@@ -23,64 +23,64 @@ import java.lang.reflect.*;
 
 public class FakePeerSupport
 {
-  private FakePeerSupport() {
-  }
-
-  public static Container createFakePeerContainer() {
-    return new FakePeerContainer();
-  }
-
-  public static void attachFakePeer(Component comp) {
-    FakePeer peer = null;
-    
-    if (comp instanceof Label)
-      peer = new FakeLabelPeer((Label) comp);
-    else if (comp instanceof Button)
-      peer = new FakeButtonPeer((Button) comp);
-    else if (comp instanceof Panel)
-      peer = new FakePanelPeer((Panel) comp);
-    else if (comp instanceof TextField)
-      peer = new FakeTextFieldPeer((TextField) comp);
-    else if (comp instanceof TextArea)
-      peer = new FakeTextAreaPeer((TextArea) comp);
-    else if (comp instanceof TextComponent)
-      peer = new FakeTextComponentPeer((TextComponent) comp);
-    else if (comp instanceof Checkbox)
-      peer = new FakeCheckboxPeer((Checkbox) comp);
-    else if (comp instanceof Choice)
-      peer = new FakeChoicePeer((Choice) comp);
-    else if (comp instanceof List)
-      peer = new FakeListPeer((List) comp);
-    else if (comp instanceof Scrollbar)
-      peer = new FakeScrollbarPeer((Scrollbar) comp);
-    else if (comp instanceof ScrollPane)
-      peer = new FakeScrollPanePeer((ScrollPane) comp);
-    else if (comp instanceof Canvas)
-      peer = new FakeCanvasPeer((Canvas) comp);
-    else
-      return;
-    
-    try {
-      Field f = Component.class.getDeclaredField("peer");
-      f.setAccessible(true);
-      f.set(comp, peer);
+    private FakePeerSupport() {
     }
-    catch (Exception ex) {
-      ex.printStackTrace();
-    }
-  }
 
-  public static void attachFakePeerRecursively(Container container) {
-    Component components[] = container.getComponents();
-    int ncomponents = components.length;
-      
-    for (int i = 0; i < ncomponents; i++) {
-      Component comp = components[i];
-      attachFakePeer(comp);
-      
-      if (comp instanceof Container)
-        attachFakePeerRecursively((Container) comp);
+    public static Container createFakePeerContainer() {
+        return new FakePeerContainer();
     }
-  }
+
+    public static void attachFakePeer(Component comp) {
+        FakePeer peer = null;
+
+        if (comp instanceof Label)
+            peer = new FakeLabelPeer((Label) comp);
+        else if (comp instanceof Button)
+            peer = new FakeButtonPeer((Button) comp);
+        else if (comp instanceof Panel)
+            peer = new FakePanelPeer((Panel) comp);
+        else if (comp instanceof TextField)
+            peer = new FakeTextFieldPeer((TextField) comp);
+        else if (comp instanceof TextArea)
+            peer = new FakeTextAreaPeer((TextArea) comp);
+        else if (comp instanceof TextComponent)
+            peer = new FakeTextComponentPeer((TextComponent) comp);
+        else if (comp instanceof Checkbox)
+            peer = new FakeCheckboxPeer((Checkbox) comp);
+        else if (comp instanceof Choice)
+            peer = new FakeChoicePeer((Choice) comp);
+        else if (comp instanceof List)
+            peer = new FakeListPeer((List) comp);
+        else if (comp instanceof Scrollbar)
+            peer = new FakeScrollbarPeer((Scrollbar) comp);
+        else if (comp instanceof ScrollPane)
+            peer = new FakeScrollPanePeer((ScrollPane) comp);
+        else if (comp instanceof Canvas)
+            peer = new FakeCanvasPeer((Canvas) comp);
+        else
+            return;
+
+        try {
+            Field f = Component.class.getDeclaredField("peer");
+            f.setAccessible(true);
+            f.set(comp, peer);
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public static void attachFakePeerRecursively(Container container) {
+        Component components[] = container.getComponents();
+        int ncomponents = components.length;
+
+        for (int i = 0; i < ncomponents; i++) {
+            Component comp = components[i];
+            attachFakePeer(comp);
+
+            if (comp instanceof Container)
+                attachFakePeerRecursively((Container) comp);
+        }
+    }
 }
 

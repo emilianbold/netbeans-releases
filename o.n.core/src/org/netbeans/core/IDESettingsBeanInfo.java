@@ -23,83 +23,83 @@ import java.util.Vector;
 * @author Ian Formanek
 */
 public class IDESettingsBeanInfo extends SimpleBeanInfo {
-  /** Icons for compiler settings objects. */
-  private static Image icon;
-  private static Image icon32;
+    /** Icons for compiler settings objects. */
+    private static Image icon;
+    private static Image icon32;
 
-  /** Array of property descriptors. */
-  private static PropertyDescriptor[] desc;
+    /** Array of property descriptors. */
+    private static PropertyDescriptor[] desc;
 
-   // initialization of the array of descriptors
-  static {
-    try {
-      desc = new PropertyDescriptor[] {
-        new PropertyDescriptor (IDESettings.PROP_SHOW_TIPS_ON_STARTUP, IDESettings.class,
-                                "getShowTipsOnStartup", "setShowTipsOnStartup"), // NOI18N
-        new PropertyDescriptor (IDESettings.PROP_LAST_TIP, IDESettings.class,
-                                "getLastTip", "setLastTip"), // NOI18N
-        new PropertyDescriptor (IDESettings.PROP_CONFIRM_DELETE, IDESettings.class,
-                                "getConfirmDelete", "setConfirmDelete"), // NOI18N
-        new PropertyDescriptor ("loadedBeans", IDESettings.class, // NOI18N
-                                "getLoadedBeans", "setLoadedBeans"), // NOI18N
-        new PropertyDescriptor (IDESettings.PROP_HOME_PAGE, IDESettings.class,
-                                "getHomePage", "setHomePage"), // NOI18N
-        new PropertyDescriptor (IDESettings.PROP_USE_PROXY, IDESettings.class,
-                                "getUseProxy", "setUseProxy"), // NOI18N
-        new PropertyDescriptor (IDESettings.PROP_PROXY_HOST, IDESettings.class,
-                                "getProxyHost", "setProxyHost"), // NOI18N
-        new PropertyDescriptor (IDESettings.PROP_PROXY_PORT, IDESettings.class,
-                                "getProxyPort", "setProxyPort"), // NOI18N
-        new PropertyDescriptor (IDESettings.PROP_SHOW_FILE_EXTENSIONS, IDESettings.class,
-                                "getShowFileExtensions", "setShowFileExtensions"), // NOI18N
-      };
+    // initialization of the array of descriptors
+    static {
+        try {
+            desc = new PropertyDescriptor[] {
+                       new PropertyDescriptor (IDESettings.PROP_SHOW_TIPS_ON_STARTUP, IDESettings.class,
+                                               "getShowTipsOnStartup", "setShowTipsOnStartup"), // NOI18N
+                       new PropertyDescriptor (IDESettings.PROP_LAST_TIP, IDESettings.class,
+                                               "getLastTip", "setLastTip"), // NOI18N
+                       new PropertyDescriptor (IDESettings.PROP_CONFIRM_DELETE, IDESettings.class,
+                                               "getConfirmDelete", "setConfirmDelete"), // NOI18N
+                       new PropertyDescriptor ("loadedBeans", IDESettings.class, // NOI18N
+                                               "getLoadedBeans", "setLoadedBeans"), // NOI18N
+                       new PropertyDescriptor (IDESettings.PROP_HOME_PAGE, IDESettings.class,
+                                               "getHomePage", "setHomePage"), // NOI18N
+                       new PropertyDescriptor (IDESettings.PROP_USE_PROXY, IDESettings.class,
+                                               "getUseProxy", "setUseProxy"), // NOI18N
+                       new PropertyDescriptor (IDESettings.PROP_PROXY_HOST, IDESettings.class,
+                                               "getProxyHost", "setProxyHost"), // NOI18N
+                       new PropertyDescriptor (IDESettings.PROP_PROXY_PORT, IDESettings.class,
+                                               "getProxyPort", "setProxyPort"), // NOI18N
+                       new PropertyDescriptor (IDESettings.PROP_SHOW_FILE_EXTENSIONS, IDESettings.class,
+                                               "getShowFileExtensions", "setShowFileExtensions"), // NOI18N
+                   };
 
-      desc[0].setDisplayName (Main.getString ("PROP_SHOW_TIPS_ON_STARTUP"));
-      desc[0].setShortDescription (Main.getString ("HINT_SHOW_TIPS_ON_STARTUP"));
+            desc[0].setDisplayName (Main.getString ("PROP_SHOW_TIPS_ON_STARTUP"));
+            desc[0].setShortDescription (Main.getString ("HINT_SHOW_TIPS_ON_STARTUP"));
 
-      desc[1].setHidden (true);
+            desc[1].setHidden (true);
 
-      desc[2].setDisplayName (Main.getString ("PROP_CONFIRM_DELETE"));
-      desc[2].setShortDescription (Main.getString ("HINT_CONFIRM_DELETE"));
+            desc[2].setDisplayName (Main.getString ("PROP_CONFIRM_DELETE"));
+            desc[2].setShortDescription (Main.getString ("HINT_CONFIRM_DELETE"));
 
-      desc[3].setHidden(true);
+            desc[3].setHidden(true);
 
-      desc[4].setDisplayName (Main.getString ("PROP_HOME_PAGE"));
-      desc[4].setShortDescription (Main.getString ("HINT_HOME_PAGE"));
-      
-      desc[5].setDisplayName (Main.getString ("PROP_USE_PROXY"));
-      desc[5].setShortDescription (Main.getString ("HINT_USE_PROXY"));
+            desc[4].setDisplayName (Main.getString ("PROP_HOME_PAGE"));
+            desc[4].setShortDescription (Main.getString ("HINT_HOME_PAGE"));
 
-      desc[6].setDisplayName (Main.getString ("PROP_PROXY_HOST"));
-      desc[6].setShortDescription (Main.getString ("HINT_PROXY_HOST"));
+            desc[5].setDisplayName (Main.getString ("PROP_USE_PROXY"));
+            desc[5].setShortDescription (Main.getString ("HINT_USE_PROXY"));
 
-      desc[7].setDisplayName (Main.getString ("PROP_PROXY_PORT"));
-      desc[7].setShortDescription (Main.getString ("HINT_PROXY_PORT"));
+            desc[6].setDisplayName (Main.getString ("PROP_PROXY_HOST"));
+            desc[6].setShortDescription (Main.getString ("HINT_PROXY_HOST"));
 
-      desc[8].setDisplayName (Main.getString ("PROP_SHOW_FILE_EXTENSIONS"));
-      desc[8].setShortDescription (Main.getString ("HINT_SHOW_FILE_EXTENSIONS"));
+            desc[7].setDisplayName (Main.getString ("PROP_PROXY_PORT"));
+            desc[7].setShortDescription (Main.getString ("HINT_PROXY_PORT"));
 
-    } catch (IntrospectionException ex) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace();
+            desc[8].setDisplayName (Main.getString ("PROP_SHOW_FILE_EXTENSIONS"));
+            desc[8].setShortDescription (Main.getString ("HINT_SHOW_FILE_EXTENSIONS"));
+
+        } catch (IntrospectionException ex) {
+            if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace();
+        }
     }
-  }
 
-  /** Provides an explicit property info. */
-  public PropertyDescriptor[] getPropertyDescriptors() {
-    return desc;
-  }
-
-  /** Returns the IDESettings' icon */
-  public Image getIcon(int type) {
-    if (icon == null) {
-      icon = loadImage("/org/netbeans/core/resources/ideSettings.gif"); // NOI18N
-      icon32 = loadImage ("/org/netbeans/core/resources/ideSettings32.gif"); // NOI18N
+    /** Provides an explicit property info. */
+    public PropertyDescriptor[] getPropertyDescriptors() {
+        return desc;
     }
-    if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
-      return icon;
-    else
-      return icon32;
-  }
+
+    /** Returns the IDESettings' icon */
+    public Image getIcon(int type) {
+        if (icon == null) {
+            icon = loadImage("/org/netbeans/core/resources/ideSettings.gif"); // NOI18N
+            icon32 = loadImage ("/org/netbeans/core/resources/ideSettings32.gif"); // NOI18N
+        }
+        if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
+            return icon;
+        else
+            return icon32;
+    }
 
 }
 

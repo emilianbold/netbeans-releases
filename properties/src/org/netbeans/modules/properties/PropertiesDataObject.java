@@ -45,191 +45,191 @@ import org.openide.nodes.NodeListener;
 * @author Ian Formanek
 */
 public final class PropertiesDataObject extends MultiDataObject {
-  /** generated Serialized Version UID */
-  static final long serialVersionUID = 4795737295255253334L;
-  
-  public static final String MIME_PROPERTIES = "text/x-properties";
+    /** generated Serialized Version UID */
+    static final long serialVersionUID = 4795737295255253334L;
 
-  /** Structural view of the dataobject */
-  protected transient BundleStructure bundleStructure;
+    public static final String MIME_PROPERTIES = "text/x-properties";
 
-  /** Icon base for the PropertiesNode node */
-  static final String PROPERTIES_ICON_BASE =
-    "org/netbeans/modules/properties/propertiesObject";
-  static final String PROPERTIES_ICON_BASE2 =
-    "org/netbeans/modules/properties/propertiesLocale";
+    /** Structural view of the dataobject */
+    protected transient BundleStructure bundleStructure;
 
-  /** Constructor */                        
-  public PropertiesDataObject (final FileObject obj, final MultiFileLoader loader)
-                       throws DataObjectExistsException {
-    super(obj, loader);
-    // use editor support
-    init();
-  }
-  
-  /** Initializes the object after it is created or deserialized */
-  private void init() {
-    bundleStructure = null;
-    getCookieSet().add(new PropertiesOpen((PropertiesFileEntry)getPrimaryEntry()));
-    getCookieSet().add(((PropertiesFileEntry)getPrimaryEntry()).getPropertiesEditor());
-  }
-                                         
-  /** Returns the support object for JTable-editing. Should be used by all subentries as well */                                       
-  public PropertiesOpen getOpenSupport () {
-    return (PropertiesOpen)getCookie(OpenCookie.class);
-  }                               
-                                          
-  /** Setter for modification status. Mod.status is handled by events from entries, 
-  * so this method does nothing. */
-  public void setModified(boolean modif) {
-    // do nothing, modification status is handled in other ways
-  }
-  
-              
-  /** Updates modification status of this dataobject from its entries. */            
-  void updateModificationStatus() {
-    boolean modif = false;
-    if (((PresentableFileEntry)getPrimaryEntry()).isModified())
-      modif = true;
-    else {
-      for (Iterator it = secondaryEntries().iterator(); it.hasNext(); )
-        if (((PresentableFileEntry)it.next()).isModified()) {
-          modif = true;                                     
-          break;
-        } 
-    }     
-                  
-    super.setModified(modif);              
-  }
-  
-  /** Provides node that should represent this data object. When a node for representation
-  * in a parent is requested by a call to getNode (parent) it is the exact copy of this node
-  * with only parent changed. This implementation creates instance
-  * <CODE>DataNode</CODE>.
-  * <P>
-  * This method is called only once.
-  *
-  * @return the node representation for this data object
-  * @see DataNode
-  */                                                           
-  protected Node createNodeDelegate () {
-    PropertiesChildren pc = new PropertiesChildren();
+    /** Icon base for the PropertiesNode node */
+    static final String PROPERTIES_ICON_BASE =
+        "org/netbeans/modules/properties/propertiesObject";
+    static final String PROPERTIES_ICON_BASE2 =
+        "org/netbeans/modules/properties/propertiesLocale";
 
-    // properties node - creates new types
-    DataNode dn = new PropertiesDataNode(this, pc);
-    return dn;
-  }            
-   
-  /** Returns a structural view of this data object */
-  public BundleStructure getBundleStructure() {
-    if (bundleStructure == null)
-      bundleStructure = new BundleStructure(this);
-    return bundleStructure;  
-  } 
-   
-  /** Help context for this object.
-  * @return help context
-  */
-  public org.openide.util.HelpCtx getHelpCtx () {
-    return new org.openide.util.HelpCtx (PropertiesDataObject.class);
-  }
-                                         
-  /** Comparator used for ordering secondary files, works over file names */
-  public static Comparator getSecondaryFilesComparator() {
-    return new KeyComparator();
-  }
-  
-  /** Deserialization */
-  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-    in.defaultReadObject();
-    init();
-  }
-
-  /** listener for changes in the cookie set */
-/*  private PropertyChangeListener propL = new PropertyChangeListener () {
-    public void propertyChange (PropertyChangeEvent ev) {
-      if (ev.getPropertyName().equals(PROP_VALID)) {
-//        myReaction();
-//        PropertiesDataObject.this.dispose();
-      }  
-      if (ev.getPropertyName().equals(PROP_NAME)) {                  
-//        myReaction();
-//        PropertiesDataObject.this.dispose();
-      }  
+    /** Constructor */
+    public PropertiesDataObject (final FileObject obj, final MultiFileLoader loader)
+    throws DataObjectExistsException {
+        super(obj, loader);
+        // use editor support
+        init();
     }
-  };*/
-                     
-  /** Registers itself as a PropertyChangeListener for a given entry */                                                
-/*  void registerEntryListener (PropertiesFileEntry pfe) {
-    pfe.addPropertyChangeListener (propL);
-  }*/
-                                                  
-  class PropertiesChildren extends Children.Keys {
 
-    /** Listens to changes on the dataobject */
-    private PropertyChangeListener pcl = null;  
-                          
-    PropertiesChildren() {
-      super();
-    }         
-      
-    /** Sets all keys in the correct order */      
-    protected void mySetKeys() {
-    
-      TreeSet ts = new TreeSet(new Comparator() {
-        public int compare(Object o1, Object o2) {
-          if (o1 == o2)
-            return 0;
-          if (o1 instanceof MultiDataObject.Entry && o2 instanceof MultiDataObject.Entry)
-            return getSecondaryFilesComparator().compare(((MultiDataObject.Entry)o1).getFile().getName(), 
-                                                         ((MultiDataObject.Entry)o2).getFile().getName());
-          else 
-            return 0;
+    /** Initializes the object after it is created or deserialized */
+    private void init() {
+        bundleStructure = null;
+        getCookieSet().add(new PropertiesOpen((PropertiesFileEntry)getPrimaryEntry()));
+        getCookieSet().add(((PropertiesFileEntry)getPrimaryEntry()).getPropertiesEditor());
+    }
+
+    /** Returns the support object for JTable-editing. Should be used by all subentries as well */
+    public PropertiesOpen getOpenSupport () {
+        return (PropertiesOpen)getCookie(OpenCookie.class);
+    }
+
+    /** Setter for modification status. Mod.status is handled by events from entries,
+    * so this method does nothing. */
+    public void setModified(boolean modif) {
+        // do nothing, modification status is handled in other ways
+    }
+
+
+    /** Updates modification status of this dataobject from its entries. */
+    void updateModificationStatus() {
+        boolean modif = false;
+        if (((PresentableFileEntry)getPrimaryEntry()).isModified())
+            modif = true;
+        else {
+            for (Iterator it = secondaryEntries().iterator(); it.hasNext(); )
+                if (((PresentableFileEntry)it.next()).isModified()) {
+                    modif = true;
+                    break;
+                }
         }
-      }
-      );
-      
-      ts.add(getPrimaryEntry());
-      for (Iterator it = secondaryEntries().iterator();it.hasNext();) {
-        FileEntry fe = (FileEntry)it.next();
-        ts.add(fe);
-      }  
-                
-      setKeys(ts);
+
+        super.setModified(modif);
     }
-           
-    /** Called to notify that the children has been asked for children
-    * after and that they should set its keys.
+
+    /** Provides node that should represent this data object. When a node for representation
+    * in a parent is requested by a call to getNode (parent) it is the exact copy of this node
+    * with only parent changed. This implementation creates instance
+    * <CODE>DataNode</CODE>.
+    * <P>
+    * This method is called only once.
+    *
+    * @return the node representation for this data object
+    * @see DataNode
+    */                                                           
+    protected Node createNodeDelegate () {
+        PropertiesChildren pc = new PropertiesChildren();
+
+        // properties node - creates new types
+        DataNode dn = new PropertiesDataNode(this, pc);
+        return dn;
+    }
+
+    /** Returns a structural view of this data object */
+    public BundleStructure getBundleStructure() {
+        if (bundleStructure == null)
+            bundleStructure = new BundleStructure(this);
+        return bundleStructure;
+    }
+
+    /** Help context for this object.
+    * @return help context
     */
-    protected void addNotify () {
-      mySetKeys();
-      // listener
-      pcl = new PropertyChangeListener () {
-      
-        public void propertyChange(PropertyChangeEvent evt) {
-          if (evt.getPropertyName().equals(PROP_FILES)) {
-            mySetKeys();                                
+    public org.openide.util.HelpCtx getHelpCtx () {
+        return new org.openide.util.HelpCtx (PropertiesDataObject.class);
+    }
+
+    /** Comparator used for ordering secondary files, works over file names */
+    public static Comparator getSecondaryFilesComparator() {
+        return new KeyComparator();
+    }
+
+    /** Deserialization */
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        init();
+    }
+
+    /** listener for changes in the cookie set */
+    /*  private PropertyChangeListener propL = new PropertyChangeListener () {
+        public void propertyChange (PropertyChangeEvent ev) {
+          if (ev.getPropertyName().equals(PROP_VALID)) {
+    //        myReaction();
+    //        PropertiesDataObject.this.dispose();
+          }  
+          if (ev.getPropertyName().equals(PROP_NAME)) {                  
+    //        myReaction();
+    //        PropertiesDataObject.this.dispose();
           }  
         }
-        
-      }; // end of inner class
-      
-      PropertiesDataObject.this.addPropertyChangeListener (new WeakListener.PropertyChange(pcl));
-    }
+      };*/
 
-    /** Called to notify that the children has lost all of its references to
-    * its nodes associated to keys and that the keys could be cleared without
-    * affecting any nodes (because nobody listens to that nodes).
-    */
-    protected void removeNotify () {
-      setKeys(new ArrayList());
-    }
+    /** Registers itself as a PropertyChangeListener for a given entry */
+    /*  void registerEntryListener (PropertiesFileEntry pfe) {
+        pfe.addPropertyChangeListener (propL);
+      }*/
 
-    protected Node[] createNodes (Object key) {
-      return new Node[] { ((PropertiesFileEntry)key).getNodeDelegate() };
-    }
+    class PropertiesChildren extends Children.Keys {
 
-  } // end of class PropertiesChildren
+        /** Listens to changes on the dataobject */
+        private PropertyChangeListener pcl = null;
+
+        PropertiesChildren() {
+            super();
+        }
+
+        /** Sets all keys in the correct order */
+        protected void mySetKeys() {
+
+            TreeSet ts = new TreeSet(new Comparator() {
+                                         public int compare(Object o1, Object o2) {
+                                             if (o1 == o2)
+                                                 return 0;
+                                             if (o1 instanceof MultiDataObject.Entry && o2 instanceof MultiDataObject.Entry)
+                                                 return getSecondaryFilesComparator().compare(((MultiDataObject.Entry)o1).getFile().getName(),
+                                                         ((MultiDataObject.Entry)o2).getFile().getName());
+                                             else
+                                                 return 0;
+                                         }
+                                     }
+                                    );
+
+            ts.add(getPrimaryEntry());
+            for (Iterator it = secondaryEntries().iterator();it.hasNext();) {
+                FileEntry fe = (FileEntry)it.next();
+                ts.add(fe);
+            }
+
+            setKeys(ts);
+        }
+
+        /** Called to notify that the children has been asked for children
+        * after and that they should set its keys.
+        */
+        protected void addNotify () {
+            mySetKeys();
+            // listener
+            pcl = new PropertyChangeListener () {
+
+                      public void propertyChange(PropertyChangeEvent evt) {
+                          if (evt.getPropertyName().equals(PROP_FILES)) {
+                              mySetKeys();
+                          }
+                      }
+
+                  }; // end of inner class
+
+            PropertiesDataObject.this.addPropertyChangeListener (new WeakListener.PropertyChange(pcl));
+        }
+
+        /** Called to notify that the children has lost all of its references to
+        * its nodes associated to keys and that the keys could be cleared without
+        * affecting any nodes (because nobody listens to that nodes).
+        */
+        protected void removeNotify () {
+            setKeys(new ArrayList());
+        }
+
+        protected Node[] createNodes (Object key) {
+            return new Node[] { ((PropertiesFileEntry)key).getNodeDelegate() };
+        }
+
+    } // end of class PropertiesChildren
 
 }
 

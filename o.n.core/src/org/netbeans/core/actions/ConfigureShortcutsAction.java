@@ -26,37 +26,37 @@ import org.netbeans.core.ShortcutsEditor;
 */
 public class ConfigureShortcutsAction extends org.openide.util.actions.CallableSystemAction {
 
-  /** Shows the dialog.
-  */
-  public void performAction () {
-    ShortcutsEditor se = new ShortcutsEditor ();
-    DialogDescriptor dd = new DialogDescriptor (se, NbBundle.getBundle (ConfigureShortcutsAction.class).getString("CTL_ConfigureShortcuts_Title"));
-    TopManager.getDefault ().createDialog (dd).show ();
-    if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-      try {
-        if (se.isModified ()) ShortcutsEditor.saveCustomKeys ();
-      } catch (java.io.IOException e) {
-        TopManager.getDefault ().notifyException (e); // [PENDING]
-      }
-    } else {
-      ShortcutsEditor.installCurrentBindings (); // Cancel the modifications performed in Configure Shortcuts dialog
+    /** Shows the dialog.
+    */
+    public void performAction () {
+        ShortcutsEditor se = new ShortcutsEditor ();
+        DialogDescriptor dd = new DialogDescriptor (se, NbBundle.getBundle (ConfigureShortcutsAction.class).getString("CTL_ConfigureShortcuts_Title"));
+        TopManager.getDefault ().createDialog (dd).show ();
+        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            try {
+                if (se.isModified ()) ShortcutsEditor.saveCustomKeys ();
+            } catch (java.io.IOException e) {
+                TopManager.getDefault ().notifyException (e); // [PENDING]
+            }
+        } else {
+            ShortcutsEditor.installCurrentBindings (); // Cancel the modifications performed in Configure Shortcuts dialog
+        }
     }
-  }
 
-  /** URL to this action.
-  * @return URL to the action icon
-  */
-  public String iconResource () {
-    return "/org/netbeans/core/resources/actions/configureShortcuts.gif"; // NOI18N
-  }
+    /** URL to this action.
+    * @return URL to the action icon
+    */
+    public String iconResource () {
+        return "/org/netbeans/core/resources/actions/configureShortcuts.gif"; // NOI18N
+    }
 
-  public HelpCtx getHelpCtx() {
-    return new org.openide.util.HelpCtx (ConfigureShortcutsAction.class);
-  }
+    public HelpCtx getHelpCtx() {
+        return new org.openide.util.HelpCtx (ConfigureShortcutsAction.class);
+    }
 
-  public String getName() {
-    return NbBundle.getBundle (ConfigureShortcutsAction.class).getString("CTL_ConfigureShortcuts");
-  }
+    public String getName() {
+        return NbBundle.getBundle (ConfigureShortcutsAction.class).getString("CTL_ConfigureShortcuts");
+    }
 
 }
 

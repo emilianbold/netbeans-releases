@@ -13,16 +13,16 @@
 
 package org.netbeans.lib.ddl;
 
-/** 
+/**
 * Interface of function.
 * @author Slavek Psenicka
 */
-public interface FunctionDescriptor extends ProcedureDescriptor 
+public interface FunctionDescriptor extends ProcedureDescriptor
 {
-	/** Returns text of procedure */
-	public int getReturnType();
-	/** Sets name of table */
-	public void setReturnType(int aval);
+    /** Returns text of procedure */
+    public int getReturnType();
+    /** Sets name of table */
+    public void setReturnType(int aval);
 }
 
 /*

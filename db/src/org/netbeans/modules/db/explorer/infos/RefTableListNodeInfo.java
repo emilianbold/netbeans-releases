@@ -25,29 +25,29 @@ import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class RefTableListNodeInfo extends DatabaseNodeInfo
 {
-  static final long serialVersionUID =318942800614012305L;
-	public void initChildren(Vector children)
-	throws DatabaseException
-	{
- 		try {
-			DatabaseMetaData dmd = getSpecification().getMetaData();
-			String catalog = (String)get(DatabaseNode.CATALOG);
-			String table = (String)get(DatabaseNode.TABLE);
+    static final long serialVersionUID =318942800614012305L;
+    public void initChildren(Vector children)
+    throws DatabaseException
+    {
+        try {
+            DatabaseMetaData dmd = getSpecification().getMetaData();
+            String catalog = (String)get(DatabaseNode.CATALOG);
+            String table = (String)get(DatabaseNode.TABLE);
 
-      DriverSpecification drvSpec = getDriverSpecification();
-			drvSpec.getExportedKeys(catalog, dmd, table);
-      if (drvSpec.rs != null) {
-        while (drvSpec.rs.next()) {
-          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.EXPORTED_KEY, drvSpec.rs);
-          if (info != null) children.add(info);
-          else throw new Exception("unable to create node information for exported key");
+            DriverSpecification drvSpec = getDriverSpecification();
+            drvSpec.getExportedKeys(catalog, dmd, table);
+            if (drvSpec.rs != null) {
+                while (drvSpec.rs.next()) {
+                    DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.EXPORTED_KEY, drvSpec.rs);
+                    if (info != null) children.add(info);
+                    else throw new Exception("unable to create node information for exported key");
+                }
+                drvSpec.rs.close();
+            }
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
         }
-        drvSpec.rs.close();
-      }
-		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());	
-		}
-	}
+    }
 }
 
 /*

@@ -19,195 +19,195 @@ import java.text.ParseException;
 import org.netbeans.lib.ddl.*;
 import java.io.Serializable;
 
-/** 
+/**
 * Implementation of table column.
 *
 * @author Slavek Psenicka
 */
-public class TableColumn extends AbstractTableColumn 
-implements Serializable, TableColumnDescriptor, CheckConstraintDescriptor
-{	
-	/** String constant for column type */
-	public static final String COLUMN = "COLUMN";
-	/** String constant for column check */
-	public static final String CHECK = "CHECK";
-	/** String constant for unique column type */
-	public static final String UNIQUE = "UNIQUE";
-	/** String constant for primary key */
-	public static final String PRIMARY_KEY = "PRIMARY_KEY";
-	/** String constant for foreign key */
-	public static final String FOREIGN_KEY = "FOREIGN_KEY";
-	/** String constant for check constraint */
-	public static final String CHECK_CONSTRAINT = "CHECK_CONSTRAINT";
-	/** String constant for unique constraint */
-	public static final String UNIQUE_CONSTRAINT = "UNIQUE_CONSTRAINT";
-	/** String constant for primary key constraint */
-	public static final String PRIMARY_KEY_CONSTRAINT = "PRIMARY_KEY_CONSTRAINT";
-	/** String constant for foreign key constraint */
-	public static final String FOREIGN_KEY_CONSTRAINT = "FOREIGN_KEY_CONSTRAINT";
+public class TableColumn extends AbstractTableColumn
+            implements Serializable, TableColumnDescriptor, CheckConstraintDescriptor
+{
+    /** String constant for column type */
+    public static final String COLUMN = "COLUMN";
+    /** String constant for column check */
+    public static final String CHECK = "CHECK";
+    /** String constant for unique column type */
+    public static final String UNIQUE = "UNIQUE";
+    /** String constant for primary key */
+    public static final String PRIMARY_KEY = "PRIMARY_KEY";
+    /** String constant for foreign key */
+    public static final String FOREIGN_KEY = "FOREIGN_KEY";
+    /** String constant for check constraint */
+    public static final String CHECK_CONSTRAINT = "CHECK_CONSTRAINT";
+    /** String constant for unique constraint */
+    public static final String UNIQUE_CONSTRAINT = "UNIQUE_CONSTRAINT";
+    /** String constant for primary key constraint */
+    public static final String PRIMARY_KEY_CONSTRAINT = "PRIMARY_KEY_CONSTRAINT";
+    /** String constant for foreign key constraint */
+    public static final String FOREIGN_KEY_CONSTRAINT = "FOREIGN_KEY_CONSTRAINT";
 
-	/** Column type */
-	int type;
+    /** Column type */
+    int type;
 
-	/** Column size */ 
-	int size;
+    /** Column size */
+    int size;
 
-	/** Column decimal size */ 
-	int decsize;
+    /** Column decimal size */
+    int decsize;
 
-	/** Null allowed */
-	boolean nullable;
+    /** Null allowed */
+    boolean nullable;
 
-	/** Default value */
-	String defval;
+    /** Default value */
+    String defval;
 
-	/** Check expression */
-	String checke;
+    /** Check expression */
+    String checke;
 
-static final long serialVersionUID =4298150043758715392L;
-	/** Constructor */
-	public TableColumn()
-	{
-		size = 0;
-		decsize = 0;
-		nullable = true;
-	}
+    static final long serialVersionUID =4298150043758715392L;
+    /** Constructor */
+    public TableColumn()
+    {
+        size = 0;
+        decsize = 0;
+        nullable = true;
+    }
 
-	/** Returns type of column */
-	public int getColumnType()
-	{
-		return type;
-	}
-	
-	/** Sets type of column */
-	public void setColumnType(int columnType)
-	{
-		type = columnType;
-	}
-	
-	/** Returns column size */
-	public int getColumnSize()
-	{
-		return size;
-	}
-	
-	/** Sets size of column */
-	public void setColumnSize(int csize)
-	{
-		size = csize;
-	}
+    /** Returns type of column */
+    public int getColumnType()
+    {
+        return type;
+    }
 
-	/** Returns decimal digits of column */
-	public int getDecimalSize()
-	{
-		return decsize;
-	}
+    /** Sets type of column */
+    public void setColumnType(int columnType)
+    {
+        type = columnType;
+    }
 
-	/** Sets decimal digits of column */
-	public void setDecimalSize(int dsize)
-	{
-		decsize = dsize;
-	}
+    /** Returns column size */
+    public int getColumnSize()
+    {
+        return size;
+    }
 
-	/** Nulls allowed? */
-	public boolean isNullAllowed()
-	{
-		return nullable;
-	}
-	
-	/** Sets null property */
-	public void setNullAllowed(boolean flag)
-	{
-		nullable = flag;
-	}
-	
-	/** Returns default value of column */
-	public String getDefaultValue()
-	{
-		return defval;
-	}
-	
-	/** Sets default value of column */
-	public void setDefaultValue(String val)
-	{
-		defval = val;
-	}
+    /** Sets size of column */
+    public void setColumnSize(int csize)
+    {
+        size = csize;
+    }
 
-	/** Returns column check condition */
-	public String getCheckCondition()
-	{
-		return checke;
-	}
-	
-	/** Sets column check condition */
-	public void setCheckCondition(String val)
-	{
-		checke = val;
-	}
-	
-	/** 
-	* Returns properties and it's values supported by this object.
-	* object.name		Name of the object; use setObjectName() 
-	* object.owner		Name of the object; use setObjectOwner() 
-	* column.size		Size of column 
-	* column.decsize	Deimal size of size 
-	* column.type		Type of column 
-	* default.value		Condition of column 
-	* Throws DDLException if object name is not specified.
-	*/
-	public Map getColumnProperties(AbstractCommand cmd)
-	throws DDLException
-	{
-		DatabaseSpecification spec = cmd.getSpecification();
-		Map args = super.getColumnProperties(cmd);
-		String stype = spec.getType(type);
-		Vector decimaltypes = (Vector)spec.getProperties().get("DecimalTypes");
-		Vector charactertypes = (Vector)spec.getProperties().get("CharacterTypes");
-		String strdelim = (String)spec.getProperties().get("StringDelimiter");
-		Vector sizelesstypes = (Vector)spec.getProperties().get("SizelessTypes");
-		
-		// Decimal size for sizeless type
-		if (sizelesstypes != null && size > 0) {
-			if (!sizelesstypes.contains(stype)) {
-				if (size > 0) args.put("column.size", new Integer(size));
-				if (decsize > 0) args.put("column.decsize", new Integer(decsize));
-			}
-		}
-			
-		String qdefval = defval;	
-		if (charactertypes.contains(spec.getType(type))) qdefval = strdelim+defval+strdelim;
-		args.put("column.type", spec.getType(type));
-		if (!nullable) args.put("column.notnull", "");
-		if (defval != null) args.put("default.value", qdefval);
-		if (checke != null) args.put("check.condition", checke);
-		return args;
-	}	
+    /** Returns decimal digits of column */
+    public int getDecimalSize()
+    {
+        return decsize;
+    }
 
-	/** Reads object from stream */
-	public void readObject(java.io.ObjectInputStream in) 
-	throws java.io.IOException, ClassNotFoundException 
-	{
-		super.readObject(in);
-		type = in.readInt();
-		size = in.readInt();
-		decsize = in.readInt();
-		nullable = in.readBoolean();
-		defval = (String)in.readObject();
-		checke = (String)in.readObject();
-	}
+    /** Sets decimal digits of column */
+    public void setDecimalSize(int dsize)
+    {
+        decsize = dsize;
+    }
 
-	/** Writes object to stream */
-	public void writeObject(java.io.ObjectOutputStream out)
-	throws java.io.IOException 
-	{
-		super.writeObject(out);
-		out.writeInt(type);
-		out.writeInt(size);
-		out.writeInt(decsize);
-		out.writeBoolean(nullable);
-		out.writeObject(defval);
-		out.writeObject(checke);
-	}
+    /** Nulls allowed? */
+    public boolean isNullAllowed()
+    {
+        return nullable;
+    }
+
+    /** Sets null property */
+    public void setNullAllowed(boolean flag)
+    {
+        nullable = flag;
+    }
+
+    /** Returns default value of column */
+    public String getDefaultValue()
+    {
+        return defval;
+    }
+
+    /** Sets default value of column */
+    public void setDefaultValue(String val)
+    {
+        defval = val;
+    }
+
+    /** Returns column check condition */
+    public String getCheckCondition()
+    {
+        return checke;
+    }
+
+    /** Sets column check condition */
+    public void setCheckCondition(String val)
+    {
+        checke = val;
+    }
+
+    /**
+    * Returns properties and it's values supported by this object.
+    * object.name		Name of the object; use setObjectName() 
+    * object.owner		Name of the object; use setObjectOwner() 
+    * column.size		Size of column 
+    * column.decsize	Deimal size of size 
+    * column.type		Type of column 
+    * default.value		Condition of column 
+    * Throws DDLException if object name is not specified.
+    */
+    public Map getColumnProperties(AbstractCommand cmd)
+    throws DDLException
+    {
+        DatabaseSpecification spec = cmd.getSpecification();
+        Map args = super.getColumnProperties(cmd);
+        String stype = spec.getType(type);
+        Vector decimaltypes = (Vector)spec.getProperties().get("DecimalTypes");
+        Vector charactertypes = (Vector)spec.getProperties().get("CharacterTypes");
+        String strdelim = (String)spec.getProperties().get("StringDelimiter");
+        Vector sizelesstypes = (Vector)spec.getProperties().get("SizelessTypes");
+
+        // Decimal size for sizeless type
+        if (sizelesstypes != null && size > 0) {
+            if (!sizelesstypes.contains(stype)) {
+                if (size > 0) args.put("column.size", new Integer(size));
+                if (decsize > 0) args.put("column.decsize", new Integer(decsize));
+            }
+        }
+
+        String qdefval = defval;
+        if (charactertypes.contains(spec.getType(type))) qdefval = strdelim+defval+strdelim;
+        args.put("column.type", spec.getType(type));
+        if (!nullable) args.put("column.notnull", "");
+        if (defval != null) args.put("default.value", qdefval);
+        if (checke != null) args.put("check.condition", checke);
+        return args;
+    }
+
+    /** Reads object from stream */
+    public void readObject(java.io.ObjectInputStream in)
+    throws java.io.IOException, ClassNotFoundException
+    {
+        super.readObject(in);
+        type = in.readInt();
+        size = in.readInt();
+        decsize = in.readInt();
+        nullable = in.readBoolean();
+        defval = (String)in.readObject();
+        checke = (String)in.readObject();
+    }
+
+    /** Writes object to stream */
+    public void writeObject(java.io.ObjectOutputStream out)
+    throws java.io.IOException
+    {
+        super.writeObject(out);
+        out.writeInt(type);
+        out.writeInt(size);
+        out.writeInt(decsize);
+        out.writeBoolean(nullable);
+        out.writeObject(defval);
+        out.writeObject(checke);
+    }
 }
 
 /*

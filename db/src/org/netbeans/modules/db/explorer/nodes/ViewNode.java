@@ -26,21 +26,21 @@ import org.netbeans.modules.db.explorer.infos.*;
 
 public class ViewNode extends DatabaseNode
 {
-	public void setName(String newname)
-	{
-		try {
-			DatabaseNodeInfo info = getInfo();
-			Specification spec = (Specification)info.getSpecification();
-			AbstractCommand cmd = spec.createCommandRenameView(info.getName(), newname);
-			cmd.execute();
-			super.setName(newname);
-			info.put(DatabaseNode.TABLE, newname);
-		} catch (CommandNotSupportedException e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to change the name, command "+e.getCommand()+" is not supported by system", NotifyDescriptor.ERROR_MESSAGE));				
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+    public void setName(String newname)
+    {
+        try {
+            DatabaseNodeInfo info = getInfo();
+            Specification spec = (Specification)info.getSpecification();
+            AbstractCommand cmd = spec.createCommandRenameView(info.getName(), newname);
+            cmd.execute();
+            super.setName(newname);
+            info.put(DatabaseNode.TABLE, newname);
+        } catch (CommandNotSupportedException e) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to change the name, command "+e.getCommand()+" is not supported by system", NotifyDescriptor.ERROR_MESSAGE));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
 /*
  * <<Log>>

@@ -15,7 +15,7 @@ package org.netbeans.lib.ddl;
 
 import org.netbeans.lib.ddl.DDLException;
 
-/** 
+/**
 * Interface of database action command. Instances should remember connection 
 * information of DatabaseSpecification and use it in execute() method.
 *
@@ -23,29 +23,29 @@ import org.netbeans.lib.ddl.DDLException;
 */
 public interface DDLCommand
 {
-	/** Returns specification (DatabaseSpecification) for this command */
-	public DatabaseSpecification getSpecification();
-	
-	/** Returns name of modified object */
-	public String getObjectName();
-	
-	/** Sets name to be used in command 
-	* @param name New name
-	*/
-	public void setObjectName(String name);
+    /** Returns specification (DatabaseSpecification) for this command */
+    public DatabaseSpecification getSpecification();
 
-	/** Executes command */
-	public void execute() throws DDLException;
+    /** Returns name of modified object */
+    public String getObjectName();
 
-	/** 
-	* Returns full string representation of command. This string needs no 
-	* formatting and could be used directly as argument of executeUpdate() 
-	* command. Throws DDLException if format is not specified or CommandFormatter
-	* can't format it (it uses MapFormat to process entire lines and can solve []
-	* enclosed expressions as optional.
-	*/
-	public String getCommand()
-	throws DDLException;
+    /** Sets name to be used in command
+    * @param name New name
+    */
+    public void setObjectName(String name);
+
+    /** Executes command */
+    public void execute() throws DDLException;
+
+    /**
+    * Returns full string representation of command. This string needs no 
+    * formatting and could be used directly as argument of executeUpdate() 
+    * command. Throws DDLException if format is not specified or CommandFormatter
+    * can't format it (it uses MapFormat to process entire lines and can solve []
+    * enclosed expressions as optional.
+    */
+    public String getCommand()
+    throws DDLException;
 }
 
 /*

@@ -21,29 +21,29 @@ import org.netbeans.modules.db.explorer.infos.*;
 
 public class DriverNode extends LeafNode implements PropertyChangeListener
 {
-	public void setInfo(DatabaseNodeInfo info)
-	{
-		super.setInfo(info);
-		DatabaseDriver drv = (DatabaseDriver)info.get(DatabaseNodeInfo.DBDRIVER);
-		if (drv != null) {
-			info.put(DatabaseNodeInfo.NAME, drv.getName());
-			info.put(DatabaseNodeInfo.URL, drv.getURL());		
-			info.put(DatabaseNodeInfo.ADAPTOR_CLASSNAME, drv.getDatabaseAdaptor());		
-			info.addDriverListener(this);
-		} 
-	}
+    public void setInfo(DatabaseNodeInfo info)
+    {
+        super.setInfo(info);
+        DatabaseDriver drv = (DatabaseDriver)info.get(DatabaseNodeInfo.DBDRIVER);
+        if (drv != null) {
+            info.put(DatabaseNodeInfo.NAME, drv.getName());
+            info.put(DatabaseNodeInfo.URL, drv.getURL());
+            info.put(DatabaseNodeInfo.ADAPTOR_CLASSNAME, drv.getDatabaseAdaptor());
+            info.addDriverListener(this);
+        }
+    }
 
-	public void propertyChange(PropertyChangeEvent evt)
-	{
-		DatabaseNodeInfo info = getInfo();
-		String pname = evt.getPropertyName();
-		Object newval = evt.getNewValue();
-		DatabaseDriver drv = (DatabaseDriver)info.get(DatabaseNodeInfo.DBDRIVER);	
-		if (pname.equals(DatabaseNodeInfo.NAME)) drv.setName((String)newval);
-		if (pname.equals(DatabaseNodeInfo.URL)) drv.setURL((String)newval);
-		if (pname.equals(DatabaseNodeInfo.PREFIX)) drv.setDatabasePrefix((String)newval);
-		if (pname.equals(DatabaseNodeInfo.ADAPTOR_CLASSNAME)) drv.setDatabaseAdaptor((String)newval);
-	}
+    public void propertyChange(PropertyChangeEvent evt)
+    {
+        DatabaseNodeInfo info = getInfo();
+        String pname = evt.getPropertyName();
+        Object newval = evt.getNewValue();
+        DatabaseDriver drv = (DatabaseDriver)info.get(DatabaseNodeInfo.DBDRIVER);
+        if (pname.equals(DatabaseNodeInfo.NAME)) drv.setName((String)newval);
+        if (pname.equals(DatabaseNodeInfo.URL)) drv.setURL((String)newval);
+        if (pname.equals(DatabaseNodeInfo.PREFIX)) drv.setDatabasePrefix((String)newval);
+        if (pname.equals(DatabaseNodeInfo.ADAPTOR_CLASSNAME)) drv.setDatabaseAdaptor((String)newval);
+    }
 }
 
 /*

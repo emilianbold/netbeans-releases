@@ -32,51 +32,51 @@ import org.openide.actions.RenameAction;
 * @version  0.13, Apr 26, 1999
 */
 public class LangRenameAction extends RenameAction {
-  static final long serialVersionUID =-6548687347804513177L;
-  /** generated Serialized Version UID */
-//  static final long serialVersionUID = 1261145028106838566L;
+    static final long serialVersionUID =-6548687347804513177L;
+    /** generated Serialized Version UID */
+    //  static final long serialVersionUID = 1261145028106838566L;
 
-/*  protected boolean enable (Node[] activatedNodes) {
-    boolean en = super.enable(activatedNodes);
-    if (activatedNodes[0] instanceof PropertiesLocaleNode) {
-      if ...
-    }  
-    return en;
-  }*/
+    /*  protected boolean enable (Node[] activatedNodes) {
+        boolean en = super.enable(activatedNodes);
+        if (activatedNodes[0] instanceof PropertiesLocaleNode) {
+          if ...
+        }  
+        return en;
+      }*/
 
 
-  protected void performAction (Node[] activatedNodes) {
-    Node n = activatedNodes[0]; // we supposed that one node is activated
-    if (!(n instanceof PropertiesLocaleNode))
-      throw new InternalError("Node is not PropertiesLocaleNode (renaming language)");
-    PropertiesLocaleNode pln = (PropertiesLocaleNode)n;  
-      
-    //RenameCookie ren = (RenameCookie) Cookies.getInstanceOf (n.getCookie(), RenameCookie.class);
-                                           
-    String lang = Util.getLocalePartOfFileName (pln.getFileEntry());
-    if (lang.length() > 0)
-      if (lang.charAt(0) == PropertiesDataLoader.PRB_SEPARATOR_CHAR)
-        lang = lang.substring(1);
-        
-    NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
-       NbBundle.getBundle("org.openide.actions.Bundle").getString("CTL_RenameLabel"),
-       NbBundle.getBundle("org.openide.actions.Bundle").getString("CTL_RenameTitle"));
-    dlg.setInputText(lang);
-    if (NotifyDescriptor.OK_OPTION.equals(TopManager.getDefault().notify(dlg))) {
-      try {
-        pln.setName(Util.assembleName (((PropertiesFileEntry)pln.getFileEntry()).basicName, dlg.getInputText()));
-      }
-      catch (IllegalArgumentException e) {
-        // catch & report badly formatted names
-        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-          java.text.MessageFormat.format(
-            NbBundle.getBundle("org.openide.actions.Bundle").getString("MSG_BadFormat"),
-            new Object[] {n.getName()}),
-          NotifyDescriptor.ERROR_MESSAGE);
-        TopManager.getDefault().notify(msg);
-      }
+    protected void performAction (Node[] activatedNodes) {
+        Node n = activatedNodes[0]; // we supposed that one node is activated
+        if (!(n instanceof PropertiesLocaleNode))
+            throw new InternalError("Node is not PropertiesLocaleNode (renaming language)");
+        PropertiesLocaleNode pln = (PropertiesLocaleNode)n;
+
+        //RenameCookie ren = (RenameCookie) Cookies.getInstanceOf (n.getCookie(), RenameCookie.class);
+
+        String lang = Util.getLocalePartOfFileName (pln.getFileEntry());
+        if (lang.length() > 0)
+            if (lang.charAt(0) == PropertiesDataLoader.PRB_SEPARATOR_CHAR)
+                lang = lang.substring(1);
+
+        NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
+                                             NbBundle.getBundle("org.openide.actions.Bundle").getString("CTL_RenameLabel"),
+                                             NbBundle.getBundle("org.openide.actions.Bundle").getString("CTL_RenameTitle"));
+        dlg.setInputText(lang);
+        if (NotifyDescriptor.OK_OPTION.equals(TopManager.getDefault().notify(dlg))) {
+            try {
+                pln.setName(Util.assembleName (((PropertiesFileEntry)pln.getFileEntry()).basicName, dlg.getInputText()));
+            }
+            catch (IllegalArgumentException e) {
+                // catch & report badly formatted names
+                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                                                   java.text.MessageFormat.format(
+                                                       NbBundle.getBundle("org.openide.actions.Bundle").getString("MSG_BadFormat"),
+                                                       new Object[] {n.getName()}),
+                                                   NotifyDescriptor.ERROR_MESSAGE);
+                TopManager.getDefault().notify(msg);
+            }
+        }
     }
-  }
 }
 
 

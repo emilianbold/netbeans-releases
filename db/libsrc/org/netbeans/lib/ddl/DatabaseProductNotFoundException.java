@@ -13,7 +13,7 @@
 
 package org.netbeans.lib.ddl;
 
-/** 
+/**
 * System is not able to locate appropriate resources to create DatabaseSpecification object
 * (object describing the database). It means that database product is not 
 * supported by system. You can use generic database system or write your 
@@ -22,37 +22,37 @@ package org.netbeans.lib.ddl;
 *
 * @author Slavek Psenicka
 */
-public class DatabaseProductNotFoundException extends Exception 
+public class DatabaseProductNotFoundException extends Exception
 {
-	/** Database product name */
-	private String sname;
+    /** Database product name */
+    private String sname;
 
-static final long serialVersionUID =-1108211224066947350L;
-	/** Creates new exception
-	* @param desc The text describing the exception
-	*/
-	public DatabaseProductNotFoundException (String spec) {
-		super ();
-		sname = spec;    
-	}
+    static final long serialVersionUID =-1108211224066947350L;
+    /** Creates new exception
+    * @param desc The text describing the exception
+    */
+    public DatabaseProductNotFoundException (String spec) {
+        super ();
+        sname = spec;
+    }
 
-	/** Creates new exception with text specified string.
-	* @param spec Database product name
-	* @param desc The text describing the exception
-	*/
-	public DatabaseProductNotFoundException (String spec, String desc) {
-		super (desc);
-		sname = spec;
-	}
-	
-	/** Returns database product name.
-	* This database is not supported by system. You can use generic database 
-	* system or write your own description file.
-	*/
-	public String getDatabaseProductName()
-	{
-		return sname;
-	}
+    /** Creates new exception with text specified string.
+    * @param spec Database product name
+    * @param desc The text describing the exception
+    */
+    public DatabaseProductNotFoundException (String spec, String desc) {
+        super (desc);
+        sname = spec;
+    }
+
+    /** Returns database product name.
+    * This database is not supported by system. You can use generic database 
+    * system or write your own description file.
+    */
+    public String getDatabaseProductName()
+    {
+        return sname;
+    }
 }
 
 /*

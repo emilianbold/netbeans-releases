@@ -17,7 +17,7 @@ import java.util.*;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 
-/** 
+/**
 * Interface of database action command. Instances should remember connection 
 * information of DatabaseSpecification and use it in execute() method. This is a base interface
 * used heavily for sub-interfacing (it is not subclassing :)
@@ -25,31 +25,31 @@ import org.netbeans.lib.ddl.impl.*;
 * @author Slavek Psenicka
 */
 
-public class CreateFunction extends CreateProcedure implements FunctionDescriptor 
+public class CreateFunction extends CreateProcedure implements FunctionDescriptor
 {
-	/** Catalog */
-	private int rarg;
-				
-static final long serialVersionUID =-7554675717309349130L;
-	/** Returns text of procedure */
-	public int getReturnType()
-	{
-		return rarg;
-	}
-	
-	/** Sets name of table */
-	public void setReturnType(int aval)
-	{
-		rarg = aval;
-	}
+    /** Catalog */
+    private int rarg;
 
-	public Map getCommandProperties()
-	throws DDLException
-	{
-		Map cmdprops = super.getCommandProperties();
-		cmdprops.put("return.type", getSpecification().getType(rarg));
-		return cmdprops;	
-	}
+    static final long serialVersionUID =-7554675717309349130L;
+    /** Returns text of procedure */
+    public int getReturnType()
+    {
+        return rarg;
+    }
+
+    /** Sets name of table */
+    public void setReturnType(int aval)
+    {
+        rarg = aval;
+    }
+
+    public Map getCommandProperties()
+    throws DDLException
+    {
+        Map cmdprops = super.getCommandProperties();
+        cmdprops.put("return.type", getSpecification().getType(rarg));
+        return cmdprops;
+    }
 }
 
 /*

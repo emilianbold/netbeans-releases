@@ -23,42 +23,42 @@ import java.awt.peer.TextFieldPeer;
 
 class FakeTextFieldPeer extends FakeTextComponentPeer implements TextFieldPeer
 {
-  FakeTextFieldPeer(TextField target) {
-    super(target);
-  }
+    FakeTextFieldPeer(TextField target) {
+        super(target);
+    }
 
-  Component createDelegate() {
-    return new Delegate();
-  }
+    Component createDelegate() {
+        return new Delegate();
+    }
 
-  public void setEchoChar(char echoChar) {
-  }
-  
-  public Dimension getPreferredSize(int columns) {
-    return new Dimension(100, 20);
-  }
-  
-  public Dimension getMinimumSize(int columns) {
-    return new Dimension(100, 20);
-  }
+    public void setEchoChar(char echoChar) {
+    }
 
-  public void setEchoCharacter(char c) {
-    setEchoChar(c);
-  }
+    public Dimension getPreferredSize(int columns) {
+        return new Dimension(100, 20);
+    }
 
-  public Dimension preferredSize(int cols) {
-    return getPreferredSize(cols);
-  }
+    public Dimension getMinimumSize(int columns) {
+        return new Dimension(100, 20);
+    }
 
-  public Dimension minimumSize(int cols) {
-    return getMinimumSize(cols);
-  }
+    public void setEchoCharacter(char c) {
+        setEchoChar(c);
+    }
 
-  //
-  //
-  //
+    public Dimension preferredSize(int cols) {
+        return getPreferredSize(cols);
+    }
 
-  private class Delegate extends FakeTextComponentPeer.Delegate
-  {
-  }
+    public Dimension minimumSize(int cols) {
+        return getMinimumSize(cols);
+    }
+
+    //
+    //
+    //
+
+    private class Delegate extends FakeTextComponentPeer.Delegate
+    {
+    }
 }

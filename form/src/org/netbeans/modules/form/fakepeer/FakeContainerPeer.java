@@ -23,25 +23,25 @@ import java.awt.peer.ContainerPeer;
 
 abstract class FakeContainerPeer extends FakeComponentPeer implements ContainerPeer
 {
-  private Insets _insets;
+    private Insets _insets;
 
-  FakeContainerPeer(Container target) {
-    super(target);
-  }
+    FakeContainerPeer(Container target) {
+        super(target);
+    }
 
-  public Insets getInsets() {
-    return insets();
-  }
+    public Insets getInsets() {
+        return insets();
+    }
 
-  public void beginValidate() {
-  }
+    public void beginValidate() {
+    }
 
-  public void endValidate() {
-  }
+    public void endValidate() {
+    }
 
-  public Insets insets() {
-    if(_insets == null)
-      _insets = new Insets(0, 0, 0, 0);
-    return _insets;
-  }
+    public Insets insets() {
+        if(_insets == null)
+            _insets = new Insets(0, 0, 0, 0);
+        return _insets;
+    }
 }

@@ -25,66 +25,66 @@ import org.netbeans.modules.db.explorer.dataview.*;
 
 public class ViewDataAction extends DatabaseAction
 {
-  static final long serialVersionUID =-894644054833609687L;
-	protected boolean enable(Node[] activatedNodes)
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return false;
-		
-		ConnectionNodeInfo info = (ConnectionNodeInfo)node.getCookie(ConnectionNodeInfo.class);
-		if (info != null) return (info.getConnection() != null);
-		return true;
-	}
+    static final long serialVersionUID =-894644054833609687L;
+    protected boolean enable(Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return false;
 
-	public void performAction (Node[] activatedNodes) 
-	{
-		String expression = "";
-		StringBuffer cols = new StringBuffer();
-		Node node;
-    ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+        ConnectionNodeInfo info = (ConnectionNodeInfo)node.getCookie(ConnectionNodeInfo.class);
+        if (info != null) return (info.getConnection() != null);
+        return true;
+    }
 
-		if (activatedNodes != null && activatedNodes.length>0) {
-			try {
+    public void performAction (Node[] activatedNodes)
+    {
+        String expression = "";
+        StringBuffer cols = new StringBuffer();
+        Node node;
+        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 
-				node = activatedNodes[0];
-				DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-				String onome = info.getName();
-				if (info instanceof TableNodeInfo || info instanceof ViewNodeInfo) {
-					Enumeration enum = info.getChildren().elements();
-					while (enum.hasMoreElements()) {
-						DatabaseNodeInfo nfo = (DatabaseNodeInfo)enum.nextElement();
-						if (nfo instanceof ColumnNodeInfo || nfo instanceof ViewColumnNodeInfo) {
-							if (cols.length()>0) cols.append(", ");
-							cols.append(nfo.getName());
-						}
-					}
-					
-					expression = "select "+cols.toString()+" from "+onome;
-					
-				} else if (info instanceof ColumnNodeInfo || info instanceof ViewColumnNodeInfo) {
-					onome = info.getTable();
-					for (int i = 0; i<activatedNodes.length; i++) {
-						node = activatedNodes[i];
-						info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-						if (info instanceof ColumnNodeInfo || info instanceof ViewColumnNodeInfo) {
-							if (cols.length()>0) cols.append(", ");
-							cols.append(info.getName());
-						}
-					}
+        if (activatedNodes != null && activatedNodes.length>0) {
+            try {
 
-					expression = "select "+cols.toString()+" from "+onome;
+                node = activatedNodes[0];
+                DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+                String onome = info.getName();
+                if (info instanceof TableNodeInfo || info instanceof ViewNodeInfo) {
+                    Enumeration enum = info.getChildren().elements();
+                    while (enum.hasMoreElements()) {
+                        DatabaseNodeInfo nfo = (DatabaseNodeInfo)enum.nextElement();
+                        if (nfo instanceof ColumnNodeInfo || nfo instanceof ViewColumnNodeInfo) {
+                            if (cols.length()>0) cols.append(", ");
+                            cols.append(nfo.getName());
+                        }
+                    }
 
-				} 
-				
-				DataViewWindow win = new DataViewWindow(info, expression);
-				win.open();
-				win.executeCommand();
-			} catch(Exception e) {
-				TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("ShowDataError") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-			}
-		}				 
-	}
+                    expression = "select "+cols.toString()+" from "+onome;
+
+                } else if (info instanceof ColumnNodeInfo || info instanceof ViewColumnNodeInfo) {
+                    onome = info.getTable();
+                    for (int i = 0; i<activatedNodes.length; i++) {
+                        node = activatedNodes[i];
+                        info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+                        if (info instanceof ColumnNodeInfo || info instanceof ViewColumnNodeInfo) {
+                            if (cols.length()>0) cols.append(", ");
+                            cols.append(info.getName());
+                        }
+                    }
+
+                    expression = "select "+cols.toString()+" from "+onome;
+
+                }
+
+                DataViewWindow win = new DataViewWindow(info, expression);
+                win.open();
+                win.executeCommand();
+            } catch(Exception e) {
+                TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("ShowDataError") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+            }
+        }
+    }
 }
 /*
  * <<Log>>

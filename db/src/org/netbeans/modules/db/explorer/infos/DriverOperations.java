@@ -16,17 +16,17 @@ package org.netbeans.modules.db.explorer.infos;
 import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 
-/** 
+/**
 * Interface of driver-related nodes.
 * @author Slavek Psenicka
 */
 public interface DriverOperations
 {
-	/** Add driver operation 
-	* @param drv Driver to add
-	*/
-	public void addDriver(DatabaseDriver drv) 
-	throws DatabaseException;
+    /** Add driver operation
+    * @param drv Driver to add
+    */
+    public void addDriver(DatabaseDriver drv)
+    throws DatabaseException;
 }
 
 /*

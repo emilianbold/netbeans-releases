@@ -19,17 +19,17 @@ package org.netbeans.modules.form;
  */
 public interface ComponentContainer {
 
-  public RADComponent[] getSubBeans ();
+    public RADComponent[] getSubBeans ();
 
-  public void initSubComponents (RADComponent[] initComponents);
+    public void initSubComponents (RADComponent[] initComponents);
 
-  public void reorderSubComponents (int[] perm);
+    public void reorderSubComponents (int[] perm);
 
-  public void add (RADComponent comp);
+    public void add (RADComponent comp);
 
-  public void remove (RADComponent comp);
+    public void remove (RADComponent comp);
 
-  public int getIndexOf (RADComponent comp);
+    public int getIndexOf (RADComponent comp);
 
 }
 

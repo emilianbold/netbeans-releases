@@ -13,8 +13,8 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
-public class ProcedureListNode extends DatabaseNode 
-{		
+public class ProcedureListNode extends DatabaseNode
+{
 }
 /*
  * <<Log>>

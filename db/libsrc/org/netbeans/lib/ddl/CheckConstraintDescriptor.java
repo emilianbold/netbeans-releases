@@ -13,20 +13,20 @@
 
 package org.netbeans.lib.ddl;
 
-/** 
+/**
 * Interface of check constraint descriptor.
 *
 * @author Slavek Psenicka
 */
 public interface CheckConstraintDescriptor extends TableConstraintDescriptor {
 
-	/** Returns check condition for table */
-	public String getCheckCondition();
-	
-	/** Sets check condition for table 
-	* @param val Check condition
-	*/
-	public void setCheckCondition(String val);
+    /** Returns check condition for table */
+    public String getCheckCondition();
+
+    /** Sets check condition for table
+    * @param val Check condition
+    */
+    public void setCheckCondition(String val);
 }
 
 /*

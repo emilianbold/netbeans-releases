@@ -24,58 +24,58 @@ import org.openide.util.NbBundle;
 */
 public class ImageDataLoader extends UniFileLoader {
 
-  static final long serialVersionUID =-8188309025795898449L;
-  /** Create a new loader. */
-  public ImageDataLoader() {
-    // Set the representation class.
-    super(ImageDataObject.class);
-    // Get a localized display name.
-    setDisplayName(NbBundle.getBundle(ImageDataLoader.class).
-                   getString("PROP_ImageLoader_Name"));
-    // List of recognized extensions.
-    ExtensionList ext = new ExtensionList();
-    ext.addExtension("jpg"); // NOI18N
-    ext.addExtension("jpeg"); // NOI18N
-    ext.addExtension("jpe"); // NOI18N
-    ext.addExtension("gif"); // NOI18N
-    // PhotoShop frequently saves image files with capital extensions:
-    ext.addExtension("JPG"); // NOI18N
-    ext.addExtension("JPEG"); // NOI18N
-    ext.addExtension("JPE"); // NOI18N
-    ext.addExtension("GIF"); // NOI18N
-    setExtensions(ext);
+    static final long serialVersionUID =-8188309025795898449L;
+    /** Create a new loader. */
+    public ImageDataLoader() {
+        // Set the representation class.
+        super(ImageDataObject.class);
+        // Get a localized display name.
+        setDisplayName(NbBundle.getBundle(ImageDataLoader.class).
+                       getString("PROP_ImageLoader_Name"));
+        // List of recognized extensions.
+        ExtensionList ext = new ExtensionList();
+        ext.addExtension("jpg"); // NOI18N
+        ext.addExtension("jpeg"); // NOI18N
+        ext.addExtension("jpe"); // NOI18N
+        ext.addExtension("gif"); // NOI18N
+        // PhotoShop frequently saves image files with capital extensions:
+        ext.addExtension("JPG"); // NOI18N
+        ext.addExtension("JPEG"); // NOI18N
+        ext.addExtension("JPE"); // NOI18N
+        ext.addExtension("GIF"); // NOI18N
+        setExtensions(ext);
 
-    // Common actions for all images.
-    setActions(new SystemAction[] {
-      SystemAction.get(OpenAction.class),
-      SystemAction.get(FileSystemAction.class),
-      null,
-      SystemAction.get(CutAction.class),
-      SystemAction.get(CopyAction.class),
-      SystemAction.get(PasteAction.class),
-      null,
-      SystemAction.get(DeleteAction.class),
-      SystemAction.get(RenameAction.class),
-      null,
-      SystemAction.get(SaveAsTemplateAction.class),
-      null,
-      SystemAction.get(ToolsAction.class),
-      SystemAction.get(PropertiesAction.class)
-    });
+        // Common actions for all images.
+        setActions(new SystemAction[] {
+                       SystemAction.get(OpenAction.class),
+                       SystemAction.get(FileSystemAction.class),
+                       null,
+                       SystemAction.get(CutAction.class),
+                       SystemAction.get(CopyAction.class),
+                       SystemAction.get(PasteAction.class),
+                       null,
+                       SystemAction.get(DeleteAction.class),
+                       SystemAction.get(RenameAction.class),
+                       null,
+                       SystemAction.get(SaveAsTemplateAction.class),
+                       null,
+                       SystemAction.get(ToolsAction.class),
+                       SystemAction.get(PropertiesAction.class)
+                   });
 
-  }
+    }
 
-  /** Create the image data object.
-  *
-  * @param primaryFile the primary file (e.g. <code>*.gif</code>)
-  * @return the data object for this file
-  * @exception DataObjectExistsException if the primary file already has a data object
-  * @exception java.io.IOException should not be thrown
-  */
-  protected MultiDataObject createMultiObject (FileObject primaryFile)
-  throws DataObjectExistsException, java.io.IOException {
-    return new ImageDataObject(primaryFile, this);
-  }
+    /** Create the image data object.
+    *
+    * @param primaryFile the primary file (e.g. <code>*.gif</code>)
+    * @return the data object for this file
+    * @exception DataObjectExistsException if the primary file already has a data object
+    * @exception java.io.IOException should not be thrown
+    */
+    protected MultiDataObject createMultiObject (FileObject primaryFile)
+    throws DataObjectExistsException, java.io.IOException {
+        return new ImageDataObject(primaryFile, this);
+    }
 
 }
 

@@ -23,20 +23,20 @@ import java.awt.peer.CheckboxPeer;
 
 class FakeCheckboxPeer extends FakeComponentPeer implements CheckboxPeer
 {
-  FakeCheckboxPeer(Checkbox target) {
-    super(target);
-  }
+    FakeCheckboxPeer(Checkbox target) {
+        super(target);
+    }
 
-  Component createDelegate() {
-    return new Delegate();
-  }
+    Component createDelegate() {
+        return new Delegate();
+    }
 
-  public void setState(boolean state) {
-  }
-  
-  public void setCheckboxGroup(CheckboxGroup g) {
-  }
-  
-  public void setLabel(String label) {
-  }
+    public void setState(boolean state) {
+    }
+
+    public void setCheckboxGroup(CheckboxGroup g) {
+    }
+
+    public void setLabel(String label) {
+    }
 }

@@ -42,206 +42,206 @@ import org.netbeans.editor.MultiKeyBinding;
 */
 public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
-  private ResourceBundle bundle;
+    private ResourceBundle bundle;
 
-  /** Prefix of the icon location. */
-  private String iconPrefix;
-  
-  /** Prefix for getting localized strings for property name and hint */
-  private String bundlePrefix;
+    /** Prefix of the icon location. */
+    private String iconPrefix;
 
-  /** Icons for compiler settings objects. */
-  private Image icon;
-  private Image icon32;
+    /** Prefix for getting localized strings for property name and hint */
+    private String bundlePrefix;
 
-  /** Propertydescriptors */
-  PropertyDescriptor[] descriptors;
-  
-  private static final String[] EXPERT_PROP_NAMES = new String[] {
-    BaseOptions.CARET_BLINK_RATE_PROP,
-    BaseOptions.CARET_ITALIC_INSERT_MODE_PROP,
-    BaseOptions.CARET_ITALIC_OVERWRITE_MODE_PROP,
-    BaseOptions.CARET_TYPE_INSERT_MODE_PROP,
-    BaseOptions.CARET_TYPE_OVERWRITE_MODE_PROP,
-    BaseOptions.CARET_COLOR_INSERT_MODE_PROP,
-    BaseOptions.CARET_COLOR_OVERWRITE_MODE_PROP,
-    BaseOptions.HIGHLIGHT_CARET_ROW_PROP,
-    BaseOptions.HIGHLIGHT_MATCHING_BRACKET_PROP,
-    BaseOptions.LINE_HEIGHT_CORRECTION_PROP,
-    BaseOptions.LINE_NUMBER_MARGIN_PROP,
-    BaseOptions.MARGIN_PROP,
-    BaseOptions.SCROLL_JUMP_INSETS_PROP,
-    BaseOptions.SCROLL_FIND_INSETS_PROP,
-    BaseOptions.STATUS_BAR_CARET_DELAY_PROP,
-    BaseOptions.STATUS_BAR_VISIBLE_PROP,
-    BaseOptions.TEXT_LIMIT_LINE_COLOR_PROP,
-    BaseOptions.TEXT_LIMIT_LINE_VISIBLE_PROP,
-    BaseOptions.TEXT_LIMIT_WIDTH_PROP,
-  };
+    /** Icons for compiler settings objects. */
+    private Image icon;
+    private Image icon32;
+
+    /** Propertydescriptors */
+    PropertyDescriptor[] descriptors;
+
+    private static final String[] EXPERT_PROP_NAMES = new String[] {
+                BaseOptions.CARET_BLINK_RATE_PROP,
+                BaseOptions.CARET_ITALIC_INSERT_MODE_PROP,
+                BaseOptions.CARET_ITALIC_OVERWRITE_MODE_PROP,
+                BaseOptions.CARET_TYPE_INSERT_MODE_PROP,
+                BaseOptions.CARET_TYPE_OVERWRITE_MODE_PROP,
+                BaseOptions.CARET_COLOR_INSERT_MODE_PROP,
+                BaseOptions.CARET_COLOR_OVERWRITE_MODE_PROP,
+                BaseOptions.HIGHLIGHT_CARET_ROW_PROP,
+                BaseOptions.HIGHLIGHT_MATCHING_BRACKET_PROP,
+                BaseOptions.LINE_HEIGHT_CORRECTION_PROP,
+                BaseOptions.LINE_NUMBER_MARGIN_PROP,
+                BaseOptions.MARGIN_PROP,
+                BaseOptions.SCROLL_JUMP_INSETS_PROP,
+                BaseOptions.SCROLL_FIND_INSETS_PROP,
+                BaseOptions.STATUS_BAR_CARET_DELAY_PROP,
+                BaseOptions.STATUS_BAR_VISIBLE_PROP,
+                BaseOptions.TEXT_LIMIT_LINE_COLOR_PROP,
+                BaseOptions.TEXT_LIMIT_LINE_VISIBLE_PROP,
+                BaseOptions.TEXT_LIMIT_WIDTH_PROP,
+            };
 
 
-  public BaseOptionsBeanInfo() {
-    this("/org/netbeans/modules/editor/resources/baseOptions"); // NOI18N
-  }
+    public BaseOptionsBeanInfo() {
+        this("/org/netbeans/modules/editor/resources/baseOptions"); // NOI18N
+    }
 
-  public BaseOptionsBeanInfo(String iconPrefix) {
-    this(iconPrefix, ""); // NOI18N
-  }
-  
-  public BaseOptionsBeanInfo(String iconPrefix, String bundlePrefix) {
-    this.iconPrefix = iconPrefix;
-    this.bundlePrefix = bundlePrefix;
-  }
+    public BaseOptionsBeanInfo(String iconPrefix) {
+        this(iconPrefix, ""); // NOI18N
+    }
 
-  /*
-  * @return Returns an array of PropertyDescriptors
-  * describing the editable properties supported by this bean.
-  */
-  public PropertyDescriptor[] getPropertyDescriptors () {
-    if (descriptors == null) {
-      String[] propNames = getPropNames();
-      try {
-        descriptors = new PropertyDescriptor[propNames.length];
-        
+    public BaseOptionsBeanInfo(String iconPrefix, String bundlePrefix) {
+        this.iconPrefix = iconPrefix;
+        this.bundlePrefix = bundlePrefix;
+    }
+
+    /*
+    * @return Returns an array of PropertyDescriptors
+    * describing the editable properties supported by this bean.
+    */
+    public PropertyDescriptor[] getPropertyDescriptors () {
+        if (descriptors == null) {
+            String[] propNames = getPropNames();
+            try {
+                descriptors = new PropertyDescriptor[propNames.length];
+
+                for (int i = 0; i < propNames.length; i++) {
+                    descriptors[i] = new PropertyDescriptor(propNames[i], getBeanClass());
+                    descriptors[i].setDisplayName(getString("PROP_" + bundlePrefix + propNames[i])); // NOI18N
+                    descriptors[i].setShortDescription(getString("HINT_" + bundlePrefix + propNames[i])); // NOI18N
+                }
+
+                setPropertyEditor(BaseOptions.ABBREV_MAP_PROP, AbbrevsEditor.class);
+                setPropertyEditor(BaseOptions.CARET_TYPE_INSERT_MODE_PROP, CaretTypeEditor.class);
+                setPropertyEditor(BaseOptions.CARET_TYPE_OVERWRITE_MODE_PROP, CaretTypeEditor.class);
+                setPropertyEditor(BaseOptions.KEY_BINDING_LIST_PROP, KeyBindingsEditor.class);
+                setPropertyEditor(BaseOptions.COLORING_MAP_PROP, ColoringArrayEditor.class);
+                setPropertyEditor(BaseOptions.SCROLL_JUMP_INSETS_PROP, ScrollInsetsEditor.class);
+                setPropertyEditor(BaseOptions.SCROLL_FIND_INSETS_PROP, ScrollInsetsEditor.class);
+
+                setExpert(EXPERT_PROP_NAMES);
+
+            } catch (IntrospectionException e) {
+                descriptors = new PropertyDescriptor[0];
+            }
+        }
+        return descriptors;
+    }
+
+    protected Class getBeanClass() {
+        return BaseOptions.class;
+    }
+
+    protected String[] getPropNames() {
+        return BaseOptions.BASE_PROP_NAMES;
+    }
+
+    protected PropertyDescriptor getPD(String prop) {
+        String[] propNames = getPropNames();
+        for (int i = 0; i < descriptors.length; i++) {
+            if (prop.equals(propNames[i])) {
+                return descriptors[i];
+            }
+        }
+        return null;
+    }
+
+    protected void setPropertyEditor(String propName, Class propEditor) {
+        PropertyDescriptor pd = getPD(propName);
+        if (pd != null) {
+            pd.setPropertyEditorClass(propEditor);
+        }
+    }
+
+    protected void setExpert(String[] propNames) {
         for (int i = 0; i < propNames.length; i++) {
-          descriptors[i] = new PropertyDescriptor(propNames[i], getBeanClass());
-          descriptors[i].setDisplayName(getString("PROP_" + bundlePrefix + propNames[i])); // NOI18N
-          descriptors[i].setShortDescription(getString("HINT_" + bundlePrefix + propNames[i])); // NOI18N
+            PropertyDescriptor pd = getPD(propNames[i]);
+            if (pd != null) {
+                pd.setExpert(true);
+            }
+        }
+    }
+
+    protected void setHidden(String[] propNames) {
+        for (int i = 0; i < propNames.length; i++) {
+            PropertyDescriptor pd = getPD(propNames[i]);
+            if (pd != null) {
+                pd.setHidden(true);
+            }
+        }
+    }
+
+    /* @param type Desired type of the icon
+    * @return returns the Java loader's icon
+    */
+    public Image getIcon(final int type) {
+        if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
+            if (icon == null)
+                icon = loadImage(iconPrefix + ".gif"); // NOI18N
+            return icon;
+        }
+        else {
+            if (icon32 == null)
+                icon32 = loadImage(iconPrefix + "32.gif"); // NOI18N
+            return icon32;
+        }
+    }
+
+    /** @return localized string */
+    protected String getString(String s) {
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(BaseOptionsBeanInfo.class);
+        }
+        return bundle.getString(s);
+    }
+
+    // ------------------------ carets --------------------------------
+
+    public static class CaretTypeEditor extends PropertyEditorSupport {
+
+        private static ResourceBundle bundle;
+
+        private static String[] tags = new String[] {
+                                           BaseCaret.LINE_CARET,
+                                           BaseCaret.THIN_LINE_CARET,
+                                           BaseCaret.BLOCK_CARET
+                                       };
+
+        private static String[] locTags = new String[] {
+                                              getString("LINE_CARET"), // NOI18N
+                                              getString("THIN_LINE_CARET"), // NOI18N
+                                              getString("BLOCK_CARET") // NOI18N
+                                          };
+
+        public String[] getTags() {
+            return locTags;
         }
 
-        setPropertyEditor(BaseOptions.ABBREV_MAP_PROP, AbbrevsEditor.class);
-        setPropertyEditor(BaseOptions.CARET_TYPE_INSERT_MODE_PROP, CaretTypeEditor.class);
-        setPropertyEditor(BaseOptions.CARET_TYPE_OVERWRITE_MODE_PROP, CaretTypeEditor.class);
-        setPropertyEditor(BaseOptions.KEY_BINDING_LIST_PROP, KeyBindingsEditor.class);
-        setPropertyEditor(BaseOptions.COLORING_MAP_PROP, ColoringArrayEditor.class);
-        setPropertyEditor(BaseOptions.SCROLL_JUMP_INSETS_PROP, ScrollInsetsEditor.class);
-        setPropertyEditor(BaseOptions.SCROLL_FIND_INSETS_PROP, ScrollInsetsEditor.class);
-
-        setExpert(EXPERT_PROP_NAMES);
-
-      } catch (IntrospectionException e) {
-        descriptors = new PropertyDescriptor[0];
-      }
-    }
-    return descriptors;
-  }
-
-  protected Class getBeanClass() {
-    return BaseOptions.class;
-  }
-  
-  protected String[] getPropNames() {
-    return BaseOptions.BASE_PROP_NAMES;
-  }
-  
-  protected PropertyDescriptor getPD(String prop) {
-    String[] propNames = getPropNames();
-    for (int i = 0; i < descriptors.length; i++) {
-      if (prop.equals(propNames[i])) {
-        return descriptors[i];
-      }
-    }
-    return null;
-  }
-  
-  protected void setPropertyEditor(String propName, Class propEditor) {
-    PropertyDescriptor pd = getPD(propName);
-    if (pd != null) {
-      pd.setPropertyEditorClass(propEditor);
-    }
-  }
-  
-  protected void setExpert(String[] propNames) {
-    for (int i = 0; i < propNames.length; i++) {
-      PropertyDescriptor pd = getPD(propNames[i]);
-      if (pd != null) {
-        pd.setExpert(true);
-      }
-    }
-  }
-  
-  protected void setHidden(String[] propNames) {
-    for (int i = 0; i < propNames.length; i++) {
-      PropertyDescriptor pd = getPD(propNames[i]);
-      if (pd != null) {
-        pd.setHidden(true);
-      }
-    }
-  }    
-
-  /* @param type Desired type of the icon
-  * @return returns the Java loader's icon
-  */
-  public Image getIcon(final int type) {
-    if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-      if (icon == null)
-        icon = loadImage(iconPrefix + ".gif"); // NOI18N
-      return icon;
-    }
-    else {
-      if (icon32 == null)
-        icon32 = loadImage(iconPrefix + "32.gif"); // NOI18N
-      return icon32;
-    }
-  }
-
-  /** @return localized string */
-  protected String getString(String s) {
-    if (bundle == null) {
-      bundle = NbBundle.getBundle(BaseOptionsBeanInfo.class);
-    }
-    return bundle.getString(s);
-  }
-
-  // ------------------------ carets --------------------------------
-  
-  public static class CaretTypeEditor extends PropertyEditorSupport {
-
-    private static ResourceBundle bundle;
-
-    private static String[] tags = new String[] {
-      BaseCaret.LINE_CARET,
-      BaseCaret.THIN_LINE_CARET,
-      BaseCaret.BLOCK_CARET
-    };
-
-    private static String[] locTags = new String[] {
-      getString("LINE_CARET"), // NOI18N
-      getString("THIN_LINE_CARET"), // NOI18N
-      getString("BLOCK_CARET") // NOI18N
-    };
-      
-    public String[] getTags() {
-      return locTags;
-    }
-
-    public void setAsText(String txt) {
-      for (int i = 0; i < locTags.length; i++) {
-        if (locTags[i].equals(txt)) {
-          setValue(tags[i]);
-          break;
+        public void setAsText(String txt) {
+            for (int i = 0; i < locTags.length; i++) {
+                if (locTags[i].equals(txt)) {
+                    setValue(tags[i]);
+                    break;
+                }
+            }
         }
-      }
-    }
 
-    public String getAsText() {
-      String val = (String) getValue();
-      for (int i = 0; i < tags.length; i++) {
-        if (tags[i].equals(val)) {
-          return locTags[i];
+        public String getAsText() {
+            String val = (String) getValue();
+            for (int i = 0; i < tags.length; i++) {
+                if (tags[i].equals(val)) {
+                    return locTags[i];
+                }
+            }
+            throw new IllegalStateException();
         }
-      }
-      throw new IllegalStateException();
-    }
 
-    static String getString(String s) {
-      if (bundle == null) {
-        bundle = NbBundle.getBundle(BaseOptionsBeanInfo.class);
-      }
-      return bundle.getString(s);
-    }
+        static String getString(String s) {
+            if (bundle == null) {
+                bundle = NbBundle.getBundle(BaseOptionsBeanInfo.class);
+            }
+            return bundle.getString(s);
+        }
 
-  }
+    }
 }
 
 /*

@@ -24,53 +24,53 @@ import org.openide.util.NbBundle;
 */
 public class URLDataLoader extends UniFileLoader {
 
-  static final long serialVersionUID =-7407252842873642582L;
-  /** Creates new URLDataLoader without the extension. */
-  public URLDataLoader() {
-    super(URLDataObject.class);
-  }
+    static final long serialVersionUID =-7407252842873642582L;
+    /** Creates new URLDataLoader without the extension. */
+    public URLDataLoader() {
+        super(URLDataObject.class);
+    }
 
-  /** Initialize */
-  protected void initialize () {
-    setDisplayName(NbBundle.getBundle(URLDataLoader.class).
-                   getString("PROP_URLLoader_Name"));
-    ExtensionList ext = new ExtensionList();
-    ext.addExtension("url"); // NOI18N
-    setExtensions(ext);
+    /** Initialize */
+    protected void initialize () {
+        setDisplayName(NbBundle.getBundle(URLDataLoader.class).
+                       getString("PROP_URLLoader_Name"));
+        ExtensionList ext = new ExtensionList();
+        ext.addExtension("url"); // NOI18N
+        setExtensions(ext);
 
-    setActions(new SystemAction[] {
-      SystemAction.get(OpenAction.class),
-      SystemAction.get(OpenInNewWindowAction.class),
-      SystemAction.get(FileSystemAction.class),
-      null,
-      SystemAction.get(EditAction.class),
-      null,
-      SystemAction.get(CutAction.class),
-      SystemAction.get(CopyAction.class),
-      SystemAction.get(PasteAction.class),
-      null,
-      SystemAction.get(DeleteAction.class),
-      SystemAction.get(RenameAction.class),
-      null,
-      SystemAction.get(SaveAsTemplateAction.class),
-      null,
-      SystemAction.get(ToolsAction.class),
-      SystemAction.get(PropertiesAction.class),
-    });
-  }
+        setActions(new SystemAction[] {
+                       SystemAction.get(OpenAction.class),
+                       SystemAction.get(OpenInNewWindowAction.class),
+                       SystemAction.get(FileSystemAction.class),
+                       null,
+                       SystemAction.get(EditAction.class),
+                       null,
+                       SystemAction.get(CutAction.class),
+                       SystemAction.get(CopyAction.class),
+                       SystemAction.get(PasteAction.class),
+                       null,
+                       SystemAction.get(DeleteAction.class),
+                       SystemAction.get(RenameAction.class),
+                       null,
+                       SystemAction.get(SaveAsTemplateAction.class),
+                       null,
+                       SystemAction.get(ToolsAction.class),
+                       SystemAction.get(PropertiesAction.class),
+                   });
+    }
 
-  /** Creates the right data object for given primary file.
-  * It is guaranteed that the provided file is realy primary file
-  * returned from the method findPrimaryFile.
-  *
-  * @param primaryFile the primary file
-  * @return the data object for this file
-  * @exception DataObjectExistsException if the primary file already has data object
-  */
-  protected MultiDataObject createMultiObject (FileObject primaryFile)
-  throws DataObjectExistsException, java.io.IOException {
-    return new URLDataObject(primaryFile, this);
-  }
+    /** Creates the right data object for given primary file.
+    * It is guaranteed that the provided file is realy primary file
+    * returned from the method findPrimaryFile.
+    *
+    * @param primaryFile the primary file
+    * @return the data object for this file
+    * @exception DataObjectExistsException if the primary file already has data object
+    */
+    protected MultiDataObject createMultiObject (FileObject primaryFile)
+    throws DataObjectExistsException, java.io.IOException {
+        return new URLDataObject(primaryFile, this);
+    }
 
 }
 

@@ -25,7 +25,7 @@ import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class ForeignColumnNodeInfo extends ColumnNodeInfo
 {
-  static final long serialVersionUID =5724448383581029249L;
+    static final long serialVersionUID =5724448383581029249L;
 }
 /*
  * <<Log>>

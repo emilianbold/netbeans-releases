@@ -16,11 +16,11 @@ package org.netbeans.modules.db.explorer.infos;
 import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 
-/** 
+/**
 * Interface of driver-related nodes.
 * @author Slavek Psenicka
 */
-public interface DatabaseOperations 
+public interface DatabaseOperations
 {
 }
 

@@ -13,21 +13,21 @@
 
 package org.netbeans.lib.ddl;
 
-/** 
+/**
 * Interface for comment commands. Command CommentTable must implement it. If another
 * command comments something, it should do it too.
 *
 * @author Slavek Psenicka
 */
 public interface CommentOperationCommand extends DDLCommand {
-	
-	/** Returns object comment */
-	public String getComment();
-	
-	/** Sets object comment 
-	* @param comment New comment.
-	*/
-	public void setComment(String comment);
+
+    /** Returns object comment */
+    public String getComment();
+
+    /** Sets object comment
+    * @param comment New comment.
+    */
+    public void setComment(String comment);
 }
 
 /*

@@ -21,8 +21,8 @@ import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
 
-public class ProcedureParamNode extends LeafNode 
-{		
+public class ProcedureParamNode extends LeafNode
+{
 }
 /*
  * <<Log>>

@@ -13,19 +13,19 @@
 
 package org.netbeans.lib.ddl;
 
-/** 
+/**
 * Interface of create table action command. 
 *
 * @author Slavek Psenicka
 */
 public interface CreateTableCommand extends DDLCommand, OwnedObjectCommand {
-	
-	/** Returns column specification array 
-	* @param type Type of command.
-	* @param name Name of command.
-	*/
-	public TableColumnDescriptor createColumn(String type, String name)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException;
+
+    /** Returns column specification array
+    * @param type Type of command.
+    * @param name Name of command.
+    */
+    public TableColumnDescriptor createColumn(String type, String name)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException;
 }
 
 /*

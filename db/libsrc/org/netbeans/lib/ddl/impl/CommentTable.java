@@ -17,7 +17,7 @@ import java.util.*;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 
-/** 
+/**
 * Interface of database action command. Instances should remember connection 
 * information of DatabaseSpecification and use it in execute() method. This is a base interface
 * used heavily for sub-interfacing (it is not subclassing :)
@@ -25,30 +25,30 @@ import org.netbeans.lib.ddl.impl.*;
 * @author Slavek Psenicka
 */
 
-public class CommentTable extends AbstractCommand 
+public class CommentTable extends AbstractCommand
 {
-	private String comment;
-	
-static final long serialVersionUID =2058860037972661389L;
-	public String getComment()
-	{
-		return comment;	
-	}
-	
-	public void setComment(String comm)
-	{
-		String delim = (String)getSpecification().getProperties().get("StringDelimiter");
-		if (!(comm.startsWith(delim))) comment = delim+comm+delim;
-		else comment = comm;
-	}
-	
-	public Map getCommandProperties()
-	throws DDLException
-	{
-		Map args = super.getCommandProperties();
-		args.put("comment", comment);			
-		return args;	
-	}
+    private String comment;
+
+    static final long serialVersionUID =2058860037972661389L;
+    public String getComment()
+    {
+        return comment;
+    }
+
+    public void setComment(String comm)
+    {
+        String delim = (String)getSpecification().getProperties().get("StringDelimiter");
+        if (!(comm.startsWith(delim))) comment = delim+comm+delim;
+        else comment = comm;
+    }
+
+    public Map getCommandProperties()
+    throws DDLException
+    {
+        Map args = super.getCommandProperties();
+        args.put("comment", comment);
+        return args;
+    }
 }
 
 /*

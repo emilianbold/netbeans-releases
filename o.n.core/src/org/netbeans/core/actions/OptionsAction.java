@@ -33,69 +33,69 @@ import org.netbeans.core.NbMainExplorer;
  */
 public class OptionsAction extends CallableSystemAction {
 
-  /** Creates new OptionsAction. */
-  public OptionsAction() {
-  }
-  
-  /** Shows options panel. */
-  public void performAction () {
-    OptionsPanel singleton = OptionsPanel.singleton();
-    singleton.open();
-    singleton.requestFocus();
-  }
-
-  /** URL to this action.
-  * @return URL to the action icon
-  */
-  public String iconResource () {
-    return "/org/netbeans/core/resources/sessionSettings.gif"; // NOI18N
-  }
-
-  public HelpCtx getHelpCtx() {
-    return new org.openide.util.HelpCtx(OptionsAction.class);
-  }
-
-  public String getName() {
-    return NbBundle.getBundle(OptionsAction.class).getString("Options");
-  }
-  
-  /** Options panel. Uses singleton pattern. */
-  public static final class OptionsPanel extends NbMainExplorer.SettingsTab {
-
-    /** Singleton instance of options panel */
-    private static OptionsPanel singleton;
-    /** Formatted title of this view */
-    private static MessageFormat formatTitle;
-    
-    public OptionsPanel () {
-      super();
-      setRootContext(TopManager.getDefault().getPlaces().nodes().session());
+    /** Creates new OptionsAction. */
+    public OptionsAction() {
     }
-    
-    /** Accessor to the singleron instance */
-    static OptionsPanel singleton () {
-      if (singleton == null) {
-        singleton = new OptionsPanel();
-      }
-      return singleton;
+
+    /** Shows options panel. */
+    public void performAction () {
+        OptionsPanel singleton = OptionsPanel.singleton();
+        singleton.open();
+        singleton.requestFocus();
     }
-    
-    /** Resolves to the singleton instance of options panel. */
-    public Object readResolve () 
-                throws ObjectStreamException {
-      if (singleton == null) {
-        singleton = this;
-      }
-      return singleton;
+
+    /** URL to this action.
+    * @return URL to the action icon
+    */
+    public String iconResource () {
+        return "/org/netbeans/core/resources/sessionSettings.gif"; // NOI18N
     }
-    
-  } // end of inner class OptionsPanel
-  
-  
-  
+
+    public HelpCtx getHelpCtx() {
+        return new org.openide.util.HelpCtx(OptionsAction.class);
+    }
+
+    public String getName() {
+        return NbBundle.getBundle(OptionsAction.class).getString("Options");
+    }
+
+    /** Options panel. Uses singleton pattern. */
+    public static final class OptionsPanel extends NbMainExplorer.SettingsTab {
+
+        /** Singleton instance of options panel */
+        private static OptionsPanel singleton;
+        /** Formatted title of this view */
+        private static MessageFormat formatTitle;
+
+        public OptionsPanel () {
+            super();
+            setRootContext(TopManager.getDefault().getPlaces().nodes().session());
+        }
+
+        /** Accessor to the singleron instance */
+        static OptionsPanel singleton () {
+            if (singleton == null) {
+                singleton = new OptionsPanel();
+            }
+            return singleton;
+        }
+
+        /** Resolves to the singleton instance of options panel. */
+        public Object readResolve ()
+        throws ObjectStreamException {
+            if (singleton == null) {
+                singleton = this;
+            }
+            return singleton;
+        }
+
+    } // end of inner class OptionsPanel
+
+
+
 }
 
-/* 
+/*
 * Log
 *  3    Gandalf   1.2         1/12/00  Ales Novak      i18n
 *  2    Gandalf   1.1         12/7/99  David Simonek   top component inner class
@@ -103,4 +103,3 @@ public class OptionsAction extends CallableSystemAction {
 *  1    Gandalf   1.0         12/3/99  David Simonek   
 * $ 
 */ 
-  

@@ -20,34 +20,34 @@ package org.netbeans.lib.ddl;
 *
 * @author Slavek Psenicka
 */
-public class CommandNotSupportedException extends Exception 
+public class CommandNotSupportedException extends Exception
 {
-	/** Unsuccessfull command */
-	private String cmd;
+    /** Unsuccessfull command */
+    private String cmd;
 
-static final long serialVersionUID =3121142575910991422L;
-	/** Creates new exception 
-	* @param command The text describing the exception
-	*/
-	public CommandNotSupportedException (String command) {
-		super ();
-		cmd = command;    
-	}
+    static final long serialVersionUID =3121142575910991422L;
+    /** Creates new exception
+    * @param command The text describing the exception
+    */
+    public CommandNotSupportedException (String command) {
+        super ();
+        cmd = command;
+    }
 
-	/** Creates new exception with text specified string.
-	* @param command Executed command
-	* @param desc The text describing the exception
-	*/
-	public CommandNotSupportedException (String command, String desc) {
-		super (desc);
-		cmd = command;
-	}
-	
-	/** Returns executed command */
-	public String getCommand()
-	{
-		return cmd;
-	}
+    /** Creates new exception with text specified string.
+    * @param command Executed command
+    * @param desc The text describing the exception
+    */
+    public CommandNotSupportedException (String command, String desc) {
+        super (desc);
+        cmd = command;
+    }
+
+    /** Returns executed command */
+    public String getCommand()
+    {
+        return cmd;
+    }
 }
 
 /*

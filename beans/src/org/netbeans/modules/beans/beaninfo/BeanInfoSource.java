@@ -28,235 +28,235 @@ import org.openide.TopManager;
 import org.netbeans.modules.beans.PatternAnalyser;
 import org.netbeans.modules.java.JavaEditor;
 
-/** 
+/**
  * Finds or creates BeanInfo source elemnet for the class.
  * It can regenerate the source if there are the guarded blocks.
  * @author  Petr Hrebejk
  */
 
 public class BeanInfoSource extends Object {
-  
-  private static final String BEANINFO_NAME_EXT = "BeanInfo"; // NOI18N
-  
-  private static final String PROPERTIES_SECTION = "Properties"; // NOI18N
-  private static final String EVENTSETS_SECTION = "Events"; // NOI18N
-  private static final String ICONS_SECTION = "Icons"; // NOI18N
-  private static final String IDX_SECTION = "Idx"; // NOI18N
-  
-  private ClassElement classElement;
-  
-  private DataObject   biDataObject = null;
-  private JavaEditor   javaEditor =  null;  
-  //private PatternAnalyser pa = null;
-  
-  /** Creates new BeanInfoSource */
-  public BeanInfoSource (ClassElement classElement ) {
-    this.classElement = classElement;
-    //this.pa = pa;
 
-    findBeanInfo();
-  }
+    private static final String BEANINFO_NAME_EXT = "BeanInfo"; // NOI18N
 
-  /** Returns wether the bean info exists or not */
-  boolean exists() {
-    return biDataObject != null;
-  }
+    private static final String PROPERTIES_SECTION = "Properties"; // NOI18N
+    private static final String EVENTSETS_SECTION = "Events"; // NOI18N
+    private static final String ICONS_SECTION = "Icons"; // NOI18N
+    private static final String IDX_SECTION = "Idx"; // NOI18N
 
-  /** Checks wether the bean info object has Guarded sections i.e.
-   * was created from netbeans template.
-   */
-  boolean isNbBeanInfo() {
-  
-    if ( !exists() || javaEditor == null ) {
-      return false;
+    private ClassElement classElement;
+
+    private DataObject   biDataObject = null;
+    private JavaEditor   javaEditor =  null;
+    //private PatternAnalyser pa = null;
+
+    /** Creates new BeanInfoSource */
+    public BeanInfoSource (ClassElement classElement ) {
+        this.classElement = classElement;
+        //this.pa = pa;
+
+        findBeanInfo();
     }
-    
-    JavaEditor.InteriorSection pis = javaEditor.findInteriorSection( PROPERTIES_SECTION );
-    JavaEditor.InteriorSection eis = javaEditor.findInteriorSection( EVENTSETS_SECTION );
-    JavaEditor.SimpleSection iss = javaEditor.findSimpleSection( ICONS_SECTION );
-    JavaEditor.SimpleSection dss = javaEditor.findSimpleSection( IDX_SECTION );
-    
-    return ( pis != null && eis != null && iss != null && dss != null );
-  }
 
-
-  /** Finds the bean info for classElement asspciated with this
-      object */
-  void findBeanInfo() {
-    
-     javaEditor = null; 
-    
-     DataObject dataObject = (DataObject)classElement.getCookie( DataObject.class );
-     if ( dataObject == null )
-       return;
-     
-     FileObject folder = dataObject.getFolder().getPrimaryFile();
-     if ( folder == null )
-       return;
-
-     FileObject biFile = folder.getFileObject( dataObject.getName() + BEANINFO_NAME_EXT, "java" ); // NOI18N
-     if ( biFile == null )
-       return;
-
-     try {
-      biDataObject = DataObject.find( biFile );
-      javaEditor = (JavaEditor)biDataObject.getCookie( JavaEditor.class );
-      //System.out.println("ClassElem : " + biDataObject ); // NOI18N
-     }
-     catch ( org.openide.loaders.DataObjectNotFoundException e ) {
-        // Do nothing if no data object is found
-     }
-            
-  }   
-
-  /** Deletes the BeanInfo */
-  void delete() throws java.io.IOException {
-    biDataObject.delete();
-  }
-  
-  
-  /** Creates beanInfo data object */
-  void createFromTemplate() {
-
-    DataFolder dfTemplates = TopManager.getDefault().getPlaces().folders().templates();
-    if ( dfTemplates == null )
-      return;
-
-    FileObject foTemplates = dfTemplates.getPrimaryFile() ;
-    if ( foTemplates == null )
-      return;
-
-    FileObject foClassTemplates = foTemplates.getFileObject( "Beans" ); // NOI18N
-    if ( foClassTemplates == null )
-      return;
-    
-    FileObject foBiTemplate = foClassTemplates.getFileObject( "BeanInfo", "java" ); // NOI18N
-    if ( foBiTemplate == null )
-      return;
-
-
-
-    try {
-      DataObject doBiTemplate = DataObject.find ( foBiTemplate );
-
-      DataObject dataObject = (DataObject)classElement.getCookie( DataObject.class );
-
-      if ( dataObject == null )
-        return;
-     
-      DataFolder folder = dataObject.getFolder();
-
-      biDataObject = doBiTemplate.createFromTemplate( folder, dataObject.getName() + BEANINFO_NAME_EXT );
-      javaEditor = (JavaEditor)biDataObject.getCookie( JavaEditor.class );      
+    /** Returns wether the bean info exists or not */
+    boolean exists() {
+        return biDataObject != null;
     }
-    catch ( org.openide.loaders.DataObjectNotFoundException e ) {
-      //System.out.println ( e );
-      // Do nothing if no data object is found
-    }
-    catch ( java.io.IOException e ) {
-      //System.out.println ( e );
-      // Do nothing if no data object is found
-    }
-  }
-                
-  /** If the bean info is available returns the bean info data object */    
-  DataObject getDataObject() {
-    return biDataObject;
-  }
- 
-  /** opens the source */
-  void open() {
-    javaEditor.open();
-  }
 
-  /** Sets the header and bottom of properties section */
-  void setPropertiesSection( String header, String bottom ) {
-    JavaEditor.InteriorSection is = javaEditor.findInteriorSection( PROPERTIES_SECTION );
+    /** Checks wether the bean info object has Guarded sections i.e.
+     * was created from netbeans template.
+     */
+    boolean isNbBeanInfo() {
 
-    if ( is != null ) {
-      is.setHeader( header );  
-      is.setBottom( bottom );
+        if ( !exists() || javaEditor == null ) {
+            return false;
+        }
+
+        JavaEditor.InteriorSection pis = javaEditor.findInteriorSection( PROPERTIES_SECTION );
+        JavaEditor.InteriorSection eis = javaEditor.findInteriorSection( EVENTSETS_SECTION );
+        JavaEditor.SimpleSection iss = javaEditor.findSimpleSection( ICONS_SECTION );
+        JavaEditor.SimpleSection dss = javaEditor.findSimpleSection( IDX_SECTION );
+
+        return ( pis != null && eis != null && iss != null && dss != null );
+    }
+
+
+    /** Finds the bean info for classElement asspciated with this
+        object */
+    void findBeanInfo() {
+
+        javaEditor = null;
+
+        DataObject dataObject = (DataObject)classElement.getCookie( DataObject.class );
+        if ( dataObject == null )
+            return;
+
+        FileObject folder = dataObject.getFolder().getPrimaryFile();
+        if ( folder == null )
+            return;
+
+        FileObject biFile = folder.getFileObject( dataObject.getName() + BEANINFO_NAME_EXT, "java" ); // NOI18N
+        if ( biFile == null )
+            return;
+
+        try {
+            biDataObject = DataObject.find( biFile );
+            javaEditor = (JavaEditor)biDataObject.getCookie( JavaEditor.class );
+            //System.out.println("ClassElem : " + biDataObject ); // NOI18N
+        }
+        catch ( org.openide.loaders.DataObjectNotFoundException e ) {
+            // Do nothing if no data object is found
+        }
+
+    }
+
+    /** Deletes the BeanInfo */
+    void delete() throws java.io.IOException {
+        biDataObject.delete();
+    }
+
+
+    /** Creates beanInfo data object */
+    void createFromTemplate() {
+
+        DataFolder dfTemplates = TopManager.getDefault().getPlaces().folders().templates();
+        if ( dfTemplates == null )
+            return;
+
+        FileObject foTemplates = dfTemplates.getPrimaryFile() ;
+        if ( foTemplates == null )
+            return;
+
+        FileObject foClassTemplates = foTemplates.getFileObject( "Beans" ); // NOI18N
+        if ( foClassTemplates == null )
+            return;
+
+        FileObject foBiTemplate = foClassTemplates.getFileObject( "BeanInfo", "java" ); // NOI18N
+        if ( foBiTemplate == null )
+            return;
+
+
+
+        try {
+            DataObject doBiTemplate = DataObject.find ( foBiTemplate );
+
+            DataObject dataObject = (DataObject)classElement.getCookie( DataObject.class );
+
+            if ( dataObject == null )
+                return;
+
+            DataFolder folder = dataObject.getFolder();
+
+            biDataObject = doBiTemplate.createFromTemplate( folder, dataObject.getName() + BEANINFO_NAME_EXT );
+            javaEditor = (JavaEditor)biDataObject.getCookie( JavaEditor.class );
+        }
+        catch ( org.openide.loaders.DataObjectNotFoundException e ) {
+            //System.out.println ( e );
+            // Do nothing if no data object is found
+        }
+        catch ( java.io.IOException e ) {
+            //System.out.println ( e );
+            // Do nothing if no data object is found
+        }
+    }
+
+    /** If the bean info is available returns the bean info data object */
+    DataObject getDataObject() {
+        return biDataObject;
+    }
+
+    /** opens the source */
+    void open() {
+        javaEditor.open();
+    }
+
+    /** Sets the header and bottom of properties section */
+    void setPropertiesSection( String header, String bottom ) {
+        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( PROPERTIES_SECTION );
+
+        if ( is != null ) {
+            is.setHeader( header );
+            is.setBottom( bottom );
+        }
+    }
+
+    /** Gets the header of properties setion */
+    String getPropertiesSection() {
+        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( PROPERTIES_SECTION );
+
+        if ( is != null ) {
+            return is.getText();
+        }
+        else
+            return null;
+
+    }
+
+    /** Sets the header and bottom of event sets section */
+    void setEventSetsSection( String header, String bottom ) {
+        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( EVENTSETS_SECTION );
+        if ( is != null ) {
+            is.setHeader( header );
+            is.setBottom( bottom );
+        }
+    }
+
+    /** Gets the header of properties setion */
+    String getEventSetsSection() {
+        JavaEditor.InteriorSection is = javaEditor.findInteriorSection( EVENTSETS_SECTION );
+
+        if ( is != null ) {
+            return is.getText();
+        }
+        else
+            return null;
+    }
+
+    /** Gets the header of properties setion */
+    String getIconsSection() {
+        JavaEditor.SimpleSection ss = javaEditor.findSimpleSection( ICONS_SECTION );
+
+        if ( ss != null ) {
+            return ss.getText();
+        }
+        else
+            return null;
+    }
+
+    /** Sets the header of properties setion */
+    void setIconsSection( String text ) {
+        JavaEditor.SimpleSection ss = javaEditor.findSimpleSection( ICONS_SECTION );
+        if ( ss != null )
+            ss.setText( text );
+    }
+
+    /** Gets the header of properties setion */
+    String getDefaultIdxSection() {
+        JavaEditor.SimpleSection ss = javaEditor.findSimpleSection( IDX_SECTION );
+
+        if ( ss != null ) {
+            return ss.getText();
+        }
+        else
+            return null;
+    }
+
+    /** Sets the header of properties setion */
+    void setDefaultIdxSection( String text ) {
+        JavaEditor.SimpleSection ss = javaEditor.findSimpleSection( IDX_SECTION );
+        if ( ss != null )
+            ss.setText( text );
+    }
+
+    /*
+    void regenerateMethods() {
+      JavaEditor.InteriorSection is = javaEditor.findInteriorSection( "Events" );
+      
+      if ( is != null ) {
+        is.setHeader( BeanInfoGenerator.generateMethods( classElement.getName().getName(), methods ) );
+        is.setBottom( BeanInfoGenerator.generateMethodsBottom( methods ) );
       }
-  }
-
-  /** Gets the header of properties setion */
-  String getPropertiesSection() {
-    JavaEditor.InteriorSection is = javaEditor.findInteriorSection( PROPERTIES_SECTION );
-
-    if ( is != null ) {
-      return is.getText();
-      }
-    else
-      return null;
-    
-  }
-
-  /** Sets the header and bottom of event sets section */
-  void setEventSetsSection( String header, String bottom ) {
-    JavaEditor.InteriorSection is = javaEditor.findInteriorSection( EVENTSETS_SECTION );
-    if ( is != null ) {
-      is.setHeader( header );
-      is.setBottom( bottom );
-    }
-  }
-
-  /** Gets the header of properties setion */
-  String getEventSetsSection() {
-    JavaEditor.InteriorSection is = javaEditor.findInteriorSection( EVENTSETS_SECTION );
-
-    if ( is != null ) {
-      return is.getText();
-      }
-    else
-      return null; 
-  }
-  
-  /** Gets the header of properties setion */
-  String getIconsSection() {
-    JavaEditor.SimpleSection ss = javaEditor.findSimpleSection( ICONS_SECTION );
-
-    if ( ss != null ) {
-      return ss.getText();
-      }
-    else
-      return null; 
-  }
-
-  /** Sets the header of properties setion */
-  void setIconsSection( String text ) {
-    JavaEditor.SimpleSection ss = javaEditor.findSimpleSection( ICONS_SECTION );
-    if ( ss != null ) 
-      ss.setText( text );
-  }  
-  
-  /** Gets the header of properties setion */
-  String getDefaultIdxSection() {
-    JavaEditor.SimpleSection ss = javaEditor.findSimpleSection( IDX_SECTION );
-
-    if ( ss != null ) {
-      return ss.getText();
-      }
-    else
-      return null; 
-  }
-
-  /** Sets the header of properties setion */
-  void setDefaultIdxSection( String text ) {
-    JavaEditor.SimpleSection ss = javaEditor.findSimpleSection( IDX_SECTION );
-    if ( ss != null ) 
-      ss.setText( text );
-  }
-  
-  /*
-  void regenerateMethods() {
-    JavaEditor.InteriorSection is = javaEditor.findInteriorSection( "Events" );
-    
-    if ( is != null ) {
-      is.setHeader( BeanInfoGenerator.generateMethods( classElement.getName().getName(), methods ) );
-      is.setBottom( BeanInfoGenerator.generateMethodsBottom( methods ) );
-    }
-  }
-  */
+}
+    */
 
 }
 

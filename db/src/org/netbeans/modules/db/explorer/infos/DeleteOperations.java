@@ -18,14 +18,14 @@ import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
-/** 
+/**
 * Interface of driver-related nodes.
 * @author Slavek Psenicka
 */
 public interface DeleteOperations
 {
-	public void delete()
-	throws DatabaseException;
+    public void delete()
+    throws DatabaseException;
 }
 
 /*

@@ -27,52 +27,52 @@ import org.openide.util.NbBundle;
 */
 public class HostPropertyEditor extends PropertyEditorSupport {
 
-  private static final java.util.ResourceBundle bundle = NbBundle.getBundle(HostPropertyEditor.class);
+    private static final java.util.ResourceBundle bundle = NbBundle.getBundle(HostPropertyEditor.class);
 
-  /** localized local host string*/
-  private final static String LOCALHOST = bundle.getString("CTL_Local_host");
+    /** localized local host string*/
+    private final static String LOCALHOST = bundle.getString("CTL_Local_host");
 
-  /** localized local host string*/
-  private final static String ANYHOST = bundle.getString("CTL_Any_host");
+    /** localized local host string*/
+    private final static String ANYHOST = bundle.getString("CTL_Any_host");
 
-  /** array of hosts */
-  private static final String[] hostNames = {LOCALHOST, ANYHOST};
+    /** array of hosts */
+    private static final String[] hostNames = {LOCALHOST, ANYHOST};
 
-  /** @return names of the supported LookAndFeels */
-  public String[] getTags() {
-    return hostNames;
-  }
-
-  /** @return text for the current value */
-  public String getAsText () {
-    String host = (String) getValue();
-    if (host.equals(HttpServerSettings.LOCALHOST)) {
-      return LOCALHOST;
-    }
-    else {
-      return ANYHOST;
-    }
-  }
-
-  /** @param text A text for the current value. */
-  public void setAsText (String text) {
-    if (text.equals(LOCALHOST)) {
-      //HttpServerSettings.OPTIONS.setHost(HttpServerSettings.LOCALHOST);
-      setValue(HttpServerSettings.LOCALHOST);
-      return;
-    }
-    if (text.equals(ANYHOST)) {
-      //HttpServerSettings.OPTIONS.setHost(HttpServerSettings.ANYHOST);
-      setValue(HttpServerSettings.ANYHOST);
-      return;
+    /** @return names of the supported LookAndFeels */
+    public String[] getTags() {
+        return hostNames;
     }
 
-    throw new IllegalArgumentException ();
-  }   
-  
-  public void setValue(Object value) {
-    super.setValue(value);
-  }
+    /** @return text for the current value */
+    public String getAsText () {
+        String host = (String) getValue();
+        if (host.equals(HttpServerSettings.LOCALHOST)) {
+            return LOCALHOST;
+        }
+        else {
+            return ANYHOST;
+        }
+    }
+
+    /** @param text A text for the current value. */
+    public void setAsText (String text) {
+        if (text.equals(LOCALHOST)) {
+            //HttpServerSettings.OPTIONS.setHost(HttpServerSettings.LOCALHOST);
+            setValue(HttpServerSettings.LOCALHOST);
+            return;
+        }
+        if (text.equals(ANYHOST)) {
+            //HttpServerSettings.OPTIONS.setHost(HttpServerSettings.ANYHOST);
+            setValue(HttpServerSettings.ANYHOST);
+            return;
+        }
+
+        throw new IllegalArgumentException ();
+    }
+
+    public void setValue(Object value) {
+        super.setValue(value);
+    }
 }
 
 /*

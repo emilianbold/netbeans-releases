@@ -23,106 +23,106 @@ import org.openide.TopManager;
 
 import org.netbeans.modules.db.explorer.*;
 
-/** 
+/**
 * xxx
 *
 * @author Slavek Psenicka
 */
 public class LabeledTextFieldDialog
 {
-	boolean result = false;
-	Dialog dialog = null;
-	Object combosel = null;
-	JTextField field;
-	
-	public LabeledTextFieldDialog(String title, String lab, String notes)
-	{  
-		try {
-			JPanel pane = new JPanel();
-			pane.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
-			GridBagLayout layout = new GridBagLayout();
-			GridBagConstraints con = new GridBagConstraints ();
-			pane.setLayout (layout);
+    boolean result = false;
+    Dialog dialog = null;
+    Object combosel = null;
+    JTextField field;
 
-			// Title
-		
-			JLabel label = new JLabel(lab);
-			con.anchor = GridBagConstraints.WEST;
-			con.insets = new java.awt.Insets (2, 2, 2, 2);
+    public LabeledTextFieldDialog(String title, String lab, String notes)
+    {
+        try {
+            JPanel pane = new JPanel();
+            pane.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
+            GridBagLayout layout = new GridBagLayout();
+            GridBagConstraints con = new GridBagConstraints ();
+            pane.setLayout (layout);
+
+            // Title
+
+            JLabel label = new JLabel(lab);
+            con.anchor = GridBagConstraints.WEST;
+            con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
             con.gridy = 0;
-			layout.setConstraints(label, con);
-			pane.add(label);
-                
-			// Textfield
-		
+            layout.setConstraints(label, con);
+            pane.add(label);
+
+            // Textfield
+
             con.fill = GridBagConstraints.HORIZONTAL;
             con.weightx = 1.0;
             con.gridx = 1;
             con.gridy = 0;
-			con.insets = new java.awt.Insets (2, 2, 2, 2);
+            con.insets = new java.awt.Insets (2, 2, 2, 2);
             field = new JTextField(35);
             layout.setConstraints(field, con);
             pane.add(field);
-            
+
             // Notes
-            
-			JTextArea notesarea = new JTextArea(notes, 5, 50);
-			notesarea.setEditable(false);
-			notesarea.setLineWrap(true);
-			notesarea.setWrapStyleWord(true);
-			notesarea.setFont(label.getFont());
-			notesarea.setBackground(label.getBackground());
+
+            JTextArea notesarea = new JTextArea(notes, 5, 50);
+            notesarea.setEditable(false);
+            notesarea.setLineWrap(true);
+            notesarea.setWrapStyleWord(true);
+            notesarea.setFont(label.getFont());
+            notesarea.setBackground(label.getBackground());
             con.weightx = 1.0;
             con.weighty = 1.0;
             con.gridwidth = 2;
             con.fill = GridBagConstraints.BOTH;
-			con.insets = new java.awt.Insets (10, 0, 0, 0);
+            con.insets = new java.awt.Insets (10, 0, 0, 0);
             con.gridx = 0;
             con.gridy = 1;
-			notesarea.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
+            notesarea.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
             JScrollPane spane = new JScrollPane(notesarea);
-			layout.setConstraints(spane, con);
-			pane.add(spane);
-                
-			ActionListener listener = new ActionListener() {
-				public void actionPerformed(ActionEvent event) {
-					boolean dispcond = true;
-					if (event.getSource() == DialogDescriptor.OK_OPTION) {
-						result = true;
-						dispcond = (getStringValue().length()!=0);
-					} else result = false;
-					
-					if (dispcond) {
-						dialog.setVisible(false);
-						dialog.dispose();
-					} else Toolkit.getDefaultToolkit().beep();
-				}
-			};				
-				      
-			DialogDescriptor descriptor = new DialogDescriptor(pane, title, true, listener);
-			dialog = TopManager.getDefault().createDialog(descriptor);
-			dialog.setResizable(true);
-		} catch (MissingResourceException ex) {
-			ex.printStackTrace();
-		}
+            layout.setConstraints(spane, con);
+            pane.add(spane);
+
+            ActionListener listener = new ActionListener() {
+                                          public void actionPerformed(ActionEvent event) {
+                                              boolean dispcond = true;
+                                              if (event.getSource() == DialogDescriptor.OK_OPTION) {
+                                                  result = true;
+                                                  dispcond = (getStringValue().length()!=0);
+                                              } else result = false;
+
+                                              if (dispcond) {
+                                                  dialog.setVisible(false);
+                                                  dialog.dispose();
+                                              } else Toolkit.getDefaultToolkit().beep();
+                                          }
+                                      };
+
+            DialogDescriptor descriptor = new DialogDescriptor(pane, title, true, listener);
+            dialog = TopManager.getDefault().createDialog(descriptor);
+            dialog.setResizable(true);
+        } catch (MissingResourceException ex) {
+            ex.printStackTrace();
+        }
     }
-    
+
     public boolean run()
     {
-    	if (dialog != null) dialog.setVisible(true);
-    	return result;
-	}
+        if (dialog != null) dialog.setVisible(true);
+        return result;
+    }
 
-	public String getStringValue()
-	{
-		return field.getText();
-	}
-	
-	public void setStringValue(String val)
-	{
-		field.setText(val);
-	}
+    public String getStringValue()
+    {
+        return field.getText();
+    }
+
+    public void setStringValue(String val)
+    {
+        field.setText(val);
+    }
 }
 /*
  * <<Log>>

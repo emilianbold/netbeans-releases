@@ -13,28 +13,28 @@
 
 package org.netbeans.lib.ddl;
 
-/** 
+/**
 * Interface of foreign key constraint.
 *
 * @author Slavek Psenicka
 */
-public interface ForeignKeyConstraintDescriptor extends TableConstraintDescriptor 
+public interface ForeignKeyConstraintDescriptor extends TableConstraintDescriptor
 {
-	/** Returns name of Referenced table */
-	public String getReferencedTableName();
-	
-	/** Sets name of Referenced table 
-	* @param cname Referenced table name.
-	*/
-	public void setReferencedTableName(String cname);
+    /** Returns name of Referenced table */
+    public String getReferencedTableName();
 
-	/** Returns name of Referenced column */
-	public String getReferencedColumnName();
-	
-	/** Sets name of Referenced column 
-	* @param cname Referenced column name.
-	*/
-	public void setReferencedColumnName(String cname);
+    /** Sets name of Referenced table
+    * @param cname Referenced table name.
+    */
+    public void setReferencedTableName(String cname);
+
+    /** Returns name of Referenced column */
+    public String getReferencedColumnName();
+
+    /** Sets name of Referenced column
+    * @param cname Referenced column name.
+    */
+    public void setReferencedColumnName(String cname);
 }
 
 /*

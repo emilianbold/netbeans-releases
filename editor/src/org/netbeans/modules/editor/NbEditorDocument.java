@@ -27,7 +27,7 @@ import org.netbeans.editor.Utilities;
 import org.openide.text.NbDocument;
 import org.openide.text.AttributedCharacters;
 
-/** 
+/**
 * BaseDocument extension managing the readonly blocks of text
 *
 * @author Miloslav Metelka
@@ -35,82 +35,82 @@ import org.openide.text.AttributedCharacters;
 */
 
 public class NbEditorDocument extends GuardedDocument
-implements NbDocument.PositionBiasable, NbDocument.WriteLockable,
-NbDocument.Printable, NbDocument.CustomEditor {
+            implements NbDocument.PositionBiasable, NbDocument.WriteLockable,
+    NbDocument.Printable, NbDocument.CustomEditor {
 
-  public NbEditorDocument(Class kitClass) {
-    super(kitClass);
-    addStyleToLayerMapping(NbDocument.BREAKPOINT_STYLE_NAME,
-        NbDocument.BREAKPOINT_STYLE_NAME + "Layer:5000"); // NOI18N
-    addStyleToLayerMapping(NbDocument.ERROR_STYLE_NAME,
-        NbDocument.ERROR_STYLE_NAME + "Layer:6000"); // NOI18N
-    addStyleToLayerMapping(NbDocument.CURRENT_STYLE_NAME,
-        NbDocument.CURRENT_STYLE_NAME + "Layer:7000"); // NOI18N
-    setNormalStyleName(NbDocument.NORMAL_STYLE_NAME);
-  } 
+    public NbEditorDocument(Class kitClass) {
+        super(kitClass);
+        addStyleToLayerMapping(NbDocument.BREAKPOINT_STYLE_NAME,
+                               NbDocument.BREAKPOINT_STYLE_NAME + "Layer:5000"); // NOI18N
+        addStyleToLayerMapping(NbDocument.ERROR_STYLE_NAME,
+                               NbDocument.ERROR_STYLE_NAME + "Layer:6000"); // NOI18N
+        addStyleToLayerMapping(NbDocument.CURRENT_STYLE_NAME,
+                               NbDocument.CURRENT_STYLE_NAME + "Layer:7000"); // NOI18N
+        setNormalStyleName(NbDocument.NORMAL_STYLE_NAME);
+    }
 
 
-  public void setCharacterAttributes(int offset, int length, AttributeSet s,
-  boolean replace) {
-    if (s != null) {
-      Object val = s.getAttribute(NbDocument.GUARDED);
-      if (val != null && val instanceof Boolean) {
-        if (((Boolean)val).booleanValue() == true) { // want make guarded
-          super.setCharacterAttributes(offset, length, guardedSet, replace);
-        } else { // want make unguarded
-          super.setCharacterAttributes(offset, length, unguardedSet, replace);
+    public void setCharacterAttributes(int offset, int length, AttributeSet s,
+                                       boolean replace) {
+        if (s != null) {
+            Object val = s.getAttribute(NbDocument.GUARDED);
+            if (val != null && val instanceof Boolean) {
+                if (((Boolean)val).booleanValue() == true) { // want make guarded
+                    super.setCharacterAttributes(offset, length, guardedSet, replace);
+                } else { // want make unguarded
+                    super.setCharacterAttributes(offset, length, unguardedSet, replace);
+                }
+            } else { // not special values, just pass
+                super.setCharacterAttributes(offset, length, s, replace);
+            }
         }
-      } else { // not special values, just pass
-        super.setCharacterAttributes(offset, length, s, replace);
-      }
-    }
-  }
-
-  public java.text.AttributedCharacterIterator[] createPrintIterators() {
-    NbPrintContainer npc = new NbPrintContainer();
-    print(npc);
-    return npc.getIterators();
-  }
-  
-  public Component createEditor(JEditorPane j) {
-    return Utilities.getEditorUI(j).getExtComponent();
-  }
-
-
-  class NbPrintContainer extends AttributedCharacters implements PrintContainer {
-    
-    ArrayList acl = new ArrayList();
-    
-    AttributedCharacters a;
-    
-    NbPrintContainer() {
-      a = new AttributedCharacters();
     }
 
-    public void add(char[] chars, Font font, Color foreColor, Color backColor) {
-      a.append(chars, font, foreColor);
+    public java.text.AttributedCharacterIterator[] createPrintIterators() {
+        NbPrintContainer npc = new NbPrintContainer();
+        print(npc);
+        return npc.getIterators();
     }
 
-    public void eol() {
-      acl.add(a);
-      a = new AttributedCharacters();
+    public Component createEditor(JEditorPane j) {
+        return Utilities.getEditorUI(j).getExtComponent();
     }
 
-    public boolean initEmptyLines() {
-      return true;
+
+    class NbPrintContainer extends AttributedCharacters implements PrintContainer {
+
+        ArrayList acl = new ArrayList();
+
+        AttributedCharacters a;
+
+        NbPrintContainer() {
+            a = new AttributedCharacters();
+        }
+
+        public void add(char[] chars, Font font, Color foreColor, Color backColor) {
+            a.append(chars, font, foreColor);
+        }
+
+        public void eol() {
+            acl.add(a);
+            a = new AttributedCharacters();
+        }
+
+        public boolean initEmptyLines() {
+            return true;
+        }
+
+        public AttributedCharacterIterator[] getIterators() {
+            int cnt = acl.size();
+            AttributedCharacterIterator[] acis = new AttributedCharacterIterator[cnt];
+            for (int i = 0; i < cnt; i++) {
+                AttributedCharacters ac = (AttributedCharacters)acl.get(i);
+                acis[i] = ac.iterator();
+            }
+            return acis;
+        }
+
     }
-    
-    public AttributedCharacterIterator[] getIterators() {
-      int cnt = acl.size();
-      AttributedCharacterIterator[] acis = new AttributedCharacterIterator[cnt];
-      for (int i = 0; i < cnt; i++) {
-        AttributedCharacters ac = (AttributedCharacters)acl.get(i);
-        acis[i] = ac.iterator();
-      }
-      return acis;
-    }
-   
-  }
 
 }
 

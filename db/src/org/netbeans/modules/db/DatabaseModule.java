@@ -29,32 +29,32 @@ import org.openide.util.NbBundle;
 * @author Slavek Psenicka
 */
 public class DatabaseModule extends ModuleInstall {
-	private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
-	
-  static final long serialVersionUID =5426465356344170725L;
-  
-	public void installed() {
-		TopManager tm = TopManager.getDefault();
-		
-		try {
-			FileSystem rfs = tm.getRepository().getDefaultFileSystem();
-      FileObject rootFolder = rfs.getRoot();
-      FileObject databaseFileObject = rootFolder.getFileObject("Database");
-      if (databaseFileObject == null) {
-        databaseFileObject = rootFolder.createFolder("Database");
-        FileObject adaptorsFileObject = databaseFileObject.createFolder("Adaptors");
-        InstanceDataObject.create(DataFolder.findFolder(adaptorsFileObject), "DefaultAdaptor", org.netbeans.lib.ddl.adaptors.DefaultAdaptor.class);
-      }
-		} catch (LinkageError ex) {
-			String msg = MessageFormat.format(bundle.getString("FMT_CLASSNOTFOUND"), new String[] {ex.getMessage()});
-			if (tm != null)
-        tm.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
-		} catch (Exception ex) {
-			String msg = MessageFormat.format(bundle.getString("FMT_EXCEPTIONINSTALL"), new String[] {ex.getMessage()});
-			if (tm != null)
-        tm.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
-		}
-	}
+    private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+
+    static final long serialVersionUID =5426465356344170725L;
+
+    public void installed() {
+        TopManager tm = TopManager.getDefault();
+
+        try {
+            FileSystem rfs = tm.getRepository().getDefaultFileSystem();
+            FileObject rootFolder = rfs.getRoot();
+            FileObject databaseFileObject = rootFolder.getFileObject("Database");
+            if (databaseFileObject == null) {
+                databaseFileObject = rootFolder.createFolder("Database");
+                FileObject adaptorsFileObject = databaseFileObject.createFolder("Adaptors");
+                InstanceDataObject.create(DataFolder.findFolder(adaptorsFileObject), "DefaultAdaptor", org.netbeans.lib.ddl.adaptors.DefaultAdaptor.class);
+            }
+        } catch (LinkageError ex) {
+            String msg = MessageFormat.format(bundle.getString("FMT_CLASSNOTFOUND"), new String[] {ex.getMessage()});
+            if (tm != null)
+                tm.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+        } catch (Exception ex) {
+            String msg = MessageFormat.format(bundle.getString("FMT_EXCEPTIONINSTALL"), new String[] {ex.getMessage()});
+            if (tm != null)
+                tm.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
 }
 
 /*

@@ -21,12 +21,12 @@ import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
 
-public class LeafNode extends DatabaseNode 
-{		
-	public LeafNode()
-	{
-		super(Children.LEAF);
-	}
+public class LeafNode extends DatabaseNode
+{
+    public LeafNode()
+    {
+        super(Children.LEAF);
+    }
 }
 /*
  * <<Log>>

@@ -30,234 +30,234 @@ import org.netbeans.core.execution.ExecutionEngine;
 * @author Jaroslav Tulach
 */
 final class NbPlaces extends Object implements Places, Places.Nodes, Places.Folders {
-  /** session settings icon base */
-  private static final String SESSION_SETTINGS_ICON_BASE="/org/netbeans/core/resources/sessionSettings"; // NOI18N
-  
-  /** default */
-  private static NbPlaces places;
-  /** set of roots */
-  private static ArrayList roots = new ArrayList ();
-  /** session node */
-  private static AbstractNode session;
+    /** session settings icon base */
+    private static final String SESSION_SETTINGS_ICON_BASE="/org/netbeans/core/resources/sessionSettings"; // NOI18N
 
-  private static class SessionNode extends AbstractNode {
-    SessionNode () {
-      super (new Children.Array ());
-    }
-    public HelpCtx getHelpCtx () {
-      return new HelpCtx (SessionNode.class);
-    }
-    /** serialization */
-    public Node.Handle getHandle () {
-      return new SessionHandle ();
-    }
-    
-    static final class SessionHandle implements Node.Handle {
-      public Node getNode () {
-        return TopManager.getDefault ().getPlaces ().nodes (). session();          
-      }
-    }
-  }
-  static {
-    session = new SessionNode ();
-    session.setName (NbBundle.getBundle (NbPlaces.class).getString ("CTL_Session_Settings"));
-    session.setIconBase (SESSION_SETTINGS_ICON_BASE);
-  }
-  
-  /** No instance outside this class.
-  */
-  private NbPlaces() {
-  }
+    /** default */
+    private static NbPlaces places;
+    /** set of roots */
+    private static ArrayList roots = new ArrayList ();
+    /** session node */
+    private static AbstractNode session;
 
-  /** @return the default implementation of places */
-  public static NbPlaces getDefault () {
-    if (places == null) {
-      places = new NbPlaces ();
-    }
-    return places;
-  }
-
-  /** Adds new root node.
-  */
-  public static void addRoot (Node n) {
-    roots.add (n);
-    NbTopManager.get ().firePropertyChange (NbTopManager.PROP_PLACES, null, null);
-  }
-  
-  /** Removes new root node.
-  */
-  public static void removeRoot (Node n) {
-    if (roots.remove (n)) {
-      NbTopManager.get ().firePropertyChange (NbTopManager.PROP_PLACES, null, null);
-    }
-  }
-  
-  /** Adds new session node.
-  */
-  public static void addSession (Node n) {
-    session.getChildren ().add (new Node[] { n });
-  }
-  
-  /** Removes new session node.
-  */
-  public static void removeSession (Node n) {
-    session.getChildren ().remove (new Node[] { n });
-  }
-
-  /** Interesting places for nodes.
-  * @return object that holds "node places"
-  */
-  public Places.Nodes nodes () {
-    return this;
-  }
-
-  /** Interesting places for data objects.
-  * @return interface that provides access to data objects' places
-  */
-  public Places.Folders folders () {
-    return this;
-  }
-
-  /** Repository node.
-  */
-  public Node repository () {
-    return DataSystem.getDataSystem ();
-  }
-
-  /** Repository node with given DataFilter. */
-  public Node repository(DataFilter f) {
-    return DataSystem.getDataSystem (f);
-  }
-
-  /** Get a root of packages with a given data filter. 
-  * @param f the requested filter
-  * @return the node
-  */ 
-  public Node packages (DataFilter f) {
-    return PackageChildren.createNode (f);
-  }
-
-  /** Node with all installed loaders.
-  */
-  public Node loaderPool () {
-    return LoaderPoolNode.getLoaderPoolNode ();
-  }
-
-  /** Environment node. Place for all transient information about
-  * the IDE.
-  */
-  public Node environment () {
-    return EnvironmentNode.getDefault ();
-  }
-
-
-  /** Session node */
-  public Node session () {
-    return NbPlaces.session;
-  }
-
-  /** Control panel
-  */
-  public Node controlPanel () {
-    return ControlPanelNode.getDefault ();
-  }
-
-  /** Project settings.
-  */
-  public Node project () {
-    return ControlPanelNode.getProjectSettings ();
-  }
-  
-  /** Node with all workspaces */
-  public Node workspaces () {
-    return WorkspacePoolContext.getDefault ();
-  }
-
-  /** Repository settings */
-  public Node repositorySettings () {
-    return FSPoolNode.getFSPoolNode ();
-  }
-
-  /** Workspace node for current project. This node can change when project changes.
-  */
-  public Node projectDesktop () {
-    return NbProjectOperation.getProjectDesktop ();
-  }
-
-  /** Root nodes.
-  */
-  public Node[] roots () {
-    return (Node[])roots.toArray (new Node[0]);
-  }
-
-  /** Default folder for templates.
-  */
-  public DataFolder templates () {
-    return findSessionFolder ("Templates"); // NOI18N
-  }
-
-  /** Default folder for toolbars.
-  */
-  public DataFolder toolbars () {
-    return findSessionFolder ("Toolbars"); // NOI18N
-  }
-
-  /** Default folder for menus.
-  */
-  public DataFolder menus () {
-    return findSessionFolder ("Menu"); // NOI18N
-  }
-
-  /** Default folder for actions pool.
-  */
-  public DataFolder actions () {
-    return findSessionFolder ("Actions"); // NOI18N
-  }
-
-  /** Default folder for bookmarks.
-  */
-  public DataFolder bookmarks () {
-    return findSessionFolder ("Bookmarks"); // NOI18N
-  }
-
-  /** Default folder for projects.
-  */
-  public DataFolder projects () {
-    return findSessionFolder ("Projects"); // NOI18N
-  }
-
-  /** Startup folder.
-  */
-  public DataFolder startup () {
-    return findSessionFolder ("Startup"); // NOI18N
-  }
-
-  /**
-   * Returns a DataFolder subfolder of the session folder.  In the DataFolder
-   * folders go first (sorted by name) followed by the rest of objects sorted
-   * by name.
-   */
-  private DataFolder findSessionFolder (String name) {
-    try {
-      FileObject fo = NbTopManager.get ().getRepository().findResource(name);
-
-      if (fo == null) {
-        // resource not found, try to create new folder
-        fo = NbTopManager.get ().getRepository ().getDefaultFileSystem ().getRoot ().createFolder (name);
-        try {
-          fo.setAttribute ("SystemFileSystem.localizingBundle", "org.netbeans.core.Bundle"); // NOI18N
-        } catch (java.io.IOException ioe) {
-          if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-            ioe.printStackTrace ();
+    private static class SessionNode extends AbstractNode {
+        SessionNode () {
+            super (new Children.Array ());
         }
-      }
+        public HelpCtx getHelpCtx () {
+            return new HelpCtx (SessionNode.class);
+        }
+        /** serialization */
+        public Node.Handle getHandle () {
+            return new SessionHandle ();
+        }
 
-      DataFolder df = DataFolder.findFolder(fo);
-      return df;
-    } catch (java.io.IOException ex) {
-      throw new InternalError ("Folder not found and cannot be created: " + name); // NOI18N
+        static final class SessionHandle implements Node.Handle {
+            public Node getNode () {
+                return TopManager.getDefault ().getPlaces ().nodes (). session();
+            }
+        }
     }
-  }
+    static {
+        session = new SessionNode ();
+        session.setName (NbBundle.getBundle (NbPlaces.class).getString ("CTL_Session_Settings"));
+        session.setIconBase (SESSION_SETTINGS_ICON_BASE);
+    }
+
+    /** No instance outside this class.
+    */
+    private NbPlaces() {
+    }
+
+    /** @return the default implementation of places */
+    public static NbPlaces getDefault () {
+        if (places == null) {
+            places = new NbPlaces ();
+        }
+        return places;
+    }
+
+    /** Adds new root node.
+    */
+    public static void addRoot (Node n) {
+        roots.add (n);
+        NbTopManager.get ().firePropertyChange (NbTopManager.PROP_PLACES, null, null);
+    }
+
+    /** Removes new root node.
+    */
+    public static void removeRoot (Node n) {
+        if (roots.remove (n)) {
+            NbTopManager.get ().firePropertyChange (NbTopManager.PROP_PLACES, null, null);
+        }
+    }
+
+    /** Adds new session node.
+    */
+    public static void addSession (Node n) {
+        session.getChildren ().add (new Node[] { n });
+    }
+
+    /** Removes new session node.
+    */
+    public static void removeSession (Node n) {
+        session.getChildren ().remove (new Node[] { n });
+    }
+
+    /** Interesting places for nodes.
+    * @return object that holds "node places"
+    */
+    public Places.Nodes nodes () {
+        return this;
+    }
+
+    /** Interesting places for data objects.
+    * @return interface that provides access to data objects' places
+    */
+    public Places.Folders folders () {
+        return this;
+    }
+
+    /** Repository node.
+    */
+    public Node repository () {
+        return DataSystem.getDataSystem ();
+    }
+
+    /** Repository node with given DataFilter. */
+    public Node repository(DataFilter f) {
+        return DataSystem.getDataSystem (f);
+    }
+
+    /** Get a root of packages with a given data filter.
+    * @param f the requested filter
+    * @return the node
+    */ 
+    public Node packages (DataFilter f) {
+        return PackageChildren.createNode (f);
+    }
+
+    /** Node with all installed loaders.
+    */
+    public Node loaderPool () {
+        return LoaderPoolNode.getLoaderPoolNode ();
+    }
+
+    /** Environment node. Place for all transient information about
+    * the IDE.
+    */
+    public Node environment () {
+        return EnvironmentNode.getDefault ();
+    }
+
+
+    /** Session node */
+    public Node session () {
+        return NbPlaces.session;
+    }
+
+    /** Control panel
+    */
+    public Node controlPanel () {
+        return ControlPanelNode.getDefault ();
+    }
+
+    /** Project settings.
+    */
+    public Node project () {
+        return ControlPanelNode.getProjectSettings ();
+    }
+
+    /** Node with all workspaces */
+    public Node workspaces () {
+        return WorkspacePoolContext.getDefault ();
+    }
+
+    /** Repository settings */
+    public Node repositorySettings () {
+        return FSPoolNode.getFSPoolNode ();
+    }
+
+    /** Workspace node for current project. This node can change when project changes.
+    */
+    public Node projectDesktop () {
+        return NbProjectOperation.getProjectDesktop ();
+    }
+
+    /** Root nodes.
+    */
+    public Node[] roots () {
+        return (Node[])roots.toArray (new Node[0]);
+    }
+
+    /** Default folder for templates.
+    */
+    public DataFolder templates () {
+        return findSessionFolder ("Templates"); // NOI18N
+    }
+
+    /** Default folder for toolbars.
+    */
+    public DataFolder toolbars () {
+        return findSessionFolder ("Toolbars"); // NOI18N
+    }
+
+    /** Default folder for menus.
+    */
+    public DataFolder menus () {
+        return findSessionFolder ("Menu"); // NOI18N
+    }
+
+    /** Default folder for actions pool.
+    */
+    public DataFolder actions () {
+        return findSessionFolder ("Actions"); // NOI18N
+    }
+
+    /** Default folder for bookmarks.
+    */
+    public DataFolder bookmarks () {
+        return findSessionFolder ("Bookmarks"); // NOI18N
+    }
+
+    /** Default folder for projects.
+    */
+    public DataFolder projects () {
+        return findSessionFolder ("Projects"); // NOI18N
+    }
+
+    /** Startup folder.
+    */
+    public DataFolder startup () {
+        return findSessionFolder ("Startup"); // NOI18N
+    }
+
+    /**
+     * Returns a DataFolder subfolder of the session folder.  In the DataFolder
+     * folders go first (sorted by name) followed by the rest of objects sorted
+     * by name.
+     */
+    private DataFolder findSessionFolder (String name) {
+        try {
+            FileObject fo = NbTopManager.get ().getRepository().findResource(name);
+
+            if (fo == null) {
+                // resource not found, try to create new folder
+                fo = NbTopManager.get ().getRepository ().getDefaultFileSystem ().getRoot ().createFolder (name);
+                try {
+                    fo.setAttribute ("SystemFileSystem.localizingBundle", "org.netbeans.core.Bundle"); // NOI18N
+                } catch (java.io.IOException ioe) {
+                    if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+                        ioe.printStackTrace ();
+                }
+            }
+
+            DataFolder df = DataFolder.findFolder(fo);
+            return df;
+        } catch (java.io.IOException ex) {
+            throw new InternalError ("Folder not found and cannot be created: " + name); // NOI18N
+        }
+    }
 
 }
 

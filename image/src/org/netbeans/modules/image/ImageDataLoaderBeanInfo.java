@@ -24,32 +24,32 @@ import org.openide.loaders.UniFileLoader;
 */
 public class ImageDataLoaderBeanInfo extends SimpleBeanInfo {
 
-  /** Icons for image data loader. */
-  private static Image icon;
-  private static Image icon32;
-  
-  public BeanInfo[] getAdditionalBeanInfo () {
-    try {
-      return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
-    } catch (IntrospectionException ie) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-        ie.printStackTrace ();
-      return null;
-    }
-  }
+    /** Icons for image data loader. */
+    private static Image icon;
+    private static Image icon32;
 
-  public Image getIcon(final int type) {
-    if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
-        (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-      if (icon == null)
-        icon = loadImage("/org/netbeans/modules/image/imageObject.gif"); // NOI18N
-      return icon;
-    } else {
-      if (icon32 == null)
-        icon32 = loadImage ("/org/netbeans/modules/image/imageObject32.gif"); // NOI18N
-      return icon32;
+    public BeanInfo[] getAdditionalBeanInfo () {
+        try {
+            return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
+        } catch (IntrospectionException ie) {
+            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+                ie.printStackTrace ();
+            return null;
+        }
     }
-  }
+
+    public Image getIcon(final int type) {
+        if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
+                (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
+            if (icon == null)
+                icon = loadImage("/org/netbeans/modules/image/imageObject.gif"); // NOI18N
+            return icon;
+        } else {
+            if (icon32 == null)
+                icon32 = loadImage ("/org/netbeans/modules/image/imageObject32.gif"); // NOI18N
+            return icon32;
+        }
+    }
 
 }
 

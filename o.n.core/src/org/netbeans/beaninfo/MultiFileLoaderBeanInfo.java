@@ -18,17 +18,17 @@ import java.beans.*;
 import org.openide.loaders.DataLoader;
 
 public class MultiFileLoaderBeanInfo extends SimpleBeanInfo {
-  
-  public BeanInfo[] getAdditionalBeanInfo () {
-    try {
-      return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
-    } catch (IntrospectionException ie) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-        ie.printStackTrace ();
-      return null;
+
+    public BeanInfo[] getAdditionalBeanInfo () {
+        try {
+            return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
+        } catch (IntrospectionException ie) {
+            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+                ie.printStackTrace ();
+            return null;
+        }
     }
-  }
-  
+
 }
 
 /*

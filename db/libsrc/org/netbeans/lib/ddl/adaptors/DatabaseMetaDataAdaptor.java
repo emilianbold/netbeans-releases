@@ -23,9 +23,9 @@ import java.sql.SQLException;
 */
 
 public interface DatabaseMetaDataAdaptor extends DatabaseMetaData
-{	
-	/** Sets conenction to adaptor */
-	public void setConnection(Connection conn) throws SQLException;
+{
+    /** Sets conenction to adaptor */
+    public void setConnection(Connection conn) throws SQLException;
 }
 
 

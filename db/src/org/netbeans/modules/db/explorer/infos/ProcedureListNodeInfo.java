@@ -25,65 +25,65 @@ import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class ProcedureListNodeInfo extends DatabaseNodeInfo
-implements ProcedureOwnerOperations
+            implements ProcedureOwnerOperations
 {
-  static final long serialVersionUID =-7911927402768472443L;
-  
-	public void initChildren(Vector children) throws DatabaseException {
- 		try {
-			DatabaseMetaData dmd = getSpecification().getMetaData();
-			String catalog = (String) get(DatabaseNode.CATALOG);
-      
-      DriverSpecification drvSpec = getDriverSpecification();
-      drvSpec.getProcedures(catalog, dmd, null);
-			
-      if (drvSpec.rs != null) {
-        while (drvSpec.rs.next()) {
-          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE, drvSpec.rs);
-          if (info != null) {
-            info.put(DatabaseNode.PROCEDURE, info.getName());
-            children.add(info);
-          } else
-            throw new Exception("unable to create node information for procedure");
+    static final long serialVersionUID =-7911927402768472443L;
+
+    public void initChildren(Vector children) throws DatabaseException {
+        try {
+            DatabaseMetaData dmd = getSpecification().getMetaData();
+            String catalog = (String) get(DatabaseNode.CATALOG);
+
+            DriverSpecification drvSpec = getDriverSpecification();
+            drvSpec.getProcedures(catalog, dmd, null);
+
+            if (drvSpec.rs != null) {
+                while (drvSpec.rs.next()) {
+                    DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE, drvSpec.rs);
+                    if (info != null) {
+                        info.put(DatabaseNode.PROCEDURE, info.getName());
+                        children.add(info);
+                    } else
+                        throw new Exception("unable to create node information for procedure");
+                }
+                drvSpec.rs.close();
+            }
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
         }
-        drvSpec.rs.close();
-      }
-		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());	
-		}
-	}	
+    }
 
-	public void dropProcedure(DatabaseNodeInfo tinfo) 
-	throws DatabaseException
-	{
-		DatabaseNode node = (DatabaseNode)tinfo.getNode();
-		DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();
-		try {
-			String tname = tinfo.getName();
-			Specification spec = (Specification)getSpecification();
-			AbstractCommand cmd = spec.createCommandDropProcedure(tname);
-			getNode().getChildren().remove(new Node[]{node});
-		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());
-		}		
-	}
-  
-	public void refreshChildren() throws DatabaseException {
-// PENDING !!!
-/*
-		Vector charr = new Vector();
-		DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
+    public void dropProcedure(DatabaseNodeInfo tinfo)
+    throws DatabaseException
+    {
+        DatabaseNode node = (DatabaseNode)tinfo.getNode();
+        DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();
+        try {
+            String tname = tinfo.getName();
+            Specification spec = (Specification)getSpecification();
+            AbstractCommand cmd = spec.createCommandDropProcedure(tname);
+            getNode().getChildren().remove(new Node[]{node});
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
+        }
+    }
 
-		put(DatabaseNodeInfo.CHILDREN, charr);
-		chil.remove(chil.getNodes());
-		initChildren(charr);
-		Enumeration en = charr.elements();
-		while(en.hasMoreElements()) {
-			DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
-			chil.add(new Node[] {subnode});
-		}
-*/
-  }
+    public void refreshChildren() throws DatabaseException {
+        // PENDING !!!
+        /*
+        		Vector charr = new Vector();
+        		DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
+
+        		put(DatabaseNodeInfo.CHILDREN, charr);
+        		chil.remove(chil.getNodes());
+        		initChildren(charr);
+        		Enumeration en = charr.elements();
+        		while(en.hasMoreElements()) {
+        			DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
+        			chil.add(new Node[] {subnode});
+        		}
+        */
+    }
 }
 /*
  * <<Log>>

@@ -26,61 +26,61 @@ import org.openide.filesystems.FileObject;
 
 public abstract class IndexSearchThread extends Thread  {
 
-  // PENDING: Add some abstract methods
+    // PENDING: Add some abstract methods
 
-  protected String                toFind;
-  protected FileObject            fo;
-  private   DocIndexItemConsumer  ddiConsumer;
-  RequestProcessor.Task           rpTask = null;
-
-
-  /** This method must terminate the process of searching */
-  abstract void stopSearch(); 
-
-  public IndexSearchThread( String toFind, FileObject fo, DocIndexItemConsumer ddiConsumer ) {
-    this.ddiConsumer = ddiConsumer;
-    this.fo = fo;
-    this.toFind = toFind;
-    //rpTask = RequestProcessor.createRequest( this );
-  };
+    protected String                toFind;
+    protected FileObject            fo;
+    private   DocIndexItemConsumer  ddiConsumer;
+    RequestProcessor.Task           rpTask = null;
 
 
-  protected void insertDocIndexItem( DocIndexItem dii ) {
-    ddiConsumer.addDocIndexItem ( dii );
-  }
+    /** This method must terminate the process of searching */
+    abstract void stopSearch();
 
-  public void go() {
-    rpTask = RequestProcessor.postRequest( this, 0, NORM_PRIORITY );
-  }
-
-  public void finish() {
-    if ( !rpTask.isFinished() && !rpTask.cancel() )
-      stopSearch();
-    taskFinished();
-  }
-
-  public void taskFinished() {
-    ddiConsumer.indexSearchThreadFinished( this );    
-  }
-
-  /** Class for callback. Used to feed some container with found
-   * index items;
-   */
-
-  public static interface DocIndexItemConsumer {
-
-    /** Called when an item is found */
-    public void addDocIndexItem ( DocIndexItem dii );
-
-    /** Called when a task finished. May be called more than once */
-    public void indexSearchThreadFinished( IndexSearchThread ist );
+    public IndexSearchThread( String toFind, FileObject fo, DocIndexItemConsumer ddiConsumer ) {
+        this.ddiConsumer = ddiConsumer;
+        this.fo = fo;
+        this.toFind = toFind;
+        //rpTask = RequestProcessor.createRequest( this );
+    };
 
 
-  }
+    protected void insertDocIndexItem( DocIndexItem dii ) {
+        ddiConsumer.addDocIndexItem ( dii );
+    }
+
+    public void go() {
+        rpTask = RequestProcessor.postRequest( this, 0, NORM_PRIORITY );
+    }
+
+    public void finish() {
+        if ( !rpTask.isFinished() && !rpTask.cancel() )
+            stopSearch();
+        taskFinished();
+    }
+
+    public void taskFinished() {
+        ddiConsumer.indexSearchThreadFinished( this );
+    }
+
+    /** Class for callback. Used to feed some container with found
+     * index items;
+     */
+
+    public static interface DocIndexItemConsumer {
+
+        /** Called when an item is found */
+        public void addDocIndexItem ( DocIndexItem dii );
+
+        /** Called when a task finished. May be called more than once */
+        public void indexSearchThreadFinished( IndexSearchThread ist );
+
+
+    }
 
 }
 
-/* 
+/*
  * Log
  *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

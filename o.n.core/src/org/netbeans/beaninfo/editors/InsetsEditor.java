@@ -25,55 +25,55 @@ import org.openide.util.NbBundle;
 */
 public class InsetsEditor extends ArrayOfIntSupport {
 
-  // the bundle to use
-  static ResourceBundle bundle = NbBundle.getBundle (
-    InsetsEditor.class);
+    // the bundle to use
+    static ResourceBundle bundle = NbBundle.getBundle (
+                                       InsetsEditor.class);
 
-  public InsetsEditor() {
-    super("java.awt.Insets", 4); // NOI18N
-  }
-
-  /** Abstract method for translating the value from getValue() method to array of int. */
-  int[] getValues() {
-    Insets insets = (Insets) getValue();
-    return new int[] { insets.top, insets.left, insets.bottom, insets.right };
-  }
-
-  /** Abstract method for translating the array of int to value
-  * which is set to method setValue(XXX)
-  */
-  void setValues(int[] val) {
-    if ((val[0] < 0) || (val[1] < 0) || (val[2] < 0) || (val[3] < 0)) {
-      //TopManager.getDefault().notify(...) cannot be called synchronous, because when error dialog is displayed
-      //PropertyEditor lost focus and setValues() method is called. After closing error dialog is focus returned
-      //to PropertyEditor and setValues() method is called again.
-      javax.swing.SwingUtilities.invokeLater(new Runnable() {
-        public void run() {
-          TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CTL_NegativeSize"), NotifyDescriptor.ERROR_MESSAGE));
-        }
-      });
+    public InsetsEditor() {
+        super("java.awt.Insets", 4); // NOI18N
     }
-    else 
-      setValue(new Insets(val[0], val[1], val[2], val[3]));
-  }
 
-  public boolean supportsCustomEditor () {
-    return true;
-  }
+    /** Abstract method for translating the value from getValue() method to array of int. */
+    int[] getValues() {
+        Insets insets = (Insets) getValue();
+        return new int[] { insets.top, insets.left, insets.bottom, insets.right };
+    }
 
-  public java.awt.Component getCustomEditor () {
-    return new InsetsCustomEditor (this);
-  }
+    /** Abstract method for translating the array of int to value
+    * which is set to method setValue(XXX)
+    */
+    void setValues(int[] val) {
+        if ((val[0] < 0) || (val[1] < 0) || (val[2] < 0) || (val[3] < 0)) {
+            //TopManager.getDefault().notify(...) cannot be called synchronous, because when error dialog is displayed
+            //PropertyEditor lost focus and setValues() method is called. After closing error dialog is focus returned
+            //to PropertyEditor and setValues() method is called again.
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                                                       public void run() {
+                                                           TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CTL_NegativeSize"), NotifyDescriptor.ERROR_MESSAGE));
+                                                       }
+                                                   });
+        }
+        else
+            setValue(new Insets(val[0], val[1], val[2], val[3]));
+    }
 
-  /** @return the format of value set in property editor. */
-  String getHintFormat() {
-    return bundle.getString ("CTL_HintFormatIE");
-  }
+    public boolean supportsCustomEditor () {
+        return true;
+    }
 
-  /** Provides name of XML tag to use for XML persistence of the property value */
-  protected String getXMLValueTag () {
-    return "Insets"; // NOI18N
-  }
+    public java.awt.Component getCustomEditor () {
+        return new InsetsCustomEditor (this);
+    }
+
+    /** @return the format of value set in property editor. */
+    String getHintFormat() {
+        return bundle.getString ("CTL_HintFormatIE");
+    }
+
+    /** Provides name of XML tag to use for XML persistence of the property value */
+    protected String getXMLValueTag () {
+        return "Insets"; // NOI18N
+    }
 
 }
 

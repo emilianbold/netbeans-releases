@@ -21,32 +21,32 @@ import org.netbeans.modules.db.explorer.infos.*;
 
 public class DisconnectAction extends DatabaseAction
 {
-  static final long serialVersionUID =-5994051723289754485L;
-	protected boolean enable(Node[] activatedNodes)
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return false;
-		
-		DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-		DatabaseNodeInfo nfo = info.getParent(DatabaseNode.CONNECTION);
-		if (nfo != null) return (nfo.getConnection() != null);
-		return false;
-	}
+    static final long serialVersionUID =-5994051723289754485L;
+    protected boolean enable(Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return false;
 
-	public void performAction (Node[] activatedNodes) 
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return;
-		try {
-			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-			ConnectionNodeInfo nfo = (ConnectionNodeInfo)info.getParent(DatabaseNode.CONNECTION);
-			nfo.disconnect();
-		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to disconnect from "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-		}
-	}
+        DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+        DatabaseNodeInfo nfo = info.getParent(DatabaseNode.CONNECTION);
+        if (nfo != null) return (nfo.getConnection() != null);
+        return false;
+    }
+
+    public void performAction (Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return;
+        try {
+            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+            ConnectionNodeInfo nfo = (ConnectionNodeInfo)info.getParent(DatabaseNode.CONNECTION);
+            nfo.disconnect();
+        } catch(Exception e) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to disconnect from "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
 }
 /*
  * <<Log>>

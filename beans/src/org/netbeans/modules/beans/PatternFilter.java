@@ -21,22 +21,22 @@ import org.openide.src.nodes.ClassElementFilter;
 */
 public class PatternFilter extends ClassElementFilter {
 
-  /** Specifies a child representing a property. */
-  public static final int     PROPERTY = 256;
-  /** Specifies a child representing a indexed property */
-  public static final int     IDXPROPERTY = 512;
-  /** Specifies a child representing a event listener. */
-  public static final int     EVENT_SET = 1024;
-  /** Specifies a child representing a method. */
-  
-  /** Does not specify a child type. */
-  public static final int     ALL = ClassElementFilter.ALL | PROPERTY | IDXPROPERTY | EVENT_SET;
+    /** Specifies a child representing a property. */
+    public static final int     PROPERTY = 256;
+    /** Specifies a child representing a indexed property */
+    public static final int     IDXPROPERTY = 512;
+    /** Specifies a child representing a event listener. */
+    public static final int     EVENT_SET = 1024;
+    /** Specifies a child representing a method. */
 
-  /** Default order and filtering.
-  * Places all fields, constructors, methods, and inner classes (interfaces) together
-  * in one block.
-  */
-  public static final int[]   DEFAULT_ORDER = {PROPERTY | IDXPROPERTY | EVENT_SET};
+    /** Does not specify a child type. */
+    public static final int     ALL = ClassElementFilter.ALL | PROPERTY | IDXPROPERTY | EVENT_SET;
+
+    /** Default order and filtering.
+    * Places all fields, constructors, methods, and inner classes (interfaces) together
+    * in one block.
+    */
+    public static final int[]   DEFAULT_ORDER = {PROPERTY | IDXPROPERTY | EVENT_SET};
 
 }
 

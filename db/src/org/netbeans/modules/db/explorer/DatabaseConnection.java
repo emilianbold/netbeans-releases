@@ -22,7 +22,7 @@ import org.netbeans.lib.ddl.*;
 import org.openide.TopManager;
 import java.lang.reflect.*;
 
-/** 
+/**
 * Connection information
 * This class encapsulates all information needed for connection to database
 * (database and driver url, login name and password). It can create JDBC 
@@ -33,273 +33,273 @@ import java.lang.reflect.*;
 * @author Slavek Psenicka
 */
 
-public class DatabaseConnection extends Object implements DBConnection 
+public class DatabaseConnection extends Object implements DBConnection
 {
-	/** Driver URL and name */
-	private String drv, drvname;
-	
-	/** Database URL */
-	private String db;
-	
-	/** User login name */
-	private String usr;
-	
-	/** User password */
-	private String pwd = "";
+    /** Driver URL and name */
+    private String drv, drvname;
 
-	/** Remembers password */
-	private Boolean rpwd = Boolean.FALSE;
+    /** Database URL */
+    private String db;
 
-	/** The support for firing property changes */
-	private PropertyChangeSupport propertySupport;
+    /** User login name */
+    private String usr;
 
-	/** Connection name */
-	private String name;
+    /** User password */
+    private String pwd = "";
 
-	public static final String PROP_DRIVER = "driver";
-	public static final String PROP_DATABASE = "database";
-	public static final String PROP_USER = "user";
-	public static final String PROP_PASSWORD = "password";
-	public static final String PROP_DRIVERNAME = "drivername";
-	public static final String PROP_NAME = "name";
+    /** Remembers password */
+    private Boolean rpwd = Boolean.FALSE;
 
-        static final long serialVersionUID =4554639187416958735L;
-	/** Default constructor */
-	public DatabaseConnection()
-	{
-		propertySupport = new PropertyChangeSupport(this);
-	}
+    /** The support for firing property changes */
+    private PropertyChangeSupport propertySupport;
 
-	/** Advanced constructor
-	* Allows to specify all needed information.
-	* @param driver Driver URL
-	* @param database Database URL
-	* @param user User login name
-	* @param password User password
-	*/
-	public DatabaseConnection(String driver, String database, String user, String password)
-	{
-		drv = driver;
-		db = database;	
-		usr = user;
-		pwd = password;
-	}
-	
-	/** Returns driver URL */
-	public String getDriver()
-	{
-		return drv;
-	}
-	
-	/** Sets driver URL 
-	* Fires propertychange event.
-	* @param driver DNew driver URL
-	*/
-	public void setDriver(String driver)
-	{
-		if (driver == null || driver.equals(drv)) return;
-		String olddrv = drv;
-		drv = driver;
-		propertySupport.firePropertyChange(PROP_DRIVER, olddrv, drv);
-	}
+    /** Connection name */
+    private String name;
 
-	public String getDriverName()
-	{
-		return drvname;
-	}
-	
-	public void setDriverName(String name)
-	{
-		if (name == null || name.equals(drvname)) return;
-		String olddrv = drvname;
-		drvname = name;
-		propertySupport.firePropertyChange(PROP_DRIVERNAME, olddrv, drvname);
-	}
+    public static final String PROP_DRIVER = "driver";
+    public static final String PROP_DATABASE = "database";
+    public static final String PROP_USER = "user";
+    public static final String PROP_PASSWORD = "password";
+    public static final String PROP_DRIVERNAME = "drivername";
+    public static final String PROP_NAME = "name";
 
-	/** Returns database URL */
-	public String getDatabase()
-	{
-		return db;
-	}
-	
-	/** Sets database URL 
-	* Fires propertychange event.
-	* @param database New database URL
-	*/
-	public void setDatabase(String database)
-	{
-		if (database == null || database.equals(db)) return;
-		String olddb = db;
-		db = database;
-		propertySupport.firePropertyChange(PROP_DATABASE, olddb, db);
-	}
+    static final long serialVersionUID =4554639187416958735L;
+    /** Default constructor */
+    public DatabaseConnection()
+    {
+        propertySupport = new PropertyChangeSupport(this);
+    }
 
-	/** Returns user login name */
-	public String getUser()
-	{
-		return usr;
-	}
-	
-	/** Sets user login name 
-	* Fires propertychange event.
-	* @param user New login name
-	*/
-	public void setUser(String user)
-	{
-		if (user == null || user.equals(usr)) return;
-		String oldusr = usr;
-		usr = user;
-		propertySupport.firePropertyChange(PROP_USER, oldusr, usr);
-	}
+    /** Advanced constructor
+    * Allows to specify all needed information.
+    * @param driver Driver URL
+    * @param database Database URL
+    * @param user User login name
+    * @param password User password
+    */
+    public DatabaseConnection(String driver, String database, String user, String password)
+    {
+        drv = driver;
+        db = database;
+        usr = user;
+        pwd = password;
+    }
 
-	/** Returns name of the connection */
-	public String getName()
-	{
-		return name;
-	}
-	
-	/** Sets user login name 
-	* Fires propertychange event.
-	* @param user New login name
-	*/
-	public void setName(String value)
-	{
-		if (name == null || name.equals(value)) return;
-		String old = name;
-		name = value;
-		propertySupport.firePropertyChange(PROP_NAME, old, name);
-	}
+    /** Returns driver URL */
+    public String getDriver()
+    {
+        return drv;
+    }
 
-	/** Returns if password should be remembered */
-	public boolean rememberPassword()
-	{
-		return rpwd.equals(Boolean.TRUE);
-	}
-	
-	/** Sets password should be remembered 
-	* @param flag New flag
-	*/
-	public void setRememberPassword(boolean flag)
-	{
-		rpwd = (flag ? Boolean.TRUE : Boolean.FALSE);
-	}
+    /** Sets driver URL
+    * Fires propertychange event.
+    * @param driver DNew driver URL
+    */
+    public void setDriver(String driver)
+    {
+        if (driver == null || driver.equals(drv)) return;
+        String olddrv = drv;
+        drv = driver;
+        propertySupport.firePropertyChange(PROP_DRIVER, olddrv, drv);
+    }
 
-	/** Returns password */
-	public String getPassword()
-	{
-		return pwd;
-	}
-	
-	/** Sets password 
-	* Fires propertychange event.
-	* @param password New password
-	*/
-	public void setPassword(String password)
-	{
-		if (password == null || password.equals(pwd)) return;
-		String oldpwd = pwd;
-		pwd = password;
-		propertySupport.firePropertyChange(PROP_PASSWORD, oldpwd, pwd);
-	}
+    public String getDriverName()
+    {
+        return drvname;
+    }
 
-	/** Creates JDBC connection 
-	* Uses DriverManager to create connection to specified database. Throws 
-	* DDLException if none of driver/database/user/password is set or if 
-	* driver or database does not exist or is inaccessible.
-	*/
-	public Connection createJDBCConnection()
-	throws DDLException
-	{
-		if (drv == null || db == null || usr == null || pwd == null) throw new DDLException("insufficient information to create a connection");
-		Properties dbprops = new Properties();
-		dbprops.put("user", usr);
-		dbprops.put("password", pwd);
-		
-		try {
-/*
-			ClassLoader syscl = TopManager.getDefault().currentClassLoader();
-			Class cl = syscl.loadClass("java.sql.DriverManager");
-			cl = syscl.loadClass(drv);
-			DriverManager.registerDriver((Driver)cl.newInstance());
+    public void setDriverName(String name)
+    {
+        if (name == null || name.equals(drvname)) return;
+        String olddrv = drvname;
+        drvname = name;
+        propertySupport.firePropertyChange(PROP_DRIVERNAME, olddrv, drvname);
+    }
 
-			Method gmet = DriverManager.class.getDeclaredMethod("getConnection", new Class[] {String.class, Properties.class, ClassLoader.class});
-			gmet.setAccessible(true);
-			gmet.invoke(DriverManager.class, new Object[] {db, dbprops, syscl});		
+    /** Returns database URL */
+    public String getDatabase()
+    {
+        return db;
+    }
 
-	    	Connection connection = (Connection)gmet.invoke(DriverManager.class, new Object[] {db, dbprops, syscl});
-*/
-			Class.forName(drv);
-			Connection connection = DriverManager.getConnection(db, dbprops);	
-			return connection;
+    /** Sets database URL
+    * Fires propertychange event.
+    * @param database New database URL
+    */
+    public void setDatabase(String database)
+    {
+        if (database == null || database.equals(db)) return;
+        String olddb = db;
+        db = database;
+        propertySupport.firePropertyChange(PROP_DATABASE, olddb, db);
+    }
 
-		} catch (Exception e) {
-			throw new DDLException("cannot establish a connection to "+db+" using "+drv+"("+e+")");
-		}
-	}
+    /** Returns user login name */
+    public String getUser()
+    {
+        return usr;
+    }
 
-	/** Add property change listener 
-	* Registers a listener for the PropertyChange event. The connection object
-	* should fire a PropertyChange event whenever somebody changes driver, database,
-	* login name or password.
-	*/
-	public void addPropertyChangeListener (PropertyChangeListener l) {
-		propertySupport.addPropertyChangeListener (l);
-	}
+    /** Sets user login name
+    * Fires propertychange event.
+    * @param user New login name
+    */
+    public void setUser(String user)
+    {
+        if (user == null || user.equals(usr)) return;
+        String oldusr = usr;
+        usr = user;
+        propertySupport.firePropertyChange(PROP_USER, oldusr, usr);
+    }
 
-	/** Remove property change listener
-	* Remove a listener for the PropertyChange event.
-	*/
-	public void removePropertyChangeListener (PropertyChangeListener l) {
-		propertySupport.removePropertyChangeListener (l);
-	}
-	
-	public int hashCode()
-	{
-		return drv.hashCode()+db.hashCode()+usr.hashCode();
-	}
-	
-	/** Compares two connections.
-	* Returns true if driver, database and login name equals.
-	*/
-	public boolean equals(Object obj)
-	{
-		if (obj instanceof DBConnection) {
-			DBConnection con = (DBConnection)obj;
-			return db.equals(con.getDatabase());		
-		}
-		
-		return false;
-	}
-	
-	/** Reads object from stream */
-	private void readObject(java.io.ObjectInputStream in) 
-	throws java.io.IOException, ClassNotFoundException 
-	{
-		drv = (String)in.readObject();
-		db = (String)in.readObject();
-		usr = (String)in.readObject();
-		pwd = (String)in.readObject();
-//		rpwd = (Boolean)in.readObject();
-		rpwd = new Boolean(false);
-		name = (String)in.readObject();
-	}
+    /** Returns name of the connection */
+    public String getName()
+    {
+        return name;
+    }
 
-	/** Writes object to stream */
-	private void writeObject(java.io.ObjectOutputStream out)
-	throws java.io.IOException 
-	{
-		out.writeObject(drv);
-		out.writeObject(db);
-		out.writeObject(usr);
-		out.writeObject(pwd);
-//		out.writeObject(rpwd);
-		out.writeObject(name);
-	}
-	
-	public String toString()
-	{
-		return "drv: "+drv+" db: "+db+" usr: "+usr;
-	}
+    /** Sets user login name
+    * Fires propertychange event.
+    * @param user New login name
+    */
+    public void setName(String value)
+    {
+        if (name == null || name.equals(value)) return;
+        String old = name;
+        name = value;
+        propertySupport.firePropertyChange(PROP_NAME, old, name);
+    }
+
+    /** Returns if password should be remembered */
+    public boolean rememberPassword()
+    {
+        return rpwd.equals(Boolean.TRUE);
+    }
+
+    /** Sets password should be remembered
+    * @param flag New flag
+    */
+    public void setRememberPassword(boolean flag)
+    {
+        rpwd = (flag ? Boolean.TRUE : Boolean.FALSE);
+    }
+
+    /** Returns password */
+    public String getPassword()
+    {
+        return pwd;
+    }
+
+    /** Sets password
+    * Fires propertychange event.
+    * @param password New password
+    */
+    public void setPassword(String password)
+    {
+        if (password == null || password.equals(pwd)) return;
+        String oldpwd = pwd;
+        pwd = password;
+        propertySupport.firePropertyChange(PROP_PASSWORD, oldpwd, pwd);
+    }
+
+    /** Creates JDBC connection
+    * Uses DriverManager to create connection to specified database. Throws 
+    * DDLException if none of driver/database/user/password is set or if 
+    * driver or database does not exist or is inaccessible.
+    */
+    public Connection createJDBCConnection()
+    throws DDLException
+    {
+        if (drv == null || db == null || usr == null || pwd == null) throw new DDLException("insufficient information to create a connection");
+        Properties dbprops = new Properties();
+        dbprops.put("user", usr);
+        dbprops.put("password", pwd);
+
+        try {
+            /*
+            			ClassLoader syscl = TopManager.getDefault().currentClassLoader();
+            			Class cl = syscl.loadClass("java.sql.DriverManager");
+            			cl = syscl.loadClass(drv);
+            			DriverManager.registerDriver((Driver)cl.newInstance());
+
+            			Method gmet = DriverManager.class.getDeclaredMethod("getConnection", new Class[] {String.class, Properties.class, ClassLoader.class});
+            			gmet.setAccessible(true);
+            			gmet.invoke(DriverManager.class, new Object[] {db, dbprops, syscl});		
+
+            	    	Connection connection = (Connection)gmet.invoke(DriverManager.class, new Object[] {db, dbprops, syscl});
+            */
+            Class.forName(drv);
+            Connection connection = DriverManager.getConnection(db, dbprops);
+            return connection;
+
+        } catch (Exception e) {
+            throw new DDLException("cannot establish a connection to "+db+" using "+drv+"("+e+")");
+        }
+    }
+
+    /** Add property change listener
+    * Registers a listener for the PropertyChange event. The connection object
+    * should fire a PropertyChange event whenever somebody changes driver, database,
+    * login name or password.
+    */
+    public void addPropertyChangeListener (PropertyChangeListener l) {
+        propertySupport.addPropertyChangeListener (l);
+    }
+
+    /** Remove property change listener
+    * Remove a listener for the PropertyChange event.
+    */
+    public void removePropertyChangeListener (PropertyChangeListener l) {
+        propertySupport.removePropertyChangeListener (l);
+    }
+
+    public int hashCode()
+    {
+        return drv.hashCode()+db.hashCode()+usr.hashCode();
+    }
+
+    /** Compares two connections.
+    * Returns true if driver, database and login name equals.
+    */
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof DBConnection) {
+            DBConnection con = (DBConnection)obj;
+            return db.equals(con.getDatabase());
+        }
+
+        return false;
+    }
+
+    /** Reads object from stream */
+    private void readObject(java.io.ObjectInputStream in)
+    throws java.io.IOException, ClassNotFoundException
+    {
+        drv = (String)in.readObject();
+        db = (String)in.readObject();
+        usr = (String)in.readObject();
+        pwd = (String)in.readObject();
+        //		rpwd = (Boolean)in.readObject();
+        rpwd = new Boolean(false);
+        name = (String)in.readObject();
+    }
+
+    /** Writes object to stream */
+    private void writeObject(java.io.ObjectOutputStream out)
+    throws java.io.IOException
+    {
+        out.writeObject(drv);
+        out.writeObject(db);
+        out.writeObject(usr);
+        out.writeObject(pwd);
+        //		out.writeObject(rpwd);
+        out.writeObject(name);
+    }
+
+    public String toString()
+    {
+        return "drv: "+drv+" db: "+db+" usr: "+usr;
+    }
 
 }
 

@@ -27,75 +27,75 @@ import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class IndexNodeInfo extends TableNodeInfo
 {
-  static final long serialVersionUID =-8633867970381524742L;
-	public void initChildren(Vector children)
-	throws DatabaseException
-	{
- 		try {
-			DatabaseMetaData dmd = getSpecification().getMetaData();
-			String catalog = (String)get(DatabaseNode.CATALOG);
-			String table = (String)get(DatabaseNode.TABLE);
+    static final long serialVersionUID =-8633867970381524742L;
+    public void initChildren(Vector children)
+    throws DatabaseException
+    {
+        try {
+            DatabaseMetaData dmd = getSpecification().getMetaData();
+            String catalog = (String)get(DatabaseNode.CATALOG);
+            String table = (String)get(DatabaseNode.TABLE);
 
-      DriverSpecification drvSpec = getDriverSpecification();
-      drvSpec.getIndexInfo(catalog, dmd, table, true, false);
-      
-      if (drvSpec.rs != null) {
-        Hashtable ixmap = new Hashtable();
-        while (drvSpec.rs.next()) {
-          String ixname = (String)get("index");
-          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXCOLUMN, drvSpec.rs);
-          String newixname = (String)info.get("ixname");
-          if (ixname != null && newixname != null && newixname.equals(ixname)) {
-            String way;
-            if (info.get("ord") instanceof java.lang.Boolean) //HACK for PointBase
-              way = "A";
-            else
-              way = (String) info.get("ord");
-            if (way == null) way = "A";
-            info.put(DatabaseNodeInfo.ICONBASE, info.get(DatabaseNodeInfo.ICONBASE+way));
-            if (info != null)
-              children.add(info);
-            else {
-      	  		drvSpec.rs.close();
-              throw new Exception("unable to create node information for index");
+            DriverSpecification drvSpec = getDriverSpecification();
+            drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+
+            if (drvSpec.rs != null) {
+                Hashtable ixmap = new Hashtable();
+                while (drvSpec.rs.next()) {
+                    String ixname = (String)get("index");
+                    DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEXCOLUMN, drvSpec.rs);
+                    String newixname = (String)info.get("ixname");
+                    if (ixname != null && newixname != null && newixname.equals(ixname)) {
+                        String way;
+                        if (info.get("ord") instanceof java.lang.Boolean) //HACK for PointBase
+                            way = "A";
+                        else
+                            way = (String) info.get("ord");
+                        if (way == null) way = "A";
+                        info.put(DatabaseNodeInfo.ICONBASE, info.get(DatabaseNodeInfo.ICONBASE+way));
+                        if (info != null)
+                            children.add(info);
+                        else {
+                            drvSpec.rs.close();
+                            throw new Exception("unable to create node information for index");
+                        }
+                    }
+                }
+                drvSpec.rs.close();
             }
-          }
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
         }
-	  		drvSpec.rs.close();
-      }
- 		} catch (Exception e) {
-      throw new DatabaseException(e.getMessage());	
-		}
-	}
+    }
 
-	public void refreshChildren() throws DatabaseException
-	{
-		Vector charr = new Vector();
-		DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
+    public void refreshChildren() throws DatabaseException
+    {
+        Vector charr = new Vector();
+        DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
 
-		put(DatabaseNodeInfo.CHILDREN, charr);
-		chil.remove(chil.getNodes());		
-		initChildren(charr);
-		Enumeration en = charr.elements();
-		while(en.hasMoreElements()) {
-			DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
-			chil.add(new Node[] {subnode});
-		}
-	}
+        put(DatabaseNodeInfo.CHILDREN, charr);
+        chil.remove(chil.getNodes());
+        initChildren(charr);
+        Enumeration en = charr.elements();
+        while(en.hasMoreElements()) {
+            DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
+            chil.add(new Node[] {subnode});
+        }
+    }
 
-	public void delete()
-	throws IOException
-	{
-		try {
-			String code = getCode();
-			String table = (String)get(DatabaseNode.TABLE);
-			Specification spec = (Specification)getSpecification();
-			AbstractCommand cmd = spec.createCommandDropIndex(getName());
-			cmd.execute();
-		} catch (Exception e) {
-			throw new IOException(e.getMessage());
-		}
-	}	
+    public void delete()
+    throws IOException
+    {
+        try {
+            String code = getCode();
+            String table = (String)get(DatabaseNode.TABLE);
+            Specification spec = (Specification)getSpecification();
+            AbstractCommand cmd = spec.createCommandDropIndex(getName());
+            cmd.execute();
+        } catch (Exception e) {
+            throw new IOException(e.getMessage());
+        }
+    }
 }
 
 /*

@@ -16,7 +16,7 @@ package org.netbeans.lib.ddl.util;
 import java.sql.*;
 import org.netbeans.lib.ddl.*;
 
-/** 
+/**
 * Interface of command buffer handler. When you use CommandBuffer to execute
 * a bunch of command and any error occures during the execution, this handler
 * catches it and lets user to decide if continue or not (when you're dropping
@@ -26,11 +26,11 @@ import org.netbeans.lib.ddl.*;
 */
 public interface CommandBufferExceptionHandler {
 
-	/** Solves exception situation 
-	* Returns true if catched exception does not affect data consistency.
-	* @param ex Thrown exception
-	*/
-	public boolean shouldContinueAfterException(Exception ex);
+    /** Solves exception situation
+    * Returns true if catched exception does not affect data consistency.
+    * @param ex Thrown exception
+    */
+    public boolean shouldContinueAfterException(Exception ex);
 }
 
 /*

@@ -17,66 +17,66 @@ import java.text.ParseException;
 import java.util.*;
 import org.netbeans.lib.ddl.*;
 
-/** 
+/**
 * Instances of this command operates with one column.
 *
 * @author Slavek Psenicka
 */
 
-public class ColumnCommand extends AbstractCommand 
+public class ColumnCommand extends AbstractCommand
 {
-	/** Column */
-	private TableColumn column;
-		
-static final long serialVersionUID =-4554975764392047624L;
-	/** Creates specification of command
-	* @param type Type of column
-	* @param name Name of column
-	* @param cmd Command
-	*/	
-	public TableColumn specifyColumn(String type, String name, String cmd)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		Map gprops = (Map)getSpecification().getProperties();
-		Map props = (Map)getSpecification().getCommandProperties(cmd);
-		Map bindmap = (Map)props.get("Binding");
-		String tname = (String)bindmap.get(type);
-		if (tname != null) {
-			Map typemap = (Map)gprops.get(tname);
-			if (typemap == null) throw new InstantiationException("unable to locate binded object "+tname);
-			Class typeclass = Class.forName((String)typemap.get("Class"));
-			String format = (String)typemap.get("Format");
-			column = (TableColumn)typeclass.newInstance();
-			column.setObjectName(name);
-			column.setObjectType(type);
-			column.setColumnName(name);
-			column.setFormat(format);
-		} else throw new InstantiationException("unable to locate type "+type+" in table: "+bindmap);
+    /** Column */
+    private TableColumn column;
 
-		return column;
-	}
-				
-	public TableColumn getColumn()
-	{
-		return column;
-	}			
+    static final long serialVersionUID =-4554975764392047624L;
+    /** Creates specification of command
+    * @param type Type of column
+    * @param name Name of column
+    * @param cmd Command
+    */	
+    public TableColumn specifyColumn(String type, String name, String cmd)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        Map gprops = (Map)getSpecification().getProperties();
+        Map props = (Map)getSpecification().getCommandProperties(cmd);
+        Map bindmap = (Map)props.get("Binding");
+        String tname = (String)bindmap.get(type);
+        if (tname != null) {
+            Map typemap = (Map)gprops.get(tname);
+            if (typemap == null) throw new InstantiationException("unable to locate binded object "+tname);
+            Class typeclass = Class.forName((String)typemap.get("Class"));
+            String format = (String)typemap.get("Format");
+            column = (TableColumn)typeclass.newInstance();
+            column.setObjectName(name);
+            column.setObjectType(type);
+            column.setColumnName(name);
+            column.setFormat(format);
+        } else throw new InstantiationException("unable to locate type "+type+" in table: "+bindmap);
 
-	public void setColumn(TableColumn col)
-	{
-		column = col;
-	}			
-				
-	/** 
-	* Returns properties and it's values supported by this object.
-	* column	Specification of the column 
-	*/
-	public Map getCommandProperties()
-	throws DDLException
-	{
-		Map args = super.getCommandProperties();
-		args.put("column", column.getCommand(this));
-		return args;	
-	}
+        return column;
+    }
+
+    public TableColumn getColumn()
+    {
+        return column;
+    }
+
+    public void setColumn(TableColumn col)
+    {
+        column = col;
+    }
+
+    /**
+    * Returns properties and it's values supported by this object.
+    * column	Specification of the column 
+    */
+    public Map getCommandProperties()
+    throws DDLException
+    {
+        Map args = super.getCommandProperties();
+        args.put("column", column.getCommand(this));
+        return args;
+    }
 }
 
 /*

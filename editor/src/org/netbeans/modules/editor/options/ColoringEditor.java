@@ -32,100 +32,100 @@ import org.openide.util.HelpCtx;
  */
 public class ColoringEditor extends PropertyEditorSupport {
 
-  /** Editor for font and color components. */
-  private ColoringEditorPanel editor;
+    /** Editor for font and color components. */
+    private ColoringEditorPanel editor;
 
-  /** Construct new instance */
-  public ColoringEditor() {
-  }
+    /** Construct new instance */
+    public ColoringEditor() {
+    }
 
-  /** Get value as text is not supported */
-  public String getAsText() {
-    return null;
-  }
+    /** Get value as text is not supported */
+    public String getAsText() {
+        return null;
+    }
 
-  /** Set value as text is not supported */
-  public void setAsText(String text) {
-    throw new IllegalArgumentException();
-  }
+    /** Set value as text is not supported */
+    public void setAsText(String text) {
+        throw new IllegalArgumentException();
+    }
 
     /** Set the new value into property editor */
-  public void setValue(Object value) {
-    super.setValue( value );
-    if (editor != null) {
-      editor.setValue( (ColoringBean)getValue() );
-    }
-  }
-
-  /** It supports custom editor */
-  public boolean supportsCustomEditor() {
-    return true;
-  }
-
-  /** Get custom editor */
-  public Component getCustomEditor() {
-    if (editor == null) {
-
-      // If we don't have any, create one
-      editor = new ColoringEditorPanel();
-
-      // fill it with our current value
-      editor.setValue( (ColoringBean)getValue() );
-
-      // register listener, which will propagate editor changes to our interval value with firing
-      editor.addPropertyChangeListener(new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          if (evt.getPropertyName() == "value") // NOI18N
-            superSetValue( editor.getValue()); // skip updating editor
+    public void setValue(Object value) {
+        super.setValue( value );
+        if (editor != null) {
+            editor.setValue( (ColoringBean)getValue() );
         }
-      });
     }
-    
-    return editor;
-  }
-  
 
-  /** when we don't need to update editor, use this */
-  void superSetValue( Object value ) {
-    super.setValue( value );
-  }
-
-  /** This editor is paintable */
-  public boolean isPaintable() {
-    return true;
-  }
-
-  /** Paint the current value */
-  public void paintValue(Graphics g, Rectangle box) {
-    Coloring c = getAppliedColoring();
-    if (c != null) {
-      // clear background
-      g.setColor(c.getBackColor());
-      g.fillRect(box.x, box.y, box.width - 1, box.height - 1);
-
-      // draw example text
-      g.setColor(c.getForeColor());
-      g.setFont(c.getFont());
-      String text = ((ColoringBean)getValue()).example;
-      FontMetrics fm = g.getFontMetrics();
-      int x = Math.max((box.width - fm.stringWidth(text)) / 2, 0);
-      int y = Math.max((box.height - fm.getHeight()) / 2 + fm.getAscent(), 0);
-      g.drawString(text, x, y);
+    /** It supports custom editor */
+    public boolean supportsCustomEditor() {
+        return true;
     }
-  }
-  
-  private Coloring getAppliedColoring() {
-    ColoringBean value = ((ColoringBean)getValue());
-    if( value == null ) return null;
-    Coloring dc = value.defaultColoring;
-    Coloring c = value.coloring;
-    Coloring ret = null;
-    if (dc != null && c != null) {
-      ret = c.apply(dc);
+
+    /** Get custom editor */
+    public Component getCustomEditor() {
+        if (editor == null) {
+
+            // If we don't have any, create one
+            editor = new ColoringEditorPanel();
+
+            // fill it with our current value
+            editor.setValue( (ColoringBean)getValue() );
+
+            // register listener, which will propagate editor changes to our interval value with firing
+            editor.addPropertyChangeListener(new PropertyChangeListener() {
+                                                 public void propertyChange(PropertyChangeEvent evt) {
+                                                     if (evt.getPropertyName() == "value") // NOI18N
+                                                         superSetValue( editor.getValue()); // skip updating editor
+                                                 }
+                                             });
+        }
+
+        return editor;
     }
-    return ret;
-  }
-      
+
+
+    /** when we don't need to update editor, use this */
+    void superSetValue( Object value ) {
+        super.setValue( value );
+    }
+
+    /** This editor is paintable */
+    public boolean isPaintable() {
+        return true;
+    }
+
+    /** Paint the current value */
+    public void paintValue(Graphics g, Rectangle box) {
+        Coloring c = getAppliedColoring();
+        if (c != null) {
+            // clear background
+            g.setColor(c.getBackColor());
+            g.fillRect(box.x, box.y, box.width - 1, box.height - 1);
+
+            // draw example text
+            g.setColor(c.getForeColor());
+            g.setFont(c.getFont());
+            String text = ((ColoringBean)getValue()).example;
+            FontMetrics fm = g.getFontMetrics();
+            int x = Math.max((box.width - fm.stringWidth(text)) / 2, 0);
+            int y = Math.max((box.height - fm.getHeight()) / 2 + fm.getAscent(), 0);
+            g.drawString(text, x, y);
+        }
+    }
+
+    private Coloring getAppliedColoring() {
+        ColoringBean value = ((ColoringBean)getValue());
+        if( value == null ) return null;
+        Coloring dc = value.defaultColoring;
+        Coloring c = value.coloring;
+        Coloring ret = null;
+        if (dc != null && c != null) {
+            ret = c.apply(dc);
+        }
+        return ret;
+    }
+
 }
 
 /*

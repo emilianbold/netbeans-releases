@@ -16,20 +16,20 @@ package org.netbeans.lib.ddl;
 import java.sql.*;
 import org.netbeans.lib.ddl.*;
 
-/** 
+/**
 * Interface of create view action command. 
 *
 * @author Slavek Psenicka
 */
-public interface CreateViewCommand extends DDLCommand, OwnedObjectCommand 
+public interface CreateViewCommand extends DDLCommand, OwnedObjectCommand
 {
-	/** Returns used query */
-	public String getQuery();
-	
-	/** Sets direct code of command.
-	* @param qry Creating query.
-	*/
-	public void setQuery(String qry);
+    /** Returns used query */
+    public String getQuery();
+
+    /** Sets direct code of command.
+    * @param qry Creating query.
+    */
+    public void setQuery(String qry);
 }
 
 /*

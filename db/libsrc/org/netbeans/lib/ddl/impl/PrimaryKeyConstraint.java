@@ -18,14 +18,14 @@ import java.sql.*;
 import java.text.ParseException;
 import org.netbeans.lib.ddl.*;
 
-/** 
+/**
 * Implementation of table primary key constraint.
 *
 * @author Slavek Psenicka
 */
 public class PrimaryKeyConstraint extends AbstractTableColumn implements TableConstraintDescriptor
-{	
-static final long serialVersionUID =1012869540018507889L;
+{
+    static final long serialVersionUID =1012869540018507889L;
 }
 /*
  * <<Log>>

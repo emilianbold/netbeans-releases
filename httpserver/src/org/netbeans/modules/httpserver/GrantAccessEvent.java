@@ -36,46 +36,46 @@ import java.net.InetAddress;
 * @author Jaroslav Tulach
 */
 public class GrantAccessEvent extends EventObject {
-  /** is access granted */
-  private boolean granted = false;
-  private InetAddress clientAddress;
-  private String resource;
+    /** is access granted */
+    private boolean granted = false;
+    private InetAddress clientAddress;
+    private String resource;
 
-  /** Creates new AccessEvent. Used only in this package by
-  * the HttpServer to create new access event when a resource
-  * is requested.
-  *
-  * @param httpServer the server 
-  */
-  GrantAccessEvent(Object source, InetAddress clientAddress, String resource) {
-    super (source);
-    this.clientAddress = clientAddress;
-    this.resource = resource;
-  }
-  
-  /** The Inet address that initiated the connection.
-  * @return the inet address
-  */
-  public InetAddress getClientAddress () {
-    return clientAddress;
-  }
-  
-  /** The resource to which access is requested */
-  public String getResource() {
-    return resource;
-  }
-  
-  /** Allows access. The listener can use this method to grant
-  * access the client and resource.
-  */
-  public void grantAccess () {
-    granted = true;
-  }
-  
-  /** Getter to test whether the access has been granted.
-  * @return true if a listener granted the access
-  */
-  boolean isGranted () {
-    return granted;
-  }
+    /** Creates new AccessEvent. Used only in this package by
+    * the HttpServer to create new access event when a resource
+    * is requested.
+    *
+    * @param httpServer the server 
+    */
+    GrantAccessEvent(Object source, InetAddress clientAddress, String resource) {
+        super (source);
+        this.clientAddress = clientAddress;
+        this.resource = resource;
+    }
+
+    /** The Inet address that initiated the connection.
+    * @return the inet address
+    */
+    public InetAddress getClientAddress () {
+        return clientAddress;
+    }
+
+    /** The resource to which access is requested */
+    public String getResource() {
+        return resource;
+    }
+
+    /** Allows access. The listener can use this method to grant
+    * access the client and resource.
+    */
+    public void grantAccess () {
+        granted = true;
+    }
+
+    /** Getter to test whether the access has been granted.
+    * @return true if a listener granted the access
+    */
+    boolean isGranted () {
+        return granted;
+    }
 }

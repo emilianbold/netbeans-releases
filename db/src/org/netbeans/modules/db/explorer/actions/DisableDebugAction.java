@@ -21,27 +21,27 @@ import org.netbeans.modules.db.explorer.infos.*;
 
 public class DisableDebugAction extends DatabaseAction
 {
-  static final long serialVersionUID =-7189966255551930161L;
-	protected boolean enable(Node[] activatedNodes)
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return false;
-		
-		DatabaseNodeInfo nfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-		return nfo.isDebugMode();
-	}
+    static final long serialVersionUID =-7189966255551930161L;
+    protected boolean enable(Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return false;
 
-	public void performAction (Node[] activatedNodes) 
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return;
-		
-		DatabaseNodeInfo nfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-		nfo.setDebugMode(false);
-		DriverManager.setLogStream(null);
-	}
+        DatabaseNodeInfo nfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+        return nfo.isDebugMode();
+    }
+
+    public void performAction (Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return;
+
+        DatabaseNodeInfo nfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+        nfo.setDebugMode(false);
+        DriverManager.setLogStream(null);
+    }
 }
 /*
  * <<Log>>

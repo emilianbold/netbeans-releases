@@ -16,19 +16,19 @@ package org.netbeans.lib.ddl;
 import java.sql.*;
 import org.netbeans.lib.ddl.*;
 
-/** 
+/**
 * Interface of trigger describing objects.
 * @author Slavek Psenicka
 */
 public interface TriggerDescriptor {
 
-	/** Returns type of trigger. 
-	* It describes when (before/after) and where (insert/update/delete) it fires.
-	*/
-//	public int getType();
-	/** Sets type of trigger */
-//	public void setType(int ttype);
-	
+    /** Returns type of trigger.
+    * It describes when (before/after) and where (insert/update/delete) it fires.
+    */
+    //	public int getType();
+    /** Sets type of trigger */
+    //	public void setType(int ttype);
+
 }
 
 /*

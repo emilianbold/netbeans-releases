@@ -28,61 +28,61 @@ import org.openide.nodes.*;
 * @author Petr Hamernik, Jaroslav Tulach, Ian Formanek
 */
 public class ImageDataObject extends MultiDataObject {
-  /** generated Serialized Version UID */
-  static final long serialVersionUID = -6035788991669336965L;
+    /** generated Serialized Version UID */
+    static final long serialVersionUID = -6035788991669336965L;
 
-  private static final String IMAGE_ICON_BASE =
-    "org/netbeans/modules/image/imageObject"; // NOI18N
+    private static final String IMAGE_ICON_BASE =
+        "org/netbeans/modules/image/imageObject"; // NOI18N
 
-  /** New instance.
-  * @param pf primary file object for this data object
-  * @param loader the data loader creating it
-  * @exception DataObjectExistsException if there was already a data object for it 
-  */
-  public ImageDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
-    super(pf, loader);
-    // Support OpenCookie.
-    getCookieSet ().add (new Open (getPrimaryEntry ()));
-  }
-
-  /** Help context for this object.
-  * @return the help context
-  */
-  public org.openide.util.HelpCtx getHelpCtx () {
-    return new org.openide.util.HelpCtx (ImageDataObject.class);
-  }
-
-  /** Get a URL for the image.
-  * @return the image url
-  */
-  java.net.URL getImageURL() {
-    try {
-      return getPrimaryFile().getURL();
-    } catch (FileStateInvalidException ex) {
-      return null;
-    }
-  }
-
-  /** Create a node to represent the image.
-  * @return the node
-  */
-  protected Node createNodeDelegate () {
-    DataNode node = new DataNode (this, Children.LEAF);
-    node.setIconBase(IMAGE_ICON_BASE);
-    node.setDefaultAction (SystemAction.get (OpenAction.class));
-    return node;
-  }
-
-  private class Open extends OpenSupport implements OpenCookie {
-    public Open (MultiDataObject.Entry ent) {
-      super (ent);
+    /** New instance.
+    * @param pf primary file object for this data object
+    * @param loader the data loader creating it
+    * @exception DataObjectExistsException if there was already a data object for it 
+    */
+    public ImageDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
+        super(pf, loader);
+        // Support OpenCookie.
+        getCookieSet ().add (new Open (getPrimaryEntry ()));
     }
 
-    // Creates the viewer
-    public CloneableTopComponent createCloneableTopComponent () {
-      return new ImageViewer(ImageDataObject.this);
+    /** Help context for this object.
+    * @return the help context
+    */
+    public org.openide.util.HelpCtx getHelpCtx () {
+        return new org.openide.util.HelpCtx (ImageDataObject.class);
     }
-  }
+
+    /** Get a URL for the image.
+    * @return the image url
+    */
+    java.net.URL getImageURL() {
+        try {
+            return getPrimaryFile().getURL();
+        } catch (FileStateInvalidException ex) {
+            return null;
+        }
+    }
+
+    /** Create a node to represent the image.
+    * @return the node
+    */
+    protected Node createNodeDelegate () {
+        DataNode node = new DataNode (this, Children.LEAF);
+        node.setIconBase(IMAGE_ICON_BASE);
+        node.setDefaultAction (SystemAction.get (OpenAction.class));
+        return node;
+    }
+
+    private class Open extends OpenSupport implements OpenCookie {
+        public Open (MultiDataObject.Entry ent) {
+            super (ent);
+        }
+
+        // Creates the viewer
+        public CloneableTopComponent createCloneableTopComponent () {
+            return new ImageViewer(ImageDataObject.this);
+        }
+    }
 
 }
 

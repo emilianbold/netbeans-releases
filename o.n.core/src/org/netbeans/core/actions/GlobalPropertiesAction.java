@@ -28,29 +28,29 @@ import org.netbeans.core.*;
 */
 public final class GlobalPropertiesAction extends CallableSystemAction {
 
-static final long serialVersionUID =-4072717465854016148L;
-  /** Opens std IO top component */
-  public void performAction() {
-    TopComponent c = NbNodeOperation.Sheet.getDefault ();
-    c.open ();
-    c.requestFocus();
-  }
+    static final long serialVersionUID =-4072717465854016148L;
+    /** Opens std IO top component */
+    public void performAction() {
+        TopComponent c = NbNodeOperation.Sheet.getDefault ();
+        c.open ();
+        c.requestFocus();
+    }
 
-  public String getName() {
-    return NbBundle.getBundle(GlobalPropertiesAction.class).getString("GlobalProperties");
-  }
+    public String getName() {
+        return NbBundle.getBundle(GlobalPropertiesAction.class).getString("GlobalProperties");
+    }
 
-  /** @return the action's help context */
-  public HelpCtx getHelpCtx() {
-    return new HelpCtx (GlobalPropertiesAction.class);
-  }
+    /** @return the action's help context */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx (GlobalPropertiesAction.class);
+    }
 
-  /**
-  * @return resource for the action icon
-  */
-  protected String iconResource () {
-    return "/org/netbeans/core/resources/frames/globalProperties.gif"; // NOI18N
-  }
+    /**
+    * @return resource for the action icon
+    */
+    protected String iconResource () {
+        return "/org/netbeans/core/resources/frames/globalProperties.gif"; // NOI18N
+    }
 
 }
 

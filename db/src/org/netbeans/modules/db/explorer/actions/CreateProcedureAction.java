@@ -24,21 +24,21 @@ import org.netbeans.modules.db.explorer.infos.*;
 
 public class CreateProcedureAction extends DatabaseAction
 {
-  static final long serialVersionUID =6900032866933824412L;
-	public void performAction(Node[] activatedNodes) 
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return;
+    static final long serialVersionUID =6900032866933824412L;
+    public void performAction(Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return;
 
-		ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
-		try {
-			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-			TableOperations nfo = (TableOperations)info.getParent(nodename);
-		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DropTableErrorPrefix")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-		}
-	}
+        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+        try {
+            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+            TableOperations nfo = (TableOperations)info.getParent(nodename);
+        } catch(Exception e) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DropTableErrorPrefix")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
 }
 /*
  * <<Log>>

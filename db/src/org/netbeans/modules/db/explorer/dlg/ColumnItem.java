@@ -26,7 +26,7 @@ import org.netbeans.modules.db.explorer.*;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 
-/** 
+/**
 * xxx
 *
 * @author Slavek Psenicka
@@ -34,204 +34,204 @@ import java.beans.PropertyChangeListener;
 
 public class ColumnItem extends Hashtable
 {
-	public static final String NAME = "name";
-	public static final String TYPE = "type";
-	public static final String SIZE = "size";
-	public static final String SCALE = "scale";
-	public static final String PRIMARY_KEY = "pkey";
-	public static final String INDEX = "idx";
-	public static final String NULLABLE = "nullable";
-	public static final String COMMENT = "comment";
-	public static final String DEFVAL = "defval";
-	public static final String UNIQUE = "unique";
-	public static final String CHECK = "check";
-	public static final String CHECK_CODE = "checkcode";
+    public static final String NAME = "name";
+    public static final String TYPE = "type";
+    public static final String SIZE = "size";
+    public static final String SCALE = "scale";
+    public static final String PRIMARY_KEY = "pkey";
+    public static final String INDEX = "idx";
+    public static final String NULLABLE = "nullable";
+    public static final String COMMENT = "comment";
+    public static final String DEFVAL = "defval";
+    public static final String UNIQUE = "unique";
+    public static final String CHECK = "check";
+    public static final String CHECK_CODE = "checkcode";
 
-	private PropertyChangeSupport propertySupport;
+    private PropertyChangeSupport propertySupport;
 
-	public static final Map getColumnProperty(int idx)
-	{
-		return (Map)getProperties().elementAt(idx);
-	}
+    public static final Map getColumnProperty(int idx)
+    {
+        return (Map)getProperties().elementAt(idx);
+    }
 
-	public static final Vector getProperties()
-	{
-		return (Vector)CreateTableDialog.getProperties().get("columns");
-	}
+    public static final Vector getProperties()
+    {
+        return (Vector)CreateTableDialog.getProperties().get("columns");
+    }
 
-	public static final Vector getProperties(String pname)
-	{
-		Vector vec = getProperties(), cnames = new Vector(vec.size());
-		Enumeration evec = vec.elements();
-		while (evec.hasMoreElements()) {
-			Map pmap = (Map)evec.nextElement();
-			cnames.add(pmap.get(pname));
-		}
-		
-		return cnames;
-	}
+    public static final Vector getProperties(String pname)
+    {
+        Vector vec = getProperties(), cnames = new Vector(vec.size());
+        Enumeration evec = vec.elements();
+        while (evec.hasMoreElements()) {
+            Map pmap = (Map)evec.nextElement();
+            cnames.add(pmap.get(pname));
+        }
 
-	public static final Vector getColumnNames()
-	{
-		return getProperties("name");
-	}
+        return cnames;
+    }
 
-	public static final Vector getColumnTitles()
-	{
-		return getProperties("columntitle");
-	}
+    public static final Vector getColumnNames()
+    {
+        return getProperties("name");
+    }
 
-	public static final Vector getColumnClasses()
-	{
-		return getProperties("columnclass");
-	}
+    public static final Vector getColumnTitles()
+    {
+        return getProperties("columntitle");
+    }
 
-        static final long serialVersionUID =-6638535249384813829L;
-	public ColumnItem()
-	{
-		Vector vec = getProperties();
-		Enumeration evec = vec.elements();
-		propertySupport = new PropertyChangeSupport(this);
-		while (evec.hasMoreElements()) {
-			Map pmap = (Map)evec.nextElement();
-			Object pdv = pmap.get("default");
-			if (pdv != null) {
-				String pclass = (String)pmap.get("columnclass");
-				if (pclass.equals("java.lang.Boolean")) pdv = new Boolean((String)pdv);
-				put(pmap.get("name"), pdv);
-			}
-		}
-	}
+    public static final Vector getColumnClasses()
+    {
+        return getProperties("columnclass");
+    }
 
-	/** Add property change listener 
-	* Registers a listener for the PropertyChange event. The connection object
-	* should fire a PropertyChange event whenever somebody changes driver, database,
-	* login name or password.
-	*/
-	public void addPropertyChangeListener (PropertyChangeListener l) {
-		propertySupport.addPropertyChangeListener (l);
-	}
+    static final long serialVersionUID =-6638535249384813829L;
+    public ColumnItem()
+    {
+        Vector vec = getProperties();
+        Enumeration evec = vec.elements();
+        propertySupport = new PropertyChangeSupport(this);
+        while (evec.hasMoreElements()) {
+            Map pmap = (Map)evec.nextElement();
+            Object pdv = pmap.get("default");
+            if (pdv != null) {
+                String pclass = (String)pmap.get("columnclass");
+                if (pclass.equals("java.lang.Boolean")) pdv = new Boolean((String)pdv);
+                put(pmap.get("name"), pdv);
+            }
+        }
+    }
 
-	/** Remove property change listener
-	* Remove a listener for the PropertyChange event.
-	*/
-	public void removePropertyChangeListener (PropertyChangeListener l) {
-		propertySupport.removePropertyChangeListener (l);
-	}
+    /** Add property change listener
+    * Registers a listener for the PropertyChange event. The connection object
+    * should fire a PropertyChange event whenever somebody changes driver, database,
+    * login name or password.
+    */
+    public void addPropertyChangeListener (PropertyChangeListener l) {
+        propertySupport.addPropertyChangeListener (l);
+    }
 
-	public Object getProperty(String pname)
-	{
-		return get(pname);
-	}
-	
-	public void setProperty(String pname, Object value)
-	{
-		if (pname == null) return;
-		Object old = get(pname);
-		if (old != null) {
-			Class oldc = old.getClass();
-			if (old.equals(value)) return;
-		
-			try {
-				if (!oldc.equals(value.getClass())) {
-					if (oldc.equals(Integer.class)) value = new Integer((String)value);
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+    /** Remove property change listener
+    * Remove a listener for the PropertyChange event.
+    */
+    public void removePropertyChangeListener (PropertyChangeListener l) {
+        propertySupport.removePropertyChangeListener (l);
+    }
 
-		put(pname, value);
-		propertySupport.firePropertyChange(pname, old, value);
-	}
-	
-	public String getName()
-	{
-		return (String)get(NAME);
-	}
-	
-	public TypeElement getType()
-	{
-		return (TypeElement)get(TYPE);
-	}
-	
-	public int getSize()
-	{
-		return ((Integer)get(SIZE)).intValue();
-	}
-	
-	public boolean isPrimaryKey()
-	{
-		Boolean val = (Boolean)get(PRIMARY_KEY);
-		if (val != null) return val.booleanValue();
-		return false;
-	}
+    public Object getProperty(String pname)
+    {
+        return get(pname);
+    }
 
-	public boolean isUnique()
-	{
-		Boolean val = (Boolean)get(UNIQUE);
-		if (val != null) return val.booleanValue();
-		return false;
-	}
+    public void setProperty(String pname, Object value)
+    {
+        if (pname == null) return;
+        Object old = get(pname);
+        if (old != null) {
+            Class oldc = old.getClass();
+            if (old.equals(value)) return;
 
-	public boolean isIndexed()
-	{
-		Boolean val = (Boolean)get(INDEX);
-		if (val != null) return val.booleanValue();
-		return false;
-	}		
+            try {
+                if (!oldc.equals(value.getClass())) {
+                    if (oldc.equals(Integer.class)) value = new Integer((String)value);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
-	public boolean allowsNull()
-	{
-		Boolean val = (Boolean)get(NULLABLE);
-		if (val != null) return val.booleanValue();
-		return false;
-	}
+        put(pname, value);
+        propertySupport.firePropertyChange(pname, old, value);
+    }
 
-	public boolean hasCheckConstraint()
-	{
-		Boolean val = (Boolean)get(CHECK);
-		if (val != null) return val.booleanValue();
-		return false;
-	}
-	
-	public String getCheckConstraint()
-	{
-		return (String)get(CHECK_CODE);
-	}
-	
-	public boolean hasDefaultValue()
-	{
-		String dv = getDefaultValue();	
-		if (dv != null && dv.length()>0) return true;
-		return false;
-	}
-	
-	public String getDefaultValue()
-	{
-		return (String)get(DEFVAL);
-	}		
+    public String getName()
+    {
+        return (String)get(NAME);
+    }
 
-	public boolean validate()
-	{
-		String name = getName();
-		int size = getSize();
-		int scale = getScale();
-    
-    if (size < scale)
-      return false;
-		if (name == null || name.length() == 0)
-      return false;
-    
-		return true;
-	}
-  /** Getter for property scale.
-   * @return Value of property scale.
-   */
-  public int getScale() {
-		return ((Integer)get(SCALE)).intValue();
-  }
-}	
+    public TypeElement getType()
+    {
+        return (TypeElement)get(TYPE);
+    }
+
+    public int getSize()
+    {
+        return ((Integer)get(SIZE)).intValue();
+    }
+
+    public boolean isPrimaryKey()
+    {
+        Boolean val = (Boolean)get(PRIMARY_KEY);
+        if (val != null) return val.booleanValue();
+        return false;
+    }
+
+    public boolean isUnique()
+    {
+        Boolean val = (Boolean)get(UNIQUE);
+        if (val != null) return val.booleanValue();
+        return false;
+    }
+
+    public boolean isIndexed()
+    {
+        Boolean val = (Boolean)get(INDEX);
+        if (val != null) return val.booleanValue();
+        return false;
+    }
+
+    public boolean allowsNull()
+    {
+        Boolean val = (Boolean)get(NULLABLE);
+        if (val != null) return val.booleanValue();
+        return false;
+    }
+
+    public boolean hasCheckConstraint()
+    {
+        Boolean val = (Boolean)get(CHECK);
+        if (val != null) return val.booleanValue();
+        return false;
+    }
+
+    public String getCheckConstraint()
+    {
+        return (String)get(CHECK_CODE);
+    }
+
+    public boolean hasDefaultValue()
+    {
+        String dv = getDefaultValue();
+        if (dv != null && dv.length()>0) return true;
+        return false;
+    }
+
+    public String getDefaultValue()
+    {
+        return (String)get(DEFVAL);
+    }
+
+    public boolean validate()
+    {
+        String name = getName();
+        int size = getSize();
+        int scale = getScale();
+
+        if (size < scale)
+            return false;
+        if (name == null || name.length() == 0)
+            return false;
+
+        return true;
+    }
+    /** Getter for property scale.
+     * @return Value of property scale.
+     */
+    public int getScale() {
+        return ((Integer)get(SCALE)).intValue();
+    }
+}
 
 /*
  * <<Log>>

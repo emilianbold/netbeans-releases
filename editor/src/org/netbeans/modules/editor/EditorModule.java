@@ -52,142 +52,142 @@ import org.openidex.util.Utilities2;
 public class EditorModule extends ModuleInstall {
 
 
-  private static final String MIME_PLAIN = "text/plain"; // NOI18N
-  private static final String MIME_JAVA = "text/x-java"; // NOI18N
-  private static final String MIME_HTML = "text/html"; // NOI18N
+    private static final String MIME_PLAIN = "text/plain"; // NOI18N
+    private static final String MIME_JAVA = "text/x-java"; // NOI18N
+    private static final String MIME_HTML = "text/html"; // NOI18N
 
-  /** Kit replacements that will be installed into JEditorPane */
-  KitInfo[] replacements = new KitInfo[] {
-    new KitInfo(MIME_PLAIN, PlainKit.class.getName()),
-    new KitInfo(MIME_JAVA, JavaKit.class.getName()),
-    new KitInfo(MIME_HTML, HTMLKit.class.getName())
-  };
+    /** Kit replacements that will be installed into JEditorPane */
+    KitInfo[] replacements = new KitInfo[] {
+                                 new KitInfo(MIME_PLAIN, PlainKit.class.getName()),
+                                 new KitInfo(MIME_JAVA, JavaKit.class.getName()),
+                                 new KitInfo(MIME_HTML, HTMLKit.class.getName())
+                             };
 
-  private static SettingsChangeListener settingsListener;
+    private static SettingsChangeListener settingsListener;
 
-  static {
-    settingsListener = new SettingsChangeListener() {
-      public void settingsChange(SettingsChangeEvent evt) {
-        registerIndents();
-      }
-    };
-    Settings.addSettingsChangeListener(settingsListener);
-  }
-
-  static final long serialVersionUID =-929863607593944237L;
-
-  private static void registerIndents() {
-    IndentEngine.register(MIME_JAVA,
-        new FilterIndentEngine(Formatter.getFormatter(JavaKit.class)));
-  }
-  
-  public void installed () {
-    try {
-      Utilities2.createAction (JCUpdateAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
-    } catch (IOException ioe) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-        ioe.printStackTrace ();
-    }
-    
-    restored ();
-  }
-
-  /** Module installed again. */
-  public void restored () {
-
-    LocaleSupport.addLocalizer(new NbLocalizer(NbEditorSettingsInitializer.class));
-
-    // Initializations
-
-    // Settings
-    NbEditorSettingsInitializer.init();
-
-    FileSystem rfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
-    JCStorage.init(rfs.getRoot());
-
-    // Indentation engines registration
-    registerIndents();
-
-    // Preloading of some classes for faster editor opening
-    BaseKit.getKit(JavaKit.class).createDefaultDocument();
-
-    // Registration of the editor kits to JEditorPane
-    for (int i = 0; i < replacements.length; i++) {
-      JEditorPane.registerEditorKitForContentType(
-        replacements[i].contentType,
-        replacements[i].newKitClassName,
-        getClass().getClassLoader()
-      );
+    static {
+        settingsListener = new SettingsChangeListener() {
+                               public void settingsChange(SettingsChangeEvent evt) {
+                                   registerIndents();
+                               }
+                           };
+        Settings.addSettingsChangeListener(settingsListener);
     }
 
-  }
+    static final long serialVersionUID =-929863607593944237L;
 
-  public void uninstalled() {
-    try {
-      Utilities2.removeAction (JCUpdateAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
-    } catch (IOException ioe) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-        ioe.printStackTrace ();
+    private static void registerIndents() {
+        IndentEngine.register(MIME_JAVA,
+                              new FilterIndentEngine(Formatter.getFormatter(JavaKit.class)));
     }
-    
-    if (Boolean.getBoolean("netbeans.module.test")) { // NOI18N
-      /* Reset the hashtable holding the editor kits, so the editor kit
-      * can be refreshed. As the JEditorPane.kitRegistryKey is private
-      * it must be accessed through the reflection.
-      */
-      try {
-        java.lang.reflect.Field kitRegistryKeyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
-        if (kitRegistryKeyField != null) {
-          kitRegistryKeyField.setAccessible(true);
-          Object kitRegistryKey = kitRegistryKeyField.get(JEditorPane.class);
-          if (kitRegistryKey != null) {
-            // Set a fresh hashtable. It can't be null as there is a hashtable in AppContext
-            sun.awt.AppContext.getAppContext().put(kitRegistryKey, new java.util.Hashtable());
-          }
+
+    public void installed () {
+        try {
+            Utilities2.createAction (JCUpdateAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
+        } catch (IOException ioe) {
+            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+                ioe.printStackTrace ();
         }
-      } catch (Throwable t) {
-        t.printStackTrace();
-      }
-    }
-  }
 
-
-  static class KitInfo {
-
-    /** Content type for which the kits will be switched */
-    String contentType;
-
-    /** Class name of the kit that will be registered */
-    String newKitClassName;
-
-    KitInfo(String contentType, String newKitClassName) {
-      this.contentType = contentType;
-      this.newKitClassName = newKitClassName;
+        restored ();
     }
 
-  }
+    /** Module installed again. */
+    public void restored () {
 
-  static class FilterIndentEngine extends IndentEngine {
+        LocaleSupport.addLocalizer(new NbLocalizer(NbEditorSettingsInitializer.class));
 
-    Formatter formatter;
+        // Initializations
 
-    FilterIndentEngine(Formatter formatter) { 
-      this.formatter = formatter;
+        // Settings
+        NbEditorSettingsInitializer.init();
+
+        FileSystem rfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
+        JCStorage.init(rfs.getRoot());
+
+        // Indentation engines registration
+        registerIndents();
+
+        // Preloading of some classes for faster editor opening
+        BaseKit.getKit(JavaKit.class).createDefaultDocument();
+
+        // Registration of the editor kits to JEditorPane
+        for (int i = 0; i < replacements.length; i++) {
+            JEditorPane.registerEditorKitForContentType(
+                replacements[i].contentType,
+                replacements[i].newKitClassName,
+                getClass().getClassLoader()
+            );
+        }
+
     }
 
-    public int indentLine (Document doc, int offset) {
-      return formatter.indentLine(doc, offset);
-    }
-    
-    public int indentNewLine (Document doc, int offset) {
-      return formatter.indentNewLine(doc, offset);
-    }
-    
-    public Writer createWriter (Document doc, int offset, Writer writer) {
-      return formatter.createWriter(doc, offset, writer);
+    public void uninstalled() {
+        try {
+            Utilities2.removeAction (JCUpdateAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
+        } catch (IOException ioe) {
+            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+                ioe.printStackTrace ();
+        }
+
+        if (Boolean.getBoolean("netbeans.module.test")) { // NOI18N
+            /* Reset the hashtable holding the editor kits, so the editor kit
+            * can be refreshed. As the JEditorPane.kitRegistryKey is private
+            * it must be accessed through the reflection.
+            */
+            try {
+                java.lang.reflect.Field kitRegistryKeyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
+                if (kitRegistryKeyField != null) {
+                    kitRegistryKeyField.setAccessible(true);
+                    Object kitRegistryKey = kitRegistryKeyField.get(JEditorPane.class);
+                    if (kitRegistryKey != null) {
+                        // Set a fresh hashtable. It can't be null as there is a hashtable in AppContext
+                        sun.awt.AppContext.getAppContext().put(kitRegistryKey, new java.util.Hashtable());
+                    }
+                }
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        }
     }
 
-  }
+
+    static class KitInfo {
+
+        /** Content type for which the kits will be switched */
+        String contentType;
+
+        /** Class name of the kit that will be registered */
+        String newKitClassName;
+
+        KitInfo(String contentType, String newKitClassName) {
+            this.contentType = contentType;
+            this.newKitClassName = newKitClassName;
+        }
+
+    }
+
+    static class FilterIndentEngine extends IndentEngine {
+
+        Formatter formatter;
+
+        FilterIndentEngine(Formatter formatter) {
+            this.formatter = formatter;
+        }
+
+        public int indentLine (Document doc, int offset) {
+            return formatter.indentLine(doc, offset);
+        }
+
+        public int indentNewLine (Document doc, int offset) {
+            return formatter.indentNewLine(doc, offset);
+        }
+
+        public Writer createWriter (Document doc, int offset, Writer writer) {
+            return formatter.createWriter(doc, offset, writer);
+        }
+
+    }
 
 }
 

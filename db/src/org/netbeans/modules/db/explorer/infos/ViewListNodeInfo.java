@@ -25,75 +25,75 @@ import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class ViewListNodeInfo extends DatabaseNodeInfo
 {
-  static final long serialVersionUID =2854540580610981370L;
-  
-	public void initChildren(Vector children) throws DatabaseException {
- 		try {
-			DatabaseMetaData dmd = getSpecification().getMetaData();
-			String catalog = (String) get(DatabaseNode.CATALOG);
-			String[] types = new String[] {"VIEW"};
-      
-      DriverSpecification drvSpec = getDriverSpecification();
-      drvSpec.getTables(catalog, dmd, null, types);
+    static final long serialVersionUID =2854540580610981370L;
 
-      if (drvSpec.rs != null) {
-        while (drvSpec.rs.next()) {
-          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, drvSpec.rs);
-          if (info != null) {
-            info.put(DatabaseNode.VIEW, info.getName());
-            children.add(info);
-          } else
-            throw new Exception("unable to create node information for table");
+    public void initChildren(Vector children) throws DatabaseException {
+        try {
+            DatabaseMetaData dmd = getSpecification().getMetaData();
+            String catalog = (String) get(DatabaseNode.CATALOG);
+            String[] types = new String[] {"VIEW"};
+
+            DriverSpecification drvSpec = getDriverSpecification();
+            drvSpec.getTables(catalog, dmd, null, types);
+
+            if (drvSpec.rs != null) {
+                while (drvSpec.rs.next()) {
+                    DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, drvSpec.rs);
+                    if (info != null) {
+                        info.put(DatabaseNode.VIEW, info.getName());
+                        children.add(info);
+                    } else
+                        throw new Exception("unable to create node information for table");
+                }
+                drvSpec.rs.close();
+            }
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
         }
-        drvSpec.rs.close();
-      }
-		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());	
-		}
-	}
+    }
 
-	/** Adds view into list
-	* Adds view named name into children list. View should exist.
-	* @param name Name of existing view
-	*/
-	public void addView(String name)
-	throws DatabaseException
-	{
- 		try {
-      DatabaseMetaData dmd = getSpecification().getMetaData();
-			String catalog = (String) get(DatabaseNode.CATALOG);
-			String[] types = new String[] {"VIEW"};
-      
-      DriverSpecification drvSpec = getDriverSpecification();
-      drvSpec.getTables(catalog, dmd, name, types);
-			
-      if (drvSpec.rs != null) {
-        drvSpec.rs.next();
-  			DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, drvSpec.rs);
-        drvSpec.rs.close();
-        if (info != null)
-          ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
-        else
-          throw new Exception("unable to create node information for view");
-      }
- 		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());	
-		}
-	}
-  
-	public void refreshChildren() throws DatabaseException {
-		Vector charr = new Vector();
-		DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
+    /** Adds view into list
+    * Adds view named name into children list. View should exist.
+    * @param name Name of existing view
+    */
+    public void addView(String name)
+    throws DatabaseException
+    {
+        try {
+            DatabaseMetaData dmd = getSpecification().getMetaData();
+            String catalog = (String) get(DatabaseNode.CATALOG);
+            String[] types = new String[] {"VIEW"};
 
-		put(DatabaseNodeInfo.CHILDREN, charr);
-		chil.remove(chil.getNodes());		
-		initChildren(charr);
-		Enumeration en = charr.elements();
-		while(en.hasMoreElements()) {
-			DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
-			chil.add(new Node[] {subnode});
-		}
-	}
+            DriverSpecification drvSpec = getDriverSpecification();
+            drvSpec.getTables(catalog, dmd, name, types);
+
+            if (drvSpec.rs != null) {
+                drvSpec.rs.next();
+                DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, drvSpec.rs);
+                drvSpec.rs.close();
+                if (info != null)
+                    ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
+                else
+                    throw new Exception("unable to create node information for view");
+            }
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
+        }
+    }
+
+    public void refreshChildren() throws DatabaseException {
+        Vector charr = new Vector();
+        DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
+
+        put(DatabaseNodeInfo.CHILDREN, charr);
+        chil.remove(chil.getNodes());
+        initChildren(charr);
+        Enumeration en = charr.elements();
+        while(en.hasMoreElements()) {
+            DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
+            chil.add(new Node[] {subnode});
+        }
+    }
 }
 
 /*

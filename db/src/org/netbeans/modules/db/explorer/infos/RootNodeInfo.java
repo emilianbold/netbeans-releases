@@ -33,68 +33,68 @@ import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class RootNodeInfo extends DatabaseNodeInfo
-implements ConnectionOwnerOperations
+            implements ConnectionOwnerOperations
 {
-  static final long serialVersionUID =-8079386805046070315L;
-	public void initChildren(Vector children)
-	throws DatabaseException
-	{
- 		try {
-			Vector cons = RootNode.getOption().getConnections();
-			if (cons != null) {
-				Enumeration en = cons.elements();
-				while(en.hasMoreElements()) {
-					DBConnection cinfo = (DBConnection)en.nextElement();
-					ConnectionNodeInfo ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
-					ninfo.setUser(cinfo.getUser());
-					ninfo.setDatabase(cinfo.getDatabase());
-					ninfo.setDatabaseConnection(cinfo);
-					children.add(ninfo);
-				}
-			}
+    static final long serialVersionUID =-8079386805046070315L;
+    public void initChildren(Vector children)
+    throws DatabaseException
+    {
+        try {
+            Vector cons = RootNode.getOption().getConnections();
+            if (cons != null) {
+                Enumeration en = cons.elements();
+                while(en.hasMoreElements()) {
+                    DBConnection cinfo = (DBConnection)en.nextElement();
+                    ConnectionNodeInfo ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
+                    ninfo.setUser(cinfo.getUser());
+                    ninfo.setDatabase(cinfo.getDatabase());
+                    ninfo.setDatabaseConnection(cinfo);
+                    children.add(ninfo);
+                }
+            }
 
-			TopManager tm = TopManager.getDefault();
-			FileSystem rfs = tm.getRepository().getDefaultFileSystem();
-			FileObject rootFolder = rfs.getRoot();
-			FileObject databaseFileObject = rootFolder.getFileObject("Database");
-			if (databaseFileObject != null) {
-				FileObject adaptorsFolder = databaseFileObject.getFileObject("Adaptors");
-				DataObject dbdo = DataFolder.findFolder(adaptorsFolder);
-				if (dbdo != null) children.add(dbdo.getNodeDelegate());
-			}
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new DatabaseException(e.getMessage());	
-		}
-	}
-	
-	public void addConnection(DBConnection cinfo)
-	throws DatabaseException
-	{
-		getChildren(); // force restore
-		Vector cons = RootNode.getOption().getConnections();
-		String usr = cinfo.getUser();
-		String pwd = cinfo.getPassword();
-		if (cons.contains(cinfo)) throw new DatabaseException("connection already exists");
-		try {
-			DatabaseNode node = getNode();
-			DatabaseNodeChildren children = (DatabaseNodeChildren)node.getChildren();
-			ConnectionNodeInfo ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
-			ninfo.setName(cinfo.getDatabase());
-			ninfo.setUser(cinfo.getUser());
-			ninfo.setDatabase(cinfo.getDatabase());
-			ninfo.setDatabaseConnection(cinfo);
-			cons.add(cinfo);
-			DatabaseNode cnode = children.createSubnode(ninfo, true);
-			if (usr != null && usr.length() > 0 && pwd != null && pwd.length() > 0) {
-				((ConnectionNodeInfo)cnode.getInfo()).connect();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new DatabaseException(e.getMessage());
-		}
-	}
+            TopManager tm = TopManager.getDefault();
+            FileSystem rfs = tm.getRepository().getDefaultFileSystem();
+            FileObject rootFolder = rfs.getRoot();
+            FileObject databaseFileObject = rootFolder.getFileObject("Database");
+            if (databaseFileObject != null) {
+                FileObject adaptorsFolder = databaseFileObject.getFileObject("Adaptors");
+                DataObject dbdo = DataFolder.findFolder(adaptorsFolder);
+                if (dbdo != null) children.add(dbdo.getNodeDelegate());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new DatabaseException(e.getMessage());
+        }
+    }
+
+    public void addConnection(DBConnection cinfo)
+    throws DatabaseException
+    {
+        getChildren(); // force restore
+        Vector cons = RootNode.getOption().getConnections();
+        String usr = cinfo.getUser();
+        String pwd = cinfo.getPassword();
+        if (cons.contains(cinfo)) throw new DatabaseException("connection already exists");
+        try {
+            DatabaseNode node = getNode();
+            DatabaseNodeChildren children = (DatabaseNodeChildren)node.getChildren();
+            ConnectionNodeInfo ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
+            ninfo.setName(cinfo.getDatabase());
+            ninfo.setUser(cinfo.getUser());
+            ninfo.setDatabase(cinfo.getDatabase());
+            ninfo.setDatabaseConnection(cinfo);
+            cons.add(cinfo);
+            DatabaseNode cnode = children.createSubnode(ninfo, true);
+            if (usr != null && usr.length() > 0 && pwd != null && pwd.length() > 0) {
+                ((ConnectionNodeInfo)cnode.getInfo()).connect();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new DatabaseException(e.getMessage());
+        }
+    }
 }
 /*
  * <<Log>>

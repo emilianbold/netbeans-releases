@@ -22,9 +22,9 @@ import java.util.EventListener;
 */
 public interface PropertyBundleListener extends EventListener {
 
-  /** Handles the PropertyBundleEvent */
-  public void bundleChanged(PropertyBundleEvent e);
-  
+    /** Handles the PropertyBundleEvent */
+    public void bundleChanged(PropertyBundleEvent e);
+
 }
 
 /*

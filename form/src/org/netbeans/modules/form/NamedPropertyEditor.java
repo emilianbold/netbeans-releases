@@ -15,15 +15,15 @@ package org.netbeans.modules.form;
 
 import java.beans.PropertyEditor;
 
-/** An interface which can be implemented by PropertyEditor to provide a display name 
+/** An interface which can be implemented by PropertyEditor to provide a display name
 * to identify the editor. This name will be used for example as the tab name in Form CustomPropertyEditor. 
 *
 * @author Ian Formanek
 */
 public interface NamedPropertyEditor extends PropertyEditor {
 
-  /** @return display name of the property editor */
-  public String getDisplayName ();
+    /** @return display name of the property editor */
+    public String getDisplayName ();
 }
 
 /*

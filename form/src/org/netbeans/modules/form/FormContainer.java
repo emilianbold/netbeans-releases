@@ -21,7 +21,7 @@ import org.netbeans.modules.form.forminfo.FormInfo;
  */
 public interface FormContainer extends ComponentContainer {
 
-  public FormInfo getFormInfo ();
+    public FormInfo getFormInfo ();
 
 }
 

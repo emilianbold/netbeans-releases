@@ -13,8 +13,8 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
-public class TableListNode extends DatabaseNode 
-{		
+public class TableListNode extends DatabaseNode
+{
 }
 /*
  * <<Log>>

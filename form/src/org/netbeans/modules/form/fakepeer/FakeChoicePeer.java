@@ -23,27 +23,27 @@ import java.awt.peer.ChoicePeer;
 
 class FakeChoicePeer extends FakeComponentPeer implements ChoicePeer
 {
-  FakeChoicePeer(Choice target) {
-    super(target);
-  }
+    FakeChoicePeer(Choice target) {
+        super(target);
+    }
 
-  Component createDelegate() {
-    return new Delegate();
-  }
-  
-  public void add(String item, int index) {
-  }
+    Component createDelegate() {
+        return new Delegate();
+    }
 
-  public void remove(int index) {
-  }
+    public void add(String item, int index) {
+    }
 
-  public void removeAll() {
-  }
-  
-  public void select(int index) {
-  }
+    public void remove(int index) {
+    }
 
-  public void addItem(String item, int index) {
-    add(item, index);
-  }
+    public void removeAll() {
+    }
+
+    public void select(int index) {
+    }
+
+    public void addItem(String item, int index) {
+        add(item, index);
+    }
 }

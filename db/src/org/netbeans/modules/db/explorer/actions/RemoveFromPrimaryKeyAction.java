@@ -21,22 +21,22 @@ import org.netbeans.modules.db.explorer.infos.*;
 
 public class RemoveFromPrimaryKeyAction extends DatabaseAction
 {
-  static final long serialVersionUID =-7648018578177394773L;
-	public void performAction (Node[] activatedNodes) 
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return;
-		
-		try {
+    static final long serialVersionUID =-7648018578177394773L;
+    public void performAction (Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return;
 
-			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-			DatabaseNodeInfo nfo = info.getParent(nodename);
+        try {
 
-		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to disconnect from "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-		}
-	}
+            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+            DatabaseNodeInfo nfo = info.getParent(nodename);
+
+        } catch(Exception e) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to disconnect from "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
 }
 /*
  * <<Log>>

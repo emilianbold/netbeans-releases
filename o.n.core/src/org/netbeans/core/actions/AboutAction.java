@@ -26,29 +26,29 @@ import org.netbeans.core.Splash;
 * @version 0.10, Mar 01, 1998
 */
 public class AboutAction extends CallableSystemAction {
-  /** generated Serialized Version UID */
-  static final long serialVersionUID = 6074126305723764618L;
+    /** generated Serialized Version UID */
+    static final long serialVersionUID = 6074126305723764618L;
 
-  /** Shows the dialog.
-  */
-  public void performAction () {
-    Splash.showSplashDialog ();
-  }
+    /** Shows the dialog.
+    */
+    public void performAction () {
+        Splash.showSplashDialog ();
+    }
 
-  /** URL to this action.
-  * @return URL to the action icon
-  */
-  public String iconResource () {
-    return "/org/netbeans/core/resources/actions/about.gif"; // NOI18N
-  }
+    /** URL to this action.
+    * @return URL to the action icon
+    */
+    public String iconResource () {
+        return "/org/netbeans/core/resources/actions/about.gif"; // NOI18N
+    }
 
-  public HelpCtx getHelpCtx() {
-    return new org.openide.util.HelpCtx (AboutAction.class);
-  }
+    public HelpCtx getHelpCtx() {
+        return new org.openide.util.HelpCtx (AboutAction.class);
+    }
 
-  public String getName() {
-    return NbBundle.getBundle (AboutAction.class).getString("About");
-  }
+    public String getName() {
+        return NbBundle.getBundle (AboutAction.class).getString("About");
+    }
 
 }
 

@@ -15,68 +15,68 @@ package org.netbeans.modules.form;
 
 import java.util.ArrayList;
 
-/** 
+/**
 *
 * @author Ian Formanek
 */
 public class RADContainer extends RADComponent implements ComponentContainer {
-  private ArrayList subComponents;
+    private ArrayList subComponents;
 
-  public RADComponent[] getSubBeans () {
-    RADComponent[] components = new RADComponent [subComponents.size ()];
-    subComponents.toArray (components);
-    return components;
-  }
-
-  public void initSubComponents (RADComponent[] initComponents) {
-    subComponents = new ArrayList (initComponents.length);
-    for (int i = 0; i < initComponents.length; i++) {
-      subComponents.add (initComponents[i]);
+    public RADComponent[] getSubBeans () {
+        RADComponent[] components = new RADComponent [subComponents.size ()];
+        subComponents.toArray (components);
+        return components;
     }
-  }
 
-  public void reorderSubComponents (int[] perm) {
-    for (int i = 0; i < perm.length; i++) {
-      int from = i;
-      int to = perm[i];
-      if (from == to) continue;
-      Object value = subComponents.remove (from);
-      if (from < to) {
-        subComponents.add (to - 1, value);
-      } else {
-        subComponents.add (to, value);
-      }
+    public void initSubComponents (RADComponent[] initComponents) {
+        subComponents = new ArrayList (initComponents.length);
+        for (int i = 0; i < initComponents.length; i++) {
+            subComponents.add (initComponents[i]);
+        }
     }
-    getFormManager ().fireComponentsReordered (this);
-  }
 
-  public void add (RADComponent comp) {
-    subComponents.add (comp);
-    ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
-  }
-
-  public void remove (RADComponent comp) {
-    int index = subComponents.indexOf (comp);
-    if (index != -1) {
-      subComponents.remove (index);
+    public void reorderSubComponents (int[] perm) {
+        for (int i = 0; i < perm.length; i++) {
+            int from = i;
+            int to = perm[i];
+            if (from == to) continue;
+            Object value = subComponents.remove (from);
+            if (from < to) {
+                subComponents.add (to - 1, value);
+            } else {
+                subComponents.add (to, value);
+            }
+        }
+        getFormManager ().fireComponentsReordered (this);
     }
-    ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
-  }
 
-  public int getIndexOf (RADComponent comp) {
-    return subComponents.indexOf (comp);
-  }
+    public void add (RADComponent comp) {
+        subComponents.add (comp);
+        ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
+    }
+
+    public void remove (RADComponent comp) {
+        int index = subComponents.indexOf (comp);
+        if (index != -1) {
+            subComponents.remove (index);
+        }
+        ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
+    }
+
+    public int getIndexOf (RADComponent comp) {
+        return subComponents.indexOf (comp);
+    }
 
 
-  /** Called to obtain a Java code to be used to generate code to access the container for adding subcomponents.
-  * It is expected that the returned code is either "" (in which case the form is the container) or is a name of variable
-  * or method call ending with "." (e.g. "container.getContentPane ().").
-  * This implementation returns "", as there is no sense to add visual components to non-visual containers
-  * @return the prefix code for generating code to add subcomponents to this container
-  */
-  public String getContainerGenName () {
-    return ""; // NOI18N
-  }
+    /** Called to obtain a Java code to be used to generate code to access the container for adding subcomponents.
+    * It is expected that the returned code is either "" (in which case the form is the container) or is a name of variable
+    * or method call ending with "." (e.g. "container.getContentPane ().").
+    * This implementation returns "", as there is no sense to add visual components to non-visual containers
+    * @return the prefix code for generating code to add subcomponents to this container
+    */
+    public String getContainerGenName () {
+        return ""; // NOI18N
+    }
 }
 
 /*

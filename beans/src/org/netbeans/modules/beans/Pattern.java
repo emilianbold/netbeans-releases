@@ -23,94 +23,94 @@ import org.openide.nodes.Node;
  */
 public abstract class  Pattern extends Object {
 
-  /** PatternAnalyser which created this pattern */
-  PatternAnalyser patternAnalyser;
-  
-  /** Constructor of Pattern. The patternAnalyser is the only connetion
-   * to class which created this pattern.
-   * @param patternAnalyser The patern analayser which created this pattern.
-   */
-  public Pattern( PatternAnalyser patternAnalyser ) {
-    this.patternAnalyser = patternAnalyser;
-  }
+    /** PatternAnalyser which created this pattern */
+    PatternAnalyser patternAnalyser;
 
-  /** Gets the name of pattern.
-   * @return Name of the pattern.
-   */
-  public abstract String getName();
-  
-  /** Sets the name of the pattern
-   * @param name New name of the pattern.
-   * @throws SourceException If the change of source code is not possible.
-   */
-  public abstract void setName( String name ) throws SourceException;
-  
-  /** Gets the class which declares this Pattern.
-   * @return Class in which this pattern is defined.
-   */
-  public ClassElement getDeclaringClass() {
-    return patternAnalyser.getClassElement();
-  }
+    /** Constructor of Pattern. The patternAnalyser is the only connetion
+     * to class which created this pattern.
+     * @param patternAnalyser The patern analayser which created this pattern.
+     */
+    public Pattern( PatternAnalyser patternAnalyser ) {
+        this.patternAnalyser = patternAnalyser;
+    }
 
-  /** Temporary implementation of getCookie
-   * @param type Type of the Cookie.
-   * @return The Cookie.
-   */
-  Node.Cookie getCookie( Class type ) {
-    return null;
-  }
+    /** Gets the name of pattern.
+     * @return Name of the pattern.
+     */
+    public abstract String getName();
 
-  /** Default behavior for destroying pattern is to do nothing
-   * @throws SourceException If the modification of source code is impossible.
-   */
-  public void destroy() throws SourceException {
-  }
+    /** Sets the name of the pattern
+     * @param name New name of the pattern.
+     * @throws SourceException If the change of source code is not possible.
+     */
+    public abstract void setName( String name ) throws SourceException;
 
-  // UTILITY METHODS ----------------------------------------------------------
-  
-  /** Utility method capitalizes the first letter of string, used to
-   * generate method names for patterns
-   * @param str The string for capitalization.
-   * @return String with the first letter capitalized.
-   */
-  static String capitalizeFirstLetter( String str ) {
-    if ( str == null || str.length() <= 0 )
-      return str;
-    
-    char chars[] = str.toCharArray();
-    chars[0] = Character.toUpperCase(chars[0]);
-    return new String(chars);
-  }
-  
-  // IMPLEMENTATION OF PropertyChangeSupport ----------------------------------
-  
-  /** Utility field used by bound properties. */
-  private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport( this );
-  
-  /** Add a PropertyChangeListener to the listener list.
-   * @param l the listener to add. 
-   */
-  public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
-      propertyChangeSupport.addPropertyChangeListener( l );
-  }
-  
-  /** Removes a PropertyChangeListener from the listener list.
-   * @param l the listener to remove. 
-   */
-  public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
-    propertyChangeSupport.removePropertyChangeListener( l );
-  }
-  
-  /** Fires the <CODE>PropertyChangeEvent</CODE> to listeners.
-   * @param evt The event to fire.
-   */
-  protected void firePropertyChange( java.beans.PropertyChangeEvent evt ) {
-    propertyChangeSupport.firePropertyChange( evt );
-  }
+    /** Gets the class which declares this Pattern.
+     * @return Class in which this pattern is defined.
+     */
+    public ClassElement getDeclaringClass() {
+        return patternAnalyser.getClassElement();
+    }
+
+    /** Temporary implementation of getCookie
+     * @param type Type of the Cookie.
+     * @return The Cookie.
+     */
+    Node.Cookie getCookie( Class type ) {
+        return null;
+    }
+
+    /** Default behavior for destroying pattern is to do nothing
+     * @throws SourceException If the modification of source code is impossible.
+     */
+    public void destroy() throws SourceException {
+    }
+
+    // UTILITY METHODS ----------------------------------------------------------
+
+    /** Utility method capitalizes the first letter of string, used to
+     * generate method names for patterns
+     * @param str The string for capitalization.
+     * @return String with the first letter capitalized.
+     */
+    static String capitalizeFirstLetter( String str ) {
+        if ( str == null || str.length() <= 0 )
+            return str;
+
+        char chars[] = str.toCharArray();
+        chars[0] = Character.toUpperCase(chars[0]);
+        return new String(chars);
+    }
+
+    // IMPLEMENTATION OF PropertyChangeSupport ----------------------------------
+
+    /** Utility field used by bound properties. */
+    private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport( this );
+
+    /** Add a PropertyChangeListener to the listener list.
+     * @param l the listener to add. 
+     */
+    public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        propertyChangeSupport.addPropertyChangeListener( l );
+    }
+
+    /** Removes a PropertyChangeListener from the listener list.
+     * @param l the listener to remove. 
+     */
+    public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        propertyChangeSupport.removePropertyChangeListener( l );
+    }
+
+    /** Fires the <CODE>PropertyChangeEvent</CODE> to listeners.
+     * @param evt The event to fire.
+     */
+    protected void firePropertyChange( java.beans.PropertyChangeEvent evt ) {
+        propertyChangeSupport.firePropertyChange( evt );
+    }
 
 }
 
-/* 
+/*
  * Log
  *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

@@ -23,20 +23,20 @@ import java.awt.peer.CanvasPeer;
 
 class FakeCanvasPeer extends FakeComponentPeer implements CanvasPeer
 {
-  FakeCanvasPeer(Canvas target) {
-    super(target);
-  }
+    FakeCanvasPeer(Canvas target) {
+        super(target);
+    }
 
-  Component createDelegate() {
-    return new Delegate();
-  }
+    Component createDelegate() {
+        return new Delegate();
+    }
 
-  //
-  //
-  //
-  
-  private class Delegate extends Component
-  {
-    // noop
-  }
+    //
+    //
+    //
+
+    private class Delegate extends Component
+    {
+        // noop
+    }
 }

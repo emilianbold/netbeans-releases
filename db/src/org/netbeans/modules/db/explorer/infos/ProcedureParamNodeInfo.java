@@ -28,9 +28,9 @@ import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 
-public class ProcedureParamNodeInfo extends DatabaseNodeInfo 
+public class ProcedureParamNodeInfo extends DatabaseNodeInfo
 {
-  static final long serialVersionUID =4583121775649131706L;
+    static final long serialVersionUID =4583121775649131706L;
 }
 /*
  * <<Log>>

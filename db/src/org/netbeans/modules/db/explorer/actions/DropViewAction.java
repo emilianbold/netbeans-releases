@@ -24,20 +24,20 @@ import org.netbeans.modules.db.explorer.infos.*;
 
 public class DropViewAction extends DatabaseAction
 {
-  static final long serialVersionUID =2634594290357298187L;
-	public void performAction(Node[] activatedNodes) 
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0)
-      node = activatedNodes[0];
-		else
-      return;
-		ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
-//		try {			
-//		} catch(Exception e) {
-//			TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DropIndexErrorPrefix")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-//		}
-	}
+    static final long serialVersionUID =2634594290357298187L;
+    public void performAction(Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0)
+            node = activatedNodes[0];
+        else
+            return;
+        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+        //		try {
+        //		} catch(Exception e) {
+        //			TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DropIndexErrorPrefix")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        //		}
+    }
 }
 /*
  * <<Log>>

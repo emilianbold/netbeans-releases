@@ -12,71 +12,71 @@
  */
 
 package org.netbeans.modules.beans.beaninfo;
- 
+
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
 
-/** 
+/**
 * Toggles selection.
 *
 * @author   Petr Hrebejk
 */
 public class BiExcludeAllAction extends NodeAction  {
 
-static final long serialVersionUID =300378897958545485L;
-  /** generated Serialized Version UID */
-  //static final long serialVersionUID = 1391479985940417455L;
+    static final long serialVersionUID =300378897958545485L;
+    /** generated Serialized Version UID */
+    //static final long serialVersionUID = 1391479985940417455L;
 
-  //private static final Class[] cookieClasses = new Class[] { BiFeatureNode.class };
-
-
- 
-  /** Human presentable name of the action. This should be
-  * presented as an item in a menu.
-  * @return the name of the action
-  */
-  public String getName () {
-    return NbBundle.getBundle (GenerateBeanInfoAction.class).getString ("CTL_EXCLALL_MenuItem");
-  }
-
-  /** The action's icon location.
-  * @return the action's icon location
-  */
-  protected String iconResource () {
-    return null;
-  }
-  
-  /** Help context where to find more about the action.
-  * @return the help context for this action
-  */
-  public HelpCtx getHelpCtx () {
-    return new HelpCtx (BiToggleAction.class);
-  }
-
-  protected boolean enable( Node[] activatedNodes ) {
-    return true;
-  }
+    //private static final Class[] cookieClasses = new Class[] { BiFeatureNode.class };
 
 
-  /** This method is called by one of the "invokers" as a result of
-  * some user's action that should lead to actual "performing" of the action.
-  * This default implementation calls the assigned actionPerformer if it
-  * is not null otherwise the action is ignored.
-  */
-  public void performAction ( Node[] nodes ) {
-     
-    nodes = BiPanel.getSelectedNodes();
 
-    if ( nodes.length < 1 )
-      return;
-
-    for(int i = 0; i < nodes.length; i++ ) {
-      ((BiNode.SubNode)nodes[i].getCookie( BiNode.SubNode.class )).includeAll( false );
+    /** Human presentable name of the action. This should be
+    * presented as an item in a menu.
+    * @return the name of the action
+    */
+    public String getName () {
+        return NbBundle.getBundle (GenerateBeanInfoAction.class).getString ("CTL_EXCLALL_MenuItem");
     }
-    
-   }
+
+    /** The action's icon location.
+    * @return the action's icon location
+    */
+    protected String iconResource () {
+        return null;
+    }
+
+    /** Help context where to find more about the action.
+    * @return the help context for this action
+    */
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx (BiToggleAction.class);
+    }
+
+    protected boolean enable( Node[] activatedNodes ) {
+        return true;
+    }
+
+
+    /** This method is called by one of the "invokers" as a result of
+    * some user's action that should lead to actual "performing" of the action.
+    * This default implementation calls the assigned actionPerformer if it
+    * is not null otherwise the action is ignored.
+    */
+    public void performAction ( Node[] nodes ) {
+
+        nodes = BiPanel.getSelectedNodes();
+
+        if ( nodes.length < 1 )
+            return;
+
+        for(int i = 0; i < nodes.length; i++ ) {
+            ((BiNode.SubNode)nodes[i].getCookie( BiNode.SubNode.class )).includeAll( false );
+        }
+
+    }
 
 }
 

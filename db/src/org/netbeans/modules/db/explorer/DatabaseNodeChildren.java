@@ -26,103 +26,103 @@ import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
-public class DatabaseNodeChildren extends Children.Array 
-{		
-	protected Collection initCollection()
-	{
-		DatabaseNodeInfo nodeinfo = ((DatabaseNode)getNode()).getInfo();
-		java.util.Map nodeord = (java.util.Map)nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
-		TreeSet children = new TreeSet(new NodeComparator(nodeord));
-		
-		try {
-			Vector chlist = nodeinfo.getChildren();
-			for (int i=0;i<chlist.size();i++) {
-				Node snode = null;
-				Object sinfo = chlist.elementAt(i);
-				
-				if (sinfo instanceof DatabaseNodeInfo) {
-				  DatabaseNodeInfo dni = (DatabaseNodeInfo) sinfo;
-				  if (dni.getName().equals("Connection"))
-            dni.setName(dni.getName() + " " + dni.getDatabase());
-				  snode = createNode(dni);
-				}
-				else
-				  if (sinfo instanceof Node)
-				    snode = (Node)sinfo;
-				if (snode != null)
-				  children.add(snode);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			children.clear();
-		}
-		
-		return children;
-	}
-/*
-	protected Node[] createNodes()
-	{
-		Node[] nodeorg = super.createNodes();
-		DatabaseNodeInfo nodeinfo = ((DatabaseNode)getNode()).getInfo();
-		java.util.Map nodeord = (java.util.Map)nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
-		if (nodeord != null) Arrays.sort(nodeorg, new NodeComparator(nodeord));
-		return nodeorg;
-	}
-*/
-	class NodeComparator implements Comparator 
-	{
-		private java.util.Map map = null;
-		
-		public NodeComparator(java.util.Map map) 
-		{
-			this.map = map;
-		}
-		
-		public int compare(Object o1, Object o2) 
-		{
-			int o1val, o2val, diff;
-			Integer o1i = (Integer)map.get(o1.getClass().getName());
-			if (o1i != null) o1val = o1i.intValue();
-			else o1val = Integer.MAX_VALUE;
-			Integer o2i = (Integer)map.get(o2.getClass().getName());
-			if (o2i != null) o2val = o2i.intValue();
-			else o2val = Integer.MAX_VALUE;
-			
-			diff = o1val-o2val;
-			if (diff == 0) return ((DatabaseNode)o1).getInfo().getName().compareTo(((DatabaseNode)o2).getInfo().getName());
-			return diff;			
-		}
-	}
+public class DatabaseNodeChildren extends Children.Array
+{
+    protected Collection initCollection()
+    {
+        DatabaseNodeInfo nodeinfo = ((DatabaseNode)getNode()).getInfo();
+        java.util.Map nodeord = (java.util.Map)nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
+        TreeSet children = new TreeSet(new NodeComparator(nodeord));
 
-	public DatabaseNode createNode(DatabaseNodeInfo info)
-	{
-		String ncode = (String)info.get(DatabaseNodeInfo.CODE);
-		String nclass = (String)info.get(DatabaseNodeInfo.CLASS);
-		DatabaseNode node = null;
-		
-		try {
-			node = (DatabaseNode)Class.forName(nclass).newInstance();
-			node.setInfo(info); /* makes a copy of info, use node.getInfo() to access it */
-			node.getInfo().setNode(node); /* this is a weak, be cool, baby ;) */
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        try {
+            Vector chlist = nodeinfo.getChildren();
+            for (int i=0;i<chlist.size();i++) {
+                Node snode = null;
+                Object sinfo = chlist.elementAt(i);
 
-		return node;
-	}
-	
-	public DatabaseNode createSubnode(DatabaseNodeInfo info, boolean addToChildrenFlag)
-	throws DatabaseException
-	{
-		DatabaseNode subnode = createNode(info);
-		if (subnode != null && addToChildrenFlag) {
-			DatabaseNodeInfo ninfo = ((DatabaseNode)getNode()).getInfo();
-			ninfo.getChildren().add(info);
-			if (isInitialized()) add(new Node[] {subnode});
-		}
+                if (sinfo instanceof DatabaseNodeInfo) {
+                    DatabaseNodeInfo dni = (DatabaseNodeInfo) sinfo;
+                    if (dni.getName().equals("Connection"))
+                        dni.setName(dni.getName() + " " + dni.getDatabase());
+                    snode = createNode(dni);
+                }
+                else
+                    if (sinfo instanceof Node)
+                        snode = (Node)sinfo;
+                if (snode != null)
+                    children.add(snode);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            children.clear();
+        }
 
-		return subnode;
-	}
+        return children;
+    }
+    /*
+    	protected Node[] createNodes()
+    	{
+    		Node[] nodeorg = super.createNodes();
+    		DatabaseNodeInfo nodeinfo = ((DatabaseNode)getNode()).getInfo();
+    		java.util.Map nodeord = (java.util.Map)nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
+    		if (nodeord != null) Arrays.sort(nodeorg, new NodeComparator(nodeord));
+    		return nodeorg;
+    	}
+    */
+    class NodeComparator implements Comparator
+    {
+        private java.util.Map map = null;
+
+        public NodeComparator(java.util.Map map)
+        {
+            this.map = map;
+        }
+
+        public int compare(Object o1, Object o2)
+        {
+            int o1val, o2val, diff;
+            Integer o1i = (Integer)map.get(o1.getClass().getName());
+            if (o1i != null) o1val = o1i.intValue();
+            else o1val = Integer.MAX_VALUE;
+            Integer o2i = (Integer)map.get(o2.getClass().getName());
+            if (o2i != null) o2val = o2i.intValue();
+            else o2val = Integer.MAX_VALUE;
+
+            diff = o1val-o2val;
+            if (diff == 0) return ((DatabaseNode)o1).getInfo().getName().compareTo(((DatabaseNode)o2).getInfo().getName());
+            return diff;
+        }
+    }
+
+    public DatabaseNode createNode(DatabaseNodeInfo info)
+    {
+        String ncode = (String)info.get(DatabaseNodeInfo.CODE);
+        String nclass = (String)info.get(DatabaseNodeInfo.CLASS);
+        DatabaseNode node = null;
+
+        try {
+            node = (DatabaseNode)Class.forName(nclass).newInstance();
+            node.setInfo(info); /* makes a copy of info, use node.getInfo() to access it */
+            node.getInfo().setNode(node); /* this is a weak, be cool, baby ;) */
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return node;
+    }
+
+    public DatabaseNode createSubnode(DatabaseNodeInfo info, boolean addToChildrenFlag)
+    throws DatabaseException
+    {
+        DatabaseNode subnode = createNode(info);
+        if (subnode != null && addToChildrenFlag) {
+            DatabaseNodeInfo ninfo = ((DatabaseNode)getNode()).getInfo();
+            ninfo.getChildren().add(info);
+            if (isInitialized()) add(new Node[] {subnode});
+        }
+
+        return subnode;
+    }
 }
 
 /*

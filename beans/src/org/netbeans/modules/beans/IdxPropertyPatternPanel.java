@@ -28,122 +28,122 @@ import org.openide.NotifyDescriptor;
  *
  * @author Petr Hrebejk
  */
-public class IdxPropertyPatternPanel extends javax.swing.JPanel 
-                  implements java.awt.event.ActionListener {
-                    
-  /** The resource bundle */                  
-  private static final ResourceBundle bundle = NbBundle.getBundle( IdxPropertyPatternPanel.class );
-  
-  /** Dialog for displaiyng this panel */
-  private Dialog dialog;
-  /** Group node under which the new pattern will below */
-  private PatternGroupNode groupNode;
-  /** Geneartion for interface/class */
-  private boolean forInterface = false;
+public class IdxPropertyPatternPanel extends javax.swing.JPanel
+    implements java.awt.event.ActionListener {
 
-  /** Standard types */
-  private final String[] types = new String[] {
-    "boolean", "char", "byte", "short", "int", // NOI18N
-    "long", "float", "double", "String" // NOI18N
-  };
+    /** The resource bundle */
+    private static final ResourceBundle bundle = NbBundle.getBundle( IdxPropertyPatternPanel.class );
 
-  /** Human representable form of properties modes */  
-  private final String[] modes = new String[] {
-    bundle.getString( "LAB_ReadWriteMODE" ),
-    bundle.getString( "LAB_ReadOnlyMODE" ),
-    bundle.getString( "LAB_WriteOnlyMODE" )
-  };
+    /** Dialog for displaiyng this panel */
+    private Dialog dialog;
+    /** Group node under which the new pattern will below */
+    private PatternGroupNode groupNode;
+    /** Geneartion for interface/class */
+    private boolean forInterface = false;
 
-static final long serialVersionUID =8551245035767258531L;
-  /** Initializes the Form */
-  public IdxPropertyPatternPanel() {
-    initComponents ();
+    /** Standard types */
+    private final String[] types = new String[] {
+                                       "boolean", "char", "byte", "short", "int", // NOI18N
+                                       "long", "float", "double", "String" // NOI18N
+                                   };
 
-    // Customize type checkbox
-    for ( int i = 0; i < types.length; i++ ) {
-      typeComboBox.addItem( types[i] );
-    }
-    typeComboBox.setSelectedItem( "" ); // NOI18N
+    /** Human representable form of properties modes */
+    private final String[] modes = new String[] {
+                                       bundle.getString( "LAB_ReadWriteMODE" ),
+                                       bundle.getString( "LAB_ReadOnlyMODE" ),
+                                       bundle.getString( "LAB_WriteOnlyMODE" )
+                                   };
 
-    // Customize mode checkbox
-    for ( int i = 0; i < modes.length; i++ ) {
-      modeComboBox.addItem( modes[i] );
-    }
-    modeComboBox.setSelectedItem( modes[0] );
-    
+    static final long serialVersionUID =8551245035767258531L;
+    /** Initializes the Form */
+    public IdxPropertyPatternPanel() {
+        initComponents ();
+
+        // Customize type checkbox
+        for ( int i = 0; i < types.length; i++ ) {
+            typeComboBox.addItem( types[i] );
+        }
+        typeComboBox.setSelectedItem( "" ); // NOI18N
+
+        // Customize mode checkbox
+        for ( int i = 0; i < modes.length; i++ ) {
+            modeComboBox.addItem( modes[i] );
+        }
+        modeComboBox.setSelectedItem( modes[0] );
+
         // i18n
-    
-    ((TitledBorder)propertyPanel.getBorder()).setTitle( 
-      bundle.getString( "CTL_IdxPropertyPanel_propertyPanel" ) );
-    ((TitledBorder)optionsPanel.getBorder()).setTitle( 
-      bundle.getString( "CTL_IdxPropertyPanel_optionsPanel" ) );
-    ((TitledBorder)nonIndexOptionsPanel.getBorder()).setTitle( 
-      bundle.getString( "CTL_IdxPropertyPanel_niOptionsPanel" ) );
-    nameLabel.setText( bundle.getString( "CTL_IdxPropertyPanel_nameLabel" ) );
-    typeLabel.setText( bundle.getString( "CTL_IdxPropertyPanel_typeLabel" ) );
-    modeLabel.setText( bundle.getString( "CTL_IdxPropertyPanel_modeLabel" ) );
-    boundCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_boundCheckBox" ) );
-    constrainedCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_constrainedCheckBox" ) );
-    fieldCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_fieldCheckBox" ) );
-    returnCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_returnCheckBox" ) );
-    setCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_setCheckBox" ) );
-    supportCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_supportCheckBox" ) );
-    niGetterCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_niGetterCheckBox" ) );
-    niReturnCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_niReturnCheckBox" ) );
-    niSetterCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_niSetterCheckBox" ) );
-    niSetCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_niSetCheckBox" ) );
-    
-  }
 
-  /** This method is called from within the constructor to
-   * initialize the form.
-   * WARNING: Do NOT modify this code. The content of this method is
-   * always regenerated by the FormEditor.
-   */
-  private void initComponents () {//GEN-BEGIN:initComponents
-    mainPanel = new javax.swing.JPanel ();
-    propertyPanel = new javax.swing.JPanel ();
-    nameLabel = new javax.swing.JLabel ();
-    nameTextField = new javax.swing.JTextField ();
-    typeLabel = new javax.swing.JLabel ();
-    typeComboBox = new javax.swing.JComboBox ();
-    modeLabel = new javax.swing.JLabel ();
-    modeComboBox = new javax.swing.JComboBox ();
-    jPanel3 = new javax.swing.JPanel ();
-    boundCheckBox = new javax.swing.JCheckBox ();
-    jPanel4 = new javax.swing.JPanel ();
-    constrainedCheckBox = new javax.swing.JCheckBox ();
-    optionsPanel = new javax.swing.JPanel ();
-    fieldCheckBox = new javax.swing.JCheckBox ();
-    returnCheckBox = new javax.swing.JCheckBox ();
-    setCheckBox = new javax.swing.JCheckBox ();
-    supportCheckBox = new javax.swing.JCheckBox ();
-    nonIndexOptionsPanel = new javax.swing.JPanel ();
-    niGetterCheckBox = new javax.swing.JCheckBox ();
-    niReturnCheckBox = new javax.swing.JCheckBox ();
-    niSetterCheckBox = new javax.swing.JCheckBox ();
-    niSetCheckBox = new javax.swing.JCheckBox ();
-    setLayout (new java.awt.BorderLayout ());
+        ((TitledBorder)propertyPanel.getBorder()).setTitle(
+            bundle.getString( "CTL_IdxPropertyPanel_propertyPanel" ) );
+        ((TitledBorder)optionsPanel.getBorder()).setTitle(
+            bundle.getString( "CTL_IdxPropertyPanel_optionsPanel" ) );
+        ((TitledBorder)nonIndexOptionsPanel.getBorder()).setTitle(
+            bundle.getString( "CTL_IdxPropertyPanel_niOptionsPanel" ) );
+        nameLabel.setText( bundle.getString( "CTL_IdxPropertyPanel_nameLabel" ) );
+        typeLabel.setText( bundle.getString( "CTL_IdxPropertyPanel_typeLabel" ) );
+        modeLabel.setText( bundle.getString( "CTL_IdxPropertyPanel_modeLabel" ) );
+        boundCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_boundCheckBox" ) );
+        constrainedCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_constrainedCheckBox" ) );
+        fieldCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_fieldCheckBox" ) );
+        returnCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_returnCheckBox" ) );
+        setCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_setCheckBox" ) );
+        supportCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_supportCheckBox" ) );
+        niGetterCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_niGetterCheckBox" ) );
+        niReturnCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_niReturnCheckBox" ) );
+        niSetterCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_niSetterCheckBox" ) );
+        niSetCheckBox.setText( bundle.getString( "CTL_IdxPropertyPanel_niSetCheckBox" ) );
 
-    mainPanel.setLayout (new java.awt.GridBagLayout ());
-    java.awt.GridBagConstraints gridBagConstraints1;
-    mainPanel.setBorder (new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
+    }
 
-      propertyPanel.setLayout (new java.awt.GridBagLayout ());
-      java.awt.GridBagConstraints gridBagConstraints2;
-      propertyPanel.setBorder (new javax.swing.border.TitledBorder(
-      new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)),
-      "propertyPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black)); // NOI18N
-  
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the FormEditor.
+     */
+    private void initComponents () {//GEN-BEGIN:initComponents
+        mainPanel = new javax.swing.JPanel ();
+        propertyPanel = new javax.swing.JPanel ();
+        nameLabel = new javax.swing.JLabel ();
+        nameTextField = new javax.swing.JTextField ();
+        typeLabel = new javax.swing.JLabel ();
+        typeComboBox = new javax.swing.JComboBox ();
+        modeLabel = new javax.swing.JLabel ();
+        modeComboBox = new javax.swing.JComboBox ();
+        jPanel3 = new javax.swing.JPanel ();
+        boundCheckBox = new javax.swing.JCheckBox ();
+        jPanel4 = new javax.swing.JPanel ();
+        constrainedCheckBox = new javax.swing.JCheckBox ();
+        optionsPanel = new javax.swing.JPanel ();
+        fieldCheckBox = new javax.swing.JCheckBox ();
+        returnCheckBox = new javax.swing.JCheckBox ();
+        setCheckBox = new javax.swing.JCheckBox ();
+        supportCheckBox = new javax.swing.JCheckBox ();
+        nonIndexOptionsPanel = new javax.swing.JPanel ();
+        niGetterCheckBox = new javax.swing.JCheckBox ();
+        niReturnCheckBox = new javax.swing.JCheckBox ();
+        niSetterCheckBox = new javax.swing.JCheckBox ();
+        niSetCheckBox = new javax.swing.JCheckBox ();
+        setLayout (new java.awt.BorderLayout ());
+
+        mainPanel.setLayout (new java.awt.GridBagLayout ());
+        java.awt.GridBagConstraints gridBagConstraints1;
+        mainPanel.setBorder (new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
+
+        propertyPanel.setLayout (new java.awt.GridBagLayout ());
+        java.awt.GridBagConstraints gridBagConstraints2;
+        propertyPanel.setBorder (new javax.swing.border.TitledBorder(
+                                     new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)),
+                                     "propertyPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black)); // NOI18N
+
         nameLabel.setText ("nameLabel"); // NOI18N
-    
+
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.insets = new java.awt.Insets (2, 4, 2, 2);
         gridBagConstraints2.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints2.weighty = 1.0;
         propertyPanel.add (nameLabel, gridBagConstraints2);
-    
-    
+
+
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.gridwidth = 0;
         gridBagConstraints2.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -152,17 +152,17 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints2.weightx = 1.0;
         gridBagConstraints2.weighty = 1.0;
         propertyPanel.add (nameTextField, gridBagConstraints2);
-    
+
         typeLabel.setText ("typeLabel"); // NOI18N
-    
+
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.insets = new java.awt.Insets (2, 4, 2, 2);
         gridBagConstraints2.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints2.weighty = 1.0;
         propertyPanel.add (typeLabel, gridBagConstraints2);
-    
+
         typeComboBox.setEditable (true);
-    
+
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.gridwidth = 0;
         gridBagConstraints2.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -171,22 +171,22 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints2.weightx = 1.0;
         gridBagConstraints2.weighty = 1.0;
         propertyPanel.add (typeComboBox, gridBagConstraints2);
-    
+
         modeLabel.setText ("modeLabel"); // NOI18N
-    
+
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.insets = new java.awt.Insets (2, 4, 2, 2);
         gridBagConstraints2.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints2.weighty = 1.0;
         propertyPanel.add (modeLabel, gridBagConstraints2);
-    
+
         modeComboBox.addActionListener (new java.awt.event.ActionListener () {
-          public void actionPerformed (java.awt.event.ActionEvent evt) {
-            modeComboBoxActionPerformed (evt);
-          }
-        }
-        );
-    
+                                            public void actionPerformed (java.awt.event.ActionEvent evt) {
+                                                modeComboBoxActionPerformed (evt);
+                                            }
+                                        }
+                                       );
+
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.gridwidth = 0;
         gridBagConstraints2.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -195,19 +195,19 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints2.weightx = 1.0;
         gridBagConstraints2.weighty = 1.0;
         propertyPanel.add (modeComboBox, gridBagConstraints2);
-    
-    
+
+
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         propertyPanel.add (jPanel3, gridBagConstraints2);
-    
+
         boundCheckBox.setText ("boundCheckBox"); // NOI18N
         boundCheckBox.addActionListener (new java.awt.event.ActionListener () {
-          public void actionPerformed (java.awt.event.ActionEvent evt) {
-            boundCheckBoxActionPerformed (evt);
-          }
-        }
-        );
-    
+                                             public void actionPerformed (java.awt.event.ActionEvent evt) {
+                                                 boundCheckBoxActionPerformed (evt);
+                                             }
+                                         }
+                                        );
+
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.gridwidth = 0;
         gridBagConstraints2.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -215,19 +215,19 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints2.weightx = 1.0;
         gridBagConstraints2.weighty = 1.0;
         propertyPanel.add (boundCheckBox, gridBagConstraints2);
-    
-    
+
+
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         propertyPanel.add (jPanel4, gridBagConstraints2);
-    
+
         constrainedCheckBox.setText ("constrainedCheckBox"); // NOI18N
         constrainedCheckBox.addActionListener (new java.awt.event.ActionListener () {
-          public void actionPerformed (java.awt.event.ActionEvent evt) {
-            constrainedCheckBoxActionPerformed (evt);
-          }
-        }
-        );
-    
+                                                   public void actionPerformed (java.awt.event.ActionEvent evt) {
+                                                       constrainedCheckBoxActionPerformed (evt);
+                                                   }
+                                               }
+                                              );
+
         gridBagConstraints2 = new java.awt.GridBagConstraints ();
         gridBagConstraints2.gridwidth = 0;
         gridBagConstraints2.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -235,28 +235,28 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints2.weightx = 1.0;
         gridBagConstraints2.weighty = 1.0;
         propertyPanel.add (constrainedCheckBox, gridBagConstraints2);
-    
-      gridBagConstraints1 = new java.awt.GridBagConstraints ();
-      gridBagConstraints1.gridwidth = 0;
-      gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-      gridBagConstraints1.weightx = 1.0;
-      gridBagConstraints1.weighty = 1.0;
-      mainPanel.add (propertyPanel, gridBagConstraints1);
-  
-      optionsPanel.setLayout (new java.awt.GridBagLayout ());
-      java.awt.GridBagConstraints gridBagConstraints3;
-      optionsPanel.setBorder (new javax.swing.border.TitledBorder(
-      new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)),
-      "optionsPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black)); // NOI18N
-  
+
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.gridwidth = 0;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints1.weightx = 1.0;
+        gridBagConstraints1.weighty = 1.0;
+        mainPanel.add (propertyPanel, gridBagConstraints1);
+
+        optionsPanel.setLayout (new java.awt.GridBagLayout ());
+        java.awt.GridBagConstraints gridBagConstraints3;
+        optionsPanel.setBorder (new javax.swing.border.TitledBorder(
+                                    new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)),
+                                    "optionsPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black)); // NOI18N
+
         fieldCheckBox.setText ("fieldCheckBox"); // NOI18N
         fieldCheckBox.addActionListener (new java.awt.event.ActionListener () {
-          public void actionPerformed (java.awt.event.ActionEvent evt) {
-            fieldCheckBoxActionPerformed (evt);
-          }
-        }
-        );
-    
+                                             public void actionPerformed (java.awt.event.ActionEvent evt) {
+                                                 fieldCheckBoxActionPerformed (evt);
+                                             }
+                                         }
+                                        );
+
         gridBagConstraints3 = new java.awt.GridBagConstraints ();
         gridBagConstraints3.gridwidth = 0;
         gridBagConstraints3.insets = new java.awt.Insets (2, 4, 2, 4);
@@ -264,10 +264,10 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints3.weightx = 1.0;
         gridBagConstraints3.weighty = 1.0;
         optionsPanel.add (fieldCheckBox, gridBagConstraints3);
-    
+
         returnCheckBox.setText ("returnCheckBox"); // NOI18N
         returnCheckBox.setEnabled (false);
-    
+
         gridBagConstraints3 = new java.awt.GridBagConstraints ();
         gridBagConstraints3.gridwidth = 0;
         gridBagConstraints3.insets = new java.awt.Insets (2, 4, 2, 4);
@@ -275,10 +275,10 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints3.weightx = 1.0;
         gridBagConstraints3.weighty = 1.0;
         optionsPanel.add (returnCheckBox, gridBagConstraints3);
-    
+
         setCheckBox.setText ("setCheckBox"); // NOI18N
         setCheckBox.setEnabled (false);
-    
+
         gridBagConstraints3 = new java.awt.GridBagConstraints ();
         gridBagConstraints3.gridwidth = 0;
         gridBagConstraints3.insets = new java.awt.Insets (2, 4, 2, 4);
@@ -286,10 +286,10 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints3.weightx = 1.0;
         gridBagConstraints3.weighty = 1.0;
         optionsPanel.add (setCheckBox, gridBagConstraints3);
-    
+
         supportCheckBox.setText ("supportCheckBox"); // NOI18N
         supportCheckBox.setEnabled (false);
-    
+
         gridBagConstraints3 = new java.awt.GridBagConstraints ();
         gridBagConstraints3.gridwidth = 0;
         gridBagConstraints3.insets = new java.awt.Insets (2, 4, 2, 4);
@@ -297,38 +297,38 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints3.weightx = 1.0;
         gridBagConstraints3.weighty = 1.0;
         optionsPanel.add (supportCheckBox, gridBagConstraints3);
-    
-      gridBagConstraints1 = new java.awt.GridBagConstraints ();
-      gridBagConstraints1.gridwidth = 0;
-      gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-      gridBagConstraints1.weightx = 1.0;
-      gridBagConstraints1.weighty = 1.0;
-      mainPanel.add (optionsPanel, gridBagConstraints1);
-  
-      nonIndexOptionsPanel.setLayout (new java.awt.GridBagLayout ());
-      java.awt.GridBagConstraints gridBagConstraints4;
-      nonIndexOptionsPanel.setBorder (new javax.swing.border.TitledBorder(
-      new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)),
-      "nonIndexOptionsPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black)); // NOI18N
-  
+
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.gridwidth = 0;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints1.weightx = 1.0;
+        gridBagConstraints1.weighty = 1.0;
+        mainPanel.add (optionsPanel, gridBagConstraints1);
+
+        nonIndexOptionsPanel.setLayout (new java.awt.GridBagLayout ());
+        java.awt.GridBagConstraints gridBagConstraints4;
+        nonIndexOptionsPanel.setBorder (new javax.swing.border.TitledBorder(
+                                            new javax.swing.border.EtchedBorder(java.awt.Color.white, new java.awt.Color (149, 142, 130)),
+                                            "nonIndexOptionsPanel", 1, 2, new java.awt.Font ("Dialog", 0, 11), java.awt.Color.black)); // NOI18N
+
         niGetterCheckBox.setText ("niGetterCheckBox"); // NOI18N
         niGetterCheckBox.addActionListener (new java.awt.event.ActionListener () {
-          public void actionPerformed (java.awt.event.ActionEvent evt) {
-            niGetterCheckBoxActionPerformed (evt);
-          }
-        }
-        );
-    
+                                                public void actionPerformed (java.awt.event.ActionEvent evt) {
+                                                    niGetterCheckBoxActionPerformed (evt);
+                                                }
+                                            }
+                                           );
+
         gridBagConstraints4 = new java.awt.GridBagConstraints ();
         gridBagConstraints4.insets = new java.awt.Insets (2, 2, 2, 2);
         gridBagConstraints4.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints4.weightx = 1.0;
         gridBagConstraints4.weighty = 1.0;
         nonIndexOptionsPanel.add (niGetterCheckBox, gridBagConstraints4);
-    
+
         niReturnCheckBox.setText ("niReturnCheckBox"); // NOI18N
         niReturnCheckBox.setEnabled (false);
-    
+
         gridBagConstraints4 = new java.awt.GridBagConstraints ();
         gridBagConstraints4.gridwidth = 0;
         gridBagConstraints4.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -336,25 +336,25 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints4.weightx = 1.0;
         gridBagConstraints4.weighty = 1.0;
         nonIndexOptionsPanel.add (niReturnCheckBox, gridBagConstraints4);
-    
+
         niSetterCheckBox.setText ("niSetterCheckBox"); // NOI18N
         niSetterCheckBox.addActionListener (new java.awt.event.ActionListener () {
-          public void actionPerformed (java.awt.event.ActionEvent evt) {
-            niSetterCheckBoxActionPerformed (evt);
-          }
-        }
-        );
-    
+                                                public void actionPerformed (java.awt.event.ActionEvent evt) {
+                                                    niSetterCheckBoxActionPerformed (evt);
+                                                }
+                                            }
+                                           );
+
         gridBagConstraints4 = new java.awt.GridBagConstraints ();
         gridBagConstraints4.insets = new java.awt.Insets (2, 2, 2, 2);
         gridBagConstraints4.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints4.weightx = 1.0;
         gridBagConstraints4.weighty = 1.0;
         nonIndexOptionsPanel.add (niSetterCheckBox, gridBagConstraints4);
-    
+
         niSetCheckBox.setText ("niSetCheckBox"); // NOI18N
         niSetCheckBox.setEnabled (false);
-    
+
         gridBagConstraints4 = new java.awt.GridBagConstraints ();
         gridBagConstraints4.gridwidth = 0;
         gridBagConstraints4.insets = new java.awt.Insets (2, 2, 2, 2);
@@ -362,223 +362,223 @@ static final long serialVersionUID =8551245035767258531L;
         gridBagConstraints4.weightx = 1.0;
         gridBagConstraints4.weighty = 1.0;
         nonIndexOptionsPanel.add (niSetCheckBox, gridBagConstraints4);
-    
-      gridBagConstraints1 = new java.awt.GridBagConstraints ();
-      gridBagConstraints1.gridwidth = 0;
-      gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-      gridBagConstraints1.weightx = 1.0;
-      gridBagConstraints1.weighty = 1.0;
-      mainPanel.add (nonIndexOptionsPanel, gridBagConstraints1);
-  
 
-    add (mainPanel, java.awt.BorderLayout.CENTER);
-
-  }//GEN-END:initComponents
-
-  private void niSetterCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_niSetterCheckBoxActionPerformed
-    protectControls();
-  }//GEN-LAST:event_niSetterCheckBoxActionPerformed
-
-  private void niGetterCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_niGetterCheckBoxActionPerformed
-    protectControls();
-  }//GEN-LAST:event_niGetterCheckBoxActionPerformed
-
-  private void fieldCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fieldCheckBoxActionPerformed
-    protectControls();
-  }//GEN-LAST:event_fieldCheckBoxActionPerformed
-
-  private void constrainedCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_constrainedCheckBoxActionPerformed
-    protectControls();
-  }//GEN-LAST:event_constrainedCheckBoxActionPerformed
-
-  private void boundCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boundCheckBoxActionPerformed
-    protectControls();
-  }//GEN-LAST:event_boundCheckBoxActionPerformed
-
-  private void modeComboBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modeComboBoxActionPerformed
-    protectControls();
-  }//GEN-LAST:event_modeComboBoxActionPerformed
+        gridBagConstraints1 = new java.awt.GridBagConstraints ();
+        gridBagConstraints1.gridwidth = 0;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints1.weightx = 1.0;
+        gridBagConstraints1.weighty = 1.0;
+        mainPanel.add (nonIndexOptionsPanel, gridBagConstraints1);
 
 
-  // Variables declaration - do not modify//GEN-BEGIN:variables
-  private javax.swing.JPanel mainPanel;
-  private javax.swing.JPanel propertyPanel;
-  private javax.swing.JLabel nameLabel;
-  private javax.swing.JTextField nameTextField;
-  private javax.swing.JLabel typeLabel;
-  private javax.swing.JComboBox typeComboBox;
-  private javax.swing.JLabel modeLabel;
-  private javax.swing.JComboBox modeComboBox;
-  private javax.swing.JPanel jPanel3;
-  private javax.swing.JCheckBox boundCheckBox;
-  private javax.swing.JPanel jPanel4;
-  private javax.swing.JCheckBox constrainedCheckBox;
-  private javax.swing.JPanel optionsPanel;
-  private javax.swing.JCheckBox fieldCheckBox;
-  private javax.swing.JCheckBox returnCheckBox;
-  private javax.swing.JCheckBox setCheckBox;
-  private javax.swing.JCheckBox supportCheckBox;
-  private javax.swing.JPanel nonIndexOptionsPanel;
-  private javax.swing.JCheckBox niGetterCheckBox;
-  private javax.swing.JCheckBox niReturnCheckBox;
-  private javax.swing.JCheckBox niSetterCheckBox;
-  private javax.swing.JCheckBox niSetCheckBox;
-  // End of variables declaration//GEN-END:variables
+        add (mainPanel, java.awt.BorderLayout.CENTER);
 
-  class Result  {
-    String name;
-    String type;
-    int mode = PropertyPattern.READ_WRITE;
-    boolean bound = false;
-    boolean constrained = false;
-    boolean withField = false;
-    boolean withReturn = false;
-    boolean withSet = false;
-    boolean withSupport = false;
+    }//GEN-END:initComponents
 
-    boolean niGetter = false;
-    boolean niWithReturn = false;
-    boolean niSetter = false;
-    boolean niWithSet = false;
-  }
+    private void niSetterCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_niSetterCheckBoxActionPerformed
+        protectControls();
+    }//GEN-LAST:event_niSetterCheckBoxActionPerformed
 
-  IdxPropertyPatternPanel.Result getResult( ) {
-    Result result = new Result();
+    private void niGetterCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_niGetterCheckBoxActionPerformed
+        protectControls();
+    }//GEN-LAST:event_niGetterCheckBoxActionPerformed
 
-    result.name = nameTextField.getText();
-    result.type = typeComboBox.getEditor().getItem().toString();
-    if ( modeComboBox.getSelectedItem().toString().equals( modes[1] ) )
-      result.mode = PropertyPattern.READ_ONLY;
-    else if ( modeComboBox.getSelectedItem().toString().equals( modes[2] ) )
-      result.mode = PropertyPattern.WRITE_ONLY;
-    else
-      result.mode = PropertyPattern.READ_WRITE;
+    private void fieldCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fieldCheckBoxActionPerformed
+        protectControls();
+    }//GEN-LAST:event_fieldCheckBoxActionPerformed
 
-    if ( boundCheckBox.isSelected() )
-      result.bound = true;
+    private void constrainedCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_constrainedCheckBoxActionPerformed
+        protectControls();
+    }//GEN-LAST:event_constrainedCheckBoxActionPerformed
 
-    if ( constrainedCheckBox.isSelected() )
-      result.constrained = true;
+    private void boundCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boundCheckBoxActionPerformed
+        protectControls();
+    }//GEN-LAST:event_boundCheckBoxActionPerformed
 
-    if ( fieldCheckBox.isSelected() )
-      result.withField = true;
+    private void modeComboBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modeComboBoxActionPerformed
+        protectControls();
+    }//GEN-LAST:event_modeComboBoxActionPerformed
 
-    if ( returnCheckBox.isSelected() )
-      result.withReturn = true;
 
-    if ( setCheckBox.isSelected() )
-      result.withSet = true;
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel mainPanel;
+    private javax.swing.JPanel propertyPanel;
+    private javax.swing.JLabel nameLabel;
+    private javax.swing.JTextField nameTextField;
+    private javax.swing.JLabel typeLabel;
+    private javax.swing.JComboBox typeComboBox;
+    private javax.swing.JLabel modeLabel;
+    private javax.swing.JComboBox modeComboBox;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JCheckBox boundCheckBox;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JCheckBox constrainedCheckBox;
+    private javax.swing.JPanel optionsPanel;
+    private javax.swing.JCheckBox fieldCheckBox;
+    private javax.swing.JCheckBox returnCheckBox;
+    private javax.swing.JCheckBox setCheckBox;
+    private javax.swing.JCheckBox supportCheckBox;
+    private javax.swing.JPanel nonIndexOptionsPanel;
+    private javax.swing.JCheckBox niGetterCheckBox;
+    private javax.swing.JCheckBox niReturnCheckBox;
+    private javax.swing.JCheckBox niSetterCheckBox;
+    private javax.swing.JCheckBox niSetCheckBox;
+    // End of variables declaration//GEN-END:variables
 
-    if ( supportCheckBox.isSelected() )
-      result.withSupport = true;
+    class Result  {
+        String name;
+        String type;
+        int mode = PropertyPattern.READ_WRITE;
+        boolean bound = false;
+        boolean constrained = false;
+        boolean withField = false;
+        boolean withReturn = false;
+        boolean withSet = false;
+        boolean withSupport = false;
 
-    if ( niGetterCheckBox.isSelected() )
-      result.niGetter = true;
-
-    if ( niReturnCheckBox.isSelected() )
-      result.niWithReturn = true;
-
-    if ( niSetterCheckBox.isSelected() )
-      result.niSetter = true;
-
-    if ( niSetCheckBox.isSelected() )
-      result.niWithSet = true;
-
-    return result;
-  }
-
-  /** This method is called when ocuures the possibilty that any
-  * xontrol should be enabled or disabled.
-  */
-  private void protectControls() {
-    Result result = getResult();
-    
-    fieldCheckBox.setEnabled( !forInterface );
-    
-    returnCheckBox.setEnabled( 
-                        ( result.mode == PropertyPattern.READ_WRITE ||
-                         result.mode == PropertyPattern.READ_ONLY ) &&
-                         result.withField && !forInterface ); 
-    
-    setCheckBox.setEnabled( 
-                         ( result.mode == PropertyPattern.READ_WRITE ||
-                         result.mode == PropertyPattern.WRITE_ONLY ) &&
-                         result.withField && !forInterface ); 
-    
-    supportCheckBox.setEnabled( ( result.bound || result.constrained ) && !forInterface );
-    
-    niGetterCheckBox.setEnabled( !forInterface );
-    niSetterCheckBox.setEnabled( !forInterface );
-    
-    niReturnCheckBox.setEnabled( result.niGetter && !forInterface );
-    niSetCheckBox.setEnabled( result.niSetter && !forInterface );
-  }
-  
-  void setDialog( Dialog dialog ) {
-    this.dialog = dialog;
-  }
-
-  void setForInterface( boolean forInterface ) {
-    this.forInterface = forInterface;
-    protectControls();
-  }
-  
-  void setGroupNode( PatternGroupNode groupNode ) {
-    this.groupNode = groupNode;
-  }
-  
-  public void actionPerformed( java.awt.event.ActionEvent e ) {
-    if ( dialog != null ) {
-      
-      if ( e.getActionCommand().equals( "OK" ) ) { // NOI18N
-                  //Test wether the string is empty 
-         if ( typeComboBox.getEditor().getItem().toString().trim().length() <= 0) {
-           TopManager.getDefault().notify(
-              new NotifyDescriptor.Message(
-                                      bundle.getString("MSG_Not_Valid_Type"),
-                                      NotifyDescriptor.ERROR_MESSAGE) );
-           typeComboBox.requestFocus();
-           return;
-         } 
-
-         if ( !Utilities.isJavaIdentifier( nameTextField.getText() ) ) {
-           TopManager.getDefault().notify(
-              new NotifyDescriptor.Message(
-                                      bundle.getString("MSG_Not_Valid_Identifier"),
-                                      NotifyDescriptor.ERROR_MESSAGE) );
-           nameTextField.requestFocus();
-           return;
-         }
-
-         // Test wheter property with this name already exists 
-         if ( groupNode.propertyExists( nameTextField.getText() ) ) {
-           String msg = MessageFormat.format( bundle.getString("MSG_Property_Exists"),
-                                              new Object[] { nameTextField.getText() } );
-           TopManager.getDefault().notify(
-             new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) ); 
-           
-           nameTextField.requestFocus();
-           return;          
-         }
-
-         try {
-          Type type = Type.parse( typeComboBox.getEditor().getItem().toString() );
-         } 
-         catch ( IllegalArgumentException ex ) {
-           TopManager.getDefault().notify(
-              new NotifyDescriptor.Message(
-                                      bundle.getString("MSG_Not_Valid_Type"),
-                                      NotifyDescriptor.ERROR_MESSAGE) );
-           typeComboBox.requestFocus();
-           return;
-         } 
-
-       }
-      dialog.setVisible( false );
-      dialog.dispose();
+        boolean niGetter = false;
+        boolean niWithReturn = false;
+        boolean niSetter = false;
+        boolean niWithSet = false;
     }
-  } 
-  
+
+    IdxPropertyPatternPanel.Result getResult( ) {
+        Result result = new Result();
+
+        result.name = nameTextField.getText();
+        result.type = typeComboBox.getEditor().getItem().toString();
+        if ( modeComboBox.getSelectedItem().toString().equals( modes[1] ) )
+            result.mode = PropertyPattern.READ_ONLY;
+        else if ( modeComboBox.getSelectedItem().toString().equals( modes[2] ) )
+            result.mode = PropertyPattern.WRITE_ONLY;
+        else
+            result.mode = PropertyPattern.READ_WRITE;
+
+        if ( boundCheckBox.isSelected() )
+            result.bound = true;
+
+        if ( constrainedCheckBox.isSelected() )
+            result.constrained = true;
+
+        if ( fieldCheckBox.isSelected() )
+            result.withField = true;
+
+        if ( returnCheckBox.isSelected() )
+            result.withReturn = true;
+
+        if ( setCheckBox.isSelected() )
+            result.withSet = true;
+
+        if ( supportCheckBox.isSelected() )
+            result.withSupport = true;
+
+        if ( niGetterCheckBox.isSelected() )
+            result.niGetter = true;
+
+        if ( niReturnCheckBox.isSelected() )
+            result.niWithReturn = true;
+
+        if ( niSetterCheckBox.isSelected() )
+            result.niSetter = true;
+
+        if ( niSetCheckBox.isSelected() )
+            result.niWithSet = true;
+
+        return result;
+    }
+
+    /** This method is called when ocuures the possibilty that any
+    * xontrol should be enabled or disabled.
+    */
+    private void protectControls() {
+        Result result = getResult();
+
+        fieldCheckBox.setEnabled( !forInterface );
+
+        returnCheckBox.setEnabled(
+                  ( result.mode == PropertyPattern.READ_WRITE ||
+                    result.mode == PropertyPattern.READ_ONLY ) &&
+                  result.withField && !forInterface );
+
+        setCheckBox.setEnabled(
+            ( result.mode == PropertyPattern.READ_WRITE ||
+              result.mode == PropertyPattern.WRITE_ONLY ) &&
+            result.withField && !forInterface );
+
+        supportCheckBox.setEnabled( ( result.bound || result.constrained ) && !forInterface );
+
+        niGetterCheckBox.setEnabled( !forInterface );
+        niSetterCheckBox.setEnabled( !forInterface );
+
+        niReturnCheckBox.setEnabled( result.niGetter && !forInterface );
+        niSetCheckBox.setEnabled( result.niSetter && !forInterface );
+    }
+
+    void setDialog( Dialog dialog ) {
+        this.dialog = dialog;
+    }
+
+    void setForInterface( boolean forInterface ) {
+        this.forInterface = forInterface;
+        protectControls();
+    }
+
+    void setGroupNode( PatternGroupNode groupNode ) {
+        this.groupNode = groupNode;
+    }
+
+    public void actionPerformed( java.awt.event.ActionEvent e ) {
+        if ( dialog != null ) {
+
+            if ( e.getActionCommand().equals( "OK" ) ) { // NOI18N
+                //Test wether the string is empty
+                if ( typeComboBox.getEditor().getItem().toString().trim().length() <= 0) {
+                    TopManager.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            bundle.getString("MSG_Not_Valid_Type"),
+                            NotifyDescriptor.ERROR_MESSAGE) );
+                    typeComboBox.requestFocus();
+                    return;
+                }
+
+                if ( !Utilities.isJavaIdentifier( nameTextField.getText() ) ) {
+                    TopManager.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            bundle.getString("MSG_Not_Valid_Identifier"),
+                            NotifyDescriptor.ERROR_MESSAGE) );
+                    nameTextField.requestFocus();
+                    return;
+                }
+
+                // Test wheter property with this name already exists
+                if ( groupNode.propertyExists( nameTextField.getText() ) ) {
+                    String msg = MessageFormat.format( bundle.getString("MSG_Property_Exists"),
+                                                       new Object[] { nameTextField.getText() } );
+                    TopManager.getDefault().notify(
+                        new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
+
+                    nameTextField.requestFocus();
+                    return;
+                }
+
+                try {
+                    Type type = Type.parse( typeComboBox.getEditor().getItem().toString() );
+                }
+                catch ( IllegalArgumentException ex ) {
+                    TopManager.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            bundle.getString("MSG_Not_Valid_Type"),
+                            NotifyDescriptor.ERROR_MESSAGE) );
+                    typeComboBox.requestFocus();
+                    return;
+                }
+
+            }
+            dialog.setVisible( false );
+            dialog.dispose();
+        }
+    }
+
 }
 
 /*

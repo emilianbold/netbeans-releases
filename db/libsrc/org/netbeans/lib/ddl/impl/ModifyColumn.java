@@ -17,7 +17,7 @@ import java.util.*;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 
-/** 
+/**
 * Interface of database action command. Instances should remember connection 
 * information of DatabaseSpecification and use it in execute() method. This is a base interface
 * used heavily for sub-interfacing (it is not subclassing :)
@@ -25,20 +25,20 @@ import org.netbeans.lib.ddl.impl.*;
 * @author Slavek Psenicka
 */
 
-public class ModifyColumn extends ColumnCommand 
+public class ModifyColumn extends ColumnCommand
 {
-static final long serialVersionUID =2870433389508513811L;
-	public AbstractTableColumn specifyColumn(String type, String name)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		return specifyColumn(type, name, Specification.MODIFY_COLUMN);
-	}
+    static final long serialVersionUID =2870433389508513811L;
+    public AbstractTableColumn specifyColumn(String type, String name)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        return specifyColumn(type, name, Specification.MODIFY_COLUMN);
+    }
 
-	public AbstractTableColumn specifyColumn(String name)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		return specifyColumn(TableColumn.COLUMN, name, Specification.MODIFY_COLUMN);
-	}
+    public AbstractTableColumn specifyColumn(String name)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        return specifyColumn(TableColumn.COLUMN, name, Specification.MODIFY_COLUMN);
+    }
 }
 
 /*

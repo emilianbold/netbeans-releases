@@ -23,15 +23,15 @@ import java.awt.peer.ScrollbarPeer;
 
 class FakeScrollbarPeer extends FakeComponentPeer implements ScrollbarPeer
 {
-  FakeScrollbarPeer(Scrollbar target) {
-    super(target);
-  }
+    FakeScrollbarPeer(Scrollbar target) {
+        super(target);
+    }
 
-  Component createDelegate() {
-    return new Delegate();
-  }
+    Component createDelegate() {
+        return new Delegate();
+    }
 
-  public void setValues(int value, int visible, int minimum, int maximum) {}
-  public void setLineIncrement(int l) {}
-  public void setPageIncrement(int l) {}
+    public void setValues(int value, int visible, int minimum, int maximum) {}
+    public void setLineIncrement(int l) {}
+    public void setPageIncrement(int l) {}
 }

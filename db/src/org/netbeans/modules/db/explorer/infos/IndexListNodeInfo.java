@@ -26,87 +26,87 @@ import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class IndexListNodeInfo extends DatabaseNodeInfo
 {
-  static final long serialVersionUID =5809643799834921044L;
-  
-  public void initChildren(Vector children) throws DatabaseException {
-    try {
-      DatabaseMetaData dmd = getSpecification().getMetaData();
-      String catalog = (String)get(DatabaseNode.CATALOG);
-      String table = (String)get(DatabaseNode.TABLE);
+    static final long serialVersionUID =5809643799834921044L;
 
-      DriverSpecification drvSpec = getDriverSpecification();
-      drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+    public void initChildren(Vector children) throws DatabaseException {
+        try {
+            DatabaseMetaData dmd = getSpecification().getMetaData();
+            String catalog = (String)get(DatabaseNode.CATALOG);
+            String table = (String)get(DatabaseNode.TABLE);
 
-//      boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
-      boolean jdbcOdbcBridge = (((((String)get(DatabaseNode.DRIVER)).trim().equals("sun.jdbc.odbc.JdbcOdbcDriver")) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
-      
-      if (drvSpec.rs != null) {
-        Set ixmap = new HashSet();
-        while (drvSpec.rs.next()) {
-          if (jdbcOdbcBridge)
-            drvSpec.rsTemp.next();
-          if (drvSpec.rs.getString("INDEX_NAME") != null) {
-            IndexNodeInfo info;
-            if (jdbcOdbcBridge)
-              info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rsTemp);
-            else
-              info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rs);
-            
-            if (info != null) {
-              if (!ixmap.contains(info.getName())) {
-                ixmap.add(info.getName());
-                info.put("index", info.getName());
-                children.add(info);
-              }
-            } else
-              throw new Exception("unable to create node information for index");
-          }
+            DriverSpecification drvSpec = getDriverSpecification();
+            drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+
+            //      boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
+            boolean jdbcOdbcBridge = (((((String)get(DatabaseNode.DRIVER)).trim().equals("sun.jdbc.odbc.JdbcOdbcDriver")) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
+
+            if (drvSpec.rs != null) {
+                Set ixmap = new HashSet();
+                while (drvSpec.rs.next()) {
+                    if (jdbcOdbcBridge)
+                        drvSpec.rsTemp.next();
+                    if (drvSpec.rs.getString("INDEX_NAME") != null) {
+                        IndexNodeInfo info;
+                        if (jdbcOdbcBridge)
+                            info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rsTemp);
+                        else
+                            info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rs);
+
+                        if (info != null) {
+                            if (!ixmap.contains(info.getName())) {
+                                ixmap.add(info.getName());
+                                info.put("index", info.getName());
+                                children.add(info);
+                            }
+                        } else
+                            throw new Exception("unable to create node information for index");
+                    }
+                }
+                drvSpec.rs.close();
+                if (jdbcOdbcBridge)
+                    drvSpec.rsTemp.close();
+            }
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
         }
-        drvSpec.rs.close();
-        if (jdbcOdbcBridge)
-          drvSpec.rsTemp.close();
-      }
-    } catch (Exception e) {
-      throw new DatabaseException(e.getMessage());	
     }
-  }
-	
-	public void addIndex(String name)
-	throws DatabaseException
-	{
- 		try {
-			DatabaseMetaData dmd = getSpecification().getMetaData();
-			String catalog = (String)get(DatabaseNode.CATALOG);
-			String table = (String)get(DatabaseNode.TABLE);
 
-      DriverSpecification drvSpec = getDriverSpecification();
-      drvSpec.getIndexInfo(catalog, dmd, table, true, false);
-       boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
+    public void addIndex(String name)
+    throws DatabaseException
+    {
+        try {
+            DatabaseMetaData dmd = getSpecification().getMetaData();
+            String catalog = (String)get(DatabaseNode.CATALOG);
+            String table = (String)get(DatabaseNode.TABLE);
 
-			if (drvSpec.rs != null) {
-        while (drvSpec.rs.next()) {
-          if (jdbcOdbcBridge) drvSpec.rsTemp.next();
-          String findex = drvSpec.rs.getString("INDEX_NAME");
-          if (findex != null) {
-            if (findex.equals(name)) {
-              IndexNodeInfo info;
-              if (jdbcOdbcBridge)
-                info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rsTemp);
-              else
-                info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rs);
-              
-              if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
-            } 
-          }
+            DriverSpecification drvSpec = getDriverSpecification();
+            drvSpec.getIndexInfo(catalog, dmd, table, true, false);
+            boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
+
+            if (drvSpec.rs != null) {
+                while (drvSpec.rs.next()) {
+                    if (jdbcOdbcBridge) drvSpec.rsTemp.next();
+                    String findex = drvSpec.rs.getString("INDEX_NAME");
+                    if (findex != null) {
+                        if (findex.equals(name)) {
+                            IndexNodeInfo info;
+                            if (jdbcOdbcBridge)
+                                info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rsTemp);
+                            else
+                                info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, drvSpec.rs);
+
+                            if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
+                        }
+                    }
+                }
+                drvSpec.rs.close();
+                if (jdbcOdbcBridge) drvSpec.rsTemp.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new DatabaseException(e.getMessage());
         }
-        drvSpec.rs.close();
-        if (jdbcOdbcBridge) drvSpec.rsTemp.close();
-      }
- 		} catch (Exception e) {
- 			e.printStackTrace();
-			throw new DatabaseException(e.getMessage());	
-		}
-	}
+    }
 }
 
 /*

@@ -19,28 +19,28 @@ import org.openide.nodes.PropertySupport;
 
 public class DatabasePropertySupport extends PropertySupport
 {
-	protected Object repository;
-	
-	public DatabasePropertySupport(String name, Class type, String displayName, String shortDescription, Object rep, boolean writable) 
-	{
-		super(name, type, displayName, shortDescription, true, writable);
-		repository = rep;
-	}
-	
-    public Object getValue() 
-    throws IllegalAccessException, IllegalArgumentException 
-    {
-		String code = getName();
-		Object rval = ((DatabaseNodeInfo)repository).getProperty(code);
-		return rval;
-    }	
+    protected Object repository;
 
-    public void setValue(Object val) 
-    throws IllegalAccessException, IllegalArgumentException 
+    public DatabasePropertySupport(String name, Class type, String displayName, String shortDescription, Object rep, boolean writable)
     {
-		String code = getName();
-		((DatabaseNodeInfo)repository).setProperty(code, val);
-    }	
+        super(name, type, displayName, shortDescription, true, writable);
+        repository = rep;
+    }
+
+    public Object getValue()
+    throws IllegalAccessException, IllegalArgumentException
+    {
+        String code = getName();
+        Object rval = ((DatabaseNodeInfo)repository).getProperty(code);
+        return rval;
+    }
+
+    public void setValue(Object val)
+    throws IllegalAccessException, IllegalArgumentException
+    {
+        String code = getName();
+        ((DatabaseNodeInfo)repository).setProperty(code, val);
+    }
 }
 /*
  * <<Log>>

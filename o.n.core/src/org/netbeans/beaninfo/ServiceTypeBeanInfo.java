@@ -22,23 +22,23 @@ import org.openide.util.NbBundle;
 * @author Jesse Glick
 */
 public class ServiceTypeBeanInfo extends SimpleBeanInfo {
-  
-  public PropertyDescriptor[] getPropertyDescriptors () {
-    try {
-      PropertyDescriptor name = new PropertyDescriptor ("name", ServiceType.class); // NOI18N
-      name.setDisplayName (NbBundle.getBundle (ServiceTypeBeanInfo.class).getString ("PROP_ServiceType_name"));
-      name.setShortDescription (NbBundle.getBundle (ServiceTypeBeanInfo.class).getString ("HINT_ServiceType_name"));
-      // Is there an easier way to prevent this from appearing??
-      PropertyDescriptor helpCtx = new PropertyDescriptor ("helpCtx", ServiceType.class, "getHelpCtx", null); // NOI18N
-      helpCtx.setHidden (true);
-      return new PropertyDescriptor[] { name, helpCtx };
-    } catch (IntrospectionException ie) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-        ie.printStackTrace ();
-      return null;
+
+    public PropertyDescriptor[] getPropertyDescriptors () {
+        try {
+            PropertyDescriptor name = new PropertyDescriptor ("name", ServiceType.class); // NOI18N
+            name.setDisplayName (NbBundle.getBundle (ServiceTypeBeanInfo.class).getString ("PROP_ServiceType_name"));
+            name.setShortDescription (NbBundle.getBundle (ServiceTypeBeanInfo.class).getString ("HINT_ServiceType_name"));
+            // Is there an easier way to prevent this from appearing??
+            PropertyDescriptor helpCtx = new PropertyDescriptor ("helpCtx", ServiceType.class, "getHelpCtx", null); // NOI18N
+            helpCtx.setHidden (true);
+            return new PropertyDescriptor[] { name, helpCtx };
+        } catch (IntrospectionException ie) {
+            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+                ie.printStackTrace ();
+            return null;
+        }
     }
-  }
-  
+
 }
 
 /*

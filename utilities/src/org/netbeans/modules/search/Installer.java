@@ -23,7 +23,7 @@ import org.openidex.util.*;
 import org.netbeans.modules.search.res.*;
 import org.netbeans.modules.search.types.*;
 
-/** 
+/**
 * During restored() hooks SearchPresenter on FindAction. 
 * During uninstalled() frees such hook.
 * Add RepositorySearchAction to Tools menu.
@@ -33,100 +33,100 @@ import org.netbeans.modules.search.types.*;
 */
 public class Installer extends ModuleInstall {
 
-  private final static long serialVersionUID = 1;
-  
-  // place itself in
-  private final String MENU = "Tools"; // NOI18N
-  // place itself behind
-  private final String MENUITEM = "UnmountFSAction"; // NOI18N
+    private final static long serialVersionUID = 1;
 
-  /** Holds hooking code. */
-  private SearchHook hook;
+    // place itself in
+    private final String MENU = "Tools"; // NOI18N
+    // place itself behind
+    private final String MENUITEM = "UnmountFSAction"; // NOI18N
 
-  /** Install in tools menu. Place after "UnmountFSAction" separated by separator.
-  */
-  public void installed() {
+    /** Holds hooking code. */
+    private SearchHook hook;
 
-    try {
-      
-      Utilities2.createAction (
-        RepositorySearchAction.class, 
-        DataFolder.create (
-          TopManager.getDefault ().getPlaces ().folders ().menus (), 
-          MENU
-        ), 
-        MENUITEM, true, true, false, false
-      );
+    /** Install in tools menu. Place after "UnmountFSAction" separated by separator.
+    */
+    public void installed() {
+
+        try {
+
+            Utilities2.createAction (
+                RepositorySearchAction.class,
+                DataFolder.create (
+                    TopManager.getDefault ().getPlaces ().folders ().menus (),
+                    MENU
+                ),
+                MENUITEM, true, true, false, false
+            );
 
 
-      // add to action pool
-      
-      Utilities2.createAction (
-        RepositorySearchAction.class,
-        DataFolder.create (
-          TopManager.getDefault ().getPlaces ().folders ().actions (), 
-          MENU
-        )
-      );
-    
-    } catch (Exception ex) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) 
-        ex.printStackTrace ();      
+            // add to action pool
+
+            Utilities2.createAction (
+                RepositorySearchAction.class,
+                DataFolder.create (
+                    TopManager.getDefault ().getPlaces ().folders ().actions (),
+                    MENU
+                )
+            );
+
+        } catch (Exception ex) {
+            if (System.getProperty ("netbeans.debug.exceptions") != null)
+                ex.printStackTrace ();
+        }
+
+        // define default criteria tab order
+        Registry.reorderBy(new Class[] {ObjectNameType.class, FullTextType.class, ObjectTypeType.class, ModificationDateType.class} );
+
+        restored();
     }
 
-    // define default criteria tab order
-    Registry.reorderBy(new Class[] {ObjectNameType.class, FullTextType.class, ObjectTypeType.class, ModificationDateType.class} );
-    
-    restored();
-  }
-  
-  /** Start listening at SELECTED_NODES.
-  */
-  public void restored () {
-    
-    // TODO listen on new project
-    Registry.reorderBy(new Class[] {ObjectNameType.class, FullTextType.class, ObjectTypeType.class, ModificationDateType.class} );
-    
-    SearchEngine.setDefault (new SearchEngineImpl ());
-    
-    hook = new SearchHook(new SearchPerformer());
-    hook.hook();   
-  }
-  
-  /** Unhook listening at SELECTED_NODES and remove itself from menu.
-  */
-  public void uninstalled () {
-    try {
-      hook.unhook();
-      
-      Utilities2.removeAction (
-        RepositorySearchAction.class, 
-        DataFolder.create (
-          TopManager.getDefault ().getPlaces ().folders ().menus (), 
-          MENU
-        )
-      );
-      
-      // remove from actions pool
-      
-      Utilities2.removeAction (
-        RepositorySearchAction.class,
-        DataFolder.create (
-          TopManager.getDefault ().getPlaces ().folders ().actions (), 
-          MENU
-        )
-      );
-      
-    } catch (Exception ex) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-        ex.printStackTrace ();         
+    /** Start listening at SELECTED_NODES.
+    */
+    public void restored () {
+
+        // TODO listen on new project
+        Registry.reorderBy(new Class[] {ObjectNameType.class, FullTextType.class, ObjectTypeType.class, ModificationDateType.class} );
+
+        SearchEngine.setDefault (new SearchEngineImpl ());
+
+        hook = new SearchHook(new SearchPerformer());
+        hook.hook();
     }
-  }
+
+    /** Unhook listening at SELECTED_NODES and remove itself from menu.
+    */
+    public void uninstalled () {
+        try {
+            hook.unhook();
+
+            Utilities2.removeAction (
+                RepositorySearchAction.class,
+                DataFolder.create (
+                    TopManager.getDefault ().getPlaces ().folders ().menus (),
+                    MENU
+                )
+            );
+
+            // remove from actions pool
+
+            Utilities2.removeAction (
+                RepositorySearchAction.class,
+                DataFolder.create (
+                    TopManager.getDefault ().getPlaces ().folders ().actions (),
+                    MENU
+                )
+            );
+
+        } catch (Exception ex) {
+            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+                ex.printStackTrace ();
+        }
+    }
 
 }
 
 
-/* 
+/*
 * Log
 *  12   Gandalf-post-FCS1.10.2.0    2/24/00  Ian Formanek    Post FCS changes
 *  11   Gandalf   1.10        1/16/00  Jesse Glick     Installing implementation
@@ -146,4 +146,4 @@ public class Installer extends ModuleInstall {
 *  1    Gandalf   1.0         12/14/99 Petr Kuzel      
 * $ 
 */ 
-  
+

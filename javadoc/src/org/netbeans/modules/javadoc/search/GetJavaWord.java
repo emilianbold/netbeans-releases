@@ -30,55 +30,55 @@ import javax.swing.text.JTextComponent;
 
 class GetJavaWord extends Object {
 
-  static String getCurrentJavaWord() {
+    static String getCurrentJavaWord() {
 
 
-    /*
-    if ( TopComponent.getRegistry().getActivated() == null )
-      return null;
-    */
-    Node[] n = TopComponent.getRegistry ().getActivatedNodes ();
-
-    if (n.length == 1) {
-      EditorCookie ec = (EditorCookie) n[0].getCookie (EditorCookie.class);
-      if (ec != null) {
-        JEditorPane[] panes = ec.getOpenedPanes ();
-        if ( panes == null )
+        /*
+        if ( TopComponent.getRegistry().getActivated() == null )
           return null;
-        if (panes.length > 0) {
-          int cursor = panes[0].getCaret ().getDot ();
-          String selection = panes[0].getSelectedText ();
-         
-          if ( selection != null && selection.length() > 0 )
-            return selection;
-          else {
-           
-            String text = panes[0].getText();
-            if ( text == null )
-              return null;
-            int pos = panes[0].getCaretPosition();
+        */
+        Node[] n = TopComponent.getRegistry ().getActivatedNodes ();
 
-            if ( pos < 0 || pos >= text.length() )
-              return null;
+        if (n.length == 1) {
+            EditorCookie ec = (EditorCookie) n[0].getCookie (EditorCookie.class);
+            if (ec != null) {
+                JEditorPane[] panes = ec.getOpenedPanes ();
+                if ( panes == null )
+                    return null;
+                if (panes.length > 0) {
+                    int cursor = panes[0].getCaret ().getDot ();
+                    String selection = panes[0].getSelectedText ();
 
-            int bix, eix;
+                    if ( selection != null && selection.length() > 0 )
+                        return selection;
+                    else {
 
-            for( bix = Character.isJavaIdentifierPart( text.charAt( pos ) ) ? pos : pos - 1; 
-                 bix >= 0 && Character.isJavaIdentifierPart( text.charAt( bix ) ); bix-- );
-            for( eix = pos; eix < text.length() && Character.isJavaIdentifierPart( text.charAt( eix )); eix++ );        
-       
-            return bix == eix ? null : text.substring( bix + 1, eix  );
-          }
+                        String text = panes[0].getText();
+                        if ( text == null )
+                            return null;
+                        int pos = panes[0].getCaretPosition();
+
+                        if ( pos < 0 || pos >= text.length() )
+                            return null;
+
+                        int bix, eix;
+
+                        for( bix = Character.isJavaIdentifierPart( text.charAt( pos ) ) ? pos : pos - 1;
+                                bix >= 0 && Character.isJavaIdentifierPart( text.charAt( bix ) ); bix-- );
+                        for( eix = pos; eix < text.length() && Character.isJavaIdentifierPart( text.charAt( eix )); eix++ );
+
+                        return bix == eix ? null : text.substring( bix + 1, eix  );
+                    }
+                }
+            }
         }
-      }
-    }
 
-   return null;
-  }
+        return null;
+    }
 }
 
 
-/* 
+/*
  * Log
  *  9    Gandalf   1.8         1/15/00  Petr Hrebejk    Wxeption on first char 
  *       fixed

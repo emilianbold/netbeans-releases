@@ -44,107 +44,107 @@ import org.netbeans.lib.ddl.*;
 */
 public class CommandBuffer
 {
-	/** Buffered items */
-	Vector commands;
+    /** Buffered items */
+    Vector commands;
 
-	/** Exception handler */
-	CommandBufferExceptionHandler handler;
+    /** Exception handler */
+    CommandBufferExceptionHandler handler;
 
-	/** Debug mode */
-	boolean debugmode;
+    /** Debug mode */
+    boolean debugmode;
 
-	/** Adds command to buffer
-	* @param cmd Command to add.
-	*/
-	public void add(DDLCommand cmd)
-	{
-		if (commands == null) commands = new Vector();
-		commands.add(cmd);
-	}
+    /** Adds command to buffer
+    * @param cmd Command to add.
+    */
+    public void add(DDLCommand cmd)
+    {
+        if (commands == null) commands = new Vector();
+        commands.add(cmd);
+    }
 
-	/** Sets exception handler.
-	* This handler will catch and alows user to solve all exception throwed during
-	* the executing of buffered commands.
-	*/
-	public void setExceptionHandler(CommandBufferExceptionHandler hand)
-	{
-		handler = hand;
-	}
+    /** Sets exception handler.
+    * This handler will catch and alows user to solve all exception throwed during
+    * the executing of buffered commands.
+    */
+    public void setExceptionHandler(CommandBufferExceptionHandler hand)
+    {
+        handler = hand;
+    }
 
-	/** Returns true if debugging mode is on. 
-	* You can set up debug mode and buffer will print each command to 
-	* System.out before execution.
-	*/
-	public boolean isDebugMode()
-	{
-		return debugmode;
-	}
-	
-	/** Sets debug mode on/off. 
-	* You can set up debug mode and buffer will print each command to 
-	* System.out before execution.
-	* @param flag true = debugging enabled
-	*/
-	public void setDebugMode(boolean flag)
-	{
-		debugmode = flag;
-	}
+    /** Returns true if debugging mode is on.
+    * You can set up debug mode and buffer will print each command to 
+    * System.out before execution.
+    */
+    public boolean isDebugMode()
+    {
+        return debugmode;
+    }
 
-	/** Returns a string with string representation of all commands in buffer
-	*/
-	public String getCommands()
-	throws DDLException
-	{
-		String cmds = "";
-		Enumeration cmd_e = commands.elements();
-		while (cmd_e.hasMoreElements()) {
-			DDLCommand e_cmd = (DDLCommand)cmd_e.nextElement();
-			cmds = cmds + e_cmd.getCommand() + "\n";
-		}
-		
-		return cmds;
-	}
-	
-	/** Executes commnds in buffer.
-	* Buffer opens JDBC connection before executing (if isn't already open)
-	* of first command and closes it after a last one. It's safely then manually 
-	* handling connection and better then leaving commands open and close connection 
-	* for each comand separately. You can also assign an exception handler to buffer. 
-	* When any error occures during the execution, this handler catches it and lets user to 
-	* decide if continue or not (when you're dropping nonexisting table, you probably 
-	* would like to continue).	
-	*/
-	public void execute()
-	throws DDLException
-	{
-		boolean opencon = false;
-		DatabaseSpecification spec = null;
-		Enumeration cmd_e = commands.elements();
-		while (cmd_e.hasMoreElements()) {
-			DDLCommand e_cmd = (DDLCommand)cmd_e.nextElement();
-			try {
-				if (spec == null) {
-					spec = e_cmd.getSpecification();
-					if (spec.getJDBCConnection() == null) {
-						opencon = true;
-						spec.openJDBCConnection();
-					}
-				}
-				if (debugmode) System.out.println(e_cmd);
-				e_cmd.execute();
-			} catch (Exception e) {
-//				e.printStackTrace();
-				boolean exres = false;
-				if (handler != null)
-          exres = handler.shouldContinueAfterException(e);
-				if (!exres)
-    			TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-//          throw new DDLException("command buffer fatal exception: "+e.getMessage());
-			}
-		}
-		
-		if (opencon) spec.closeJDBCConnection();
-	}
+    /** Sets debug mode on/off.
+    * You can set up debug mode and buffer will print each command to 
+    * System.out before execution.
+    * @param flag true = debugging enabled
+    */
+    public void setDebugMode(boolean flag)
+    {
+        debugmode = flag;
+    }
+
+    /** Returns a string with string representation of all commands in buffer
+    */
+    public String getCommands()
+    throws DDLException
+    {
+        String cmds = "";
+        Enumeration cmd_e = commands.elements();
+        while (cmd_e.hasMoreElements()) {
+            DDLCommand e_cmd = (DDLCommand)cmd_e.nextElement();
+            cmds = cmds + e_cmd.getCommand() + "\n";
+        }
+
+        return cmds;
+    }
+
+    /** Executes commnds in buffer.
+    * Buffer opens JDBC connection before executing (if isn't already open)
+    * of first command and closes it after a last one. It's safely then manually 
+    * handling connection and better then leaving commands open and close connection 
+    * for each comand separately. You can also assign an exception handler to buffer. 
+    * When any error occures during the execution, this handler catches it and lets user to 
+    * decide if continue or not (when you're dropping nonexisting table, you probably 
+    * would like to continue).	
+    */
+    public void execute()
+    throws DDLException
+    {
+        boolean opencon = false;
+        DatabaseSpecification spec = null;
+        Enumeration cmd_e = commands.elements();
+        while (cmd_e.hasMoreElements()) {
+            DDLCommand e_cmd = (DDLCommand)cmd_e.nextElement();
+            try {
+                if (spec == null) {
+                    spec = e_cmd.getSpecification();
+                    if (spec.getJDBCConnection() == null) {
+                        opencon = true;
+                        spec.openJDBCConnection();
+                    }
+                }
+                if (debugmode) System.out.println(e_cmd);
+                e_cmd.execute();
+            } catch (Exception e) {
+                //				e.printStackTrace();
+                boolean exres = false;
+                if (handler != null)
+                    exres = handler.shouldContinueAfterException(e);
+                if (!exres)
+                    TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                //          throw new DDLException("command buffer fatal exception: "+e.getMessage());
+            }
+        }
+
+        if (opencon) spec.closeJDBCConnection();
+    }
 }
 
 /*

@@ -30,31 +30,31 @@ import org.netbeans.modules.db.explorer.dlg.NewConnectionDialog;
 
 public class ConnectUsingDriverAction extends DatabaseAction
 {
-	private final static String CLASS_NOT_FOUND = "EXC_ClassNotFound";
-	private final static String BUNDLE_PATH = "org.netbeans.modules.db.resources.Bundle";
+    private final static String CLASS_NOT_FOUND = "EXC_ClassNotFound";
+    private final static String BUNDLE_PATH = "org.netbeans.modules.db.resources.Bundle";
 
-        static final long serialVersionUID =8245005834483564671L;
-	public void performAction(Node[] activatedNodes) 
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return;
-		try {
-			DriverNodeInfo info = (DriverNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-			ConnectionOwnerOperations nfo = (ConnectionOwnerOperations)info.getParent(nodename);
-			Vector drvs = RootNode.getOption().getAvailableDrivers();
-			DatabaseConnection cinfo = new DatabaseConnection();
-			cinfo.setDriverName(info.getName());
-			cinfo.setDriver(info.getURL());
-			NewConnectionDialog cdlg = new NewConnectionDialog(drvs, cinfo);
-			if (cdlg.run()) nfo.addConnection((DBConnection)cinfo);
-		} catch (ClassNotFoundException ex) {	
-			String message = MessageFormat.format(NbBundle.getBundle(BUNDLE_PATH).getString(CLASS_NOT_FOUND), new String[] {ex.getMessage()});
-			TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to add connection, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-		}
-	}
+    static final long serialVersionUID =8245005834483564671L;
+    public void performAction(Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return;
+        try {
+            DriverNodeInfo info = (DriverNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+            ConnectionOwnerOperations nfo = (ConnectionOwnerOperations)info.getParent(nodename);
+            Vector drvs = RootNode.getOption().getAvailableDrivers();
+            DatabaseConnection cinfo = new DatabaseConnection();
+            cinfo.setDriverName(info.getName());
+            cinfo.setDriver(info.getURL());
+            NewConnectionDialog cdlg = new NewConnectionDialog(drvs, cinfo);
+            if (cdlg.run()) nfo.addConnection((DBConnection)cinfo);
+        } catch (ClassNotFoundException ex) {
+            String message = MessageFormat.format(NbBundle.getBundle(BUNDLE_PATH).getString(CLASS_NOT_FOUND), new String[] {ex.getMessage()});
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+        } catch(Exception e) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to add connection, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
 }
 /*
  * <<Log>>

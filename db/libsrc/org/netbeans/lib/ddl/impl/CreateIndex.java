@@ -17,7 +17,7 @@ import java.util.*;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 
-/** 
+/**
 * Interface of database action command. Instances should remember connection 
 * information of DatabaseSpecification and use it in execute() method. This is a base interface
 * used heavily for sub-interfacing (it is not subclassing :)
@@ -25,35 +25,35 @@ import org.netbeans.lib.ddl.impl.*;
 * @author Slavek Psenicka
 */
 
-public class CreateIndex extends ColumnListCommand 
+public class CreateIndex extends ColumnListCommand
 {
-	/** Index name */
-	private String tablename;
-	
-static final long serialVersionUID =1899024699690380782L;
-	public String getIndexName()
-	{
-		return tablename;
-	}
-	
-	public void setIndexName(String tname)
-	{
-		tablename = tname;
-	}
+    /** Index name */
+    private String tablename;
 
-	public TableColumn specifyColumn(String name)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		return specifyColumn(TableColumn.COLUMN, name, Specification.CREATE_INDEX);
-	}
+    static final long serialVersionUID =1899024699690380782L;
+    public String getIndexName()
+    {
+        return tablename;
+    }
 
-	public Map getCommandProperties()
-	throws DDLException
-	{
-		Map args = super.getCommandProperties();
-		args.put("index.name", tablename);			
-		return args;	
-	}
+    public void setIndexName(String tname)
+    {
+        tablename = tname;
+    }
+
+    public TableColumn specifyColumn(String name)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        return specifyColumn(TableColumn.COLUMN, name, Specification.CREATE_INDEX);
+    }
+
+    public Map getCommandProperties()
+    throws DDLException
+    {
+        Map args = super.getCommandProperties();
+        args.put("index.name", tablename);
+        return args;
+    }
 }
 
 /*

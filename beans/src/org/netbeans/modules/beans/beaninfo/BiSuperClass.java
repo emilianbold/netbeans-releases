@@ -29,68 +29,68 @@ import org.openide.TopManager;
 class BiSuperClass extends Object {
 
 
-  /** Creates a ClassElement containing all methods from classElement and it's superclasses */
+    /** Creates a ClassElement containing all methods from classElement and it's superclasses */
 
-  static ClassElement createForClassElement( ClassElement classElement ) {
-    ClassElement result = new ClassElement();
+    static ClassElement createForClassElement( ClassElement classElement ) {
+        ClassElement result = new ClassElement();
 
-    try {
-      result.setName( classElement.getName() );
-    }
-    catch ( org.openide.src.SourceException e ) {
-      TopManager.getDefault().notifyException( e );
-    }
-
-    ClassElement ce = classElement;
-    int methodsAdded = 0;           // Workaround for getMethd
-
-
-    while ( ce != null ) {
-      MethodElement[] methods = ce.getMethods();
-
-      for( int i = 0; i < methods.length; i++ )  {
-    
-        if ( ( methods[i].getModifiers() & Modifier.PUBLIC ) == 0 ) 
-          continue;
-
-        if ( methodsAdded == 0 || result.getMethod( methods[i].getName(), getParameterTypes( methods[i] ) ) == null ) {
-          try {
-            result.addMethod( methods[i] );
-            methodsAdded ++;
-          }
-          catch ( org.openide.src.SourceException e ) {
-            TopManager.getDefault().notifyException( e );
-          }
+        try {
+            result.setName( classElement.getName() );
         }
-      }
-     
-      ce = ce.getSuperclass() == null ? null : ClassElement.forName( ce.getSuperclass().getFullName() );      
+        catch ( org.openide.src.SourceException e ) {
+            TopManager.getDefault().notifyException( e );
+        }
+
+        ClassElement ce = classElement;
+        int methodsAdded = 0;           // Workaround for getMethd
+
+
+        while ( ce != null ) {
+            MethodElement[] methods = ce.getMethods();
+
+            for( int i = 0; i < methods.length; i++ )  {
+
+                if ( ( methods[i].getModifiers() & Modifier.PUBLIC ) == 0 )
+                    continue;
+
+                if ( methodsAdded == 0 || result.getMethod( methods[i].getName(), getParameterTypes( methods[i] ) ) == null ) {
+                    try {
+                        result.addMethod( methods[i] );
+                        methodsAdded ++;
+                    }
+                    catch ( org.openide.src.SourceException e ) {
+                        TopManager.getDefault().notifyException( e );
+                    }
+                }
+            }
+
+            ce = ce.getSuperclass() == null ? null : ClassElement.forName( ce.getSuperclass().getFullName() );
+        }
+
+        /*
+        MethodElement[] methods = result.getMethods();
+        for( int i = 0; i < methods.length; i++ ) 
+          System.out.println ( methods[i].getName() );
+        */
+        return result;
     }
 
-    /*
-    MethodElement[] methods = result.getMethods();
-    for( int i = 0; i < methods.length; i++ ) 
-      System.out.println ( methods[i].getName() );
-    */
-    return result;
-  }
+    /** Returns array of parameter types  */
+    static Type[] getParameterTypes( MethodElement method ) {
+        MethodParameter[] params = method.getParameters();
 
-  /** Returns array of parameter types  */
-  static Type[] getParameterTypes( MethodElement method ) {
-    MethodParameter[] params = method.getParameters();
-    
-    Type[] result = new Type[ params.length ];
+        Type[] result = new Type[ params.length ];
 
-    for( int i = 0; i < params.length; i++ ) {
-      result[i] = params[i].getType();
+        for( int i = 0; i < params.length; i++ ) {
+            result[i] = params[i].getType();
+        }
+
+        return result;
     }
-
-    return result;
-  }
 
 }
 
-/* 
+/*
  * Log
  *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

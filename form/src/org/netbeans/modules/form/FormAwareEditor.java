@@ -20,15 +20,15 @@ package org.netbeans.modules.form;
 */
 public interface FormAwareEditor {
 
-  /** If a property editor or customizer implements the FormAwareEditor
-  * interface, this method is called immediately after the PropertyEditor
-  * instance is created or the Customizer is obtained from getCustomizer ().
-  * @param component The RADComponent representing the JavaBean being edited by this 
-  *                  property editor or customizer
-  * @param property  The RADProperty being edited by this property editor or null 
-  *                  if this interface is implemented by a customizer
-  */
-  public void setRADComponent (RADComponent component, RADComponent.RADProperty property);
+    /** If a property editor or customizer implements the FormAwareEditor
+    * interface, this method is called immediately after the PropertyEditor
+    * instance is created or the Customizer is obtained from getCustomizer ().
+    * @param component The RADComponent representing the JavaBean being edited by this 
+    *                  property editor or customizer
+    * @param property  The RADProperty being edited by this property editor or null 
+    *                  if this interface is implemented by a customizer
+    */
+    public void setRADComponent (RADComponent component, RADComponent.RADProperty property);
 }
 
 /*

@@ -27,40 +27,40 @@ import org.openide.text.PrintSettings;
 */
 public class AllOptions extends ContextSystemOption {
 
-  static final long serialVersionUID =-5703125420292694573L;
-  
-  BaseOptions baseOptions = new BaseOptions(); // base kit settings
-  
-  public AllOptions() {
-    addOption(new PlainOptions());
-    addOption(new JavaOptions());
-    addOption(new HTMLOptions());
+    static final long serialVersionUID =-5703125420292694573L;
 
-    PrintSettings ps = (PrintSettings) PrintSettings.findObject(PrintSettings.class, true);
-    ps.addOption(new PlainPrintOptions());
-    ps.addOption(new JavaPrintOptions());
-    ps.addOption(new HTMLPrintOptions());
-  }
+    BaseOptions baseOptions = new BaseOptions(); // base kit settings
 
-  public String displayName() {
-    return NbBundle.getBundle(AllOptions.class).getString("OPTIONS_all"); // NOI18N
-  }
+    public AllOptions() {
+        addOption(new PlainOptions());
+        addOption(new JavaOptions());
+        addOption(new HTMLOptions());
 
-  public HelpCtx getHelpCtx () {
-    return new HelpCtx (AllOptions.class);
-  }
-  
-  public List getKeyBindingList() {
-    return baseOptions.getKeyBindingList();
-  }
+        PrintSettings ps = (PrintSettings) PrintSettings.findObject(PrintSettings.class, true);
+        ps.addOption(new PlainPrintOptions());
+        ps.addOption(new JavaPrintOptions());
+        ps.addOption(new HTMLPrintOptions());
+    }
 
-  public void setKeyBindingList(List list) {
-    baseOptions.setKeyBindingList(list);
-  }
+    public String displayName() {
+        return NbBundle.getBundle(AllOptions.class).getString("OPTIONS_all"); // NOI18N
+    }
 
-  public boolean isGlobal() {
-    return true;
-  }
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx (AllOptions.class);
+    }
+
+    public List getKeyBindingList() {
+        return baseOptions.getKeyBindingList();
+    }
+
+    public void setKeyBindingList(List list) {
+        baseOptions.setKeyBindingList(list);
+    }
+
+    public boolean isGlobal() {
+        return true;
+    }
 
 }
 

@@ -25,199 +25,199 @@ import org.openide.execution.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 
-/** Service type panel for viewing, selecting and configuring 
+/** Service type panel for viewing, selecting and configuring
 * of executors and other services.
 *
 * @author Jaroslav Tulach
 */
 public class ServiceTypePanel extends ExplorerPanel {
-  /** the super class of objects that we display.
-  */
-  private Class clazz;
-  
-  /** list of all services */
-  private List services;
-  
-  /** @see ServiceTypeEditor#none */
-  private ServiceType none;
-  
-  static final long serialVersionUID =861345226525021334L;
-  /** Creates new Panel PropertyEditor
-  * @param clazz the super class of objects that we display
-  * @param name string to name the panel with
-  * @param none no-op type, or null
-  */
-  public ServiceTypePanel(Class clazz, String name, ServiceType none) {
-    this.clazz = clazz;
-    this.none = none;
-    update ();
-    
-    initComponents ();
-    
-    setBorder (new javax.swing.border.TitledBorder(name));
-    
-    getExplorerManager ().addPropertyChangeListener (new java.beans.PropertyChangeListener () {
-      public void propertyChange (java.beans.PropertyChangeEvent ev) { 
+    /** the super class of objects that we display.
+    */
+    private Class clazz;
+
+    /** list of all services */
+    private List services;
+
+    /** @see ServiceTypeEditor#none */
+    private ServiceType none;
+
+    static final long serialVersionUID =861345226525021334L;
+    /** Creates new Panel PropertyEditor
+    * @param clazz the super class of objects that we display
+    * @param name string to name the panel with
+    * @param none no-op type, or null
+    */
+    public ServiceTypePanel(Class clazz, String name, ServiceType none) {
+        this.clazz = clazz;
+        this.none = none;
+        update ();
+
+        initComponents ();
+
+        setBorder (new javax.swing.border.TitledBorder(name));
+
+        getExplorerManager ().addPropertyChangeListener (new java.beans.PropertyChangeListener () {
+                    public void propertyChange (java.beans.PropertyChangeEvent ev) {
+                        firePropertyChange ();
+                    }
+                });
+    }
+
+    public HelpCtx getHelpCtx () {
+        return getHelpCtx (getExplorerManager ().getSelectedNodes (),
+                           new HelpCtx (ServiceTypePanel.class));
+    }
+
+    /** Sets the selected value of the component.
+    */
+    public void setServiceType (ServiceType s) {
+        int i = services.indexOf (s);
+
+        if (i < 0) i = 0;
+
+        Node[] nodes = getExplorerManager ().getRootContext ().getChildren ().getNodes ();
+        if (i >= nodes.length) return;
+
+        try {
+            getExplorerManager ().setSelectedNodes (new Node[] {
+                                                        nodes[i]
+                                                    });
+        } catch (java.beans.PropertyVetoException ex) {
+            throw new InternalError();
+        }
+
         firePropertyChange ();
-      }
-    });
-  }
-  
-  public HelpCtx getHelpCtx () {
-    return getHelpCtx (getExplorerManager ().getSelectedNodes (),
-                       new HelpCtx (ServiceTypePanel.class));
-  }
-
-  /** Sets the selected value of the component.
-  */
-  public void setServiceType (ServiceType s) {
-    int i = services.indexOf (s);
-    
-    if (i < 0) i = 0;
-    
-    Node[] nodes = getExplorerManager ().getRootContext ().getChildren ().getNodes ();
-    if (i >= nodes.length) return;
-    
-    try {
-      getExplorerManager ().setSelectedNodes (new Node[] { 
-        nodes[i]
-      });
-    } catch (java.beans.PropertyVetoException ex) {
-      throw new InternalError();
     }
-    
-    firePropertyChange ();
-  }
 
-  /** Sets the selected value of the component.
-  * @return selected type or null
-  */
-  public ServiceType getServiceType () {
-    Node[] arr = getExplorerManager ().getSelectedNodes ();
-    if (arr.length > 0) {
-      return ((MN) arr[0]).getServiceType ();
-    }
-    return null;
-  }
-  
-  /** Fires property change.
-  */
-  void firePropertyChange () {
-    firePropertyChange ("serviceType", null, null); // NOI18N
-  }
-  
-  /** Updates the current state of the explorer manager.
-  */
-  private void update () {
-    Children ch = new Children.Array ();
-    AbstractNode n = new AbstractNode (ch);
-    
-    ch.add ((Node[])nodes ().toArray (new Node[0]));
-    
-    getExplorerManager ().setRootContext (n);
-  }
-  
-  /** Computes the list of nodes that should represent all services classes 
-  * of the given type.
-  *
-  * @return list of Nodes
-  */
-  private List nodes () {
-    services = new ArrayList (20);
-    List l = new LinkedList ();
-    Enumeration en = TopManager.getDefault ().getServices ().services (clazz);
-    while (en.hasMoreElements ()) {
-      try {
-        Object service = en.nextElement ();
-        l.add (new MN ((ServiceType)service));
-        
-        services.add (service);
-      } catch (java.beans.IntrospectionException ex) {
-      }
-    }
-    try {
-      if (none != null) {
-        l.add (new MN (none));
-        services.add (none);
-      }
-    } catch (java.beans.IntrospectionException ex) {
-    }
-    return l;
-  }
-
-  /** This method is called from within the constructor to
-   * initialize the form.
-   * WARNING: Do NOT modify this code. The content of this method is
-   * always regenerated by the FormEditor.
-   */
-  private void initComponents () {//GEN-BEGIN:initComponents
-    setLayout (new java.awt.BorderLayout ());
-    setPreferredSize (new java.awt.Dimension(480, 320));
-
-    listView1 = new org.openide.explorer.view.ListView ();
-    listView1.setTraversalAllowed (false);
-    listView1.setSelectionMode (1);
-    listView1.setPopupAllowed (false);
-
-
-    add (listView1, "Center"); // NOI18N
-
-    propertySheetView1 = new org.openide.explorer.propertysheet.PropertySheetView ();
-
-
-    add (propertySheetView1, "East"); // NOI18N
-
-  }//GEN-END:initComponents
-
-
-  private void removeButtonPressed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonPressed
-   }//GEN-LAST:event_removeButtonPressed
-
-  private void addButtonPressed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonPressed
-  }//GEN-LAST:event_addButtonPressed
-
-
-  // Variables declaration - do not modify//GEN-BEGIN:variables
-  private org.openide.explorer.view.ListView listView1;
-  private org.openide.explorer.propertysheet.PropertySheetView propertySheetView1;
-  // End of variables declaration//GEN-END:variables
-
-  private static final class MN extends BeanNode {
-    public MN (ServiceType t) throws java.beans.IntrospectionException {
-      super (t);
-    }
-    
+    /** Sets the selected value of the component.
+    * @return selected type or null
+    */
     public ServiceType getServiceType () {
-      return (ServiceType)getBean ();
+        Node[] arr = getExplorerManager ().getSelectedNodes ();
+        if (arr.length > 0) {
+            return ((MN) arr[0]).getServiceType ();
+        }
+        return null;
     }
-    
-    // Prevent folks from changing the name here!
-    public Node.PropertySet[] getPropertySets () {
-      final Node.PropertySet[] sets = super.getPropertySets ();
-      Node.PropertySet[] nue = new Node.PropertySet[sets.length];
-      for (int i = 0; i < sets.length; i++) {
-        final int ii = i;
-        nue[i] = new Node.PropertySet () {
-          {
-            setName (sets[ii].getName ());
-            setDisplayName (sets[ii].getDisplayName ());
-            setShortDescription (sets[ii].getShortDescription ());
-          }
-          public Node.Property[] getProperties () {
-            Node.Property[] props = sets[ii].getProperties ();
-            List nueprops = new ArrayList ();
-            for (int j = 0; j < props.length; j++)
-              if (! props[j].getName ().equals ("name")) // NOI18N
-                nueprops.add (props[j]);
-            return (Node.Property[]) nueprops.toArray (new Node.Property[nueprops.size ()]);
-          }
-        };
-      }
-      return nue;
+
+    /** Fires property change.
+    */
+    void firePropertyChange () {
+        firePropertyChange ("serviceType", null, null); // NOI18N
     }
-      
-  }
-  
+
+    /** Updates the current state of the explorer manager.
+    */
+    private void update () {
+        Children ch = new Children.Array ();
+        AbstractNode n = new AbstractNode (ch);
+
+        ch.add ((Node[])nodes ().toArray (new Node[0]));
+
+        getExplorerManager ().setRootContext (n);
+    }
+
+    /** Computes the list of nodes that should represent all services classes
+    * of the given type.
+    *
+    * @return list of Nodes
+    */
+    private List nodes () {
+        services = new ArrayList (20);
+        List l = new LinkedList ();
+        Enumeration en = TopManager.getDefault ().getServices ().services (clazz);
+        while (en.hasMoreElements ()) {
+            try {
+                Object service = en.nextElement ();
+                l.add (new MN ((ServiceType)service));
+
+                services.add (service);
+            } catch (java.beans.IntrospectionException ex) {
+            }
+        }
+        try {
+            if (none != null) {
+                l.add (new MN (none));
+                services.add (none);
+            }
+        } catch (java.beans.IntrospectionException ex) {
+        }
+        return l;
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the FormEditor.
+     */
+    private void initComponents () {//GEN-BEGIN:initComponents
+        setLayout (new java.awt.BorderLayout ());
+        setPreferredSize (new java.awt.Dimension(480, 320));
+
+        listView1 = new org.openide.explorer.view.ListView ();
+        listView1.setTraversalAllowed (false);
+        listView1.setSelectionMode (1);
+        listView1.setPopupAllowed (false);
+
+
+        add (listView1, "Center"); // NOI18N
+
+        propertySheetView1 = new org.openide.explorer.propertysheet.PropertySheetView ();
+
+
+        add (propertySheetView1, "East"); // NOI18N
+
+    }//GEN-END:initComponents
+
+
+    private void removeButtonPressed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonPressed
+    }//GEN-LAST:event_removeButtonPressed
+
+    private void addButtonPressed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonPressed
+    }//GEN-LAST:event_addButtonPressed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private org.openide.explorer.view.ListView listView1;
+    private org.openide.explorer.propertysheet.PropertySheetView propertySheetView1;
+    // End of variables declaration//GEN-END:variables
+
+    private static final class MN extends BeanNode {
+        public MN (ServiceType t) throws java.beans.IntrospectionException {
+            super (t);
+        }
+
+        public ServiceType getServiceType () {
+            return (ServiceType)getBean ();
+        }
+
+        // Prevent folks from changing the name here!
+        public Node.PropertySet[] getPropertySets () {
+            final Node.PropertySet[] sets = super.getPropertySets ();
+            Node.PropertySet[] nue = new Node.PropertySet[sets.length];
+            for (int i = 0; i < sets.length; i++) {
+                final int ii = i;
+                nue[i] = new Node.PropertySet () {
+                             {
+                                 setName (sets[ii].getName ());
+                                 setDisplayName (sets[ii].getDisplayName ());
+                                 setShortDescription (sets[ii].getShortDescription ());
+                             }
+                             public Node.Property[] getProperties () {
+                                 Node.Property[] props = sets[ii].getProperties ();
+                                 List nueprops = new ArrayList ();
+                                 for (int j = 0; j < props.length; j++)
+                                     if (! props[j].getName ().equals ("name")) // NOI18N
+                                         nueprops.add (props[j]);
+                                 return (Node.Property[]) nueprops.toArray (new Node.Property[nueprops.size ()]);
+                             }
+                         };
+            }
+            return nue;
+        }
+
+    }
+
 }
 
 /*

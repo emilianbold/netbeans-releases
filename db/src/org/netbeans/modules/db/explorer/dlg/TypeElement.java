@@ -24,7 +24,7 @@ import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.db.explorer.*;
 
-/** 
+/**
 * xxx
 *
 * @author Slavek Psenicka
@@ -32,28 +32,28 @@ import org.netbeans.modules.db.explorer.*;
 
 class TypeElement
 {
-	private String tstr, tname;
-	
-	public TypeElement(String typestr, String name)
-	{
-		tstr = typestr;
-		tname = name;
-	}
-	
-	public String getType()
-	{
-		return tstr;
-	}
-	
-	public String getName()
-	{
-		return tname;
-	}
-	
-	public String toString()
-	{
-		return tname;
-	}
+    private String tstr, tname;
+
+    public TypeElement(String typestr, String name)
+    {
+        tstr = typestr;
+        tname = name;
+    }
+
+    public String getType()
+    {
+        return tstr;
+    }
+
+    public String getName()
+    {
+        return tname;
+    }
+
+    public String toString()
+    {
+        return tname;
+    }
 }
 
 

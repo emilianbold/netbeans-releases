@@ -30,36 +30,36 @@ import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 
-public class DriverNodeInfo extends DriverListNodeInfo 
+public class DriverNodeInfo extends DriverListNodeInfo
 {
-  static final long serialVersionUID =6994829681095273161L;
-	public DatabaseDriver getDatabaseDriver()
-	{
-		return (DatabaseDriver)get(DatabaseNodeInfo.DBDRIVER);
-	}
+    static final long serialVersionUID =6994829681095273161L;
+    public DatabaseDriver getDatabaseDriver()
+    {
+        return (DatabaseDriver)get(DatabaseNodeInfo.DBDRIVER);
+    }
 
-	public void setDatabaseDriver(DatabaseDriver drv)
-	{
-		put(DatabaseNodeInfo.NAME, drv.getName());
-		put(DatabaseNodeInfo.URL, drv.getURL());
-		put(DatabaseNodeInfo.PREFIX, drv.getDatabasePrefix());
-		put(DatabaseNodeInfo.ADAPTOR_CLASSNAME, drv.getDatabaseAdaptor());
-		put(DatabaseNodeInfo.DBDRIVER, drv);
-	}
+    public void setDatabaseDriver(DatabaseDriver drv)
+    {
+        put(DatabaseNodeInfo.NAME, drv.getName());
+        put(DatabaseNodeInfo.URL, drv.getURL());
+        put(DatabaseNodeInfo.PREFIX, drv.getDatabasePrefix());
+        put(DatabaseNodeInfo.ADAPTOR_CLASSNAME, drv.getDatabaseAdaptor());
+        put(DatabaseNodeInfo.DBDRIVER, drv);
+    }
 
-	public void delete()
-	throws IOException
-	{
-		try {
-			DatabaseDriver drv = getDatabaseDriver();
-			Vector drvs = RootNode.getOption().getAvailableDrivers();
-			int idx = drvs.indexOf(drv);
-			if (idx != -1) drvs.removeElementAt(idx);
-			else throw new DatabaseException("driver "+drv+" was not found");
-		} catch (Exception e) {
-			throw new IOException(e.getMessage());
-		}
-	}
+    public void delete()
+    throws IOException
+    {
+        try {
+            DatabaseDriver drv = getDatabaseDriver();
+            Vector drvs = RootNode.getOption().getAvailableDrivers();
+            int idx = drvs.indexOf(drv);
+            if (idx != -1) drvs.removeElementAt(idx);
+            else throw new DatabaseException("driver "+drv+" was not found");
+        } catch (Exception e) {
+            throw new IOException(e.getMessage());
+        }
+    }
 }
 /*
  * <<Log>>

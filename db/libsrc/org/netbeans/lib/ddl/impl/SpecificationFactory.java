@@ -24,7 +24,7 @@ import java.text.ParseException;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 
-/** 
+/**
 * The factory used for creating instances of Specification class. 
 * SpecificationFactory collects information about available database 
 * description files and is able to specify if system can control 
@@ -36,299 +36,299 @@ import org.netbeans.lib.ddl.impl.*;
 * @author Slavek Psenicka
 */
 public class SpecificationFactory implements DatabaseSpecificationFactory, DriverSpecificationFactory {
-			
-	/** Database description file
-	* You should use PListReader to parse it.
-	*/		
-	private final String dbFile = "org/netbeans/lib/ddl/resources/dbspec.plist";	
-			
-	/** Driver description file
-	* You should use PListReader to parse it.
-	*/		
-	private final String drvFile = "org/netbeans/lib/ddl/resources/driverspec.plist";	
-			
-	/** Array of SpecificationFiles, found (but not read) files 
-	* which describes database products.
-	*/
-	private HashMap dbSpecs;
-  
-	/** Array of SpecificationFiles, found (but not read) files 
-	* which describes driver products.
-	*/
-	private HashMap drvSpecs;
-	
-	/** Debug information
-	*/
-	private boolean debug = false;
-	
-	/** Constructor.
-	* Reads a bunch of specification files and prepares sfiles array. Files should
-	* be read from default place or from folder specified by system property named
-	* "db.specifications.folder".
-	*/
-	public SpecificationFactory ()
-	throws DDLException
-	{	
-		String fileDB = System.getProperty("db.specifications.file");
-		String fileDrv = System.getProperty("driver.specifications.file");
-  	SpecificationParser parser;
-    
-		try {
-			if (fileDB == null) {
-				ClassLoader cl = getClass().getClassLoader();
-				InputStream stream = cl.getResourceAsStream(dbFile);
-				if (stream == null)
-          throw new Exception("unable to open stream " + dbFile);
-				parser = new SpecificationParser(stream);
-				dbSpecs = parser.getData();
-				stream.close();
-			} else {
-				parser = new SpecificationParser(fileDB);
-				dbSpecs = parser.getData();
-			}
-		} catch (Exception e) {
-			if (fileDB != null)
-        throw new DDLException("unable to read specifications file " + fileDB + ", " + e.getMessage());
-			else
-        throw new DDLException("unable to read default specifications file, " + e.getMessage());
-		}
 
-		try {
-			if (fileDrv == null) {
-				ClassLoader cl = getClass().getClassLoader();
-				InputStream stream = cl.getResourceAsStream(drvFile);
-				if (stream == null)
-          throw new Exception("unable to open stream " + drvFile);
-				parser = new SpecificationParser(stream);
-				drvSpecs = parser.getData();
-				stream.close();
-			} else {
-				parser = new SpecificationParser(fileDrv);
-				drvSpecs = parser.getData();
-			}
-		} catch (Exception e) {
-			if (fileDrv != null)
-        throw new DDLException("unable to read specifications file " + fileDrv + ", " + e.getMessage());
-			else
-        throw new DDLException("unable to read default specifications file, " + e.getMessage());
-		}
-	}
-	
-	/** Returns array of database products supported by system.
-	* It returns string array only, if you need a Specification instance, use 
-	* appropriate createSpecification method.
-	*/
-	public Set supportedDatabases()
-	{
-		return dbSpecs.keySet();
-	}
-	
-	/** Returns true if database (specified by databaseProductName) is 
-	* supported by system. Does not throw exception if it doesn't.
-	*/	
-	public boolean isDatabaseSupported(String databaseProductName)
-	{
-		return (dbSpecs.containsKey(databaseProductName));
-	}
-	
-	/** Creates instance of DatabaseSpecification class; a database-specification
-	* class. This object knows about used database and can be used as
-	* factory for db-manipulating commands. It connects to the database 
-	* and reads database metadata. Throws DatabaseProductNotFoundException if database
-	* (obtained from database metadata) is not supported.
-	*/
-	public DatabaseSpecification createSpecification(DBConnection dbcon) 
-	throws DatabaseProductNotFoundException, DDLException
-	{
-		Connection con = dbcon.createJDBCConnection();
-		DatabaseSpecification spec = createSpecification(dbcon, con);
-		try {
-			con.close();
-		} catch (SQLException ex) {
-			throw new DDLException(ex.getMessage());
-		}
-		return spec;
-	}
+    /** Database description file
+    * You should use PListReader to parse it.
+    */		
+    private final String dbFile = "org/netbeans/lib/ddl/resources/dbspec.plist";
 
-	/** Creates instance of DatabaseSpecification class; a database-specification
-	* class. This object knows about used database and can be used as
-	* factory for db-manipulating commands. It connects to the database 
-	* and reads database metadata. Throws DatabaseProductNotFoundException if database
-	* (obtained from database metadata) is not supported. Uses given Connection
-	*/
-	public DatabaseSpecification createSpecification(DBConnection dbcon, Connection jdbccon) 
-	throws DatabaseProductNotFoundException, DDLException
-	{
-		String pn = null;
-		try {
-			boolean close = (jdbccon != null ? false : true);
-			Connection con = (jdbccon != null ? jdbccon : dbcon.createJDBCConnection());
-			DatabaseMetaData dmd = con.getMetaData();	
-			pn = dmd.getDatabaseProductName().trim();
-			
-			DatabaseSpecification spec = createSpecification(dbcon, pn, con);
-			if (close) con.close();
-			return spec;
-		} catch (SQLException e) {
-			throw new DDLException("unable to connect to server");
-		} catch (Exception e) {
-			throw new DatabaseProductNotFoundException(pn, "unable to create specification, "+e.getMessage());
-		}
-	}
-	
-	/** Creates instance of DatabaseSpecification class; a database-specification
-	* class. This object knows about used database and can be used as
-	* factory for db-manipulating commands. It connects to database and
-	* reads metadata as createSpecification(DBConnection connection), but always
-	* uses specified databaseProductName. This is not recommended technique.
-	*/
-	public DatabaseSpecification createSpecification(DBConnection connection, String databaseProductName, Connection c) 
-	throws DatabaseProductNotFoundException
-	{
-		HashMap product = (HashMap) dbSpecs.get(databaseProductName);
-		
-		if (product == null)
-		  throw new DatabaseProductNotFoundException(databaseProductName);
-		HashMap specmap = deepUnion(product, (HashMap) dbSpecs.get("GenericDatabaseSystem"), true);
-		specmap.put("connection", connection);
-		DatabaseSpecification spec = new Specification(specmap, c);
-		spec.setSpecificationFactory(this);
-		
-		return spec;
-	}
+    /** Driver description file
+    * You should use PListReader to parse it.
+    */		
+    private final String drvFile = "org/netbeans/lib/ddl/resources/driverspec.plist";
 
-	/** Creates instance of DatabaseSpecification class; a database-specification
-	* class. This object knows about used database and can be used as
-	* factory for db-manipulating commands. It connects to database and
-	* reads metadata as createSpecification(DBConnection connection), but always
-	* uses specified databaseProductName. This is not recommended technique.
-	*/
-	public DatabaseSpecification createSpecification(String databaseProductName, Connection c) 
-	throws DatabaseProductNotFoundException
-	{
-		HashMap product = (HashMap) dbSpecs.get(databaseProductName);
-		if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
-		HashMap specmap = deepUnion(product, (HashMap) dbSpecs.get("GenericDatabaseSystem"), true);
-		return new Specification(specmap, c);
-	}
+    /** Array of SpecificationFiles, found (but not read) files
+    * which describes database products.
+    */
+    private HashMap dbSpecs;
 
-	public DatabaseSpecification createSpecification(Connection c) 
-	throws DatabaseProductNotFoundException, SQLException
-	{
-		return createSpecification(c, c.getMetaData().getDatabaseProductName().trim());
-	}
+    /** Array of SpecificationFiles, found (but not read) files
+    * which describes driver products.
+    */
+    private HashMap drvSpecs;
 
-	public DatabaseSpecification createSpecification(Connection c, String databaseProductName) 
-	throws DatabaseProductNotFoundException
-	{
-		HashMap product = (HashMap) dbSpecs.get(databaseProductName);
-		if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
-		HashMap specmap = deepUnion(product, (HashMap) dbSpecs.get("GenericDatabaseSystem"), true);
-		DatabaseSpecification spec = new Specification(specmap, c);
-		spec.setSpecificationFactory(this);
-		return spec;
-	}
+    /** Debug information
+    */
+    private boolean debug = false;
 
-	/** Returns debug-mode flag
-	*/
-	public boolean isDebugMode()
-	{
-		return debug;
-	}
-	
-	/** Sets debug-mode flag
-	*/
-	public void setDebugMode(boolean mode)
-	{
-		debug = mode;
-	}
+    /** Constructor.
+    * Reads a bunch of specification files and prepares sfiles array. Files should
+    * be read from default place or from folder specified by system property named
+    * "db.specifications.folder".
+    */
+    public SpecificationFactory ()
+    throws DDLException
+    {
+        String fileDB = System.getProperty("db.specifications.file");
+        String fileDrv = System.getProperty("driver.specifications.file");
+        SpecificationParser parser;
 
-	/** Returns array of driver products supported by system.
-	* It returns string array only, if you need a Specification instance, use 
-	* appropriate createDriverSpecification method.
-	*/
-	public Set supportedDrivers()
-	{
-		return drvSpecs.keySet();
-	}
-	
-	/** Returns true if driver (specified by driverName) is 
-	* supported by system. Does not throw exception if it doesn't.
-	*/	
-	public boolean isDriverSupported(String driverName)
-	{
-		return (drvSpecs.containsKey(driverName));
-	}
+        try {
+            if (fileDB == null) {
+                ClassLoader cl = getClass().getClassLoader();
+                InputStream stream = cl.getResourceAsStream(dbFile);
+                if (stream == null)
+                    throw new Exception("unable to open stream " + dbFile);
+                parser = new SpecificationParser(stream);
+                dbSpecs = parser.getData();
+                stream.close();
+            } else {
+                parser = new SpecificationParser(fileDB);
+                dbSpecs = parser.getData();
+            }
+        } catch (Exception e) {
+            if (fileDB != null)
+                throw new DDLException("unable to read specifications file " + fileDB + ", " + e.getMessage());
+            else
+                throw new DDLException("unable to read default specifications file, " + e.getMessage());
+        }
 
-	/** Creates instance of DriverSpecification class; a driver-specification
-	* class. This object knows about used driver.
-  */
-	public DriverSpecification createDriverSpecification(String driverName) {
-		HashMap product = (HashMap) drvSpecs.get(driverName);
-		if (product == null)
-      product = (HashMap) drvSpecs.get("DefaultDriver");
-		HashMap specmap = deepUnion(product, (HashMap) drvSpecs.get("DefaultDriver"), true);
-		DriverSpecification spec = new DriverSpecification(specmap);
-		spec.setDriverSpecificationFactory(this);
-    
-		return spec;
-  }
-  
-	/** Creates deep copy of Map.
-	* All items will be cloned. Used internally in this object.
-	*/
-	private HashMap deepClone(HashMap map)
-	{
-		HashMap newone = (HashMap)map.clone();
-		Iterator it = newone.keySet().iterator();
-		while (it.hasNext()) {
-			Object newkey = it.next();
-			Object deepobj = null, newobj = newone.get(newkey);
-			if (newobj instanceof HashMap) 
-				deepobj = deepClone((HashMap)newobj);
-			else if (newobj instanceof String) 
-				deepobj = (Object)new String((String)newobj);
-			else if (newobj instanceof Vector)
-				deepobj = ((Vector)newobj).clone();
-			newone.put(newkey, deepobj);
-		}
-		
-		return newone;
-	}
-	
-	/** Joins base map with additional one. 
-	* Copies keys only if not present in base map. Used internally in this object.
-	*/
-	private HashMap deepUnion(HashMap base, HashMap additional, boolean deep)
-	{
-		Iterator it = additional.keySet().iterator();
-		while (it.hasNext()) {
-			Object addkey = it.next();
-			Object addobj = additional.get(addkey);
-      
-      //SQL92 types will be not added into databese type list
-      if (addkey.equals("TypeMap"))
-        continue;
-      
-			if (base.containsKey(addkey)) {
-				Object baseobj = base.get(addkey);
-				if (deep && (baseobj instanceof HashMap) && (addobj instanceof HashMap)) {
-					deepUnion((HashMap)baseobj, (HashMap)addobj, deep);
-				}				
-			} else {
-				if (addobj instanceof HashMap) 
-					addobj = deepClone((HashMap)addobj);
-				else if (addobj instanceof String) 
-					addobj = (Object)new String((String)addobj);
-				else if (addobj instanceof Vector)
-					addobj = ((Vector)addobj).clone();
-				base.put(addkey, addobj);
-			}	
-		}
-		
-		return base;	
-	}
-  
+        try {
+            if (fileDrv == null) {
+                ClassLoader cl = getClass().getClassLoader();
+                InputStream stream = cl.getResourceAsStream(drvFile);
+                if (stream == null)
+                    throw new Exception("unable to open stream " + drvFile);
+                parser = new SpecificationParser(stream);
+                drvSpecs = parser.getData();
+                stream.close();
+            } else {
+                parser = new SpecificationParser(fileDrv);
+                drvSpecs = parser.getData();
+            }
+        } catch (Exception e) {
+            if (fileDrv != null)
+                throw new DDLException("unable to read specifications file " + fileDrv + ", " + e.getMessage());
+            else
+                throw new DDLException("unable to read default specifications file, " + e.getMessage());
+        }
+    }
+
+    /** Returns array of database products supported by system.
+    * It returns string array only, if you need a Specification instance, use 
+    * appropriate createSpecification method.
+    */
+    public Set supportedDatabases()
+    {
+        return dbSpecs.keySet();
+    }
+
+    /** Returns true if database (specified by databaseProductName) is
+    * supported by system. Does not throw exception if it doesn't.
+    */	
+    public boolean isDatabaseSupported(String databaseProductName)
+    {
+        return (dbSpecs.containsKey(databaseProductName));
+    }
+
+    /** Creates instance of DatabaseSpecification class; a database-specification
+    * class. This object knows about used database and can be used as
+    * factory for db-manipulating commands. It connects to the database 
+    * and reads database metadata. Throws DatabaseProductNotFoundException if database
+    * (obtained from database metadata) is not supported.
+    */
+    public DatabaseSpecification createSpecification(DBConnection dbcon)
+    throws DatabaseProductNotFoundException, DDLException
+    {
+        Connection con = dbcon.createJDBCConnection();
+        DatabaseSpecification spec = createSpecification(dbcon, con);
+        try {
+            con.close();
+        } catch (SQLException ex) {
+            throw new DDLException(ex.getMessage());
+        }
+        return spec;
+    }
+
+    /** Creates instance of DatabaseSpecification class; a database-specification
+    * class. This object knows about used database and can be used as
+    * factory for db-manipulating commands. It connects to the database 
+    * and reads database metadata. Throws DatabaseProductNotFoundException if database
+    * (obtained from database metadata) is not supported. Uses given Connection
+    */
+    public DatabaseSpecification createSpecification(DBConnection dbcon, Connection jdbccon)
+    throws DatabaseProductNotFoundException, DDLException
+    {
+        String pn = null;
+        try {
+            boolean close = (jdbccon != null ? false : true);
+            Connection con = (jdbccon != null ? jdbccon : dbcon.createJDBCConnection());
+            DatabaseMetaData dmd = con.getMetaData();
+            pn = dmd.getDatabaseProductName().trim();
+
+            DatabaseSpecification spec = createSpecification(dbcon, pn, con);
+            if (close) con.close();
+            return spec;
+        } catch (SQLException e) {
+            throw new DDLException("unable to connect to server");
+        } catch (Exception e) {
+            throw new DatabaseProductNotFoundException(pn, "unable to create specification, "+e.getMessage());
+        }
+    }
+
+    /** Creates instance of DatabaseSpecification class; a database-specification
+    * class. This object knows about used database and can be used as
+    * factory for db-manipulating commands. It connects to database and
+    * reads metadata as createSpecification(DBConnection connection), but always
+    * uses specified databaseProductName. This is not recommended technique.
+    */
+    public DatabaseSpecification createSpecification(DBConnection connection, String databaseProductName, Connection c)
+    throws DatabaseProductNotFoundException
+    {
+        HashMap product = (HashMap) dbSpecs.get(databaseProductName);
+
+        if (product == null)
+            throw new DatabaseProductNotFoundException(databaseProductName);
+        HashMap specmap = deepUnion(product, (HashMap) dbSpecs.get("GenericDatabaseSystem"), true);
+        specmap.put("connection", connection);
+        DatabaseSpecification spec = new Specification(specmap, c);
+        spec.setSpecificationFactory(this);
+
+        return spec;
+    }
+
+    /** Creates instance of DatabaseSpecification class; a database-specification
+    * class. This object knows about used database and can be used as
+    * factory for db-manipulating commands. It connects to database and
+    * reads metadata as createSpecification(DBConnection connection), but always
+    * uses specified databaseProductName. This is not recommended technique.
+    */
+    public DatabaseSpecification createSpecification(String databaseProductName, Connection c)
+    throws DatabaseProductNotFoundException
+    {
+        HashMap product = (HashMap) dbSpecs.get(databaseProductName);
+        if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
+        HashMap specmap = deepUnion(product, (HashMap) dbSpecs.get("GenericDatabaseSystem"), true);
+        return new Specification(specmap, c);
+    }
+
+    public DatabaseSpecification createSpecification(Connection c)
+    throws DatabaseProductNotFoundException, SQLException
+    {
+        return createSpecification(c, c.getMetaData().getDatabaseProductName().trim());
+    }
+
+    public DatabaseSpecification createSpecification(Connection c, String databaseProductName)
+    throws DatabaseProductNotFoundException
+    {
+        HashMap product = (HashMap) dbSpecs.get(databaseProductName);
+        if (product == null) throw new DatabaseProductNotFoundException(databaseProductName);
+        HashMap specmap = deepUnion(product, (HashMap) dbSpecs.get("GenericDatabaseSystem"), true);
+        DatabaseSpecification spec = new Specification(specmap, c);
+        spec.setSpecificationFactory(this);
+        return spec;
+    }
+
+    /** Returns debug-mode flag
+    */
+    public boolean isDebugMode()
+    {
+        return debug;
+    }
+
+    /** Sets debug-mode flag
+    */
+    public void setDebugMode(boolean mode)
+    {
+        debug = mode;
+    }
+
+    /** Returns array of driver products supported by system.
+    * It returns string array only, if you need a Specification instance, use 
+    * appropriate createDriverSpecification method.
+    */
+    public Set supportedDrivers()
+    {
+        return drvSpecs.keySet();
+    }
+
+    /** Returns true if driver (specified by driverName) is
+    * supported by system. Does not throw exception if it doesn't.
+    */	
+    public boolean isDriverSupported(String driverName)
+    {
+        return (drvSpecs.containsKey(driverName));
+    }
+
+    /** Creates instance of DriverSpecification class; a driver-specification
+    * class. This object knows about used driver.
+     */
+    public DriverSpecification createDriverSpecification(String driverName) {
+        HashMap product = (HashMap) drvSpecs.get(driverName);
+        if (product == null)
+            product = (HashMap) drvSpecs.get("DefaultDriver");
+        HashMap specmap = deepUnion(product, (HashMap) drvSpecs.get("DefaultDriver"), true);
+        DriverSpecification spec = new DriverSpecification(specmap);
+        spec.setDriverSpecificationFactory(this);
+
+        return spec;
+    }
+
+    /** Creates deep copy of Map.
+    * All items will be cloned. Used internally in this object.
+    */
+    private HashMap deepClone(HashMap map)
+    {
+        HashMap newone = (HashMap)map.clone();
+        Iterator it = newone.keySet().iterator();
+        while (it.hasNext()) {
+            Object newkey = it.next();
+            Object deepobj = null, newobj = newone.get(newkey);
+            if (newobj instanceof HashMap)
+                deepobj = deepClone((HashMap)newobj);
+            else if (newobj instanceof String)
+                deepobj = (Object)new String((String)newobj);
+            else if (newobj instanceof Vector)
+                deepobj = ((Vector)newobj).clone();
+            newone.put(newkey, deepobj);
+        }
+
+        return newone;
+    }
+
+    /** Joins base map with additional one.
+    * Copies keys only if not present in base map. Used internally in this object.
+    */
+    private HashMap deepUnion(HashMap base, HashMap additional, boolean deep)
+    {
+        Iterator it = additional.keySet().iterator();
+        while (it.hasNext()) {
+            Object addkey = it.next();
+            Object addobj = additional.get(addkey);
+
+            //SQL92 types will be not added into databese type list
+            if (addkey.equals("TypeMap"))
+                continue;
+
+            if (base.containsKey(addkey)) {
+                Object baseobj = base.get(addkey);
+                if (deep && (baseobj instanceof HashMap) && (addobj instanceof HashMap)) {
+                    deepUnion((HashMap)baseobj, (HashMap)addobj, deep);
+                }
+            } else {
+                if (addobj instanceof HashMap)
+                    addobj = deepClone((HashMap)addobj);
+                else if (addobj instanceof String)
+                    addobj = (Object)new String((String)addobj);
+                else if (addobj instanceof Vector)
+                    addobj = ((Vector)addobj).clone();
+                base.put(addkey, addobj);
+            }
+        }
+
+        return base;
+    }
+
 }
 
 /*

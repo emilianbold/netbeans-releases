@@ -16,22 +16,22 @@ package org.netbeans.lib.ddl;
 import java.sql.*;
 import org.netbeans.lib.ddl.*;
 
-/** 
+/**
 * Interface of table constraint. This interface should implement primary key 
 * constraint and unique constraint.
 * @author Slavek Psenicka
 */
-public interface TableConstraintDescriptor 
+public interface TableConstraintDescriptor
 {
-	/** Returns name of constraint */
-	public String getObjectName();
-	/** Sets name of constraint */
-	public void setObjectName(String cname);
+    /** Returns name of constraint */
+    public String getObjectName();
+    /** Sets name of constraint */
+    public void setObjectName(String cname);
 
-	/** Returns name of column */
-	public String getColumnName();
-	/** Sets name of column */
-	public void setColumnName(String columnName);
+    /** Returns name of column */
+    public String getColumnName();
+    /** Sets name of column */
+    public void setColumnName(String columnName);
 }
 
 /*

@@ -28,47 +28,47 @@ import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 
-public class DriverListNodeInfo extends DatabaseNodeInfo 
-implements DriverOperations
-{	
-  static final long serialVersionUID =-7948529055260667590L;
-	protected void initChildren(Vector children)
-	throws DatabaseException
-	{
-		Vector cons = RootNode.getOption().getAvailableDrivers();
-		if (cons != null) {
-			try {
-				Enumeration cons_e = cons.elements();
-				while (cons_e.hasMoreElements()) {
-					DatabaseDriver drv = (DatabaseDriver)cons_e.nextElement();
-					DriverNodeInfo chinfo = (DriverNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.DRIVER);
-					if (chinfo != null && drv != null) {
-						chinfo.setDatabaseDriver(drv);
-						children.add(chinfo);
-					} else throw new Exception("driver "+drv);
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
+public class DriverListNodeInfo extends DatabaseNodeInfo
+            implements DriverOperations
+{
+    static final long serialVersionUID =-7948529055260667590L;
+    protected void initChildren(Vector children)
+    throws DatabaseException
+    {
+        Vector cons = RootNode.getOption().getAvailableDrivers();
+        if (cons != null) {
+            try {
+                Enumeration cons_e = cons.elements();
+                while (cons_e.hasMoreElements()) {
+                    DatabaseDriver drv = (DatabaseDriver)cons_e.nextElement();
+                    DriverNodeInfo chinfo = (DriverNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.DRIVER);
+                    if (chinfo != null && drv != null) {
+                        chinfo.setDatabaseDriver(drv);
+                        children.add(chinfo);
+                    } else throw new Exception("driver "+drv);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-	/** Adds driver specified in drv into list.
-	* Creates new node info and adds node into node children.
-	*/
-	public void addDriver(DatabaseDriver drv)
-	throws DatabaseException
-	{
-		DatabaseOption option = RootNode.getOption();
-		Vector drvs = option.getAvailableDrivers();
-		if (!drvs.contains(drv)) drvs.add(drv);
-		else throw new DatabaseException("driver "+drv+" already exists in list");
+    /** Adds driver specified in drv into list.
+    * Creates new node info and adds node into node children.
+    */
+    public void addDriver(DatabaseDriver drv)
+    throws DatabaseException
+    {
+        DatabaseOption option = RootNode.getOption();
+        Vector drvs = option.getAvailableDrivers();
+        if (!drvs.contains(drv)) drvs.add(drv);
+        else throw new DatabaseException("driver "+drv+" already exists in list");
 
-		DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();		
-		DriverNodeInfo ninfo = (DriverNodeInfo)createNodeInfo(this, DatabaseNodeInfo.DRIVER);
-		ninfo.setDatabaseDriver(drv);
-		chld.createSubnode(ninfo, true);
-	}
+        DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();
+        DriverNodeInfo ninfo = (DriverNodeInfo)createNodeInfo(this, DatabaseNodeInfo.DRIVER);
+        ninfo.setDatabaseDriver(drv);
+        chld.createSubnode(ninfo, true);
+    }
 }
 /*
  * <<Log>>

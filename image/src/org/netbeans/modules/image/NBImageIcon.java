@@ -24,40 +24,40 @@ import org.openide.util.io.*;
 * @author Petr Hamernik
 */
 class NBImageIcon extends ImageIcon implements Serializable {
-  /** generated Serialized Version UID */
-  static final long serialVersionUID = -1730253055388017036L;
-  /** Appropriate image data object */
-  ImageDataObject obj;
-
-  /** Construct a new icon.
-  * @param obj the data object to represent the image in
-  */
-  public NBImageIcon(ImageDataObject obj) {
-    super(obj.getImageURL());
-    this.obj = obj;
-  }
-
-  // Get an object to be written to the stream instead of this object.
-  public Object writeReplace() {
-    return new ResolvableHelper(obj);
-  }
-
-  // Helper class for serialization.
-  static class ResolvableHelper implements Serializable {
-    // generated Serialized Version UID
-    static final long serialVersionUID = -1120520132882774882L;
-    // serializable data object
+    /** generated Serialized Version UID */
+    static final long serialVersionUID = -1730253055388017036L;
+    /** Appropriate image data object */
     ImageDataObject obj;
 
-    ResolvableHelper(ImageDataObject obj) {
-      this.obj = obj;
+    /** Construct a new icon.
+    * @param obj the data object to represent the image in
+    */
+    public NBImageIcon(ImageDataObject obj) {
+        super(obj.getImageURL());
+        this.obj = obj;
     }
 
-    // Restore with the same data object.
-    public Object readResolve() {
-      return new NBImageIcon(obj);
+    // Get an object to be written to the stream instead of this object.
+    public Object writeReplace() {
+        return new ResolvableHelper(obj);
     }
-  }
+
+    // Helper class for serialization.
+    static class ResolvableHelper implements Serializable {
+        // generated Serialized Version UID
+        static final long serialVersionUID = -1120520132882774882L;
+        // serializable data object
+        ImageDataObject obj;
+
+        ResolvableHelper(ImageDataObject obj) {
+            this.obj = obj;
+        }
+
+        // Restore with the same data object.
+        public Object readResolve() {
+            return new NBImageIcon(obj);
+        }
+    }
 }
 
 /*

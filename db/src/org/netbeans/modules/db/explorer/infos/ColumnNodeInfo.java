@@ -27,188 +27,188 @@ import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class ColumnNodeInfo extends DatabaseNodeInfo
 {
-  static final long serialVersionUID =-1470704512178901918L;
-	public boolean canAdd(Map propmap, String propname)
-	{
-		if (propname.equals("decdigits")) {
-			int type = ((Integer)get("datatype")).intValue();
-			if (type == java.sql.Types.FLOAT || type == java.sql.Types.REAL || type == java.sql.Types.DOUBLE) return true;
-			else return false;
-		}
-		
-		return super.canAdd(propmap, propname);
-	}
+    static final long serialVersionUID =-1470704512178901918L;
+    public boolean canAdd(Map propmap, String propname)
+    {
+        if (propname.equals("decdigits")) {
+            int type = ((Integer)get("datatype")).intValue();
+            if (type == java.sql.Types.FLOAT || type == java.sql.Types.REAL || type == java.sql.Types.DOUBLE) return true;
+            else return false;
+        }
 
-	public Object getProperty(String key)
-	{
-		if (key.equals("isnullable")) {
-			boolean eq = ((String)get(key)).toUpperCase().equals("YES");
-			return new Boolean(eq);
-		}
-		return super.getProperty(key);
-	}
+        return super.canAdd(propmap, propname);
+    }
 
-	public void delete()
-	throws IOException
-	{
-		try {
-			String code = getCode();
-			String table = (String)get(DatabaseNode.TABLE);
-			Specification spec = (Specification)getSpecification();
-			RemoveColumn cmd = (RemoveColumn)spec.createCommandRemoveColumn(table);
-			cmd.removeColumn((String)get(code));
-			cmd.execute();
-		} catch (Exception e) {
-			throw new IOException(e.getMessage());
-		}
-	}
-	
-	public TableColumn getColumnSpecification()
-	throws DatabaseException
-	{
-		TableColumn col = null;
-		
-		try {
-			Specification spec = (Specification)getSpecification();
-			CreateTable cmd = (CreateTable)spec.createCommandCreateTable("DUMMY");
-			String code = getCode();
-			DatabaseMetaData dmd = getSpecification().getMetaData();
-			
-			if (code.equals(DatabaseNode.PRIMARY_KEY)) {
-				col = (TableColumn)cmd.createPrimaryKeyColumn(getName());
-			} else if (code.equals(DatabaseNode.FOREIGN_KEY)) {
-				col = null;
-			} else if (code.equals(DatabaseNode.COLUMN)) {
-				col = (TableColumn)cmd.createColumn(getName());
-			} else throw new DatabaseException("unknown code "+code);
+    public Object getProperty(String key)
+    {
+        if (key.equals("isnullable")) {
+            boolean eq = ((String)get(key)).toUpperCase().equals("YES");
+            return new Boolean(eq);
+        }
+        return super.getProperty(key);
+    }
 
-      DriverSpecification drvSpec = getDriverSpecification();
-      drvSpec.getColumns((String)get(DatabaseNode.CATALOG), dmd, (String)get(DatabaseNode.TABLE), (String)get(code));
-			if (drvSpec.rs != null) {
-        drvSpec.rs.next();
+    public void delete()
+    throws IOException
+    {
+        try {
+            String code = getCode();
+            String table = (String)get(DatabaseNode.TABLE);
+            Specification spec = (Specification)getSpecification();
+            RemoveColumn cmd = (RemoveColumn)spec.createCommandRemoveColumn(table);
+            cmd.removeColumn((String)get(code));
+            cmd.execute();
+        } catch (Exception e) {
+            throw new IOException(e.getMessage());
+        }
+    }
 
-        col.setColumnType(drvSpec.rs.getInt(5));
-        col.setColumnSize(drvSpec.rs.getInt(7));
-        col.setNullAllowed(drvSpec.rs.getString(18).toUpperCase().equals("YES"));
-        col.setDefaultValue(drvSpec.rs.getString("COLUMN_DEF"));
-        
-        drvSpec.rs.close();
-      }
-		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());
-		}
-		
-		return col;
-	}
+    public TableColumn getColumnSpecification()
+    throws DatabaseException
+    {
+        TableColumn col = null;
 
-	// catalog,schema,tablename,name,datatype,typename,
-	// columnsize,bufflen,decdigits,radix,nullable,remarks,coldef,
-	// reserved1,reserved2,octetlen,ordpos,isnullable
+        try {
+            Specification spec = (Specification)getSpecification();
+            CreateTable cmd = (CreateTable)spec.createCommandCreateTable("DUMMY");
+            String code = getCode();
+            DatabaseMetaData dmd = getSpecification().getMetaData();
 
-	public void setProperty(String key, Object obj)
-	{
-		try {
-			if (key.equals("remarks")) setRemarks((String)obj);		
-			else if (key.equals("isnullable")) {
-				setNullAllowed(((Boolean)obj).booleanValue());
-				obj = (((Boolean)obj).equals(Boolean.TRUE) ? "YES" : "NO");
-			} else if (key.equals("columnsize")) setColumnSize((Integer)obj);
-			else if (key.equals("decdigits")) setDecimalDigits((Integer)obj);
-			else if (key.equals("coldef")) setDefaultValue((String)obj);
-			else if (key.equals("datatype")) setDataType((Integer)obj);
-			super.setProperty(key, obj);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+            if (code.equals(DatabaseNode.PRIMARY_KEY)) {
+                col = (TableColumn)cmd.createPrimaryKeyColumn(getName());
+            } else if (code.equals(DatabaseNode.FOREIGN_KEY)) {
+                col = null;
+            } else if (code.equals(DatabaseNode.COLUMN)) {
+                col = (TableColumn)cmd.createColumn(getName());
+            } else throw new DatabaseException("unknown code "+code);
 
-	public void setRemarks(String rem)
-	throws DatabaseException
-	{
-		String tablename = (String)get(DatabaseNode.TABLE);
-		Specification spec = (Specification)getSpecification();
-		try {
-			AbstractCommand cmd = spec.createCommandCommentTable(tablename, rem);
-			cmd.execute();		
-		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());	
-		}
-	}
+            DriverSpecification drvSpec = getDriverSpecification();
+            drvSpec.getColumns((String)get(DatabaseNode.CATALOG), dmd, (String)get(DatabaseNode.TABLE), (String)get(code));
+            if (drvSpec.rs != null) {
+                drvSpec.rs.next();
 
-	public void setColumnSize(Integer size)
-	throws DatabaseException
-	{
-		try {
-			Specification spec = (Specification)getSpecification();
-			ModifyColumn cmd = (ModifyColumn)spec.createCommandModifyColumn(getTable());
-			TableColumn col = getColumnSpecification();
-			col.setColumnSize(size.intValue());
-			cmd.setColumn(col);
-			cmd.execute();		
-		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());	
-		}
-	}
+                col.setColumnType(drvSpec.rs.getInt(5));
+                col.setColumnSize(drvSpec.rs.getInt(7));
+                col.setNullAllowed(drvSpec.rs.getString(18).toUpperCase().equals("YES"));
+                col.setDefaultValue(drvSpec.rs.getString("COLUMN_DEF"));
 
-	public void setDecimalDigits(Integer size)
-	throws DatabaseException
-	{
-		try {
-			Specification spec = (Specification)getSpecification();
-			ModifyColumn cmd = (ModifyColumn)spec.createCommandModifyColumn(getTable());
-			TableColumn col = getColumnSpecification();
-			col.setDecimalSize(size.intValue());
-			cmd.setColumn(col);
-			cmd.execute();		
-		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());	
-		}
-	}
+                drvSpec.rs.close();
+            }
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
+        }
 
-	public void setDefaultValue(String val)
-	throws DatabaseException
-	{
-		try {
-			Specification spec = (Specification)getSpecification();
-			ModifyColumn cmd = (ModifyColumn)spec.createCommandModifyColumn(getTable());
-			TableColumn col = getColumnSpecification();
-			col.setDefaultValue(val);
-			cmd.setColumn(col);
-			cmd.execute();		
-		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());	
-		}
-	}
-	
-	public void setNullAllowed(boolean flag)
-	throws DatabaseException
-	{
-		try {
-			Specification spec = (Specification)getSpecification();
-			ModifyColumn cmd = (ModifyColumn)spec.createCommandModifyColumn(getTable());
-			TableColumn col = getColumnSpecification();
-			col.setNullAllowed(flag);
-			cmd.setColumn(col);
-			cmd.execute();		
-		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());	
-		}
-	}
+        return col;
+    }
 
-	public void setDataType(Integer type)
-	throws DatabaseException
-	{
-		try {
-			Specification spec = (Specification)getSpecification();
-			ModifyColumn cmd = (ModifyColumn)spec.createCommandModifyColumn(getTable());
-			TableColumn col = getColumnSpecification();
-			col.setColumnType(type.intValue());
-			cmd.setColumn(col);
-			cmd.execute();		
-		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());	
-		}
-	}
+    // catalog,schema,tablename,name,datatype,typename,
+    // columnsize,bufflen,decdigits,radix,nullable,remarks,coldef,
+    // reserved1,reserved2,octetlen,ordpos,isnullable
+
+    public void setProperty(String key, Object obj)
+    {
+        try {
+            if (key.equals("remarks")) setRemarks((String)obj);
+            else if (key.equals("isnullable")) {
+                setNullAllowed(((Boolean)obj).booleanValue());
+                obj = (((Boolean)obj).equals(Boolean.TRUE) ? "YES" : "NO");
+            } else if (key.equals("columnsize")) setColumnSize((Integer)obj);
+            else if (key.equals("decdigits")) setDecimalDigits((Integer)obj);
+            else if (key.equals("coldef")) setDefaultValue((String)obj);
+            else if (key.equals("datatype")) setDataType((Integer)obj);
+            super.setProperty(key, obj);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setRemarks(String rem)
+    throws DatabaseException
+    {
+        String tablename = (String)get(DatabaseNode.TABLE);
+        Specification spec = (Specification)getSpecification();
+        try {
+            AbstractCommand cmd = spec.createCommandCommentTable(tablename, rem);
+            cmd.execute();
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
+        }
+    }
+
+    public void setColumnSize(Integer size)
+    throws DatabaseException
+    {
+        try {
+            Specification spec = (Specification)getSpecification();
+            ModifyColumn cmd = (ModifyColumn)spec.createCommandModifyColumn(getTable());
+            TableColumn col = getColumnSpecification();
+            col.setColumnSize(size.intValue());
+            cmd.setColumn(col);
+            cmd.execute();
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
+        }
+    }
+
+    public void setDecimalDigits(Integer size)
+    throws DatabaseException
+    {
+        try {
+            Specification spec = (Specification)getSpecification();
+            ModifyColumn cmd = (ModifyColumn)spec.createCommandModifyColumn(getTable());
+            TableColumn col = getColumnSpecification();
+            col.setDecimalSize(size.intValue());
+            cmd.setColumn(col);
+            cmd.execute();
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
+        }
+    }
+
+    public void setDefaultValue(String val)
+    throws DatabaseException
+    {
+        try {
+            Specification spec = (Specification)getSpecification();
+            ModifyColumn cmd = (ModifyColumn)spec.createCommandModifyColumn(getTable());
+            TableColumn col = getColumnSpecification();
+            col.setDefaultValue(val);
+            cmd.setColumn(col);
+            cmd.execute();
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
+        }
+    }
+
+    public void setNullAllowed(boolean flag)
+    throws DatabaseException
+    {
+        try {
+            Specification spec = (Specification)getSpecification();
+            ModifyColumn cmd = (ModifyColumn)spec.createCommandModifyColumn(getTable());
+            TableColumn col = getColumnSpecification();
+            col.setNullAllowed(flag);
+            cmd.setColumn(col);
+            cmd.execute();
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
+        }
+    }
+
+    public void setDataType(Integer type)
+    throws DatabaseException
+    {
+        try {
+            Specification spec = (Specification)getSpecification();
+            ModifyColumn cmd = (ModifyColumn)spec.createCommandModifyColumn(getTable());
+            TableColumn col = getColumnSpecification();
+            col.setColumnType(type.intValue());
+            cmd.setColumn(col);
+            cmd.execute();
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
+        }
+    }
 }
 
 /*

@@ -16,36 +16,36 @@ package org.netbeans.lib.ddl;
 import java.sql.*;
 import org.netbeans.lib.ddl.*;
 
-/** 
+/**
 * Interface of class describing table column.
 * @author Slavek Psenicka
 */
-public interface TableColumnDescriptor 
+public interface TableColumnDescriptor
 {
-	/** Returns name of column */
-	public String getColumnName();
-	/** Sets name of column */
-	public void setColumnName(String columnName);
+    /** Returns name of column */
+    public String getColumnName();
+    /** Sets name of column */
+    public void setColumnName(String columnName);
 
-	/** Returns type of column */
-	public int getColumnType();
-	/** Sets type of column */
-	public void setColumnType(int columnType);
-	
-	/** Returns column size */
-	public int getColumnSize();
-	/** Sets size of column */
-	public void setColumnSize(int size);
+    /** Returns type of column */
+    public int getColumnType();
+    /** Sets type of column */
+    public void setColumnType(int columnType);
 
-	/** Returns decimal digits of column */
-	public int getDecimalSize();
-	/** Sets decimal digits of column */
-	public void setDecimalSize(int size);
-		
-	/** Nulls allowed? */
-	public boolean isNullAllowed();
-	/** Sets null property */
-	public void setNullAllowed(boolean flag);
+    /** Returns column size */
+    public int getColumnSize();
+    /** Sets size of column */
+    public void setColumnSize(int size);
+
+    /** Returns decimal digits of column */
+    public int getDecimalSize();
+    /** Sets decimal digits of column */
+    public void setDecimalSize(int size);
+
+    /** Nulls allowed? */
+    public boolean isNullAllowed();
+    /** Sets null property */
+    public void setNullAllowed(boolean flag);
 }
 
 /*

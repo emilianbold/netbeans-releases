@@ -21,8 +21,8 @@ import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
 
-public class ProcedureNode extends DatabaseNode 
-{		
+public class ProcedureNode extends DatabaseNode
+{
 }
 /*
  * <<Log>>

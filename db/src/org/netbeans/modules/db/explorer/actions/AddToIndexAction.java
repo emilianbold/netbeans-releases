@@ -26,75 +26,75 @@ import org.netbeans.modules.db.explorer.infos.*;
 
 public class AddToIndexAction extends DatabaseAction
 {
-  static final long serialVersionUID =-1416260930649261633L;
-	public void performAction (Node[] activatedNodes) 
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return;
-		
-		try {
+    static final long serialVersionUID =-1416260930649261633L;
+    public void performAction (Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return;
 
-			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-			DatabaseNodeInfo nfo = info.getParent(nodename);
+        try {
 
-			String catalog = (String)nfo.get(DatabaseNode.CATALOG);
-			String tablename = (String)nfo.get(DatabaseNode.TABLE);
-			String columnname = (String)nfo.get(DatabaseNode.COLUMN);
+            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+            DatabaseNodeInfo nfo = info.getParent(nodename);
 
-			Connection con = nfo.getConnection();
-			DatabaseMetaData dmd = info.getSpecification().getMetaData();
-			Specification spec = (Specification)nfo.getSpecification();
-      DriverSpecification drvSpec = info.getDriverSpecification();
-			String index = (String)nfo.get(DatabaseNode.INDEX);
+            String catalog = (String)nfo.get(DatabaseNode.CATALOG);
+            String tablename = (String)nfo.get(DatabaseNode.TABLE);
+            String columnname = (String)nfo.get(DatabaseNode.COLUMN);
 
-			// List columns used in current index (do not show)
-			HashSet ixrm = new HashSet();
-      
-	    drvSpec.getIndexInfo(catalog, dmd, tablename, true, false);
-			while (drvSpec.rs.next()) {
-				String ixname = drvSpec.rs.getString("INDEX_NAME");
-				if (ixname != null) {
-					String colname = drvSpec.rs.getString("COLUMN_NAME");
-					if (ixname.equals(index)) ixrm.add(colname);
-				}
-			}
-			drvSpec.rs.close();
+            Connection con = nfo.getConnection();
+            DatabaseMetaData dmd = info.getSpecification().getMetaData();
+            Specification spec = (Specification)nfo.getSpecification();
+            DriverSpecification drvSpec = info.getDriverSpecification();
+            String index = (String)nfo.get(DatabaseNode.INDEX);
 
-			// List columns not present in current index
-			Vector cols = new Vector(5);
-	
-      drvSpec.getColumns(catalog, dmd, tablename, null);
-			while (drvSpec.rs.next()) {
-				String colname = drvSpec.rs.getString("COLUMN_NAME");
-				if (!ixrm.contains(colname)) cols.add(colname);
-			}
-			drvSpec.rs.close();
-			if (cols.size() == 0) throw new Exception("no usable column in place");
-			
-			// Create and execute command
-			
-			LabeledComboDialog dlg = new LabeledComboDialog("Add to index", "Column:", cols);
-			if (dlg.run()) {
+            // List columns used in current index (do not show)
+            HashSet ixrm = new HashSet();
 
-				CreateIndex icmd = spec.createCommandCreateIndex(tablename);
-				icmd.setIndexName(index);
-				Iterator enu = ixrm.iterator();
-				while (enu.hasNext()) {
-					icmd.specifyColumn((String)enu.next());
-				}
-				
-				icmd.specifyColumn((String)dlg.getSelectedItem());
-				spec.createCommandDropIndex(index).execute();
-				icmd.execute();
-				nfo.refreshChildren();
-//				((DatabaseNodeChildren)nfo.getNode().getChildren()).createSubnode(info,true);
-			}
+            drvSpec.getIndexInfo(catalog, dmd, tablename, true, false);
+            while (drvSpec.rs.next()) {
+                String ixname = drvSpec.rs.getString("INDEX_NAME");
+                if (ixname != null) {
+                    String colname = drvSpec.rs.getString("COLUMN_NAME");
+                    if (ixname.equals(index)) ixrm.add(colname);
+                }
+            }
+            drvSpec.rs.close();
 
-		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to perform operation "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-		}
-	}
+            // List columns not present in current index
+            Vector cols = new Vector(5);
+
+            drvSpec.getColumns(catalog, dmd, tablename, null);
+            while (drvSpec.rs.next()) {
+                String colname = drvSpec.rs.getString("COLUMN_NAME");
+                if (!ixrm.contains(colname)) cols.add(colname);
+            }
+            drvSpec.rs.close();
+            if (cols.size() == 0) throw new Exception("no usable column in place");
+
+            // Create and execute command
+
+            LabeledComboDialog dlg = new LabeledComboDialog("Add to index", "Column:", cols);
+            if (dlg.run()) {
+
+                CreateIndex icmd = spec.createCommandCreateIndex(tablename);
+                icmd.setIndexName(index);
+                Iterator enu = ixrm.iterator();
+                while (enu.hasNext()) {
+                    icmd.specifyColumn((String)enu.next());
+                }
+
+                icmd.specifyColumn((String)dlg.getSelectedItem());
+                spec.createCommandDropIndex(index).execute();
+                icmd.execute();
+                nfo.refreshChildren();
+                //				((DatabaseNodeChildren)nfo.getNode().getChildren()).createSubnode(info,true);
+            }
+
+        } catch(Exception e) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to perform operation "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
 }
 /*
  * <<Log>>

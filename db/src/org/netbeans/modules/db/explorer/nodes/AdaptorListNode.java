@@ -14,7 +14,7 @@
 package org.netbeans.modules.db.explorer.nodes;
 
 public class AdaptorListNode extends DatabaseNode
-{		
+{
 }
 
 /*

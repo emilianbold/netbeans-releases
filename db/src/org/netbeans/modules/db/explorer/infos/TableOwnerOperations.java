@@ -15,17 +15,17 @@ package org.netbeans.modules.db.explorer.infos;
 
 import org.netbeans.modules.db.DatabaseException;
 
-/** 
+/**
 * Interface of driver-related nodes.
 * @author Slavek Psenicka
 */
 public interface TableOwnerOperations
 {
-	/** Add driver operation 
-	* @param drv Driver to add
-	*/
-	public void addTable(String tname) 
-	throws DatabaseException;
+    /** Add driver operation
+    * @param drv Driver to add
+    */
+    public void addTable(String tname)
+    throws DatabaseException;
 }
 
 /*

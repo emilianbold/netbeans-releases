@@ -26,112 +26,112 @@ import org.openide.util.actions.SystemAction;
 * @author jtulach
 */
 class ModuleActions extends ActionManager
-implements PropertyChangeListener {
-  /** array of all actions added by modules */
-  private static SystemAction[] array;
-  /** of (ModuleItem, List (SystemAction)) */
-  private static HashMap map = new HashMap (7);
-  /** current module */
-  private static Object module;
-  
-  /** instance */
-  static final ModuleActions INSTANCE = new ModuleActions ();  
-  
-  static {
-    module = INSTANCE;
-  }
+    implements PropertyChangeListener {
+    /** array of all actions added by modules */
+    private static SystemAction[] array;
+    /** of (ModuleItem, List (SystemAction)) */
+    private static HashMap map = new HashMap (7);
+    /** current module */
+    private static Object module;
 
-  /** Array with all activated actions.
-  * Can contain null that will be replaced by separators.
-  */
-  public SystemAction[] getContextActions () {
-    SystemAction[] a = array;
-    if (a != null) {
-      return a;
-    }
-    array = a = createActions ();
-    return a;
-  }
-    
-  /** Listens on change of modules and if changed,
-  * fires change to all listeners.
-  */
-  private static void fireChange () {
-    INSTANCE.firePropertyChange(PROP_CONTEXT_ACTIONS, null, null);
-  }
+    /** instance */
+    static final ModuleActions INSTANCE = new ModuleActions ();
 
-  /** Change enabled property of an action
-  */
-  public void propertyChange (PropertyChangeEvent ev) {
-    if (SystemAction.PROP_ENABLED.equals (ev.getPropertyName ())) {
-      fireChange ();
+    static {
+        module = INSTANCE;
     }
-  }
-  
-  /** Attaches to processing of a module
-  */
-  public static synchronized void attachTo (ModuleItem mi) {
-    module = mi;
-    if (module == null) {
-      // well known value
-      module = INSTANCE;
-    }
-  }
 
-  /** Adds new action to the list.
-  */
-  public synchronized static void add (ManifestSection.ActionSection as) throws InstantiationException {
-    List list = (List)map.get (module);
-    if (list == null) {
-      list = new LinkedList ();
-      map.put (module, list);
+    /** Array with all activated actions.
+    * Can contain null that will be replaced by separators.
+    */
+    public SystemAction[] getContextActions () {
+        SystemAction[] a = array;
+        if (a != null) {
+            return a;
+        }
+        array = a = createActions ();
+        return a;
     }
-    list.add (as.getAction ());
-    as.getAction ().addPropertyChangeListener (INSTANCE);
-    
-    array = null;
-    fireChange (); // PENDING this is too often
-  }
-  
-  /** Removes new action from the list.
-  */
-  public synchronized static void remove (ManifestSection.ActionSection as) throws InstantiationException {
-    List list = (List)map.get (module);
-    if (list == null) {
-      return;
+
+    /** Listens on change of modules and if changed,
+    * fires change to all listeners.
+    */
+    private static void fireChange () {
+        INSTANCE.firePropertyChange(PROP_CONTEXT_ACTIONS, null, null);
     }
-    list.remove (as.getAction ());
-    as.getAction ().removePropertyChangeListener (INSTANCE);
-    
-    if (list.isEmpty ()) {
-      map.remove (module);
+
+    /** Change enabled property of an action
+    */
+    public void propertyChange (PropertyChangeEvent ev) {
+        if (SystemAction.PROP_ENABLED.equals (ev.getPropertyName ())) {
+            fireChange ();
+        }
     }
-    
-    array = null;
-    fireChange (); // PENDING this is too often
-  }
-  
-  /** Creates the actions.
-  */
-  private synchronized static SystemAction[] createActions () {
-    java.util.Iterator it = map.values ().iterator ();
-    
-    LinkedList arr = new LinkedList ();
-    
-    while (it.hasNext ()) {
-      List l = (List)it.next ();
-      
-      arr.addAll (l);
-      
-      if (it.hasNext ()) {
-        // add separator between modules
-        arr.add (null);
-      }
-    
+
+    /** Attaches to processing of a module
+    */
+    public static synchronized void attachTo (ModuleItem mi) {
+        module = mi;
+        if (module == null) {
+            // well known value
+            module = INSTANCE;
+        }
     }
-    
-    return (SystemAction[])arr.toArray (new SystemAction[arr.size ()]);
-  }
+
+    /** Adds new action to the list.
+    */
+    public synchronized static void add (ManifestSection.ActionSection as) throws InstantiationException {
+        List list = (List)map.get (module);
+        if (list == null) {
+            list = new LinkedList ();
+            map.put (module, list);
+        }
+        list.add (as.getAction ());
+        as.getAction ().addPropertyChangeListener (INSTANCE);
+
+        array = null;
+        fireChange (); // PENDING this is too often
+    }
+
+    /** Removes new action from the list.
+    */
+    public synchronized static void remove (ManifestSection.ActionSection as) throws InstantiationException {
+        List list = (List)map.get (module);
+        if (list == null) {
+            return;
+        }
+        list.remove (as.getAction ());
+        as.getAction ().removePropertyChangeListener (INSTANCE);
+
+        if (list.isEmpty ()) {
+            map.remove (module);
+        }
+
+        array = null;
+        fireChange (); // PENDING this is too often
+    }
+
+    /** Creates the actions.
+    */
+    private synchronized static SystemAction[] createActions () {
+        java.util.Iterator it = map.values ().iterator ();
+
+        LinkedList arr = new LinkedList ();
+
+        while (it.hasNext ()) {
+            List l = (List)it.next ();
+
+            arr.addAll (l);
+
+            if (it.hasNext ()) {
+                // add separator between modules
+                arr.add (null);
+            }
+
+        }
+
+        return (SystemAction[])arr.toArray (new SystemAction[arr.size ()]);
+    }
 }
 
 /*

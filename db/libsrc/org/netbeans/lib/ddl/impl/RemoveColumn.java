@@ -17,63 +17,63 @@ import java.util.*;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 
-/** 
+/**
 * Remove column command.
 *
 * @author Slavek Psenicka
 */
 
-public class RemoveColumn extends ColumnCommand 
+public class RemoveColumn extends ColumnCommand
 {
-  static final long serialVersionUID =2845249943586553892L;
-	/** Remove simple column 
-	* @param name Column name
-	*/
-	public TableColumn removeColumn(String name)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		return specifyColumn(TableColumn.COLUMN, name, Specification.REMOVE_COLUMN);
-	}
+    static final long serialVersionUID =2845249943586553892L;
+    /** Remove simple column
+    * @param name Column name
+    */
+    public TableColumn removeColumn(String name)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        return specifyColumn(TableColumn.COLUMN, name, Specification.REMOVE_COLUMN);
+    }
 
-	/** Remove unique column 
-	* @param name Column name
-	*/
-	public TableColumn removeUniqueColumn(String name)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		TableColumn col = specifyColumn(TableColumn.UNIQUE, name, Specification.REMOVE_COLUMN);
-		return col;
-	}	
+    /** Remove unique column
+    * @param name Column name
+    */
+    public TableColumn removeUniqueColumn(String name)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        TableColumn col = specifyColumn(TableColumn.UNIQUE, name, Specification.REMOVE_COLUMN);
+        return col;
+    }
 
-	/** Remove primary key 
-	* @param name Column name
-	*/
-	public TableColumn removePrimaryKeyColumn(String name)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY, name, Specification.REMOVE_COLUMN);
-		return col;
-	}	
+    /** Remove primary key
+    * @param name Column name
+    */
+    public TableColumn removePrimaryKeyColumn(String name)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY, name, Specification.REMOVE_COLUMN);
+        return col;
+    }
 
-	/** Remove foreign key 
-	* @param name Column name
-	*/
-	public TableColumn removeForeignKeyColumn(String name)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		TableColumn col = specifyColumn(TableColumn.FOREIGN_KEY, name, Specification.REMOVE_COLUMN);
-		return col;
-	}	
+    /** Remove foreign key
+    * @param name Column name
+    */
+    public TableColumn removeForeignKeyColumn(String name)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        TableColumn col = specifyColumn(TableColumn.FOREIGN_KEY, name, Specification.REMOVE_COLUMN);
+        return col;
+    }
 
-	/** Remove check 
-	* @param name Check name
-	*/
-	public TableColumn removeCheckColumn(String name)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		TableColumn col = specifyColumn(TableColumn.CHECK, name, Specification.REMOVE_COLUMN);
-		return col;
-	}	
+    /** Remove check
+    * @param name Check name
+    */
+    public TableColumn removeCheckColumn(String name)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        TableColumn col = specifyColumn(TableColumn.CHECK, name, Specification.REMOVE_COLUMN);
+        return col;
+    }
 }
 
 /*

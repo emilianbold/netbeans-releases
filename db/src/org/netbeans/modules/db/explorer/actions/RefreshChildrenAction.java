@@ -24,21 +24,21 @@ import org.netbeans.modules.db.explorer.infos.*;
 
 public class RefreshChildrenAction extends DatabaseAction
 {
-  static final long serialVersionUID =-2858583720506557569L;
-	public void performAction (Node[] activatedNodes) 
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return;
+    static final long serialVersionUID =-2858583720506557569L;
+    public void performAction (Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return;
 
-		ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");		
-		try {
-			DatabaseNodeInfo nfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-			nfo.refreshChildren();
-		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("RefreshChildrenErrorPrefix")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-		}
-	}
+        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+        try {
+            DatabaseNodeInfo nfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+            nfo.refreshChildren();
+        } catch(Exception e) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("RefreshChildrenErrorPrefix")+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
 }
 /*
  * <<Log>>

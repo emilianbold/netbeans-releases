@@ -21,7 +21,7 @@ import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 
 public class DriverListNode extends DatabaseNode
-{		
+{
 }
 
 /*

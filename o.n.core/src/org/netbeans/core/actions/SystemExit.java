@@ -23,30 +23,30 @@ import org.openide.util.NbBundle;
 * @version  0.14, Feb 13, 1998
 */
 public class SystemExit extends CallableSystemAction {
-  /** generated Serialized Version UID */
-  static final long serialVersionUID = 5198683109749927396L;
+    /** generated Serialized Version UID */
+    static final long serialVersionUID = 5198683109749927396L;
 
- /** Human presentable name of the action. This should be
-  * presented as an item in a menu.
-  * @return the name of the action
-  */
-  public String getName() {
-    return NbBundle.getBundle(SystemExit.class).getString("Exit");
-  }
+    /** Human presentable name of the action. This should be
+     * presented as an item in a menu.
+     * @return the name of the action
+     */
+    public String getName() {
+        return NbBundle.getBundle(SystemExit.class).getString("Exit");
+    }
 
-  /** Help context where to find more about the action.
-  * @return the help context for this action
-  */
-  public HelpCtx getHelpCtx() {
-    return new HelpCtx (SystemExit.class);
-  }
+    /** Help context where to find more about the action.
+    * @return the help context for this action
+    */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx (SystemExit.class);
+    }
 
-  public void performAction() {
-    org.openide.TopManager.getDefault().exit();
-  }
+    public void performAction() {
+        org.openide.TopManager.getDefault().exit();
+    }
 
 
-  
+
 }
 
 /*

@@ -21,25 +21,25 @@ import java.util.Properties;
 */
 public class PropertiesEditor extends PropertyEditorSupport {
 
-  public String getAsText(String s) {
-    return org.openide.util.NbBundle.getBundle(PropertiesEditor.class).getString("CTL_TextProperties");
-  }
+    public String getAsText(String s) {
+        return org.openide.util.NbBundle.getBundle(PropertiesEditor.class).getString("CTL_TextProperties");
+    }
 
-  /** sets new value */
-  public void setAsText(String s) {
-  }
+    /** sets new value */
+    public void setAsText(String s) {
+    }
 
-  public String getJavaInitializationString () {
-    return null; // does not generate any code
-  }
-  
-  public boolean supportsCustomEditor () {
-    return true;
-  }
+    public String getJavaInitializationString () {
+        return null; // does not generate any code
+    }
 
-  public java.awt.Component getCustomEditor () {
-    return new PropertiesCustomEditor (this);
-  }
+    public boolean supportsCustomEditor () {
+        return true;
+    }
+
+    public java.awt.Component getCustomEditor () {
+        return new PropertiesCustomEditor (this);
+    }
 
 }
 

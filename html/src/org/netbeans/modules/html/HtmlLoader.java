@@ -46,50 +46,50 @@ import org.openide.windows.CloneableTopComponent;
 public class HtmlLoader extends UniFileLoader {
 
 
-  static final long serialVersionUID =-5809935261731217882L;
-  public HtmlLoader() {
-    super (HtmlDataObject.class);
-    setDisplayName(NbBundle.getBundle(HtmlLoader.class).
-                   getString("PROP_HtmlLoader_Name"));
-    getExtensions ().addExtension ("html"); // NOI18N
-    getExtensions ().addExtension ("htm"); // NOI18N
-    getExtensions ().addExtension ("shtml"); // NOI18N
+    static final long serialVersionUID =-5809935261731217882L;
+    public HtmlLoader() {
+        super (HtmlDataObject.class);
+        setDisplayName(NbBundle.getBundle(HtmlLoader.class).
+                       getString("PROP_HtmlLoader_Name"));
+        getExtensions ().addExtension ("html"); // NOI18N
+        getExtensions ().addExtension ("htm"); // NOI18N
+        getExtensions ().addExtension ("shtml"); // NOI18N
 
-    setActions (new SystemAction[] {
-      SystemAction.get (ViewAction.class),
-      SystemAction.get (OpenAction.class),
-      SystemAction.get (FileSystemAction.class),
-      null,
-      SystemAction.get (CutAction.class),
-      SystemAction.get (CopyAction.class),
-      SystemAction.get (PasteAction.class),
-      null,
-      SystemAction.get (DeleteAction.class),
-      SystemAction.get (RenameAction.class),
-      null,
-      SystemAction.get (SaveAsTemplateAction.class),
-      null,
-      SystemAction.get (ToolsAction.class),
-      SystemAction.get (PropertiesAction.class),
-    });
-  }
+        setActions (new SystemAction[] {
+                        SystemAction.get (ViewAction.class),
+                        SystemAction.get (OpenAction.class),
+                        SystemAction.get (FileSystemAction.class),
+                        null,
+                        SystemAction.get (CutAction.class),
+                        SystemAction.get (CopyAction.class),
+                        SystemAction.get (PasteAction.class),
+                        null,
+                        SystemAction.get (DeleteAction.class),
+                        SystemAction.get (RenameAction.class),
+                        null,
+                        SystemAction.get (SaveAsTemplateAction.class),
+                        null,
+                        SystemAction.get (ToolsAction.class),
+                        SystemAction.get (PropertiesAction.class),
+                    });
+    }
 
-  protected MultiDataObject createMultiObject (final FileObject primaryFile)
-  throws DataObjectExistsException, IOException {
+    protected MultiDataObject createMultiObject (final FileObject primaryFile)
+    throws DataObjectExistsException, IOException {
 
-    final HtmlDataObject obj = new HtmlDataObject (primaryFile, this);
-    EditorSupport es = new EditorSupport (obj.getPrimaryEntry ());
-    obj.getCookieSet ().add (es);
-    obj.getCookieSet ().add (new ViewCookie () {
-      public void view () {
-        try {
-          TopManager.getDefault ().showUrl (obj.getPrimaryEntry ().getFile ().getURL ());
-        } catch (FileStateInvalidException e) {
-        }  
-      }
-    });    
-    return obj;
-  }
+        final HtmlDataObject obj = new HtmlDataObject (primaryFile, this);
+        EditorSupport es = new EditorSupport (obj.getPrimaryEntry ());
+        obj.getCookieSet ().add (es);
+        obj.getCookieSet ().add (new ViewCookie () {
+                                     public void view () {
+                                         try {
+                                             TopManager.getDefault ().showUrl (obj.getPrimaryEntry ().getFile ().getURL ());
+                                         } catch (FileStateInvalidException e) {
+                                         }
+                                     }
+                                 });
+        return obj;
+    }
 }
 
 /*

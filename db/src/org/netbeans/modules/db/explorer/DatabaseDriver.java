@@ -16,122 +16,122 @@ package org.netbeans.modules.db.explorer;
 import java.util.*;
 import java.io.*;
 
-/** 
+/**
 * xxx
 *
 * @author Slavek Psenicka
 */
 public class DatabaseDriver extends Object implements Externalizable
 {
-	private String name;
-	private String url;
-	private String prefix;
-	private String adaptor;
+    private String name;
+    private String url;
+    private String prefix;
+    private String adaptor;
 
-        static final long serialVersionUID =7937512184160164098L;
-	public DatabaseDriver()
-	{
-	}
-	
-	public DatabaseDriver(String dname, String durl)
-	{
-		name = dname;
-		url = durl;
-	}
+    static final long serialVersionUID =7937512184160164098L;
+    public DatabaseDriver()
+    {
+    }
 
-	public DatabaseDriver(String dname, String durl, String dprefix)
-	{
-		name = dname;
-		url = durl;
-		prefix = dprefix;
-	}
-		
-	public DatabaseDriver(String dname, String durl, String dprefix, String dbadap)
-	{
-		name = dname;
-		url = durl;
-		prefix = dprefix;
-		adaptor = dbadap;
-	}
-	
-	public String getName()
-	{
-		if (name != null) return name;
-		return url;
-	}
-	
-	public void setName(String nname)
-	{
-		name = nname;
-	}
-	
-	public String getURL()
-	{
-		return url;
-	}
-	
-	public void setURL(String nurl)
-	{
-		url = nurl;
-	}
+    public DatabaseDriver(String dname, String durl)
+    {
+        name = dname;
+        url = durl;
+    }
 
-	public String getDatabasePrefix()
-	{
-		return prefix;
-	}
-	
-	public void setDatabasePrefix(String pref)
-	{
-		prefix = pref;
-	}
-	
-	public String getDatabaseAdaptor()
-	{
-		return adaptor;
-	}
-	
-	public void setDatabaseAdaptor(String name)
-	{
-		if (name == null || name.length() == 0) adaptor = null;
-		else if (name.startsWith("Database.Adaptors.")) adaptor = name;
-		else adaptor = "Database.Adaptors."+name;
-//		System.out.println("Metadata adaptor class set = "+adaptor);
-	}
-	
-	public boolean equals(Object obj)
-	{
-		if (obj instanceof String) return obj.equals(url); 
-		boolean c1 = ((DatabaseDriver)obj).getURL().equals(url); 
-		boolean c2 = ((DatabaseDriver)obj).getName().equals(name); 
-		return c1 && c2;
-	}
-	
-	public String toString()
-	{
-		return getName();
-	}
-	
-	/** Writes data
-	* @param out ObjectOutputStream
-	*/
-  	public void writeExternal(ObjectOutput out) throws IOException
-	{
-		out.writeObject(name);
-		out.writeObject(url);	
-		out.writeObject(prefix);
-		out.writeObject(adaptor);
-	}
-	
-	/** Reads data
-	* @param in ObjectInputStream
-	*/
- 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-	{
-		name = (String)in.readObject();
-		url = (String)in.readObject();
-		prefix = (String)in.readObject();
-		adaptor = (String)in.readObject();
-	}	
+    public DatabaseDriver(String dname, String durl, String dprefix)
+    {
+        name = dname;
+        url = durl;
+        prefix = dprefix;
+    }
+
+    public DatabaseDriver(String dname, String durl, String dprefix, String dbadap)
+    {
+        name = dname;
+        url = durl;
+        prefix = dprefix;
+        adaptor = dbadap;
+    }
+
+    public String getName()
+    {
+        if (name != null) return name;
+        return url;
+    }
+
+    public void setName(String nname)
+    {
+        name = nname;
+    }
+
+    public String getURL()
+    {
+        return url;
+    }
+
+    public void setURL(String nurl)
+    {
+        url = nurl;
+    }
+
+    public String getDatabasePrefix()
+    {
+        return prefix;
+    }
+
+    public void setDatabasePrefix(String pref)
+    {
+        prefix = pref;
+    }
+
+    public String getDatabaseAdaptor()
+    {
+        return adaptor;
+    }
+
+    public void setDatabaseAdaptor(String name)
+    {
+        if (name == null || name.length() == 0) adaptor = null;
+        else if (name.startsWith("Database.Adaptors.")) adaptor = name;
+        else adaptor = "Database.Adaptors."+name;
+        //		System.out.println("Metadata adaptor class set = "+adaptor);
+    }
+
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof String) return obj.equals(url);
+        boolean c1 = ((DatabaseDriver)obj).getURL().equals(url);
+        boolean c2 = ((DatabaseDriver)obj).getName().equals(name);
+        return c1 && c2;
+    }
+
+    public String toString()
+    {
+        return getName();
+    }
+
+    /** Writes data
+    * @param out ObjectOutputStream
+    */
+    public void writeExternal(ObjectOutput out) throws IOException
+    {
+        out.writeObject(name);
+        out.writeObject(url);
+        out.writeObject(prefix);
+        out.writeObject(adaptor);
+    }
+
+    /** Reads data
+    * @param in ObjectInputStream
+    */
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+    {
+        name = (String)in.readObject();
+        url = (String)in.readObject();
+        prefix = (String)in.readObject();
+        adaptor = (String)in.readObject();
+    }
 }
 /*
  * <<Log>>

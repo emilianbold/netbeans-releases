@@ -17,7 +17,7 @@ import java.util.*;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 
-/** 
+/**
 * Interface of database action command. Instances should remember connection 
 * information of DatabaseSpecification and use it in execute() method. This is a base interface
 * used heavily for sub-interfacing (it is not subclassing :)
@@ -25,54 +25,54 @@ import org.netbeans.lib.ddl.impl.*;
 * @author Slavek Psenicka
 */
 
-public class AddColumn extends ColumnListCommand 
+public class AddColumn extends ColumnListCommand
 {
-static final long serialVersionUID =8822373040877885121L;
-	public AbstractTableColumn specifyColumn(String type, String name)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		return specifyColumn(type, name, Specification.ADD_COLUMN);
-	}
+    static final long serialVersionUID =8822373040877885121L;
+    public AbstractTableColumn specifyColumn(String type, String name)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        return specifyColumn(type, name, Specification.ADD_COLUMN);
+    }
 
-	public AbstractTableColumn createColumn(String name)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		return specifyColumn(TableColumn.COLUMN, name, Specification.ADD_COLUMN);
-	}
+    public AbstractTableColumn createColumn(String name)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        return specifyColumn(TableColumn.COLUMN, name, Specification.ADD_COLUMN);
+    }
 
-	public TableColumn createUniqueColumn(String name)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		TableColumn col = specifyColumn(TableColumn.UNIQUE, name, Specification.ADD_COLUMN);
-		col.setObjectName(name+"_UQ");
-		return col;
-	}	
+    public TableColumn createUniqueColumn(String name)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        TableColumn col = specifyColumn(TableColumn.UNIQUE, name, Specification.ADD_COLUMN);
+        col.setObjectName(name+"_UQ");
+        return col;
+    }
 
-	public TableColumn createPrimaryKeyColumn(String name)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY, name, Specification.ADD_COLUMN);
-		col.setObjectName(name+"_PK");
-		return col;
-	}	
+    public TableColumn createPrimaryKeyColumn(String name)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        TableColumn col = specifyColumn(TableColumn.PRIMARY_KEY, name, Specification.ADD_COLUMN);
+        col.setObjectName(name+"_PK");
+        return col;
+    }
 
-	public TableColumn createCheckColumn(String name, String expression)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		TableColumn col = specifyColumn(TableColumn.CHECK, name, Specification.ADD_COLUMN);
-		col.setObjectName(name+"_CH");
-		col.setCheckCondition(expression);
-		return col;
-	}	
+    public TableColumn createCheckColumn(String name, String expression)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        TableColumn col = specifyColumn(TableColumn.CHECK, name, Specification.ADD_COLUMN);
+        col.setObjectName(name+"_CH");
+        col.setCheckCondition(expression);
+        return col;
+    }
 
-	public TableColumn createCheckConstraint(String name, String expression)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		TableColumn col = specifyColumn(TableColumn.CHECK_CONSTRAINT, name, Specification.ADD_COLUMN);
-		col.setObjectName(name+"_CH");
-		col.setCheckCondition(expression);
-		return col;
-	}	
+    public TableColumn createCheckConstraint(String name, String expression)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        TableColumn col = specifyColumn(TableColumn.CHECK_CONSTRAINT, name, Specification.ADD_COLUMN);
+        col.setObjectName(name+"_CH");
+        col.setCheckCondition(expression);
+        return col;
+    }
 }
 
 /*

@@ -63,537 +63,537 @@ import org.netbeans.core.compiler.CompilationEngineImpl;
 * @author Ales Novak, Jaroslav Tulach, Ian Formanek, Petr Hamernik, Jan Jancura
 */
 public abstract class NbTopManager extends TopManager {
-  /** property for status text */
-  public static final String PROP_STATUS_TEXT = "statusText";
-  
-  /** stores main shortcut context*/
-  private Keymap shortcutContext;
+    /** property for status text */
+    public static final String PROP_STATUS_TEXT = "statusText";
 
-  /** currently used debugger or null if none is in use */
-  private Debugger debugger;
+    /** stores main shortcut context*/
+    private Keymap shortcutContext;
 
-  /** default repository */
-  private Repository repository;
+    /** currently used debugger or null if none is in use */
+    private Debugger debugger;
 
-  /** ExecutionMachine */
-  private ExecutionEngine execEngine;
+    /** default repository */
+    private Repository repository;
 
-  /** error manager */
-  private ErrorManager errorManager;
+    /** ExecutionMachine */
+    private ExecutionEngine execEngine;
 
-  /** CompilationMachine */
-  private CompilationEngine compilationEngine;
+    /** error manager */
+    private ErrorManager errorManager;
 
-  /** WWW browser window. */
-  private HtmlBrowser.BrowserComponent htmlViewer;
+    /** CompilationMachine */
+    private CompilationEngine compilationEngine;
+
+    /** WWW browser window. */
+    private HtmlBrowser.BrowserComponent htmlViewer;
 
 
-  /** nodeOperation */
-  private NodeOperation nodeOperation;
-  /** clipboard */
-  private ExClipboard clipboard;
+    /** nodeOperation */
+    private NodeOperation nodeOperation;
+    /** clipboard */
+    private ExClipboard clipboard;
 
-  /** ProjectOperation main variable */
-  static NbProjectOperation projectOperation;
+    /** ProjectOperation main variable */
+    static NbProjectOperation projectOperation;
 
-  /** support for listeners */
-  private PropertyChangeSupport change = new PropertyChangeSupport (this);
+    /** support for listeners */
+    private PropertyChangeSupport change = new PropertyChangeSupport (this);
 
-  /** repository */
-  private Repository defaultRepository;
-  
-  /** loader pool */
-  private DataLoaderPool loaderPool;
-  
-  /** status text */
-  private String statusText;
+    /** repository */
+    private Repository defaultRepository;
 
-  /** the error level code for restarting windows */
-  private static final int RESTART_EXIT_CODE = 66;
+    /** loader pool */
+    private DataLoaderPool loaderPool;
 
-  /** Constructs a new manager.
-  */
-  public NbTopManager() {
-  }
-  
-  /** Getter for instance of this manager.
-  */
-  public static NbTopManager get () {
-    return (NbTopManager)TopManager.getDefault ();
-  }
-  
-  //
-  // Protected methods that are provided for subclasses (Main) 
-  // to plug-in better implementation
-  //
-  protected abstract FileSystem createDefaultFileSystem ();
-  
-  //
-  // Implementation of methods from TopManager
-  //
-  
-  /** Default repository
-  */
-  public Repository getRepository () {
-    if (defaultRepository != null) {
-      return defaultRepository;
+    /** status text */
+    private String statusText;
+
+    /** the error level code for restarting windows */
+    private static final int RESTART_EXIT_CODE = 66;
+
+    /** Constructs a new manager.
+    */
+    public NbTopManager() {
     }
-    
-    synchronized (this) {
-      if (defaultRepository == null) {
-        defaultRepository = new Repository (createDefaultFileSystem ());
-      }
-      return defaultRepository;
+
+    /** Getter for instance of this manager.
+    */
+    public static NbTopManager get () {
+        return (NbTopManager)TopManager.getDefault ();
     }
-  }
 
-  
-  /** Accessor to actions manager.
-  */
-  public ActionManager getActionManager () {
-    return ModuleActions.INSTANCE;
-  }
+    //
+    // Protected methods that are provided for subclasses (Main)
+    // to plug-in better implementation
+    //
+    protected abstract FileSystem createDefaultFileSystem ();
 
-  /** Default repository.
-  *
+    //
+    // Implementation of methods from TopManager
+    //
 
-  /** Shows a specified HelpCtx in IDE's help window.
-  * @param helpCtx thehelp to be shown
-  */
-  public void showHelp(HelpCtx helpCtx) {
-    Help.getDefault ().showHelp (helpCtx);
-  }
-
-  /** Provides support for www documents.
-  * @param url Url of WWW document to be showen.
-  */
-  public void showUrl (URL url) {
-    NbPresenter d = NbPresenter.currentModalDialog;
-    if (d != null) {
-      HtmlBrowser htmlViewer = new HtmlBrowser ();
-      htmlViewer.setURL (url);
-      JDialog d1 = new JDialog (d);
-      d1.getContentPane ().add ("Center", htmlViewer); // NOI18N
-      d1.setModal (true);
-      d1.setTitle (Main.getString ("CTL_Help"));
-      d1.pack ();
-      d1.show ();
-      return;
-    }
-    
-    
-    if (htmlViewer == null) htmlViewer = new NbBrowser ();
-    htmlViewer.open ();
-    htmlViewer.requestFocus ();
-    htmlViewer.setURL (url);
-  }
-
-  /** Creates new dialog.
-  */
-  public Dialog createDialog (DialogDescriptor d) {
-    // if there is some modal dialog active, sets it as a parent
-    // of created dialog
-    if (NbPresenter.currentModalDialog != null) {
-      return new NbDialog(d, NbPresenter.currentModalDialog);
-    }
-    // if there is some active top component and has focus, set its frame as
-    // an owner of created dialog, or set main window otherwise
-    TopComponent curTc = TopComponent.getRegistry().getActivated();
-    Frame mainWindow = TopManager.getDefault().getWindowManager().getMainWindow();
-    Frame owner = null;
-    // Beware - main window is always set as a parent for non-modal
-    // dialogs, because they sometims tend to live longer that currently
-    // active top components (find dialog in editor is good example)
-    if ((curTc != null) && d.isModal() &&
-        (SwingUtilities.findFocusOwner(curTc) != null)) {
-      // try to find top component's parent frame
-      Component comp = SwingUtilities.windowForComponent(curTc);
-      while ((comp != null) && !(comp instanceof Frame)) {
-        comp = comp.getParent();
-      }
-      owner = (Frame)comp;
-    }
-    if (owner == null) {
-      owner = mainWindow;
-    }
-    return new NbDialog(d, owner);
-  }
-
-  /** Interesting places.
-  */
-  public Places getPlaces () {
-    return NbPlaces.getDefault ();
-  }
-
-  /** Opens specified project. Asks to save the previously opened project.
-  * @exception IOException if error occurs accessing the project
-  * @exception UserCancelException if the selection is interrupted by the user
-  */
-  public void openProject (ProjectCookie project) throws IOException, UserCancelException {
-    NbProjectOperation.setProject (project);
-  }
-
-  /** Get the exception manager for the IDE. It can be used to rafine 
-  * handling of exception and the way they are presented to the user.
-  * 
-  * @return the manager
-  */
-  public ErrorManager getErrorManager () {
-    if (errorManager != null) {
-      return errorManager;
-    }
-  
-    synchronized (this) {
-      if (errorManager == null) {
-        errorManager = new NbErrorManager ();
-      }
-    }
-    return errorManager;
-  }
-
-  /** Window manager.
-  */
-  public WindowManager getWindowManager () {
-    return WindowManagerImpl.getDefault();
-  }
-
-  /** @return default root of keyboard shortcuts */
-  public Keymap getGlobalKeymap () {
-    if (shortcutContext != null) {
-      return shortcutContext;
-    }
-    
-    synchronized (this) {
-      if (shortcutContext == null) {
-        shortcutContext = new NbKeymap ();
-      }
-    }
-    return shortcutContext;
-  }
-
-  /** Returns global clipboard for the whole system. Must be redefined
-  * in subclasses.
-  *
-  * @return the clipboard for whole system
-  */
-  public ExClipboard getClipboard () {
-    if (clipboard != null) {
-      return clipboard;
-    }
-    
-    synchronized (this) {
-      if (clipboard == null) {
-        clipboard = new CoronaClipboard (""); // NOI18N
-      }
-    }
-    return clipboard;
-  }
-
-  /** Returns pool of options.
-  * @return option pool
-  */
-  public ControlPanel getControlPanel () {
-    return NbControlPanel.getDefault ();
-  }
-
-  /** Notifies user by a dialog.
-  * @param descriptor description that contains needed informations
-  * @return the option that has been choosen in the notification
-  */
-  public Object notify (NotifyDescriptor descriptor) {
-    Component focusOwner = null;
-    Component comp = org.openide.windows.TopComponent.getRegistry ().getActivated ();
-    Component win = comp;
-    while ((win != null) && (!(win instanceof Window))) win = win.getParent ();
-    if (win != null) focusOwner = ((Window)win).getFocusOwner ();
-
-    // set different owner if some modal dialog now active
-    NbPresenter presenter = null;
-    if (NbPresenter.currentModalDialog != null) {
-      presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog, true);
-    } else {
-      presenter = new NbPresenter(
-        descriptor, 
-        TopManager.getDefault().getWindowManager().getMainWindow(),
-        true
-      );
-    }
-      
-    presenter.setVisible(true);
-
-    if (focusOwner != null) { // if the focusOwner is null (meaning that MainWindow was focused before), the focus will be back on main window
-      win.requestFocus ();
-      comp.requestFocus ();
-      focusOwner.requestFocus (); 
-    }
-    return descriptor.getValue();
-  }
-
-  /** Shows specified text in MainWindow's status line.
-  * @param text the text to be shown
-  */
-  public void setStatusText(String text) {
-    if (text == null || text.length () == 0) {
-      text = " ";
-    }
-    
-    statusText = text;
-    firePropertyChange (PROP_STATUS_TEXT, null, text);
-  }
-  
-  /** Getter for status text.
-  */
-  public String getStatusText () {
-    return statusText;
-  }
-
-  /** Returns currently installed debugger or throws
-  *  DebuggerException (when no debugger is installed)
-  * @return currently installed  debugger.
-  */
-  public Debugger getDebugger () throws DebuggerNotFoundException {
-    
-    Debugger d = debugger;
-    if (d == null) {
-      throw new DebuggerNotFoundException();
-    }
-    return d;
-  }
-
-  /** Setter for debugger.
-  */
-  final void setDebugger (Debugger d) {
-    Debugger old;
-    
-    synchronized (this) {
-      old = debugger;
-      
-      if (old != null && d != null) {
-        throw new SecurityException ();
-      }
-      
-      debugger = d;
-    }
-    
-    firePropertyChange (PROP_DEBUGGER, old, d);
-  }
-
-  /**
-  * @return implementation of ExecutionMachine
-  */
-  public ExecutionEngine getExecutionEngine () {
-    if (execEngine != null) {
-      return execEngine;
-    }
-    
-    synchronized (this) {
-      if (execEngine == null) {
-        execEngine = org.netbeans.core.execution.ExecutionEngine.getExecutionEngine ();
-      }
-    }
-    return execEngine;
-  }
-
-  /** @return implementation of CompilationEngine */
-  public CompilationEngine getCompilationEngine() {
-    if (compilationEngine != null) {
-      return compilationEngine;
-    }
-    
-    synchronized (this) {
-      if (compilationEngine == null) {
-        compilationEngine = new CompilationEngineImpl();
-      }
-    }
-    return compilationEngine;
-  }
-  
-  /** Services.
-  */
-  public org.openide.ServiceType.Registry getServices () {
-    return Services.getDefault ();
-  }
-
-  /** Print output writer.
-  * @return default system output printer
-  */
-  public OutputWriter getStdOut () {
-    return OutputTab.getStdOut ();
-  }
-
-  /** creates new OutputWriter
-  * @param name is a name of the writer
-  * @return new OutputWriter with given name
-  */
-  public InputOutput getIO(String name, boolean newIO) {
-    return OutputTab.getIO (name, newIO);
-  }
-
-
-
-  /** Getter for node operations.
-  */
-  public NodeOperation getNodeOperation () {
-    if (nodeOperation != null) {
-      return nodeOperation;
-    }
-    
-    synchronized (this) {
-      if (nodeOperation == null) {
-        nodeOperation = new NbNodeOperation ();
-      }
-    }
-    return nodeOperation;
-  }
-
-  /** saves all opened objects */
-  public void saveAll () {
-    DataObject dobj = null;
-    ArrayList bad = new ArrayList ();
-    DataObject[] modifs = DataObject.getRegistry ().getModified ();
-    for (int i = 0; i < modifs.length; i++) {
-      try {
-        dobj = modifs[i];
-        SaveCookie sc = (SaveCookie)dobj.getCookie(SaveCookie.class);
-        if (sc != null) {
-          TopManager.getDefault().setStatusText (
-            java.text.MessageFormat.format (
-              NbBundle.getBundle (NbTopManager.class).getString ("CTL_FMT_SavingMessage"),
-              new Object[] { dobj.getName () }
-            )
-          );
-          sc.save();
+    /** Default repository
+    */
+    public Repository getRepository () {
+        if (defaultRepository != null) {
+            return defaultRepository;
         }
-      } catch (IOException ex) {
-        bad.add (dobj);
-      }
+
+        synchronized (this) {
+            if (defaultRepository == null) {
+                defaultRepository = new Repository (createDefaultFileSystem ());
+            }
+            return defaultRepository;
+        }
     }
-    NotifyDescriptor descriptor;
-    //recode this part to show only one dialog?
-    Iterator ee = bad.iterator ();
-    while (ee.hasNext ()) {
-      descriptor = new NotifyDescriptor.Message(
-        MessageFormat.format (
-          NbBundle.getBundle (NbTopManager.class).getString("CTL_Cannot_save"),
-          new Object[] { ((DataObject)ee.next()).getPrimaryFile().getName() }
-        )
-      );
-      TopManager.getDefault ().notify (descriptor);
+
+
+    /** Accessor to actions manager.
+    */
+    public ActionManager getActionManager () {
+        return ModuleActions.INSTANCE;
     }
-    // notify user that everything is done
-    TopManager.getDefault().setStatusText(
-      NbBundle.getBundle (NbTopManager.class).getString ("MSG_AllSaved"));
-  }    
 
-  /** The ide is left after calling this method.
-  * The method return iff Runtim.getRuntime().exit() fails
-  */
-  public void restart () {
-    // save project
-    exit (RESTART_EXIT_CODE);
-  }
+    /** Default repository.
+    *
 
-  /** Has the same behavior like exit( 0 );
-  */
-  public void exit ( ) {
-    exit( 0 );
-  }
-  
-  /** The ide is left after calling this method. All unsaved files are
-  * saved. Modules are asked to exit
-  * The method return iff Runtim.getRuntime().exit() fails
-  * JVM ends with retValue code.
-  */
-  public void exit (int retValue) {
-    // save all open files
-    if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
-      // save project
-      NbProjectOperation.storeLastProject ();
-    
-      if (ModuleInstaller.exit ()) {
-        Runtime.getRuntime().exit ( retValue );
-      }
+    /** Shows a specified HelpCtx in IDE's help window.
+    * @param helpCtx thehelp to be shown
+    */
+    public void showHelp(HelpCtx helpCtx) {
+        Help.getDefault ().showHelp (helpCtx);
     }
-  }
-  
-  
-  /** Provides access to data loader pool.
-  * @return the loader pool for the system
-  */
-  public DataLoaderPool getLoaderPool () {
-    if (loaderPool != null) {
-      return loaderPool;
+
+    /** Provides support for www documents.
+    * @param url Url of WWW document to be showen.
+    */
+    public void showUrl (URL url) {
+        NbPresenter d = NbPresenter.currentModalDialog;
+        if (d != null) {
+            HtmlBrowser htmlViewer = new HtmlBrowser ();
+            htmlViewer.setURL (url);
+            JDialog d1 = new JDialog (d);
+            d1.getContentPane ().add ("Center", htmlViewer); // NOI18N
+            d1.setModal (true);
+            d1.setTitle (Main.getString ("CTL_Help"));
+            d1.pack ();
+            d1.show ();
+            return;
+        }
+
+
+        if (htmlViewer == null) htmlViewer = new NbBrowser ();
+        htmlViewer.open ();
+        htmlViewer.requestFocus ();
+        htmlViewer.setURL (url);
     }
-    
-    synchronized (this) {
-      if (loaderPool == null) {
-        loaderPool = LoaderPoolNode.getNbLoaderPool ();
-      }
+
+    /** Creates new dialog.
+    */
+    public Dialog createDialog (DialogDescriptor d) {
+        // if there is some modal dialog active, sets it as a parent
+        // of created dialog
+        if (NbPresenter.currentModalDialog != null) {
+            return new NbDialog(d, NbPresenter.currentModalDialog);
+        }
+        // if there is some active top component and has focus, set its frame as
+        // an owner of created dialog, or set main window otherwise
+        TopComponent curTc = TopComponent.getRegistry().getActivated();
+        Frame mainWindow = TopManager.getDefault().getWindowManager().getMainWindow();
+        Frame owner = null;
+        // Beware - main window is always set as a parent for non-modal
+        // dialogs, because they sometims tend to live longer that currently
+        // active top components (find dialog in editor is good example)
+        if ((curTc != null) && d.isModal() &&
+                (SwingUtilities.findFocusOwner(curTc) != null)) {
+            // try to find top component's parent frame
+            Component comp = SwingUtilities.windowForComponent(curTc);
+            while ((comp != null) && !(comp instanceof Frame)) {
+                comp = comp.getParent();
+            }
+            owner = (Frame)comp;
+        }
+        if (owner == null) {
+            owner = mainWindow;
+        }
+        return new NbDialog(d, owner);
     }
-    return loaderPool;
-  }
 
-  /** Obtains current up-to system classloader
-  */
-  public ClassLoader systemClassLoader () {
-    return ModuleClassLoader.systemClassLoader ();
-  }
+    /** Interesting places.
+    */
+    public Places getPlaces () {
+        return NbPlaces.getDefault ();
+    }
 
-  /** Obtains current up-to data te classloader
-  */
-  public ClassLoader currentClassLoader () {
-    return ClassLoaderSupport.currentClassLoader ();
-  }
+    /** Opens specified project. Asks to save the previously opened project.
+    * @exception IOException if error occurs accessing the project
+    * @exception UserCancelException if the selection is interrupted by the user
+    */
+    public void openProject (ProjectCookie project) throws IOException, UserCancelException {
+        NbProjectOperation.setProject (project);
+    }
 
-  
-  
-  /** Add listener */
-  public void addPropertyChangeListener (PropertyChangeListener l) {
-    change.addPropertyChangeListener (l);
-  }
+    /** Get the exception manager for the IDE. It can be used to rafine
+    * handling of exception and the way they are presented to the user.
+    * 
+    * @return the manager
+    */
+    public ErrorManager getErrorManager () {
+        if (errorManager != null) {
+            return errorManager;
+        }
 
-  /** Removes the listener */
-  public void removePropertyChangeListener (PropertyChangeListener l) {
-    change.removePropertyChangeListener (l);
-  }
-  
-  /** Fires property change
-  */
-  public void firePropertyChange (String p, Object o, Object n) {
-    change.firePropertyChange (p, o, n);
-  }
+        synchronized (this) {
+            if (errorManager == null) {
+                errorManager = new NbErrorManager ();
+            }
+        }
+        return errorManager;
+    }
 
-  
-  
-  /** Provides support for www documents.
-  *
-  static HtmlBrowser.BrowserComponent getWWWBrowser () {
-    return htmlViewer;
-  }
-  
-  
-  
-  /**
-  * For externalization of HTMLBrowser.
-  */
-  public static class NbBrowser extends HtmlBrowser.BrowserComponent {
-  
-    static final long serialVersionUID =5000673049583700380L;
-    
+    /** Window manager.
+    */
+    public WindowManager getWindowManager () {
+        return WindowManagerImpl.getDefault();
+    }
+
+    /** @return default root of keyboard shortcuts */
+    public Keymap getGlobalKeymap () {
+        if (shortcutContext != null) {
+            return shortcutContext;
+        }
+
+        synchronized (this) {
+            if (shortcutContext == null) {
+                shortcutContext = new NbKeymap ();
+            }
+        }
+        return shortcutContext;
+    }
+
+    /** Returns global clipboard for the whole system. Must be redefined
+    * in subclasses.
+    *
+    * @return the clipboard for whole system
+    */
+    public ExClipboard getClipboard () {
+        if (clipboard != null) {
+            return clipboard;
+        }
+
+        synchronized (this) {
+            if (clipboard == null) {
+                clipboard = new CoronaClipboard (""); // NOI18N
+            }
+        }
+        return clipboard;
+    }
+
+    /** Returns pool of options.
+    * @return option pool
+    */
+    public ControlPanel getControlPanel () {
+        return NbControlPanel.getDefault ();
+    }
+
+    /** Notifies user by a dialog.
+    * @param descriptor description that contains needed informations
+    * @return the option that has been choosen in the notification
+    */
+    public Object notify (NotifyDescriptor descriptor) {
+        Component focusOwner = null;
+        Component comp = org.openide.windows.TopComponent.getRegistry ().getActivated ();
+        Component win = comp;
+        while ((win != null) && (!(win instanceof Window))) win = win.getParent ();
+        if (win != null) focusOwner = ((Window)win).getFocusOwner ();
+
+        // set different owner if some modal dialog now active
+        NbPresenter presenter = null;
+        if (NbPresenter.currentModalDialog != null) {
+            presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog, true);
+        } else {
+            presenter = new NbPresenter(
+                            descriptor,
+                            TopManager.getDefault().getWindowManager().getMainWindow(),
+                            true
+                        );
+        }
+
+        presenter.setVisible(true);
+
+        if (focusOwner != null) { // if the focusOwner is null (meaning that MainWindow was focused before), the focus will be back on main window
+            win.requestFocus ();
+            comp.requestFocus ();
+            focusOwner.requestFocus ();
+        }
+        return descriptor.getValue();
+    }
+
+    /** Shows specified text in MainWindow's status line.
+    * @param text the text to be shown
+    */
+    public void setStatusText(String text) {
+        if (text == null || text.length () == 0) {
+            text = " ";
+        }
+
+        statusText = text;
+        firePropertyChange (PROP_STATUS_TEXT, null, text);
+    }
+
+    /** Getter for status text.
+    */
+    public String getStatusText () {
+        return statusText;
+    }
+
+    /** Returns currently installed debugger or throws
+    *  DebuggerException (when no debugger is installed)
+    * @return currently installed  debugger.
+    */
+    public Debugger getDebugger () throws DebuggerNotFoundException {
+
+        Debugger d = debugger;
+        if (d == null) {
+            throw new DebuggerNotFoundException();
+        }
+        return d;
+    }
+
+    /** Setter for debugger.
+    */
+    final void setDebugger (Debugger d) {
+        Debugger old;
+
+        synchronized (this) {
+            old = debugger;
+
+            if (old != null && d != null) {
+                throw new SecurityException ();
+            }
+
+            debugger = d;
+        }
+
+        firePropertyChange (PROP_DEBUGGER, old, d);
+    }
+
     /**
-    * For externalization.
+    * @return implementation of ExecutionMachine
     */
-    public NbBrowser () {
+    public ExecutionEngine getExecutionEngine () {
+        if (execEngine != null) {
+            return execEngine;
+        }
+
+        synchronized (this) {
+            if (execEngine == null) {
+                execEngine = org.netbeans.core.execution.ExecutionEngine.getExecutionEngine ();
+            }
+        }
+        return execEngine;
     }
-    
-    /* Deserialize this top component.
-    * @param in the stream to deserialize from
+
+    /** @return implementation of CompilationEngine */
+    public CompilationEngine getCompilationEngine() {
+        if (compilationEngine != null) {
+            return compilationEngine;
+        }
+
+        synchronized (this) {
+            if (compilationEngine == null) {
+                compilationEngine = new CompilationEngineImpl();
+            }
+        }
+        return compilationEngine;
+    }
+
+    /** Services.
     */
-    public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
-      super.readExternal (in);
-      NbTopManager.get ().htmlViewer = this;
+    public org.openide.ServiceType.Registry getServices () {
+        return Services.getDefault ();
     }
-  }
+
+    /** Print output writer.
+    * @return default system output printer
+    */
+    public OutputWriter getStdOut () {
+        return OutputTab.getStdOut ();
+    }
+
+    /** creates new OutputWriter
+    * @param name is a name of the writer
+    * @return new OutputWriter with given name
+    */
+    public InputOutput getIO(String name, boolean newIO) {
+        return OutputTab.getIO (name, newIO);
+    }
+
+
+
+    /** Getter for node operations.
+    */
+    public NodeOperation getNodeOperation () {
+        if (nodeOperation != null) {
+            return nodeOperation;
+        }
+
+        synchronized (this) {
+            if (nodeOperation == null) {
+                nodeOperation = new NbNodeOperation ();
+            }
+        }
+        return nodeOperation;
+    }
+
+    /** saves all opened objects */
+    public void saveAll () {
+        DataObject dobj = null;
+        ArrayList bad = new ArrayList ();
+        DataObject[] modifs = DataObject.getRegistry ().getModified ();
+        for (int i = 0; i < modifs.length; i++) {
+            try {
+                dobj = modifs[i];
+                SaveCookie sc = (SaveCookie)dobj.getCookie(SaveCookie.class);
+                if (sc != null) {
+                    TopManager.getDefault().setStatusText (
+                        java.text.MessageFormat.format (
+                            NbBundle.getBundle (NbTopManager.class).getString ("CTL_FMT_SavingMessage"),
+                            new Object[] { dobj.getName () }
+                        )
+                    );
+                    sc.save();
+                }
+            } catch (IOException ex) {
+                bad.add (dobj);
+            }
+        }
+        NotifyDescriptor descriptor;
+        //recode this part to show only one dialog?
+        Iterator ee = bad.iterator ();
+        while (ee.hasNext ()) {
+            descriptor = new NotifyDescriptor.Message(
+                             MessageFormat.format (
+                                 NbBundle.getBundle (NbTopManager.class).getString("CTL_Cannot_save"),
+                                 new Object[] { ((DataObject)ee.next()).getPrimaryFile().getName() }
+                             )
+                         );
+            TopManager.getDefault ().notify (descriptor);
+        }
+        // notify user that everything is done
+        TopManager.getDefault().setStatusText(
+            NbBundle.getBundle (NbTopManager.class).getString ("MSG_AllSaved"));
+    }
+
+    /** The ide is left after calling this method.
+    * The method return iff Runtim.getRuntime().exit() fails
+    */
+    public void restart () {
+        // save project
+        exit (RESTART_EXIT_CODE);
+    }
+
+    /** Has the same behavior like exit( 0 );
+    */
+    public void exit ( ) {
+        exit( 0 );
+    }
+
+    /** The ide is left after calling this method. All unsaved files are
+    * saved. Modules are asked to exit
+    * The method return iff Runtim.getRuntime().exit() fails
+    * JVM ends with retValue code.
+    */
+    public void exit (int retValue) {
+        // save all open files
+        if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
+            // save project
+            NbProjectOperation.storeLastProject ();
+
+            if (ModuleInstaller.exit ()) {
+                Runtime.getRuntime().exit ( retValue );
+            }
+        }
+    }
+
+
+    /** Provides access to data loader pool.
+    * @return the loader pool for the system
+    */
+    public DataLoaderPool getLoaderPool () {
+        if (loaderPool != null) {
+            return loaderPool;
+        }
+
+        synchronized (this) {
+            if (loaderPool == null) {
+                loaderPool = LoaderPoolNode.getNbLoaderPool ();
+            }
+        }
+        return loaderPool;
+    }
+
+    /** Obtains current up-to system classloader
+    */
+    public ClassLoader systemClassLoader () {
+        return ModuleClassLoader.systemClassLoader ();
+    }
+
+    /** Obtains current up-to data te classloader
+    */
+    public ClassLoader currentClassLoader () {
+        return ClassLoaderSupport.currentClassLoader ();
+    }
+
+
+
+    /** Add listener */
+    public void addPropertyChangeListener (PropertyChangeListener l) {
+        change.addPropertyChangeListener (l);
+    }
+
+    /** Removes the listener */
+    public void removePropertyChangeListener (PropertyChangeListener l) {
+        change.removePropertyChangeListener (l);
+    }
+
+    /** Fires property change
+    */
+    public void firePropertyChange (String p, Object o, Object n) {
+        change.firePropertyChange (p, o, n);
+    }
+
+
+
+    /** Provides support for www documents.
+    *
+    static HtmlBrowser.BrowserComponent getWWWBrowser () {
+      return htmlViewer;
+}
+
+
+
+    /**
+    * For externalization of HTMLBrowser.
+    */
+    public static class NbBrowser extends HtmlBrowser.BrowserComponent {
+
+        static final long serialVersionUID =5000673049583700380L;
+
+        /**
+        * For externalization.
+        */
+        public NbBrowser () {
+        }
+
+        /* Deserialize this top component.
+        * @param in the stream to deserialize from
+        */
+        public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
+            super.readExternal (in);
+            NbTopManager.get ().htmlViewer = this;
+        }
+    }
 }
 /*
 * Log

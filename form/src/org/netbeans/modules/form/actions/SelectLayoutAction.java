@@ -30,176 +30,176 @@ import org.netbeans.modules.form.compat2.layouts.support.DesignSupportLayout;
 * @author   Ian Formanek
 */
 public class SelectLayoutAction extends CookieAction {
-  static final long serialVersionUID =4760011790717781801L;
-  /** generated Serialized Version UID */
-//  static final long serialVersionUID = -5280204757097896304L;
+    static final long serialVersionUID =4760011790717781801L;
+    /** generated Serialized Version UID */
+    //  static final long serialVersionUID = -5280204757097896304L;
 
-  /** @return the mode of action. Possible values are disjunctions of MODE_XXX
-  * constants. */
-  protected int mode() {
-    return MODE_ALL;
-  }
-  
-  /** Creates new set of classes that are tested by the cookie.
-  *
-  * @return list of classes the that the cookie tests
-  */
-  protected Class[] cookieClasses () {
-    return new Class[] { RADComponentCookie.class, FormLayoutCookie.class };
-  }
+    /** @return the mode of action. Possible values are disjunctions of MODE_XXX
+    * constants. */
+    protected int mode() {
+        return MODE_ALL;
+    }
 
-  /** Human presentable name of the action. This should be
-  * presented as an item in a menu.
-  * @return the name of the action
-  */
-  public String getName() {
-    return org.openide.util.NbBundle.getBundle (SelectLayoutAction.class).getString ("ACT_SelectLayout");
-  }
+    /** Creates new set of classes that are tested by the cookie.
+    *
+    * @return list of classes the that the cookie tests
+    */
+    protected Class[] cookieClasses () {
+        return new Class[] { RADComponentCookie.class, FormLayoutCookie.class };
+    }
 
-  /** Help context where to find more about the action.
-  * @return the help context for this action
-  */
-  public HelpCtx getHelpCtx() {
-    return new HelpCtx(SelectLayoutAction.class);
-  }
+    /** Human presentable name of the action. This should be
+    * presented as an item in a menu.
+    * @return the name of the action
+    */
+    public String getName() {
+        return org.openide.util.NbBundle.getBundle (SelectLayoutAction.class).getString ("ACT_SelectLayout");
+    }
 
-  /** Icon resource.
-  * @return name of resource for icon
-  */
-  protected String iconResource () {
-    return "/org/netbeans/modules/form/resources/selectLayout.gif"; // NOI18N
-  }
+    /** Help context where to find more about the action.
+    * @return the help context for this action
+    */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(SelectLayoutAction.class);
+    }
 
-  /**
-  * Standard perform action extended by actually activated nodes.
-  *
-  * @param activatedNodes gives array of actually activated nodes.
-  */
-  protected void performAction (Node[] activatedNodes) {
-  }
+    /** Icon resource.
+    * @return name of resource for icon
+    */
+    protected String iconResource () {
+        return "/org/netbeans/modules/form/resources/selectLayout.gif"; // NOI18N
+    }
 
-  /*
-  * In this method the enable / disable action logic can be defined.
-  *
-  * @param activatedNodes gives array of actually activated nodes.
-  */
-  protected boolean enable (Node[] activatedNodes) {
-    if (super.enable (activatedNodes)) {
-      for (int i = 0; i < activatedNodes.length; i++) {
-        RADVisualContainer container = null;
-        FormLayoutCookie layoutCookie = (FormLayoutCookie)activatedNodes[i].getCookie (FormLayoutCookie.class);
-        if (layoutCookie != null) {
-          container = layoutCookie.getLayoutNode ().getRADContainer ();
-        } else {
-          RADComponentCookie nodeCookie = (RADComponentCookie)activatedNodes[i].getCookie (RADComponentCookie.class);
-          if (nodeCookie != null) {
-            if (nodeCookie.getRADComponent () instanceof RADVisualContainer) {
-              container = (RADVisualContainer)nodeCookie.getRADComponent ();
+    /**
+    * Standard perform action extended by actually activated nodes.
+    *
+    * @param activatedNodes gives array of actually activated nodes.
+    */
+    protected void performAction (Node[] activatedNodes) {
+    }
+
+    /*
+    * In this method the enable / disable action logic can be defined.
+    *
+    * @param activatedNodes gives array of actually activated nodes.
+    */
+    protected boolean enable (Node[] activatedNodes) {
+        if (super.enable (activatedNodes)) {
+            for (int i = 0; i < activatedNodes.length; i++) {
+                RADVisualContainer container = null;
+                FormLayoutCookie layoutCookie = (FormLayoutCookie)activatedNodes[i].getCookie (FormLayoutCookie.class);
+                if (layoutCookie != null) {
+                    container = layoutCookie.getLayoutNode ().getRADContainer ();
+                } else {
+                    RADComponentCookie nodeCookie = (RADComponentCookie)activatedNodes[i].getCookie (RADComponentCookie.class);
+                    if (nodeCookie != null) {
+                        if (nodeCookie.getRADComponent () instanceof RADVisualContainer) {
+                            container = (RADVisualContainer)nodeCookie.getRADComponent ();
+                        }
+                    }
+                }
+
+                if ((container != null) && (!(container.getDesignLayout () instanceof DesignSupportLayout))) {
+                    return true;
+                }
+
             }
-          }
         }
-
-        if ((container != null) && (!(container.getDesignLayout () instanceof DesignSupportLayout))) {
-          return true;
-        }
-
-      }
-    }
-    return false;
-  }
-
-  /** Returns a JMenuItem that presents the Action, that implements this
-  * interface, in a MenuBar.
-  * @return the JMenuItem representation for the Action
-  */
-  public JMenuItem getMenuPresenter() {
-    return getPopupPresenter ();
-  }
-
-  private PaletteItem[] getAllLayouts () {
-    PaletteItem[] allItems = ComponentPalette.getDefault ().getAllItems ();
-    ArrayList layoutsList = new ArrayList ();
-    for (int i = 0; i < allItems.length; i++) {
-      if (allItems[i].isDesignLayout ()) {
-        layoutsList.add (allItems[i]);
-      }
+        return false;
     }
 
-    PaletteItem[] layouts = new PaletteItem[layoutsList.size ()];
-    layoutsList.toArray (layouts);
-    return layouts;
-  }
-    
-  /** Returns a JMenuItem that presents the Action, that implements this
-  * interface, in a Popup Menu.
-  * @return the JMenuItem representation for the Action
-  */
-  public JMenuItem getPopupPresenter() {
-    JMenu popupMenu = new org.openide.awt.JMenuPlus (getName ());
-    popupMenu.setEnabled (isEnabled ());
-    HelpCtx.setHelpIDString (popupMenu, SelectLayoutAction.class.getName ());
-    popupMenu.addMenuListener(new MenuListener() {
-        public void menuSelected(MenuEvent e) {
-          JMenu menu = (JMenu)e.getSource ();
-          if (menu.getMenuComponentCount () > 0) { // [IAN - Patch for Swing 1.1, which throws NullPointerException if removeAll is called on empty uninitialized JMenu]
-            menu.removeAll ();
-          }
-          Node[] nodes = getActivatedNodes ();
-          if (nodes.length == 0) return;
-
-          PaletteItem[] layouts = getAllLayouts ();
-          
-          for (int i = 0; i < layouts.length; i++) {
-            JMenuItem mi = new JMenuItem (layouts[i].getDisplayName ());
-            HelpCtx.setHelpIDString (mi, SelectLayoutAction.class.getName ());
-            menu.add (mi);
-            mi.addActionListener (new LayoutActionListener (nodes, layouts[i]));
-          }
-        }
-        public void menuDeselected(MenuEvent e) {
-        }
-        public void menuCanceled(MenuEvent e) {
-        }
-      }
-    );
-    return popupMenu;
-  }
-
-  class LayoutActionListener implements java.awt.event.ActionListener {
-    private Node[] activatedNodes;
-    private PaletteItem paletteItem;
-    
-    LayoutActionListener (Node[] activatedNodes, PaletteItem paletteItem) {
-      this.activatedNodes = activatedNodes;
-      this.paletteItem = paletteItem;
+    /** Returns a JMenuItem that presents the Action, that implements this
+    * interface, in a MenuBar.
+    * @return the JMenuItem representation for the Action
+    */
+    public JMenuItem getMenuPresenter() {
+        return getPopupPresenter ();
     }
-    
-    public void actionPerformed (java.awt.event.ActionEvent evt) {
-      if (activatedNodes == null) return; // due to the swing's bug with popup menus, it can be null
-      for (int i = 0; i < activatedNodes.length; i++) {
-        RADVisualContainer container = null;
-        FormLayoutCookie layoutCookie = (FormLayoutCookie)activatedNodes[i].getCookie (FormLayoutCookie.class);
-        if (layoutCookie != null) {
-          container = layoutCookie.getLayoutNode ().getRADContainer ();
-        } else {
-          RADComponentCookie nodeCookie = (RADComponentCookie)activatedNodes[i].getCookie (RADComponentCookie.class);
-          if (nodeCookie != null) {
-            if (nodeCookie.getRADComponent () instanceof RADVisualContainer) {
-              container = (RADVisualContainer)nodeCookie.getRADComponent ();
+
+    private PaletteItem[] getAllLayouts () {
+        PaletteItem[] allItems = ComponentPalette.getDefault ().getAllItems ();
+        ArrayList layoutsList = new ArrayList ();
+        for (int i = 0; i < allItems.length; i++) {
+            if (allItems[i].isDesignLayout ()) {
+                layoutsList.add (allItems[i]);
             }
-          }
         }
 
-        if (container == null) {
-          continue;
-        }
-
-        // set the selected layout on the activated container 
-        // (or activated layout's parent container)
-        container.getFormManager ().setDesignLayout (container, paletteItem);
-      }
+        PaletteItem[] layouts = new PaletteItem[layoutsList.size ()];
+        layoutsList.toArray (layouts);
+        return layouts;
     }
-  }
+
+    /** Returns a JMenuItem that presents the Action, that implements this
+    * interface, in a Popup Menu.
+    * @return the JMenuItem representation for the Action
+    */
+    public JMenuItem getPopupPresenter() {
+        JMenu popupMenu = new org.openide.awt.JMenuPlus (getName ());
+        popupMenu.setEnabled (isEnabled ());
+        HelpCtx.setHelpIDString (popupMenu, SelectLayoutAction.class.getName ());
+        popupMenu.addMenuListener(new MenuListener() {
+                                      public void menuSelected(MenuEvent e) {
+                                          JMenu menu = (JMenu)e.getSource ();
+                                          if (menu.getMenuComponentCount () > 0) { // [IAN - Patch for Swing 1.1, which throws NullPointerException if removeAll is called on empty uninitialized JMenu]
+                                              menu.removeAll ();
+                                          }
+                                          Node[] nodes = getActivatedNodes ();
+                                          if (nodes.length == 0) return;
+
+                                          PaletteItem[] layouts = getAllLayouts ();
+
+                                          for (int i = 0; i < layouts.length; i++) {
+                                              JMenuItem mi = new JMenuItem (layouts[i].getDisplayName ());
+                                              HelpCtx.setHelpIDString (mi, SelectLayoutAction.class.getName ());
+                                              menu.add (mi);
+                                              mi.addActionListener (new LayoutActionListener (nodes, layouts[i]));
+                                          }
+                                      }
+                                      public void menuDeselected(MenuEvent e) {
+                                      }
+                                      public void menuCanceled(MenuEvent e) {
+                                      }
+                                  }
+                                 );
+        return popupMenu;
+    }
+
+    class LayoutActionListener implements java.awt.event.ActionListener {
+        private Node[] activatedNodes;
+        private PaletteItem paletteItem;
+
+        LayoutActionListener (Node[] activatedNodes, PaletteItem paletteItem) {
+            this.activatedNodes = activatedNodes;
+            this.paletteItem = paletteItem;
+        }
+
+        public void actionPerformed (java.awt.event.ActionEvent evt) {
+            if (activatedNodes == null) return; // due to the swing's bug with popup menus, it can be null
+            for (int i = 0; i < activatedNodes.length; i++) {
+                RADVisualContainer container = null;
+                FormLayoutCookie layoutCookie = (FormLayoutCookie)activatedNodes[i].getCookie (FormLayoutCookie.class);
+                if (layoutCookie != null) {
+                    container = layoutCookie.getLayoutNode ().getRADContainer ();
+                } else {
+                    RADComponentCookie nodeCookie = (RADComponentCookie)activatedNodes[i].getCookie (RADComponentCookie.class);
+                    if (nodeCookie != null) {
+                        if (nodeCookie.getRADComponent () instanceof RADVisualContainer) {
+                            container = (RADVisualContainer)nodeCookie.getRADComponent ();
+                        }
+                    }
+                }
+
+                if (container == null) {
+                    continue;
+                }
+
+                // set the selected layout on the activated container
+                // (or activated layout's parent container)
+                container.getFormManager ().setDesignLayout (container, paletteItem);
+            }
+        }
+    }
 
 }
 /*

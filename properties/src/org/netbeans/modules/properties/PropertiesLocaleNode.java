@@ -52,203 +52,203 @@ import org.openide.util.datatransfer.PasteType;
 */
 
 public class PropertiesLocaleNode extends FileEntryNode {
-      
-  static final String PROPERTIES_ICON_BASE2 = PropertiesDataObject.PROPERTIES_ICON_BASE2;
-        
-  /** Creates a new PropertiesLocaleNode for the given locale-specific file */
-  public PropertiesLocaleNode (PropertiesFileEntry fe) {
-    super(fe, fe.getChildren());
-    setDisplayName(Util.getPropertiesLabel(fe));
-    setIconBase(PROPERTIES_ICON_BASE2);
-    setDefaultAction (SystemAction.get(OpenAction.class));
 
-    getCookieSet().add(((PropertiesDataObject)getFileEntry().getDataObject()).getOpenSupport());
-  }
-  
-  /** Lazily initialize set of node's actions (overridable).
-  * The default implementation returns <code>null</code>.
-  * <p><em>Warning:</em> do not call {@link #getActions} within this method.
-  * If necessary, call {@link NodeOp#getDefaultActions} to merge in.
-  * @return array of actions for this node, or <code>null</code> to use the default node actions
-  */
-  protected SystemAction[] createActions () {
-    return new SystemAction[] {
-      SystemAction.get(OpenAction.class),
-      SystemAction.get(EditAction.class),
-      SystemAction.get(FileSystemAction.class),
-      null,
-      SystemAction.get(CutAction.class),
-      SystemAction.get(CopyAction.class),
-      SystemAction.get(PasteAction.class),
-      null,
-      SystemAction.get(DeleteAction.class),
-      SystemAction.get(LangRenameAction.class),
-      null,
-      SystemAction.get(NewAction.class),
-      SystemAction.get(SaveAsTemplateAction.class),
-      null,
-      SystemAction.get(ToolsAction.class),
-      SystemAction.get(PropertiesAction.class)
-    };
-  }
+    static final String PROPERTIES_ICON_BASE2 = PropertiesDataObject.PROPERTIES_ICON_BASE2;
 
-  /** Set the system name. Fires a property change event.
-  * Also may change the display name according to {@link #displayFormat}.
-  *
-  * @param s the new name
-  */
-  public void setName (String s) {
-    super.setName (s);
-    setDisplayName (Util.getPropertiesLabel(getFileEntry()));
-  }
+    /** Creates a new PropertiesLocaleNode for the given locale-specific file */
+    public PropertiesLocaleNode (PropertiesFileEntry fe) {
+        super(fe, fe.getChildren());
+        setDisplayName(Util.getPropertiesLabel(fe));
+        setIconBase(PROPERTIES_ICON_BASE2);
+        setDefaultAction (SystemAction.get(OpenAction.class));
 
-  /** Clones this node */
-  public Node cloneNode() {
-    return new PropertiesLocaleNode((PropertiesFileEntry)getFileEntry());
-  }                                
-                
-  /** This node can be renamed. */              
-  public boolean canRename() {
-    return getFileEntry().isDeleteAllowed ();
-  }
-                                      
-  /** Returns a string from my bundle. */                                    
-  private String getString(String what) {
-    return NbBundle.getBundle(PropertiesLocaleNode.class).getString(what);
-  }
-  
-  /** Returns all the item in addition to "normal" cookies. */
-  public Node.Cookie getCookie(Class cls) {
-    if (cls.isInstance(getFileEntry())) return getFileEntry();
-    return super.getCookie(cls);
-  }
-
-  /* List new types that can be created in this node.
-  * @return new types
-  */
-  public NewType[] getNewTypes () {
-    return new NewType[] {
-      new NewType() {
-      
-        public String getName() {
-          return NbBundle.getBundle(PropertiesDataNode.class).getString("LAB_NewPropertyAction");
-        }
-        
-        public HelpCtx getHelpCtx() {
-          return new HelpCtx (PropertiesLocaleNode.class.getName () + ".new_property");
-        }                             
-         
-        public void create() throws IOException {
-          NewPropertyDialog dia = new NewPropertyDialog();
-          Dialog d = dia.getDialog();
-          dia.focusKey();
-          d.setVisible(true);
-          dia.focusKey();
-          if (dia.getOKPressed ()) {                            
-            if (((PropertiesFileEntry)getFileEntry()).getHandler().getStructure().addItem(
-                  dia.getKeyText(), dia.getValueText(), dia.getCommentText()))
-              ;
-            else {
-              NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                java.text.MessageFormat.format(
-                  NbBundle.getBundle(PropertiesLocaleNode.class).getString("MSG_KeyExists"),
-                  new Object[] {dia.getKeyText()}),
-                NotifyDescriptor.ERROR_MESSAGE);
-              TopManager.getDefault().notify(msg);
-            }  
-          }
-        }
-         
-      } // end of inner class
-    };
-  }
-
-  /* Creates paste types for this node. */
-  protected void createPasteTypes(Transferable t, List s) {
-    super.createPasteTypes(t, s);
-    Element.ItemElem item;
-    Node n = NodeTransfer.node(t, NodeTransfer.MOVE);
-    // cut
-    if (n != null && n.canDestroy ()) {
-      item = (Element.ItemElem)n.getCookie(Element.ItemElem.class);
-      if (item != null) {
-        // are we pasting into the same node
-        Node n2 = getChildren().findChild(item.getKey());
-        if (n == n2)
-          return;
-        s.add(new KeyPasteType(item, n, KeyPasteType.MODE_PASTE_WITH_VALUE));
-        s.add(new KeyPasteType(item, n, KeyPasteType.MODE_PASTE_WITHOUT_VALUE));
-        return;
-      }
-    } 
-    // copy
-    else {
-      item = (Element.ItemElem)NodeTransfer.cookie(t, NodeTransfer.COPY, Element.ItemElem.class);
-      if (item != null) {
-        s.add(new KeyPasteType(item, null, KeyPasteType.MODE_PASTE_WITH_VALUE));
-        s.add(new KeyPasteType(item, null, KeyPasteType.MODE_PASTE_WITHOUT_VALUE));
-        return;
-      }
-    }
-  }	
-  
-  /** Paste type for keys. */
-  private class KeyPasteType extends PasteType {
-    /** transferred item */
-    private Element.ItemElem item;
-		
-    /** the node to destroy or null */
-    private Node node;
-    
-    /** Paste mode */
-    int mode;
-    
-    public static final int MODE_PASTE_WITH_VALUE = 1;
-    public static final int MODE_PASTE_WITHOUT_VALUE = 2;
-		
-    /** Constructs new KeyPasteType for the specific type of operation paste.*/
-    public KeyPasteType(Element.ItemElem item, Node node, int mode) {
-      this.item = item;
-      this.node = node;
-      this.mode = mode;
-    }
-	
-    /* @return Human presentable name of this paste type. */
-    public String getName() {                                                
-      String pasteKey = mode == 1 ? "CTL_PasteKeyValue" : "CTL_PasteKeyNoValue";
-      return NbBundle.getBundle(PropertiesLocaleNode.class).getString(pasteKey);
+        getCookieSet().add(((PropertiesDataObject)getFileEntry().getDataObject()).getOpenSupport());
     }
 
-    /** Performs the paste action.
-    * @return Transferable which should be inserted into the clipboard after
-    *         paste action. It can be null, which means that clipboard content
-    *         should stay the same.
+    /** Lazily initialize set of node's actions (overridable).
+    * The default implementation returns <code>null</code>.
+    * <p><em>Warning:</em> do not call {@link #getActions} within this method.
+    * If necessary, call {@link NodeOp#getDefaultActions} to merge in.
+    * @return array of actions for this node, or <code>null</code> to use the default node actions
     */
-    public Transferable paste() throws IOException {
-      PropertiesStructure ps = ((PropertiesFileEntry)getFileEntry()).getHandler().getStructure();
-      String value;
-      if (mode == MODE_PASTE_WITH_VALUE)
-        value = item.getValue();
-      else 
-        value = ""; 
-      if (ps != null) {
-        Element.ItemElem newItem = ps.getItem(item.getKey());
-        if (newItem == null) {
-          ps.addItem(item.getKey(), value, item.getComment());
-        }                                                    
-        else {
-          newItem.setValue(value);
-          newItem.setComment(item.getComment());
-        }
-        if (node != null) 
-          node.destroy();
-      }
-      
-      return null;
-    }              
-  }  
+    protected SystemAction[] createActions () {
+        return new SystemAction[] {
+                   SystemAction.get(OpenAction.class),
+                   SystemAction.get(EditAction.class),
+                   SystemAction.get(FileSystemAction.class),
+                   null,
+                   SystemAction.get(CutAction.class),
+                   SystemAction.get(CopyAction.class),
+                   SystemAction.get(PasteAction.class),
+                   null,
+                   SystemAction.get(DeleteAction.class),
+                   SystemAction.get(LangRenameAction.class),
+                   null,
+                   SystemAction.get(NewAction.class),
+                   SystemAction.get(SaveAsTemplateAction.class),
+                   null,
+                   SystemAction.get(ToolsAction.class),
+                   SystemAction.get(PropertiesAction.class)
+               };
+    }
 
-}                                                
+    /** Set the system name. Fires a property change event.
+    * Also may change the display name according to {@link #displayFormat}.
+    *
+    * @param s the new name
+    */
+    public void setName (String s) {
+        super.setName (s);
+        setDisplayName (Util.getPropertiesLabel(getFileEntry()));
+    }
+
+    /** Clones this node */
+    public Node cloneNode() {
+        return new PropertiesLocaleNode((PropertiesFileEntry)getFileEntry());
+    }
+
+    /** This node can be renamed. */
+    public boolean canRename() {
+        return getFileEntry().isDeleteAllowed ();
+    }
+
+    /** Returns a string from my bundle. */
+    private String getString(String what) {
+        return NbBundle.getBundle(PropertiesLocaleNode.class).getString(what);
+    }
+
+    /** Returns all the item in addition to "normal" cookies. */
+    public Node.Cookie getCookie(Class cls) {
+        if (cls.isInstance(getFileEntry())) return getFileEntry();
+        return super.getCookie(cls);
+    }
+
+    /* List new types that can be created in this node.
+    * @return new types
+    */
+    public NewType[] getNewTypes () {
+        return new NewType[] {
+                   new NewType() {
+
+                       public String getName() {
+                           return NbBundle.getBundle(PropertiesDataNode.class).getString("LAB_NewPropertyAction");
+                       }
+
+                       public HelpCtx getHelpCtx() {
+                           return new HelpCtx (PropertiesLocaleNode.class.getName () + ".new_property");
+                       }
+
+                       public void create() throws IOException {
+                           NewPropertyDialog dia = new NewPropertyDialog();
+                           Dialog d = dia.getDialog();
+                           dia.focusKey();
+                           d.setVisible(true);
+                           dia.focusKey();
+                           if (dia.getOKPressed ()) {
+                               if (((PropertiesFileEntry)getFileEntry()).getHandler().getStructure().addItem(
+                                           dia.getKeyText(), dia.getValueText(), dia.getCommentText()))
+                                   ;
+                               else {
+                                   NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                                                                      java.text.MessageFormat.format(
+                                                                          NbBundle.getBundle(PropertiesLocaleNode.class).getString("MSG_KeyExists"),
+                                                                          new Object[] {dia.getKeyText()}),
+                                                                      NotifyDescriptor.ERROR_MESSAGE);
+                                   TopManager.getDefault().notify(msg);
+                               }
+                           }
+                       }
+
+                   } // end of inner class
+               };
+    }
+
+    /* Creates paste types for this node. */
+    protected void createPasteTypes(Transferable t, List s) {
+        super.createPasteTypes(t, s);
+        Element.ItemElem item;
+        Node n = NodeTransfer.node(t, NodeTransfer.MOVE);
+        // cut
+        if (n != null && n.canDestroy ()) {
+            item = (Element.ItemElem)n.getCookie(Element.ItemElem.class);
+            if (item != null) {
+                // are we pasting into the same node
+                Node n2 = getChildren().findChild(item.getKey());
+                if (n == n2)
+                    return;
+                s.add(new KeyPasteType(item, n, KeyPasteType.MODE_PASTE_WITH_VALUE));
+                s.add(new KeyPasteType(item, n, KeyPasteType.MODE_PASTE_WITHOUT_VALUE));
+                return;
+            }
+        }
+        // copy
+        else {
+            item = (Element.ItemElem)NodeTransfer.cookie(t, NodeTransfer.COPY, Element.ItemElem.class);
+            if (item != null) {
+                s.add(new KeyPasteType(item, null, KeyPasteType.MODE_PASTE_WITH_VALUE));
+                s.add(new KeyPasteType(item, null, KeyPasteType.MODE_PASTE_WITHOUT_VALUE));
+                return;
+            }
+        }
+    }
+
+    /** Paste type for keys. */
+    private class KeyPasteType extends PasteType {
+        /** transferred item */
+        private Element.ItemElem item;
+
+        /** the node to destroy or null */
+        private Node node;
+
+        /** Paste mode */
+        int mode;
+
+        public static final int MODE_PASTE_WITH_VALUE = 1;
+        public static final int MODE_PASTE_WITHOUT_VALUE = 2;
+
+        /** Constructs new KeyPasteType for the specific type of operation paste.*/
+        public KeyPasteType(Element.ItemElem item, Node node, int mode) {
+            this.item = item;
+            this.node = node;
+            this.mode = mode;
+        }
+
+        /* @return Human presentable name of this paste type. */
+        public String getName() {
+            String pasteKey = mode == 1 ? "CTL_PasteKeyValue" : "CTL_PasteKeyNoValue";
+            return NbBundle.getBundle(PropertiesLocaleNode.class).getString(pasteKey);
+        }
+
+        /** Performs the paste action.
+        * @return Transferable which should be inserted into the clipboard after
+        *         paste action. It can be null, which means that clipboard content
+        *         should stay the same.
+        */
+        public Transferable paste() throws IOException {
+            PropertiesStructure ps = ((PropertiesFileEntry)getFileEntry()).getHandler().getStructure();
+            String value;
+            if (mode == MODE_PASTE_WITH_VALUE)
+                value = item.getValue();
+            else
+                value = "";
+            if (ps != null) {
+                Element.ItemElem newItem = ps.getItem(item.getKey());
+                if (newItem == null) {
+                    ps.addItem(item.getKey(), value, item.getComment());
+                }
+                else {
+                    newItem.setValue(value);
+                    newItem.setComment(item.getComment());
+                }
+                if (node != null)
+                    node.destroy();
+            }
+
+            return null;
+        }
+    }
+
+}
 
 /*
  * <<Log>>

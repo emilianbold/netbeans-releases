@@ -19,31 +19,31 @@ package org.netbeans.modules.beans;
 * @author Petr Hrebejk
 */
 public interface PatternProperties {
-  /** Name of type property for all {@link PropertyPattern}s.
-  */
-  public static final String PROP_TYPE = "type"; // NOI18N
+    /** Name of type property for all {@link PropertyPattern}s.
+    */
+    public static final String PROP_TYPE = "type"; // NOI18N
 
-  public static final String PROP_MODE = "mode"; // NOI18N
+    public static final String PROP_MODE = "mode"; // NOI18N
 
-  public static final String PROP_NAME = "name"; // NOI18N
+    public static final String PROP_NAME = "name"; // NOI18N
 
-  public static final String PROP_GETTER = "getter"; // NOI18N
+    public static final String PROP_GETTER = "getter"; // NOI18N
 
-  public static final String PROP_SETTER = "setter"; // NOI18N
+    public static final String PROP_SETTER = "setter"; // NOI18N
 
-  public static final String PROP_ESTIMATEDFIELD = "estimatedField"; // NOI18N
+    public static final String PROP_ESTIMATEDFIELD = "estimatedField"; // NOI18N
 
-  public static final String PROP_INDEXEDTYPE = "indexedType"; // NOI18N
+    public static final String PROP_INDEXEDTYPE = "indexedType"; // NOI18N
 
-  public static final String PROP_INDEXEDGETTER = "indexedGetter"; // NOI18N
+    public static final String PROP_INDEXEDGETTER = "indexedGetter"; // NOI18N
 
-  public static final String PROP_INDEXEDSETTER = "indexedSetter"; // NOI18N
+    public static final String PROP_INDEXEDSETTER = "indexedSetter"; // NOI18N
 
-  public static final String PROP_ADDLISTENER = "addListener"; // NOI18N
-  
-  public static final String PROP_REMOVELISTENER = "removeListener"; // NOI18N
+    public static final String PROP_ADDLISTENER = "addListener"; // NOI18N
 
-  public static final String PROP_ISUNICAST = "isUnicast"; // NOI18N
+    public static final String PROP_REMOVELISTENER = "removeListener"; // NOI18N
+
+    public static final String PROP_ISUNICAST = "isUnicast"; // NOI18N
 }
 
 /*

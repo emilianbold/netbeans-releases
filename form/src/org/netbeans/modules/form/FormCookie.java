@@ -22,11 +22,11 @@ import org.openide.nodes.Node;
 */
 public interface FormCookie extends Node.Cookie {
 
-  /** Focuses the source editor */
-  public void gotoEditor();
+    /** Focuses the source editor */
+    public void gotoEditor();
 
-  /** Focuses the form */
-  public void gotoForm();
+    /** Focuses the form */
+    public void gotoForm();
 
 }
 

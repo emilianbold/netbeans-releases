@@ -25,23 +25,23 @@ import org.openide.util.NbBundle;
 * @version 1.00
 */
 public class AllOptionsBeanInfo extends BaseOptionsBeanInfo {
-  
-  public static final String[] PROP_NAMES = new String[] {
-    BaseOptions.KEY_BINDING_LIST_PROP
-  };
 
-  public AllOptionsBeanInfo() {
-    super("/org/netbeans/modules/editor/resources/allOptions", "base_"); // NOI18N
-  }
+    public static final String[] PROP_NAMES = new String[] {
+                BaseOptions.KEY_BINDING_LIST_PROP
+            };
 
-  protected Class getBeanClass() {
-    return AllOptions.class;
-  }
-  
-  protected String[] getPropNames() {
-    return PROP_NAMES;
-  }
-      
+    public AllOptionsBeanInfo() {
+        super("/org/netbeans/modules/editor/resources/allOptions", "base_"); // NOI18N
+    }
+
+    protected Class getBeanClass() {
+        return AllOptions.class;
+    }
+
+    protected String[] getPropNames() {
+        return PROP_NAMES;
+    }
+
 }
 
 /*

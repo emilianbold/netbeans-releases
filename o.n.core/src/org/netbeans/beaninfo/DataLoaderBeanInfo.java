@@ -22,49 +22,49 @@ import org.openide.util.NbBundle;
 
 /** BeanInfo for {@link DataLoader}. */
 public class DataLoaderBeanInfo extends SimpleBeanInfo {
-  
-  public PropertyDescriptor[] getPropertyDescriptors () {
-    try {
-      PropertyDescriptor representationClass = new PropertyDescriptor ("representationClass", DataLoader.class, "getRepresentationClass", null); // NOI18N
-      representationClass.setDisplayName (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("PROP_representationClass"));
-      representationClass.setShortDescription (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("HINT_representationClass"));
-      representationClass.setExpert (true);
-      PropertyDescriptor actions = new PropertyDescriptor ("actions", DataLoader.class); // NOI18N
-      actions.setDisplayName (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("PROP_actions"));
-      actions.setShortDescription (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("HINT_actions"));
-      actions.setPropertyEditorClass (ActionsEditor.class);
-      return new PropertyDescriptor[] { actions, representationClass };
-    } catch (IntrospectionException ie) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-        ie.printStackTrace ();
-      return null;
+
+    public PropertyDescriptor[] getPropertyDescriptors () {
+        try {
+            PropertyDescriptor representationClass = new PropertyDescriptor ("representationClass", DataLoader.class, "getRepresentationClass", null); // NOI18N
+            representationClass.setDisplayName (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("PROP_representationClass"));
+            representationClass.setShortDescription (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("HINT_representationClass"));
+            representationClass.setExpert (true);
+            PropertyDescriptor actions = new PropertyDescriptor ("actions", DataLoader.class); // NOI18N
+            actions.setDisplayName (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("PROP_actions"));
+            actions.setShortDescription (NbBundle.getBundle (DataLoaderBeanInfo.class).getString ("HINT_actions"));
+            actions.setPropertyEditorClass (ActionsEditor.class);
+            return new PropertyDescriptor[] { actions, representationClass };
+        } catch (IntrospectionException ie) {
+            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
+                ie.printStackTrace ();
+            return null;
+        }
     }
-  }
-  
-  private static Image icon;
-  private static Image icon32;
-  public Image getIcon (int type) {
-    if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-      if (icon == null) icon = loadImage ("/org/netbeans/core/resources/objectTypes.gif"); // NOI18N
-      return icon;
-    } else {
-      if (icon32 == null) icon32 = loadImage ("/org/netbeans/core/resources/objectTypes32.gif"); // NOI18N
-      return icon32;
+
+    private static Image icon;
+    private static Image icon32;
+    public Image getIcon (int type) {
+        if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
+            if (icon == null) icon = loadImage ("/org/netbeans/core/resources/objectTypes.gif"); // NOI18N
+            return icon;
+        } else {
+            if (icon32 == null) icon32 = loadImage ("/org/netbeans/core/resources/objectTypes32.gif"); // NOI18N
+            return icon32;
+        }
     }
-  }
-  
-  public static class ActionsEditor extends PropertyEditorSupport {
-    
-    public boolean supportsCustomEditor () {
-      return true;
+
+    public static class ActionsEditor extends PropertyEditorSupport {
+
+        public boolean supportsCustomEditor () {
+            return true;
+        }
+
+        public Component getCustomEditor () {
+            return new LoaderActionsPanel (this);
+        }
+
     }
-    
-    public Component getCustomEditor () {
-      return new LoaderActionsPanel (this);
-    }
-    
-  }
-  
+
 }
 
 /*

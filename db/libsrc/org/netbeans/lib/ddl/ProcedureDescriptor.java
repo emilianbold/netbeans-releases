@@ -17,26 +17,26 @@ import java.util.Vector;
 import java.sql.*;
 import org.netbeans.lib.ddl.*;
 
-/** 
+/**
 * Interface of procedure description object.
 * @author Slavek Psenicka
 */
 public interface ProcedureDescriptor {
 
-	/** Returns catalog */
-	public String getCatalog();
-	/** Sets catalog */
-	public void setCatalog(String cname);
+    /** Returns catalog */
+    public String getCatalog();
+    /** Sets catalog */
+    public void setCatalog(String cname);
 
-	/** Returns text of procedure */
-	public String getText();
-	/** Sets name of table */
-	public void setText(String text);
-	
-	/** Returns arguments */
-	public Vector getArguments();
-	/** Sets argument array */
-	public void setArguments(Vector args);
+    /** Returns text of procedure */
+    public String getText();
+    /** Sets name of table */
+    public void setText(String text);
+
+    /** Returns arguments */
+    public Vector getArguments();
+    /** Sets argument array */
+    public void setArguments(Vector args);
 }
 
 /*

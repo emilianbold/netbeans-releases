@@ -27,57 +27,57 @@ import org.netbeans.modules.db.explorer.nodes.*;
 
 public class DatabaseAction extends CookieAction
 {
-	protected String aname;
-	protected String nodename;
-	
-        static final long serialVersionUID =2711301279685474175L;
-	public String getName()
-	{
-		return aname;
-	}
-	
-	public void setName(String name)
-	{
-		aname = name;	
-	}
-	
-	public String getNode()
-	{
-		return nodename;
-	}
-	
-	public void setNode(String name)
-	{
-		nodename = name;	
-	}
+    protected String aname;
+    protected String nodename;
+
+    static final long serialVersionUID =2711301279685474175L;
+    public String getName()
+    {
+        return aname;
+    }
+
+    public void setName(String name)
+    {
+        aname = name;
+    }
+
+    public String getNode()
+    {
+        return nodename;
+    }
+
+    public void setNode(String name)
+    {
+        nodename = name;
+    }
 
     /** Help context where to find more about the paste type action.
     * @return the help context for this action
     */
     public HelpCtx getHelpCtx() {
-      return new HelpCtx (DatabaseAction.class);
+        return new HelpCtx (DatabaseAction.class);
     }
 
-	protected Class[] cookieClasses()
-	{
-		return new Class[] {
-			this.getClass()
-		};	
-	}
+    protected Class[] cookieClasses()
+    {
+        return new Class[] {
+                   this.getClass()
+               };
+    }
 
-	protected int mode()
-	{
-		return MODE_ONE;
-	}
+    protected int mode()
+    {
+        return MODE_ONE;
+    }
 
-	protected boolean enable(Node[] activatedNodes)
-	{		
-		return true;
-	}
+    protected boolean enable(Node[] activatedNodes)
+    {
+        return true;
+    }
 
-	public void performAction (Node[] activatedNodes) 
-	{
-	}
+    public void performAction (Node[] activatedNodes)
+    {
+    }
 }
 
 /*

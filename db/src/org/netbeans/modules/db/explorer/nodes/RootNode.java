@@ -34,40 +34,40 @@ import org.netbeans.modules.db.explorer.infos.*;
 */
 public class RootNode extends DatabaseNode
 {
-	/** Stores DBNode's connections info */
-	private static DatabaseOption option = null;
+    /** Stores DBNode's connections info */
+    private static DatabaseOption option = null;
 
-	/** DDLFactory */
-	SpecificationFactory sfactory;
+    /** DDLFactory */
+    SpecificationFactory sfactory;
 
-	public static DatabaseOption getOption()
-	{
-		if (option == null) {
-			option = (DatabaseOption)SystemOption.findObject(DatabaseOption.class, false);
-		}
-		
-		return option;
-	}
+    public static DatabaseOption getOption()
+    {
+        if (option == null) {
+            option = (DatabaseOption)SystemOption.findObject(DatabaseOption.class, false);
+        }
 
-	public RootNode()
-	{
-		try {
-			sfactory = new SpecificationFactory();
-			DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(null, "root");
-			if (sfactory != null) nfo.setSpecificationFactory(sfactory);
-			else throw new Exception("no specification factory");
-						
-			setInfo(nfo);
-			getInfo().setNode(this);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+        return option;
+    }
 
- 	public boolean canRename()
-  	{
-  		return true;	
-  	}
+    public RootNode()
+    {
+        try {
+            sfactory = new SpecificationFactory();
+            DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(null, "root");
+            if (sfactory != null) nfo.setSpecificationFactory(sfactory);
+            else throw new Exception("no specification factory");
+
+            setInfo(nfo);
+            getInfo().setNode(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean canRename()
+    {
+        return true;
+    }
 }
 
 /*

@@ -29,90 +29,90 @@ import org.netbeans.modules.db.explorer.dlg.UnsupportedDatabaseDialog;
 import org.openide.TopManager;
 
 public class ConnectionNodeInfo extends DatabaseNodeInfo
-implements ConnectionOperations
+            implements ConnectionOperations
 {
-  static final long serialVersionUID =-8322295510950137669L;
-	public void connect(String dbsys)
-	throws DatabaseException
-	{
-		String drvurl = getDriver();
-		String dburl = getDatabase();
-		
-		Properties dbprops = getConnectionProperties();
-		try {
+    static final long serialVersionUID =-8322295510950137669L;
+    public void connect(String dbsys)
+    throws DatabaseException
+    {
+        String drvurl = getDriver();
+        String dburl = getDatabase();
 
-			DatabaseConnection con = new DatabaseConnection(drvurl, dburl, getUser(), getPassword());
-			Connection connection = con.createJDBCConnection();
-			SpecificationFactory factory = (SpecificationFactory)getSpecificationFactory();
-			Specification spec;
-			DriverSpecification drvSpec;
-      
-			if (dbsys != null) {
-				spec = (Specification)factory.createSpecification(con, dbsys, connection);
-			} else spec = (Specification)factory.createSpecification(con, connection);
-			setSpecification(spec);
-      
-      drvSpec = factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
-			setDriverSpecification(drvSpec);
-      
-			setConnection(connection); // fires change
-		} catch (DatabaseProductNotFoundException e) {
-			
-			UnsupportedDatabaseDialog dlg = new UnsupportedDatabaseDialog();
-			dlg.show();
-			switch (dlg.getResult()) {
-				case UnsupportedDatabaseDialog.GENERIC: connect("GenericDatabaseSystem"); break;
-				case UnsupportedDatabaseDialog.READONLY: connectReadOnly(); break;
-				default: return;
-			}
+        Properties dbprops = getConnectionProperties();
+        try {
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new DatabaseException(e.getMessage());	
-		}
-	}
+            DatabaseConnection con = new DatabaseConnection(drvurl, dburl, getUser(), getPassword());
+            Connection connection = con.createJDBCConnection();
+            SpecificationFactory factory = (SpecificationFactory)getSpecificationFactory();
+            Specification spec;
+            DriverSpecification drvSpec;
 
-	public void connect()
-	throws DatabaseException
-	{
-		connect(null);
-	}
+            if (dbsys != null) {
+                spec = (Specification)factory.createSpecification(con, dbsys, connection);
+            } else spec = (Specification)factory.createSpecification(con, connection);
+            setSpecification(spec);
 
-	public void connectReadOnly()
-	throws DatabaseException
-	{
-		setReadOnly(true);
-		connect("GenericDatabaseSystem");
-	}
+            drvSpec = factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
+            setDriverSpecification(drvSpec);
 
-	public void disconnect()
-	throws DatabaseException
-	{
-		Connection connection = getConnection();
-		if (connection != null) {
-			try {
-	    	connection.close();
-				setConnection(null); // fires change
-			} catch (Exception e) {
-				throw new DatabaseException("unable to disconnect; "+e.getMessage());	
-			}
-	    }
-	}
+            setConnection(connection); // fires change
+        } catch (DatabaseProductNotFoundException e) {
 
-	public void delete()
-	throws IOException
-	{
-		try {
-			disconnect();
-			Vector cons = RootNode.getOption().getConnections();
-			DatabaseConnection cinfo = (DatabaseConnection)getDatabaseConnection();
-			if (cons.contains(cinfo)) cons.remove(cinfo);
-//			throw new Exception("connection does not exist");
-//			cons.remove(cinfo);
-		} catch (Exception e) {
-			throw new IOException(e.getMessage());
-		}
-	}
+            UnsupportedDatabaseDialog dlg = new UnsupportedDatabaseDialog();
+            dlg.show();
+            switch (dlg.getResult()) {
+            case UnsupportedDatabaseDialog.GENERIC: connect("GenericDatabaseSystem"); break;
+            case UnsupportedDatabaseDialog.READONLY: connectReadOnly(); break;
+            default: return;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new DatabaseException(e.getMessage());
+        }
+    }
+
+    public void connect()
+    throws DatabaseException
+    {
+        connect(null);
+    }
+
+    public void connectReadOnly()
+    throws DatabaseException
+    {
+        setReadOnly(true);
+        connect("GenericDatabaseSystem");
+    }
+
+    public void disconnect()
+    throws DatabaseException
+    {
+        Connection connection = getConnection();
+        if (connection != null) {
+            try {
+                connection.close();
+                setConnection(null); // fires change
+            } catch (Exception e) {
+                throw new DatabaseException("unable to disconnect; "+e.getMessage());
+            }
+        }
+    }
+
+    public void delete()
+    throws IOException
+    {
+        try {
+            disconnect();
+            Vector cons = RootNode.getOption().getConnections();
+            DatabaseConnection cinfo = (DatabaseConnection)getDatabaseConnection();
+            if (cons.contains(cinfo)) cons.remove(cinfo);
+            //			throw new Exception("connection does not exist");
+            //			cons.remove(cinfo);
+        } catch (Exception e) {
+            throw new IOException(e.getMessage());
+        }
+    }
 }
 /*
  * <<Log>>

@@ -43,7 +43,7 @@ public class UtilConvert {
     public  static final String keyValueSeparators = "=: \t\r\n\f";
 
     public  static final String strictKeyValueSeparators = "=:";
-                                                      
+
     /** Differs from Sun's implementation in that it does not save ' ' as '\ '. */
     private static final String specialSaveChars = "=:\t\r\n\f#!";
 
@@ -126,7 +126,7 @@ public class UtilConvert {
         Hashtable ht = new Hashtable();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(inStream, "8859_1"));
-	while (true) {
+        while (true) {
             // Get next line
             String line = in.readLine();
             if(line == null)
@@ -192,7 +192,7 @@ public class UtilConvert {
                     ht.put(key, value);
                 }
             }
-	}
+        }
     }
 
     /*
@@ -235,24 +235,24 @@ public class UtilConvert {
                 if(aChar == 'u') {
                     // Read the xxxx
                     int value=0;
-		    for (int i=0; i<4; i++) {
-		        aChar = theString.charAt(x++);
-		        switch (aChar) {
-		          case '0': case '1': case '2': case '3': case '4':
-		          case '5': case '6': case '7': case '8': case '9':
-		             value = (value << 4) + aChar - '0';
-			     break;
-			  case 'a': case 'b': case 'c':
-                          case 'd': case 'e': case 'f':
-			     value = (value << 4) + 10 + aChar - 'a';
-			     break;
-			  case 'A': case 'B': case 'C':
-                          case 'D': case 'E': case 'F':
-			     value = (value << 4) + 10 + aChar - 'A';
-			     break;
-			  default:
-                              throw new IllegalArgumentException(
-                                           "Malformed \\uxxxx encoding.");
+                    for (int i=0; i<4; i++) {
+                        aChar = theString.charAt(x++);
+                        switch (aChar) {
+        case '0': case '1': case '2': case '3': case '4':
+        case '5': case '6': case '7': case '8': case '9':
+                            value = (value << 4) + aChar - '0';
+                            break;
+                case 'a': case 'b': case 'c':
+                case 'd': case 'e': case 'f':
+                            value = (value << 4) + 10 + aChar - 'a';
+                            break;
+                case 'A': case 'B': case 'C':
+                case 'D': case 'E': case 'F':
+                            value = (value << 4) + 10 + aChar - 'A';
+                            break;
+                        default:
+                            throw new IllegalArgumentException(
+                                "Malformed \\uxxxx encoding.");
                         }
                     }
                     outBuffer.append((char)value);
@@ -283,30 +283,30 @@ public class UtilConvert {
         for(int x=0; x<len; ) {
             aChar = theString.charAt(x++);
             switch(aChar) {
-                case '\\':outBuffer.append('\\'); outBuffer.append('\\');
-                          continue;
-                case '\t':outBuffer.append('\\'); outBuffer.append('t');
-                          continue;
-                case '\n':outBuffer.append('\\'); outBuffer.append('n');
-                          continue;
-                case '\r':outBuffer.append('\\'); outBuffer.append('r');
-                          continue;
-                case '\f':outBuffer.append('\\'); outBuffer.append('f');
-                          continue;
-                default:
-                    if ((aChar < 20) || (aChar > 127)) {
+            case '\\':outBuffer.append('\\'); outBuffer.append('\\');
+                continue;
+            case '\t':outBuffer.append('\\'); outBuffer.append('t');
+                continue;
+            case '\n':outBuffer.append('\\'); outBuffer.append('n');
+                continue;
+            case '\r':outBuffer.append('\\'); outBuffer.append('r');
+                continue;
+            case '\f':outBuffer.append('\\'); outBuffer.append('f');
+                continue;
+            default:
+                if ((aChar < 20) || (aChar > 127)) {
+                    outBuffer.append('\\');
+                    outBuffer.append('u');
+                    outBuffer.append(toHex((aChar >> 12) & 0xF));
+                    outBuffer.append(toHex((aChar >> 8) & 0xF));
+                    outBuffer.append(toHex((aChar >> 4) & 0xF));
+                    outBuffer.append(toHex((aChar >> 0) & 0xF));
+                }
+                else {
+                    if (specialSaveChars.indexOf(aChar) != -1)
                         outBuffer.append('\\');
-                        outBuffer.append('u');
-                        outBuffer.append(toHex((aChar >> 12) & 0xF));
-                        outBuffer.append(toHex((aChar >> 8) & 0xF));
-                        outBuffer.append(toHex((aChar >> 4) & 0xF));
-                        outBuffer.append(toHex((aChar >> 0) & 0xF));
-                    }
-                    else {
-                        if (specialSaveChars.indexOf(aChar) != -1)
-                            outBuffer.append('\\');
-                        outBuffer.append(aChar);
-                    }
+                    outBuffer.append(aChar);
+                }
             }
         }
         return outBuffer.toString();
@@ -384,12 +384,12 @@ public class UtilConvert {
      * @param	nibble	the nibble to convert.
      */
     private static char toHex(int nibble) {
-	return hexDigit[(nibble & 0xF)];
+        return hexDigit[(nibble & 0xF)];
     }
 
     /** A table of hex digits */
     private static final char[] hexDigit = {
-	'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'
+        '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'
     };
 }
 

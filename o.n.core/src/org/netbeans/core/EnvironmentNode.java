@@ -32,77 +32,77 @@ import org.netbeans.core.actions.*;
 * @author Petr Hamernik, Dafe Simonek
 */
 final class EnvironmentNode extends AbstractNode {
-  /** generated Serialized Version UID */
-  static final long serialVersionUID = 4782447107972624693L;
-  /** icon base for icons of this node */
-  private static final String EN_ICON_BASE = "/org/netbeans/core/resources/environment"; // NOI18N
+    /** generated Serialized Version UID */
+    static final long serialVersionUID = 4782447107972624693L;
+    /** icon base for icons of this node */
+    private static final String EN_ICON_BASE = "/org/netbeans/core/resources/environment"; // NOI18N
 
-  /** base instance of the node */
-  private static EnvironmentNode node;
+    /** base instance of the node */
+    private static EnvironmentNode node;
 
-  /** children to use */
-  private static Children children;
-  
+    /** children to use */
+    private static Children children;
 
-  /** Constructor */
-  private EnvironmentNode () {
-    super (children = new Children.Array());
-    setName(NbBundle.getBundle(EnvironmentNode.class).
-                   getString("CTL_Environment_name"));
-    setIconBase(EN_ICON_BASE);
-  }
 
-  public HelpCtx getHelpCtx () {
-    return new HelpCtx (EnvironmentNode.class);
-  }
-
-  /** Method to add an node to the environment.
-  */
-  public static void addNode (Node n) {
-    getDefault ();
-    children.add (new Node[] { n });
-  }
-  
-  /** Method to add an node to the environment.
-  */
-  public static void removeNode (Node n) {
-    children.remove (new Node[] { n });
-  }
-
-  /** Default instance */
-  public static synchronized Node getDefault() {
-    if (node == null) {
-      node = new EnvironmentNode ();
+    /** Constructor */
+    private EnvironmentNode () {
+        super (children = new Children.Array());
+        setName(NbBundle.getBundle(EnvironmentNode.class).
+                getString("CTL_Environment_name"));
+        setIconBase(EN_ICON_BASE);
     }
-    return node;
-  }
-  
-  /** For deserialization */
-  public Node.Handle getHandle () {
-    return new EnvironmentHandle();
-  }
 
-  static final class EnvironmentHandle implements Node.Handle {
-static final long serialVersionUID =-850350968366553370L;
-    public Node getNode () {
-      return EnvironmentNode.getDefault();
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx (EnvironmentNode.class);
     }
-  }
-  
 
-  /** Getter for set of actions that should be present in the
-  * popup menu of this node. This set is used in construction of
-  * menu returned from getContextMenu and specially when a menu for
-  * more nodes is constructed.
-  *
-  * @return array of system actions that should be in popup menu
-  */
-  public SystemAction[] createActions () {
-    return new SystemAction[] {
-      SystemAction.get(ToolsAction.class),
-      SystemAction.get(PropertiesAction.class)
-    };
-  }
+    /** Method to add an node to the environment.
+    */
+    public static void addNode (Node n) {
+        getDefault ();
+        children.add (new Node[] { n });
+    }
+
+    /** Method to add an node to the environment.
+    */
+    public static void removeNode (Node n) {
+        children.remove (new Node[] { n });
+    }
+
+    /** Default instance */
+    public static synchronized Node getDefault() {
+        if (node == null) {
+            node = new EnvironmentNode ();
+        }
+        return node;
+    }
+
+    /** For deserialization */
+    public Node.Handle getHandle () {
+        return new EnvironmentHandle();
+    }
+
+    static final class EnvironmentHandle implements Node.Handle {
+        static final long serialVersionUID =-850350968366553370L;
+        public Node getNode () {
+            return EnvironmentNode.getDefault();
+        }
+    }
+
+
+    /** Getter for set of actions that should be present in the
+    * popup menu of this node. This set is used in construction of
+    * menu returned from getContextMenu and specially when a menu for
+    * more nodes is constructed.
+    *
+    * @return array of system actions that should be in popup menu
+    */
+    public SystemAction[] createActions () {
+        return new SystemAction[] {
+                   SystemAction.get(ToolsAction.class),
+                   SystemAction.get(PropertiesAction.class)
+               };
+    }
 }
 
 /*

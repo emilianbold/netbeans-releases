@@ -21,77 +21,77 @@ import javax.swing.event.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-/** 
+/**
  * AbbrevsEditor is editor for Map of abbreviations.
  * Each abbreviation is pair of Strings.
  * @author  Petr Nejedly
  */
 
 public class AbbrevsEditor extends PropertyEditorSupport {
-  
-  private AbbrevsEditorPanel editorPanel;
 
-  protected HelpCtx getHelpCtx () {
-    return new HelpCtx (AbbrevsEditor.class);
-  }
+    private AbbrevsEditorPanel editorPanel;
 
-  /**
-   * Tell the world that we have nice editor Component
-   */
-  public boolean supportsCustomEditor() {
-    return true;
-  }
-  
-  /**
-   * Create custom editor tightly coupled with this editor
-   */
-  public java.awt.Component getCustomEditor() {    
-    if( editorPanel == null ) {
-      editorPanel = new AbbrevsEditorPanel( this );
-      HelpCtx.setHelpIDString( editorPanel, getHelpCtx().getHelpID() );
-      refreshEditorPanel();
+    protected HelpCtx getHelpCtx () {
+        return new HelpCtx (AbbrevsEditor.class);
     }
-    return editorPanel;
-  }
 
-  private void refreshEditorPanel() {
-    if( editorPanel != null ) {
-      editorPanel.setValue( (Map)getValue() );
+    /**
+     * Tell the world that we have nice editor Component
+     */
+    public boolean supportsCustomEditor() {
+        return true;
     }
-  }  
 
-  /**
-   *  Sets the value for editor / customEditor
-   */
-  public void setValue( Object obj ) {
-    Object oldValue = getValue();
-    if( (obj != null) && (! obj.equals( oldValue ) ) ) {
-      super.setValue( obj );
-      if( ( editorPanel != null ) && (! editorPanel.getValue().equals( getValue() ) ) ) {
-        refreshEditorPanel();
-      }
+    /**
+     * Create custom editor tightly coupled with this editor
+     */
+    public java.awt.Component getCustomEditor() {
+        if( editorPanel == null ) {
+            editorPanel = new AbbrevsEditorPanel( this );
+            HelpCtx.setHelpIDString( editorPanel, getHelpCtx().getHelpID() );
+            refreshEditorPanel();
+        }
+        return editorPanel;
     }
-  }
 
-  /**
-   * The way our customEditor notifies us when user changes something.
-   */
-  protected void customEditorChange() {
-    // forward it to parent, which will fire propertyChange
-    super.setValue( editorPanel.getValue() );
-  }
+    private void refreshEditorPanel() {
+        if( editorPanel != null ) {
+            editorPanel.setValue( (Map)getValue() );
+        }
+    }
 
-  /**
-   * Return the label to be shown in the PropertySheet
-   */
-  public String getAsText() {
-    return NbBundle.getBundle( KeyBindingsEditor.class ).getString( "PROP_Abbreviations" ); // NOI18N
-  }
+    /**
+     *  Sets the value for editor / customEditor
+     */
+    public void setValue( Object obj ) {
+        Object oldValue = getValue();
+        if( (obj != null) && (! obj.equals( oldValue ) ) ) {
+            super.setValue( obj );
+            if( ( editorPanel != null ) && (! editorPanel.getValue().equals( getValue() ) ) ) {
+                refreshEditorPanel();
+            }
+        }
+    }
 
-  /**
-   * Don't bother if the user tried to edit our label in the PropertySheet
-   */
-  public void setAsText( String s ) {
-  }
-  
+    /**
+     * The way our customEditor notifies us when user changes something.
+     */
+    protected void customEditorChange() {
+        // forward it to parent, which will fire propertyChange
+        super.setValue( editorPanel.getValue() );
+    }
+
+    /**
+     * Return the label to be shown in the PropertySheet
+     */
+    public String getAsText() {
+        return NbBundle.getBundle( KeyBindingsEditor.class ).getString( "PROP_Abbreviations" ); // NOI18N
+    }
+
+    /**
+     * Don't bother if the user tried to edit our label in the PropertySheet
+     */
+    public void setAsText( String s ) {
+    }
+
 }

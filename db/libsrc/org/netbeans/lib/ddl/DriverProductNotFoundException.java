@@ -13,7 +13,7 @@
 
 package org.netbeans.lib.ddl;
 
-/** 
+/**
 * System is not able to locate appropriate resources to create DriverSpecification object
 * (object describing the driver). It means that driver product is not supported by system.
 * You can write your own description file. If you are sure that it is, please check
@@ -21,37 +21,37 @@ package org.netbeans.lib.ddl;
 *
 * @author Radko Najman
 */
-public class DriverProductNotFoundException extends Exception 
+public class DriverProductNotFoundException extends Exception
 {
-  static final long serialVersionUID =-1108211224066947350L;
-  
-	/** Driver name */
-	private String drvName;
+    static final long serialVersionUID =-1108211224066947350L;
 
-	/** Creates new exception
-	* @param desc The text describing the exception
-	*/
-	public DriverProductNotFoundException(String spec) {
-		super ();
-		drvName = spec;    
-	}
+    /** Driver name */
+    private String drvName;
 
-	/** Creates new exception with text specified string.
-	* @param spec Driver name
-	* @param desc The text describing the exception
-	*/
-	public DriverProductNotFoundException(String spec, String desc) {
-		super (desc);
-		drvName = spec;
-	}
-	
-	/** Returns driver name.
-	* This driver is not supported by system. You can write your own description file.
-	*/
-	public String getDriverName()
-	{
-		return drvName;
-	}
+    /** Creates new exception
+    * @param desc The text describing the exception
+    */
+    public DriverProductNotFoundException(String spec) {
+        super ();
+        drvName = spec;
+    }
+
+    /** Creates new exception with text specified string.
+    * @param spec Driver name
+    * @param desc The text describing the exception
+    */
+    public DriverProductNotFoundException(String spec, String desc) {
+        super (desc);
+        drvName = spec;
+    }
+
+    /** Returns driver name.
+    * This driver is not supported by system. You can write your own description file.
+    */
+    public String getDriverName()
+    {
+        return drvName;
+    }
 }
 
 /*

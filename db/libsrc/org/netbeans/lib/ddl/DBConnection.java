@@ -19,7 +19,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.String;
 import java.util.Properties;
 
-/** 
+/**
 * Connection information.
 * This interface defines information needed for connection to database
 * (database and driver url, login name and password). It can create JDBC 
@@ -30,58 +30,58 @@ import java.util.Properties;
 * @author Slavek Psenicka
 */
 
-public interface DBConnection extends java.io.Serializable 
-{	
-	/** Returns driver URL */
-	public String getDriver();
-	
-	/** Sets driver URL 
-	* Fires propertychange event.
-	* @param driver DNew driver URL
-	*/
-	public void setDriver(String driver);
+public interface DBConnection extends java.io.Serializable
+{
+    /** Returns driver URL */
+    public String getDriver();
 
-	/** Returns database URL */
-	public String getDatabase();
-	
-	/** Sets database URL 
-	* Fires propertychange event.
-	* @param database New database URL
-	*/
-	public void setDatabase(String database);
+    /** Sets driver URL
+    * Fires propertychange event.
+    * @param driver DNew driver URL
+    */
+    public void setDriver(String driver);
 
-	/** Returns user login name */
-	public String getUser();
-	
-	/** Sets user login name 
-	* Fires propertychange event.
-	* @param user New login name
-	*/
-	public void setUser(String user);
+    /** Returns database URL */
+    public String getDatabase();
 
-	/** Returns if password should be remembered */
-	public boolean rememberPassword();
-	
-	/** Sets password should be remembered 
-	* @param flag New flag
-	*/
-	public void setRememberPassword(boolean flag);
+    /** Sets database URL
+    * Fires propertychange event.
+    * @param database New database URL
+    */
+    public void setDatabase(String database);
 
-	/** Returns password */
-	public String getPassword();
-	
-	/** Sets password 
-	* Fires propertychange event.
-	* @param password New password
-	*/
-	public void setPassword(String password);
+    /** Returns user login name */
+    public String getUser();
 
-	/** Creates JDBC connection 
-	* Uses DriverManager to create connection to specified database. Throws 
-	* DDLException if none of driver/database/user/password is set or if 
-	* driver or database does not exist or is inaccessible.
-	*/
-	public Connection createJDBCConnection() throws DDLException;
+    /** Sets user login name
+    * Fires propertychange event.
+    * @param user New login name
+    */
+    public void setUser(String user);
+
+    /** Returns if password should be remembered */
+    public boolean rememberPassword();
+
+    /** Sets password should be remembered
+    * @param flag New flag
+    */
+    public void setRememberPassword(boolean flag);
+
+    /** Returns password */
+    public String getPassword();
+
+    /** Sets password
+    * Fires propertychange event.
+    * @param password New password
+    */
+    public void setPassword(String password);
+
+    /** Creates JDBC connection
+    * Uses DriverManager to create connection to specified database. Throws 
+    * DDLException if none of driver/database/user/password is set or if 
+    * driver or database does not exist or is inaccessible.
+    */
+    public Connection createJDBCConnection() throws DDLException;
 }
 
 

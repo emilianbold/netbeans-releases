@@ -24,23 +24,23 @@ import org.netbeans.modules.db.explorer.dlg.CreateTableDialog;
 
 public class CreateTableAction extends DatabaseAction
 {
-  static final long serialVersionUID =-7008851466327604724L;
-	public void performAction (Node[] activatedNodes) 
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return;
+    static final long serialVersionUID =-7008851466327604724L;
+    public void performAction (Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return;
 
-		try {
-			DatabaseNodeInfo xnfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-			TableOwnerOperations nfo = (TableOwnerOperations)xnfo.getParent(nodename);
-			Specification spec = (Specification)xnfo.getSpecification();
-			CreateTableDialog dlg = new CreateTableDialog(spec, (DatabaseNodeInfo)nfo);
-			if (dlg.run()) nfo.addTable(dlg.getTableName());
-		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to create table "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-		}
-	}
+        try {
+            DatabaseNodeInfo xnfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+            TableOwnerOperations nfo = (TableOwnerOperations)xnfo.getParent(nodename);
+            Specification spec = (Specification)xnfo.getSpecification();
+            CreateTableDialog dlg = new CreateTableDialog(spec, (DatabaseNodeInfo)nfo);
+            if (dlg.run()) nfo.addTable(dlg.getTableName());
+        } catch(Exception e) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to create table "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
 }
 /*
  * <<Log>>

@@ -25,13 +25,13 @@ import org.netbeans.lib.ddl.*;
 */
 public interface ColumnOperationCommand extends DDLCommand, OwnedObjectCommand {
 
-	/** Returns column specification array */
-	public TableColumnDescriptor getColumn();
+    /** Returns column specification array */
+    public TableColumnDescriptor getColumn();
 
-	/** Sets column specification array
-	* @param col New column.
-	*/
-	public void setColumn(TableColumnDescriptor col);
+    /** Sets column specification array
+    * @param col New column.
+    */
+    public void setColumn(TableColumnDescriptor col);
 }
 
 /*

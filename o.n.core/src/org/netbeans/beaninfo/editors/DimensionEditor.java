@@ -26,56 +26,56 @@ import org.openide.util.NbBundle;
 */
 public class DimensionEditor extends ArrayOfIntSupport {
 
-  // the bundle to use
-  static ResourceBundle bundle = NbBundle.getBundle (
-    DimensionEditor.class);
+    // the bundle to use
+    static ResourceBundle bundle = NbBundle.getBundle (
+                                       DimensionEditor.class);
 
-  public DimensionEditor() {
-    super("java.awt.Dimension", 2); // NOI18N
-  }
-
-  /** Abstract method for translating the value from getValue() method to array of int. */
-  int[] getValues() {
-    Dimension d = (Dimension) getValue();
-    return new int[] { d.width, d.height };
-  }
-
-  /** Abstract method for translating the array of int to value
-  * which is set to method setValue(XXX)
-  */
-  void setValues(int[] val) {
-    if ((val[0] < 0) || (val[1] < 0)) {
-      //TopManager.getDefault().notify(...) cannot be called synchronous, because when error dialog is displayed
-      //PropertyEditor lost focus and setValues() method is called. After closing error dialog is focus returned
-      //to PropertyEditor and setValues() method is called again.
-      javax.swing.SwingUtilities.invokeLater(new Runnable() {
-        public void run() {
-          TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CTL_NegativeSize"), NotifyDescriptor.ERROR_MESSAGE));
-        }
-      });
+    public DimensionEditor() {
+        super("java.awt.Dimension", 2); // NOI18N
     }
-    else 
-      setValue(new Dimension(val[0], val[1]));
-  }
 
-  public boolean supportsCustomEditor () {
-    return true;
-  }
+    /** Abstract method for translating the value from getValue() method to array of int. */
+    int[] getValues() {
+        Dimension d = (Dimension) getValue();
+        return new int[] { d.width, d.height };
+    }
 
-  public java.awt.Component getCustomEditor () {
-    return new DimensionCustomEditor (this);
-  }
+    /** Abstract method for translating the array of int to value
+    * which is set to method setValue(XXX)
+    */
+    void setValues(int[] val) {
+        if ((val[0] < 0) || (val[1] < 0)) {
+            //TopManager.getDefault().notify(...) cannot be called synchronous, because when error dialog is displayed
+            //PropertyEditor lost focus and setValues() method is called. After closing error dialog is focus returned
+            //to PropertyEditor and setValues() method is called again.
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                                                       public void run() {
+                                                           TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CTL_NegativeSize"), NotifyDescriptor.ERROR_MESSAGE));
+                                                       }
+                                                   });
+        }
+        else
+            setValue(new Dimension(val[0], val[1]));
+    }
+
+    public boolean supportsCustomEditor () {
+        return true;
+    }
+
+    public java.awt.Component getCustomEditor () {
+        return new DimensionCustomEditor (this);
+    }
 
 
-  /** @return the format of value set in property editor. */
-  String getHintFormat() {
-    return bundle.getString ("CTL_HintFormat");
-  }
+    /** @return the format of value set in property editor. */
+    String getHintFormat() {
+        return bundle.getString ("CTL_HintFormat");
+    }
 
-  /** Provides name of XML tag to use for XML persistence of the property value */
-  protected String getXMLValueTag () {
-    return "Dimension"; // NOI18N
-  }
+    /** Provides name of XML tag to use for XML persistence of the property value */
+    protected String getXMLValueTag () {
+        return "Dimension"; // NOI18N
+    }
 
 }
 

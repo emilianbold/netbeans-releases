@@ -27,59 +27,59 @@ import org.netbeans.modules.db.explorer.infos.*;
 
 public class AddIndexAction extends DatabaseAction
 {
-	public void performAction (Node[] activatedNodes) 
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return;
-		
-		try {
+    public void performAction (Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return;
 
-			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-			IndexListNodeInfo nfo = (IndexListNodeInfo)info.getParent(nodename);
+        try {
 
-			String catalog = (String)nfo.get(DatabaseNode.CATALOG);
-			String tablename = (String)nfo.get(DatabaseNode.TABLE);
-			String columnname = (String)nfo.get(DatabaseNode.COLUMN);
+            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+            IndexListNodeInfo nfo = (IndexListNodeInfo)info.getParent(nodename);
 
-			Connection con = nfo.getConnection();
-			DatabaseMetaData dmd = info.getSpecification().getMetaData();
-			Specification spec = (Specification)nfo.getSpecification();
-			String index = (String)nfo.get(DatabaseNode.INDEX);
-      DriverSpecification drvSpec = info.getDriverSpecification();
+            String catalog = (String)nfo.get(DatabaseNode.CATALOG);
+            String tablename = (String)nfo.get(DatabaseNode.TABLE);
+            String columnname = (String)nfo.get(DatabaseNode.COLUMN);
 
-			// List columns not present in current index
-			Vector cols = new Vector(5);
+            Connection con = nfo.getConnection();
+            DatabaseMetaData dmd = info.getSpecification().getMetaData();
+            Specification spec = (Specification)nfo.getSpecification();
+            String index = (String)nfo.get(DatabaseNode.INDEX);
+            DriverSpecification drvSpec = info.getDriverSpecification();
 
-      drvSpec.getColumns(catalog, dmd, tablename, null);
-			while (drvSpec.rs.next())
-        cols.add(drvSpec.rs.getString("COLUMN_NAME"));
-			drvSpec.rs.close();
-      
-			if (cols.size() == 0)
-        throw new Exception("no usable column in place");
+            // List columns not present in current index
+            Vector cols = new Vector(5);
 
-			// Create and execute command
-			
-			AddIndexDialog dlg = new AddIndexDialog(cols);
-			dlg.setIndexName(tablename+"_idx");
-			if (dlg.run()) {
+            drvSpec.getColumns(catalog, dmd, tablename, null);
+            while (drvSpec.rs.next())
+                cols.add(drvSpec.rs.getString("COLUMN_NAME"));
+            drvSpec.rs.close();
 
-				CreateIndex icmd = spec.createCommandCreateIndex(tablename);
-				icmd.setIndexName(dlg.getIndexName());
-				Iterator enu = dlg.getSelectedColumns().iterator();
-				while (enu.hasNext()) {
-					icmd.specifyColumn((String)enu.next());
-				}
-				
-				icmd.execute();
-				nfo.addIndex(dlg.getIndexName());
-			}
+            if (cols.size() == 0)
+                throw new Exception("no usable column in place");
 
-		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to perform operation " + node.getName() + ", " + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-		}
-	}
+            // Create and execute command
+
+            AddIndexDialog dlg = new AddIndexDialog(cols);
+            dlg.setIndexName(tablename+"_idx");
+            if (dlg.run()) {
+
+                CreateIndex icmd = spec.createCommandCreateIndex(tablename);
+                icmd.setIndexName(dlg.getIndexName());
+                Iterator enu = dlg.getSelectedColumns().iterator();
+                while (enu.hasNext()) {
+                    icmd.specifyColumn((String)enu.next());
+                }
+
+                icmd.execute();
+                nfo.addIndex(dlg.getIndexName());
+            }
+
+        } catch(Exception e) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to perform operation " + node.getName() + ", " + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
 }
 /*
  * <<Log>>

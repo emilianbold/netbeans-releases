@@ -17,7 +17,7 @@ import java.sql.*;
 
 public class OracleAdaptor extends DefaultAdaptor
 {
-  static final long serialVersionUID =750800980444527256L;
+    static final long serialVersionUID =750800980444527256L;
 }
 
 

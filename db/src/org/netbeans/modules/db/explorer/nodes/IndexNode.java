@@ -30,136 +30,136 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 public class IndexNode extends DatabaseNode
-{		
-/*
-	public void setName(String newname)
-	{
-		try {
-			DatabaseNodeInfo info = getInfo();
-			String table = (String)info.get(DatabaseNode.TABLE);
-			Specification spec = (Specification)info.getSpecification();
-			RenameColumn cmd = spec.createCommandRenameColumn(table);
-			cmd.renameColumn(info.getName(), newname);
-			cmd.execute();
-			super.setName(newname);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-*/
+{
+    /*
+    	public void setName(String newname)
+    	{
+    		try {
+    			DatabaseNodeInfo info = getInfo();
+    			String table = (String)info.get(DatabaseNode.TABLE);
+    			Specification spec = (Specification)info.getSpecification();
+    			RenameColumn cmd = spec.createCommandRenameColumn(table);
+    			cmd.renameColumn(info.getName(), newname);
+    			cmd.execute();
+    			super.setName(newname);
+    		} catch (Exception e) {
+    			e.printStackTrace();
+    		}
+    	}
+    */
 
-	protected void createPasteTypes(Transferable t, List s) 
-	{
-		super.createPasteTypes(t, s);
-		Node node = NodeTransfer.node(t, NodeTransfer.MOVE);
-		if (node != null) {
-			ColumnNodeInfo nfo = (ColumnNodeInfo)node.getCookie(ColumnNodeInfo.class);
-			if (nfo != null) s.add(new IndexPasteType((ColumnNodeInfo)nfo, null));
-		}
-	}	
+    protected void createPasteTypes(Transferable t, List s)
+    {
+        super.createPasteTypes(t, s);
+        Node node = NodeTransfer.node(t, NodeTransfer.MOVE);
+        if (node != null) {
+            ColumnNodeInfo nfo = (ColumnNodeInfo)node.getCookie(ColumnNodeInfo.class);
+            if (nfo != null) s.add(new IndexPasteType((ColumnNodeInfo)nfo, null));
+        }
+    }
 
-	class IndexPasteType extends PasteType
-	{
-		/** transferred info */
-		private DatabaseNodeInfo info;
-		
-		/** the node to destroy or null */
-		private Node node;
-		
-		/** Constructs new TablePasteType for the specific type of operation paste.
-		*/
-		public IndexPasteType(ColumnNodeInfo info, Node node)
-		{
-			this.info = info;
-			this.node = node;
-		}
-	
-		/* @return Human presentable name of this paste type. */
-		public String getName() 
-		{
-			ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
-			return bundle.getString("IndexPasteTypeName");
-		}
+    class IndexPasteType extends PasteType
+    {
+        /** transferred info */
+        private DatabaseNodeInfo info;
 
-		/** Performs the paste action.
-		* @return Transferable which should be inserted into the clipboard after
-		*         paste action. It can be null, which means that clipboard content
-		*         should stay the same.
-		*/
-		public Transferable paste() throws IOException 
-		{
-			IndexNodeInfo destinfo = (IndexNodeInfo)getInfo();
-			ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
-			if (info != null) {
+        /** the node to destroy or null */
+        private Node node;
 
-				Connection con;
-				DatabaseMetaData dmd;
-				Specification spec;
-				String catalog;
+        /** Constructs new TablePasteType for the specific type of operation paste.
+        */
+        public IndexPasteType(ColumnNodeInfo info, Node node)
+        {
+            this.info = info;
+            this.node = node;
+        }
 
-				try {
-					con = info.getConnection();
-					dmd = info.getSpecification().getMetaData();
-					spec = (Specification)info.getSpecification();
-					catalog = (String)info.get(DatabaseNode.CATALOG);
-          boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
+        /* @return Human presentable name of this paste type. */
+        public String getName()
+        {
+            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+            return bundle.getString("IndexPasteTypeName");
+        }
 
-          DriverSpecification drvSpec = info.getDriverSpecification();
-          drvSpec.getIndexInfo(catalog, dmd, info.getTable(), true, false);
-					if (drvSpec.rs != null) {
-            String index = destinfo.getName();
-            HashSet ixrm = new HashSet();
+        /** Performs the paste action.
+        * @return Transferable which should be inserted into the clipboard after
+        *         paste action. It can be null, which means that clipboard content
+        *         should stay the same.
+        */
+        public Transferable paste() throws IOException
+        {
+            IndexNodeInfo destinfo = (IndexNodeInfo)getInfo();
+            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+            if (info != null) {
 
-            while (drvSpec.rs.next()) {
-              String ixname = drvSpec.rs.getString("INDEX_NAME");
-              String colname = drvSpec.rs.getString("COLUMN_NAME");
-              if (ixname.equals(index)) ixrm.add(colname);
-            }
-            drvSpec.rs.close();
-            
-            if (ixrm.contains(info.getName())) throw new IOException("index "+index+" already contains column "+info.getName());
+                Connection con;
+                DatabaseMetaData dmd;
+                Specification spec;
+                String catalog;
 
-            CreateIndex icmd = spec.createCommandCreateIndex(info.getTable());
-            icmd.setIndexName(destinfo.getName());
-            Iterator enu = ixrm.iterator();
-            while (enu.hasNext()) {
-              icmd.specifyColumn((String)enu.next());
-            }
+                try {
+                    con = info.getConnection();
+                    dmd = info.getSpecification().getMetaData();
+                    spec = (Specification)info.getSpecification();
+                    catalog = (String)info.get(DatabaseNode.CATALOG);
+                    boolean jdbcOdbcBridge = (((java.sql.DriverManager.getDriver(dmd.getURL()) instanceof sun.jdbc.odbc.JdbcOdbcDriver) && (!dmd.getDatabaseProductName().trim().equals("DB2/NT"))) ? true : false);
 
-            icmd.specifyColumn(info.getName());
-            spec.createCommandDropIndex(index).execute();
-            icmd.execute();
+                    DriverSpecification drvSpec = info.getDriverSpecification();
+                    drvSpec.getIndexInfo(catalog, dmd, info.getTable(), true, false);
+                    if (drvSpec.rs != null) {
+                        String index = destinfo.getName();
+                        HashSet ixrm = new HashSet();
 
-            drvSpec.getIndexInfo(catalog, dmd, destinfo.getTable(), true, false);
-            if (drvSpec.rs != null) {
-              while (drvSpec.rs.next()) {
-                if (jdbcOdbcBridge) drvSpec.rsTemp.next();
-                String ixname = drvSpec.rs.getString("INDEX_NAME");
-                String colname = drvSpec.rs.getString("COLUMN_NAME");
-                if (ixname.equals(index) && colname.equals(info.getName())) {
-                  IndexNodeInfo ixinfo;
-                  if (jdbcOdbcBridge)
-                    ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, drvSpec.rsTemp);
-                  else
-                    ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, drvSpec.rs);
-                  
-                  if (ixinfo != null) {
-                    ((DatabaseNodeChildren)destinfo.getNode().getChildren()).createSubnode(ixinfo,true);
-                  } else throw new Exception("unable to create node information for index");
+                        while (drvSpec.rs.next()) {
+                            String ixname = drvSpec.rs.getString("INDEX_NAME");
+                            String colname = drvSpec.rs.getString("COLUMN_NAME");
+                            if (ixname.equals(index)) ixrm.add(colname);
+                        }
+                        drvSpec.rs.close();
+
+                        if (ixrm.contains(info.getName())) throw new IOException("index "+index+" already contains column "+info.getName());
+
+                        CreateIndex icmd = spec.createCommandCreateIndex(info.getTable());
+                        icmd.setIndexName(destinfo.getName());
+                        Iterator enu = ixrm.iterator();
+                        while (enu.hasNext()) {
+                            icmd.specifyColumn((String)enu.next());
+                        }
+
+                        icmd.specifyColumn(info.getName());
+                        spec.createCommandDropIndex(index).execute();
+                        icmd.execute();
+
+                        drvSpec.getIndexInfo(catalog, dmd, destinfo.getTable(), true, false);
+                        if (drvSpec.rs != null) {
+                            while (drvSpec.rs.next()) {
+                                if (jdbcOdbcBridge) drvSpec.rsTemp.next();
+                                String ixname = drvSpec.rs.getString("INDEX_NAME");
+                                String colname = drvSpec.rs.getString("COLUMN_NAME");
+                                if (ixname.equals(index) && colname.equals(info.getName())) {
+                                    IndexNodeInfo ixinfo;
+                                    if (jdbcOdbcBridge)
+                                        ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, drvSpec.rsTemp);
+                                    else
+                                        ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, drvSpec.rs);
+
+                                    if (ixinfo != null) {
+                                        ((DatabaseNodeChildren)destinfo.getNode().getChildren()).createSubnode(ixinfo,true);
+                                    } else throw new Exception("unable to create node information for index");
+                                }
+                            }
+                            drvSpec.rs.close();
+                            if (jdbcOdbcBridge) drvSpec.rsTemp.close();
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new IOException(e.getMessage());
                 }
-              }
-              drvSpec.rs.close();
-              if (jdbcOdbcBridge) drvSpec.rsTemp.close();
-            }
-          }
-				} catch (Exception e) { 
-					throw new IOException(e.getMessage());
-				}
 
-			} else throw new IOException("cannot find index owner information");
-			return null;
-		}
-	}	
+            } else throw new IOException("cannot find index owner information");
+            return null;
+        }
+    }
 }
 /*
  * <<Log>>

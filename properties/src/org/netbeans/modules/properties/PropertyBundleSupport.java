@@ -16,13 +16,13 @@ package org.netbeans.modules.properties;
 import java.io.Serializable;
 import javax.swing.event.EventListenerList;
 
-/**                    
+/**
  * Support for PropertyBundle events, registering listeners, firing events.
  * @author Petr Jiricka
  */
 public class PropertyBundleSupport implements Serializable {
 
-    /** 
+    /**
      * The object to be provided as the "source" for any generated events.
      * @serial
      */
@@ -35,10 +35,10 @@ public class PropertyBundleSupport implements Serializable {
      * @param sourceBean  The bean to be given as the source for any events.
      */
     public PropertyBundleSupport(Object sourceBean) {
-      if (sourceBean == null) {
-        throw new NullPointerException();
-      }
-      source = sourceBean;
+        if (sourceBean == null) {
+            throw new NullPointerException();
+        }
+        source = sourceBean;
     }
 
     /** List of listeners */
@@ -51,7 +51,7 @@ public class PropertyBundleSupport implements Serializable {
      * @param	l		the PropertyBundleListener
      */
     public void addPropertyBundleListener(PropertyBundleListener l) {
-      listenerList.add(PropertyBundleListener.class, l);
+        listenerList.add(PropertyBundleListener.class, l);
     }
 
     /**
@@ -61,29 +61,29 @@ public class PropertyBundleSupport implements Serializable {
      * @param	l		the PropertyBundleListener
      */
     public void removePropertyBundleListener(PropertyBundleListener l) {
-      listenerList.remove(PropertyBundleListener.class, l);
+        listenerList.remove(PropertyBundleListener.class, l);
     }
-                                     
+
     /** Fires a global change event - structure may have changed. */
     public void fireBundleStructureChanged() {
-      fireBundleChanged(new PropertyBundleEvent(source, PropertyBundleEvent.CHANGE_STRUCT));
+        fireBundleChanged(new PropertyBundleEvent(source, PropertyBundleEvent.CHANGE_STRUCT));
     }
-                                     
+
     /** Fires a global change event - any property bundle data may have changed. */
     public void fireBundleDataChanged() {
-      fireBundleChanged(new PropertyBundleEvent(source, PropertyBundleEvent.CHANGE_ALL));
+        fireBundleChanged(new PropertyBundleEvent(source, PropertyBundleEvent.CHANGE_ALL));
     }
-                                     
+
     /** Fires a file change event - one entry has changed. */
     public void fireFileChanged(String entryName) {
-      fireBundleChanged(new PropertyBundleEvent(source, entryName));
+        fireBundleChanged(new PropertyBundleEvent(source, entryName));
     }
-                                     
+
     /** Fires an item change event - one item has changed. */
     public void fireItemChanged(String entryName, String itemName) {
-      fireBundleChanged(new PropertyBundleEvent(source, entryName, itemName));
+        fireBundleChanged(new PropertyBundleEvent(source, entryName, itemName));
     }
-                                     
+
     /**
      * Forward the given notification event to all PropertyBundleListeners that registered
      * themselves as listeners for this property bundle.
@@ -92,18 +92,18 @@ public class PropertyBundleSupport implements Serializable {
      * @see EventListenerList
      */
     public void fireBundleChanged(PropertyBundleEvent e) {
-//System.out.println(e.toString());    
-      // Guaranteed to return a non-null array
-      Object[] listeners = listenerList.getListenerList();
-      // Process the listeners last to first, notifying
-      // those that are interested in this event
-      for (int i = listeners.length-2; i>=0; i-=2) {
-        if (listeners[i]==PropertyBundleListener.class) {
-          ((PropertyBundleListener)listeners[i+1]).bundleChanged(e);
+        //System.out.println(e.toString());
+        // Guaranteed to return a non-null array
+        Object[] listeners = listenerList.getListenerList();
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length-2; i>=0; i-=2) {
+            if (listeners[i]==PropertyBundleListener.class) {
+                ((PropertyBundleListener)listeners[i+1]).bundleChanged(e);
+            }
         }
-      }
     }
-                          
+
 } // End of class PropertyBundleSupport
 
 /*

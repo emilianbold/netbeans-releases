@@ -27,29 +27,29 @@ import org.openide.util.actions.*;
 */
 public class HtmlDataObject extends MultiDataObject {
 
-  private static final String HTML_ICON_BASE =
-    "/org/netbeans/modules/html/htmlObject"; // NOI18N
+    private static final String HTML_ICON_BASE =
+        "/org/netbeans/modules/html/htmlObject"; // NOI18N
 
-static final long serialVersionUID =8354927561693097159L;
-  /** New instance.
-  * @param pf primary file object for this data object
-  * @param loader the data loader creating it
-  * @exception DataObjectExistsException if there was already a data object for it 
-  */
-  public HtmlDataObject(FileObject pf, UniFileLoader loader) throws DataObjectExistsException {
-    super(pf, loader);
-  }
+    static final long serialVersionUID =8354927561693097159L;
+    /** New instance.
+    * @param pf primary file object for this data object
+    * @param loader the data loader creating it
+    * @exception DataObjectExistsException if there was already a data object for it 
+    */
+    public HtmlDataObject(FileObject pf, UniFileLoader loader) throws DataObjectExistsException {
+        super(pf, loader);
+    }
 
-  protected org.openide.nodes.Node createNodeDelegate () {
-    DataNode n = new DataNode (this, Children.LEAF);
-    n.setIconBase (HTML_ICON_BASE);
-    n.setDefaultAction (SystemAction.get (ViewAction.class));
-    return n;
-  }
+    protected org.openide.nodes.Node createNodeDelegate () {
+        DataNode n = new DataNode (this, Children.LEAF);
+        n.setIconBase (HTML_ICON_BASE);
+        n.setDefaultAction (SystemAction.get (ViewAction.class));
+        return n;
+    }
 
-  public HelpCtx getHelpCtx () {
-    return new HelpCtx (HtmlLoader.class.getName () + ".Obj"); // NOI18N
-  }
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx (HtmlLoader.class.getName () + ".Obj"); // NOI18N
+    }
 
 }
 

@@ -19,7 +19,7 @@ import java.text.ParseException;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.util.PListReader;
 
-/** 
+/**
 * SpecificationParser extends PListReader. It should be removed (it's functionality
 * seems to be zero), but it's prepared here for future nonstandard implementations
 * among the PListReader and it's use here. 
@@ -27,20 +27,20 @@ import org.netbeans.lib.ddl.util.PListReader;
 * @author Slavek Psenicka
 */
 public class SpecificationParser extends PListReader {
-	
-	/** Constructor */
-	public SpecificationParser(String file)
-	throws FileNotFoundException, ParseException, IOException
-	{	
-		super(file);
-	}
 
-	/** Constructor */
-	public SpecificationParser(InputStream stream)
-	throws FileNotFoundException, ParseException, IOException
-	{	
-		super(stream);
-	}
+    /** Constructor */
+    public SpecificationParser(String file)
+    throws FileNotFoundException, ParseException, IOException
+    {
+        super(file);
+    }
+
+    /** Constructor */
+    public SpecificationParser(InputStream stream)
+    throws FileNotFoundException, ParseException, IOException
+    {
+        super(stream);
+    }
 }
 
 /*

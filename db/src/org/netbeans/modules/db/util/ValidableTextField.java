@@ -18,39 +18,39 @@ import java.awt.Toolkit;
 
 public class ValidableTextField extends JTextField
 {
-	private TextFieldValidator validator = null;
-	
-        static final long serialVersionUID =3686208002682293243L;
-	public ValidableTextField(TextFieldValidator val)
-	{
-		super();
-		setValidator(val);
-	}
-	
-	public TextFieldValidator getValidator()
-	{
-		return validator;
-	}
-	
-	public void setValidator(TextFieldValidator val)
-	{
-		validator = val;
-	}
+    private TextFieldValidator validator = null;
 
-	protected void reflectInvalidValue(String oldval, String newval)
-	{
-		setText(oldval);
-		Toolkit.getDefaultToolkit().beep();
-	}
+    static final long serialVersionUID =3686208002682293243L;
+    public ValidableTextField(TextFieldValidator val)
+    {
+        super();
+        setValidator(val);
+    }
 
-	public void replaceSelection(String s) 
-	{
-		String oldText = getText();
-		super.replaceSelection(s);
-		if (validator != null && !validator.accepts(getText())) {
-			reflectInvalidValue(oldText, s);
-		}
-	}
+    public TextFieldValidator getValidator()
+    {
+        return validator;
+    }
+
+    public void setValidator(TextFieldValidator val)
+    {
+        validator = val;
+    }
+
+    protected void reflectInvalidValue(String oldval, String newval)
+    {
+        setText(oldval);
+        Toolkit.getDefaultToolkit().beep();
+    }
+
+    public void replaceSelection(String s)
+    {
+        String oldText = getText();
+        super.replaceSelection(s);
+        if (validator != null && !validator.accepts(getText())) {
+            reflectInvalidValue(oldText, s);
+        }
+    }
 }
 /*
  * <<Log>>

@@ -17,22 +17,22 @@ import java.io.IOException;
 
 import javax.servlet.http.*;
 import javax.servlet.ServletException;
-/** 
+/**
  *
  * @author  pjiricka
  * @version 
  */
 public class NotFoundServlet extends HttpServlet {
 
-  public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-    processRequest(req, res);
-  }
-  
-  public void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-    processRequest(req, res);
-  }
+    public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        processRequest(req, res);
+    }
 
-  public void processRequest(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-    res.sendError(404);
-  }
+    public void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        processRequest(req, res);
+    }
+
+    public void processRequest(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        res.sendError(404);
+    }
 }

@@ -38,7 +38,7 @@ import org.openide.actions.CopyAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.DeleteAction;
 
-/** 
+/**
 * Customized settings for NetBeans editor
 *
 * @author Miloslav Metelka
@@ -47,56 +47,56 @@ import org.openide.actions.DeleteAction;
 
 public class NbEditorSettingsInitializer implements Settings.Initializer {
 
-  private static boolean inited;
-  
-  public static void init() {
-    if (!inited) {
-      inited = true;
-      Settings.addInitializer(new BaseSettingsInitializer(), Settings.CORE_LEVEL);
-      Settings.addInitializer(new ExtSettingsInitializer(), Settings.CORE_LEVEL);
-      Settings.addInitializer(new JavaSettingsInitializer(JavaKit.class));
-      Settings.addInitializer(new HTMLSettingsInitializer(HTMLKit.class));
-      Settings.addInitializer(new NbEditorSettingsInitializer());
-      Settings.addInitializer(new PlainSettingsInitializer());
-      Settings.addInitializer(new NbJavaSettingsInitializer());
-      Settings.addInitializer(new NbHTMLSettingsInitializer());
+    private static boolean inited;
 
-      Settings.reset();
-    }
-  }
+    public static void init() {
+        if (!inited) {
+            inited = true;
+            Settings.addInitializer(new BaseSettingsInitializer(), Settings.CORE_LEVEL);
+            Settings.addInitializer(new ExtSettingsInitializer(), Settings.CORE_LEVEL);
+            Settings.addInitializer(new JavaSettingsInitializer(JavaKit.class));
+            Settings.addInitializer(new HTMLSettingsInitializer(HTMLKit.class));
+            Settings.addInitializer(new NbEditorSettingsInitializer());
+            Settings.addInitializer(new PlainSettingsInitializer());
+            Settings.addInitializer(new NbJavaSettingsInitializer());
+            Settings.addInitializer(new NbHTMLSettingsInitializer());
 
-  public NbEditorSettingsInitializer() {
-  }
-
-  /** Update map filled with the settings.
-  * @param kitClass kit class for which the settings are being updated.
-  *   It is always non-null value.
-  * @param settingsMap map holding [setting-name, setting-value] pairs.
-  *   The map can be empty if this is the first initializer
-  *   that updates it or if no previous initializers updated it.
-  */
-  public void updateSettingsMap(Class kitClass, Map settingsMap) {
-
-    if (kitClass == NbEditorKit.class) {
-
-      settingsMap.put(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST, 
-        new ArrayList(Arrays.asList(
-          new String[] {
-            SaveAction.class.getName(),
-            null,
-            CutAction.class.getName(),
-            CopyAction.class.getName(),
-            PasteAction.class.getName(),
-            null,
-            DeleteAction.class.getName()
-          }
-        ))
-      );
-
+            Settings.reset();
+        }
     }
 
-  }
-  
+    public NbEditorSettingsInitializer() {
+    }
+
+    /** Update map filled with the settings.
+    * @param kitClass kit class for which the settings are being updated.
+    *   It is always non-null value.
+    * @param settingsMap map holding [setting-name, setting-value] pairs.
+    *   The map can be empty if this is the first initializer
+    *   that updates it or if no previous initializers updated it.
+    */
+    public void updateSettingsMap(Class kitClass, Map settingsMap) {
+
+        if (kitClass == NbEditorKit.class) {
+
+            settingsMap.put(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
+                            new ArrayList(Arrays.asList(
+                                              new String[] {
+                                                  SaveAction.class.getName(),
+                                                  null,
+                                                  CutAction.class.getName(),
+                                                  CopyAction.class.getName(),
+                                                  PasteAction.class.getName(),
+                                                  null,
+                                                  DeleteAction.class.getName()
+                                              }
+                                          ))
+                           );
+
+        }
+
+    }
+
 }
 
 /*

@@ -23,33 +23,33 @@ import org.netbeans.modules.db.explorer.infos.*;
 
 public class CreateViewAction extends DatabaseAction
 {
-  static final long serialVersionUID =-1640355770860785644L;
-	public void performAction (Node[] activatedNodes) 
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return;
-		
-		try {
+    static final long serialVersionUID =-1640355770860785644L;
+    public void performAction (Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return;
 
-			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-			ViewListNodeInfo nfo = (ViewListNodeInfo)info.getParent(nodename);
-			Specification spec = (Specification)nfo.getSpecification();
+        try {
 
-			// Create and execute command
-			
-			AddViewDialog dlg = new AddViewDialog();
-			if (dlg.run()) {
-				CreateView cmd = spec.createCommandCreateView(dlg.getViewName());
-				cmd.setQuery(dlg.getViewCode());
-				cmd.execute();
-				nfo.addView(dlg.getViewName());
-			}
+            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+            ViewListNodeInfo nfo = (ViewListNodeInfo)info.getParent(nodename);
+            Specification spec = (Specification)nfo.getSpecification();
 
-		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to perform operation "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-		}
-	}
+            // Create and execute command
+
+            AddViewDialog dlg = new AddViewDialog();
+            if (dlg.run()) {
+                CreateView cmd = spec.createCommandCreateView(dlg.getViewName());
+                cmd.setQuery(dlg.getViewCode());
+                cmd.execute();
+                nfo.addView(dlg.getViewName());
+            }
+
+        } catch(Exception e) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to perform operation "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
 }
 /*
  * <<Log>>

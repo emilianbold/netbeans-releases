@@ -26,28 +26,28 @@ import javax.swing.DefaultListCellRenderer;
 */
 class IndexListCellRenderer extends DefaultListCellRenderer {
 
-  static final long serialVersionUID =543071118545614229L;
-	public Component getListCellRendererComponent( JList list, 
-                                Object value, 
-                                int index, 
-                                boolean isSelected, 
-                                boolean cellHasFocus) {
-    JLabel cr = (JLabel)super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );
+    static final long serialVersionUID =543071118545614229L;
+    public Component getListCellRendererComponent( JList list,
+            Object value,
+            int index,
+            boolean isSelected,
+            boolean cellHasFocus) {
+        JLabel cr = (JLabel)super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );
 
-    cr.setIcon( DocSearchIcons.getIcon( ((DocIndexItem)value).getIconIndex() ) );
-    
-    try {
-      if (  ((DocIndexItem)value).getURL() == null )
-        setForeground (java.awt.SystemColor.textInactiveText);
+        cr.setIcon( DocSearchIcons.getIcon( ((DocIndexItem)value).getIconIndex() ) );
+
+        try {
+            if (  ((DocIndexItem)value).getURL() == null )
+                setForeground (java.awt.SystemColor.textInactiveText);
+        }
+        catch ( java.net.MalformedURLException e ) {
+            setForeground (java.awt.SystemColor.textInactiveText);
+        }
+        return cr;
     }
-    catch ( java.net.MalformedURLException e ) {
-        setForeground (java.awt.SystemColor.textInactiveText);
-    }
-    return cr;
-  }
 }
 
-/* 
+/*
  * Log
  *  4    Gandalf   1.3         11/27/99 Patrik Knakal   
  *  3    Gandalf   1.2         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

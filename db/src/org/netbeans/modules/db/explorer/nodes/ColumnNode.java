@@ -30,31 +30,31 @@ import org.openide.util.NbBundle;
 import org.openide.nodes.*;
 
 public class ColumnNode extends LeafNode
-{		
-	protected PropertySupport createPropertySupport(String name, Class type, String displayName, String shortDescription, DatabaseNodeInfo rep, boolean writable, boolean expert)
-	{
-		PropertySupport ps;
-		if (name.equals("datatype")) {
-			ps = new DatabaseTypePropertySupport(name, type, displayName, shortDescription, rep, writable, expert);
-		} else ps = super.createPropertySupport(name, type, displayName, shortDescription, rep, writable, expert);
-		return ps;
-	}
+{
+    protected PropertySupport createPropertySupport(String name, Class type, String displayName, String shortDescription, DatabaseNodeInfo rep, boolean writable, boolean expert)
+    {
+        PropertySupport ps;
+        if (name.equals("datatype")) {
+            ps = new DatabaseTypePropertySupport(name, type, displayName, shortDescription, rep, writable, expert);
+        } else ps = super.createPropertySupport(name, type, displayName, shortDescription, rep, writable, expert);
+        return ps;
+    }
 
-	public void setName(String newname)
-	{
-		try {
-			DatabaseNodeInfo info = getInfo();
-			String table = (String)info.get(DatabaseNode.TABLE);
-			Specification spec = (Specification)info.getSpecification();
-			RenameColumn cmd = spec.createCommandRenameColumn(table);
-			cmd.renameColumn(info.getName(), newname);
-			cmd.execute();
-			super.setName(newname);
-		} catch (CommandNotSupportedException ex) {
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
+    public void setName(String newname)
+    {
+        try {
+            DatabaseNodeInfo info = getInfo();
+            String table = (String)info.get(DatabaseNode.TABLE);
+            Specification spec = (Specification)info.getSpecification();
+            RenameColumn cmd = spec.createCommandRenameColumn(table);
+            cmd.renameColumn(info.getName(), newname);
+            cmd.execute();
+            super.setName(newname);
+        } catch (CommandNotSupportedException ex) {
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 }
 /*
  * <<Log>>

@@ -17,7 +17,7 @@ import java.sql.*;
 import java.util.*;
 import org.netbeans.lib.ddl.*;
 
-/** 
+/**
 * Interface for commands.
 * DatabaseSpecification instances keeps information about used database type (object was 
 * created using factory's method createSpecification()) and used connection info. 
@@ -28,58 +28,58 @@ import org.netbeans.lib.ddl.*;
 */
 public interface DatabaseSpecification {
 
-	/** Returns database metadata */
-	public DatabaseMetaData getMetaData() throws SQLException;	
+    /** Returns database metadata */
+    public DatabaseMetaData getMetaData() throws SQLException;
 
-	public String getMetaDataAdaptorClassName();
-	public void setMetaDataAdaptorClassName(String name);
-	
-	/** Returns used connection */
-	public DBConnection getConnection();
+    public String getMetaDataAdaptorClassName();
+    public void setMetaDataAdaptorClassName(String name);
 
-	/** Creates and returns java.sql.Connection object */
-	public Connection openJDBCConnection() throws DDLException;
-	
-	/** Returns java.sql.Connection, if present and open */
-	public Connection getJDBCConnection();
+    /** Returns used connection */
+    public DBConnection getConnection();
 
-	/** Returns factory */
-	public DatabaseSpecificationFactory getSpecificationFactory();
-	
-	/** Sets factory */
-	public void setSpecificationFactory(DatabaseSpecificationFactory fac);
-		
-	/** Closes the connection. 
-	* If you forget to close the connection, next open should throw
-	* DDLException. This is an internal dummy-trap.
-	*/
-	public void closeJDBCConnection() throws DDLException;
+    /** Creates and returns java.sql.Connection object */
+    public Connection openJDBCConnection() throws DDLException;
 
-	/** Returns all database properties.
-	* It contains all command properties. Used to obtain settings independent
-	* on commands.
-	*/
-	public Map getProperties();
+    /** Returns java.sql.Connection, if present and open */
+    public Connection getJDBCConnection();
 
-	/** Returns properties of command.
-	* This description should be used for formatting commands, it contains
-	* available information for DatabaseSpecification. 
-	* @param command Name of command. 
-	*/
-	public Map getCommandProperties(String command);
+    /** Returns factory */
+    public DatabaseSpecificationFactory getSpecificationFactory();
 
-	/** Creates command identified by commandName. Command names will include 
-	* create/rename/drop table/view/index/column and comment table/column. It 
-	* returns null if command specified by commandName was not found. Used 
-	* system allows developers to extend db-specification files and simply 
-	* address new commands (everybody can implement createXXXCommand()).
-	* @param command Name of command. 
-	*/
-	public DDLCommand createCommand(String commandName) throws CommandNotSupportedException;
-	
-	/** Returns DBType where maps specified java type.
-	*/
-	public String getType(int sqltype);
+    /** Sets factory */
+    public void setSpecificationFactory(DatabaseSpecificationFactory fac);
+
+    /** Closes the connection.
+    * If you forget to close the connection, next open should throw
+    * DDLException. This is an internal dummy-trap.
+    */
+    public void closeJDBCConnection() throws DDLException;
+
+    /** Returns all database properties.
+    * It contains all command properties. Used to obtain settings independent
+    * on commands.
+    */
+    public Map getProperties();
+
+    /** Returns properties of command.
+    * This description should be used for formatting commands, it contains
+    * available information for DatabaseSpecification. 
+    * @param command Name of command. 
+    */
+    public Map getCommandProperties(String command);
+
+    /** Creates command identified by commandName. Command names will include
+    * create/rename/drop table/view/index/column and comment table/column. It 
+    * returns null if command specified by commandName was not found. Used 
+    * system allows developers to extend db-specification files and simply 
+    * address new commands (everybody can implement createXXXCommand()).
+    * @param command Name of command. 
+    */
+    public DDLCommand createCommand(String commandName) throws CommandNotSupportedException;
+
+    /** Returns DBType where maps specified java type.
+    */
+    public String getType(int sqltype);
 }
 
 /*

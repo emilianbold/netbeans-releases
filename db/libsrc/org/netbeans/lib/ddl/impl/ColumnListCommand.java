@@ -17,101 +17,101 @@ import java.text.ParseException;
 import java.util.*;
 import org.netbeans.lib.ddl.*;
 
-/** 
+/**
 * Instances of this command operates with column list (e.g. create column).
 * To process command with one column use ColumnCommand.
 *
 * @author Slavek Psenicka
 */
 
-public class ColumnListCommand extends AbstractCommand 
+public class ColumnListCommand extends AbstractCommand
 {
-	/** Used columns */
-	private Vector columns;
-		
-static final long serialVersionUID =3646663278680222131L;
-	/** Constructor */	
-	public ColumnListCommand()
-	{
-		columns = new Vector();
-	}
-	
-	/** Returns list of columns */
-	public Vector getColumns()
-	{
-		return columns;
-	}
-	
-	/** Creates specification of command
-	* @param type Type of column
-	* @param name Name of column
-	* @param cmd Command
-	*/	
-	public TableColumn specifyColumn(String type, String name, String cmd)
-	throws ClassNotFoundException, IllegalAccessException, InstantiationException
-	{
-		TableColumn column;
-		Map gprops = (Map)getSpecification().getProperties();
-		Map props = (Map)getSpecification().getCommandProperties(cmd);
-		Map bindmap = (Map)props.get("Binding");
-		String tname = (String)bindmap.get(type);
-		if (tname != null) {
-			Map typemap = (Map)gprops.get(tname);
-			if (typemap != null) {
-				Class typeclass = Class.forName((String)typemap.get("Class"));
-				String format = (String)typemap.get("Format");
-				column = (TableColumn)typeclass.newInstance();
-				column.setObjectName(name);
-				column.setObjectType(type);
-				column.setColumnName(name);
-				column.setFormat(format);
-				columns.add(column);
-			} else throw new InstantiationException("can't locate binded type "+tname+" in: "+props.keySet());
-		} else throw new InstantiationException("can't bind type "+type+", table: "+bindmap);
+    /** Used columns */
+    private Vector columns;
 
-		return column;
-	}
+    static final long serialVersionUID =3646663278680222131L;
+    /** Constructor */
+    public ColumnListCommand()
+    {
+        columns = new Vector();
+    }
 
-	/** 
-	* Returns properties and it's values supported by this object.
-	* columns	Specification of columns served by this object
-	*/
-	public Map getCommandProperties()
-	throws DDLException
-	{
-		Map props = (Map)getSpecification().getProperties();
-		String cols = (String)props.get("ColumnListHeader");
-		String coldelim = (String)props.get("ColumnListDelimiter");
-		Map args = super.getCommandProperties();
+    /** Returns list of columns */
+    public Vector getColumns()
+    {
+        return columns;
+    }
 
-		// Construct string
-			
-		Enumeration col_e = columns.elements();
-		while (col_e.hasMoreElements()) {
-			AbstractTableColumn col = (AbstractTableColumn)col_e.nextElement();
-			boolean inscomma = col_e.hasMoreElements();
-			cols = cols + col.getCommand(this)+(inscomma ? coldelim : "");
-		}
-		
-		args.put("columns", cols);
-		return args;	
-	}
+    /** Creates specification of command
+    * @param type Type of column
+    * @param name Name of column
+    * @param cmd Command
+    */	
+    public TableColumn specifyColumn(String type, String name, String cmd)
+    throws ClassNotFoundException, IllegalAccessException, InstantiationException
+    {
+        TableColumn column;
+        Map gprops = (Map)getSpecification().getProperties();
+        Map props = (Map)getSpecification().getCommandProperties(cmd);
+        Map bindmap = (Map)props.get("Binding");
+        String tname = (String)bindmap.get(type);
+        if (tname != null) {
+            Map typemap = (Map)gprops.get(tname);
+            if (typemap != null) {
+                Class typeclass = Class.forName((String)typemap.get("Class"));
+                String format = (String)typemap.get("Format");
+                column = (TableColumn)typeclass.newInstance();
+                column.setObjectName(name);
+                column.setObjectType(type);
+                column.setColumnName(name);
+                column.setFormat(format);
+                columns.add(column);
+            } else throw new InstantiationException("can't locate binded type "+tname+" in: "+props.keySet());
+        } else throw new InstantiationException("can't bind type "+type+", table: "+bindmap);
 
-	/** Reads object from stream */
-	public void readObject(java.io.ObjectInputStream in) 
-	throws java.io.IOException, ClassNotFoundException 
-	{
-		super.readObject(in);
-		columns = (Vector)in.readObject();
-	}
+        return column;
+    }
 
-	/** Writes object to stream */
-	public void writeObject(java.io.ObjectOutputStream out)
-	throws java.io.IOException 
-	{
-		super.writeObject(out);
-		out.writeObject(columns);
-	}
+    /**
+    * Returns properties and it's values supported by this object.
+    * columns	Specification of columns served by this object
+    */
+    public Map getCommandProperties()
+    throws DDLException
+    {
+        Map props = (Map)getSpecification().getProperties();
+        String cols = (String)props.get("ColumnListHeader");
+        String coldelim = (String)props.get("ColumnListDelimiter");
+        Map args = super.getCommandProperties();
+
+        // Construct string
+
+        Enumeration col_e = columns.elements();
+        while (col_e.hasMoreElements()) {
+            AbstractTableColumn col = (AbstractTableColumn)col_e.nextElement();
+            boolean inscomma = col_e.hasMoreElements();
+            cols = cols + col.getCommand(this)+(inscomma ? coldelim : "");
+        }
+
+        args.put("columns", cols);
+        return args;
+    }
+
+    /** Reads object from stream */
+    public void readObject(java.io.ObjectInputStream in)
+    throws java.io.IOException, ClassNotFoundException
+    {
+        super.readObject(in);
+        columns = (Vector)in.readObject();
+    }
+
+    /** Writes object to stream */
+    public void writeObject(java.io.ObjectOutputStream out)
+    throws java.io.IOException
+    {
+        super.writeObject(out);
+        out.writeObject(columns);
+    }
 }
 
 /*

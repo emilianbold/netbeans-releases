@@ -25,44 +25,44 @@ import org.openide.filesystems.*;
 */
 public class FileSystemBeanInfo extends SimpleBeanInfo {
 
-  /** Array of property descriptors. */
-  private static PropertyDescriptor[] desc;
+    /** Array of property descriptors. */
+    private static PropertyDescriptor[] desc;
 
-  // initialization of the array of descriptors
-  static {
-    try {
-      desc = new PropertyDescriptor[] {
-        new PropertyDescriptor ("readOnly", FileSystem.class, "isReadOnly", null), // 0 // NOI18N
-        new PropertyDescriptor ("valid", FileSystem.class, "isValid", null), // 1 // NOI18N
-        new PropertyDescriptor ("hidden", FileSystem.class, "isHidden", "setHidden"), // 2 // NOI18N
-        new PropertyDescriptor ("actions", FileSystem.class, "getActions", null), // 3 // NOI18N
-        new PropertyDescriptor ("displayName", FileSystem.class, "getDisplayName", null), // 4 // NOI18N
-        new PropertyDescriptor ("root", FileSystem.class, "getRoot", null), // 5 // NOI18N
-        new PropertyDescriptor ("status", FileSystem.class, "getStatus", null), // 6 // NOI18N
-      };
-      ResourceBundle bundle = NbBundle.getBundle(FileSystemBeanInfo.class);
-      desc[0].setDisplayName (bundle.getString("PROP_readOnly"));
-      desc[0].setShortDescription (bundle.getString("HINT_readOnly"));
-      desc[1].setDisplayName (bundle.getString("PROP_valid"));
-      desc[1].setShortDescription (bundle.getString("HINT_valid"));
-      desc[2].setDisplayName (bundle.getString("PROP_hidden"));
-      desc[2].setShortDescription (bundle.getString("HINT_hidden"));
-      desc[3].setHidden (true);
-      desc[4].setHidden (true);
-      desc[5].setHidden (true);
-      desc[6].setHidden (true);
-    } catch (IntrospectionException ex) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace();
+    // initialization of the array of descriptors
+    static {
+        try {
+            desc = new PropertyDescriptor[] {
+                       new PropertyDescriptor ("readOnly", FileSystem.class, "isReadOnly", null), // 0 // NOI18N
+                       new PropertyDescriptor ("valid", FileSystem.class, "isValid", null), // 1 // NOI18N
+                       new PropertyDescriptor ("hidden", FileSystem.class, "isHidden", "setHidden"), // 2 // NOI18N
+                       new PropertyDescriptor ("actions", FileSystem.class, "getActions", null), // 3 // NOI18N
+                       new PropertyDescriptor ("displayName", FileSystem.class, "getDisplayName", null), // 4 // NOI18N
+                       new PropertyDescriptor ("root", FileSystem.class, "getRoot", null), // 5 // NOI18N
+                       new PropertyDescriptor ("status", FileSystem.class, "getStatus", null), // 6 // NOI18N
+                   };
+            ResourceBundle bundle = NbBundle.getBundle(FileSystemBeanInfo.class);
+            desc[0].setDisplayName (bundle.getString("PROP_readOnly"));
+            desc[0].setShortDescription (bundle.getString("HINT_readOnly"));
+            desc[1].setDisplayName (bundle.getString("PROP_valid"));
+            desc[1].setShortDescription (bundle.getString("HINT_valid"));
+            desc[2].setDisplayName (bundle.getString("PROP_hidden"));
+            desc[2].setShortDescription (bundle.getString("HINT_hidden"));
+            desc[3].setHidden (true);
+            desc[4].setHidden (true);
+            desc[5].setHidden (true);
+            desc[6].setHidden (true);
+        } catch (IntrospectionException ex) {
+            if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace();
+        }
     }
-  }
 
 
-  /* Descriptor of valid properties
-  * @return array of properties
-  */
-  public PropertyDescriptor[] getPropertyDescriptors () {
-    return desc;
-  }
+    /* Descriptor of valid properties
+    * @return array of properties
+    */
+    public PropertyDescriptor[] getPropertyDescriptors () {
+        return desc;
+    }
 
 }
 

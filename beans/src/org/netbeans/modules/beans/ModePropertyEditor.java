@@ -18,54 +18,54 @@ import sun.tools.util.ModifierFilter;
 
 import org.openide.util.NbBundle;
 
-/** property editor for mode property of Prperty patterns 
+/** property editor for mode property of Prperty patterns
 *
 * @author Petr Hrebejk
 */
 public class ModePropertyEditor extends PropertyEditorSupport {
-  /** Array of tags 
-  */
+    /** Array of tags
+    */
 
 
-  private static final String[] tags = new String[3];
-  private static final int [] values = {
-                     PropertyPattern.READ_WRITE, 
-                     PropertyPattern.READ_ONLY,
-                     PropertyPattern.WRITE_ONLY };
+    private static final String[] tags = new String[3];
+    private static final int [] values = {
+        PropertyPattern.READ_WRITE,
+        PropertyPattern.READ_ONLY,
+        PropertyPattern.WRITE_ONLY };
 
-  static {                                 
-    tags[0]=PatternNode.bundle.getString( "LAB_ReadWriteMODE" );
-    tags[1]=PatternNode.bundle.getString( "LAB_ReadOnlyMODE" );
-    tags[2]=PatternNode.bundle.getString( "LAB_WriteOnlyMODE" );
-    
-  }
+    static {
+        tags[0]=PatternNode.bundle.getString( "LAB_ReadWriteMODE" );
+        tags[1]=PatternNode.bundle.getString( "LAB_ReadOnlyMODE" );
+        tags[2]=PatternNode.bundle.getString( "LAB_WriteOnlyMODE" );
 
-  /** @return names of the supported member Acces types */
-  public String[] getTags() {
-    return tags;
-  }
+    }
 
-  /** @return text for the current value */
-  public String getAsText () {
-    int value = ((Integer)getValue()).intValue();
+    /** @return names of the supported member Acces types */
+    public String[] getTags() {
+        return tags;
+    }
 
-    for (int i = 0; i < values.length ; i++) 
-      if (values[i] == value) 
-        return tags[i];
+    /** @return text for the current value */
+    public String getAsText () {
+        int value = ((Integer)getValue()).intValue();
 
-    return PatternNode.bundle.getString( "LAB_Unsupported" );
-  }
+        for (int i = 0; i < values.length ; i++)
+            if (values[i] == value)
+                return tags[i];
 
-  /** @param text A text for the current value. */
-  public void setAsText (String text) {
-    for (int i = 0; i < tags.length ; i++) 
-      if (tags[i] == text) {
-        setValue(new Integer(values[i]));
-        return;
-        }
+        return PatternNode.bundle.getString( "LAB_Unsupported" );
+    }
 
-    setValue( new Integer(0) );
-  }
+    /** @param text A text for the current value. */
+    public void setAsText (String text) {
+        for (int i = 0; i < tags.length ; i++)
+            if (tags[i] == text) {
+                setValue(new Integer(values[i]));
+                return;
+            }
+
+        setValue( new Integer(0) );
+    }
 }
 
 /*

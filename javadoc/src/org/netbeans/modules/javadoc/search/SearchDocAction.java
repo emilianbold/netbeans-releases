@@ -17,52 +17,52 @@ import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
-/** 
+/**
 * Search doc action.
 *
 * @author   Petr Hrebejk
 */
 public class SearchDocAction extends CallableSystemAction {
 
-  /** Human presentable name of the action. This should be
-   * presented as an item in a menu.
-   * @return the name of the action
-   */
-  public String getName () {
-    return NbBundle.getBundle (SearchDocAction.class).getString ("CTL_SEARCH_MenuItem");
-  }
+    /** Human presentable name of the action. This should be
+     * presented as an item in a menu.
+     * @return the name of the action
+     */
+    public String getName () {
+        return NbBundle.getBundle (SearchDocAction.class).getString ("CTL_SEARCH_MenuItem");
+    }
 
-  /** The action's icon location.
-   * @return the action's icon location
-   */
-  protected String iconResource () {
-    return "/org/netbeans/modules/javadoc/resources/searchDoc.gif"; // NOI18N
-  }
-  
-  /** Help context where to find more about the action.
-   * @return the help context for this action
-   */
-  public HelpCtx getHelpCtx () {
-    return new HelpCtx (SearchDocAction.class);
-  }
+    /** The action's icon location.
+     * @return the action's icon location
+     */
+    protected String iconResource () {
+        return "/org/netbeans/modules/javadoc/resources/searchDoc.gif"; // NOI18N
+    }
 
-  /** This method is called by one of the "invokers" as a result of
-   * some user's action that should lead to actual "performing" of the action.
-   * This default implementation calls the assigned actionPerformer if it
-   * is not null otherwise the action is ignored.
-   */
-  public void performAction () {
-    
-    IndexSearch indexSearch = IndexSearch.getDefault();
-    
-    String toFind = GetJavaWord.getCurrentJavaWord();
+    /** Help context where to find more about the action.
+     * @return the help context for this action
+     */
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx (SearchDocAction.class);
+    }
 
-    if (toFind != null) 
-      indexSearch.setTextToFind( toFind );
-      
-    indexSearch.open ();
-    indexSearch.requestFocus();
-  }
+    /** This method is called by one of the "invokers" as a result of
+     * some user's action that should lead to actual "performing" of the action.
+     * This default implementation calls the assigned actionPerformer if it
+     * is not null otherwise the action is ignored.
+     */
+    public void performAction () {
+
+        IndexSearch indexSearch = IndexSearch.getDefault();
+
+        String toFind = GetJavaWord.getCurrentJavaWord();
+
+        if (toFind != null)
+            indexSearch.setTextToFind( toFind );
+
+        indexSearch.open ();
+        indexSearch.requestFocus();
+    }
 }
 
 /*

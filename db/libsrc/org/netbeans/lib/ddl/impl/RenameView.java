@@ -17,40 +17,40 @@ import java.util.*;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 
-/** 
+/**
 * Rename table command. Encapsulates name and new name of table.
 *
 * @author Slavek Psenicka
 */
 
-public class RenameView extends AbstractCommand 
+public class RenameView extends AbstractCommand
 {
-	/** New name */
-	private String newname;
-	
-static final long serialVersionUID =-223515979547554815L;
-	/** Returns new name */
-	public String getNewName()
-	{
-		return newname;
-	}
-	
-	/** Sets new name */
-	public void setNewName(String name)
-	{
-		newname = name;
-	}
+    /** New name */
+    private String newname;
 
-	/** Returns properties of command:
-	* object.newname	New name of table
-	*/
-	public Map getCommandProperties()
-	throws DDLException
-	{
-		Map args = super.getCommandProperties();
-		args.put("object.newname", newname);			
-		return args;	
-	}
+    static final long serialVersionUID =-223515979547554815L;
+    /** Returns new name */
+    public String getNewName()
+    {
+        return newname;
+    }
+
+    /** Sets new name */
+    public void setNewName(String name)
+    {
+        newname = name;
+    }
+
+    /** Returns properties of command:
+    * object.newname	New name of table
+    */
+    public Map getCommandProperties()
+    throws DDLException
+    {
+        Map args = super.getCommandProperties();
+        args.put("object.newname", newname);
+        return args;
+    }
 }
 
 /*

@@ -24,30 +24,30 @@ import org.netbeans.modules.java.JavaNode;
 * @version 1.00, Jul 21, 1998
 */
 public class FormDataNode extends JavaNode {
-  /** generated Serialized Version UID */
-//  static final long serialVersionUID = 1795549004166402392L;
-  
-  /** Icons for form data objects. */
-  private static final String[] FORM_ICONS = { "form", "formMain", "formError", "form", "formMain" }; // NOI18N
+    /** generated Serialized Version UID */
+    //  static final long serialVersionUID = 1795549004166402392L;
 
-  /** Icon base for form data objects. */
-  private static final String FORM_ICON_BASE = "org/netbeans/modules/form/resources/"; // NOI18N
-    
-  transient private String currentIcon;
+    /** Icons for form data objects. */
+    private static final String[] FORM_ICONS = { "form", "formMain", "formError", "form", "formMain" }; // NOI18N
 
-  /** Constructs a new FormDataObject for specified primary file */
-  public FormDataNode (FormDataObject fdo) {
-    super (fdo);
-  }
+    /** Icon base for form data objects. */
+    private static final String FORM_ICON_BASE = "org/netbeans/modules/form/resources/"; // NOI18N
 
-  protected String getIconBase() {
-    return FORM_ICON_BASE;
-  }
+    transient private String currentIcon;
 
-  protected String[] getIcons() {
-    return FORM_ICONS;
-  }
-  
+    /** Constructs a new FormDataObject for specified primary file */
+    public FormDataNode (FormDataObject fdo) {
+        super (fdo);
+    }
+
+    protected String getIconBase() {
+        return FORM_ICON_BASE;
+    }
+
+    protected String[] getIcons() {
+        return FORM_ICONS;
+    }
+
 }
 
 /*

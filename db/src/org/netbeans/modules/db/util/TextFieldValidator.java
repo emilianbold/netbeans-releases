@@ -17,17 +17,17 @@ import java.lang.Integer;
 
 public abstract class TextFieldValidator
 {
-	public abstract boolean accepts(String value);
-	
-	public static final class integer extends TextFieldValidator
-	{
-		public boolean accepts(String value) {
-			try {
-				Integer intval = new Integer(value);
-			} catch (NumberFormatException e) { return false; }
-			return true;
-		}
-	}
+    public abstract boolean accepts(String value);
+
+    public static final class integer extends TextFieldValidator
+    {
+        public boolean accepts(String value) {
+            try {
+                Integer intval = new Integer(value);
+            } catch (NumberFormatException e) { return false; }
+            return true;
+        }
+    }
 }
 
 

@@ -19,34 +19,34 @@ package org.netbeans.modules.beans.beaninfo;
 */
 interface IconBases {
 
-  // Properties for Bean Info Features. There should be added S for selected features
-  // and N for non selected features at the end of the string.
+    // Properties for Bean Info Features. There should be added S for selected features
+    // and N for non selected features at the end of the string.
 
-  public static final String BIF_PROPERTY_RW =
-    "/org/netbeans/modules/beans/resources/bifPropertyRW_"; // NOI18N
+    public static final String BIF_PROPERTY_RW =
+        "/org/netbeans/modules/beans/resources/bifPropertyRW_"; // NOI18N
 
-  public static final String BIF_PROPERTY_RO =
-    "/org/netbeans/modules/beans/resources/bifPropertyRO_"; // NOI18N
+    public static final String BIF_PROPERTY_RO =
+        "/org/netbeans/modules/beans/resources/bifPropertyRO_"; // NOI18N
 
-  public static final String BIF_PROPERTY_WO =
-    "/org/netbeans/modules/beans/resources/bifPropertyWO_"; // NOI18N
-    
-  public static final String BIF_IDXPROPERTY_RW =
-    "/org/netbeans/modules/beans/resources/bifIndexedPropertyRW_"; // NOI18N
+    public static final String BIF_PROPERTY_WO =
+        "/org/netbeans/modules/beans/resources/bifPropertyWO_"; // NOI18N
 
-  public static final String BIF_IDXPROPERTY_RO =
-    "/org/netbeans/modules/beans/resources/bifIndexedPropertyRO_"; // NOI18N
+    public static final String BIF_IDXPROPERTY_RW =
+        "/org/netbeans/modules/beans/resources/bifIndexedPropertyRW_"; // NOI18N
 
-  public static final String BIF_IDXPROPERTY_WO =
-    "/org/netbeans/modules/beans/resources/bifIndexedPropertyWO_"; // NOI18N
-  
-  public static final String BIF_EVENTSET_MULTICAST =
-    "/org/netbeans/modules/beans/resources/bifEventSetMC_"; // NOI18N
+    public static final String BIF_IDXPROPERTY_RO =
+        "/org/netbeans/modules/beans/resources/bifIndexedPropertyRO_"; // NOI18N
 
-  public static final String BIF_EVENTSET_UNICAST =
-    "/org/netbeans/modules/beans/resources/bifEventSetUC_"; // NOI18N
-  
-  }
+    public static final String BIF_IDXPROPERTY_WO =
+        "/org/netbeans/modules/beans/resources/bifIndexedPropertyWO_"; // NOI18N
+
+    public static final String BIF_EVENTSET_MULTICAST =
+        "/org/netbeans/modules/beans/resources/bifEventSetMC_"; // NOI18N
+
+    public static final String BIF_EVENTSET_UNICAST =
+        "/org/netbeans/modules/beans/resources/bifEventSetUC_"; // NOI18N
+
+}
 /*
  * Log
  *  3    Gandalf   1.2         1/12/00  Petr Hrebejk    i18n  

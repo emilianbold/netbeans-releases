@@ -18,7 +18,7 @@ import java.util.MissingResourceException;
 import org.openide.util.NbBundle;
 import org.netbeans.editor.LocaleSupport;
 
-/** 
+/**
 * Locale support localizer that uses the bundle to get
 * the localized string for the given key.
 *
@@ -28,23 +28,23 @@ import org.netbeans.editor.LocaleSupport;
 
 public class NbLocalizer implements LocaleSupport.Localizer {
 
-  private ResourceBundle bundle;
+    private ResourceBundle bundle;
 
-  /** Construct new localizer that uses a bundle for the given class.
-  * @param bundleClass class for which the bundle is retrieved by NbBundle.getBundle()
-  */
-  public NbLocalizer(Class bundleClass) {
-    bundle = NbBundle.getBundle(bundleClass);
-  }
-
-  /** Get the localized string using the given key. */
-  public String getString(String key) {
-    try {
-      return bundle.getString(key);
-    } catch (MissingResourceException e) {
-      return null;
+    /** Construct new localizer that uses a bundle for the given class.
+    * @param bundleClass class for which the bundle is retrieved by NbBundle.getBundle()
+    */
+    public NbLocalizer(Class bundleClass) {
+        bundle = NbBundle.getBundle(bundleClass);
     }
-  }
+
+    /** Get the localized string using the given key. */
+    public String getString(String key) {
+        try {
+            return bundle.getString(key);
+        } catch (MissingResourceException e) {
+            return null;
+        }
+    }
 
 }
 

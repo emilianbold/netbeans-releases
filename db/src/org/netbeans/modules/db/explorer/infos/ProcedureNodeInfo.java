@@ -28,73 +28,73 @@ import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 
-public class ProcedureNodeInfo extends DatabaseNodeInfo 
+public class ProcedureNodeInfo extends DatabaseNodeInfo
 {
-  static final long serialVersionUID =-5984072379104199563L;
-  
-/*
-	public DatabaseDriver getDatabaseDriver() {
-		return (DatabaseDriver)get(DatabaseNodeInfo.DBDRIVER);
-	}
-  
-	public void setDatabaseDriver(DatabaseDriver drv) {
-		put(DatabaseNodeInfo.NAME, drv.getName());
-		put(DatabaseNodeInfo.URL, drv.getURL());
-		put(DatabaseNodeInfo.DBDRIVER, drv);
-	}
-*/
-  
-	public void initChildren(Vector children) throws DatabaseException {
- 		try {
-			DatabaseMetaData dmd = getSpecification().getMetaData();
-			String catalog = (String)get(DatabaseNode.CATALOG);
-			String name = (String)get(DatabaseNode.PROCEDURE);
+    static final long serialVersionUID =-5984072379104199563L;
+
+    /*
+    	public DatabaseDriver getDatabaseDriver() {
+    		return (DatabaseDriver)get(DatabaseNodeInfo.DBDRIVER);
+    	}
       
-      DriverSpecification drvSpec = getDriverSpecification();
-      drvSpec.getProcedureColumns(catalog, dmd, name, null);
-      
-			if (drvSpec.rs != null) {
-        while (drvSpec.rs.next()) {
-          DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE_COLUMN, drvSpec.rs);
-          if (info != null) {
-            Object ibase = null;
-            String itype = "unknown";
-            int type = ((Number)info.get("type")).intValue();
-            switch (type) {
-              case DatabaseMetaData.procedureColumnIn: 
-                ibase = info.get("iconbase_in"); 
-                itype = "in";
-                break;
-              case DatabaseMetaData.procedureColumnOut: 
-                ibase = info.get("iconbase_out"); 
-                itype = "out";
-                break;
-              case DatabaseMetaData.procedureColumnInOut: 
-                ibase = info.get("iconbase_inout"); 
-                itype = "in/out";
-                break;
-              case DatabaseMetaData.procedureColumnReturn: 
-                ibase = info.get("iconbase_return"); 
-                itype = "return";
-                break;
-              case DatabaseMetaData.procedureColumnResult: 
-                ibase = info.get("iconbase_result"); 
-                itype = "result";
-                break;
+    	public void setDatabaseDriver(DatabaseDriver drv) {
+    		put(DatabaseNodeInfo.NAME, drv.getName());
+    		put(DatabaseNodeInfo.URL, drv.getURL());
+    		put(DatabaseNodeInfo.DBDRIVER, drv);
+    	}
+    */
+
+    public void initChildren(Vector children) throws DatabaseException {
+        try {
+            DatabaseMetaData dmd = getSpecification().getMetaData();
+            String catalog = (String)get(DatabaseNode.CATALOG);
+            String name = (String)get(DatabaseNode.PROCEDURE);
+
+            DriverSpecification drvSpec = getDriverSpecification();
+            drvSpec.getProcedureColumns(catalog, dmd, name, null);
+
+            if (drvSpec.rs != null) {
+                while (drvSpec.rs.next()) {
+                    DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE_COLUMN, drvSpec.rs);
+                    if (info != null) {
+                        Object ibase = null;
+                        String itype = "unknown";
+                        int type = ((Number)info.get("type")).intValue();
+                        switch (type) {
+                        case DatabaseMetaData.procedureColumnIn:
+                            ibase = info.get("iconbase_in");
+                            itype = "in";
+                            break;
+                        case DatabaseMetaData.procedureColumnOut:
+                            ibase = info.get("iconbase_out");
+                            itype = "out";
+                            break;
+                        case DatabaseMetaData.procedureColumnInOut:
+                            ibase = info.get("iconbase_inout");
+                            itype = "in/out";
+                            break;
+                        case DatabaseMetaData.procedureColumnReturn:
+                            ibase = info.get("iconbase_return");
+                            itype = "return";
+                            break;
+                        case DatabaseMetaData.procedureColumnResult:
+                            ibase = info.get("iconbase_result");
+                            itype = "result";
+                            break;
+                        }
+                        if (ibase != null)
+                            info.put("iconbase", ibase);
+                        info.put("type", itype);
+                        children.add(info);
+                    } else
+                        throw new Exception("unable to create node information for procedure column");
+                }
+                drvSpec.rs.close();
             }
-            if (ibase != null)
-              info.put("iconbase", ibase);
-            info.put("type", itype);
-            children.add(info);
-          } else
-            throw new Exception("unable to create node information for procedure column");
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage());
         }
-        drvSpec.rs.close();
-      }
-		} catch (Exception e) {
-			throw new DatabaseException(e.getMessage());	
-		}
-	}	
+    }
 }
 
 /*

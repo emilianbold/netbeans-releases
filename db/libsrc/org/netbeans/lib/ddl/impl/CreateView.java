@@ -17,7 +17,7 @@ import java.util.*;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 
-/** 
+/**
 * Interface of database action command. Instances should remember connection 
 * information of DatabaseSpecification and use it in execute() method. This is a base interface
 * used heavily for sub-interfacing (it is not subclassing :)
@@ -25,28 +25,28 @@ import org.netbeans.lib.ddl.impl.*;
 * @author Slavek Psenicka
 */
 
-public class CreateView extends AbstractCommand 
+public class CreateView extends AbstractCommand
 {
-	String query;
-	
-static final long serialVersionUID =-3890617111076632936L;
-	public String getQuery()
-	{
-		return query;
-	}
-	
-	public void setQuery(String qry)
-	{
-		query = qry;
-	}
-	
-	public Map getCommandProperties()
-	throws DDLException
-	{
-		Map args = super.getCommandProperties();
-		args.put("query", query);			
-		return args;	
-	}	
+    String query;
+
+    static final long serialVersionUID =-3890617111076632936L;
+    public String getQuery()
+    {
+        return query;
+    }
+
+    public void setQuery(String qry)
+    {
+        query = qry;
+    }
+
+    public Map getCommandProperties()
+    throws DDLException
+    {
+        Map args = super.getCommandProperties();
+        args.put("query", query);
+        return args;
+    }
 }
 
 /*

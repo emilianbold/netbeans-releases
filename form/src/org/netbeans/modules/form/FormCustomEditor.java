@@ -33,216 +33,216 @@ import javax.swing.border.EmptyBorder;
  */
 public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEditor {
 
-  private static final int DEFAULT_WIDTH  = 350;
-  private static final int DEFAULT_HEIGHT = 350;
+    private static final int DEFAULT_WIDTH  = 350;
+    private static final int DEFAULT_HEIGHT = 350;
 
-// -----------------------------------------------------------------------------
-// Private variables
+    // -----------------------------------------------------------------------------
+    // Private variables
 
-  private FormPropertyEditor editor;
-  private JTabbedPane tabs;
-  private PropertyEditor[] allEditors;
-  private Component[] allCustomEditors;
-    
-  private String preCode;
-  private String postCode;
-  
-// -----------------------------------------------------------------------------
-// Constructor
+    private FormPropertyEditor editor;
+    private JTabbedPane tabs;
+    private PropertyEditor[] allEditors;
+    private Component[] allCustomEditors;
 
-  static final long serialVersionUID =-5566324092702416875L;
+    private String preCode;
+    private String postCode;
 
-  public FormCustomEditor (FormPropertyEditor editor) {
-    this.editor = editor;
-    setBorder (new EmptyBorder (5, 5, 5, 5));
-    setLayout (new BorderLayout ());
+    // -----------------------------------------------------------------------------
+    // Constructor
 
-    preCode = editor.getRADProperty ().getPreCode ();
-    postCode = editor.getRADProperty ().getPostCode ();
-    
-    allEditors = editor.getAllEditors ();
-    allCustomEditors = new Component[allEditors.length];
-    PropertyEditor currentlyUsedEditor = editor.getModifiedEditor ();
-    if (currentlyUsedEditor == null) {
-      currentlyUsedEditor = allEditors[0];
-      editor.setModifiedEditor (currentlyUsedEditor);
-    } else if (!currentlyUsedEditor.getClass ().equals (allEditors[0].getClass ())) {
-      // if the current editor does not match any of available ones, we will use the first available instead of it
-      editor.setModifiedEditor (currentlyUsedEditor);
-    }
+    static final long serialVersionUID =-5566324092702416875L;
 
-    if (allEditors.length == 1) {
-      if (allEditors[0] instanceof FormAwareEditor) {
-        ((FormAwareEditor)allEditors[0]).setRADComponent (editor.getRADComponent (), editor.getRADProperty ());
-      }
+    public FormCustomEditor (FormPropertyEditor editor) {
+        this.editor = editor;
+        setBorder (new EmptyBorder (5, 5, 5, 5));
+        setLayout (new BorderLayout ());
 
-      if (allEditors[0] instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
-        ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)allEditors[0]).attach (new org.openide.nodes.Node[] { editor.getRADComponent ().getNodeReference () });
-      }
+        preCode = editor.getRADProperty ().getPreCode ();
+        postCode = editor.getRADProperty ().getPostCode ();
 
-      allEditors[0].setValue (editor.getValue ());
-
-      if (allEditors[0].supportsCustomEditor ()) {
-        add (allCustomEditors[0] = allEditors[0].getCustomEditor (), BorderLayout.CENTER);
-      } else {
-        // [FUTURE - add property sheet line component]
-        add (allCustomEditors[0] = new JLabel (FormEditor.getFormBundle ().getString ("CTL_PropertyEditorDoesNot")), BorderLayout.CENTER);
-      }
-      
-    } else {
-      tabs = new JTabbedPane ();
-      HelpCtx.setHelpIDString (tabs, FormCustomEditor.class.getName () + ".tabbedPane"); // NOI18N
-      int indexToSelect = -1;
-      for (int i = 0; i < allEditors.length; i++) {
-        if (allEditors[i] instanceof FormAwareEditor) {
-          ((FormAwareEditor)allEditors[i]).setRADComponent (editor.getRADComponent (), editor.getRADProperty ());
+        allEditors = editor.getAllEditors ();
+        allCustomEditors = new Component[allEditors.length];
+        PropertyEditor currentlyUsedEditor = editor.getModifiedEditor ();
+        if (currentlyUsedEditor == null) {
+            currentlyUsedEditor = allEditors[0];
+            editor.setModifiedEditor (currentlyUsedEditor);
+        } else if (!currentlyUsedEditor.getClass ().equals (allEditors[0].getClass ())) {
+            // if the current editor does not match any of available ones, we will use the first available instead of it
+            editor.setModifiedEditor (currentlyUsedEditor);
         }
 
-        if (allEditors[i] instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
-          ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)allEditors[i]).attach (new org.openide.nodes.Node[] { editor.getRADComponent ().getNodeReference () });
-        }
-
-        if (allEditors[i].getClass ().equals (currentlyUsedEditor.getClass ()) && (indexToSelect == -1)) {
-          allEditors[i].setValue (editor.getValue ());
-          indexToSelect = i;
-        } else {
-          Object currValue = editor.getValue ();
-          boolean valueSet = false;
-          if (currValue != null) {
-            if (editor.getPropertyType ().isAssignableFrom (currValue.getClass ())) {
-              allEditors[i].setValue (currValue); // current value is of the real property type
-              valueSet = true;
-            } else if (currValue instanceof FormDesignValue) {
-              Object desValue = ((FormDesignValue)currValue).getDesignValue (editor.getRADComponent ());
-              if (desValue != FormDesignValue.IGNORED_VALUE) {
-                allEditors[i].setValue (desValue); // current value is of the real property type
-                valueSet = true;
-              }
+        if (allEditors.length == 1) {
+            if (allEditors[0] instanceof FormAwareEditor) {
+                ((FormAwareEditor)allEditors[0]).setRADComponent (editor.getRADComponent (), editor.getRADProperty ());
             }
-          } 
-          if (!valueSet) {
-            Object defValue = editor.getRADProperty ().getDefaultValue ();
-            if (defValue != null) {
-              allEditors[i].setValue (defValue);
+
+            if (allEditors[0] instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
+                ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)allEditors[0]).attach (new org.openide.nodes.Node[] { editor.getRADComponent ().getNodeReference () });
             }
-          }
-        }
 
-        String tabName;
-        if (allEditors[i] instanceof NamedPropertyEditor) {
-          tabName = ((NamedPropertyEditor)allEditors[i]).getDisplayName ();
+            allEditors[0].setValue (editor.getValue ());
+
+            if (allEditors[0].supportsCustomEditor ()) {
+                add (allCustomEditors[0] = allEditors[0].getCustomEditor (), BorderLayout.CENTER);
+            } else {
+                // [FUTURE - add property sheet line component]
+                add (allCustomEditors[0] = new JLabel (FormEditor.getFormBundle ().getString ("CTL_PropertyEditorDoesNot")), BorderLayout.CENTER);
+            }
+
         } else {
-          tabName = Utilities.getShortClassName (allEditors[i].getClass ());
+            tabs = new JTabbedPane ();
+            HelpCtx.setHelpIDString (tabs, FormCustomEditor.class.getName () + ".tabbedPane"); // NOI18N
+            int indexToSelect = -1;
+            for (int i = 0; i < allEditors.length; i++) {
+                if (allEditors[i] instanceof FormAwareEditor) {
+                    ((FormAwareEditor)allEditors[i]).setRADComponent (editor.getRADComponent (), editor.getRADProperty ());
+                }
+
+                if (allEditors[i] instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
+                    ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)allEditors[i]).attach (new org.openide.nodes.Node[] { editor.getRADComponent ().getNodeReference () });
+                }
+
+                if (allEditors[i].getClass ().equals (currentlyUsedEditor.getClass ()) && (indexToSelect == -1)) {
+                    allEditors[i].setValue (editor.getValue ());
+                    indexToSelect = i;
+                } else {
+                    Object currValue = editor.getValue ();
+                    boolean valueSet = false;
+                    if (currValue != null) {
+                        if (editor.getPropertyType ().isAssignableFrom (currValue.getClass ())) {
+                            allEditors[i].setValue (currValue); // current value is of the real property type
+                            valueSet = true;
+                        } else if (currValue instanceof FormDesignValue) {
+                            Object desValue = ((FormDesignValue)currValue).getDesignValue (editor.getRADComponent ());
+                            if (desValue != FormDesignValue.IGNORED_VALUE) {
+                                allEditors[i].setValue (desValue); // current value is of the real property type
+                                valueSet = true;
+                            }
+                        }
+                    }
+                    if (!valueSet) {
+                        Object defValue = editor.getRADProperty ().getDefaultValue ();
+                        if (defValue != null) {
+                            allEditors[i].setValue (defValue);
+                        }
+                    }
+                }
+
+                String tabName;
+                if (allEditors[i] instanceof NamedPropertyEditor) {
+                    tabName = ((NamedPropertyEditor)allEditors[i]).getDisplayName ();
+                } else {
+                    tabName = Utilities.getShortClassName (allEditors[i].getClass ());
+                }
+                if (allEditors[i].supportsCustomEditor ()) {
+                    tabs.addTab (tabName, allCustomEditors[i] = allEditors[i].getCustomEditor ());
+                } else {
+                    // [FUTURE - add property sheet line component]
+                    tabs.addTab (tabName, allCustomEditors[i] = new JLabel (FormEditor.getFormBundle ().getString ("CTL_PropertyEditorDoesNot")));
+                }
+            }
+
+            add (tabs, BorderLayout.CENTER);
+
+            if (indexToSelect == -1) {
+                // if the current editor does not match any of available ones, we will use the first available instaed of it
+                tabs.setSelectedIndex (0);
+                editor.setModifiedEditor (allEditors[0]);
+            } else {
+                tabs.setSelectedIndex (indexToSelect);
+            }
+
+            tabs.addChangeListener (new ChangeListener () {
+                                        public void stateChanged (ChangeEvent evt) {
+                                            FormCustomEditor.this.editor.setModifiedEditor (getCurrentPropertyEditor ());
+                                        }
+                                    }
+                                   );
         }
-        if (allEditors[i].supportsCustomEditor ()) {
-          tabs.addTab (tabName, allCustomEditors[i] = allEditors[i].getCustomEditor ());
-        } else {
-          // [FUTURE - add property sheet line component]
-          tabs.addTab (tabName, allCustomEditors[i] = new JLabel (FormEditor.getFormBundle ().getString ("CTL_PropertyEditorDoesNot")));
+
+        JButton advancedButton = new JButton (FormEditor.getFormBundle ().getString ("CTL_Advanced"));
+        advancedButton.addActionListener (new java.awt.event.ActionListener () {
+                                              public void actionPerformed (java.awt.event.ActionEvent evt) {
+                                                  showAdvancedSettings ();
+                                              }
+                                          }
+                                         );
+
+        JPanel advancedPanel = new JPanel ();
+        advancedPanel.setLayout (new java.awt.FlowLayout (java.awt.FlowLayout.LEFT, 0, 0));
+        advancedPanel.setBorder (new EmptyBorder (8, 0, 0, 0));
+        advancedPanel.add (advancedButton);
+        add (advancedPanel, BorderLayout.SOUTH);
+    }
+
+    public Dimension getPreferredSize () {
+        Dimension inh = super.getPreferredSize ();
+        return new Dimension (Math.max (inh.width, DEFAULT_WIDTH), Math.max (inh.height, DEFAULT_HEIGHT));
+    }
+
+    private void showAdvancedSettings () {
+        FormCustomEditorAdvanced fcea = new FormCustomEditorAdvanced (preCode, postCode);
+        DialogDescriptor dd = new DialogDescriptor (
+                                  fcea,
+                                  FormEditor.getFormBundle ().getString ("CTL_AdvancedInitializationCode")
+                              );
+        dd.setHelpCtx (new HelpCtx (FormCustomEditorAdvanced.class));
+        TopManager.getDefault ().createDialog (dd).show ();
+
+        if (dd.getValue () == DialogDescriptor.OK_OPTION) {
+            preCode = fcea.getPreCode ();
+            postCode =fcea.getPostCode ();
         }
-      }
+    }
 
-      add (tabs, BorderLayout.CENTER);
+    // -----------------------------------------------------------------------------
+    // EnhancedCustomPropertyEditor implementation
 
-      if (indexToSelect == -1) { 
-        // if the current editor does not match any of available ones, we will use the first available instaed of it
-        tabs.setSelectedIndex (0);
-        editor.setModifiedEditor (allEditors[0]);
-      } else {
-        tabs.setSelectedIndex (indexToSelect);
-      }
+    /** Get the customized property value.
+    * @return the property value
+    * @exception InvalidStateException when the custom property editor does not contain a valid property value
+    *            (and thus it should not be set)
+    */
+    public Object getPropertyValue () throws IllegalStateException {
+        Component currentCustomEditor = getCurrentCustomPropertyEditor ();
+        PropertyEditor currentEditor = getCurrentPropertyEditor ();
 
-      tabs.addChangeListener (new ChangeListener () {
-          public void stateChanged (ChangeEvent evt) {
-            FormCustomEditor.this.editor.setModifiedEditor (getCurrentPropertyEditor ());
-          }
+        if (currentEditor != null) {
+            editor.commitModifiedEditor ();
         }
-      );
-    }
 
-    JButton advancedButton = new JButton (FormEditor.getFormBundle ().getString ("CTL_Advanced"));
-    advancedButton.addActionListener (new java.awt.event.ActionListener () {
-        public void actionPerformed (java.awt.event.ActionEvent evt) {
-          showAdvancedSettings ();
+        editor.getRADProperty ().setPreCode (preCode); // [PENDING - change only if modified]
+        editor.getRADProperty ().setPostCode (postCode);
+
+        if (currentCustomEditor instanceof EnhancedCustomPropertyEditor) {
+            return ((EnhancedCustomPropertyEditor)currentCustomEditor).getPropertyValue ();
         }
-      }
-    );
+        if (currentEditor != null) {
+            return currentEditor.getValue ();
+        }
 
-    JPanel advancedPanel = new JPanel ();
-    advancedPanel.setLayout (new java.awt.FlowLayout (java.awt.FlowLayout.LEFT, 0, 0));
-    advancedPanel.setBorder (new EmptyBorder (8, 0, 0, 0));
-    advancedPanel.add (advancedButton);
-    add (advancedPanel, BorderLayout.SOUTH);
-  }
-
-  public Dimension getPreferredSize () {
-    Dimension inh = super.getPreferredSize ();
-    return new Dimension (Math.max (inh.width, DEFAULT_WIDTH), Math.max (inh.height, DEFAULT_HEIGHT));
-  }
-
-  private void showAdvancedSettings () {
-    FormCustomEditorAdvanced fcea = new FormCustomEditorAdvanced (preCode, postCode);
-    DialogDescriptor dd = new DialogDescriptor (
-      fcea,
-      FormEditor.getFormBundle ().getString ("CTL_AdvancedInitializationCode")
-    );
-    dd.setHelpCtx (new HelpCtx (FormCustomEditorAdvanced.class));
-    TopManager.getDefault ().createDialog (dd).show ();
-    
-    if (dd.getValue () == DialogDescriptor.OK_OPTION) {
-      preCode = fcea.getPreCode ();
-      postCode =fcea.getPostCode ();
+        return editor.getValue ();
     }
-  }
 
-// -----------------------------------------------------------------------------
-// EnhancedCustomPropertyEditor implementation
+    public PropertyEditor getCurrentPropertyEditor () {
+        int index = 0;
+        if (tabs != null) {
+            index = tabs.getSelectedIndex ();
+            if (index == -1) {
+                return null;
+            }
+        }
+        return allEditors[index];
+    }
 
-  /** Get the customized property value.
-  * @return the property value
-  * @exception InvalidStateException when the custom property editor does not contain a valid property value
-  *            (and thus it should not be set)
-  */
-  public Object getPropertyValue () throws IllegalStateException {
-    Component currentCustomEditor = getCurrentCustomPropertyEditor ();
-    PropertyEditor currentEditor = getCurrentPropertyEditor ();
-
-    if (currentEditor != null) {
-      editor.commitModifiedEditor ();
+    public Component getCurrentCustomPropertyEditor () {
+        int index = 0;
+        if (tabs != null) index = tabs.getSelectedIndex ();
+        if (index == -1) {
+            return null;
+        }
+        return allCustomEditors[index];
     }
-    
-    editor.getRADProperty ().setPreCode (preCode); // [PENDING - change only if modified]
-    editor.getRADProperty ().setPostCode (postCode);
-    
-    if (currentCustomEditor instanceof EnhancedCustomPropertyEditor) {
-      return ((EnhancedCustomPropertyEditor)currentCustomEditor).getPropertyValue ();
-    }
-    if (currentEditor != null) {
-      return currentEditor.getValue ();
-    }
-    
-    return editor.getValue ();
-  }
-
-  public PropertyEditor getCurrentPropertyEditor () {
-    int index = 0;
-    if (tabs != null) {
-      index = tabs.getSelectedIndex ();
-      if (index == -1) {
-        return null;
-      }
-    }
-    return allEditors[index];
-  }
-
-  public Component getCurrentCustomPropertyEditor () {
-    int index = 0;
-    if (tabs != null) index = tabs.getSelectedIndex ();
-    if (index == -1) {
-      return null;
-    }
-    return allCustomEditors[index];
-  }
 }
 
 /*

@@ -23,24 +23,24 @@ import org.netbeans.modules.db.explorer.dlg.AddTableColumnDialog;
 
 public class AddColumnAction extends DatabaseAction
 {
-  static final long serialVersionUID =5894518352294344657L;
-	public void performAction (Node[] activatedNodes) 
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return;
-		
-		try {
+    static final long serialVersionUID =5894518352294344657L;
+    public void performAction (Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return;
 
-			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-			TableNodeInfo nfo = (TableNodeInfo)info.getParent(nodename);
-			AddTableColumnDialog dlg = new AddTableColumnDialog((Specification)nfo.getSpecification(), nfo);
-			if (dlg.run()) nfo.addColumn(dlg.getColumnName());
+        try {
 
-		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to add column, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-		}
-	}
+            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+            TableNodeInfo nfo = (TableNodeInfo)info.getParent(nodename);
+            AddTableColumnDialog dlg = new AddTableColumnDialog((Specification)nfo.getSpecification(), nfo);
+            if (dlg.run()) nfo.addColumn(dlg.getColumnName());
+
+        } catch(Exception e) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to add column, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
 }
 /*
  * <<Log>>

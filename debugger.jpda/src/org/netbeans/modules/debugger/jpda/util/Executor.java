@@ -20,10 +20,10 @@ package org.netbeans.modules.debugger.jpda.util;
 */
 public interface Executor {
 
-  /**
-  * Executes event.
-  */
-  public void exec (com.sun.jdi.event.Event event);
+    /**
+    * Executes event.
+    */
+    public void exec (com.sun.jdi.event.Event event);
 }
 
 /*

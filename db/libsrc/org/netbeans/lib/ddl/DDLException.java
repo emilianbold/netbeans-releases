@@ -18,15 +18,15 @@ package org.netbeans.lib.ddl;
 *
 * @author Slavek Psenicka
 */
-public class DDLException extends Exception 
+public class DDLException extends Exception
 {
-static final long serialVersionUID =6999409518605532598L;
-	/** Creates new exception 
-	* @param message The text describing the exception
-	*/
-	public DDLException(String message) {
-		super (message);
-	}
+    static final long serialVersionUID =6999409518605532598L;
+    /** Creates new exception
+    * @param message The text describing the exception
+    */
+    public DDLException(String message) {
+        super (message);
+    }
 }
 
 /*

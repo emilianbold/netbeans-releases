@@ -32,106 +32,106 @@ import org.netbeans.modules.form.*;
 * @author Ian Formanek, Petr Hamernik
 */
 public class FormDataObject extends JavaDataObject {
-  /** generated Serialized Version UID */
-//  static final long serialVersionUID = 7952143476761137063L;
+    /** generated Serialized Version UID */
+    //  static final long serialVersionUID = 7952143476761137063L;
 
-//--------------------------------------------------------------------
-// Static variables
+    //--------------------------------------------------------------------
+    // Static variables
 
-  private static java.util.ResourceBundle formBundle = org.openide.util.NbBundle.getBundle (FormDataObject.class);
+    private static java.util.ResourceBundle formBundle = org.openide.util.NbBundle.getBundle (FormDataObject.class);
 
-  /** lock for closing window */
-  private static final Object OPEN_FORM_LOCK = new Object ();
+    /** lock for closing window */
+    private static final Object OPEN_FORM_LOCK = new Object ();
 
-//--------------------------------------------------------------------
-// Private variables
+    //--------------------------------------------------------------------
+    // Private variables
 
-  /** If true, a postInit method is called after reparsing - used after createFromTemplate */
-  transient private boolean templateInit;
-  /** If true, the form is marked as modified after regeneration - used if created from template */
-  transient private boolean modifiedInit;
-  /** A flag to prevent multiple registration of ComponentRefListener */
-  transient private boolean componentRefRegistered;
+    /** If true, a postInit method is called after reparsing - used after createFromTemplate */
+    transient private boolean templateInit;
+    /** If true, the form is marked as modified after regeneration - used if created from template */
+    transient private boolean modifiedInit;
+    /** A flag to prevent multiple registration of ComponentRefListener */
+    transient private boolean componentRefRegistered;
 
 
-  transient private FormEditorSupport formEditor;
+    transient private FormEditorSupport formEditor;
 
-  /** The entry for the .form file */
-  FileEntry formEntry;
-  
-//--------------------------------------------------------------------
-// Constructors
+    /** The entry for the .form file */
+    FileEntry formEntry;
 
-static final long serialVersionUID =-975322003627854168L;
-  public FormDataObject (FileObject ffo, FileObject jfo, FormDataLoader loader) throws DataObjectExistsException {
-    super(jfo, loader);
-    formEntry = (FileEntry)registerEntry (ffo);
-    init ();
-  }
+    //--------------------------------------------------------------------
+    // Constructors
 
-  /** Initalizes the FormDataObject after deserialization */
-  private void init() {
-    templateInit = false;
-    modifiedInit = false;
-    componentRefRegistered = false;
-  }
-
-//--------------------------------------------------------------------
-// Important interface
-
-//--------------------------------------------------------------------
-// Other methods
-
-  public FileObject getFormFile () {
-    return getFormEntry ().getFile ();
-  }
-  
-  protected JavaEditor createJavaEditor () {
-    if (formEditor == null) {
-      formEditor = new FormEditorSupport (getPrimaryEntry (), this);
+    static final long serialVersionUID =-975322003627854168L;
+    public FormDataObject (FileObject ffo, FileObject jfo, FormDataLoader loader) throws DataObjectExistsException {
+        super(jfo, loader);
+        formEntry = (FileEntry)registerEntry (ffo);
+        init ();
     }
-    return formEditor;
-  }
 
-  public FormEditorSupport getFormEditor () {
-    return (FormEditorSupport)createJavaEditor ();
-  }
-  
-  FileEntry getFormEntry () {
-    return formEntry;
-  }
-  
-  /** Help context for this object.
-  * @return help context
-  */
-  public org.openide.util.HelpCtx getHelpCtx () {
-    return new org.openide.util.HelpCtx (FormDataObject.class);
-  }
+    /** Initalizes the FormDataObject after deserialization */
+    private void init() {
+        templateInit = false;
+        modifiedInit = false;
+        componentRefRegistered = false;
+    }
 
-  /** Provides node that should represent this data object. When a node for representation
-  * in a parent is requested by a call to getNode (parent) it is the exact copy of this node
-  * with only parent changed. This implementation creates instance
-  * <CODE>DataNode</CODE>.
-  * <P>
-  * This method is called only once.
-  *
-  * @return the node representation for this data object
-  * @see DataNode
-  */
-  protected Node createNodeDelegate () {
-    FormDataNode node = new FormDataNode (this);
-    node.setDefaultAction (SystemAction.get (OpenAction.class));
-    return node;
-  }
+    //--------------------------------------------------------------------
+    // Important interface
 
-//--------------------------------------------------------------------
-// Serialization
+    //--------------------------------------------------------------------
+    // Other methods
 
-  private void readObject(java.io.ObjectInputStream is)
-  throws java.io.IOException, ClassNotFoundException {
-    is.defaultReadObject();
-    init();
-  }
+    public FileObject getFormFile () {
+        return getFormEntry ().getFile ();
+    }
+
+    protected JavaEditor createJavaEditor () {
+        if (formEditor == null) {
+            formEditor = new FormEditorSupport (getPrimaryEntry (), this);
+        }
+        return formEditor;
+    }
+
+    public FormEditorSupport getFormEditor () {
+        return (FormEditorSupport)createJavaEditor ();
+    }
+
+    FileEntry getFormEntry () {
+        return formEntry;
+    }
+
+    /** Help context for this object.
+    * @return help context
+    */
+    public org.openide.util.HelpCtx getHelpCtx () {
+        return new org.openide.util.HelpCtx (FormDataObject.class);
+    }
+
+    /** Provides node that should represent this data object. When a node for representation
+    * in a parent is requested by a call to getNode (parent) it is the exact copy of this node
+    * with only parent changed. This implementation creates instance
+    * <CODE>DataNode</CODE>.
+    * <P>
+    * This method is called only once.
+    *
+    * @return the node representation for this data object
+    * @see DataNode
+    */
+    protected Node createNodeDelegate () {
+        FormDataNode node = new FormDataNode (this);
+        node.setDefaultAction (SystemAction.get (OpenAction.class));
+        return node;
+    }
+
+    //--------------------------------------------------------------------
+    // Serialization
+
+    private void readObject(java.io.ObjectInputStream is)
+    throws java.io.IOException, ClassNotFoundException {
+        is.defaultReadObject();
+        init();
+    }
 
 }
 

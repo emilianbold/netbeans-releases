@@ -24,22 +24,22 @@ import org.netbeans.modules.db.explorer.dlg.AddDriverDialog;
 
 public class AddDriverAction extends DatabaseAction
 {
-  static final long serialVersionUID =-109193000951395612L;
-	public void performAction(Node[] activatedNodes) 
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return;
-		try {
-			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-			DriverOperations nfo = (DriverOperations)info.getParent(nodename);
-			AddDriverDialog dlg = new AddDriverDialog();
-			if (dlg.run()) nfo.addDriver(dlg.getDriver());
-		} catch(Exception e) {
-			e.printStackTrace();
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to add driver, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-		}
-	}
+    static final long serialVersionUID =-109193000951395612L;
+    public void performAction(Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return;
+        try {
+            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+            DriverOperations nfo = (DriverOperations)info.getParent(nodename);
+            AddDriverDialog dlg = new AddDriverDialog();
+            if (dlg.run()) nfo.addDriver(dlg.getDriver());
+        } catch(Exception e) {
+            e.printStackTrace();
+            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to add driver, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
 }
 /*
  * <<Log>>

@@ -27,65 +27,65 @@ import org.netbeans.lib.ddl.impl.*;
 
 public class GrabTableAction extends DatabaseAction
 {
-  static final long serialVersionUID =-7685449970256732671L;
-	public void performAction (Node[] activatedNodes)
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return;
-		try {
+    static final long serialVersionUID =-7685449970256732671L;
+    public void performAction (Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return;
+        try {
 
-			final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
-			DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-			DatabaseNodeInfo nfo = info.getParent(nodename);
-			Specification spec = (Specification)nfo.getSpecification();
-			String tablename = (String)nfo.get(DatabaseNode.TABLE);
+            final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+            DatabaseNodeInfo nfo = info.getParent(nodename);
+            Specification spec = (Specification)nfo.getSpecification();
+            String tablename = (String)nfo.get(DatabaseNode.TABLE);
 
-			// Get command
+            // Get command
 
-			CreateTable cmd = (CreateTable)spec.createCommandCreateTable(tablename);
-			Enumeration enu = nfo.getChildren().elements();
-			while (enu.hasMoreElements()) {
-				Object element = enu.nextElement();
-				if (element instanceof ColumnNodeInfo) {
-					cmd.getColumns().add(((ColumnNodeInfo)element).getColumnSpecification());
-				} 
-			}
+            CreateTable cmd = (CreateTable)spec.createCommandCreateTable(tablename);
+            Enumeration enu = nfo.getChildren().elements();
+            while (enu.hasMoreElements()) {
+                Object element = enu.nextElement();
+                if (element instanceof ColumnNodeInfo) {
+                    cmd.getColumns().add(((ColumnNodeInfo)element).getColumnSpecification());
+                }
+            }
 
-//			System.out.println(cmd.getCommand());
+            //			System.out.println(cmd.getCommand());
 
-			// Get filename
+            // Get filename
 
-			JFileChooser chooser = new JFileChooser();
-			chooser.setDialogType(JFileChooser.SAVE_DIALOG);
-			chooser.setDialogTitle(bundle.getString("GrabTableFileSaveDialogTitle"));
-			chooser.setSelectedFile(new File(tablename+".grab"));
-			chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-				public boolean accept(File f) {
-					return (f.isDirectory() || f.getName().endsWith(".grab"));
-				}
-				public String getDescription() {
-					return bundle.getString("GrabTableFileTypeDescription");
-				}
-			});
-			
-			java.awt.Component par = TopManager.getDefault().getWindowManager().getMainWindow();
-			if (chooser.showSaveDialog(par) == JFileChooser.APPROVE_OPTION) {
-				File file = chooser.getSelectedFile();
-				if (file != null) {
-					FileOutputStream fstream = new FileOutputStream(file);
-					ObjectOutputStream ostream = new ObjectOutputStream(fstream);
-					cmd.setSpecification(null);
-					ostream.writeObject(cmd);
-					ostream.flush();
-					ostream.close();
-				}
-			}
-			
-		} catch(Exception e) {
-			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to grab table, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-		}
-	}
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogType(JFileChooser.SAVE_DIALOG);
+            chooser.setDialogTitle(bundle.getString("GrabTableFileSaveDialogTitle"));
+            chooser.setSelectedFile(new File(tablename+".grab"));
+            chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+                                      public boolean accept(File f) {
+                                          return (f.isDirectory() || f.getName().endsWith(".grab"));
+                                      }
+                                      public String getDescription() {
+                                          return bundle.getString("GrabTableFileTypeDescription");
+                                      }
+                                  });
+
+            java.awt.Component par = TopManager.getDefault().getWindowManager().getMainWindow();
+            if (chooser.showSaveDialog(par) == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+                if (file != null) {
+                    FileOutputStream fstream = new FileOutputStream(file);
+                    ObjectOutputStream ostream = new ObjectOutputStream(fstream);
+                    cmd.setSpecification(null);
+                    ostream.writeObject(cmd);
+                    ostream.flush();
+                    ostream.close();
+                }
+            }
+
+        } catch(Exception e) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to grab table, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
 }
 /*
  * <<Log>>

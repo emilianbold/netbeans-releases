@@ -26,55 +26,55 @@ import org.openide.util.NbBundle;
 */
 public final class PropertiesDataLoaderBeanInfo extends SimpleBeanInfo {
 
-  /** Icons for compiler settings objects. */
-  private static Image icon;
-  private static Image icon32;
+    /** Icons for compiler settings objects. */
+    private static Image icon;
+    private static Image icon32;
 
-  /** Propertydescriptors */
-  private static PropertyDescriptor[] descriptors;
+    /** Propertydescriptors */
+    private static PropertyDescriptor[] descriptors;
 
-  /**
-  * @return Returns an array of PropertyDescriptors
-  * describing the editable properties supported by this bean.
-  */
-  public PropertyDescriptor[] getPropertyDescriptors () {
-    if (descriptors == null) initializeDescriptors();
-    return descriptors;
-  }
-
-  /** @param type Desired type of the icon
-  * @return returns the properties loader's icon
-  */
-  public Image getIcon(final int type) {
-    if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
-        (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-      if (icon == null)
-        icon = loadImage("/org/netbeans/modules/properties/propertiesObject.gif");
-      return icon;
-    } else {
-      if (icon32 == null)
-        icon32 = loadImage ("/org/netbeans/modules/properties/propertiesObject32.gif");
-      return icon32;
+    /**
+    * @return Returns an array of PropertyDescriptors
+    * describing the editable properties supported by this bean.
+    */
+    public PropertyDescriptor[] getPropertyDescriptors () {
+        if (descriptors == null) initializeDescriptors();
+        return descriptors;
     }
-  }
 
-  private static void initializeDescriptors () {
-    final ResourceBundle bundle =
-      NbBundle.getBundle(PropertiesDataLoaderBeanInfo.class);
-    try {
-      descriptors =  new PropertyDescriptor[] {
-        new PropertyDescriptor ("displayName", PropertiesDataLoader.class,
-                                "getDisplayName", null),
-        new PropertyDescriptor ("extensions", PropertiesDataLoader.class,
-                                "getExtensions", "setExtensions")
-      };
-      descriptors[0].setDisplayName(bundle.getString("PROP_Name"));
-      descriptors[0].setShortDescription(bundle.getString("HINT_Name"));
-    } catch (IntrospectionException e) {
-      if (Boolean.getBoolean("netbeans.debug.exceptions"))
-        e.printStackTrace ();
+    /** @param type Desired type of the icon
+    * @return returns the properties loader's icon
+    */
+    public Image getIcon(final int type) {
+        if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
+                (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
+            if (icon == null)
+                icon = loadImage("/org/netbeans/modules/properties/propertiesObject.gif");
+            return icon;
+        } else {
+            if (icon32 == null)
+                icon32 = loadImage ("/org/netbeans/modules/properties/propertiesObject32.gif");
+            return icon32;
+        }
     }
-  }
+
+    private static void initializeDescriptors () {
+        final ResourceBundle bundle =
+            NbBundle.getBundle(PropertiesDataLoaderBeanInfo.class);
+        try {
+            descriptors =  new PropertyDescriptor[] {
+                               new PropertyDescriptor ("displayName", PropertiesDataLoader.class,
+                                                       "getDisplayName", null),
+                               new PropertyDescriptor ("extensions", PropertiesDataLoader.class,
+                                                       "getExtensions", "setExtensions")
+                           };
+            descriptors[0].setDisplayName(bundle.getString("PROP_Name"));
+            descriptors[0].setShortDescription(bundle.getString("HINT_Name"));
+        } catch (IntrospectionException e) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions"))
+                e.printStackTrace ();
+        }
+    }
 
 }
 

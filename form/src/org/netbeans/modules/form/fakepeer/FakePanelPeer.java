@@ -23,22 +23,22 @@ import java.awt.peer.PanelPeer;
 
 class FakePanelPeer extends FakeContainerPeer implements PanelPeer
 {
-  FakePanelPeer(Panel target) {
-    super(target);
-  }
+    FakePanelPeer(Panel target) {
+        super(target);
+    }
 
-  Component createDelegate() {
-    return new Delegate();
-  }
+    Component createDelegate() {
+        return new Delegate();
+    }
 
-  //
-  //
-  //
-  
-  private class Delegate extends Component
-  {
-    // noop
-  }
+    //
+    //
+    //
+
+    private class Delegate extends Component
+    {
+        // noop
+    }
 
 
 }

@@ -23,25 +23,25 @@ import java.awt.peer.ScrollPanePeer;
 
 class FakeScrollPanePeer extends FakeContainerPeer implements ScrollPanePeer
 {
-  FakeScrollPanePeer(ScrollPane target) {
-    super(target);
-  }
+    FakeScrollPanePeer(ScrollPane target) {
+        super(target);
+    }
 
-  Component createDelegate() {
-    return new Delegate();
-  }
+    Component createDelegate() {
+        return new Delegate();
+    }
 
-  public int getHScrollbarHeight() {
-    return 10;
-  }
-  
-  public int getVScrollbarWidth() {
-    return 10;
-  }
-  
-  public void setScrollPosition(int x, int y) {}
-  public void childResized(int w, int h) {}
-  public void setUnitIncrement(Adjustable adj, int u) {}
-  public void setValue(Adjustable adj, int v) {}
+    public int getHScrollbarHeight() {
+        return 10;
+    }
+
+    public int getVScrollbarWidth() {
+        return 10;
+    }
+
+    public void setScrollPosition(int x, int y) {}
+    public void childResized(int w, int h) {}
+    public void setUnitIncrement(Adjustable adj, int u) {}
+    public void setValue(Adjustable adj, int v) {}
 
 }

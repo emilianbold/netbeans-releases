@@ -20,18 +20,18 @@ import javax.swing.AbstractListModel;
 */
 public class ListModelEditor extends Object {
 
-  public static class NbListModel extends AbstractListModel implements java.io.Serializable {
-    static final long serialVersionUID =-1806930448622666787L;
-    public NbListModel (String[] data) {
-      this.data = data;
-    }
-    
-    public int getSize() { return data.length; }
-    public Object getElementAt(int i) { return data[i]; }
+    public static class NbListModel extends AbstractListModel implements java.io.Serializable {
+        static final long serialVersionUID =-1806930448622666787L;
+        public NbListModel (String[] data) {
+            this.data = data;
+        }
 
-    private String[] data;
-  }
-  
+        public int getSize() { return data.length; }
+        public Object getElementAt(int i) { return data[i]; }
+
+        private String[] data;
+    }
+
 }
 
 /*

@@ -23,81 +23,81 @@ import org.openide.TopManager;
 
 import org.netbeans.modules.db.explorer.*;
 
-/** 
+/**
 * xxx
 *
 * @author Slavek Psenicka
 */
 public class LabeledComboDialog
 {
-	boolean result = false;
-	Dialog dialog = null;
-	Object combosel = null;
-	JComboBox combo;
-	
-	public LabeledComboDialog(String title, String lab, Collection items)
-	{  
-		try {
-			JPanel pane = new JPanel();
-			pane.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
-			GridBagLayout layout = new GridBagLayout();
-			GridBagConstraints con = new GridBagConstraints ();
-			pane.setLayout (layout);
+    boolean result = false;
+    Dialog dialog = null;
+    Object combosel = null;
+    JComboBox combo;
 
-			// Title
-		
-			JLabel label = new JLabel(lab);
-			con.anchor = GridBagConstraints.WEST;
-			con.insets = new java.awt.Insets (2, 2, 2, 2);
+    public LabeledComboDialog(String title, String lab, Collection items)
+    {
+        try {
+            JPanel pane = new JPanel();
+            pane.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
+            GridBagLayout layout = new GridBagLayout();
+            GridBagConstraints con = new GridBagConstraints ();
+            pane.setLayout (layout);
+
+            // Title
+
+            JLabel label = new JLabel(lab);
+            con.anchor = GridBagConstraints.WEST;
+            con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
             con.gridy = 0;
-			layout.setConstraints(label, con);
-			pane.add(label);
-                
-			// Combo
-		
+            layout.setConstraints(label, con);
+            pane.add(label);
+
+            // Combo
+
             con.fill = GridBagConstraints.HORIZONTAL;
             con.weightx = 1.0;
             con.gridx = 1;
             con.gridy = 0;
-			con.insets = new java.awt.Insets (2, 2, 2, 2);
+            con.insets = new java.awt.Insets (2, 2, 2, 2);
             combo = new JComboBox((items instanceof Vector) ? (Vector)items : new Vector(items));
             layout.setConstraints(combo, con);
             pane.add(combo);
-                
-			ActionListener listener = new ActionListener() {
-				public void actionPerformed(ActionEvent event) {
-					boolean dispcond = true;
-					if (event.getSource() == DialogDescriptor.OK_OPTION) {
-						result = true;
-						combosel = combo.getSelectedItem();
-					} else result = false;
-					
-					if (dispcond) {
-						dialog.setVisible(false);
-						dialog.dispose();
-					} else Toolkit.getDefaultToolkit().beep();
-				}
-			};				
-				      
-			DialogDescriptor descriptor = new DialogDescriptor(pane, title, true, listener);
-			dialog = TopManager.getDefault().createDialog(descriptor);
-			dialog.setResizable(false);
-		} catch (MissingResourceException ex) {
-			ex.printStackTrace();
-		}
+
+            ActionListener listener = new ActionListener() {
+                                          public void actionPerformed(ActionEvent event) {
+                                              boolean dispcond = true;
+                                              if (event.getSource() == DialogDescriptor.OK_OPTION) {
+                                                  result = true;
+                                                  combosel = combo.getSelectedItem();
+                                              } else result = false;
+
+                                              if (dispcond) {
+                                                  dialog.setVisible(false);
+                                                  dialog.dispose();
+                                              } else Toolkit.getDefaultToolkit().beep();
+                                          }
+                                      };
+
+            DialogDescriptor descriptor = new DialogDescriptor(pane, title, true, listener);
+            dialog = TopManager.getDefault().createDialog(descriptor);
+            dialog.setResizable(false);
+        } catch (MissingResourceException ex) {
+            ex.printStackTrace();
+        }
     }
-    
+
     public boolean run()
     {
-    	if (dialog != null) dialog.setVisible(true);
-    	return result;
-	}
+        if (dialog != null) dialog.setVisible(true);
+        return result;
+    }
 
-	public Object getSelectedItem()
-	{
-		return combosel;
-	}
+    public Object getSelectedItem()
+    {
+        return combosel;
+    }
 }
 /*
  * <<Log>>

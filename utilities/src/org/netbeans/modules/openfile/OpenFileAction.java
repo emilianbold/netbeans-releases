@@ -23,36 +23,36 @@ import org.openide.util.actions.CallableSystemAction;
 
 /** Opens a file by file chooser. */
 public class OpenFileAction extends CallableSystemAction {
-  
-static final long serialVersionUID =-3424129228987962529L;
-  public String getName () {
-    return SettingsBeanInfo.getString ("LBL_openFile");
-  }
-  
-  public HelpCtx getHelpCtx () {
-    return new HelpCtx (OpenFileAction.class);
-  }
-  
-  protected String iconResource () {
-    return "/org/netbeans/modules/openfile/openFile.gif"; // NOI18N
-  }
-  
-  /** Last-used directory. */
-  private static File currDir = null;
-  public void performAction () {
-    JFileChooser chooser = new JFileChooser ();
-    HelpCtx.setHelpIDString (chooser, getHelpCtx ().getHelpID ());
-    chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
-    chooser.setMultiSelectionEnabled (true);
-    if (currDir != null) chooser.setCurrentDirectory (currDir);
-    if (chooser.showOpenDialog (null) == JFileChooser.APPROVE_OPTION) {
-      File[] files = chooser.getSelectedFiles ();
-      for (int i = 0; i < files.length; i++)
-        OpenFile.open (files[i], false, null, 0, -1);
+
+    static final long serialVersionUID =-3424129228987962529L;
+    public String getName () {
+        return SettingsBeanInfo.getString ("LBL_openFile");
     }
-    currDir = chooser.getCurrentDirectory ();
-  }
-  
+
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx (OpenFileAction.class);
+    }
+
+    protected String iconResource () {
+        return "/org/netbeans/modules/openfile/openFile.gif"; // NOI18N
+    }
+
+    /** Last-used directory. */
+    private static File currDir = null;
+    public void performAction () {
+        JFileChooser chooser = new JFileChooser ();
+        HelpCtx.setHelpIDString (chooser, getHelpCtx ().getHelpID ());
+        chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
+        chooser.setMultiSelectionEnabled (true);
+        if (currDir != null) chooser.setCurrentDirectory (currDir);
+        if (chooser.showOpenDialog (null) == JFileChooser.APPROVE_OPTION) {
+            File[] files = chooser.getSelectedFiles ();
+            for (int i = 0; i < files.length; i++)
+                OpenFile.open (files[i], false, null, 0, -1);
+        }
+        currDir = chooser.getCurrentDirectory ();
+    }
+
 }
 
 /*

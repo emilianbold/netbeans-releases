@@ -23,49 +23,49 @@ import java.awt.peer.TextAreaPeer;
 
 class FakeTextAreaPeer extends FakeTextComponentPeer implements TextAreaPeer
 {
-  FakeTextAreaPeer(TextArea target) {
-    super(target);
-  }
+    FakeTextAreaPeer(TextArea target) {
+        super(target);
+    }
 
-  Component createDelegate() {
-    return new Delegate();
-  }
-  
-  public void insert(String text, int pos) {
-  }
-  
-  public void replaceRange(String text, int start, int end) {
-  }
-    
-  public Dimension getPreferredSize(int rows, int columns) {
-    return new Dimension(100, 80);
-  }
+    Component createDelegate() {
+        return new Delegate();
+    }
 
-  public Dimension getMinimumSize(int rows, int columns) {
-    return new Dimension(100, 80);
-  }
+    public void insert(String text, int pos) {
+    }
 
-  public void insertText(String txt, int pos) {
-    insert(txt, pos);
-  }
+    public void replaceRange(String text, int start, int end) {
+    }
 
-  public void replaceText(String txt, int start, int end) {
-    replaceRange(txt, start, end);
-  }
+    public Dimension getPreferredSize(int rows, int columns) {
+        return new Dimension(100, 80);
+    }
 
-  public Dimension preferredSize(int rows, int cols) {
-    return getPreferredSize(rows, cols);
-  }
-  
-  public Dimension minimumSize(int rows, int cols) {
-    return getMinimumSize(rows, cols);
-  }
+    public Dimension getMinimumSize(int rows, int columns) {
+        return new Dimension(100, 80);
+    }
 
-  //
-  //
-  //
+    public void insertText(String txt, int pos) {
+        insert(txt, pos);
+    }
 
-  private class Delegate extends FakeTextComponentPeer.Delegate
-  {
-  }
+    public void replaceText(String txt, int start, int end) {
+        replaceRange(txt, start, end);
+    }
+
+    public Dimension preferredSize(int rows, int cols) {
+        return getPreferredSize(rows, cols);
+    }
+
+    public Dimension minimumSize(int rows, int cols) {
+        return getMinimumSize(rows, cols);
+    }
+
+    //
+    //
+    //
+
+    private class Delegate extends FakeTextComponentPeer.Delegate
+    {
+    }
 }

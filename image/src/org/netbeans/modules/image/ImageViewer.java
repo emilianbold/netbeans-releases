@@ -25,92 +25,92 @@ import org.openide.windows.*;
 * @author Petr Hamernik, Ian Formanek
 */
 public class ImageViewer extends CloneableTopComponent {
-  private static final int MINIMUM_WIDTH = 200;
-  private static final int MINIMUM_HEIGHT = 150;
+    private static final int MINIMUM_WIDTH = 200;
+    private static final int MINIMUM_HEIGHT = 150;
 
-  private static final int DEFAULT_BORDER_WIDTH = 40;
-  private static final int DEFAULT_BORDER_HEIGHT = 40;
+    private static final int DEFAULT_BORDER_WIDTH = 40;
+    private static final int DEFAULT_BORDER_HEIGHT = 40;
 
-  private ImageDataObject storedObject;
-  private javax.swing.JLabel label;
+    private ImageDataObject storedObject;
+    private javax.swing.JLabel label;
 
-  static final long serialVersionUID =6960127954234034486L;
-  
-  /** Default constructor. Must be here, used during de-externalization */
-  public ImageViewer () {
-    super();
-  }
-  
-  /** Create a new image viewer.
-  * @param obj the data object holding the image
-  */
-  public ImageViewer(ImageDataObject obj) {
-    super(obj);
-    initialize(obj);
-  }
-  
-  private void initialize (ImageDataObject obj) {
-    storedObject = obj;
-    javax.swing.JScrollPane scroll = new javax.swing.JScrollPane(label = new javax.swing.JLabel(new NBImageIcon(obj)));
-    setLayout(new java.awt.BorderLayout());
-    add(scroll, "Center"); // NOI18N
-  }
+    static final long serialVersionUID =6960127954234034486L;
 
-  /** Show the component on given workspace. If given workspace is
-  * not active, component will be shown only after given workspace
-  * will become visible.
-  * Note that this method only makes it visible, but does not
-  * give it focus.
-  * @param workspace Workspace on which component should be opened.
-  * @see #requestFocus
-  */
-  public void open (Workspace w) {
-    Workspace realW = (w == null)
-      ? org.openide.TopManager.getDefault().getWindowManager().getCurrentWorkspace()
-      : w;
-    Mode viewerMode = realW.findMode(this);
-    if (viewerMode == null) {
-      Mode editorMode = realW.findMode(EditorSupport.EDITOR_MODE);
-      if (editorMode != null) editorMode.dockInto(this);
+    /** Default constructor. Must be here, used during de-externalization */
+    public ImageViewer () {
+        super();
     }
-    super.open (w);
-  }
-  
-  public Dimension getPreferredSize () {
-    Dimension pref = label.getPreferredSize ();
-    return new Dimension (Math.max (DEFAULT_BORDER_WIDTH + pref.width, MINIMUM_WIDTH), Math.max (DEFAULT_BORDER_HEIGHT + pref.height, MINIMUM_HEIGHT));
-  }
-  
-  public HelpCtx getHelpCtx () {
-    return new HelpCtx(ImageViewer.class);
-  }
-  
-  /** Serialize this top component. Serializes its data object in addition
-  * to common superclass behaviour.
-  * @param out the stream to serialize to
-  */
-  public void writeExternal (ObjectOutput out)
-              throws IOException {
-    super.writeExternal(out);
-    out.writeObject(storedObject);
-  }
-  
-  /** Deserialize this top component.
-  * Reads its data object and initializes itself in addition
-  * to common superclass behaviour.
-  * @param in the stream to deserialize from
-  */
-  public void readExternal (ObjectInput in)
-              throws IOException, ClassNotFoundException {
-    super.readExternal(in);
-    storedObject = (ImageDataObject)in.readObject();
-    initialize(storedObject);
-  }              
 
-  // Cloning the viewer uses the same underlying data object.
-  protected CloneableTopComponent createClonedObject () {
-    return new ImageViewer(storedObject);
-  }
+    /** Create a new image viewer.
+    * @param obj the data object holding the image
+    */
+    public ImageViewer(ImageDataObject obj) {
+        super(obj);
+        initialize(obj);
+    }
+
+    private void initialize (ImageDataObject obj) {
+        storedObject = obj;
+        javax.swing.JScrollPane scroll = new javax.swing.JScrollPane(label = new javax.swing.JLabel(new NBImageIcon(obj)));
+        setLayout(new java.awt.BorderLayout());
+        add(scroll, "Center"); // NOI18N
+    }
+
+    /** Show the component on given workspace. If given workspace is
+    * not active, component will be shown only after given workspace
+    * will become visible.
+    * Note that this method only makes it visible, but does not
+    * give it focus.
+    * @param workspace Workspace on which component should be opened.
+    * @see #requestFocus
+    */
+    public void open (Workspace w) {
+        Workspace realW = (w == null)
+                          ? org.openide.TopManager.getDefault().getWindowManager().getCurrentWorkspace()
+                          : w;
+        Mode viewerMode = realW.findMode(this);
+        if (viewerMode == null) {
+            Mode editorMode = realW.findMode(EditorSupport.EDITOR_MODE);
+            if (editorMode != null) editorMode.dockInto(this);
+        }
+        super.open (w);
+    }
+
+    public Dimension getPreferredSize () {
+        Dimension pref = label.getPreferredSize ();
+        return new Dimension (Math.max (DEFAULT_BORDER_WIDTH + pref.width, MINIMUM_WIDTH), Math.max (DEFAULT_BORDER_HEIGHT + pref.height, MINIMUM_HEIGHT));
+    }
+
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx(ImageViewer.class);
+    }
+
+    /** Serialize this top component. Serializes its data object in addition
+    * to common superclass behaviour.
+    * @param out the stream to serialize to
+    */
+    public void writeExternal (ObjectOutput out)
+    throws IOException {
+        super.writeExternal(out);
+        out.writeObject(storedObject);
+    }
+
+    /** Deserialize this top component.
+    * Reads its data object and initializes itself in addition
+    * to common superclass behaviour.
+    * @param in the stream to deserialize from
+    */
+    public void readExternal (ObjectInput in)
+    throws IOException, ClassNotFoundException {
+        super.readExternal(in);
+        storedObject = (ImageDataObject)in.readObject();
+        initialize(storedObject);
+    }
+
+    // Cloning the viewer uses the same underlying data object.
+    protected CloneableTopComponent createClonedObject () {
+        return new ImageViewer(storedObject);
+    }
 
 }
 

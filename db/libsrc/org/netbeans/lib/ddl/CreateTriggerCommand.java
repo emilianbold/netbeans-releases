@@ -16,20 +16,20 @@ package org.netbeans.lib.ddl;
 import java.sql.*;
 import org.netbeans.lib.ddl.*;
 
-/** 
+/**
 * Interface of create trigger action command. 
 *
 * @author Slavek Psenicka
 */
-public interface CreateTriggerCommand extends DDLCommand 
-{	
-	/** Returns host table */
-	public String getTableName();
-	
-	/** Sets the host table 
-	* @param tablename Name of table.
-	*/
-	public void setTableName(String tablename);
+public interface CreateTriggerCommand extends DDLCommand
+{
+    /** Returns host table */
+    public String getTableName();
+
+    /** Sets the host table
+    * @param tablename Name of table.
+    */
+    public void setTableName(String tablename);
 }
 
 /*

@@ -21,9 +21,9 @@ import org.openide.nodes.Node;
 */
 public interface RADComponentCookie extends Node.Cookie {
 
-  /** Provides access to form editor node */
-  public RADComponent getRADComponent ();
-    
+    /** Provides access to form editor node */
+    public RADComponent getRADComponent ();
+
 }
 
 /*

@@ -13,17 +13,17 @@
 
 package org.netbeans.lib.ddl;
 
-/** 
+/**
 * Interface of command with object which has an owner.
 * @author Slavek Psenicka
 */
-public interface OwnedObjectCommand 
+public interface OwnedObjectCommand
 {
-	/** Returns the owner of table */
-	public String getOwner();
-	
-	/** Sets owner of table */
-	public void setOwner(String owner);
+    /** Returns the owner of table */
+    public String getOwner();
+
+    /** Sets owner of table */
+    public void setOwner(String owner);
 }
 
 /*

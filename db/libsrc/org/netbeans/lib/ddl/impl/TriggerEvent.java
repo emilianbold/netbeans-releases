@@ -19,7 +19,7 @@ import java.text.ParseException;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.util.*;
 
-/** 
+/**
 * Describes trigger. Encapsulates name, timing (when it fires; when user INSERTs of 
 * some data, after UPDATE or DELETE). In trigger descriptor this values should be 
 * combined together. 
@@ -28,97 +28,97 @@ import org.netbeans.lib.ddl.util.*;
 */
 public class TriggerEvent
 {
-	public static final int INSERT = 1;
-	public static final int UPDATE = 2;
-	public static final int DELETE = 3;
+    public static final int INSERT = 1;
+    public static final int UPDATE = 2;
+    public static final int DELETE = 3;
 
-	/** Converts code into string representation */	
-	public static String getName(int code)
-	{
-		switch (code) {
-			case INSERT: return "INSERT";
-			case UPDATE: return "UPDATE";
-			case DELETE: return "DELETE";
-		}
+    /** Converts code into string representation */
+    public static String getName(int code)
+    {
+        switch (code) {
+        case INSERT: return "INSERT";
+        case UPDATE: return "UPDATE";
+        case DELETE: return "DELETE";
+        }
 
-		return null;
-	}
-	
-	/** Event */
-	private String name;
-	
-	/** Column */
-	private String col;
+        return null;
+    }
 
-	/** Format */
-	private String format;
-		
-	/** Returns name */
-	public String getName()
-	{
-		return name;
-	}
-	
-	/** Sets name */
-	public void setName(String aname)
-	{
-		name = aname;
-	}
+    /** Event */
+    private String name;
 
-	/** Returns name of column */
-	public String getFormat()
-	{
-		return format;
-	}
-	
-	/** Sets name of column */
-	public void setFormat(String fmt)
-	{
-		format = fmt;
-	}
+    /** Column */
+    private String col;
 
-	/** Returns name of column */
-	public String getColumn()
-	{
-		return col;
-	}
-	
-	/** Sets name of column */
-	public void setColumn(String column)
-	{
-		col = column;
-	}
-	
-	/** 
-	* Returns properties and it's values supported by this object.
-	* event.name	Name of event 
-	* event.column	Name of column 
-	* Throws DDLException if object name is not specified.
-	*/
-	public Map getColumnProperties(AbstractCommand cmd)
-	throws DDLException
-	{
-		HashMap args = new HashMap();		
-		args.put("event.name", name);
-		args.put("event.column", col);
-		return args;	
-	}
-	
-	/** Returns string representation of event 
-	* @param cmd Command context
-	*/
-	public String getCommand(AbstractCommand cmd)
-	throws DDLException
-	{
-		Map cprops;
-		if (format == null) throw new DDLException("no format specified");
-		try {
-			cprops = getColumnProperties(cmd);
-			return CommandFormatter.format(format, cprops);
-		} catch (Exception e) {
-			throw new DDLException(e.getMessage());
-		}
-	}
+    /** Format */
+    private String format;
+
+    /** Returns name */
+    public String getName()
+    {
+        return name;
+    }
+
+    /** Sets name */
+    public void setName(String aname)
+    {
+        name = aname;
+    }
+
+    /** Returns name of column */
+    public String getFormat()
+    {
+        return format;
+    }
+
+    /** Sets name of column */
+    public void setFormat(String fmt)
+    {
+        format = fmt;
+    }
+
+    /** Returns name of column */
+    public String getColumn()
+    {
+        return col;
+    }
+
+    /** Sets name of column */
+    public void setColumn(String column)
+    {
+        col = column;
+    }
+
+    /**
+    * Returns properties and it's values supported by this object.
+    * event.name	Name of event 
+    * event.column	Name of column 
+    * Throws DDLException if object name is not specified.
+    */
+    public Map getColumnProperties(AbstractCommand cmd)
+    throws DDLException
+    {
+        HashMap args = new HashMap();
+        args.put("event.name", name);
+        args.put("event.column", col);
+        return args;
+    }
+
+    /** Returns string representation of event
+    * @param cmd Command context
+    */
+    public String getCommand(AbstractCommand cmd)
+    throws DDLException
+    {
+        Map cprops;
+        if (format == null) throw new DDLException("no format specified");
+        try {
+            cprops = getColumnProperties(cmd);
+            return CommandFormatter.format(format, cprops);
+        } catch (Exception e) {
+            throw new DDLException(e.getMessage());
+        }
+    }
 }
 
 /*

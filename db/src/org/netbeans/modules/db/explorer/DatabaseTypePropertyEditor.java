@@ -23,94 +23,94 @@ import java.sql.*;
 */
 public class DatabaseTypePropertyEditor implements PropertyEditor
 {
-	private int[] constants;
-	private String[] names;
-	private int index;
-	private String name;
-	private PropertyChangeSupport support;
+    private int[] constants;
+    private String[] names;
+    private int index;
+    private String name;
+    private PropertyChangeSupport support;
 
-	public DatabaseTypePropertyEditor()
-	{
-		support = new PropertyChangeSupport(this);
-		constants = new int[] {java.sql.Types.ARRAY, java.sql.Types.BIGINT, java.sql.Types.BINARY, java.sql.Types.BIT, java.sql.Types.BLOB, java.sql.Types.CHAR, java.sql.Types.CLOB, java.sql.Types.DATE, java.sql.Types.DECIMAL, java.sql.Types.DISTINCT, java.sql.Types.DOUBLE, java.sql.Types.FLOAT, java.sql.Types.INTEGER, java.sql.Types.JAVA_OBJECT, java.sql.Types.LONGVARBINARY, java.sql.Types.LONGVARCHAR, java.sql.Types.NUMERIC, java.sql.Types.REAL, java.sql.Types.REF, java.sql.Types.SMALLINT, java.sql.Types.TIME, java.sql.Types.TIMESTAMP, java.sql.Types.TINYINT, java.sql.Types.VARBINARY, java.sql.Types.VARCHAR, java.sql.Types.OTHER};
-		names = new String[] {"ARRAY", "BIGINT", "BINARY", "BIT", "BLOB", "CHAR", "CLOB", "DATE", "DECIMAL", "DISTINCT", "DOUBLE", "FLOAT", "INTEGER", "JAVA_OBJECT", "LONGVARBINARY", "LONGVARCHAR", "NUMERIC", "REAL", "REF", "SMALLINT", "TIME", "TIMESTAMP", "TINYINT", "VARBINARY", "VARCHAR", "OTHER"};
-	}
+    public DatabaseTypePropertyEditor()
+    {
+        support = new PropertyChangeSupport(this);
+        constants = new int[] {java.sql.Types.ARRAY, java.sql.Types.BIGINT, java.sql.Types.BINARY, java.sql.Types.BIT, java.sql.Types.BLOB, java.sql.Types.CHAR, java.sql.Types.CLOB, java.sql.Types.DATE, java.sql.Types.DECIMAL, java.sql.Types.DISTINCT, java.sql.Types.DOUBLE, java.sql.Types.FLOAT, java.sql.Types.INTEGER, java.sql.Types.JAVA_OBJECT, java.sql.Types.LONGVARBINARY, java.sql.Types.LONGVARCHAR, java.sql.Types.NUMERIC, java.sql.Types.REAL, java.sql.Types.REF, java.sql.Types.SMALLINT, java.sql.Types.TIME, java.sql.Types.TIMESTAMP, java.sql.Types.TINYINT, java.sql.Types.VARBINARY, java.sql.Types.VARCHAR, java.sql.Types.OTHER};
+        names = new String[] {"ARRAY", "BIGINT", "BINARY", "BIT", "BLOB", "CHAR", "CLOB", "DATE", "DECIMAL", "DISTINCT", "DOUBLE", "FLOAT", "INTEGER", "JAVA_OBJECT", "LONGVARBINARY", "LONGVARCHAR", "NUMERIC", "REAL", "REF", "SMALLINT", "TIME", "TIMESTAMP", "TINYINT", "VARBINARY", "VARCHAR", "OTHER"};
+    }
 
-	public DatabaseTypePropertyEditor(int[] types, String[] titles)
-	{
-		support = new PropertyChangeSupport(this);
-		constants = types;
-		names = titles;
-	}
+    public DatabaseTypePropertyEditor(int[] types, String[] titles)
+    {
+        support = new PropertyChangeSupport(this);
+        constants = types;
+        names = titles;
+    }
 
-	public Object getValue () 
-	{
-		return new Integer(constants[index]);
-	}
+    public Object getValue ()
+    {
+        return new Integer(constants[index]);
+    }
 
-	public void setValue (Object object) 
-	{
-		if (!(object instanceof Number)) {
-			throw new IllegalArgumentException("cannot operate with "+object);
-		}
-		int ii = ((Number)object).intValue ();
-		int i, k = constants.length;
-		for (i = 0; i < k; i++) {
-			if (constants [i] == ii) break;
-		}
-		
-		if (i == k) {
-			throw new IllegalArgumentException("cannot find "+ii);
-		} 
-		index = i;
-		name = names [i];
-		support.firePropertyChange (null, null, null);
-	}
+    public void setValue (Object object)
+    {
+        if (!(object instanceof Number)) {
+            throw new IllegalArgumentException("cannot operate with "+object);
+        }
+        int ii = ((Number)object).intValue ();
+        int i, k = constants.length;
+        for (i = 0; i < k; i++) {
+            if (constants [i] == ii) break;
+        }
 
-  public String getAsText () {
-    return name;
-  }
+        if (i == k) {
+            throw new IllegalArgumentException("cannot find "+ii);
+        }
+        index = i;
+        name = names [i];
+        support.firePropertyChange (null, null, null);
+    }
 
-  public void setAsText (String string)
-  throws IllegalArgumentException {
-    int i, k = names.length;
-    for (i = 0; i < k; i++) if (names [i].equals (string)) break;
-    if (i == k)  throw new IllegalArgumentException("cannot find as text "+string);
-    index = i;
-    name = names [i];
-    return;
-  }
+    public String getAsText () {
+        return name;
+    }
 
-  public String getJavaInitializationString () {
-    return "" + index;
-  }
+    public void setAsText (String string)
+    throws IllegalArgumentException {
+        int i, k = names.length;
+        for (i = 0; i < k; i++) if (names [i].equals (string)) break;
+        if (i == k)  throw new IllegalArgumentException("cannot find as text "+string);
+        index = i;
+        name = names [i];
+        return;
+    }
 
-  public String[] getTags () {
-    return names;
-  }
+    public String getJavaInitializationString () {
+        return "" + index;
+    }
 
-  public boolean isPaintable () {
-    return false;
-  }
+    public String[] getTags () {
+        return names;
+    }
 
-  public void paintValue (Graphics g, Rectangle rectangle) {
-  }
+    public boolean isPaintable () {
+        return false;
+    }
 
-  public boolean supportsCustomEditor () {
-    return false;
-  }
+    public void paintValue (Graphics g, Rectangle rectangle) {
+    }
 
-  public Component getCustomEditor () {
-    return null;
-  }
+    public boolean supportsCustomEditor () {
+        return false;
+    }
 
-  public void addPropertyChangeListener (PropertyChangeListener propertyChangeListener) {
-    support.addPropertyChangeListener (propertyChangeListener);
-  }
+    public Component getCustomEditor () {
+        return null;
+    }
 
-  public void removePropertyChangeListener (PropertyChangeListener propertyChangeListener) {
-    support.removePropertyChangeListener (propertyChangeListener);
-  }
+    public void addPropertyChangeListener (PropertyChangeListener propertyChangeListener) {
+        support.addPropertyChangeListener (propertyChangeListener);
+    }
+
+    public void removePropertyChangeListener (PropertyChangeListener propertyChangeListener) {
+        support.removePropertyChangeListener (propertyChangeListener);
+    }
 }
 
 /*

@@ -44,303 +44,303 @@ import org.apache.tomcat.service.SimpleTcpConnector;
 */
 public class HttpServerModule extends ModuleInstall implements Externalizable {
 
-  
-  private static ContextManager server;
-  private static Thread serverThread;
-  private static boolean inSetRunning = false;
-  
-  static final long serialVersionUID =8562026516563511530L;
 
-  /** Module installed again.
-  */
-  public void restored() {            
-    try {
-      org.openide.util.HttpServer.registerServer(HttpServerSettings.OPTIONS);
-    }
-    catch (SecurityException e) {}
-  }
+    private static ContextManager server;
+    private static Thread serverThread;
+    private static boolean inSetRunning = false;
 
+    static final long serialVersionUID =8562026516563511530L;
 
-  /** Module is being closed. */
-  public boolean closing () {
-    // stop the server, don't set the running status
-    try {
-      org.openide.util.HttpServer.deregisterServer(HttpServerSettings.OPTIONS);
-    }
-    catch (SecurityException e) {
-      // pending - why do I get SecurityException ?
-    } 
-    synchronized (HttpServerSettings.OPTIONS) {
-      stopHTTPServer();
-    }  
-    return true; // agree to close
-  }
-
-  /** initiates HTTPServer so it runs */
-  static void initHTTPServer() {
-    if (inSetRunning)
-      return;
-    synchronized (HttpServerSettings.OPTIONS) {  
-      if (inSetRunning)
-        return; 
-      inSetRunning = true;
-      try {
-        if ((serverThread != null) && (!HttpServerSettings.OPTIONS.running)) {
-          // another thread is trying to start the server, wait for a while and then stop it if it's still bad
-          try {
-            Thread.currentThread().sleep(2000);
-          }
-          catch (InterruptedException e) {}
-          if ((serverThread != null) && (!HttpServerSettings.OPTIONS.running)) {
-            serverThread.stop();
-            serverThread = null;
-          }
-        }
-        if (serverThread == null) {
-          serverThread = new Thread("HTTPServer") { // NOI18N
-            public void run() {
-              try {                   
-                server = buildServer();
-                server.start();
-                HttpServerSettings.OPTIONS.runSuccess();
-                // this is not a debug message, this is a server startup message
-                if (HttpServerSettings.OPTIONS.isStartStopMessages())
-                  System.out.println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
-                    getString("CTL_ServerStarted"), new Object[] {new Integer(HttpServerSettings.OPTIONS.getPort())}));
-              } 
-              catch (ThreadDeath td) {
-                throw td;
-              }
-              catch (Throwable ex) {
-ex.printStackTrace();
-                // couldn't start
-                serverThread = null;
-                inSetRunning = false;
-                HttpServerSettings.OPTIONS.runFailure();
-              }
-              finally {
-                HttpServerSettings.OPTIONS.setStartStopMessages(true);
-              }
-            }
-          };
-          serverThread.start();
-        }  
-        // wait for the other thread to start the server
+    /** Module installed again.
+    */
+    public void restored() {
         try {
-          HttpServerSettings.OPTIONS.wait(HttpServerSettings.SERVER_STARTUP_TIMEOUT);
+            org.openide.util.HttpServer.registerServer(HttpServerSettings.OPTIONS);
         }
-        catch (Exception e) {
-        }
-      }  
-      finally {  
-        inSetRunning = false;
-      }  
+        catch (SecurityException e) {}
     }
-  }
 
-  /** stops the HTTP server */
-  static void stopHTTPServer() {
-    if (inSetRunning)
-      return;
-    synchronized (HttpServerSettings.OPTIONS) {  
-      if (inSetRunning)
-        return;
-      inSetRunning = true;
-      try {
-        if ((serverThread != null) && (server != null)) {
-          try {
-            server.stop();
-            serverThread.join();
-          }
-          catch (InterruptedException e) {
-            serverThread.stop(); 
-            /* deprecated, but this really is the last resort,
-               only if everything else failed */
-          } 
-          catch (Exception e) {
-//e.printStackTrace();
-            serverThread.stop(); 
-            /* deprecated, but this really is the last resort,
-               only if everything else failed */
-          }
-          serverThread = null;
-          // this is not a debug message, this is a server shutdown message
-          if (HttpServerSettings.OPTIONS.isStartStopMessages())
-            System.out.println(NbBundle.getBundle(HttpServerModule.class).
-              getString("CTL_ServerStopped"));
+
+    /** Module is being closed. */
+    public boolean closing () {
+        // stop the server, don't set the running status
+        try {
+            org.openide.util.HttpServer.deregisterServer(HttpServerSettings.OPTIONS);
+        }
+        catch (SecurityException e) {
+            // pending - why do I get SecurityException ?
+        }
+        synchronized (HttpServerSettings.OPTIONS) {
+            stopHTTPServer();
+        }
+        return true; // agree to close
+    }
+
+    /** initiates HTTPServer so it runs */
+    static void initHTTPServer() {
+        if (inSetRunning)
+            return;
+        synchronized (HttpServerSettings.OPTIONS) {
+            if (inSetRunning)
+                return;
+            inSetRunning = true;
+            try {
+                if ((serverThread != null) && (!HttpServerSettings.OPTIONS.running)) {
+                    // another thread is trying to start the server, wait for a while and then stop it if it's still bad
+                    try {
+                        Thread.currentThread().sleep(2000);
+                    }
+                    catch (InterruptedException e) {}
+                    if ((serverThread != null) && (!HttpServerSettings.OPTIONS.running)) {
+                        serverThread.stop();
+                        serverThread = null;
+                    }
+                }
+                if (serverThread == null) {
+                    serverThread = new Thread("HTTPServer") { // NOI18N
+                                       public void run() {
+                                           try {
+                                               server = buildServer();
+                                               server.start();
+                                               HttpServerSettings.OPTIONS.runSuccess();
+                                               // this is not a debug message, this is a server startup message
+                                               if (HttpServerSettings.OPTIONS.isStartStopMessages())
+                                                   System.out.println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
+                                                                      getString("CTL_ServerStarted"), new Object[] {new Integer(HttpServerSettings.OPTIONS.getPort())}));
+                                           }
+                                           catch (ThreadDeath td) {
+                                               throw td;
+                                           }
+                                           catch (Throwable ex) {
+                                               ex.printStackTrace();
+                                               // couldn't start
+                                               serverThread = null;
+                                               inSetRunning = false;
+                                               HttpServerSettings.OPTIONS.runFailure();
+                                           }
+                                           finally {
+                                               HttpServerSettings.OPTIONS.setStartStopMessages(true);
+                                           }
+                                       }
+                                   };
+                    serverThread.start();
+                }
+                // wait for the other thread to start the server
+                try {
+                    HttpServerSettings.OPTIONS.wait(HttpServerSettings.SERVER_STARTUP_TIMEOUT);
+                }
+                catch (Exception e) {
+                }
+            }
+            finally {
+                inSetRunning = false;
+            }
+        }
+    }
+
+    /** stops the HTTP server */
+    static void stopHTTPServer() {
+        if (inSetRunning)
+            return;
+        synchronized (HttpServerSettings.OPTIONS) {
+            if (inSetRunning)
+                return;
+            inSetRunning = true;
+            try {
+                if ((serverThread != null) && (server != null)) {
+                    try {
+                        server.stop();
+                        serverThread.join();
+                    }
+                    catch (InterruptedException e) {
+                        serverThread.stop();
+                        /* deprecated, but this really is the last resort,
+                           only if everything else failed */
+                    }
+                    catch (Exception e) {
+                        //e.printStackTrace();
+                        serverThread.stop();
+                        /* deprecated, but this really is the last resort,
+                           only if everything else failed */
+                    }
+                    serverThread = null;
+                    // this is not a debug message, this is a server shutdown message
+                    if (HttpServerSettings.OPTIONS.isStartStopMessages())
+                        System.out.println(NbBundle.getBundle(HttpServerModule.class).
+                                           getString("CTL_ServerStopped"));
+                }
+            }
+            finally {
+                inSetRunning = false;
+            }
+        }
+    }
+
+    private static ContextManager buildServer() throws Exception {
+        HttpServerSettings op = HttpServerSettings.OPTIONS;
+
+        ContextManager cm = new ContextManager();
+
+        cm.addContextInterceptor(new LogEvents());
+        //cm.addContextInterceptor(new AutoSetup());
+        cm.addContextInterceptor(new NbCMSetter());
+        cm.addContextInterceptor(new WorkDirInterceptor());
+        //cm.addContextInterceptor(new WebXmlReader());
+        cm.addContextInterceptor(new LoadOnStartupInterceptor());
+
+        cm.setDefaults();
+        // set the HTTP connector port
+        SimpleTcpConnector con = (SimpleTcpConnector)cm.getConnectors().nextElement();
+        con.setPort(op.getPort());
+
+        Context ctxt = new Context();
+        ctxt.setContextManager(cm);
+        cm.addContext(ctxt);
+
+        ServletWrapper nf = new ServletWrapper();
+        nf.setServletClass("org.netbeans.modules.httpserver.NotFoundServlet");
+        nf.setServletName("NotFoundServlet");
+        ctxt.addServlet(nf);
+        ctxt.addServletMapping("/", "NotFoundServlet");
+        nf.setContext(ctxt);
+
+        ServletWrapper repo = new ServletWrapper();
+        repo.setServletClass("org.netbeans.modules.httpserver.RepositoryServlet");
+        repo.setServletName("RepositoryServlet");
+        ctxt.addServlet(repo);
+        ctxt.addServletMapping(op.getRepositoryBaseURL() + "*", "RepositoryServlet");
+        repo.setContext(ctxt);
+
+        ServletWrapper claz = new ServletWrapper();
+        claz.setServletClass("org.netbeans.modules.httpserver.ClasspathServlet");
+        claz.setServletName("ClasspathServlet");
+        ctxt.addServlet(claz);
+        ctxt.addServletMapping(op.getClasspathBaseURL() + "*", "ClasspathServlet");
+        claz.setContext(ctxt);
+
+        cm.init();
+        return cm;
+    }
+
+
+    /*  private static HttpServer buildServer() {
+        HttpServerSettings op = HttpServerSettings.OPTIONS;
+
+        HttpServer server = new NbHttpServer(op.getPort(), null, null);
+
+        try {
+          server.setDocumentBase(new URL("file:///nonexistingdirectory")); // NOI18N
+        }
+        catch (MalformedURLException e) {
+          throw new InternalError();
         }  
-      }
-      finally {  
-        inSetRunning = false;
-      }  
-    }
-  }
-
-  private static ContextManager buildServer() throws Exception {
-    HttpServerSettings op = HttpServerSettings.OPTIONS;
-
-    ContextManager cm = new ContextManager();
-
-    cm.addContextInterceptor(new LogEvents());
-    //cm.addContextInterceptor(new AutoSetup());
-    cm.addContextInterceptor(new NbCMSetter());
-    cm.addContextInterceptor(new WorkDirInterceptor());
-    //cm.addContextInterceptor(new WebXmlReader());
-    cm.addContextInterceptor(new LoadOnStartupInterceptor());
-
-    cm.setDefaults();
-    // set the HTTP connector port
-    SimpleTcpConnector con = (SimpleTcpConnector)cm.getConnectors().nextElement();
-    con.setPort(op.getPort());
-
-    Context ctxt = new Context();
-    ctxt.setContextManager(cm);
-    cm.addContext(ctxt);
-
-    ServletWrapper nf = new ServletWrapper();
-    nf.setServletClass("org.netbeans.modules.httpserver.NotFoundServlet");
-    nf.setServletName("NotFoundServlet");
-    ctxt.addServlet(nf);
-    ctxt.addServletMapping("/", "NotFoundServlet");
-    nf.setContext(ctxt);
-    
-    ServletWrapper repo = new ServletWrapper();
-    repo.setServletClass("org.netbeans.modules.httpserver.RepositoryServlet");
-    repo.setServletName("RepositoryServlet");
-    ctxt.addServlet(repo);
-    ctxt.addServletMapping(op.getRepositoryBaseURL() + "*", "RepositoryServlet");
-    repo.setContext(ctxt);
-    
-    ServletWrapper claz = new ServletWrapper();
-    claz.setServletClass("org.netbeans.modules.httpserver.ClasspathServlet");
-    claz.setServletName("ClasspathServlet");
-    ctxt.addServlet(claz);
-    ctxt.addServletMapping(op.getClasspathBaseURL() + "*", "ClasspathServlet");
-    claz.setContext(ctxt);
-
-    cm.init();
-    return cm;
-  }
-  
-  
-/*  private static HttpServer buildServer() {
-    HttpServerSettings op = HttpServerSettings.OPTIONS;
-
-    HttpServer server = new NbHttpServer(op.getPort(), null, null);
-
-    try {
-      server.setDocumentBase(new URL("file:///nonexistingdirectory")); // NOI18N
-    }
-    catch (MalformedURLException e) {
-      throw new InternalError();
-    }  
-    Context context = server.getDefaultContext();
-    context.setSecurityModule (new NbSecurityModule (context));
-    context.setClassLoader(TopManager.getDefault().systemClassLoader());
-    
-    Container container = context.getContainer();
-
-    container.addServlet("repositoryHandler", "org.netbeans.modules.httpserver.RepositoryServlet"); // NOI18N
-    container.addMapping("repositoryHandler", op.getRepositoryBaseURL()); // NOI18N
-    
-    container.addServlet("classpathHandler", "org.netbeans.modules.httpserver.ClasspathServlet"); // NOI18N
-    container.addMapping("classpathHandler", op.getClasspathBaseURL()); // NOI18N
-    
-    return server;
-  }
-  
-  static class NbHttpServer extends HttpServer {
-    
-    public NbHttpServer(int i, InetAddress inetaddress, String s) {
-      super(i, inetaddress, s);
-    }
-    
-    public void start() throws HttpServerException {
-      File wd = NbClassPath.toFile(
-        TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot());
-      wd = new File(wd, "httpwork"); // NOI18N
+        Context context = server.getDefaultContext();
+        context.setSecurityModule (new NbSecurityModule (context));
+        context.setClassLoader(TopManager.getDefault().systemClassLoader());
         
-      try {
-        java.lang.reflect.Field ff = HttpServer.class.getDeclaredField("isWorkDirPersistent"); // NOI18N
-        ff.setAccessible(true);
-        boolean bb = ff.getBoolean(this);
-        
-        getDefaultContext().setWorkDir(wd, bb / *isWorkDirPersistent* /);
-        getDefaultContext().init();
-        EndpointManager endpointmanager = EndpointManager.getManager();
+        Container container = context.getContainer();
 
-        // endpointmanager.startServer(this);
-        java.lang.reflect.Method mm = EndpointManager.class.getDeclaredMethod("startServer", new Class[] {HttpServer.class}); // NOI18N
-        mm.setAccessible(true);
-        mm.invoke(endpointmanager, new Object[] { this });
+        container.addServlet("repositoryHandler", "org.netbeans.modules.httpserver.RepositoryServlet"); // NOI18N
+        container.addMapping("repositoryHandler", op.getRepositoryBaseURL()); // NOI18N
+        
+        container.addServlet("classpathHandler", "org.netbeans.modules.httpserver.ClasspathServlet"); // NOI18N
+        container.addMapping("classpathHandler", op.getClasspathBaseURL()); // NOI18N
+        
+        return server;
       }
-      catch (NoSuchMethodException e) {
-        if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-          e.printStackTrace();
-        throw new IllegalArgumentException();  
-      }
-      catch (NoSuchFieldException e) {
-        if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-          e.printStackTrace();
-        throw new IllegalArgumentException();  
-      }
-      catch (IllegalAccessException e) {
-        if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-          e.printStackTrace();
-        throw new IllegalArgumentException();  
-      }
-      catch (InvocationTargetException e) {
-        Throwable th = e.getTargetException();
-        throw ((HttpServerException)th);
-      }
-    }
       
-  }
-    
-  static class NbSecurityModule implements SecurityModule {
+      static class NbHttpServer extends HttpServer {
+        
+        public NbHttpServer(int i, InetAddress inetaddress, String s) {
+          super(i, inetaddress, s);
+        }
+        
+        public void start() throws HttpServerException {
+          File wd = NbClassPath.toFile(
+            TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot());
+          wd = new File(wd, "httpwork"); // NOI18N
+            
+          try {
+            java.lang.reflect.Field ff = HttpServer.class.getDeclaredField("isWorkDirPersistent"); // NOI18N
+            ff.setAccessible(true);
+            boolean bb = ff.getBoolean(this);
+            
+            getDefaultContext().setWorkDir(wd, bb / *isWorkDirPersistent* /);
+            getDefaultContext().init();
+            EndpointManager endpointmanager = EndpointManager.getManager();
 
-    public NbSecurityModule (Context context1) {
-      context = context1;
-    }
-
-    public Context getContext() {
-      return context;
-    }
-
-    public boolean authenticateRequest(HttpServletRequest httpservletrequest, HttpServletResponse httpservletresponse)
-      throws IOException {
-      return true;
-    }
-
-    public boolean authorizeRequest(HttpServletRequest httpservletrequest, HttpServletResponse httpservletresponse)
-      throws IOException {
-
-      HttpServerSettings op = HttpServerSettings.OPTIONS;
-
-      String requestURI = httpservletrequest.getRequestURI ();
-      String contextPath = context.getPath();
-      String lookupPath = requestURI.substring(contextPath.length(), requestURI.length());
-      int i = lookupPath.indexOf("?"); // NOI18N
-      if(i > -1) lookupPath = lookupPath.substring(0, i);
-      if(lookupPath.length() < 1) lookupPath = "/"; // NOI18N
-      String s = lookupPath.toLowerCase();
-      if(s.startsWith("/servlet/")) { // NOI18N
-        return true;
-      }  
-      if(s.startsWith("/web-inf")) { // NOI18N
-        httpservletresponse.sendError(403);
-        return false;
-      } if (s.startsWith(op.getRepositoryBaseURL() + "/") || s.startsWith(op.getClasspathBaseURL() + "/")) { // NOI18N
-        return true;
-      } else {
-        httpservletresponse.sendError(404);
-        return false;
+            // endpointmanager.startServer(this);
+            java.lang.reflect.Method mm = EndpointManager.class.getDeclaredMethod("startServer", new Class[] {HttpServer.class}); // NOI18N
+            mm.setAccessible(true);
+            mm.invoke(endpointmanager, new Object[] { this });
+          }
+          catch (NoSuchMethodException e) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+              e.printStackTrace();
+            throw new IllegalArgumentException();  
+          }
+          catch (NoSuchFieldException e) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+              e.printStackTrace();
+            throw new IllegalArgumentException();  
+          }
+          catch (IllegalAccessException e) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+              e.printStackTrace();
+            throw new IllegalArgumentException();  
+          }
+          catch (InvocationTargetException e) {
+            Throwable th = e.getTargetException();
+            throw ((HttpServerException)th);
+          }
+        }
+          
       }
-                   
-    }
+        
+      static class NbSecurityModule implements SecurityModule {
 
-    private Context context;
-  }*/
+        public NbSecurityModule (Context context1) {
+          context = context1;
+        }
+
+        public Context getContext() {
+          return context;
+        }
+
+        public boolean authenticateRequest(HttpServletRequest httpservletrequest, HttpServletResponse httpservletresponse)
+          throws IOException {
+          return true;
+        }
+
+        public boolean authorizeRequest(HttpServletRequest httpservletrequest, HttpServletResponse httpservletresponse)
+          throws IOException {
+
+          HttpServerSettings op = HttpServerSettings.OPTIONS;
+
+          String requestURI = httpservletrequest.getRequestURI ();
+          String contextPath = context.getPath();
+          String lookupPath = requestURI.substring(contextPath.length(), requestURI.length());
+          int i = lookupPath.indexOf("?"); // NOI18N
+          if(i > -1) lookupPath = lookupPath.substring(0, i);
+          if(lookupPath.length() < 1) lookupPath = "/"; // NOI18N
+          String s = lookupPath.toLowerCase();
+          if(s.startsWith("/servlet/")) { // NOI18N
+            return true;
+          }  
+          if(s.startsWith("/web-inf")) { // NOI18N
+            httpservletresponse.sendError(403);
+            return false;
+          } if (s.startsWith(op.getRepositoryBaseURL() + "/") || s.startsWith(op.getClasspathBaseURL() + "/")) { // NOI18N
+            return true;
+          } else {
+            httpservletresponse.sendError(404);
+            return false;
+          }
+                       
+        }
+
+        private Context context;
+      }*/
 
 }
 

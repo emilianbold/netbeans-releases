@@ -33,38 +33,38 @@ package org.netbeans.modules.form;
 * @author Ian Formanek
 */
 public interface FormDesignValue extends java.io.Serializable {
-  /** A special value which is not used during design-time if returned from the getDesignValue
-  * method call.
-  * @see #getDesignValue
-  */
-  public static final Object IGNORED_VALUE = new Object ();
-
-static final long serialVersionUID =5993614134339828170L;
-  /** Provides a value which should be used during design-time
-  * as the real property value on the bean instance.
-  * E.g. the ResourceBundle String would provide the real value
-  * of the String from the resource bundle, so that the design-time
-  * representation reflects the real code being generated.
-  * @param radComponent the radComponent in which this property is used
-  * @return the real property value to be used during design-time
-  */
-  public Object getDesignValue (RADComponent radComponent);
-
-  /** Extended version of FormDesignValue which supports listening on changes of the design value */
-  public interface Listener extends FormDesignValue {
-static final long serialVersionUID =7127443991708952900L;
-    /** Attaches specified listener to the design value. 
-    * The change event is fired whenever the design value (accessible via getDesignValue () method call) changes
-    * @param listener the change listener to add
+    /** A special value which is not used during design-time if returned from the getDesignValue
+    * method call.
+    * @see #getDesignValue
     */
-    public void addChangeListener (javax.swing.event.ChangeListener listener);
+    public static final Object IGNORED_VALUE = new Object ();
 
-    /** Deattaches specified listener from the design value. 
-    * The change event is fired whenever the design value (accessible via getDesignValue () method call) changes
-    * @param listener the change listener to remove
+    static final long serialVersionUID =5993614134339828170L;
+    /** Provides a value which should be used during design-time
+    * as the real property value on the bean instance.
+    * E.g. the ResourceBundle String would provide the real value
+    * of the String from the resource bundle, so that the design-time
+    * representation reflects the real code being generated.
+    * @param radComponent the radComponent in which this property is used
+    * @return the real property value to be used during design-time
     */
-    public void removeChangeListener (javax.swing.event.ChangeListener listener);
-  }
+    public Object getDesignValue (RADComponent radComponent);
+
+    /** Extended version of FormDesignValue which supports listening on changes of the design value */
+    public interface Listener extends FormDesignValue {
+        static final long serialVersionUID =7127443991708952900L;
+        /** Attaches specified listener to the design value.
+        * The change event is fired whenever the design value (accessible via getDesignValue () method call) changes
+        * @param listener the change listener to add
+        */
+        public void addChangeListener (javax.swing.event.ChangeListener listener);
+
+        /** Deattaches specified listener from the design value.
+        * The change event is fired whenever the design value (accessible via getDesignValue () method call) changes
+        * @param listener the change listener to remove
+        */
+        public void removeChangeListener (javax.swing.event.ChangeListener listener);
+    }
 }
 
 /*

@@ -26,35 +26,35 @@ import org.netbeans.modules.db.explorer.dataview.*;
 
 public class ExecuteCommandAction extends DatabaseAction
 {
-//  static final long serialVersionUID =-894644054833609687L;
-	protected boolean enable(Node[] activatedNodes)
-	{
-		Node node;
-		if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-		else return false;
-		
-		ConnectionNodeInfo info = (ConnectionNodeInfo)node.getCookie(ConnectionNodeInfo.class);
-		if (info != null) return (info.getConnection() != null);
-		return true;
-	}
+    //  static final long serialVersionUID =-894644054833609687L;
+    protected boolean enable(Node[] activatedNodes)
+    {
+        Node node;
+        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
+        else return false;
 
-	public void performAction (Node[] activatedNodes) {
-		StringBuffer cols = new StringBuffer();
-		Node node;
-    ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+        ConnectionNodeInfo info = (ConnectionNodeInfo)node.getCookie(ConnectionNodeInfo.class);
+        if (info != null) return (info.getConnection() != null);
+        return true;
+    }
 
-		if (activatedNodes != null && activatedNodes.length > 0) {
-			try {
-				node = activatedNodes[0];
-				DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-				
-				DataViewWindow win = new DataViewWindow(info, "");
-				win.open();
-			} catch(Exception e) {
-				TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-			}
-		}				 
-	}
+    public void performAction (Node[] activatedNodes) {
+        StringBuffer cols = new StringBuffer();
+        Node node;
+        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+
+        if (activatedNodes != null && activatedNodes.length > 0) {
+            try {
+                node = activatedNodes[0];
+                DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+
+                DataViewWindow win = new DataViewWindow(info, "");
+                win.open();
+            } catch(Exception e) {
+                TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+            }
+        }
+    }
 }
 /*
  * <<Log>>

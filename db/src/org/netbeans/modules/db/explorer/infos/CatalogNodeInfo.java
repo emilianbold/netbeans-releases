@@ -25,7 +25,7 @@ import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class CatalogNodeInfo extends DatabaseNodeInfo
 {
-  static final long serialVersionUID =-2415636395795933849L;
+    static final long serialVersionUID =-2415636395795933849L;
 }
 /*
  * <<Log>>

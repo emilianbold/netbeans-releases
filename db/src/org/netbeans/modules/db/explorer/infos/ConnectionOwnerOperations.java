@@ -18,17 +18,17 @@ import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
-/** 
+/**
 * Interface of driver-related nodes.
 * @author Slavek Psenicka
 */
 public interface ConnectionOwnerOperations
 {
-	/** Add connection operation 
-	* @param drv Driver to add (null allowed)
-	*/
-	public void addConnection(DBConnection con)
-	throws DatabaseException;
+    /** Add connection operation
+    * @param drv Driver to add (null allowed)
+    */
+    public void addConnection(DBConnection con)
+    throws DatabaseException;
 }
 
 /*

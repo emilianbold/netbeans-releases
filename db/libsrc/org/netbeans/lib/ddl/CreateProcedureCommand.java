@@ -15,35 +15,35 @@ package org.netbeans.lib.ddl;
 
 import java.util.Vector;
 
-/** 
+/**
 * Interface of create procedure action command. 
 * @author Slavek Psenicka
 */
-public interface CreateProcedureCommand extends DDLCommand 
-{		
-	/** Returns catalog */
-	public String getCatalog();
+public interface CreateProcedureCommand extends DDLCommand
+{
+    /** Returns catalog */
+    public String getCatalog();
 
-	/** Sets catalog 
-	*@param cname New catalog name
-	*/
-	public void setCatalog(String cname);
+    /** Sets catalog
+    *@param cname New catalog name
+    */
+    public void setCatalog(String cname);
 
-	/** Returns text of procedure */
-	public String getText();
+    /** Returns text of procedure */
+    public String getText();
 
-	/** Sets name of table
-	*@param cname New code of procedure
-	*/
-	public void setText(String text);
-	
-	/** Returns arguments */
-	public Vector getArguments();
-	
-	/** Sets argument array
-	*@param cname New argument array
-	*/
-	public void setArguments(Vector args);
+    /** Sets name of table
+    *@param cname New code of procedure
+    */
+    public void setText(String text);
+
+    /** Returns arguments */
+    public Vector getArguments();
+
+    /** Sets argument array
+    *@param cname New argument array
+    */
+    public void setArguments(Vector args);
 }
 
 /*

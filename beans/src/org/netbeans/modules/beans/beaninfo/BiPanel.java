@@ -36,70 +36,70 @@ import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 
 
-/** 
+/**
 * Search doc action.
 *
 * @author   Petr Hrebejk
 */
 public class BiPanel extends ExplorerPanel  {
 
- private SplittedPanel sp;
- private static ExplorerManager em;
- private PropertySheetView psv;
- private BeanTreeView btv;
-  
- static final long serialVersionUID =4088175782441275332L;
+    private SplittedPanel sp;
+    private static ExplorerManager em;
+    private PropertySheetView psv;
+    private BeanTreeView btv;
 
- BiPanel( ) {
-   Node waitNode = new BiNode.Wait();
+    static final long serialVersionUID =4088175782441275332L;
 
-   createContent( waitNode );
- }
- 
- private void createContent ( Node biNode ) {
+    BiPanel( ) {
+        Node waitNode = new BiNode.Wait();
 
-    SplittedPanel sp = new SplittedPanel ();
-    btv = new BeanTreeView ();
-    em = getExplorerManager ();
-    PropertySheetView psv = new PropertySheetView ();
-
-    try {
-      psv.setSortingMode (PropertySheetView.UNSORTED);
-    } 
-    catch (java.beans.PropertyVetoException e) {
+        createContent( waitNode );
     }
-    
-    //sp.add (new org.openide.explorer.view.ListView (), SplittedPanel.ADD_LEFT);
-    sp.add (btv, SplittedPanel.ADD_LEFT);
-    sp.add (psv, SplittedPanel.ADD_RIGHT);
 
-    em.setRootContext ( biNode );
-    em.setExploredContext( biNode );
-   
-    btv.setDefaultActionAllowed( true );
+    private void createContent ( Node biNode ) {
 
-    setLayout (new BorderLayout());
-    add (BorderLayout.CENTER, sp);
-    
-  }
+        SplittedPanel sp = new SplittedPanel ();
+        btv = new BeanTreeView ();
+        em = getExplorerManager ();
+        PropertySheetView psv = new PropertySheetView ();
 
-  public java.awt.Dimension getPreferredSize () {
-    java.awt.Dimension sup = super.getPreferredSize ();
-    return new java.awt.Dimension ( Math.max (sup.width, 450), Math.max (sup.height, 300 ));
-    }  
+        try {
+            psv.setSortingMode (PropertySheetView.UNSORTED);
+        }
+        catch (java.beans.PropertyVetoException e) {
+        }
 
-  void expandAll() {
-    btv.expandAll();
-  }
+        //sp.add (new org.openide.explorer.view.ListView (), SplittedPanel.ADD_LEFT);
+        sp.add (btv, SplittedPanel.ADD_LEFT);
+        sp.add (psv, SplittedPanel.ADD_RIGHT);
 
-  static Node[] getSelectedNodes() {
-    return em.getSelectedNodes();
-  }
+        em.setRootContext ( biNode );
+        em.setExploredContext( biNode );
 
-  void setContext( Node node ) {
-    em.setRootContext ( node );
-    em.setExploredContext( node );
-  }
+        btv.setDefaultActionAllowed( true );
+
+        setLayout (new BorderLayout());
+        add (BorderLayout.CENTER, sp);
+
+    }
+
+    public java.awt.Dimension getPreferredSize () {
+        java.awt.Dimension sup = super.getPreferredSize ();
+        return new java.awt.Dimension ( Math.max (sup.width, 450), Math.max (sup.height, 300 ));
+    }
+
+    void expandAll() {
+        btv.expandAll();
+    }
+
+    static Node[] getSelectedNodes() {
+        return em.getSelectedNodes();
+    }
+
+    void setContext( Node node ) {
+        em.setRootContext ( node );
+        em.setExploredContext( node );
+    }
 
 }
 

@@ -13,8 +13,8 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
-public class ViewListNode extends DatabaseNode 
-{		
+public class ViewListNode extends DatabaseNode
+{
 }
 /*
  * <<Log>>
