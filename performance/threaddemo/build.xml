@@ -33,8 +33,21 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${looks.jar}"/>
         <pathelement location="${Spin.jar}"/>
     </path>
+    
+    <target name="init">
+        <available property="openide/build.xml" file="${nbroot}/openide/build.xml"/>
+        <available property="looks/build.xml" file="${looks}/build.xml"/>
+    </target>
+    
+    <target name="build-openide" depends="init" if="openide/build.xml">
+        <ant dir="${nbroot}/openide" target="jars"/>
+    </target>
+    
+    <target name="build-looks" depends="init,build-openide" if="looks/build.xml">
+        <ant dir="${looks}" target="jars"/>
+    </target>
 
-    <target name="build">
+    <target name="build" depends="build-openide,build-looks">
         <javac srcdir="src" destdir="src">
             <classpath refid="cp"/>
         </javac>
