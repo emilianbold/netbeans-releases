@@ -86,7 +86,7 @@ public class SimpleExtBrowser extends ExtWebBrowser {
      * that returned implementation will implement org.openide.awt.HtmlBrowser.Impl
      */
     public HtmlBrowser.Impl createHtmlBrowserImpl() {
-        return new SimpleExtBrowserImpl();
+        return new SimpleExtBrowserImpl(this);
     }
         
     /** Default format that can format tags related to execution. Currently this is only the URL.

@@ -25,10 +25,6 @@ import org.openide.ErrorManager;
  */
 public class SimpleExtBrowserImpl extends ExtBrowserImpl {
 
-    public SimpleExtBrowserImpl () {
-        this(null);
-    }
-
     public SimpleExtBrowserImpl(ExtWebBrowser extBrowserFactory) {
         super();
         this.extBrowserFactory = extBrowserFactory;
