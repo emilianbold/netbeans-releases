@@ -96,6 +96,12 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
       </file>
+      <!-- Tag File --> 
+      <file name="TagFile.tag" url="templates/TagFile.template">
+        <attr name="template" boolvalue="true"/>
+        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/TagFile.html"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+      </file>
       <attr name="webapp.warImage/JSP.jsp" boolvalue="true"/>
       <attr name="webappSample.warImage/JSP.jsp" boolvalue="true"/>
       <attr name="JSP.jsp/Servlet.java" boolvalue="true"/>
