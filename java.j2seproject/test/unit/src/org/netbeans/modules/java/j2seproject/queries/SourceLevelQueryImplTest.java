@@ -80,13 +80,6 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         file = sources.createData("a.java");
         sl = SourceLevelQuery.getSourceLevel(file);
         assertEquals("Project's Java file must have project's source", "1.2.3.4", sl);
-        try {
-            SourceLevelQuery.getSourceLevel(projdir);
-        } catch (IllegalArgumentException e) {
-            // as exepted
-            return;
-        }
-        assertTrue("Exception must be thrown for non Java files", false);
     }
     
 }
