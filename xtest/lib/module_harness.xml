@@ -82,11 +82,12 @@ Microsystems, Inc. All Rights Reserved.
         </nbtaskdef>
 
         <!-- JUnit -->
-        <nbtaskdef name="nbjunit" classname="org.netbeans.xtest.junit.JUnitTaskExt" 
+         <nbtaskdef name="junitTest" classname="org.netbeans.xtest.testrunner.JUnitTestRunnerTask"
                    classpath="${junit.path};${xtest.path};${xerces.path}"/>
 
         <!-- Needed for running code-mode tests with Clover (see build-clover.xml): -->
         <property name="clover.test.path" value=""/>
+        
         <pathdef useid="test.basepath">
             <path>
                 <pathelement path="${junit.path};${xtest.path};${xerces.path}"/>
@@ -209,7 +210,11 @@ Microsystems, Inc. All Rights Reserved.
     <target name="code_test_bootstrap" depends="init,code_test_init,junit_test"/>
     
     <target name="code_test_init" depends="extra-classpath">
+        <!-- deprecated
         <property name="junit.fork" value="yes"/>
+        -->
+        <property name="xtest.testrunner.mode" value="testsuite"/>
+        
         <property name="test.extra.classpath" value=""/>
         <property name="codetest.classpath" value=""/>
         <pathdef useid="test.classpath">
@@ -289,7 +294,7 @@ Microsystems, Inc. All Rights Reserved.
         
         
         <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.home}/lib"/>
-        <copy file="${xtest.home}/lib/xtest-ext.jar" todir="${xtest.workdir.idejars}"/>
+        <copy file="${xtest.home}/lib/xtest-junit-testrunner.jar" todir="${xtest.workdir.idejars}"/>
         
         <copy file="${xtest.home}/lib/junit.jar" todir="${netbeans.home}/lib/ext"/>
         <copy file="${xtest.home}/lib/junit-ext.jar" todir="${netbeans.home}/lib/ext"/>
@@ -341,7 +346,7 @@ Microsystems, Inc. All Rights Reserved.
         </ideexec>
 
         <delete file="${netbeans.home}/lib/xtest.jar"/>
-        <delete file="${xtest.workdir.idejars}/xtest-ext.jar"/>
+        <delete file="${xtest.workdir.idejars}/xtest-junit-testrunner.jar"/>
         <delete file="${netbeans.home}/lib/ext/junit.jar"/>
         <delete file="${netbeans.home}/lib/ext/junit-ext.jar"/>
         
@@ -398,7 +403,11 @@ Microsystems, Inc. All Rights Reserved.
     <target name="ide_test_helper" depends="init,ide_test_init,junit_test"/>
     
     <target name="ide_test_init">
+        <!-- deprecated
         <property name="junit.fork" value="no"/>
+        -->
+        <!-- run tests in ide mode -->
+        <property name="xtest.testrunner.mode" value="ide"/>
         <!-- !! always use empty path, JUnit task will use IDE filesystems instead !! -->
         <pathdef useid="test.classpath"/>
     </target>
@@ -414,17 +423,18 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Main JUnit target -->
     <!-- ================= -->
     <target name="junit_test">
-        <!-- create testbag info for report -->
-        <!-- moved to target test
-        <testbaginfo name="${tbag.name}" testType="${tbag.testtype}" testAttribs="${xtest.attribs}"
-                      executor="${tbag.executor}" module="${xtest.module}"
-                      outfile="${xtest.workdir}/xmlresults/testbag.xml"/>  
+  
+        <!--
+        <property name="xtest.jvmargs" value="-Xdebug -Xnoagent -Xrunjdwp:transport=socket,server=y,suspend=y,address=8765"/>
         -->
         <property name="xtest.jvmargs" value=""/>
         <property name="junit.properties.file" value=""/>
         
-        <!-- run the tests -->
-        <nbjunit fork="${junit.fork}" printsummary="yes" timeout="${xtest.timeout}" jvmargs="${xtest.jvmargs}">            
+        <!-- run the tests -->        
+        <junitTest resultDir = "${xtest.workdir}/xmlresults/suites" workDir="${xtest.workdir}/sys" 
+            testMode="${xtest.testrunner.mode}" jvmArgs="${xtest.jvmargs}" timeout="${xtest.timeout}">
+            <classpath  refid="test.classpath"/>
+            
             <sysproperty key="work.dir" value="${xtest.workdir}/sys"/>
             <sysproperty key="xtest.workdir" value="${xtest.workdir}"/>
             <sysproperty key="system.dir" value="${xtest.workdir}/sys"/>
@@ -433,26 +443,13 @@ Microsystems, Inc. All Rights Reserved.
             <sysproperty key="nbjunit.workdir" value="${xtest.workdir}/user"/>
             <sysproperty key="junit.properties.file" value="${junit.properties.file}"/>
             <syspropertyfile file="${test.propertyfile}"/>
-
-            <formatter classname="org.netbeans.xtest.pe.junit.JUnitResultsReporter" extension=".xml"/>
             
-            <classpath refid="test.classpath"/>
-            
-            <batchtest todir="${xtest.workdir}/xmlresults/suites">
-                <testset path="${tbag.classpath}">
-                   <patternset refid="xtest.pattern"/>
-                   <patternset includes="${tbag.patternset.include}"
-                               excludes="${tbag.patternset.exclude}"/>
-                </testset>
-            </batchtest>
-        </nbjunit>
-        
-        <!-- check whether JVM finished abnormally, in this case
-            add failure information to the testbag -->
-        <!--    
-        <available file="${xtest.workdir}/nbjunit.flag" property="testbag.failure"/>
-        <antcall target="testbag-failure"/>
-        -->
+             <testset path="${tbag.classpath}" >                
+                <patternset refid="xtest.pattern"/>
+                <patternset includes="${tbag.patternset.include}"
+                            excludes="${tbag.patternset.exclude}"/>
+            </testset>
+        </junitTest>
     </target>
     
     <!-- ======================= -->

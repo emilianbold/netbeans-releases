@@ -216,7 +216,7 @@ public class NbPath extends Task {
         if (null == getProject().getProperty(XTEST_PATH)) {
             list.setLength(0);
             addPath(list, appendSlash(xthome) + "lib/xtest.jar");
-            addPath(list, appendSlash(xtexhome) + "lib/xtest-ext.jar");
+            addPath(list, appendSlash(xtexhome) + "lib/xtest-junit-testrunner.jar");
             getProject().setProperty(XTEST_PATH, list.toString());
         }
 

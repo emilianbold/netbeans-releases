@@ -46,6 +46,8 @@ Microsystems, Inc. All Rights Reserved.
         </fileset>
 	<pathelement location="../core/netbeans/lib/core.jar"/>
 	<pathelement location="../core/netbeans/lib/ext/boot.jar"/>
+        <!-- execution, because of NbClassLoader .... -->
+        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <!-- use junit with already compiled extensions -->        
 	<pathelement location="src"/>
         <fileset dir="external">
@@ -68,12 +70,14 @@ Microsystems, Inc. All Rights Reserved.
       <exclude name="org/netbeans/xtest/ide/MainWithExec.java"/>
       <classpath refid="basecp"/>
     </javac>
+
     <!-- Compile just MainWithExec with other openide/core modules in CP. -->
     <!-- It is referred to only indirectly using reflection and can access any module. -->
     <javac srcdir="src" destdir="src"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">
       <include name="org/netbeans/xtest/ide/MainWithExec.java"/>
+      <include name="org/netbeans/xtest/testrunner/JUnitTestRunner.java"/>
       <classpath>
         <path refid="basecp"/>
         <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
@@ -104,6 +108,7 @@ Microsystems, Inc. All Rights Reserved.
             compress="false">
 	<include name="org/netbeans/xtest/**"/>
         <exclude name="org/netbeans/xtest/pe/server*/**"/>
+        <exclude name="org/netbeans/xtest/testrunner/**"/>
 	<!--
 	<exclude name="org/netbeans/xtest/ide/**"/>
 	-->
@@ -111,12 +116,22 @@ Microsystems, Inc. All Rights Reserved.
 	<include name="META-INF/services/org.openide.ErrorManager"/>
 	-->
     </jar>	    
+
+    <jar jarfile="lib/xtest-junit-testrunner.jar"
+            manifest="manifest-subst.mf"
+            basedir="src"
+            excludesfile="../nbbuild/standard-jar-excludes.txt"
+            compress="false">
+	<include name="org/netbeans/xtest/testrunner/**"/>
+    </jar>	        
   
     <copy file="../junit/external/junit-3.7.jar" tofile="lib/junit.jar"/>
     <copy file="external/xml-apis-1.0b2.jar" tofile="lib/xml-apis.jar"/>
     <copy file="external/xerces-2.0.1.jar" tofile="lib/xerces.jar"/>
     <copy file="external/xalan-2.3.1.jar" tofile="lib/xalan.jar"/>
+    <!--
     <copy file="external/xtest-ext.jar" todir="lib"/>
+    -->
   </target>
   
   <target name="makedist" depends="compile-dependend-modules,jars">
@@ -145,7 +160,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="lib/xerces.jar"/>
     <delete file="lib/xml-apis.jar"/>
     <delete file="lib/xalan.jar"/>
-    <delete file="lib/xtest-ext.jar"/>
+    <delete file="lib/xtest-junit-testrunner.jar"/>
     <delete file="xtest-distribution.zip"/>
     <delete file="xtest-pes-distribution.zip"/>
   </target>

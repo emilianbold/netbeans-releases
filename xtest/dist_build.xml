@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     	   <available file="lib/xml-apis.jar"/>
     	   <available file="lib/xerces.jar"/>
     	   <available file="lib/xalan.jar"/>
-    	   <available file="lib/xtest-ext.jar"/>
+    	   <available file="lib/xtest-junit-testrunner.jar"/>
     	</and>
      </condition>
   </target>
