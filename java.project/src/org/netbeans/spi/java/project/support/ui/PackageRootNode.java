@@ -54,7 +54,7 @@ import org.openidex.search.SearchInfoFactory;
  */
 final class PackageRootNode extends AbstractNode {
 
-    private static Image PACKAGE_BADGE = Utilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" ); // NOI18N
+    static Image PACKAGE_BADGE = Utilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" ); // NOI18N
         
     private static Action actions[]; 
 
@@ -208,7 +208,7 @@ final class PackageRootNode extends AbstractNode {
     
     private static Component CONVERTOR_COMPONENT = new Panel();
     
-    private static Image icon2image( Icon icon ) {
+    static Image icon2image(Icon icon) {
         int height = icon.getIconHeight();
         int width = icon.getIconWidth();
         

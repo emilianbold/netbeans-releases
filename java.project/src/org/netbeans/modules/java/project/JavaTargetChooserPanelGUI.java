@@ -14,39 +14,32 @@
 package org.netbeans.modules.java.project;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
-import javax.swing.ListCellRenderer;
+import javax.swing.ListModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.spi.java.project.support.ui.PackageView;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.awt.Mnemonics;
-
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
- *
- * @author  phrebejk
+ * Permits user to select a package to place a Java class (or other resource) into.
+ * @author Petr Hrebejk, Jesse Glick
  */
 public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener {
   
@@ -54,22 +47,19 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         NbBundle.getMessage( JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_DefaultNewPackageName" ); // NOI18N
     
     /** prefered dimmension of the panel */
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
-    
-    private static final ListCellRenderer CELL_RENDERER = new NodeCellRenderer();
+    private static final Dimension PREF_DIM = new Dimension(500, 340);
     
     private Project project;
-    private ModelItem[] groupItems;
     private String expectedExtension;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     private boolean isPackage;
-    private SourceGroup folders[];
+    private SourceGroup groups[];
     
     /** Creates new form SimpleTargetChooserGUI */
     public JavaTargetChooserPanelGUI( Project p, SourceGroup[] groups, Component bottomPanel, boolean isPackage ) {
         this.isPackage = isPackage;
         this.project = p;
-        this.folders = groups;
+        this.groups = groups;
         
         initComponents();        
         if ( isPackage ) {
@@ -99,8 +89,8 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             packageComboBox.addActionListener( this );
         }
         
-        rootComboBox.setRenderer( CELL_RENDERER );
-        packageComboBox.setRenderer( CELL_RENDERER );                
+        rootComboBox.setRenderer(new GroupListCellRenderer());
+        packageComboBox.setRenderer(PackageListView.listRenderer());
         rootComboBox.addActionListener( this );
         
         setPreferredSize( PREF_DIM );
@@ -110,12 +100,6 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     public void initValues( FileObject template, FileObject preselectedFolder ) {
         assert project != null : "Project must be specified."; // NOI18N
         
-        // Create list of groups
-        this.groupItems = new ModelItem[ folders.length ]; 
-        for( int i = 0; i < folders.length; i++ ) {
-            this.groupItems[i] = new ModelItem( folders[i] ); 
-        }
-                
         // Show name of the project
         projectTextField.setText( ProjectUtils.getInformation(project).getDisplayName() );
         assert template != null;
@@ -130,11 +114,11 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         
         putClientProperty ("NewFileWizard_Title", displayName);// NOI18N        
         // Setup comboboxes 
-        rootComboBox.setModel( new DefaultComboBoxModel( this.groupItems ) );
-        ModelItem preselectedGroup = getPreselectedGroup( preselectedFolder );
+        rootComboBox.setModel(new DefaultComboBoxModel(groups));
+        SourceGroup preselectedGroup = getPreselectedGroup( preselectedFolder );
         rootComboBox.setSelectedItem( preselectedGroup );
         updatePackages();                
-        ModelItem preselectedPackage = getPreselectedPackage( preselectedGroup, preselectedFolder );
+        Object preselectedPackage = getPreselectedPackage(preselectedGroup, preselectedFolder, packageComboBox.getModel());
         if ( preselectedPackage != null ) {            
             if ( isPackage ) {
                 
@@ -161,7 +145,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     }
         
     public FileObject getRootFolder() {
-        return ((ModelItem)rootComboBox.getSelectedItem()).group.getRootFolder();        
+        return ((SourceGroup) rootComboBox.getSelectedItem()).getRootFolder();        
     }
     
     public String getPackageFileName() {
@@ -174,32 +158,19 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         return  packageName.replace( '.', '/' ); // NOI18N        
     }
     
-    public String getPackageName() {
-        
+    /**
+     * Name of selected package, or "" for default package.
+     */
+    String getPackageName() {
         if ( isPackage ) {
             return ""; // NOI18N
         }
-        
         return packageComboBox.getEditor().getItem().toString();
     }
     
-    public java.awt.Dimension getPreferredSize() {
+    public Dimension getPreferredSize() {
         return PREF_DIM;
     }
-    
-    
-    /*
-    public String getTargetFolder() {
-        File fo = getFolder();
-        
-        if ( fo == null ) {
-            return null;
-        }
-        else {
-            return fo.getPath();
-        }
-    }
-    */
     
     public String getTargetName() {
         String text = documentNameTextField.getText().trim();
@@ -414,7 +385,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     // Private methods ---------------------------------------------------------
         
     private void updatePackages() {
-        packageComboBox.setModel( new DefaultComboBoxModel( ((ModelItem)rootComboBox.getSelectedItem()).getChildren() ) );        
+        packageComboBox.setModel(PackageListView.createListView((SourceGroup) rootComboBox.getSelectedItem()));
     }
     
     private File getFolder() {
@@ -430,8 +401,8 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     
     private void updateText() {
         
-        ModelItem modelItem = (ModelItem)rootComboBox.getSelectedItem();
-        FileObject rootFolder = modelItem.group.getRootFolder();
+        SourceGroup g = (SourceGroup) rootComboBox.getSelectedItem();
+        FileObject rootFolder = g.getRootFolder();
         String packageName = getPackageFileName();
         String documentName = documentNameTextField.getText().trim();
         if ( isPackage ) {
@@ -449,22 +420,24 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         fileTextField.setText( createdFileName.replace( '/', File.separatorChar ) ); // NOI18N        
     }
     
-    private ModelItem getPreselectedGroup( FileObject folder ) {        
-        for( int i = 0; folder != null && i < groupItems.length; i++ ) {
-            if ( groupItems[i].group.getRootFolder().equals( folder ) || 
-                FileUtil.isParentOf( groupItems[i].group.getRootFolder(), folder ) ) {
-                return groupItems[i];
+    private SourceGroup getPreselectedGroup(FileObject folder) {
+        for(int i = 0; folder != null && i < groups.length; i++) {
+            FileObject root = groups[i].getRootFolder();
+            if (root.equals(folder) || FileUtil.isParentOf(root, folder)) {
+                return groups[i];
             }
         }
-        return groupItems[0];
+        return groups[0];
     }
     
-    private ModelItem getPreselectedPackage( ModelItem groupItem, FileObject folder ) {
+    /**
+     * Get a package combo model item.
+     */
+    private Object getPreselectedPackage(SourceGroup group, FileObject folder, ListModel model) {
         if ( folder == null ) {
             return null;
         }
-        ModelItem ch[] = groupItem.getChildren();
-        FileObject root = groupItem.group.getRootFolder();
+        FileObject root = group.getRootFolder();
         
         String relPath = FileUtil.getRelativePath( root, folder );
         
@@ -474,112 +447,36 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             return null; 
         }        
         else {
-            relPath = relPath.replace( '/', '.' ); //NOI18N
-        }        
-            
-        for( int i = 0; i < ch.length; i++ ) {
-            if ( ch[i].toString().equals( relPath ) ) {
-                return ch[i];
+            // Find the right item.
+            String name = relPath.replace('/', '.');
+            int max = model.getSize();
+            for (int i = 0; i < max; i++) {
+                Object item = model.getElementAt(i);
+                if (item.toString().equals(name)) {
+                    return item;
+                }
             }
-        }
-        
-        return null;
+            // Didn't find it.
+            return null;
+        }        
     }
     
     // Private innerclasses ----------------------------------------------------
-    
-    private static class ModelItem {
+
+    /**
+     * Displays a {@link SourceGroup} in {@link #rootComboBox}.
+     */
+    private static final class GroupListCellRenderer extends DefaultListCellRenderer/*<SourceGroup>*/ {
         
-        private static final String DEFAULT_PACKAGE_DISPLAY_NAME =
-            NbBundle.getMessage( JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_DefaultPackage" ); // NOI18N
+        public GroupListCellRenderer() {}
         
-        private Node node;        
-        private SourceGroup group;
-        private Icon icon;
-        private ModelItem[] children;
-	
-        // For source groups
-        public ModelItem( SourceGroup group ) {            
-            this.group = group;
-            this.icon = group.getIcon( false );
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            SourceGroup g = (SourceGroup) value;
+            super.getListCellRendererComponent(list, g.getDisplayName(), index, isSelected, cellHasFocus);
+            setIcon(g.getIcon(false));
+            return this;
         }
         
-        // For packages
-        public ModelItem( Node node ) {
-            this.node = node;
-            this.icon = new ImageIcon( node.getIcon( java.beans.BeanInfo.ICON_COLOR_16x16 ) );
-        }
-        
-	public String getDisplayName() {
-            if ( group != null ) {
-                return group.getDisplayName();
-            }
-            else {
-                String nodeName = node.getName();
-                return nodeName.length() == 0 ? DEFAULT_PACKAGE_DISPLAY_NAME : nodeName;
-            }
-        }
-	
-        public Icon getIcon() {
-            return icon;
-        }
-                
-        public String toString() {
-            if ( group != null ) {
-                return getDisplayName();
-            }
-            else {
-                return node.getName();
-            }
-        }        
-        
-        public ModelItem[] getChildren() {
-            if ( group == null ) {
-                return null;
-            }
-            else {
-                if ( children == null ) {
-                    Node n = PackageView.createPackageView( group );
-                    Node nodes[] = n.getChildren().getNodes( true );
-                    children = new ModelItem[ nodes.length ];
-                    for( int i = 0; i < nodes.length; i++ ) {
-                        children[i] = new ModelItem( nodes[i] );
-                    }
-                }
-                return children;
-            }
-        }
-        
-    }
-    
-    private static class NodeCellRenderer extends JLabel implements ListCellRenderer {
-    
-        public NodeCellRenderer() {
-            setOpaque( true );
-        }
-        
-        public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
-            if (value instanceof ModelItem) {
-                ModelItem item = (ModelItem)value;
-                setText( item.getDisplayName() );
-                setIcon( item.getIcon() );
-            } 
-            else {
-                setText( value.toString () );
-                setIcon( null );
-            }
-            if ( isSelected ) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());             
-            }
-            else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-             
-            }
-            return this;        
-        }
-                
     }
     
 }

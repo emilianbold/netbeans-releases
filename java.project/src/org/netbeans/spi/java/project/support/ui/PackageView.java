@@ -23,14 +23,29 @@ import org.openide.nodes.Node;
  */
 public class PackageView {
     
+    /** #42151: option to show tree structure instead */
+    private static final boolean USE_TREE_VIEW = Boolean.getBoolean("org.netbeans.spi.java.project.support.ui.packageView.USE_TREE_VIEW"); // NOI18N
+    
     private PackageView() {}
     
-    /** Create a node which will contain package-oriented view.
-     * @param group SourceGroup which should be represented.
+    /**
+     * Create a node which will contain package-oriented view of a source group.
+     * <p>
+     * The precise structure of this node is <em>not</em> specified by the API
+     * and is subject to arbitrary change (perhaps at user option).
+     * Callers should not make assumptions about the nature of subnodes, the
+     * code or display names of certain nodes, and so on. You may use cookies/lookup
+     * to find if particular subnodes correspond to folders or files.
+     * </p>
+     * @param group a source group which should be represented
      * @return node which will display packages in given group
      */
     public static Node createPackageView( SourceGroup group ) {
-        return new PackageRootNode( group );
+        if (USE_TREE_VIEW) {
+            return new TreeRootNode(group);
+        } else {
+            return new PackageRootNode(group);
+        }
     }
     
     /**
@@ -48,7 +63,12 @@ public class PackageView {
         if ( pf != null ) {
             return pf.findPath( rootNode, object );
         } else {
-            return null;
+            TreeRootNode.PathFinder pf2 = (TreeRootNode.PathFinder) rootNode.getLookup().lookup(TreeRootNode.PathFinder.class);
+            if (pf2 != null) {
+                return pf2.findPath(rootNode, object);
+            } else {
+                return null;
+            }
         }
     }
 }

@@ -50,7 +50,6 @@ import org.netbeans.modules.junit.GuiUtils;
 import org.netbeans.modules.junit.NamedObject;
 import org.netbeans.modules.junit.SizeRestrictedPanel;
 import org.netbeans.modules.junit.TestCreator;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
@@ -58,17 +57,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.nodes.NodeOperation;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -512,10 +507,11 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
              */
             
             Node srcGroupNode = PackageView.createPackageView(srcSourceGroup);
+            // Note: precise structure of this view is *not* specified by the API.
             
             Node rootNode = new FilterNode(
                     srcGroupNode,
-                    new LogicalViewRootChildren(srcGroupNode));
+                    new JavaChildren(srcGroupNode));
             
             NodeAcceptor acceptor = new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {

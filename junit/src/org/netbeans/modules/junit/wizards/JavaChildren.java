@@ -20,8 +20,8 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
 /**
- *
- * @author  Marian Petras
+ * Displays folders and Java source files under a source node.
+ * @author Marian Petras, Jesse Glick
  */
 public class JavaChildren extends FilterNode.Children {
     
@@ -33,7 +33,7 @@ public class JavaChildren extends FilterNode.Children {
     
     protected Node[] createNodes(Object original) {
         Node originalNode = (Node) original;
-        Node newNode = null;
+        Node newNode;
         
         Object cookie = originalNode.getCookie(DataObject.class);
         if (cookie == null) {
@@ -43,9 +43,9 @@ public class JavaChildren extends FilterNode.Children {
             
             FileObject primaryFile = dataObj.getPrimaryFile();
             if (primaryFile.isFolder()) {
-                newNode = copyNode(originalNode);
+                newNode = new FilterNode(originalNode, new JavaChildren(originalNode));
             } else if (primaryFile.getMIMEType().equals(JAVA_MIME_TYPE)) {
-                newNode = new FilterNode(copyNode(originalNode), Children.LEAF);
+                newNode = new FilterNode(originalNode, Children.LEAF);
                 newNode.setDisplayName(primaryFile.getName());
             } else {
                 newNode = null;

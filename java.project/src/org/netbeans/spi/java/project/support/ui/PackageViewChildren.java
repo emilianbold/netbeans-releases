@@ -31,6 +31,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.java.project.PackageDisplayUtils;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
@@ -164,6 +165,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         boolean hasSubfolders = false;
         boolean hasFiles = false;
         for (int i = 0; i < kids.length; i++) {
+            // XXX could use PackageDisplayUtils.isSignificant here
             if ( VisibilityQuery.getDefault().isVisible( kids[i] ) ) {
                 if (kids[i].isFolder() ) {
                     findNonExcludedPackages( kids[i] );
@@ -432,16 +434,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
 
     static final class PackageNode extends FilterNode {
         
-        /** whether to turn on #42589 */
-        private static final boolean TRUNCATE_PACKAGE_NAMES =
-            Boolean.getBoolean("org.netbeans.spi.java.project.support.ui.packageView.TRUNCATE_PACKAGE_NAMES"); // NOI18N
-
         private static final DataFilter NO_FOLDERS_FILTER = new NoFoldersDataFilter();
-        
-        private static final Image PACKAGE = Utilities.loadImage("org/netbeans/spi/java/project/support/ui/package.gif"); // NOI18N
-        private static final Image PACKAGE_EMPTY = Utilities.loadImage("org/netbeans/spi/java/project/support/ui/packageEmpty.gif"); // NOI18N
-        private static final Image PACKAGE_PRIVATE = Utilities.loadImage("org/netbeans/spi/java/project/support/ui/packagePrivate.gif"); // NOI18N
-        private static final Image PACKAGE_PUBLIC = Utilities.loadImage("org/netbeans/spi/java/project/support/ui/packagePublic.gif"); // NOI18N
         
         private final FileObject root;
         private DataFolder dataFolder;
@@ -593,7 +586,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             if (isDefaultPackage) {
                 return;
             }
-            String oldName = computePackageName(false);
+            String oldName = getName();
             if (oldName.equals(name)) {
                 return;
             }
@@ -690,40 +683,34 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         
         
         public String getDisplayName() {
-            return computePackageName(TRUNCATE_PACKAGE_NAMES);
+            FileObject folder = dataFolder.getPrimaryFile();
+            String path = FileUtil.getRelativePath(root, folder);
+            if (path == null) {
+                // ???
+                return "";
+            }
+            return PackageDisplayUtils.getDisplayLabel(folder, path.replace('/', '.'));
         }
         
         public String getShortDescription() {
-            DataFolder df = getDataFolder();
-            Boolean b = AccessibilityQuery.isPubliclyAccessible(df.getPrimaryFile());
-            if (b != null) {
-                if (b.booleanValue()) {
-                    return NbBundle.getMessage(PackageViewChildren.class, "LBL_public_package", computePackageName(false));
-                } else {
-                    return NbBundle.getMessage(PackageViewChildren.class, "LBL_private_package", computePackageName(false));
-                }
-            } else {
-                return NbBundle.getMessage(PackageViewChildren.class, "LBL_package", computePackageName(false));
+            FileObject folder = dataFolder.getPrimaryFile();
+            String path = FileUtil.getRelativePath(root, folder);
+            if (path == null) {
+                // ???
+                return "";
             }
+            return PackageDisplayUtils.getToolTip(folder, path.replace('/', '.'));
         }
 
         
         public Image getIcon(int type) {
-            if (isLeaf()) {
-                return PACKAGE_EMPTY;
-            } else {
-                DataFolder df = getDataFolder();
-                Boolean b = df.isValid() ? AccessibilityQuery.isPubliclyAccessible(df.getPrimaryFile()) : null;
-                if (b != null) {
-                    if (b.booleanValue()) {
-                        return PACKAGE_PUBLIC;
-                    } else {
-                        return PACKAGE_PRIVATE;
-                    }
-                } else {
-                    return PACKAGE;
-                } 
+            FileObject folder = dataFolder.getPrimaryFile();
+            String path = FileUtil.getRelativePath(root, folder);
+            if (path == null) {
+                // ???
+                return null;
             }
+            return PackageDisplayUtils.getIcon(folder, path.replace('/', '.'));
         }
         
         public Image getOpenedIcon(int type) {
@@ -748,29 +735,6 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             if ( leaf != empty ) {
                 setChildren( empty ? Children.LEAF: df.createNodeChildren( NO_FOLDERS_FILTER ) );                
                 update();
-            }
-        }
-        
-        /**
-         * Get package name.
-         * Handles default package specially.
-         * @param truncate if true, show a truncated version to save display space
-         */
-        private String computePackageName(boolean truncate) {
-            String path = FileUtil.getRelativePath( root, dataFolder.getPrimaryFile());
-            if ( path == null ) {
-                return ""; // NOI18N
-            }
-            else if (path.length() == 0) {
-                return NbBundle.getMessage(PackageViewChildren.class, "LBL_DefaultPackage"); // NOI18N
-            } else {
-                String pkg = path.replace('/', '.'); // NOI18N
-                if (truncate) {
-                    // #42589: keep only first letter of first package component, up to three of others
-                    return pkg.replaceFirst("^([^.])[^.]+\\.", "$1.").replaceAll("([^.]{3})[^.]+\\.", "$1."); // NOI18N
-                } else {
-                    return pkg;
-                }
             }
         }
         
@@ -937,7 +901,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             for (int ni=0; ni< nodes.length; ni++) {
                 FileObject fo = srcRoot;
                 if (!nodes[ni].isDefaultPackage) {
-                    String pkgName = nodes[ni].computePackageName(false);
+                    String pkgName = nodes[ni].getName();
                     StringTokenizer tk = new StringTokenizer(pkgName,".");  //NOI18N
                     while (tk.hasMoreTokens()) {
                         String name = tk.nextToken();

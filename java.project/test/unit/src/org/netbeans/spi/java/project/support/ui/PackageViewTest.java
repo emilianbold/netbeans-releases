@@ -501,7 +501,7 @@ public class PackageViewTest extends NbTestCase {
         pts = rn1.getPasteTypes(t);
         assertEquals ("Single file into package",1, pts.length);        
         pts[0].paste();
-        String defaultPackageName = ResourceBundle.getBundle("org/netbeans/spi/java/project/support/ui/Bundle").getString("LBL_DefaultPackage");
+        String defaultPackageName = ResourceBundle.getBundle("org/netbeans/modules/java/project/Bundle").getString("LBL_DefaultPackage");
         assertNodes(rn1.getChildren(), new String[] {
             defaultPackageName,
             "src1test1",
