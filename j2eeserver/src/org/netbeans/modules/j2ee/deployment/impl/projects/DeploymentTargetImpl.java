@@ -70,7 +70,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         return deployment.getProvider ().getModuleChangeReporter ();
     }
     
-    public void startClient() {
+    public void startClient(String partUrl) {
         if (! settings.getShowClient().booleanValue())
             return;
         
@@ -109,7 +109,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         }
         
         if (url != null)
-            startWebClient(url);
+            startWebClient(url + partUrl);
         else
             return; //PENDING implement start non-web client
     }

@@ -40,7 +40,7 @@ public interface DeploymentTarget extends Node.Cookie {
     public boolean doFastDeploy();
     
     // possibly a more involved api here?
-    public void startClient();
+    public void startClient(String url);
     
     public TargetModule[] getTargetModules();
     
