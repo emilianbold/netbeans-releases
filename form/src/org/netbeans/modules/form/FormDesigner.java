@@ -110,6 +110,9 @@ public class FormDesigner extends TopComponent
     //
     
     public void writeExternal(ObjectOutput out) throws IOException {
+        if (formEditorSupport == null)
+            return;
+
         super.writeExternal(out);
         out.writeObject(formEditorSupport.getFormDataObject());
     }
