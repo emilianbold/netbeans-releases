@@ -150,7 +150,7 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
         
         AutoSlideTrigger() {
             super();
-            slideInTimer = new Timer(100, this);
+            slideInTimer = new Timer(200, this);
             slideInTimer.setRepeats(true);
             slideInTimer.setCoalesce(true);
         }
@@ -180,13 +180,16 @@ final class SlideGestureRecognizer implements ActionListener, MouseListener, Mou
                 slideInTimer.stop();
                 // multiple auto slide in requests, get rid of old one first
                 if (autoSlideActive) {
-                    slideInTimer.stop();
                     autoSlideOut();
                 }
                 autoSlideActive = true;
-                slideBar.userTriggeredAutoSlideIn(mouseInButton);
-                
-                Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_MOTION_EVENT_MASK);
+                // #45494 - rarely, mouseInButton value can be out of sync
+                // with SlideBar buttons array, and we don't slide in in such case
+                if (slideBar.userTriggeredAutoSlideIn(mouseInButton)) {
+                    Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_MOTION_EVENT_MASK);
+                } else {
+                    autoSlideActive = false;
+                }
             } else {
                 initialX = curMouseLocX;
                 initialY = curMouseLocY;

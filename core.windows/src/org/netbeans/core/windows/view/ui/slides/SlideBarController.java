@@ -27,7 +27,7 @@ public interface SlideBarController extends SlideController {
     
     public void userTriggeredPopup(MouseEvent mouseEvent, Component clickedButton);
     
-    public void userTriggeredAutoSlideIn(Component sourceButton);
+    public boolean userTriggeredAutoSlideIn(Component sourceButton);
 
     public void userTriggeredAutoSlideOut();
 

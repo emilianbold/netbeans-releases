@@ -237,14 +237,17 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     }
 
     /** Request for automatic slide in from gesture recognizer */
-    public void userTriggeredAutoSlideIn(Component sourceButton) {
+    public boolean userTriggeredAutoSlideIn(Component sourceButton) {
         int index = getButtonIndex(sourceButton);
-        
-        TopComponent tc = (TopComponent)dataModel.getTab(index).getComponent();
-        if (tc != null) {
-            tc.requestVisible();
+        if (index < 0) {
+            return false;
         }
-        
+        TopComponent tc = (TopComponent)dataModel.getTab(index).getComponent();
+        if (tc == null) {
+            return false;
+        }
+        tc.requestVisible();
+        return true;
     }    
     
     /** Request for automatic slide out from gesture recognizer */
