@@ -23,20 +23,33 @@
 
 package org.netbeans.modules.web.monitor.client;
 
-import org.netbeans.modules.web.monitor.server.Constants;
-import org.netbeans.modules.web.monitor.data.*;
-import javax.swing.*;     // widgets
-import javax.swing.border.*;     // widgets
-import javax.swing.event.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
-
-import java.net.*;        // url
-import java.awt.*;          // layouts, dialog, etc.
-import java.awt.event.*;    // Events
-import java.io.*;           // I/O
-import java.text.*;         // I/O
-import java.util.*;         // local GUI
+import java.awt.Graphics;
+import java.awt.event.ActionListener;    
+import java.awt.event.ActionEvent;    
+import java.beans.PropertyChangeListener;    
+import java.beans.PropertyChangeEvent;
+import java.io.ObjectStreamException;
+import javax.swing.Icon;     
+import javax.swing.ImageIcon;     
+import javax.swing.JFrame;     
+import javax.swing.JLabel;     
+import javax.swing.JPanel;     
+import javax.swing.JScrollPane;      
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;    
+import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
+import javax.swing.border.CompoundBorder;     
+import javax.swing.border.EmptyBorder;     
+import javax.swing.border.EtchedBorder;     
+import javax.swing.event.ChangeListener;    
+import javax.swing.event.ChangeEvent;    
 
 import org.openide.awt.ToolbarButton;
 import org.openide.awt.ToolbarToggleButton;
@@ -50,13 +63,12 @@ import org.openide.nodes.Children.SortedArray;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
-import org.openide.util.NbBundle;
-
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+
+import org.netbeans.modules.web.monitor.data.DataRecord;
+import org.netbeans.modules.web.monitor.data.MonitorData;
 
 /**
  * Update title does not work like it should. Maybe there is a getName
@@ -86,7 +98,7 @@ public class TransactionView extends ExplorerPanel implements
     private transient JPanel logPanel = null; 
     private transient JPanel dataPanel = null; 
     private transient JSplitPane splitPanel = null; 
-    private transient double dividerPosition = .35;
+    private transient double dividerRatio = .35;
     private transient BeanTreeView tree = null;
     private transient AbstractNode selected = null;
 
@@ -100,11 +112,12 @@ public class TransactionView extends ExplorerPanel implements
 
     private transient EditPanel editPanel = null;
 
+    // Handle resizing for larger fonts
+    boolean fontChanged = true;
 
     // Data display tables 
     private int displayType = 0;
 
-    
     // Button icons
 
     static protected Icon updateIcon;
@@ -115,7 +128,6 @@ public class TransactionView extends ExplorerPanel implements
     static protected Icon browserCookieIcon;
     static protected Icon savedCookieIcon;
     static protected ImageIcon frameIcon;
-
    
     static {
 		
@@ -197,8 +209,8 @@ public class TransactionView extends ExplorerPanel implements
 	createDataPanel(); 
 	splitPanel = 
 	    new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, logPanel, dataPanel); 
-	splitPanel.setDividerLocation(dividerPosition);
-	splitPanel.setResizeWeight(dividerPosition);
+	splitPanel.setDividerLocation((int)(logD.getWidth()));
+	splitPanel.setResizeWeight(dividerRatio);
 	splitPanel.setDividerSize(1); 
 	splitPanel.setOneTouchExpandable(true); 
 	this.add(splitPanel);
@@ -298,42 +310,8 @@ public class TransactionView extends ExplorerPanel implements
 	    openedOnceAlready = true;
 	    controller.getTransactions();
 	    openTransactionNodes();
-
-	    FontMetrics fm = this.getGraphics().getFontMetrics(); 
-	    double logWidth = fm.stringWidth(NbBundle.getBundle(TransactionView.class).getString("MON_Transactions_27")) * 1.1; 
-
-	    if(logWidth > logD.getWidth()) { 
-		double factor = logWidth/logD.getWidth(); 
-		logD.setSize(logWidth, factor * logD.getHeight());
-		logPanel.setPreferredSize(logD);
-		//logPanel.setMinimumSize(logD);
-		//logPanel.setSize(logD); 
-
-		dataD.setSize(factor * dataD.getWidth(), 
-			      factor * dataD.getHeight()); 
-		dataPanel.setPreferredSize(dataD);
-		//dataPanel.setMinimumSize(dataD);
-		//dataPanel.setSize(dataD); 
-
-		splitPanel.resetToPreferredSizes(); 
-
-		try { 
-		    Container o = (Container)this.getParent(); 
-		    while(true) { 
-			if(o instanceof JFrame) { 
-			    JFrame parent = (JFrame)o; 
-			    parent.pack(); 
-			    break; 
-			} 
-			o = o.getParent(); 
-		    } 
-		}
-		catch(Throwable t) {
-		    // Do nothing, we can't resize the component
-		    // invalidate on this component does not work. 
-		}
-	    }
 	}
+
 	controller.checkServer(false);
         requestFocus();
     }
@@ -777,28 +755,51 @@ public class TransactionView extends ExplorerPanel implements
 	showData(); 
     }
 
-    class ComboBoxRenderer extends JLabel implements ListCellRenderer {
-	public ComboBoxRenderer() {
-	    setOpaque(true);
+    /** 
+     * When paint is first invoked, we set the rowheight based on the
+     * size of the font. */
+    public void paint(Graphics g) {
+	if(fontChanged) {
+	    super.paint(g);
+	    return; 
 	}
-	public Component getListCellRendererComponent(JList list,
-						      Object o,
-						      int index,
-						      boolean isSelected,
-						      boolean cellHasFocus) {
-	    if(isSelected) {
-		setBackground(list.getSelectionBackground());
-		setForeground(list.getSelectionForeground());
-	    }
-	    else {
-		setBackground(list.getBackground());
-		setForeground(list.getForeground());
-	    }
-	    ImageIcon icon = (ImageIcon)o;
-	    setText(icon.getDescription());
-	    setIcon(icon);
-	    return this;
+
+	FontMetrics fm = g.getFontMetrics(getFont());
+	fontChanged = false;
+	
+	double logWidth = fm.stringWidth(NbBundle.getBundle(TransactionView.class).getString("MON_Transactions_27")) * 1.1; 
+
+	if(logWidth > logD.getWidth()) { 
+	    double factor = logWidth/logD.getWidth(); 
+	    logD.setSize(logWidth, factor * logD.getHeight());
+
+
+	    dataD.setSize(factor * dataD.getWidth(), 
+			  factor * dataD.getHeight()); 
 	}
+
+	logPanel.setPreferredSize(logD);
+	dataPanel.setPreferredSize(dataD);
+	splitPanel.resetToPreferredSizes(); 
+	splitPanel.setDividerLocation((int)(logD.getWidth()));
+
+	try { 
+	    Container o = (Container)this.getParent(); 
+	    while(true) { 
+		if(o instanceof JFrame) { 
+		    JFrame parent = (JFrame)o; 
+		    parent.pack(); 
+		    break; 
+		} 
+		o = o.getParent(); 
+	    } 
+	}
+	catch(Throwable t) {
+	    // Do nothing, we can't resize the component
+	    // invalidate on this component does not work. 
+	}
+	//super.paint(g);
+	return;
     }
 
     private void log(String s) {

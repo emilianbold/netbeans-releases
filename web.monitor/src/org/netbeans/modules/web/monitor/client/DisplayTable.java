@@ -24,18 +24,25 @@
 
 package org.netbeans.modules.web.monitor.client;
 
-import javax.swing.*;     // widgets
-import javax.swing.border.Border;     // widgets
-import javax.swing.table.*;     // widgets
-import javax.swing.event.TableModelEvent;     // widgets
-import javax.swing.event.TableModelListener;     // widgets
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import javax.swing.BorderFactory;     
+import javax.swing.DefaultCellEditor;     
+import javax.swing.JComboBox;     
+import javax.swing.JTable;     
+import javax.swing.border.Border;
+import javax.swing.table.TableCellEditor;     
+import javax.swing.table.TableColumn;     
+import javax.swing.table.TableColumnModel;     
+import javax.swing.table.TableModel;     
+import javax.swing.event.TableModelEvent; 
+import javax.swing.event.TableModelListener;  
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.SystemColor;
-import java.util.*;
 
-import org.netbeans.modules.web.monitor.data.*;
+import org.netbeans.modules.web.monitor.data.Param;
 import org.openide.util.NbBundle;
 
 public class DisplayTable extends JTable {
@@ -70,6 +77,9 @@ public class DisplayTable extends JTable {
     private int sort = NEUTRAL;
     private boolean sortable = false; 
 
+    // Handle resizing for larger fonts
+    boolean fontChanged = true;
+    
     public DisplayTable(String[] categories) {
 	this(categories, null, UNEDITABLE, false);
     }
@@ -77,7 +87,6 @@ public class DisplayTable extends JTable {
     public DisplayTable(String[] categories, boolean sortable) {
 	this(categories, null, UNEDITABLE, sortable);
     }
-
 
     public DisplayTable(String[] categories, int editable) {
 	this(categories, null, editable, false);
@@ -90,7 +99,6 @@ public class DisplayTable extends JTable {
     public DisplayTable(String[] names, String[] values) {
 	this(names, values, UNEDITABLE, false);
     }
-
 
     public DisplayTable(String[] names, String[] values, boolean sortable) {
 	this(names, values, UNEDITABLE, sortable);
@@ -279,6 +287,27 @@ public class DisplayTable extends JTable {
 	return data;
     }
 
+    public void setFont(Font f) {
+	fontChanged = true;
+	super.setFont(f);
+    }
+
+    /** 
+     * When paint is first invoked, we set the rowheight based on the
+     * size of the font. */
+    public void paint(Graphics g) {
+	if (fontChanged) {
+	    Font f = getFont();
+	    FontMetrics fm = g.getFontMetrics(f);
+	    int rowHeight = fm.getHeight(); 
+	    fontChanged = false;
+	    //triggers paint, just return afterwards
+	    this.setRowHeight(rowHeight);
+	    return;
+	}
+	super.paint(g);
+    }
+    
     private void log(String s) {
 	System.out.println("DisplayTable::" + s);  //NOI18N
     }
