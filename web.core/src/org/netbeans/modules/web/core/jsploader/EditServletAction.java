@@ -18,7 +18,6 @@ import org.openide.util.HelpCtx;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
 * Edit an object.
@@ -96,19 +95,13 @@ public class EditServletAction extends CookieAction {
     * HtmlDataObject cookie.
     */
     protected void performAction (final Node[] activatedNodes) {
-        RequestProcessor.postRequest (
-            new Runnable () {
-                public void run () {
-                    for (int i = 0; i < activatedNodes.length; i++) {
-                        JspDataObject jspdo = (JspDataObject)activatedNodes[i].getCookie(JspDataObject.class);
-                        if (jspdo != null) {
-                            EditorCookie cook = jspdo.getServletEditor();
-                            if (cook != null)
-                                cook.open ();
-                        }
-                    }
-                }
+        for (int i = 0; i < activatedNodes.length; i++) {
+            JspDataObject jspdo = (JspDataObject)activatedNodes[i].getCookie(JspDataObject.class);
+            if (jspdo != null) {
+                EditorCookie cook = jspdo.getServletEditor();
+                if (cook != null)
+                    cook.open ();
             }
-        );
+        }
     }
 }
