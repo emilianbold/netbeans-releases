@@ -437,6 +437,8 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
                 bundle.getString("TEXT_LABEL_SELECT"));                 //NOI18N
         
         JComboBox combo = new JComboBox(savedCriteria);
+        combo.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACSD_SELECT_CRITERION"));             //NOI18N
         resLabel.setLabelFor(combo);
         
         GridBagConstraints gbc = new GridBagConstraints();
