@@ -27,6 +27,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -40,7 +41,6 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
     private Project project;
     private SourceGroup[] folders;
     private WizardDescriptor.Panel bottomPanel;
-    
     SimpleTargetChooserPanel( Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel ) {
         this.folders = folders;
         this.project = project;
@@ -103,12 +103,22 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
         // Init values
         gui.initValues( project, Templates.getTemplate( wd ), preselectedTarget );
         
+        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
+        // this name is used in NewFileWizard to modify the title
+        Object substitute = gui.getClientProperty ("NewFileWizard_Title"); // NOI18N
+        if (substitute != null) {
+            wd.putProperty ("NewFileWizard_Title", substitute); // NOI18N
+        }
         
+        wd.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
+            NbBundle.getBundle (SimpleTargetChooserPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
+            NbBundle.getBundle (SimpleTargetChooserPanel.class).getString ("LBL_SimpleTargetChooserPanel_Name")}); // NOI18N
+            
         if ( bottomPanel != null ) {
             bottomPanel.readSettings( settings );
         }
     }
-
+    
     public void storeSettings(Object settings) { 
         if( isValid() ) {
             if ( bottomPanel != null ) {
@@ -140,6 +150,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
                 // Can't create the folder
             }
         }
+        ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
     }
 
     public void stateChanged(ChangeEvent e) {        

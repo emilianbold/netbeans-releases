@@ -34,9 +34,9 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
-
-// XXX I18N
 
 /**
  *
@@ -66,12 +66,13 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             bottomPanelContainer.add( bottomPanel, java.awt.BorderLayout.CENTER );
         }
         initValues( project, null, null );
+        
         browseButton.addActionListener( this );
         locationComboBox.addActionListener( this );
         documentNameTextField.getDocument().addDocumentListener( this );
         folderTextField.getDocument().addDocumentListener( this );
         
-        setName( "Name and Location");
+        setName (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
     }
     
     public void initValues( Project p, FileObject template, FileObject preselectedFolder ) {
@@ -107,6 +108,30 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         
         String ext = template == null ? "" : template.getExt(); // NOI18N
         expectedExtension = ext.length() == 0 ? "" : "." + ext; // NOI18N
+        
+        String displayName = null;
+        try {
+            if (template != null) {
+                DataObject templateDo = DataObject.find (template);
+                displayName = templateDo.getNodeDelegate ().getDisplayName ();
+            }
+        } catch (DataObjectNotFoundException ex) {
+            displayName = template.getName ();
+        }
+        putClientProperty ("NewFileWizard_Title", displayName);// NOI18N        
+        
+        // XXX hack to decide if Folder or File will be created
+        // (can be implement better if NewFileIterator will be created)
+        boolean isFolder = template != null && "Folder".equals (template.getName ());  // NOI18N
+        if (isFolder) {
+            jLabel3.setText (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_FolderName_Label")); // NOI18N
+            jLabel2.setText (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_ParentFolder_Label")); // NOI18N
+            jLabel4.setText (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_CreatedFolder_Label")); // NOI18N
+        } else {
+            jLabel3.setText (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_FileName_Label")); // NOI18N
+            jLabel2.setText (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Folder_Label")); // NOI18N
+            jLabel4.setText (NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_CreatedFile_Label")); // NOI18N
+        }
     }
     
     public SourceGroup getTargetGroup() {
@@ -405,7 +430,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
                 }
                 else {
                     setText( MessageFormat.format(
-                        NbBundle.getMessage( SimpleTargetChooserPanelGUI.class, "FMT_TargetChooser_GroupProjectNameBadge" ),
+                        NbBundle.getMessage( SimpleTargetChooserPanelGUI.class, "FMT_TargetChooser_GroupProjectNameBadge" ), // NOI18N
                         new Object[] { groupDisplayName, projectDisplayName } ) );
                 }
                 
