@@ -49,6 +49,16 @@
     updates the specification number in your module's <tt>ejb-jar.xml</tt> to 
     1.4. J2EE 1.4 is fully backwards-compatible, so upgrading the specification 
     level does not change the behaviour of your code.</li>
+ <li><b>Source Level Recommendations.</b> One of the following checkboxes will appear
+  if JDK 1.5 is set as the default platform in the 
+  <a href="nbdocs:/org/netbeans/modules/usersguide/project/csh/proj_platform_manager.html">Java Platform Manager</a>.
+  The J2EE 1.4 and J2EE 1.3 specifications do not recommend JDK 1.5. Therefore, if you want
+  to create a portable application, select the appropriate checkbox:
+  <ul><li><b>Use JDK 1.4 and Set Source Level to 1.4.</b> This checkbox appears if 
+  JDK 1.4 is available in the
+  Java Platform Manager. Select this checkbox to set both your JDK level and your source level to 1.4.</li>
+  <li><b>Set Source Level to 1.4.</b> This checkbox appears if JDK 1.4 is not available
+  in the Java Platform Manager. Select this checkbox so that at least your source level is set to 1.4.</li></ul></li>
   <li><b>Set as Main Project.</b> Sets the newly created project as the <a href="../../enterprise/general/ent_app_build.html">main 
     project</a>.</li>
 </ul>

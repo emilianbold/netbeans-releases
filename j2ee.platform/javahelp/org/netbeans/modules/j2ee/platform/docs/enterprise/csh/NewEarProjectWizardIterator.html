@@ -48,6 +48,16 @@
   enterprise application, and its name. By default, it is created and named <tt><i>project-name</i>-WebModule</tt>.
   If you do not let the IDE create the EJB module together with the enterprise application, you can 
   <a href="../../web/create/about/create_webapps_proj.html">Create a Web Application Project</a> later.</li>
+ <li><b>Source Level Recommendations.</b> One of the following checkboxes will appear
+  if JDK 1.5 is set as the default platform in the 
+  <a href="nbdocs:/org/netbeans/modules/usersguide/project/csh/proj_platform_manager.html">Java Platform Manager</a>.
+  The J2EE 1.4 and J2EE 1.3 specifications do not recommend JDK 1.5. Therefore, if you want
+  to create a portable application, select the appropriate checkbox:
+  <ul><li><b>Use JDK 1.4 and Set Source Level to 1.4.</b> This checkbox appears if 
+  JDK 1.4 is available in the
+  Java Platform Manager. Select this checkbox to set both your JDK level and your source level to 1.4.</li>
+  <li><b>Set Source Level to 1.4.</b> This checkbox appears if JDK 1.4 is not available
+  in the Java Platform Manager. Select this checkbox so that at least your source level is set to 1.4.</li></ul></li>
   <li><b>Set as Main Project.</b> Sets the newly created project as the <a href="../general/ent_app_build.html">main 
     project</a>.</li>
 </ul>
