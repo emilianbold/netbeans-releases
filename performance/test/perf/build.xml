@@ -20,28 +20,34 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ClassPath for platform performance tests compilation -->
     <path id="performance.pt.cpath">
 	<pathelement location="../../../xtest/lib/junit.jar"/>
-	<pathelement location="../../lib/performance.jar"/>
+	<pathelement location="${perf.home}/lib/performance.jar"/>
     </path>
 
     <!-- ClassPath for platform performance tests running -->
     <path id="performance.pt.rpath">
 	<pathelement location="../../../xtest/lib/junit.jar"/>
-	<pathelement location="../../lib/performance.jar"/>
+	<pathelement location="${perf.home}/lib/performance.jar"/>
 	<pathelement location="lib/tests.jar"/>
+	<pathelement location="lib"/>
     </path>
 
-    <!-- Task definitions -->
-    <target name="init">
-    </target>
-
     <!-- test compilation & packaging -->
-    <target name="compile" depends="init">
+    <target name="compile">
         <javac destdir="src" srcdir="src">
             <classpath refid="performance.pt.cpath"/>
         </javac>
     </target>
 
-    <target depends="compile" name="jars">
+    <target name="suite_assembler" depends="compile">
+	<java   fork="yes"
+	        classname="org.netbeans.performance.SuiteAssembler">
+	    <arg value="${basedir}/src"/>
+	    <classpath refid="performance.pt.cpath"/>
+	</java>
+    </target>
+								
+
+    <target depends="compile,suite_assembler" name="jars">
         <mkdir dir="lib"/>
         <jar basedir="src"
 		compress="false"
@@ -49,56 +55,48 @@ Microsystems, Inc. All Rights Reserved.
 		jarfile="lib/tests.jar"/>
     </target>
     
-    <!-- Temporal way for spawning tests before I write ant task for spawning -->
-    <target name="test">
+    <target depends="jars,prop_runner_init,prop_test_init,prop_output_init" name="init">
 	<mkdir dir="report"/>
-	<antcall target="test-lists"/>
-	<antcall target="test-exceptionconstruct"/>
-	<antcall target="test-runnablemethod"/>
+    </target>
+		    
+    <target name="prop_runner_init" unless="${runnerclass}">
+	<property name="runnerclass" value="junit.textui.TestRunner"/>
+    </target>
+				    
+    <target name="prop_test_init" unless="${tests.specs}">
+        <property name="tests.specs" value=""/>
     </target>
 
-    <target depends="jars" name="test-lists">
-	<java	fork="yes"
-		output="report/list-arraylist.txt"
-		classname="org.netbeans.performance.collections.ListTestArrayList">
-	    <classpath refid="performance.pt.rpath"/>
-	</java>
-	<java	fork="yes"
-		output="report/list-arraylistn.txt"
-		classname="org.netbeans.performance.collections.ListTestArrayListForN">
-	    <classpath refid="performance.pt.rpath"/>
-	</java>
-	<java	fork="yes"
-		output="report/list-vector.txt"
-		classname="org.netbeans.performance.collections.ListTestVector">
-	    <classpath refid="performance.pt.rpath"/>
-	</java>
-	<java	fork="yes"
-		output="report/list-vectorn.txt"
-		classname="org.netbeans.performance.collections.ListTestVectorForN">
-	    <classpath refid="performance.pt.rpath"/>
-	</java>
-	<java	fork="yes"
-		output="report/list-linkedlist.txt"
-		classname="org.netbeans.performance.collections.ListTestLinkedList">
-	    <classpath refid="performance.pt.rpath"/>
-	</java>
+    <target name="prop_output_init" unless="${tests.specs}">
+        <property name="tests.output" value="report/all.xml"/>
     </target>
 
-    <target depends="jars" name="test-exceptionconstruct">
+    <target name="test" depends="init">
 	<java	fork="yes"
-		output="report/exceptionconstruct.txt"
-		classname="org.netbeans.performance.platform.ExceptionConstruct">
+		classname="${runnerclass}">
 	    <classpath refid="performance.pt.rpath"/>
+	    <arg value="libgen.GenSuite"/>
+	    <jvmarg value="-Dtests.specs=${tests.specs}"/>
+	    <jvmarg value="-Dtests.output=${tests.output}"/>
 	</java>
+    </target>
+    
+    <target name="test-lists">
+        <property name="tests.specs" value="org.netbeans.performance.collections.ListTestArrayList;org.netbeans.performance.collections.ListTestArrayListForN;org.netbeans.performance.collections.ListTestVector;org.netbeans.performance.collections.ListTestVectorForN;org.netbeans.performance.collections.ListTestLinkedList"/>
+        <property name="tests.output" value="report/lists.xml"/>
+	<antcall target="test"/>
+    </target>
+
+    <target name="test-exceptions">
+        <property name="tests.specs" value="org.netbeans.performance.platform.ExceptionConstruct"/>
+        <property name="tests.output" value="report/exceptions.xml"/>
+	<antcall target="test"/>
     </target>
 
     <target depends="jars" name="test-runnablemethod">
-	<java	fork="yes"
-		output="report/runnablemethod.txt"
-		classname="org.netbeans.performance.platform.RunnableMethod">
-	    <classpath refid="performance.pt.rpath"/>
-	</java>
+        <property name="tests.specs" value="org.netbeans.performance.platform.RunnableMethod"/>
+        <property name="tests.output" value="report/runnablemethod.xml"/>
+	<antcall target="test"/>
     </target>
 
 
