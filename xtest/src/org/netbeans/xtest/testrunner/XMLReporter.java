@@ -126,7 +126,7 @@ public class XMLReporter implements JUnitTestListener {
         // did the test used workdir ?
         if (test instanceof NbTestCase) {
             NbTestCase nbtest = (NbTestCase)test;
-            try {
+            //try {
                 String workdir = nbtest.getWorkDirPath();
                 File workdirFile = new File(workdir);
                 if (workdirFile.exists()) {
@@ -134,9 +134,9 @@ public class XMLReporter implements JUnitTestListener {
                     String relativePath = XMLBean.cutPrefix(workdir,rootWorkdir);
                     currentTestCase.xmlat_workdir = relativePath;
                 }
-            } catch (IOException ioe) {
+            //} catch (IOException ioe) {
                 // no workdir is available ... 
-            }
+            //}
         }
         
         currentTestCase.xmlat_time = System.currentTimeMillis() - caseTime;
