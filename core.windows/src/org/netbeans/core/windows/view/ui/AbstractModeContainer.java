@@ -92,20 +92,21 @@ public abstract class AbstractModeContainer implements ModeContainer {
         tabbedHandler.removeTopComponent(tc);
 
         TopComponent selected = tabbedHandler.getSelectedTopComponent();
-        updateTitle(selected == null ? "" : selected.getName()); // NOI18N
+        updateTitle(selected == null
+            ? "" : WindowManagerImpl.getInstance().getTopComponentDisplayName(selected)); // NOI18N
     }
     
     public void setSelectedTopComponent(TopComponent tc) {
         tabbedHandler.setSelectedTopComponent(tc);
         
-        updateTitle(tc.getName());
+        updateTitle(WindowManagerImpl.getInstance().getTopComponentDisplayName(tc));
     }
     
     public void setTopComponents(TopComponent[] tcs, TopComponent selected) {
         //Cheaper to do the equality test here than later
         if (!Arrays.equals(tcs, getTopComponents())) {
             tabbedHandler.setTopComponents(tcs, selected);
-            updateTitle(selected.getName());
+            updateTitle(WindowManagerImpl.getInstance().getTopComponentDisplayName(selected));
         } else {
             //Probably this method is never used just to set the selection,
             //but it should work if someone tries it
@@ -126,7 +127,8 @@ public abstract class AbstractModeContainer implements ModeContainer {
         updateActive(active);
 
         TopComponent selected = tabbedHandler.getSelectedTopComponent();
-        updateTitle(selected == null ? "" : selected.getName()); // NOI18N
+        updateTitle(selected == null
+            ? "" : WindowManagerImpl.getInstance().getTopComponentDisplayName(selected)); // NOI18N
         
         tabbedHandler.setActive(active);
     }
@@ -150,9 +152,8 @@ public abstract class AbstractModeContainer implements ModeContainer {
     public void updateName(TopComponent tc) {
         TopComponent selected = getSelectedTopComponent();
         if(tc == selected) {
-            // XXX When display name is null, use name.
-            String displayName = tc.getDisplayName();
-            updateTitle(displayName != null ? displayName : tc.getName());
+            updateTitle(tc == null 
+                ? "" : WindowManagerImpl.getInstance().getTopComponentDisplayName(tc)); // NOI18N
         }
         
         tabbedHandler.topComponentNameChanged(tc, kind);

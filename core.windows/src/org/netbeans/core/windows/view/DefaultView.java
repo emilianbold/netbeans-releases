@@ -46,6 +46,7 @@ import org.netbeans.core.windows.ModeStructureSnapshot;
 import org.netbeans.core.windows.model.ModelElement;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.ui.MainWindow;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.WindowSystemSnapshot;
 
 
@@ -404,7 +405,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     }
     
     public void userSelectedTab(ModeView modeView, TopComponent selected) {
-        debugLog("User selected tab, tc="+selected.getName()); // NOI18N
+        debugLog("User selected tab, tc=" + WindowManagerImpl.getInstance().getTopComponentDisplayName(selected)); // NOI18N
 
         ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
         ModeImpl mode = getModeForModeAccessor(modeAccessor);

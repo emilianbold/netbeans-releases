@@ -37,6 +37,7 @@ import javax.swing.JTabbedPane;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.view.ModeView;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
+import org.netbeans.core.windows.WindowManagerImpl;
 
 import org.openide.windows.TopComponent;
 
@@ -130,7 +131,7 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
         
         try {
             ignoreChange = true;
-            String title = extractTopComponentTitle(tc, kind);
+            String title = WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
             tabbed.addTopComponent(
                 title + CloseButtonTabbedPane.TAB_NAME_TRAILING_SPACE,
                 icon == null ? null : new ImageIcon(icon),
@@ -156,7 +157,7 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
         Image icon = tc.getIcon();
         try {
             ignoreChange = true;
-            String title = extractTopComponentTitle(tc, kind);
+            String title = WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
             tabbed.insertTopComponent(
                 title + CloseButtonTabbedPane.TAB_NAME_TRAILING_SPACE,
                 icon == null ? null : new ImageIcon(icon),
@@ -212,15 +213,8 @@ final class TabbedHandler implements ChangeListener, PropertyChangeListener {
             return;
         }
         
-        String title = extractTopComponentTitle(tc, kind);
+        String title = WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
         tabbed.setTitleAt(index, title + CloseButtonTabbedPane.TAB_NAME_TRAILING_SPACE);
-    }
-    
-    // XXX
-    private static String extractTopComponentTitle(TopComponent tc, int kind) {
-        // XXX When display name is null, use name.
-        String displayName = tc.getDisplayName();
-        return displayName != null ? displayName : tc.getName();
     }
     
     public void topComponentToolTipChanged(TopComponent tc) {

@@ -195,7 +195,8 @@ implements HelpCtx.Provider, PropertyChangeListener {
                     ErrorManager em = ErrorManager.getDefault();
                     em.log(ErrorManager.WARNING,
                     "[WinSys.DocumentsDlg.saveDocuments]" // NOI18N
-                    + " Warning: Cannot save content of TopComponent: [" + tc.getName() + "]" // NOI18N
+                    + " Warning: Cannot save content of TopComponent: [" // NOI18N
+                    + WindowManagerImpl.getInstance().getTopComponentDisplayName(tc) + "]" // NOI18N
                     + " [" + tc.getClass().getName() + "]"); // NOI18N
                     em.notify(ErrorManager.INFORMATIONAL, exc);
                 }
@@ -382,7 +383,7 @@ implements HelpCtx.Provider, PropertyChangeListener {
         }
         
         public String getName () {
-            return tc.getName();
+            return WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
         }
         
         public Image getIcon (int type) {
@@ -410,8 +411,14 @@ implements HelpCtx.Provider, PropertyChangeListener {
             
             TopComponentNode tcn = (TopComponentNode)o;
 
-            // PENDING Later use display name.
-            return tc.getName().compareTo(tcn.tc.getName());
+            String displayName1 = WindowManagerImpl.getInstance().getTopComponentDisplayName(tc);
+            String displayName2 = WindowManagerImpl.getInstance().getTopComponentDisplayName(tcn.tc);
+            
+            if(displayName1 == null) {
+                return displayName2 == null ? 0 : -1;
+            } else {
+                return displayName2 == null ? 1 : displayName1.compareTo(displayName2);
+            }
         }
         
     }

@@ -28,6 +28,7 @@ import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.ui.DefaultSeparateContainer;
 import org.netbeans.core.windows.view.ui.DefaultSplitContainer;
+import org.netbeans.core.windows.WindowManagerImpl;
 
 import org.openide.windows.TopComponent;
 
@@ -137,7 +138,7 @@ public class ModeView extends ViewElement {
     public String toString() {
         TopComponent selected = container.getSelectedTopComponent();
         return super.toString() + " [selected=" // NOI18N
-            + (selected == null ? null : selected.getName()) + "]"; // NOI18N
+            + (selected == null ? null : WindowManagerImpl.getInstance().getTopComponentDisplayName(selected)) + "]"; // NOI18N
     }
 
 }

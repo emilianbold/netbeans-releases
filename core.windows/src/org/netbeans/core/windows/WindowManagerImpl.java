@@ -595,6 +595,16 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         return false;
     }
     
+    /** Helper method to retrieve the display name of TopComponent. */
+    public String getTopComponentDisplayName(TopComponent tc) {
+        if(tc == null) {
+            return null;
+        }
+        
+        String displayName = tc.getDisplayName();
+        return displayName == null ? tc.getName() : displayName;
+    }
+    
     // PENDING for ModeImpl only.
     Central getCentral() {
         return central;
