@@ -99,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <pathdef useid="test.basepath">
             <path>
-                <pathelement path="${junit.path};${xtest.path};${xerces.path}"/>
+                <pathelement path="${junit.path};${xtest.path}"/>
                 <pathelement location="${xtest.workdir}/sys/tests"/>
                 <pathelement path="${clover.test.path}"/>
             </path>
@@ -660,8 +660,7 @@ ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.s
                debug="${build.compiler.debug}"
                excludes="${compile.excludes}">
             <classpath>
-           	<pathelement path="${junit.path}"/>
-    		<pathelement path="${xerces.path}"/>
+           	<pathelement path="${junit.path}"/>    		
     		<pathelement path="${test.extra.classpath}"/>
 		<pathelement path="${compiletest.classpath}"/>
 		<pathelement path="${ide.extra.classpath}"/>
@@ -733,7 +732,7 @@ ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.s
     <!-- ================= -->
     <!-- Generate config with failed tests from the last test run. -->
     <target name="generateFailedConfig" description="Generates config of failed tests from last results">
-        <taskdef name="generateFailedConfig" classpath="${xtest.home}/lib/xtest.jar;${xtest.home}/lib/xerces.jar;${xtest.home}/lib/xml-apis.jar"
+        <taskdef name="generateFailedConfig" classpath="${xtest.home}/lib/xtest.jar"
                  classname="org.netbeans.xtest.pe.GenerateFailedTask"/>
 	<generateFailedConfig inputDir="${xtest.results}" outputDir="."/>
     </target>
@@ -741,7 +740,7 @@ ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.s
     <!-- Generates config from tests excluded in given config or in all configs 
     find in input directory -->
     <target name="generateExcludedConfig">
-        <taskdef name="generateExcludedConfig" classpath="${xtest.home}/lib/xtest.jar;${xtest.home}/lib/xerces.jar;${xtest.home}/lib/xml-apis.jar"
+        <taskdef name="generateExcludedConfig" classpath="${xtest.home}/lib/xtest.jar"
                  classname="org.netbeans.xtest.pe.GenerateExcludedTask"/>
         <property name="configFile" value="" />
 	<generateExcludedConfig inputDir="." outputDir="." configFile="${configFile}"/>
