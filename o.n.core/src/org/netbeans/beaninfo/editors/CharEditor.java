@@ -126,7 +126,7 @@ public class CharEditor extends PropertyEditorSupport implements EnhancedPropert
      *   	current value.
      */
     public String getJavaInitializationString() {
-	return "'" + getAsText() + "'";
+	return "'" + getAsText() + "'"; // NOI18N
     }
 
     /**

@@ -72,7 +72,7 @@ public class DataObjectPanel extends JPanel implements EnhancedCustomPropertyEdi
         reposTree = new BeanTreeView();
         reposTree.setPopupAllowed(false);
         reposTree.setDefaultActionAllowed(false);
-        expPanel.add(reposTree, "Center");
+        expPanel.add(reposTree, "Center"); // NOI18N
     }
     
     /** Called from addNotify. */

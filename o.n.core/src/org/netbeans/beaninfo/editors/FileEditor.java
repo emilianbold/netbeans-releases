@@ -121,7 +121,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
      */
     public void setAsText(java.lang.String str) throws java.lang.IllegalArgumentException {
         if (str == null) {
-            throw new IllegalArgumentException("null"); // 
+            throw new IllegalArgumentException("null"); // // NOI18N
         }
         File f = new File(str);
         if (f != null)  {

@@ -58,7 +58,7 @@ implements ExPropertyEditor, PropertyChangeListener {
     private static final String PROP_LOOKUP = "lookup"; // NOI18N
     
     /** folder with all services */
-    private static final String DEFAULT_FOLDER ="Services";
+    private static final String DEFAULT_FOLDER ="Services"; // NOI18N
 
     /** custom editor */
     private ExplorerPanel customEditor;

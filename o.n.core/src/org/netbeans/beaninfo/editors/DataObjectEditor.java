@@ -154,7 +154,7 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
             customEditor.setText(label);
         }
         if (title != null) {
-            customEditor.putClientProperty("title", title);
+            customEditor.putClientProperty("title", title); // NOI18N
         }
         if (nodeAcceptor != null) {
             customEditor.setNodeFilter(nodeAcceptor);

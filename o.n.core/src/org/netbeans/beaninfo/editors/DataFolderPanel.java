@@ -256,7 +256,7 @@ class DataFolderPanel extends TopComponent implements
   private javax.swing.JButton createButton;
   // End of variables declaration//GEN-END:variables
 
-  private static final java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle");  
+  private static final java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle"); // NOI18N
 
     //
     // Filter to accept only folders
@@ -515,7 +515,7 @@ class DataFolderPanel extends TopComponent implements
                 if (df != null) {
                     name = df.getPrimaryFile ().getPackageName ('.');
                 } else {
-                    name = ""; // NO-I18N
+                    name = ""; // NO-I18N // NOI18N
                 }
                 exact = false;
             }
@@ -721,7 +721,7 @@ class DataFolderPanel extends TopComponent implements
             );
         }
 
-        String n = fs == null ? "" : fs.getDisplayName ();
+        String n = fs == null ? "" : fs.getDisplayName (); // NOI18N
 
         return defaultPackageName.format (new Object[] { n });
     }
@@ -736,7 +736,7 @@ class DataFolderPanel extends TopComponent implements
         }
         String name = packageName.getText ();
         if (name.equals (defaultPackageName (fs))) {
-            name = "";
+            name = ""; // NOI18N
         }
         if (name.length () > 0) {
             sb.append (java.io.File.separatorChar);
@@ -768,7 +768,7 @@ class DataFolderPanel extends TopComponent implements
         if (df != null) {
             name = df.getPrimaryFile ().getPackageName ('.');
         } else {
-            name = "";
+            name = ""; // NOI18N
         }
         if (name.equals(packageName.getText())) {
             // nothing to create
