@@ -23,6 +23,7 @@ import org.apache.tools.ant.*;
 import org.netbeans.xtest.pe.xmlbeans.*;
 import java.io.*;
 import org.w3c.dom.*;
+import java.util.*;
 
 /**
  *
@@ -44,6 +45,8 @@ public class XTestResultsReportTask extends Task{
     private String comment;
     private String project_id;
     private String team;
+    
+    private String scannedPropertiesName = null;
     
     
     public void setTestingGroup(String testingGroup) {
@@ -92,6 +95,57 @@ public class XTestResultsReportTask extends Task{
         }        
     }
     
+    public void setScanPropertiesForAttributes(boolean value) {
+        if (value == true) {    
+            /// !!!!!!!!!!!!!!!!
+            /// !!!!!!!!!!!!!!!!
+            /// !!!!!!!!!!!!!!!!
+            this.scannedPropertiesName = "xtest.report.attribute|";
+            /// !!!!!!!!!!!!!!!!
+            /// !!!!!!!!!!!!!!!!
+        }
+    }
+    
+    // scan all ant's properties beginning with scannedPropertiesName, cut the prefix and
+    // copy the new key and value to attributes of xtest results report
+    public void scanAndFillAttributes(XTestResultsReport report) {
+        Project project = getProject();
+        Hashtable props = project.getProperties();
+        //Properties userProperties = project.getUserProperties();
+        // scan for all properties beginning with
+        Iterator entrySetIterator = props.entrySet().iterator();
+        Hashtable processedProperties = new Hashtable();
+        while (entrySetIterator.hasNext()) {
+            Map.Entry entry = (Map.Entry)entrySetIterator.next();
+            String key = (String)entry.getKey();
+            if (key.startsWith(scannedPropertiesName)) {
+                // yes this is the scanned property
+                String value = (String)entry.getValue();
+                if (value != null) {
+                    String newKey = key.substring(scannedPropertiesName.length());
+                    processedProperties.put(newKey, value);
+                }
+            }            
+        }
+        
+        // now copy the scanned properties to XTestResultsReport
+        int arraySize = processedProperties.size();
+        if (arraySize > 0) {
+            report.xmlel_Attribute = new Attribute[arraySize];
+            int arrayPointer = 0;
+            Iterator processedEntrySetIterator = processedProperties.entrySet().iterator();
+            while (processedEntrySetIterator.hasNext()) {
+                Map.Entry entry = (Map.Entry)processedEntrySetIterator.next();
+                String key = (String)entry.getKey();
+                String value = (String)entry.getValue();
+                Attribute attribute = new Attribute(key, value);
+                report.xmlel_Attribute[arrayPointer] = attribute;
+                arrayPointer++;
+            }
+        }        
+    }
+    
+    
     public XTestResultsReport getReport() {
         XTestResultsReport report = new XTestResultsReport();
         report.xmlat_project = project;
@@ -103,6 +157,9 @@ public class XTestResultsReportTask extends Task{
         report.xmlat_comment = comment;
         report.xmlat_team = team;
         report.xmlat_timeStamp = new java.sql.Timestamp(System.currentTimeMillis());
+        if (scannedPropertiesName != null) {
+            scanAndFillAttributes(report);
+        }
         return report;
     }
     
@@ -119,7 +176,7 @@ public class XTestResultsReportTask extends Task{
         }
         //System.err.println("TR:"+tr);
         try {
-            FileOutputStream outStream = new FileOutputStream(this.outfile);            
+            FileOutputStream outStream = new FileOutputStream(this.outfile);
             SerializeDOM.serializeToStream(report.toDocument(),outStream);
             outStream.close();
         } catch (IOException ioe) {

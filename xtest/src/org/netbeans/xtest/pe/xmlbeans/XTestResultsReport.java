@@ -61,6 +61,7 @@ public class XTestResultsReport extends XMLBean {
     // child elements
     public SystemInfo[] xmlel_SystemInfo;
     public TestRun[] xmlel_TestRun;
+    public Attribute[] xmlel_Attribute;
     
     /** Holds value of property systemInfo_id. */
     private long systemInfo_id;    
