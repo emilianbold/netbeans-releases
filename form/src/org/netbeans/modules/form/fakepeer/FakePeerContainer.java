@@ -59,7 +59,7 @@ public class FakePeerContainer extends Container
         if (!container.isVisible())
             return;
 
-        Component components[] = container.getComponents();
+        Component components[] = FakePeerSupport.getComponents(container);
         int ncomponents = components.length;
 
         Rectangle clip = g.getClipBounds();

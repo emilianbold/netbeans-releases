@@ -74,20 +74,34 @@ public class FakePeerSupport
             f.set(comp, peer);
         }
         catch (Exception ex) {
-            ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(
+                org.openide.ErrorManager.INFORMATIONAL, ex);
         }
     }
 
     public static void attachFakePeerRecursively(Container container) {
-        Component components[] = container.getComponents();
-        int ncomponents = components.length;
-
-        for (int i = 0; i < ncomponents; i++) {
+        Component components[] = getComponents(container);
+        for (int i=0; i < components.length; i++) {
             Component comp = components[i];
             attachFakePeer(comp);
             if (comp instanceof Container)
                 attachFakePeerRecursively((Container) comp);
         }
+    }
+
+    static Component[] getComponents(Container container) {
+        // hack for the case some "smart" containers delegate getComponents()
+        // to some subcontainer (which becomes inaccessible then)
+        try {
+            Field f = Container.class.getDeclaredField("component"); // NOI18N
+            f.setAccessible(true);
+            return (Component[]) f.get(container);
+        }
+        catch (Exception ex) {
+            org.openide.ErrorManager.getDefault().notify(
+                org.openide.ErrorManager.INFORMATIONAL, ex);
+        }
+        return container.getComponents();
     }
 
     public static ComponentPeer detachFakePeer(Component comp) {
@@ -101,7 +115,8 @@ public class FakePeerSupport
             }
         }
         catch (Exception ex) {
-            ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(
+                org.openide.ErrorManager.INFORMATIONAL, ex);
         }
         return null;
     }

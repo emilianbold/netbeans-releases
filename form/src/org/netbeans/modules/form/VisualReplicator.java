@@ -26,8 +26,8 @@ import org.netbeans.modules.form.layoutsupport.*;
  * for presenting the form in designer, or by TestAction. Due to mapping from
  * meta components to clones (and viceversa), effective incremental updates of
  * changes from metadata are possible.
- * Note: if some updates are done on replicated components, revalidate() and
- * repaint() should be called on the top component afterwards.
+ * Note: After updating replicated components, revalidate() and repaint()
+ * should be called on the top component.
  *
  * @author Tomas Pavek
  */
@@ -226,10 +226,12 @@ public class VisualReplicator {
             Object compClone = getClonedComponent(subComps[i]);
             if (compClone == null)
                 addComponent(subComps[i]);
-            else if (compClone instanceof Component
-                     && ((Component)compClone).getParent() != container)
-                return; // the clone is placed in another container in
-                        // replicator, there's going to be another update
+            else if (compClone instanceof Component) {
+                Container cloneCont = ((Component)compClone).getParent();
+                if (cloneCont != container && getMetaComponent(cloneCont)
+                                                                      != null)
+                    return; // the clone is placed in another container in
+            }               // replicator, there's going to be another update
         }
     }
 
