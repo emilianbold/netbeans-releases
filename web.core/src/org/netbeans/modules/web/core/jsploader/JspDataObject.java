@@ -867,6 +867,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                     public void run() {
                         updateServletEditor();
                         JspDataObject.this.firePropertyChange0(PROP_SERVLET_DATAOBJECT, oldServlet, getServletDataObject());
+                        // the state of some CookieActions may need to be updated
+                        JspDataObject.this.firePropertyChange0(PROP_COOKIE, null, null);
                     }
                 }
             );
