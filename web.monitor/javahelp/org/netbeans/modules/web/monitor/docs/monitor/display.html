@@ -23,27 +23,35 @@ rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>The HTTP Monitor is enabled by default when you run a web application.
+<p>The HTTP Monitor is enabled and displayed by default when you run a web application.
    If the HTTP Monitor does not display or if it does not show the session
    data for a running web 
-   module, ensure that it is enabled as described below.</p>
-<p><b>To display the HTTP Monitor:</b>
+   application, ensure that it is enabled as described below.</p>
+<p><b>To manually display the HTTP Monitor:</b>
 <ul><li>Choose Window <img src="../images/arrow.gif" alt="and choosing">&nbsp;HTTP 
 Monitor (Ctrl+7) from the main menu.</p></li></ul>
 
-<b>To enable the HTTP Monitor for web servers that are started from the IDE:</b>
-<ol><li>Right-click your web server's node in the Runtime window's
+<b>To enable the HTTP Monitor for servers that are started from the IDE:</b>
+<ol><li>Right-click your server's node in the Runtime window's
 Server Registry node.</li>
 <li>Choose Properties.</li>
 <li>Select the Enable HTTP Monitor checkbox.</li>
-<li>If the web server is running, stop and restart it.</li></ol>
-<b>To enable the HTTP Monitor for web servers that are started outside the IDE:</b>
+<li>If the server is running, stop and restart it.</li></ol>
+<b>To enable the HTTP Monitor for servers that are started outside the IDE:</b>
 <ol>
-  <li>Copy <i>IDE-install-directory</i><tt>/modules/org-netbeans-modules-schema2beans.jar</tt> and 
-    <i>IDE-install-directory</i><tt>/modules/ext/org-netbeans-modules-web-httpmonitor.jar</tt> to your 
-    web module's <tt>WEB-INF/lib</tt> directory.</li>
+	<li>Copy the following two files to your web application's <tt>WEB-INF/lib</tt> folder:
+	<ul><li><i>IDE-install-directory</i><tt>/modules/org-netbeans-modules-schema2beans.jar</tt></li> 
+		<li><i>IDE-install-directory</i><tt>/modules/ext/org-netbeans-modules-web-httpmonitor.jar</tt></li></ul>
+	<table cellpadding="3" cellspacing="0" border="0">
+  <tr valign="top"> 
+    <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
+    Note that the Sun Java System Application Server 8 has its own <tt>schema2beans.jar</tt>.
+    Therefore, when you are using the Sun Java System Application Server 8, 
+    only copy <tt>httpmonitor.jar</tt> to your web application's <tt>WEB-INF/lib</tt> folder.</td>
+  </tr>
+</table></li>
   <li>Add the filter declaration that is appropriate for your servlet's version to 
-    the top of your web module's <tt>WEB-INF/web.xml</tt> file. Filters and filter 
+    the top of your web application's <tt>WEB-INF/web.xml</tt> file. Filters and filter 
     mapping entries must come first in a deployment descriptor.
 	<ul>
 	<li>Servlet 2.4 Filter Declaration:
@@ -88,7 +96,7 @@ Server Registry node.</li>
 	  </ul>
   </li>
   <li>
-To monitor the data records from a web module using more than one
+To monitor the data records from a web application using more than one
     IDE, add a second init-param entry as follows: 
       <pre>
   &lt;init-param&gt;
@@ -106,9 +114,9 @@ To monitor the data records from a web module using more than one
   <tr> 
     <td valign="top"><img src="../images/warn.gif" alt="Tip"></td>
     <td valign=top align=left> 
-        When you deploy the web module to a production server, remember to remove 
+        When you deploy the web application to a production server, remember to remove 
         the jar files from your <tt>WEB-INF/lib</tt> directory and remove 
-        the filter and filter mapping declarations from the web module's deployment 
+        the filter and filter mapping declarations from the web application's deployment 
         descriptor.
 </td>
 </tr>
@@ -128,8 +136,8 @@ To monitor the data records from a web module using more than one
 <td><a href="ctx_monitorintro.html">About the HTTP Monitor</a><br>
 <a href="process.html">Working with the HTTP Monitor</a><br>
 <a href="view.html">Analyzing Session Data</a><br>
-<a href="store.html">Saving HTTP Request Records</a><br>
-<a href="resend.html">Replaying HTTP Requests</a><br>
+<a href="store.html">Saving Session Data</a><br>
+<a href="resend.html">Replaying Session Data</a><br>
 </td>
   </tr>
 

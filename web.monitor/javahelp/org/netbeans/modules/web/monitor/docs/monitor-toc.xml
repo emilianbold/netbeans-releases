@@ -18,10 +18,10 @@
     <tocitem text="About the HTTP Monitor" target="ctx_monitorintro" />
     <tocitem text="Working with the HTTP Monitor" target="monitor_process" /> 
     <tocitem text="Setting Up the HTTP Monitor" target="monitor_display" />
-    <tocitem text="Analyzing HTTP Requests" target="monitor_view" />  
+    <tocitem text="Analyzing Session Data" target="monitor_view" />  
     <!-- monitor_resend is csh for Help button on Edit and replay dialog -->
-    <tocitem text="Saving HTTP Request Records" target="monitor_store" />
-    <tocitem text="Replaying HTTP Requests" target="monitor_resend" /> 
+    <tocitem text="Saving Session Data" target="monitor_store" />
+    <tocitem text="Replaying Session Data" target="monitor_resend" /> 
 </tocitem>
 </tocitem>
 </toc>
