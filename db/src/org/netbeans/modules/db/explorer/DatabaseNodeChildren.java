@@ -20,6 +20,8 @@ import java.util.Vector;
 import java.util.Arrays;
 import java.util.TreeSet;
 import java.sql.*;
+import javax.swing.SwingUtilities;
+import org.openide.options.SystemOption;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.netbeans.modules.db.DatabaseException;
@@ -27,6 +29,9 @@ import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.DatabaseModule;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 public class DatabaseNodeChildren extends Children.Array
 {
@@ -60,7 +65,19 @@ public class DatabaseNodeChildren extends Children.Array
                 if (snode != null)
                     children.add(snode);
             }
-        } catch (Exception e) {
+            if(getNode() instanceof RootNode) { 
+                // open connection (after initCollection done)
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        try {
+                            // add connection (if needed) and make the connection to SAMPLE database connected
+                            createPointbaseConnection();
+                            } catch(Exception ex) {
+                            }
+                        }
+                    });
+            }
+    } catch (Exception e) {
             e.printStackTrace();
             children.clear();
         }
@@ -126,5 +143,35 @@ public class DatabaseNodeChildren extends Children.Array
         }
 
         return subnode;
+    }
+
+    /** Creating the database connection to Pointbase SAMPLE database acording of setting PointbaseModule, if module is installed.
+     */
+    private void createPointbaseConnection() {
+
+        try {
+            
+            // only test for PointBase module
+            Class settings = Class.forName
+                             ("com.sun.forte4j.pointbase.PointBaseSettings", // NOI18N
+                             false, this.getClass().getClassLoader());
+
+            // load the method for creating connection
+            Class restore = Class.forName
+                            ("com.sun.forte4j.pointbase.util.CreatorConnection", // NOI18N
+                             false, this.getClass().getClassLoader());
+
+            Method addOrConnectMethod = restore.getMethod ("addOrConnectPointbase", null); // NOI18N
+
+            // call it
+            addOrConnectMethod.invoke (restore.newInstance(), null);
+
+        } catch (ClassNotFoundException e) {
+        } catch (NoSuchMethodException e) {
+        } catch (InvocationTargetException e) {
+        } catch (IllegalAccessException e) {
+        } catch (InstantiationException e) {
+        } catch (Exception e) {
+        }
     }
 }
