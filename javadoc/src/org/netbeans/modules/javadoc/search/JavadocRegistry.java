@@ -38,6 +38,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class JavadocRegistry {
     
+    private static int MAX_DEPTH = 3;
     private static JavadocRegistry INSTANCE;
     
     private Set /*<FileObject*/ roots;
@@ -92,8 +93,8 @@ public class JavadocRegistry {
                     
                 for ( int j = 0; j < jdRoots.length; j++ ) {
                     //System.out.println( "  JDR " + jdRoots[j] );
-                    FileObject fo = URLMapper.findFileObject(jdRoots[j]);
-                    if (fo != null) {
+                    FileObject fo = getIndexFolder(URLMapper.findFileObject(jdRoots[j]));
+                    if (fo != null) {                        
                         roots.add(fo);
                     }
                 }
@@ -101,6 +102,33 @@ public class JavadocRegistry {
             }
         }
         //System.out.println("roots=" + roots);
+    }
+    
+    
+    private static FileObject getIndexFolder (FileObject root) {
+        if (root == null) {
+            return null;
+        }        
+        return findIndexFolder (root,1);
+    }
+    
+    private static FileObject findIndexFolder (FileObject fo, int depth) {
+        if (depth == MAX_DEPTH) {
+            return null;
+        }
+        if (fo.getFileObject("index-files",null)!=null || fo.getFileObject("index-all.html",null)!=null) {  //NOI18N
+            return fo;
+        }
+        FileObject[] children = fo.getChildren();
+        for (int i=0; i< children.length; i++) {
+            if (children[i].isFolder()) {
+                FileObject result = findIndexFolder(children[i], depth+1);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        return null;
     }
         
 }
