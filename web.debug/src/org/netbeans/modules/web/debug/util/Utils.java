@@ -161,7 +161,7 @@ public class Utils {
     public static String getClassFilter(String url) {
         String filter = getServletClass(url);
         // get package only
-        filter = filter.substring(0, filter.lastIndexOf('.')); 
+        filter = filter.substring(0, filter.lastIndexOf('.') + 1); 
         return filter;
     }
     

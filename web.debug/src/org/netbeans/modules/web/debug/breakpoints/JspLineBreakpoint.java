@@ -13,14 +13,13 @@
 
 package org.netbeans.modules.web.debug.breakpoints;
 
-import java.beans.*;
-
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 
 import org.netbeans.modules.web.debug.util.Utils;
 import java.util.*;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -50,7 +49,7 @@ public class JspLineBreakpoint extends Breakpoint {
     private boolean                     enabled = true;
     private boolean                     hidden = false;
     private int                         suspend = SUSPEND_ALL;
-    private String                      printText = null;    
+    private String                      printText;    
 
     private String                      url = "";       // NOI18N
     private int                         lineNumber;
@@ -69,6 +68,7 @@ public class JspLineBreakpoint extends Breakpoint {
         
         this.url = url;
         this.lineNumber = lineNumber;
+        this.printText = NbBundle.getMessage(JspLineBreakpoint.class, "CTL_Default_Print_Text");
         
         DebuggerManager d = DebuggerManager.getDebuggerManager();
         
@@ -81,7 +81,7 @@ public class JspLineBreakpoint extends Breakpoint {
         javalb.setStratum("JSP"); // NOI18N
         javalb.setSourceName(Utils.getJspName(url));
         javalb.setHidden(true);
-        javalb.setPrintText(null);
+        javalb.setPrintText(printText);
         d.addBreakpoint(javalb);
 
         this.setURL(url);
@@ -135,7 +135,7 @@ public class JspLineBreakpoint extends Breakpoint {
     /**
      * Sets value of hidden property.
      *
-     * @param s a new value of hidden property
+     * @param h a new value of hidden property
      */
     public void setHidden (boolean h) {
         if (h == hidden) return;
@@ -156,12 +156,15 @@ public class JspLineBreakpoint extends Breakpoint {
     /**
      * Sets value of print text property.
      *
-     * @param s a new value of print text property
+     * @param printText a new value of print text property
      */
     public void setPrintText (String printText) {
         if (this.printText == printText) return;
         String old = this.printText;
         this.printText = printText;
+        if (javalb != null) {
+            javalb.setPrintText(printText);
+        }
         firePropertyChange(PROP_PRINT_TEXT, old, printText);
     }
     
@@ -306,21 +309,21 @@ public class JspLineBreakpoint extends Breakpoint {
         this.javalb = javalb;
     }
     
-    /**
-     * Adds a JPDABreakpointListener.
-     *
-     * @param listener the listener to add
-     */
-    public synchronized void addJPDABreakpointListener(JPDABreakpointListener listener) {
-        breakpointListeners.add (listener);
-    }
-  
-    /** 
-     * Removes a JPDABreakpointListener.
-     *
-     * @param listener the listener to remove
-    */
-    public synchronized void removeJPDABreakpointListener(JPDABreakpointListener listener) {
-        breakpointListeners.remove (listener);
-    }
+//    /**
+//     * Adds a JPDABreakpointListener.
+//     *
+//     * @param listener the listener to add
+//     */
+//    public synchronized void addJPDABreakpointListener(JPDABreakpointListener listener) {
+//        breakpointListeners.add (listener);
+//    }
+//  
+//    /** 
+//     * Removes a JPDABreakpointListener.
+//     *
+//     * @param listener the listener to remove
+//    */
+//    public synchronized void removeJPDABreakpointListener(JPDABreakpointListener listener) {
+//        breakpointListeners.remove (listener);
+//    }
 }

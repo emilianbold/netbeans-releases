@@ -70,7 +70,7 @@ public class JspGoToCursorActionProvider extends ActionsProviderSupport implemen
         );
         breakpoint.setHidden(true);
         DebuggerManager.getDebuggerManager().addBreakpoint (breakpoint);
-        session.getEngineForLanguage ("Java").getActionsManager ().doAction (
+        session.getEngineForLanguage ("JSP").getActionsManager ().doAction (
             DebuggerManager.ACTION_CONTINUE
         );
     }
