@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,23 +21,12 @@ import javax.swing.Action;
 
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
-import org.openide.actions.DeleteAction;
-import org.openide.actions.FileSystemAction;
-import org.openide.actions.FindAction;
-import org.openide.actions.NewTemplateAction;
-import org.openide.actions.OpenAction;
-import org.openide.actions.PasteAction;
-import org.openide.actions.PropertiesAction;
-import org.openide.actions.RenameAction;
-import org.openide.actions.SaveAsTemplateAction;
-import org.openide.actions.ToolsAction;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataShadow;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataFolder;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -316,80 +305,56 @@ final class Favorites extends FilterNode {
             return arr;
         }
         
+        /** Do not change original actions. */
         private Action [] createActionsForRoot (Action [] arr) {
-            List newArr = new ArrayList();
-            for (int i = 0; i < arr.length; i++) {
-                if (arr[i] != null) {
-                    if ("org.netbeans.modules.project.ui.actions.Actions$SystemNewFile". // NOI18N
-                        equals(arr[i].getClass().getName()) ||
-                        (arr[i] instanceof NewTemplateAction) ||
-                        (arr[i] instanceof FileSystemAction) ||
-                        (arr[i] instanceof FindAction) ||
-                        (arr[i] instanceof ToolsAction) ||
-                        (arr[i] instanceof PropertiesAction)) {
-                        newArr.add(arr[i]);
-                    }
-                } else {
-                    newArr.add(arr[i]);
-                }
-            }
-            return (Action[])newArr.toArray (new Action[newArr.size()]);
+            //Actions are not modified.
+            return arr;
         }
         
+        /** Add action 'Remove from Favorites'. */
         private Action [] createActionsForFavoriteFolder (Action [] arr) {
             boolean added = false;
             List newArr = new ArrayList();
             for (int i = 0; i < arr.length; i++) {
-                //Add before CopyAction
-                if (!added && (arr[i] instanceof CopyAction)) {
+                //Add before CopyAction or CutAction
+                if (!added && ((arr[i] instanceof CopyAction) || (arr[i] instanceof CutAction))) {
                     added = true;
                     newArr.add(Actions.remove());
                     newArr.add(null);
                 }
-                if (arr[i] != null) {
-                    if ("org.netbeans.modules.project.ui.actions.Actions$SystemNewFile". // NOI18N
-                        equals(arr[i].getClass().getName()) ||
-                        (arr[i] instanceof NewTemplateAction) ||
-                        (arr[i] instanceof FileSystemAction) ||
-                        (arr[i] instanceof FindAction) ||
-                        (arr[i] instanceof CopyAction) ||
-                        (arr[i] instanceof ToolsAction) ||
-                        (arr[i] instanceof PropertiesAction)) {
-                        newArr.add(arr[i]);
-                    }
-                } else {
-                    newArr.add(arr[i]);
-                }
+                newArr.add(arr[i]);
             }
+            if (!added) {
+                added = true;
+                newArr.add(null);
+                newArr.add(Actions.remove());
+            }
+            
             return (Action[])newArr.toArray (new Action[newArr.size()]);
         }
         
+        /** Add action 'Remove from Favorites'. */
         private Action [] createActionsForFavoriteFile (Action [] arr) {
             boolean added = false;
             List newArr = new ArrayList();
             for (int i = 0; i < arr.length; i++) {
-                //Add before CopyAction
-                if (!added && (arr[i] instanceof CopyAction)) {
+                //Add before CopyAction or CutAction
+                if (!added && ((arr[i] instanceof CopyAction) || (arr[i] instanceof CutAction))) {
                     added = true;
-                    newArr.add(null);
                     newArr.add(Actions.remove());
                     newArr.add(null);
                 }
-                if (arr[i] != null) {
-                    if ((arr[i] instanceof OpenAction) ||
-                        (arr[i] instanceof CopyAction) ||
-                        (arr[i] instanceof SaveAsTemplateAction) ||
-                        (arr[i] instanceof ToolsAction) ||
-                        (arr[i] instanceof PropertiesAction)) {
-                        newArr.add(arr[i]);
-                    }
-                } else {
-                    newArr.add(arr[i]);
-                }
+                newArr.add(arr[i]);
+            }
+            if (!added) {
+                added = true;
+                newArr.add(null);
+                newArr.add(Actions.remove());
             }
             return (Action[])newArr.toArray (new Action[newArr.size()]);
         }
         
+        /** Add action 'Add to Favorites'. */
         private Action [] createActionsForFolder (Action [] arr) {
             boolean added = false;
             List newArr = new ArrayList();
@@ -400,30 +365,17 @@ final class Favorites extends FilterNode {
                     newArr.add(Actions.add());
                     newArr.add(null);
                 }
-                if (arr[i] != null) {
-                    if ("org.netbeans.modules.project.ui.actions.Actions$SystemNewFile". // NOI18N
-                        equals(arr[i].getClass().getName()) ||
-                        (arr[i] instanceof NewTemplateAction) ||
-                        (arr[i] instanceof FileSystemAction) ||
-                        (arr[i] instanceof FindAction) ||
-                        (arr[i] instanceof CutAction) ||
-                        (arr[i] instanceof CopyAction) ||
-                        (arr[i] instanceof PasteAction) ||
-                        (arr[i] instanceof DeleteAction) ||
-                        "org.netbeans.modules.refactoring.ui.RSMJavaDOAction". // NOI18N
-                        equals(arr[i].getClass().getName()) ||
-                        (arr[i] instanceof RenameAction) ||
-                        (arr[i] instanceof ToolsAction) ||
-                        (arr[i] instanceof PropertiesAction)) {
-                        newArr.add(arr[i]);
-                    }
-                } else {
-                    newArr.add(arr[i]);
-                }
+                newArr.add(arr[i]);
+            }
+            if (!added) {
+                added = true;
+                newArr.add(null);
+                newArr.add(Actions.add());
             }
             return (Action[])newArr.toArray (new Action[newArr.size()]);
         }
         
+        /** Add action 'Add to Favorites'. */
         private Action [] createActionsForFile (Action [] arr) {
             boolean added = false;
             List newArr = new ArrayList();
@@ -434,22 +386,12 @@ final class Favorites extends FilterNode {
                     newArr.add(Actions.add());
                     newArr.add(null);
                 }
-                if (arr[i] != null) {
-                    if ((arr[i] instanceof OpenAction) ||
-                        (arr[i] instanceof CutAction) ||
-                        (arr[i] instanceof CopyAction) ||
-                        (arr[i] instanceof DeleteAction) ||
-                        "org.netbeans.modules.refactoring.ui.RSMJavaDOAction".  // NOI18N
-                        equals(arr[i].getClass().getName()) ||
-                        (arr[i] instanceof RenameAction) ||
-                        (arr[i] instanceof SaveAsTemplateAction) ||
-                        (arr[i] instanceof ToolsAction) ||
-                        (arr[i] instanceof PropertiesAction)) {
-                        newArr.add(arr[i]);
-                    }
-                } else {
-                    newArr.add(arr[i]);
-                }
+                newArr.add(arr[i]);
+            }
+            if (!added) {
+                added = true;
+                newArr.add(null);
+                newArr.add(Actions.add());
             }
             return (Action[])newArr.toArray (new Action[newArr.size()]);
         }
