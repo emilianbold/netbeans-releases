@@ -370,9 +370,9 @@ public class ResultModel implements TaskListener {
     
 
     /** Children for result root node. */
-    private class ResultRootChildren extends Children.Keys {
+    private class ResultRootChildren extends Children.Keys implements Runnable {
 
-        /** Keys as found objects for the search. */
+        /** Keys as found objects for the search. Must us esyncronized access to avoid connurent modifications.  */
         private Set keys;
         
         /** Comparator used for sorting children nodes. */
@@ -380,8 +380,13 @@ public class ResultModel implements TaskListener {
 
         /** Whether this node has sorted children. */
         private boolean sorted = false;
-        
-        
+
+        // once keys get bigger than BATCH_LEVEL start batching expensive setKeys call
+        private final int BATCH_LEVEL = 61;
+        private final int BATCH_INTERVAL_MS = 759;
+        private volatile RequestProcessor.Task batchSetKeys;
+        private volatile boolean active = false;
+
         /** Constructor. */
         public ResultRootChildren() {
             keys = searchGroup.getResultObjects();
@@ -423,7 +428,8 @@ public class ResultModel implements TaskListener {
         /** Overrides superclass method. */
         protected void addNotify() {
             setKeys(Collections.EMPTY_SET);
-            
+            active = true;
+
             RequestProcessor.getDefault().post(new Runnable() {
                  public void run() {
                      setKeys(keys);
@@ -433,6 +439,7 @@ public class ResultModel implements TaskListener {
 
         /** Overrrides superclass method. */
         protected void removeNotify() {
+            active = false;
             setKeys(Collections.EMPTY_SET);
         }
 
@@ -447,9 +454,29 @@ public class ResultModel implements TaskListener {
                 em.notify (/*ErrorManager.INFORMATIONAL, */new RuntimeException ("++ addFoundObjects"));
             }
 
-            keys.addAll(Arrays.asList(foundObjects));
-            setKeys (keys); //??? -> sort (sorted);
+            int size = 0;
+            synchronized(keys) {
+                keys.addAll(Arrays.asList(foundObjects));
+                size = keys.size();
+            }
+
+            if (size < BATCH_LEVEL) {
+                synchronized(keys) {
+                    setKeys (keys); //??? -> sort (sorted);
+                }
+            } else {
+                batchSetKeys();  // 2 times faster for nb_all/core search for "void" case
+            }
         }
+
+        // do not update keys too often it's rather heavyweight operation
+        // batch all request that come in BATCH_INTERVAL_MS into one real update
+        private void batchSetKeys() {
+            if (batchSetKeys == null) {
+                batchSetKeys = RequestProcessor.getDefault().post(this, BATCH_INTERVAL_MS);
+            }
+        }
+
 
         public void removeFoundObject(Object foundObject) {
             if ( em.isLoggable (ErrorManager.INFORMATIONAL) ) {
@@ -457,7 +484,11 @@ public class ResultModel implements TaskListener {
                 em.notify (/*ErrorManager.INFORMATIONAL, */new RuntimeException ("-- removeFoundObjects"));
             }
 
-            if ( keys.remove (foundObject) ) {
+            boolean removed = false;
+            synchronized(keys) {
+                removed = keys.remove (foundObject);
+            }
+            if ( removed ) {
                 sort (sorted);
             }
         }
@@ -470,9 +501,11 @@ public class ResultModel implements TaskListener {
                 newKeys = new TreeSet(comparator);
             else
                 newKeys = new HashSet();
-            
-            newKeys.addAll(keys);
-            
+
+            synchronized(keys) {
+                newKeys.addAll(keys);
+            }
+
             setKeys(newKeys);
 
             sorted = sort;
@@ -482,7 +515,16 @@ public class ResultModel implements TaskListener {
         public boolean isSorted() {
             return sorted;
         }
-        
+
+        // called from random request processor thread
+        public void run() {
+            batchSetKeys = null;
+            synchronized(keys) {
+                if (active) setKeys(keys);
+            }
+        }
+
+
     } // End of ResultRootChildren class.
 
 
