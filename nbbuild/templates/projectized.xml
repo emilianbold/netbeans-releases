@@ -106,6 +106,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- XXX check if these files exist, and if not, run xtest/build.xml -->
             <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
             <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
+            <pathelement location="${nb_all}/xtest/lib/insanelib.jar"/>
             <pathelement path="${test.unit.cp.extra}"/>
         </path>
         <path id="test.unit.run.cp">
