@@ -336,14 +336,29 @@ public class TestUtil {
         return cls.getInnerClass(name, false);
     }
 
-    static public Parameter cloneParam(Parameter p, JavaModelPackage pkg) {
+    static public String createNewName(int i, Set usedNames) {
+        String ret;
+        do {
+            ret = "p" + i++;
+        } while (usedNames.contains(ret));
+        usedNames.add(ret);
+
+        return ret;
+    }
+
+    static public Parameter cloneParam(Parameter p, JavaModelPackage pkg, int order, Set usedNames) {
+        String name = p.getName();
+        if (name == null || name.length()==0 || usedNames.contains(name)) {
+            name = createNewName(order, usedNames);
+        } 
+        
         Parameter ret =
             pkg.getParameter().
-            createParameter(p.getName(), 
+            createParameter(name,
                             p.getAnnotations(), 
                             p.isFinal(),
                             null,
-                            p.getDimCount(),
+                            0,//p.getDimCount(),
                             p.isVarArg());
         ret.setType(p.getType());
         return ret;
@@ -352,9 +367,11 @@ public class TestUtil {
     public static List cloneParams(List params, JavaModelPackage pkg) {
         Iterator origParams = params.iterator();
         List newParams = new LinkedList();
+        int o = 0; 
+        HashSet usedNames = new HashSet(params.size()*2);
         while (origParams.hasNext()) {
             Parameter p = (Parameter)origParams.next();
-            newParams.add(TestUtil.cloneParam(p, pkg));
+            newParams.add(TestUtil.cloneParam(p, pkg, o++, usedNames));
         }
         return newParams;
     }
