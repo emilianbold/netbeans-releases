@@ -208,7 +208,8 @@ public abstract class TwoWaySupport {
      * @param mutex the associated mutex
      */
     protected TwoWaySupport(Mutex mutex) {
-        if (mutex == Mutex.EVENT) throw new IllegalArgumentException("Mutex.EVENT can deadlock TwoWaySupport!");
+        // XXX can it really?
+        //if (mutex == Mutex.EVENT) throw new IllegalArgumentException("Mutex.EVENT can deadlock TwoWaySupport!");
         this.mutex = mutex;
         listeners = new ArrayList();
     }
