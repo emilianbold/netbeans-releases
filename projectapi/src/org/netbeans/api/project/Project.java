@@ -57,6 +57,7 @@ public interface Project extends Lookup.Provider {
      * <li>{@link org.netbeans.spi.project.ProjectInformation}</li>
      * <li><a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/LogicalViewProvider.html"><code>LogicalViewProvider</code></a></li>
      * <li><a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/CustomizerProvider.html"><code>CustomizerProvider</code></a></li>
+     * <li>{@link org.netbeans.spi.project.Sources}</li>
      * <li>{@link org.netbeans.spi.project.ActionProvider}</li>
      * <li>{@link org.netbeans.spi.project.SubprojectProvider}</li>
      * <li>{@link org.netbeans.spi.project.AuxiliaryConfiguration}</li>

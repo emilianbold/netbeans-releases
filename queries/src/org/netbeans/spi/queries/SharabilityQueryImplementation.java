@@ -28,6 +28,7 @@ import java.io.File;
  * facility wherever possible.
  * </p>
  * @see org.netbeans.api.queries.SharabilityQuery
+ * @see <a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/AntProjectHelper.html#createSharabilityQuery(java.lang.String[],%20java.lang.String[])"><code>AntProjectHelper.createSharabilityQuery(...)</code></a>
  * @author Jesse Glick
  */
 public interface SharabilityQueryImplementation {
