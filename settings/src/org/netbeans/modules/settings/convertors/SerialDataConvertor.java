@@ -126,13 +126,25 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
     
     /** allow to listen on changes of the object inst; should be called when
      * new instance is created */
-    private synchronized void attachToInstance(Object inst) {
-        if (saver != null) {
-            saver.removePropertyChangeListener(this);
-            saver.flush();
+    private void attachToInstance(Object inst) {
+        SerialDataConvertor.SaveSupport _saver = null;
+        synchronized (this) {
+            if (saver != null) {
+                saver.removePropertyChangeListener(this);
+                _saver = saver;
+            }
+        }    
+        
+        if (_saver != null) {
+            /** creates new Thread and waits for finish - danger of deadlock, 
+             * then called outside of lock*/            
+            _saver.flush();
         }
-        saver = createSaveSupport(inst);
-        saver.addPropertyChangeListener(this);
+
+        synchronized (this) {
+            saver = createSaveSupport(inst);
+            saver.addPropertyChangeListener(this);
+        }
     }
     
     private void provideSaveCookie() {
