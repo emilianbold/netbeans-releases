@@ -14,6 +14,7 @@
 package org.netbeans.modules.httpserver;
 
 import java.util.Enumeration;
+import java.beans.*;
 import java.io.*;
 import java.net.URL;
 import java.net.MalformedURLException;
@@ -42,6 +43,7 @@ import org.apache.tomcat.logging.TomcatLogger;
 import org.apache.tomcat.context.*;
 import org.apache.tomcat.service.PoolTcpConnector;
 import org.openide.util.SharedClassObject;
+import org.openide.util.RequestProcessor;
 
 /**
 * Module installation class for Http Server
@@ -52,6 +54,10 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
 
 
     private static ContextManager server;
+    
+    /** listener that reloads context when systemClassLoader changes */
+    private static ContextReloader reloader;
+    
     private static Thread serverThread;
     private static boolean inSetRunning = false;
 
@@ -108,6 +114,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                                                server = buildServer();
                                                server.start();
                                                httpserverSettings ().runSuccess();
+                                               reloader.activate ();
                                                // this is not a debug message, this is a server startup message
                                                if (httpserverSettings ().isStartStopMessages())
                                                    System.out.println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
@@ -163,6 +170,11 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                 return;
             inSetRunning = true;
             try {
+                if (reloader != null) {
+                    reloader.deactivate ();
+                    reloader = null;
+                }
+                
                 if ((serverThread != null) && (server != null)) {
                     try {
                         server.stop();
@@ -214,7 +226,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         NbLogger logger = new NbLogger();
         logger.setName("tc_log");    // NOI18N
 
-        EmbededTomcat tc=new EmbededTomcat();
+        final EmbededTomcat tc=new EmbededTomcat();
         
         File wd = FileUtil.toFile (
                       TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot());
@@ -238,8 +250,10 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         //ctxt.getServletLoader().setParentLoader(TopManager.getDefault().systemClassLoader());
         
         tc.addEndpoint( op.getPort(), null, null);
+
+        final ContextManager cm = getContextManager(tc);
         
-        ContextManager cm = getContextManager(tc);
+        reloader = new ContextReloader (tc, cm, sctx);
         
         // reduce number of threads
         Enumeration e = cm.getConnectors ();
@@ -277,6 +291,75 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
      */
     private static HttpServerSettings httpserverSettings () {
         return (HttpServerSettings)SharedClassObject.findObject (HttpServerSettings.class, true);
+    }
+    
+    /** Listener for change of system class loader to reinitialize context 
+     * running on HTTP server.
+     * The purpose is to force usage of up-to-date classes even in the case 
+     * of module reloading.
+     *
+     * PENDING: Better use listening on lookup changes
+     */
+    private static class ContextReloader implements PropertyChangeListener, Runnable {
+        
+        private ServletContext ide_ctx;
+        
+        private EmbededTomcat tc;
+        
+        private ContextManager cm;
+        
+        public ContextReloader (EmbededTomcat tc, ContextManager cm, ServletContext ctx) {
+            ide_ctx = ctx;
+            this.tc = tc;
+            this.cm = cm;
+        }
+        
+        /** Starts to listen on class loader changes */
+        public void activate () {
+            TopManager tm = TopManager.getDefault();
+            tm.addPropertyChangeListener (this);
+        }
+        
+        /** Stops listening. */
+        public void deactivate () {
+            TopManager tm = TopManager.getDefault();
+            tm.addPropertyChangeListener (this);
+        }
+        
+        public void propertyChange (PropertyChangeEvent evt) {
+            if (!"systemClassLoader".equals (evt.getPropertyName ()))  // NOI18N
+                return;
+            
+            System.out.println ("systemClassLoader changed !!!");
+            RequestProcessor.postRequest (this);
+        }
+        
+        public void run () {
+            System.out.println("refreshing context");
+            cm.setParentClassLoader (TopManager.getDefault ().systemClassLoader ());
+            
+            File wd = FileUtil.toFile (
+                          TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot());
+            wd = new File(wd, "httpwork"); // NOI18N
+            
+            Enumeration e = cm.getContexts ();
+            while (e.hasMoreElements ()) {
+                Object o = e.nextElement ();
+                if (o instanceof Context) {
+                    Context ctx = (Context)o;
+                    tc.removeContext (ide_ctx);
+                    try {
+                        ide_ctx=tc.addContext ("", wd.toURL ());  // NOI18N
+                    }
+                    catch (MalformedURLException ex) {
+                        // ErrorManager.getDefault ().log (ErrorManager.INFORMATIONAL, ex);
+                    }
+                    tc.initContext ( ide_ctx );
+                }
+            }
+            
+        }
+        
     }
 }
 
