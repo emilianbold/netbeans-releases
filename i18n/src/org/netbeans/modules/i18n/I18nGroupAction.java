@@ -32,7 +32,7 @@ import org.openide.awt.JMenuPlus;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
-
+import org.openide.awt.Actions;
 
 /**
  * Abstract class for I18n group actions.
@@ -97,7 +97,8 @@ public abstract class I18nGroupAction extends SystemAction {
 
         /** Constructor. */
         public LazyPopup(boolean isMenu) {
-            this.menu = new JMenuPlus(I18nGroupAction.this.getName());
+            this.menu = new JMenuPlus();
+            Actions.setMenuText(this.menu, I18nGroupAction.this.getName(), isMenu);
             this.isMenu = isMenu;
             
             if(isMenu) {
