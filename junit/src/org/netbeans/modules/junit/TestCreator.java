@@ -70,8 +70,25 @@ public class TestCreator extends java.lang.Object {
         srcelTarget = classTarget.getSource();
 
         srcelTarget.setPackage(srcelSource.getPackage());
-        srcelTarget.addImports(srcelSource.getImports());
-        srcelTarget.addImport(new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE));        
+ 
+        // add imports from the source but only those that are not
+        // already present
+        Import [] timports = srcelTarget.getImports();
+        Import [] simports = srcelSource.getImports();
+        HashSet tImpSet = new HashSet(timports.length);
+        for (int i = 0 ; i < timports.length; i++) tImpSet.add(timports[i]);
+
+        // import for junit.framework.*
+        Import frameworkImp = new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE);
+        if (!tImpSet.contains(frameworkImp)) srcelTarget.addImport(frameworkImp);
+
+        // all other imports if not present, yet
+        for (int j = 0; j < simports.length; j++) {
+          if (!tImpSet.contains(simports[j])) {
+            srcelTarget.addImport(simports[j]);
+          }
+        }
+
 
         // construct/update test class from the source class
         fillTestClass(sourceCtx, classSource, classCtx, classTarget);
