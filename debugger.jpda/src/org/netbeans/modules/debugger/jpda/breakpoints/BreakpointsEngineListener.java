@@ -42,6 +42,9 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
  */
 public class BreakpointsEngineListener extends LazyDebuggerEngineListener 
 implements PropertyChangeListener, DebuggerManagerListener {
+    
+    private static boolean verbose = 
+        System.getProperty ("netbeans.debugger.breakpoints") != null;
 
     private JPDADebuggerImpl        debugger;
     private DebuggerEngine          engine;
@@ -81,6 +84,14 @@ implements PropertyChangeListener, DebuggerManagerListener {
             started = true;
             updateBreakpoints ();
             DebuggerManager.getDebuggerManager ().addDebuggerListener (
+                DebuggerManager.PROP_BREAKPOINTS,
+                this
+            );
+        }
+        if (debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
+            removeBreakpoints ();
+            started = false;
+            DebuggerManager.getDebuggerManager ().removeDebuggerListener (
                 DebuggerManager.PROP_BREAKPOINTS,
                 this
             );
@@ -125,6 +136,8 @@ implements PropertyChangeListener, DebuggerManagerListener {
 
     private void updateBreakpoint (Breakpoint b) {
         if (breakpointToImpl.containsKey (b)) return;
+        if (verbose)
+            System.out.println("Update breakpoint " + b);
         if (b instanceof LineBreakpoint) {
             breakpointToImpl.put (
                 b,

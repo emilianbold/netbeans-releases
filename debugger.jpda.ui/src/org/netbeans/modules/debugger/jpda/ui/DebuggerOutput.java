@@ -152,6 +152,13 @@ PropertyChangeListener {
             }
         } else
         if (debugger.getState () == JPDADebugger.STATE_RUNNING) {
+            print (
+                "CTL_Debugger_running",
+                where,
+                new String[] {
+                },
+                null
+            );
         } else
         if (debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
             print ("CTL_Debugger_finished", where, null, null);

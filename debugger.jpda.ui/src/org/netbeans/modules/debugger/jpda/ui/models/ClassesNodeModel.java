@@ -42,8 +42,8 @@ public class ClassesNodeModel implements NodeModel {
     public String getDisplayName (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT)
             return "Name";
-        if (o instanceof String) {
-            String name = (String) o;
+        if (o instanceof Object[]) {
+            String name = (String) ((Object[]) o) [0];
             int i = name.lastIndexOf ('.');
             if (i >= 0)
                 name = name.substring (i + 1);
@@ -75,8 +75,8 @@ public class ClassesNodeModel implements NodeModel {
     public String getShortDescription (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT)
             return null;
-        if (o instanceof String)
-            return "Package " + o;
+        if (o instanceof Object[])
+            return "Package " + ((Object[]) o) [0];
         if (o instanceof ReferenceType) {
             String name = (o instanceof ClassType) ?
                 "Class " + ((ReferenceType) o).name () :
@@ -96,7 +96,7 @@ public class ClassesNodeModel implements NodeModel {
     public String getIconBase (Object o) throws UnknownTypeException {
         if (o == TreeModel.ROOT)
             return CLASS;
-        if (o instanceof String)
+        if (o instanceof Object[])
             return PACKAGE;
         if (o instanceof ClassType)
             return CLASS;

@@ -32,6 +32,7 @@ import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
+import com.sun.jdi.VirtualMachine;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -91,15 +92,14 @@ public class ClassesTreeModel implements TreeModel {
         try {
             if (o.equals (ROOT))
                 return getLoaders ();
-            if (o instanceof String)
-                return getChildren (((String) o) + '.');
+            if (o instanceof Object[])
+                return getChildren ((Object[]) o);
             if (o instanceof ClassLoaderReference)
                 return getPackages ((ClassLoaderReference) o);
             if (o == NULL_CLASS_LOADER)
                 return getPackages (null);
             if (o instanceof ReferenceType) {
-                String name = ((ReferenceType) o).name () + '$';
-                return getChildren (name);
+                return ((ReferenceType) o).nestedTypes ().toArray ();
             }
             throw new UnknownTypeException (o);
         } catch (VMDisconnectedException ex) {
@@ -109,7 +109,7 @@ public class ClassesTreeModel implements TreeModel {
     
     public boolean isLeaf (Object o) throws UnknownTypeException {
         if (o.equals (ROOT)) return false;
-        if (o instanceof String) return false;
+        if (o instanceof Object[]) return false;
         if (o instanceof ReferenceType) return false;
         if (o instanceof ClassLoaderReference) return false;
         if (o == NULL_CLASS_LOADER) return false;
@@ -143,27 +143,31 @@ public class ClassesTreeModel implements TreeModel {
     
     // private methods .........................................................
 
-    private HashMap classes = null; // name of class -> ReferenceType
+    private List classes = null; // name of class -> ReferenceType
     private List names = null; // list on names of all clases
     private HashMap cache = new HashMap ();
         // null => list of class loaders
         // ClassLoaderReference -> list of packages & ReferenceTypes
         // package name -> list of packages & ReferenceTypes
     private Comparator comparator = new PackageComarator ();
-    private static final Integer NULL_CLASS_LOADER = new Integer (11);
+    private Comparator comparator1 = new ClassLoaderComarator ();
+    static final Integer NULL_CLASS_LOADER = new Integer (11);
     
     
     private List getNames () {
         if (classes == null) {
-            List referenceTypes = debugger.getVirtualMachine ().allClasses ();
+	    VirtualMachine vm = debugger.getVirtualMachine ();
+            List referenceTypes = new ArrayList ();
+            if (vm != null) 
+                referenceTypes = vm.allClasses ();
             int i, k = referenceTypes.size ();
             names = new ArrayList ();
-            classes = new HashMap ();
+            classes = new ArrayList ();
             for (i = 0; i < k; i++) {
                 ReferenceType rt = (ReferenceType) referenceTypes.get (i);
                 if (rt instanceof ArrayType) continue;
                 names.add (rt.name ());
-                classes.put (rt.name (), rt);
+                classes.add (rt);
             }
         }
         return names;
@@ -173,11 +177,11 @@ public class ClassesTreeModel implements TreeModel {
         Object[] ch = (Object[]) cache.get (null);
         if (ch != null) return ch;
         List names = getNames ();
-        Set loaders = new HashSet ();
+        Set loaders = new TreeSet (comparator1);
         int i, k = names.size ();
         for (i = 0; i < k; i++) {
             String name = (String) names.get (i);
-            ReferenceType rt = (ReferenceType) classes.get (name);
+            ReferenceType rt = (ReferenceType) classes.get (i);
             ClassLoaderReference clr = rt.classLoader ();
             if (clr == null)
                 loaders.add (NULL_CLASS_LOADER);
@@ -198,25 +202,25 @@ public class ClassesTreeModel implements TreeModel {
         int i, k = names.size ();
         for (i = 0; i < k; i++) {
             String name = (String) names.get (i);
-            ReferenceType rt = (ReferenceType) classes.get (name);
+            ReferenceType rt = (ReferenceType) classes.get (i);
             if (rt.classLoader () != clr) continue;
             int start = 0;
             int end = name.indexOf ('.', start);
             if (end < 0) {
                 // ReferenceType found
                 if (name.indexOf ('$', start) < 0) {
-                    ReferenceType tr = (ReferenceType) classes.get (name);
+                    ReferenceType tr = (ReferenceType) classes.get (i);
                     objects.add (tr);
                 }
             } else
-                objects.add (name.substring (0, end));
+                objects.add (new Object[] {name.substring (0, end), clr});
         }
         ch = objects.toArray ();
         cache.put (clr, ch);
         return ch;
     }
     
-    private Object[] getChildren (String parent) {
+    private Object[] getChildren (Object[] parent) {
         Object[] ch = (Object[]) cache.get (parent);
         if (ch != null) return ch;
         List names = getNames ();
@@ -224,17 +228,19 @@ public class ClassesTreeModel implements TreeModel {
         int i, k = names.size ();
         for (i = 0; i < k; i++) {
             String name = (String) names.get (i);
-            if (!name.startsWith (parent)) continue;
-            int start = parent.length ();
+            ReferenceType rt = (ReferenceType) classes.get (i);
+            if (rt.classLoader () != parent [1]) continue;
+            String parentN = ((String) parent [0]) + '.';
+            if (!name.startsWith (parentN)) continue;
+            int start = (parentN).length ();
             int end = name.indexOf ('.', start);
             if (end < 0) {
                 // ReferenceType found
                 if (name.indexOf ('$', start) < 0) {
-                    ReferenceType tr = (ReferenceType) classes.get (name);
-                    objects.add (tr);
+                    objects.add (rt);
                 }
             } else
-                objects.add (name.substring (0, end));
+                objects.add (new Object[] {name.substring (0, end), rt.classLoader ()});
         }
         ch = objects.toArray ();
         cache.put (parent, ch);
@@ -340,15 +346,30 @@ public class ClassesTreeModel implements TreeModel {
     
     private static class PackageComarator implements Comparator {
         public int compare (Object o1, Object o2) {
-            if (o1 instanceof String) {
-                if (o2 instanceof String)
-                    return ((String) o1).compareTo (o2);
+            if (o1 instanceof Object[]) {
+                if (o2 instanceof Object[])
+                    return ((String) ((Object[]) o1) [0]).compareTo (((Object[]) o2) [0]);
                 return -1;
             } 
-            if (o2 instanceof String)
+            if (o2 instanceof Object[])
                 return 1;
             return shortName (((ReferenceType) o1).name ()).compareTo (
                 shortName (((ReferenceType) o2).name ())
+            );
+        }
+    }
+    
+    private static class ClassLoaderComarator implements Comparator {
+        public int compare (Object o1, Object o2) {
+            if (o1 == NULL_CLASS_LOADER) {
+                if (o2 == NULL_CLASS_LOADER)
+                    return 0;
+                return -1;
+            } 
+            if (o2 == NULL_CLASS_LOADER)
+                return 1;
+            return ((ClassLoaderReference) o1).toString ().compareTo (
+                ((ClassLoaderReference) o2).toString ()
             );
         }
     }
