@@ -42,7 +42,7 @@ public class GtkLFCustoms extends LFCustoms {
 
     public Object[] createApplicationSpecificKeysAndValues () {
         
-        Border lowerBorder = new AdaptiveMatteBorder (false, true, true, true, 5);
+        Border lowerBorder = new AdaptiveMatteBorder (false, true, true, true, 4);
 
         //Avoid using ThemeValue if it can't work - mainly due to testing issues when trying to run GTK UI customizations
         //on the Mac, which doesn't have a GTKLookAndFeel
@@ -74,7 +74,7 @@ public class GtkLFCustoms extends LFCustoms {
             "window", light,
             
             VIEW_TAB_OUTER_BORDER, BorderFactory.createEmptyBorder(),
-            VIEW_TAB_TABS_BORDER, new PartialEdgeBorder(5),
+            VIEW_TAB_TABS_BORDER, new PartialEdgeBorder(4),
             VIEW_TAB_CONTENT_BORDER, lowerBorder,
             EDITOR_TAB_OUTER_BORDER, BorderFactory.createEmptyBorder(),
             EDITOR_TAB_CONTENT_BORDER, lowerBorder,
@@ -117,6 +117,7 @@ public class GtkLFCustoms extends LFCustoms {
                 "textText", new ThemeValue (ThemeValue.REGION_PANEL, ThemeValue.TEXT_FOREGROUND, Color.BLACK), //NOI18N
                 "text", new ThemeValue (ThemeValue.REGION_PANEL, ThemeValue.TEXT_BACKGROUND, Color.GRAY), //NOI18N
                  
+                "SplitPane.dividerSize", new Integer (2),
                 
                 SYSTEMFONT, controlFont, //NOI18N
                 USERFONT, controlFont, //NOI18N

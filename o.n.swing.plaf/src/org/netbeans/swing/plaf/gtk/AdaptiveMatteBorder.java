@@ -40,12 +40,14 @@ public class AdaptiveMatteBorder implements Border {
             return ins;
         }
         Insets result = new Insets(ins.top, ins.left, ins.right, ins.bottom);
-        Point p = c.getLocation();
-        if (p.x > 10) {
-            result.left = 1;
-        }
-        if (p.y > 10) {
-            result.top = 1;
+        if (topLeftInsets) {
+            Point p = c.getLocation();
+            if (p.x > 10) {
+                result.left = 1;
+            }
+            if (p.y > 10) {
+                result.top = 1;
+            }
         }
         return result;
     }
