@@ -129,9 +129,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="editor-home-end.html" url="nbresloc:/org/netbeans/modules/usersguide/tips/editor-home-end.html"/>
         <attr name="editor-home-end.html/editor-select-word-line.html" boolvalue="true"/>
         <file name="editor-select-word-line.html" url="nbresloc:/org/netbeans/modules/usersguide/tips/editor-select-word-line.html"/>
-        <attr name="editor-select-word-line.html/startup-classes.html" boolvalue="true"/>
-        <file name="startup-classes.html" url="nbresloc:/org/netbeans/modules/usersguide/tips/startup-classes.html"/>
-        <attr name="startup-classes.html/editor-scrolling-shortcuts.html" boolvalue="true"/>
+        <attr name="editor-select-word-line.html/editor-scrolling-shortcuts.html" boolvalue="true"/>
         <file name="editor-scrolling-shortcuts.html" url="nbresloc:/org/netbeans/modules/usersguide/tips/editor-scrolling-shortcuts.html"/>
         <attr name="editor-scrolling-shortcuts.html/tab-switch-shortcuts.html" boolvalue="true"/>
         <file name="tab-switch-shortcuts.html" url="nbresloc:/org/netbeans/modules/usersguide/tips/tab-switch-shortcuts.html"/>

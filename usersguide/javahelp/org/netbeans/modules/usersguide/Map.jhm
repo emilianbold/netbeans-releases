@@ -309,7 +309,6 @@
 <mapID target="run.run" url="run/run.html" />
 <mapID target="run.debugmode" url="run/run_debug.html" />
 <mapID target="run.debug.applet" url="run/run_applet.html" />
-<mapID target="run.startup" url="run/startup.html" />
 <mapID target="run.arguments" url="run/arguments.html" />
 <mapID target="run.options.jump" url="run/run_options_jump.html" />
 <mapID target="run.options" url="run/options.html" />
@@ -1505,7 +1504,9 @@
    <mapID target="org.openide.text.CloneableEditor" url="pending.html" />
    <mapID target="org.openide.actions.ClassNamePanel" url="pending.html" />
 
-   <mapID target="org.netbeans.core.ui.UINodes$StartupNode" url="run/startup.html" />
+<!--delete entry pending completion of issue 33744 -->
+   <mapID target="org.netbeans.core.ui.UINodes$StartupNode" url="pending.html" />
+
    <mapID target="org.netbeans.core.ui.WelcomeFolderNode" url="configure/welcome_node.html" />
 
 
