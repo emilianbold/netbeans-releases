@@ -100,7 +100,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     </makenbm>
   </target>
 
-  <target name="test" depends="compile,javahelp">
+  <target name="test-build" depends="compile,javahelp">
     <mkdir dir="test"/>
     <filter token="BUILD_NUMBER_SUBST" value="testing"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
@@ -110,6 +110,8 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
       <zipfileset src="${binroot}/ant/release/modules/ext/ant.jar" excludes="META-INF/MANIFEST.MF"/>
       <zipfileset src="${binroot}/ant/release/modules/ext/ant-optional.jar" excludes="META-INF/MANIFEST.MF"/>
     </jar>
+  </target>
+  <target name="test" depends="test-build">
     <nbinstaller module="test/ant.jar" action="reinstall"/>
   </target>
 
