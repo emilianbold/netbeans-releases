@@ -214,10 +214,12 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("AD_SimpleTargetChooserPanelGUI"));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_FileName_Label").charAt(0));
         jLabel3.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_FileName_Label"));
+        jLabel3.setLabelFor(documentNameTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel3, gridBagConstraints);
@@ -228,6 +230,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(documentNameTextField, gridBagConstraints);
+        documentNameTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("AD_documentNameTextField"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -237,6 +240,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
 
         jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_Project_Label").charAt(0));
         jLabel1.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Project_Label"));
+        jLabel1.setLabelFor(projectTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
@@ -248,9 +252,11 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(projectTextField, gridBagConstraints);
+        projectTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("AD_projectTextField"));
 
         locationLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_Location_Label").charAt(0));
         locationLabel.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Location_Label"));
+        locationLabel.setLabelFor(locationComboBox);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -263,9 +269,11 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
         add(locationComboBox, gridBagConstraints);
+        locationComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("AD_locationComboBox"));
 
         jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_ParentFolder_Label").charAt(0));
         jLabel2.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Folder_Label"));
+        jLabel2.setLabelFor(folderTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -279,17 +287,20 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(folderTextField, gridBagConstraints);
+        folderTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("AD_folderTextField"));
 
-        browseButton.setMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_Browse_Button").charAt(0));
         browseButton.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Browse_Button"));
+        browseButton.setMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_Browse_Button").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(browseButton, gridBagConstraints);
+        browseButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("AD_browseButton"));
 
         jLabel4.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_CreatedFile_Label").charAt(0));
         jLabel4.setText(org.openide.util.NbBundle.getMessage(SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_CreatedFile_Label"));
+        jLabel4.setLabelFor(fileTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
@@ -302,6 +313,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(fileTextField, gridBagConstraints);
+        fileTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("AD_fileTextField"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
