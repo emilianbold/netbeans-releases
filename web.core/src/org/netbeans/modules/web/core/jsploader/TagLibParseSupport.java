@@ -198,6 +198,10 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
         }
     }
     
+    public JspParserAPI.ParseResult getCachedParseResult(boolean successfulOnly, boolean preferCurrent) {
+        return getCachedParseResult(successfulOnly, preferCurrent, false);
+    }
+    
     /** Returns a cached parse information about the page.
      * @param successfulOnly if true, and the page has been parsed successfully in the past, returns
      *  the result of this successful parse. Otherwise returns null.
@@ -207,9 +211,10 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
      *   unparsable, returns null.
      * @return the result of parsing this page
      */
-    public JspParserAPI.ParseResult getCachedParseResult(boolean successfulOnly, boolean preferCurrent) {
-        boolean needToParse = false;
-        if (preferCurrent && isDocumentDirty()) {
+    public JspParserAPI.ParseResult getCachedParseResult(boolean successfulOnly, boolean preferCurrent, boolean forceParse) {
+        boolean needToParse = forceParse;
+        
+         if (preferCurrent && isDocumentDirty()) {
             // need to get an up to date copy
             needToParse = true;
         }
@@ -253,6 +258,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
         }
         
         public void run() {
+            System.out.println("TaglibPaseSupport - parsing");
             //wait with the parsing until an editor pane is opened
             try {
                 if(!opened) {

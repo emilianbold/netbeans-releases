@@ -172,11 +172,13 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     }
     
     private Map getTagLibraries() {
-        JspParserAPI.ParseResult result = getParseResult();
-        if (result != null) {
-            return result.getPageInfo().getTagLibraries();
-        }
-        return null;
+        //refresh tag libraries mappings - this call causes the WebAppParseSupport to refresh taglibs mapping
+        getTagLibraryMappings();
+        //force the parser to update the parse information for the file
+        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(getDocument(), fobj, true, true, true);
+        if (result != null) return result.getPageInfo().getTagLibraries();
+        
+        return null; //an error
     }
     
     private TagLibraryInfo getTagLibrary(String prefix) {

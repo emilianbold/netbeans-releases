@@ -92,6 +92,8 @@ public abstract class JspContextInfo {
 
     public abstract JSPColoringData getJSPColoringData (Document doc, FileObject fo);
     
+    public abstract JspParserAPI.ParseResult getCachedParseResult(Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent, boolean forceReload);
+    
     public abstract JspParserAPI.ParseResult getCachedParseResult(Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent);
     
     public abstract JspParserAPI.JspOpenInfo getCachedOpenInfo(Document doc, FileObject fo, boolean preferCurrent);

@@ -99,15 +99,17 @@ public class JspContextInfoImpl extends JspContextInfo {
     }
     
    
-    public JspParserAPI.ParseResult getCachedParseResult (Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent) {
+    public JspParserAPI.ParseResult getCachedParseResult (Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent, boolean forceParse) {
         TagLibParseSupport sup = getTagLibParseSupport (doc, fo);
         if (sup != null) {
-            return sup.getCachedParseResult (successfulOnly, preferCurrent);
+            return sup.getCachedParseResult (successfulOnly, preferCurrent, forceParse);
         }
         return null;
     }
     
-    
+    public JspParserAPI.ParseResult getCachedParseResult (Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent) {
+        return getCachedParseResult(doc, fo, successfulOnly, preferCurrent, false);
+    }
     
     public JSPColoringData getJSPColoringData (Document doc, FileObject fo) {
         TagLibParseSupport sup = getTagLibParseSupport (doc, fo);
