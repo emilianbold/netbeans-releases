@@ -82,12 +82,11 @@ public final class LoaderPoolNode extends IndexedNode {
                    getString("CTL_LoaderPool"));
     setName(LOADER_POOL_NAME);
     setIconBase(LOADER_POOL_ICON_BASE);
-    createProperties();
   }
 
-  /** Method that prepares properties. Called from initialize.
+  /** Method that creates sheet for this node.
   */
-  protected void createProperties () {
+  protected Sheet createSheet () {
     final ResourceBundle bundle = NbBundle.getBundle(this);
     // default sheet with "properties" property set
     Sheet sheet = Sheet.createDefault();
@@ -102,7 +101,7 @@ public final class LoaderPoolNode extends IndexedNode {
       }
     );
     // and set new sheet
-    setSheet(sheet);
+    return sheet;
   }
 
   /** Do not allow renaming.*/
@@ -188,7 +187,7 @@ public final class LoaderPoolNode extends IndexedNode {
   */
   public static LoaderPoolNode getLoaderPoolNode () {
     if (loaderPoolNode == null)
-      loaderPoolNode = new LoaderPoolNode(new HashMap(), getNbLoaderPool());
+      loaderPoolNode = new LoaderPoolNode(new HashMap(15), getNbLoaderPool());
     return loaderPoolNode;
   }
 
@@ -321,6 +320,10 @@ public final class LoaderPoolNode extends IndexedNode {
       }
       // and return it
       return map;
+    }
+
+    protected Node[] doInitNodes (final java.util.Map m) {
+      return super.doInitNodes(m);
     }
 
     /** Adds new loader at the end of existing ones.
@@ -514,6 +517,7 @@ public final class LoaderPoolNode extends IndexedNode {
    */
     protected void superFireChangeEvent (ChangeEvent che) {
       super.fireChangeEvent(che);
+      System.out.println ("Loaders Change event fired....");
     }
 
   } // end of NbLoaderPool
@@ -522,6 +526,7 @@ public final class LoaderPoolNode extends IndexedNode {
 
 /*
 * Log
+*  7    Gandalf   1.6         2/16/99  David Simonek   
 *  6    Gandalf   1.5         1/20/99  Jaroslav Tulach 
 *  5    Gandalf   1.4         1/7/99   David Simonek   
 *  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names

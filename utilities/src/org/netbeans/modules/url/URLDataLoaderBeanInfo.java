@@ -54,11 +54,11 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
         (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage("com.netbeans.developer.modules.resources.urlLoader.gif");
+        icon = loadImage("/com/netbeans/developer/modules/resources/urlObject.gif");
       return icon;
     } else {
       if (icon32 == null)
-        icon32 = loadImage ("com.netbeans.developer.modules.resources.urlLoader32.gif");
+        icon32 = loadImage ("/com/netbeans/developer/modules/resources/urlObject32.gif");
       return icon32;
     }
   }
@@ -81,6 +81,7 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  2    Gandalf   1.1         2/16/99  David Simonek   
 *  1    Gandalf   1.0         1/22/99  Ian Formanek    
 * $
 */
