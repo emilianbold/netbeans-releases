@@ -47,7 +47,7 @@ public abstract class XTest extends NbTestCase {
         if (DEBUG) {
             dbg = new PrintWriter(System.out, true);
         } else {
-            dbg = new PrintWriter(getLog());
+            dbg = new PrintWriter(getLog(), true);
         }
     }
     
