@@ -1,0 +1,80 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2004 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>About Deployment Descriptors</title>
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+ 
+<h2>About Deployment Descriptors</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Deployment descriptors are XML-based text files whose elements describe how 
+  to assemble and deploy a module to a specific environment. The elements also 
+  contain behavioral information about components not included directly in code. 
+</p>
+<p>Deployment descriptors specify two kinds of information:</p>
+<ul>
+  <li>Structural information describes the different components of the JAR (or 
+    EAR) file, their relationship with each other, and their external dependencies. 
+    Environment entries and resource requirements are part of the structural information. 
+  </li>
+  <li>Assembly information describes how contents of a JAR (or EAR) file can be 
+    composed into a deployable unit.</li>
+</ul>
+<p>There are different types of deployment descriptors: EJB deployment descriptors 
+  described in the Enterprise JavaBeans specification, web deployment descriptors 
+  described in the Servlet specification, and application and application client 
+  deployment descriptors described in the J2EE specification. For each type of 
+  module or application, there are two deployment descriptors:</p>
+<ul>
+  <li>A general deployment descriptor that configures deployment settings on any 
+    J2EE-compliant implementation. The general deployment descriptor is named 
+    <tt><i>moduleType</i>.xml</tt> (for example, <tt>ejb-jar.xml</tt> for EJB 
+    modules and <tt>web.xml</tt> for web modules.)</li>
+  <li>A server-specific deployment descriptor that configures deployment settings 
+    for a specific J2EE-compliant implementation. The deployment descriptors for 
+    the Sun Java System Application Server are named <tt>sun-<i>moduleType</i>.xml</tt>.</li>
+</ul>
+<p>The&nbsp;IDE generates a deployment descriptor from the settings for EJB modules, 
+  web modules, and J2EE applications.when you create an empty enterprise project. 
+  It also reads your existing deployment descriptors when you import existing 
+  enterprise beans, enterprise applications, and web applications into the IDE. 
+  The deployment descriptors are located in the conf folder of your project directory, 
+  and are displayed under the Configuration Files node in the Projects window.</p>
+<p>As you work with your projects, the IDE updates the deployment descriptors 
+  to reflect changes you have made, such as adding business methods to an enterprise 
+  bean or adding a web module to an enterprise application. You can open a graphical 
+  editor for a deployment descriptor by double-clicking its node in the Projects 
+  window. You can edit the deplyment descriptor's XML by right-clicking its node 
+  and choosing Edit.</p>
+
+<table border="0">
+  
+<tr>
+<th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+</tr>
+  
+<tr valign="top"> 
+    
+<td width="23px">&nbsp;</td>
+    <td nowrap>&nbsp; </td>
+</tr>
+</table>
+ 
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0"> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   </table> 
+</body>
+
+</html>

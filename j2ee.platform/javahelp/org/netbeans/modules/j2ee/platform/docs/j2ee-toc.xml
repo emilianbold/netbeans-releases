@@ -169,11 +169,11 @@
             <tocitem text="About Entity Beans" target="about_entity_beans" />
             <tocitem text="About Session Beans" target="about_session_beans" />
             <tocitem text="About Message-Driven Beans" target="about_msg_driven_beans" />
-            <tocitem text="About EJB Deployment Descriptors" target="tbd" />
+            <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
         </tocitem>
         <tocitem text="Creating and Editing Enterprise Beans" >
             <tocitem text="Creating an EJB Module Project" target="tbd" />
-            <tocitem text="Creating an Enterprise Bean" target="tbd" />
+            <tocitem text="Creating an Enterprise Bean" target="create_ejb" />
             <tocitem text="Defining a Business Method" target="define_business_method" />
             <tocitem text="Defining a Finder Method" target="define_finder_method" />
             <tocitem text="Adding EJB QL to a Finder or Select Method" target="add_ejbql" />

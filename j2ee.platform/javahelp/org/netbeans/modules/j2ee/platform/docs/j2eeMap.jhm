@@ -99,7 +99,9 @@
     <mapID target="about_entity_beans" url="ejb/general/about_entity_beans.html" />
     <mapID target="about_msg_driven_beans" url="ejb/general/about_msg_driven_beans.html" />
     <mapID target="about_session_beans" url="ejb/general/about_session_beans.html" />
+    <mapID target="about_deployment_descriptors" url="ejb/general/about_deployment_descriptors.html" />
 
+    <mapID target="create_ejb" url="ejb/editing/create_ejb.html" />
     <mapID target="add_ejbql" url="ejb/editing/add_ejbql.html" />
     <mapID target="define_business_method" url="ejb/editing/define_business_method.html" />
     <mapID target="define_cmp_field" url="ejb/editing/define_cmp_field.html" />
