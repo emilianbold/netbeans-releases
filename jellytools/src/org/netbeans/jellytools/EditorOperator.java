@@ -122,6 +122,14 @@ public class EditorOperator extends TopComponentOperator {
     public EditorOperator(ContainerOperator contOper, String filename) {
         this(contOper, filename, 0);
     }
+    
+    /** Creates new operator instance for given component.
+     * It is used in FormDesignerOperator.
+     * @param editorComponent instance of editor
+     */
+    public EditorOperator(JComponent editorComponent) {
+        super(editorComponent);
+    }
 
     /** Waits for index-th opened editor with given name in specified container.
      * If not active, it is activated.
@@ -719,17 +727,6 @@ public class EditorOperator extends TopComponentOperator {
                                    ComponentSearcher.getTrueChooser("JButton"), index));
     }
     
-    /** Pushes popup menu on toolbar. It doesn't matter on which position it is
-     * invoked, everytime it is the same. That's why popup menu is invoked on
-     * the toolbar button with index 0. To switch toolbar on use Options ->
-     * Editing -> Editor Settings -> Toolbar Visible -> true.
-     * @param popupPath path to menu item (e.g. "Toolbar Visible")
-     */
-    public void pushToolbarPopupMenu(String popupPath) {
-        getToolbarButton(0).clickForPopup();
-        new JPopupMenuOperator().pushMenu(popupPath, "|");
-    }
-    
     /** Chooser which can be used to find a component with given tooltip,
      * in this case a toolbar button.
      */
@@ -796,7 +793,7 @@ public class EditorOperator extends TopComponentOperator {
     /** SubChooser to determine Editor TopComponent
      * Used in findTopComponent method.
      */
-    private static final class EditorSubchooser implements ComponentChooser {
+    public static final class EditorSubchooser implements ComponentChooser {
         public boolean checkComponent(Component comp) {
             return (comp instanceof CloneableEditor);
         }
