@@ -198,15 +198,11 @@ public class TestCreator extends java.lang.Object {
         StringBuffer    body = new StringBuffer(512);
         ClassElement    innerClasses[];        
         
-        // if regenerate suite method - we need to delete the old suite() method
-        // to add a new one - shoudn't it be anywhere else - it seems to me a bit
-        // as a design hack :-(
-        if (JUnitSettings.getDefault().isRegenerateSuiteMethod()) {
-            //System.err.println("TestCreator.createTestClassSuiteMethod() - is regenerate ...");
-            removeSuiteMethod(classTest);
-        }
+                
         
-        System.err.println("Generating suite() method for :"+classTest.getName());
+        //System.err.println("Generating suite() method for :"+classTest.getName());
+        
+        removeSuiteMethod(classTest);
         
         // create header of function
         MethodElement method = new MethodElement();
@@ -411,10 +407,15 @@ public class TestCreator extends java.lang.Object {
             }
         }
         
-        // fill suite methods
-        methods = new LinkedList();
-        methods.add(createTestClassSuiteMethod(classTest));
-        addMethods(classTest, methods);
+        
+        // add suite method ... only if we are supposed to do so
+        if (JUnitSettings.getDefault().isRegenerateSuiteMethod()) {
+            methods = new LinkedList();
+            methods.add(createTestClassSuiteMethod(classTest));
+            addMethods(classTest, methods);            
+        } else {
+            //System.err.println("TestCreator.createTestClassSuiteMethod() - do not regenerate ...");
+        }
         
         // fill methods according to the iface of tested class
         methods = createVariantMethods(classSource);

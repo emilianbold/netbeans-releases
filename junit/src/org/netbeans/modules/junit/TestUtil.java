@@ -70,12 +70,30 @@ class TestUtil extends Object {
     // test class names    
     //
     
+    static public String getTestClassFullName(ClassElement ce) {
+        StringBuffer name = new StringBuffer();
+        String packageName = ce.getName().getQualifier();
+        if (packageName != null) {
+            name.append(packageName.replace('.','/'));
+            if (name.length() > 0) {
+                name.append('/');
+            }
+        }
+        name.append(getTestClassName(ce));
+        name.append(JAVA_SOURCES_FULL_SUFFIX);
+        return name.toString();
+    }
+    
+    static public String getTestClassName(ClassElement ce) {
+        return getTestClassName(ce.getName().getName());
+    }
+    
     static public String getTestClassFullName(FileObject foSourceFile) {
         FileObject packageFileObject = foSourceFile.getParent();
         StringBuffer name = new StringBuffer();
         if (packageFileObject != null) {
             name.append(packageFileObject.getPackageName('/'));
-            if ( name.length() != 0 ) {
+            if ( name.length() > 0 ) {
                 // only when the package is not root
                 name.append('/');
             }
@@ -367,19 +385,31 @@ class TestUtil extends Object {
         return false;
     }    
     
-    static ClassElement getClassElementFromFileObject(FileObject fo) throws DataObjectNotFoundException {
-        return getClassElementFromDataObject(DataObject.find(fo));
+    static ClassElement[] getAllClassElementsFromFileObject(FileObject fo) throws DataObjectNotFoundException {
+        return getAllClassElementsFromDataObject(DataObject.find(fo));
     }
     
     
-    static ClassElement getClassElementFromDataObject(DataObject dO) {
+    static ClassElement[] getAllClassElementsFromDataObject(DataObject dO) {
         SourceCookie    sc;
         SourceElement   se;
 
         sc = (SourceCookie) dO.getCookie(SourceCookie.class);
         se = sc.getSource();
-        return se.getClass(Identifier.create(dO.getPrimaryFile().getName()));
+        return se.getAllClasses();
     }
+
+    static ClassElement getClassElementFromFileObject(FileObject fo) throws DataObjectNotFoundException {
+        return getClassElementFromDataObject(DataObject.find(fo));
+    }    
+    
+    static ClassElement getClassElementFromDataObject(DataObject dO) {
+        SourceCookie    sc;
+        SourceElement   se;
+        sc = (SourceCookie) dO.getCookie(SourceCookie.class);
+        se = sc.getSource();
+        return se.getClass(Identifier.create(dO.getPrimaryFile().getName()));
+    }    
     
     static ClassElement getClassElementCookie(DataObject doTarget, String name) {
         return (ClassElement) doTarget.getNodeDelegate().getChildren().findChild(name).getCookie(ClassElement.class);

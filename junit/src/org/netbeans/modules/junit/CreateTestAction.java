@@ -164,7 +164,7 @@ public class CreateTestAction extends CookieAction {
     private class CreateTestCanceledException extends Exception {}
     
     private void createSuiteTest(FileSystem fsTest, DataFolder folder, LinkedList suite, DataObject doSuiteT, LinkedList parentSuite) {
-        ClassElement        classTarget;
+        ClassElement[]      classTargets;
         DataObject          doTarget;
         FileObject          fo;
 
@@ -174,16 +174,21 @@ public class CreateTestAction extends CookieAction {
             doTarget = getTestClass(fsTest, TestUtil.getTestSuiteFullName(fo), doSuiteT);
 
             // generate the test suite for all listed test classes
-            classTarget = TestUtil.getClassElementFromDataObject(doTarget);
-
-            progress.setMessage(msgCreating + classTarget.getName().getFullName() + " ...");
-
-            TestCreator.createTestSuite(suite, fo.getPackageName('.'), classTarget);
-            save(doTarget);
+            classTargets = TestUtil.getAllClassElementsFromDataObject(doTarget);
             
-            // add the suite class to the list of members of the parent
-            if (null != parentSuite)
-                parentSuite.add(classTarget.getName().getFullName());
+            for (int i=0; i < classTargets.length; i++) {
+                ClassElement classTarget = classTargets[i];
+                
+                progress.setMessage(msgCreating + classTarget.getName().getFullName() + " ...");
+                
+                TestCreator.createTestSuite(suite, fo.getPackageName('.'), classTarget);
+                save(doTarget);
+                
+                // add the suite class to the list of members of the parent
+                if (null != parentSuite) {
+                    parentSuite.add(classTarget.getName().getFullName());
+                }
+            }
         } 
         catch (Exception e) {
             // @@ log - the suite file creation failure
@@ -217,38 +222,41 @@ public class CreateTestAction extends CookieAction {
                 createSuiteTest(fsTest, DataFolder.findFolder(foSource), mySuite, doSuiteT, parentSuite);
         }
         else {
-            ClassElement    classSource;
+            ClassElement[]  classSources;
             ClassElement    classTarget;
             DataObject      doTarget;
             String          name;
             
-            try {
-                classSource = TestUtil.getClassElementFromDataObject(DataObject.find(foSource));
-                if (null != classSource) {
-                    if (TestCreator.isClassTestable(classSource)) {
-                        // find the test class, if it exists or create one from active template
-                        doTarget = getTestClass(fsTest, TestUtil.getTestClassFullName(foSource), doTestT);
-
-                        // generate the test of current node
-                        classTarget = TestUtil.getClassElementFromDataObject(doTarget);
-
-                        progress.setMessage(msgCreating + classTarget.getName().getFullName() + " ...");
-
-                        TestCreator.createTestClass(classSource, classTarget);
-                        save(doTarget);
-
-                        name = classTarget.getName().getFullName();
-                        // add the test class to the parent's suite
-                        if (null != parentSuite) {
-                            parentSuite.add(name);
+            try {                
+                classSources = TestUtil.getAllClassElementsFromDataObject(DataObject.find(foSource));
+                for (int i=0; i < classSources.length; i++) {
+                    ClassElement classSource = classSources[i];
+                    if (null != classSource) {
+                        if (TestCreator.isClassTestable(classSource)) {
+                            // find the test class, if it exists or create one from active template
+                            doTarget = getTestClass(fsTest, TestUtil.getTestClassFullName(classSource), doTestT);
+                            
+                            // generate the test of current node
+                            classTarget = TestUtil.getClassElementFromDataObject(doTarget);
+                            
+                            progress.setMessage(msgCreating + classTarget.getName().getFullName() + " ...");
+                            
+                            TestCreator.createTestClass(classSource, classTarget);
+                            save(doTarget);
+                            
+                            name = classTarget.getName().getFullName();
+                            // add the test class to the parent's suite
+                            if (null != parentSuite) {
+                                parentSuite.add(name);
+                            }
                         }
+                        else
+                            progress.setMessage(msgIgnoring + classSource.getName().getFullName() + " ...");
                     }
-                    else
-                         progress.setMessage(msgIgnoring + classSource.getName().getFullName() + " ...");
-                }
-                else {
-                     // @@ log - the tested class file can't be parsed
-                     System.out.println("@@ log - the tested class file can't be parsed.");
+                    else {
+                        // @@ log - the tested class file can't be parsed
+                        System.out.println("@@ log - the tested class file can't be parsed.");
+                    }
                 }
             } 
             catch (Exception e) {
