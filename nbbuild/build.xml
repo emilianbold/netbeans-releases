@@ -24,14 +24,6 @@ ToDo:
 <project name="nbbuild" default="all" basedir=".">
   <import file="default.xml"/>
 
-  <!-- First things first: read the user's and/or -->
-  <!-- the site's build properties files.         -->
-  <property file="user.build.properties"/>
-  <property file="site.build.properties"/>
-
-  <!-- Now read the standard properties file. -->
-  <property file="build.properties"/>
-
   <!-- To make people happy who want to do `ant clean all': -->
   <target name="all" depends="build,commit-validation" description="Build the IDE and run basic validation tests."/>
 
@@ -47,6 +39,14 @@ ToDo:
   <target name="bootstrap"
           description="Bootstrap NetBeans-specific Ant extensions."
           depends="assure-jdk-1.4">
+    <!-- First things first: read the user's and/or -->
+    <!-- the site's build properties files.         -->
+    <property file="user.build.properties"/>
+    <property file="site.build.properties"/>
+
+    <!-- Now read the standard properties file. -->
+    <property file="build.properties"/>
+
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
     <ant dir="external" target="unscramble"/>
     <ant dir="../xml/external" target="unscramble"/>
@@ -70,8 +70,6 @@ ToDo:
   </target>
 
   <target name="init-module-list" depends="bootstrap,setup-jdkhome">
-    <!-- Already read the user, site and standard properties files. -->
-
     <!-- Define modules. -->
     <!-- The following is not permitted by Ant: -->
     <!-- <property name="modules" value="${config.modules.${moduleconfig}}"/> -->
@@ -1127,9 +1125,13 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <for-each startdir=".." target="nbm" locations="${allmodules}"/>
   </target>
   <target name="nbm"/><!-- dummy target -->
+  
+  <target name="set-config-to-javadoc" >
+      <property name="moduleconfig" value="javadoc" />
+  </target>
 
   <!-- build javadoc for selected modules -->
-  <target name="build-javadoc" depends="init" description="Builds Javadoc documentation for modules; pass -Dmoduleconfig=javadoc and on branches e.g. -Djavadoc.web.root=http://www.netbeans.org/download/release35/javadoc">
+  <target name="build-javadoc" depends="set-config-to-javadoc,init" description="Builds Javadoc documentation for modules; pass -Dmoduleconfig=javadoc and on branches e.g. -Djavadoc.web.root=http://www.netbeans.org/download/release35/javadoc">
       <ant dir="." target="merge">
           <property name="modules" value="${modules}"/>
           <property name="fixedmodules" value="${fixedmodules}"/>
