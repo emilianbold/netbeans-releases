@@ -1,0 +1,20 @@
+Prerequisites
+   
+ - InstallShield MultiPlatform 5 (SP3)
+ - Apache Ant 1.6.1
+ - JDK 1.4.2 (not JDK 1.5 which uses an incompatible classfile format)
+ - external unzip utility on $PATH
+ - Unix
+ - installers of AS 8.1 PE for all 4 supported platforms
+
+To build from command line run ant as usual with
+
+ -Dismp.home=<home dir of ISMP5>
+ -Dnb.dir=../../nbbuild/netbeans
+ -Dinstaller.basename=NetBeans-asbundle-20040622
+ -Djdk.installer=/mnt/local/as.installer/sjsas_pe-8_1_2005Q1-linux.bin
+
+As there is different command line option for every platform it must be run
+separately for every platform.
+
+The installers will be generated and placed in the directory 'dist'.
