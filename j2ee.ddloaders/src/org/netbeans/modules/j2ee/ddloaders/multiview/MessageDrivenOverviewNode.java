@@ -21,7 +21,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-public class MessageDrivenOverviewNode extends SectionNode {
+public class MessageDrivenOverviewNode extends EjbSectionNode {
 
     public MessageDrivenOverviewNode(SectionNodeView sectionNodeView, MessageDriven messageDriven) {
         super(sectionNodeView, messageDriven, Utils.getBundleMessage("LBL_Overview"), Utils.ICON_BASE_MISC_NODE);

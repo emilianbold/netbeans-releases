@@ -22,7 +22,7 @@ import org.openide.filesystems.FileObject;
 /**
  * @author pfiala
  */
-class FinderMethodsNode extends SectionNode {
+class FinderMethodsNode extends EjbSectionNode {
 
     private EntityHelper entityHelper;
 

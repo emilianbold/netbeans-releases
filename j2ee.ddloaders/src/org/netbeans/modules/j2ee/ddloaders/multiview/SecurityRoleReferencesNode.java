@@ -21,7 +21,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-public class SecurityRoleReferencesNode extends SectionNode {
+public class SecurityRoleReferencesNode extends EjbSectionNode {
 
     public SecurityRoleReferencesNode(SectionNodeView sectionNodeView, EntityAndSession ejb) {
         super(sectionNodeView, ejb, Utils.getBundleMessage("LBL_SecurityRoleReferences" +

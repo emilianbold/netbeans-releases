@@ -21,7 +21,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-public class EntityOverviewNode extends SectionNode {
+public class EntityOverviewNode extends EjbSectionNode {
 
     private EntityHelper entityHelper;
 

@@ -22,7 +22,7 @@ import org.openide.filesystems.FileObject;
 /**
  * @author pfiala
  */
-class CmpFieldsNode extends SectionNode {
+class CmpFieldsNode extends EjbSectionNode {
 
     private EntityHelper entityHelper;
 

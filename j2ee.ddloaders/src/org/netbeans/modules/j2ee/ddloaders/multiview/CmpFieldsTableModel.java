@@ -64,9 +64,9 @@ class CmpFieldsTableModel extends InnerTableModel {
         }
     }
 
-    public void dataFileChanged() {
+    public void refreshView() {
         cmpFieldHelperMap.clear();
-        super.dataFileChanged();
+        super.refreshView();
     }
 
     public int getRowCount() {

@@ -50,8 +50,11 @@ public abstract class TextItemEditorModel extends ItemEditorHelper.ItemEditorMod
             value = null;
         }
         if (validate(value)) {
-            setValue(value);
-            dataObject.modelUpdatedFromUI();
+            String currentValue = getValue();
+            if (!(value == currentValue || value != null && value.equals(currentValue))) {
+                setValue(value);
+                dataObject.modelUpdatedFromUI();
+            }
             return true;
         } else {
             return false;
@@ -64,8 +67,6 @@ public abstract class TextItemEditorModel extends ItemEditorHelper.ItemEditorMod
     }
 
     public void documentUpdated() {
-        if(!setItemValue(getEditorText())) {
-            reloadEditorText();
-        }
+        setItemValue(getEditorText());
     }
 }

@@ -26,7 +26,7 @@ import java.awt.event.ActionListener;
 /**
  * @author pfiala
  */
-class CmpRelationShipsNode extends SectionNode {
+class CmpRelationShipsNode extends EjbSectionNode {
 
     CmpRelationShipsNode(SectionNodeView sectionNodeView, EjbJar ejbJar) {
         super(sectionNodeView, true, ejbJar, Utils.getBundleMessage("LBL_CmpRelationships"), Utils.ICON_BASE_MISC_NODE);

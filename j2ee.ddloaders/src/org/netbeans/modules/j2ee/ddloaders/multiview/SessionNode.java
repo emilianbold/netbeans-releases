@@ -21,7 +21,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-class SessionNode extends SectionNode {
+class SessionNode extends EjbSectionNode {
 
     SessionNode(SectionNodeView sectionNodeView, Session session) {
         super(sectionNodeView, false, session, session.getDefaultDisplayName(), Utils.ICON_BASE_SESSION_NODE);

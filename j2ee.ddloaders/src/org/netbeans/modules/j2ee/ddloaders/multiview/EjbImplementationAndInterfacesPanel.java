@@ -79,7 +79,7 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         final JButton moveClassButton = getMoveClassButton();
         final JButton renameClassButton = getRenameClassButton();
 
-        populateFields();
+        refreshView();
 
         FocusListener focusListener = new FocusAdapter() {
             public void focusGained(FocusEvent e) {
@@ -124,7 +124,6 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
                 } else {
                     addInterfaces(true);
                 }
-                ((SectionNodeView) getSectionView()).dataFileChanged();
             }
         });
 
@@ -135,7 +134,6 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
                 } else {
                     addInterfaces(false);
                 }
-                ((SectionNodeView) getSectionView()).dataFileChanged();
             }
         });
     }
@@ -151,7 +149,7 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
             try {
                 helper.addInterfaces(local);
             } finally {
-                populateFields();
+                refreshView();
             }
         }
     }
@@ -176,16 +174,16 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
             try {
                 helper.removeInterfaces(local);
             } finally {
-                populateFields();
+                refreshView();
             }
         }
     }
 
     public void dataFileChanged() {
-        populateFields();
+        refreshView();
     }
 
-    public void populateFields() {
+    protected void refreshView() {
         beanClassDocument.init();
         localComponentDocument.init();
         localHomeDocument.init();
@@ -195,15 +193,17 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         String localComponent = helper.getLocal();
         boolean isLocal = localComponent != null;
         getLocalInterfaceCheckBox().setSelected(isLocal);
-//todo check
-//        getLocalHomeTextField().setText(isLocal ? helper.getLocalHome() : null);
-
         String remoteComponent = helper.getRemote();
         boolean isRemote = remoteComponent != null;
         getRemoteInterfaceCheckBox().setSelected(isRemote);
-//todo check
-//        getRemoteComponentTextField().setText(isRemote ? remoteComponent : null);
-//        getRemoteHomeTextField().setText(isRemote ? helper.getHome() : null);
+    }
+
+    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
+        if (source instanceof EntityAndSession) {
+            refreshView();
+        } else {
+            super.propertyChanged(source, propertyName, oldValue, newValue);
+        }
     }
 
     private abstract class NonEditableDocument extends PlainDocument {

@@ -10,7 +10,6 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.core.spi.multiview.CloseOperationState;
@@ -43,10 +42,10 @@ public abstract class EjbJarMultiviewElement extends ToolBarMultiViewElement {
         if (view == null) {
             view = createView();
         }
-        if(dataObject.isModified()) {
-            ((SectionNodeView) view).dataFileChanged();
-        }
         comp.setContentView(view);
+        if (view instanceof SectionNodeView) {
+            ((SectionNodeView) view).getRootNode().refreshSubtree();
+        }
         org.netbeans.modules.xml.multiview.Error error = view.validateView();
         if (error != null) {
             comp.getErrorPanel().setError(error);

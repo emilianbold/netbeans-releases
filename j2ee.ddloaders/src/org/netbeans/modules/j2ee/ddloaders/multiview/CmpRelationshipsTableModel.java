@@ -55,9 +55,9 @@ class CmpRelationshipsTableModel extends InnerTableModel {
         fireTableRowsDeleted(row, row);
     }
 
-    public void dataFileChanged() {
+    public void refreshView() {
         relationshipsHelperMap.clear();
-        super.dataFileChanged();
+        super.refreshView();
     }
 
     public int getRowCount() {

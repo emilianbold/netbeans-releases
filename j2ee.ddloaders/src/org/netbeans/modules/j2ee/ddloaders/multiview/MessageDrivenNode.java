@@ -21,7 +21,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-class MessageDrivenNode extends SectionNode {
+class MessageDrivenNode extends EjbSectionNode {
 
     MessageDrivenNode(SectionNodeView sectionNodeView, MessageDriven messageDriven) {
         super(sectionNodeView, false, messageDriven, messageDriven.getDefaultDisplayName(),

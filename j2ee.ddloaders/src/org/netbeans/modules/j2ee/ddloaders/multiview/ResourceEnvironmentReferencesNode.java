@@ -21,7 +21,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-public class ResourceEnvironmentReferencesNode extends SectionNode {
+public class ResourceEnvironmentReferencesNode extends EjbSectionNode {
 
     public ResourceEnvironmentReferencesNode(SectionNodeView sectionNodeView, Ejb ejb) {
         super(sectionNodeView, ejb, Utils.getBundleMessage("LBL_ResourceEnvironmentReferences"),

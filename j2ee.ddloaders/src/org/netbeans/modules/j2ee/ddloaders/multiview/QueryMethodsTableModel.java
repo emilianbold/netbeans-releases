@@ -61,9 +61,9 @@ public abstract class QueryMethodsTableModel extends InnerTableModel {
         fireTableRowsDeleted(-1, -1);
     }
 
-    public void dataFileChanged() {
+    public void refreshView() {
         queryMethodHelperMap.clear();
-        super.dataFileChanged();
+        super.refreshView();
     }
 
     public int getRowCount() {

@@ -57,7 +57,7 @@ public abstract class InnerTableModel extends AbstractTableModel {
         return columnWidths[i];
     }
 
-    public void dataFileChanged() {
+    public void refreshView() {
         fireTableDataChanged();
     }
 }

@@ -24,12 +24,20 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class SessionOverviewPanel extends SessionOverviewForm {
 
+    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
+        if (source instanceof Session) {
+            refreshView();
+        } else {
+            super.propertyChanged(source, propertyName, oldValue, newValue);
+        }
+    }
+
     public SessionOverviewPanel(final SectionNodeView sectionNodeView, final Session session) {
         super(sectionNodeView);
 
         final EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
 
-        new ItemEditorHelper(getEjbNameTextField(), new TextItemEditorModel(dataObject, false) {
+        addRefreshable(new ItemEditorHelper(getEjbNameTextField(), new TextItemEditorModel(dataObject, false) {
             protected String getValue() {
                 return session.getEjbName();
             }
@@ -37,10 +45,9 @@ public class SessionOverviewPanel extends SessionOverviewForm {
             protected void setValue(String value) {
                 session.setEjbName(value);
             }
-        });
+        }));
 
-        new ItemOptionHelper(getSessionTypeButtonGroup(), dataObject) {
-
+        addRefreshable(new ItemOptionHelper(getSessionTypeButtonGroup(), dataObject) {
             public String getItemValue() {
                 return session.getSessionType();
             }
@@ -48,10 +55,9 @@ public class SessionOverviewPanel extends SessionOverviewForm {
             public void setItemValue(String value) {
                 session.setSessionType(value);
             }
-        };
+        });
 
-        new ItemOptionHelper(getTransactionTypeButtonGroup(), dataObject) {
-
+        addRefreshable(new ItemOptionHelper(getTransactionTypeButtonGroup(), dataObject) {
             public String getItemValue() {
                 return session.getTransactionType();
             }
@@ -59,7 +65,7 @@ public class SessionOverviewPanel extends SessionOverviewForm {
             public void setItemValue(String value) {
                 session.setTransactionType(value);
             }
-        };
+        });
     }
 
 }

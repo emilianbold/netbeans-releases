@@ -21,7 +21,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
@@ -74,6 +73,8 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     private FileObject srcRoots[];
     private boolean parseable;
     protected final static RequestProcessor RP = new RequestProcessor("XML Parsing");   // NOI18N
+    private boolean merging = false;
+    private PropertyChangeListener ejbJarChangeListener;
 
     private static final long serialVersionUID = 8857563089355069362L;
 
@@ -181,10 +182,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
 
     public EjbJar getEjbJar() {
         return ejbJar;
-    }
-
-    private EjbJar createEjbJar() throws java.io.IOException {
-        return DDProvider.getDefault().getDDRoot(getPrimaryFile());
     }
 
     protected Node createNodeDelegate() {
@@ -414,14 +411,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
      * @return true if model was succesfully created, false otherwise
      */
     protected boolean createModelFromFileObject(FileObject fo) throws IOException {
-        ejbJar = createEjbJar();
-        if (ejbJar != null) {
-            setSaxError(ejbJar.getError());
-            parseable = ejbJar.getStatus() != EjbJar.STATE_INVALID_UNPARSABLE;
-        } else {
-            parseable = false;
-        }
-        return parseable;
+        return parse(createInputSource());
     }
 
     /**
@@ -449,37 +439,40 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             String version = null;
             final EjbJarProxy oldEjbJar = (EjbJarProxy) ejbJar;
             try {
-                // preparsing
-                // TODO: error = ... parse(is) ???
                 EjbJarProxy newEjbJar = (EjbJarProxy) EjbJarDDUtils.createEjbJar(is);
                 if (ejbJar != null && oldEjbJar.getOriginal() != null) {
+                    System.out.println(".............. "+this);
+                    System.out.println("************** before merge");
+                    merging = true;
                     ejbJar.merge(newEjbJar, EjbJar.MERGE_UPDATE);
+                    merging = false;
+                    System.out.println("************** after merge");
                 } else {
-                    ejbJar = newEjbJar;
+                    setEjbJar(oldEjbJar, newEjbJar);
                 }
-                if (error != null) {
-                    oldEjbJar.setStatus(EjbJar.STATE_INVALID_PARSABLE);
+                if (oldEjbJar != null) {
+                    oldEjbJar.setStatus(error == null ? EjbJar.STATE_VALID : EjbJar.STATE_INVALID_PARSABLE);
                     oldEjbJar.setError(error);
-                    ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(
-                            oldError == null ? null : oldError.getMessage(), error.getMessage());
-                } else {
-                    oldEjbJar.setStatus(EjbJar.STATE_VALID);
-                    oldEjbJar.setError(null);
-                    ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(
-                            oldError == null ? null : oldError.getMessage(), null);
-                    parseable = true;
                 }
-                System.out.println("version:" + ejbJar.getVersion() + " Status:" + ejbJar.getStatus() + " Error:" + //NOI18N
-                        ejbJar.getError());
+                String newDescription = error == null ? null : error.getMessage();
+                String oldDescription = oldError == null ? null : oldError.getMessage();
+                ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(oldDescription, newDescription);
+                parseable = error == null;
+                if (ejbJar != null) {
+                    System.out.println("version:" + ejbJar.getVersion() + " Status:" + ejbJar.getStatus() + " Error:" + //NOI18N
+                                    ejbJar.getError());
+                }
                 setSaxError(error);
             } catch (SAXException ex) {
                 if (ejbJar == null || oldEjbJar.getOriginal() == null) {
-                    ejbJar = new EjbJarProxy(null, version);
-                    oldEjbJar.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
-                    if (ex instanceof org.xml.sax.SAXParseException) {
-                        oldEjbJar.setError((org.xml.sax.SAXParseException) ex);
-                    } else if (ex.getException() instanceof org.xml.sax.SAXParseException) {
-                        oldEjbJar.setError((org.xml.sax.SAXParseException) ex.getException());
+                    setEjbJar(oldEjbJar, new EjbJarProxy(null, version));
+                    if (oldEjbJar != null) {
+                        oldEjbJar.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
+                        if (ex instanceof org.xml.sax.SAXParseException) {
+                            oldEjbJar.setError((org.xml.sax.SAXParseException) ex);
+                        } else if (ex.getException() instanceof org.xml.sax.SAXParseException) {
+                            oldEjbJar.setError((org.xml.sax.SAXParseException) ex.getException());
+                        }
                     }
                 }
                 ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(
@@ -488,6 +481,26 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             }
         }
         return parseable;
+    }
+
+    private void setEjbJar(final EjbJarProxy oldEjbJar, EjbJarProxy newEjbJar) {
+        if(oldEjbJar != null) {
+            oldEjbJar.removePropertyChangeListener(ejbJarChangeListener);
+        }
+        ejbJar = newEjbJar;
+        if (ejbJarChangeListener == null) {
+            ejbJarChangeListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (!merging) {
+                        System.out.println("======== before updateModelFromSource()");
+                        updateDocument();
+                        //updateModelFromSource();
+                        System.out.println("======== after updateModelFromSource()");
+                    }
+                }
+            };
+        }
+        ejbJar.addPropertyChangeListener(ejbJarChangeListener);
     }
 
     /**
@@ -547,6 +560,10 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             }
         }
 
+    }
+
+    public boolean isMerging() {
+        return merging;
     }
 
     private static class DDView extends DesignMultiViewDesc implements java.io.Serializable {

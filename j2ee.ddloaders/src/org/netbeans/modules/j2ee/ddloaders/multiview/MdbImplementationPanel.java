@@ -49,4 +49,8 @@ public class MdbImplementationPanel extends MdbImplementationForm {
 
 
     }
+
+    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
+        super.propertyChanged(source, propertyName, oldValue, newValue);
+    }
 }

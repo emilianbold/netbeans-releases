@@ -21,7 +21,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-class EjbImplementationAndInterfacesNode extends SectionNode {
+class EjbImplementationAndInterfacesNode extends EjbSectionNode {
 
     private EntityAndSessionHelper helper;
 

@@ -24,7 +24,7 @@ class CmpRelationshipsView extends SectionNodeView {
 
     CmpRelationshipsView(EjbJarMultiViewDataObject dataObject) {
         super(dataObject);
-        SectionNode rootNode = new SectionNode(this, this, Utils.getBundleMessage("LBL_CmpRelationships"),
+        EjbSectionNode rootNode = new EjbSectionNode(this, this, Utils.getBundleMessage("LBL_CmpRelationships"),
                 Utils.ICON_BASE_DD_VALID);
         EjbJar ejbJar = dataObject.getEjbJar();
         rootNode.addChild(new CmpRelationShipsNode(this, ejbJar));

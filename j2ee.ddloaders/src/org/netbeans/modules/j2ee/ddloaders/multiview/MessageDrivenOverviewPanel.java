@@ -49,7 +49,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
 
         final EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
 
-        new ItemEditorHelper(getNameTextField(), new TextItemEditorModel(dataObject, false) {
+        addRefreshable(new ItemEditorHelper(getNameTextField(), new TextItemEditorModel(dataObject, false) {
             protected String getValue() {
                 return messageDriven.getEjbName();
             }
@@ -57,10 +57,9 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
             protected void setValue(String value) {
                 messageDriven.setEjbName(value);
             }
-        });
+        }));
 
-        new ItemOptionHelper(getTransactionTypeButtonGroup(), dataObject) {
-
+        addRefreshable(new ItemOptionHelper(getTransactionTypeButtonGroup(), dataObject) {
             public String getItemValue() {
                 return messageDriven.getTransactionType();
             }
@@ -68,7 +67,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
             public void setItemValue(String value) {
                 messageDriven.setTransactionType(value);
             }
-        };
+        });
 
         config = getActivationConfig(messageDriven);
 
@@ -86,8 +85,8 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
             durabilityComboBox.setEnabled(false);
             messageSelectorTextField.setEnabled(false);
         } else {
-            new ItemEditorHelper(messageSelectorTextField, new TextItemEditorModel(dataObject, true, true) {
-
+            addRefreshable(new ItemEditorHelper(messageSelectorTextField,
+                            new TextItemEditorModel(dataObject, true, true) {
                 protected String getValue() {
                     return getConfigProperty(PROPERTY_MESSAGE_SELECTOR);
                 }
@@ -95,10 +94,9 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
                 protected void setValue(String value) {
                     setConfigProperty(PROPERTY_MESSAGE_SELECTOR, value);
                 }
-            });
+            }));
 
-            new ItemOptionHelper(getAcknowledgeModeButtonGroup(), dataObject) {
-
+            addRefreshable(new ItemOptionHelper(getAcknowledgeModeButtonGroup(), dataObject) {
                 public String getItemValue() {
                     return getConfigProperty(PROPERTY_ACKNOWLEDGE_NAME, "Auto-acknowledge");//NOI18N
                 }
@@ -106,13 +104,12 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
                 public void setItemValue(String value) {
                     setConfigProperty(PROPERTY_ACKNOWLEDGE_NAME, value);
                 }
-            };
+            });
 
             final DurabilityComboBoxHelper durabilityComboBoxHelper = new DurabilityComboBoxHelper(durabilityComboBox,
                     dataObject);
 
             new ItemComboBoxHelper(destinationTypeComboBox, dataObject) {
-
                 {
                     setDurabilityEnabled();
                 }
@@ -203,6 +200,10 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
             property.setActivationConfigPropertyValue(propertyValue);
             config.addActivationConfigProperty(property);
         }
+    }
+
+    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
+        super.propertyChanged(source, propertyName, oldValue, newValue);
     }
 
     private class DurabilityComboBoxHelper extends ItemComboBoxHelper {

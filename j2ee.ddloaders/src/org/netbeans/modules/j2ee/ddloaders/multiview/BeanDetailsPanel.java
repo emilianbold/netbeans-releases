@@ -10,10 +10,10 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.common.Icon;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbDetailForm;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
@@ -21,6 +21,8 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * @author pfiala
@@ -94,10 +96,10 @@ class BeanDetailsPanel extends EjbDetailForm {
         super(sectionNodeView);
         this.dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
         this.ejb = ejb;
-        new ItemEditorHelper(getDisplayNameTextField(), new DisplayNameEditorModel(dataObject));
-        new ItemEditorHelper(getDescriptionTextArea(), new DescriptionEditorModel(dataObject));
-        new ItemEditorHelper(getSmallIconTextField(), new SmallIconEditorModel(dataObject));
-        new ItemEditorHelper(getLargeIconTextField(), new LargeIconEditorModel(dataObject));
+        addRefreshable(new ItemEditorHelper(getDisplayNameTextField(), new DisplayNameEditorModel(dataObject)));
+        addRefreshable(new ItemEditorHelper(getDescriptionTextArea(), new DescriptionEditorModel(dataObject)));
+        addRefreshable(new ItemEditorHelper(getSmallIconTextField(), new SmallIconEditorModel(dataObject)));
+        addRefreshable(new ItemEditorHelper(getLargeIconTextField(), new LargeIconEditorModel(dataObject)));
         getBrowseLargeIconButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String relativePath = Utils.browseIcon(dataObject);
@@ -116,4 +118,11 @@ class BeanDetailsPanel extends EjbDetailForm {
         });
     }
 
+    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
+        if(source instanceof Ejb || source instanceof Icon) {
+            refreshView();
+        } else {
+            super.propertyChanged(source, propertyName, oldValue, newValue);
+        }
+    }
 }

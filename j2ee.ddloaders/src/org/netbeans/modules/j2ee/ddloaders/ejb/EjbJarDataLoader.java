@@ -38,7 +38,7 @@ public class EjbJarDataLoader extends UniFileLoader {
 
 
     public EjbJarDataLoader () {
-        super ("org.netbeans.modules.j2ee.ddloaders.ejb.EjbJarDataObject");  // NOI18N
+        super ("org.netbeans.modules.j2ee.ddloaders.multiview.EjbJarMultiViewDataObject");  // NOI18N
     }
 
 

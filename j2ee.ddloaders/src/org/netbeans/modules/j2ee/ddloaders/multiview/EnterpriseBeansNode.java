@@ -20,38 +20,90 @@ import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.BoxPanel;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 
 /**
  * @author pfiala
  */
-public class EnterpriseBeansNode extends SectionNode {
+public class EnterpriseBeansNode extends EjbSectionNode {
+
+    protected EnterpriseBeans enterpriseBeans;
 
     public EnterpriseBeansNode(SectionNodeView sectionNodeView, EnterpriseBeans enterpriseBeans) {
         super(sectionNodeView, enterpriseBeans, Utils.getBundleMessage("LBL_EnterpriseBeans"),
                 Utils.ICON_BASE_ENTERPRISE_JAVA_BEANS_NODE);
+        this.enterpriseBeans = enterpriseBeans;
         setExpanded(true);
+        getSectionNodePanel().refreshView();
+    }
 
-        final Ejb[] ejbs = enterpriseBeans.getEjbs();
+    private SectionNode createNode(Ejb ejb) {
+        SectionNodeView sectionNodeView = getSectionNodeView();
+        if (ejb instanceof Session) {
+            return new SessionNode(sectionNodeView, (Session) ejb);
+        } else if (ejb instanceof Entity) {
+            return new EntityNode(sectionNodeView, (Entity) ejb);
+        } else if (ejb instanceof MessageDriven) {
+            return new MessageDrivenNode(sectionNodeView, (MessageDriven) ejb);
+        } else {
+            return null;
+        }
+    }
 
+    public SectionInnerPanel createInnerPanel() {
+        SectionNodeView sectionNodeView = getSectionNodeView();
+        BoxPanel boxPanel = new BoxPanel(sectionNodeView) {
+            protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
+                if (source == enterpriseBeans) {
+                    refreshView();
+                } else {
+                    super.propertyChanged(source, propertyName, oldValue, newValue);
+                }
+            }
+
+            protected void refreshView() {
+                checkChildren();
+            }
+        };
+        populateBoxPanel(boxPanel);
+        return boxPanel;
+    }
+
+    private void checkChildren() {
+        Map nodeMap = new HashMap();
+        Children children = getChildren();
+        Node[] nodes = children.getNodes();
+        for (int i = 0; i < nodes.length; i++) {
+            Node node = nodes[i];
+            nodeMap.put(((SectionNode) node).getKey(), node);
+        }
+        Ejb[] ejbs = enterpriseBeans.getEjbs();
         // sort beans according to their display name
         Arrays.sort(ejbs, new Comparator() {
             public int compare(Object o1, Object o2) {
                 return ((Ejb) o1).getDefaultDisplayName().compareTo(((Ejb) o2).getDefaultDisplayName());
             }
         });
-
+        boolean dirty = nodes.length != ejbs.length;
+        Node[] newNodes = new Node[ejbs.length];
         for (int i = 0; i < ejbs.length; i++) {
             Ejb ejb = ejbs[i];
-            if (ejb instanceof Session) {
-                addChild(new SessionNode(sectionNodeView, (Session) ejb));
-            } else if (ejb instanceof Entity) {
-                addChild(new EntityNode(sectionNodeView, (Entity) ejb));
-            } else if (ejb instanceof MessageDriven) {
-                addChild(new MessageDrivenNode(sectionNodeView, (MessageDriven) ejb));
+            SectionNode node = (SectionNode) nodeMap.get(ejb);
+            if (node == null) {
+                node = createNode(ejb);
+                dirty = true;
             }
+            newNodes[i] = node;
+        }
+        if (dirty) {
+            children.remove(nodes);
+            children.add(newNodes);
+            populateBoxPanel();
         }
     }
 }

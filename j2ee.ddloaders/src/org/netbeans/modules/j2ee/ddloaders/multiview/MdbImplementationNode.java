@@ -21,7 +21,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-class MdbImplementationNode extends SectionNode {
+class MdbImplementationNode extends EjbSectionNode {
 
     MdbImplementationNode(SectionNodeView sectionNodeView, MessageDriven messageDriven) {
         super(sectionNodeView, true, messageDriven, Utils.getBundleMessage("LBL_EjbImplementation"),

@@ -200,7 +200,7 @@ public class InnerTablePanel extends SectionInnerPanel {
     }
 
     public void dataFileChanged() {
-        ((InnerTableModel) getTable().getModel()).dataFileChanged();
+        ((InnerTableModel) getTable().getModel()).refreshView();
         adjustHeight();
     }
 
@@ -234,6 +234,11 @@ public class InnerTablePanel extends SectionInnerPanel {
     }
 
     public void setValue(JComponent source, Object value) {
+    }
+
+    protected void propertyChanged(Object source, String propertyName, Object oldValue, Object newValue) {
+        super.propertyChanged(source, propertyName, oldValue, newValue);
+
     }
 
     public void linkButtonPressed(Object ddBean, String ddProperty) {
