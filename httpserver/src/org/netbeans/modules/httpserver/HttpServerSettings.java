@@ -117,6 +117,9 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
                                       
   /** getter for running status */
   public boolean isRunning() {
+    if (isWriteExternal()) {
+      return running;
+    }
     if (inited) {
       return running;
     }  
@@ -466,6 +469,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  21   Gandalf   1.20        10/6/99  Petr Jiricka    Fixed bug causing the 
+ *       server to start at IDE shutdown (after the first start of the IDE)
  *  20   Gandalf   1.19        9/30/99  Petr Jiricka    Jetty -> JSWDK
  *  19   Gandalf   1.18        9/13/99  Petr Jiricka    Default port moved to 
  *       8082
