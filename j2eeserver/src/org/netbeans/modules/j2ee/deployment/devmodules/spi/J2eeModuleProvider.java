@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.projects.J2eeDeploymentLookup;
 import org.openide.loaders.*;
@@ -32,7 +34,7 @@ import org.netbeans.modules.j2ee.deployment.config.ConfigSupportImpl;
  *
  * @author  Pavel Buzek
  */
-public abstract class J2eeModuleProvider implements Node.Cookie {
+public abstract class J2eeModuleProvider {
     
     public abstract J2eeModule getJ2eeModule ();
 // settings will be stored in filesystems attributes of {@link getModuleFolder}
@@ -44,29 +46,28 @@ public abstract class J2eeModuleProvider implements Node.Cookie {
      */
     public abstract FileObject getModuleFolder ();
     
-    /** This cookie must be added by modules */
-    public static final Node.Cookie cookieToAdd (DataObject obj) {
-        return new J2eeDeploymentLookup (obj);
-    }
-    public static final java.util.Set cookieClasses () {
-        java.util.Set set = new java.util.HashSet ();
-        set.add (J2eeDeploymentLookup.class);
-        return set;
+    /** This object must be added by modules into project lookup. */
+    public static final Object createJ2eeProjectMarker (J2eeModuleProvider provider) {
+        return new J2eeDeploymentLookup (provider);
     }
     
     public static org.openide.loaders.ExecutionSupport getExecutionSupport (DataObject dobj) {
         return new ServerExecSupport (((MultiDataObject) dobj).getPrimaryEntry ());
     }
 
-    public static JSPServletFinder getJSPServletFinder(DataObject docBase) {
-        return new JSPServletFinderImpl(docBase);
+    /** Returns JSPServletFinder for the project that contains given file.
+     * @returns null if the file is not in any project
+     */
+    public static JSPServletFinder getJSPServletFinder(FileObject f) {
+        Project prj = FileOwnerQuery.getOwner (f);
+        return prj == null ? null : new JSPServletFinderImpl(prj);
     }
     
     /**
      * Returns current configuration value for web context root.
      */
-    public static final ConfigSupport getConfigSupport(DataObject obj) {
-        J2eeDeploymentLookup deployment = (J2eeDeploymentLookup) obj.getCookie (J2eeDeploymentLookup.class);
+    public static final ConfigSupport getConfigSupport(Project prj) {
+        J2eeDeploymentLookup deployment = (J2eeDeploymentLookup) prj.getLookup ().lookup (J2eeDeploymentLookup.class);
         return new ConfigSupportImpl(deployment);
     }
     

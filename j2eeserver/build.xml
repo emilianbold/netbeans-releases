@@ -27,13 +27,14 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
       <pathelement location="${nb_all}/libs/external/j2eeeditor-1.0.jar"/>
       <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/> <!-- XXX -->
-      <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/> <!-- XXX -->
+      <pathelement location="${openide/execution/deprecated.dir}/${nb.modules/autoload.dir}/org-openide-execution-deprecated.jar"/> <!-- XXX -->
       <pathelement location="${debuggercore/oldapi.dir}/${nb.modules/autoload.dir}/openide-debugger.jar"/> <!-- XXX -->
       <pathelement location="${debuggercore.dir}/${nb.modules/autoload.dir}/debuggerCore.jar"/> <!-- XXX -->
       <pathelement location="${schema2beans/rt.dir}/${nb.modules/autoload.dir}/schema2beans.jar"/>
       <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
       <pathelement location="${core/settings.dir}/${nb.modules/autoload.dir}/core-settings.jar"/>
       <pathelement location="${xml/api.dir}/${nb.modules/autoload.dir}/xml-api.jar" />
+      <pathelement location="${projects/projectapi.dir}/${nb.modules/autoload.dir}/org-netbeans-modules-projectapi.jar" />
       <fileset dir="external">
           <include name="*.jar"/>
       </fileset>
