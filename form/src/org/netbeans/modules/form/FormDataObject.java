@@ -50,7 +50,7 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
 
   public FormDataObject (FileObject ffo, FileObject jfo, FormDataLoader loader) throws DataObjectExistsException {
     super(jfo, loader);
-    addSecondaryEntry (formEntry = new FileEntry (ffo) {
+    addSecondaryEntry (formEntry = new FileEntry (this, ffo) {
         /** saves the DesignForm into the .form file */
         public void save (boolean modified) {
 /*          if (modified & !isModified())
@@ -473,6 +473,8 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
 
 /*
  * Log
+ *  5    Gandalf   1.4         3/14/99  Jaroslav Tulach Change of 
+ *       MultiDataObject.Entry.
  *  4    Gandalf   1.3         3/10/99  Ian Formanek    Gandalf updated
  *  3    Gandalf   1.2         2/11/99  Ian Formanek    getXXXPresenter -> 
  *       createXXXPresenter (XXX={Menu, Toolbar})

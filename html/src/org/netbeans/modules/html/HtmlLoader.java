@@ -93,8 +93,8 @@ public class HtmlLoader extends UniFileLoader {
   public static class BrowserView extends OpenSupport implements ViewCookie {
     DataObject obj;
 
-    BrowserView (DataObject obj) {
-      super (obj.getPrimaryFile ());
+    BrowserView (MultiDataObject obj) {
+      super (obj.getPrimaryEntry ());
       this.obj = obj;
     }
 
@@ -160,6 +160,8 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  8    Gandalf   1.7         3/14/99  Jaroslav Tulach Change of 
+*       MultiDataObject.Entry.
 *  7    Gandalf   1.6         3/2/99   Jan Jancura     
 *  6    Gandalf   1.5         2/16/99  Jan Jancura     
 *  5    Gandalf   1.4         2/11/99  Jan Jancura     

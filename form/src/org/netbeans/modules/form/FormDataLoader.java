@@ -106,8 +106,8 @@ public class FormDataLoader extends MultiFileLoader {
   * @param primaryFile primary file recognized by this loader
   * @return primary entry for that file
   */
-  protected MultiDataObject.Entry createPrimaryEntry (FileObject primaryFile) {
-    return new FileEntry(primaryFile);
+  protected MultiDataObject.Entry createPrimaryEntry (MultiDataObject obj, FileObject primaryFile) {
+    return new FileEntry(obj, primaryFile);
   }
 
   /** Creates right secondary entry for given file. The file is said to
@@ -116,17 +116,19 @@ public class FormDataLoader extends MultiFileLoader {
   * @param secondaryFile secondary file for which we want to create entry
   * @return the entry
   */
-  protected MultiDataObject.Entry createSecondaryEntry (FileObject secondaryFile) {
+  protected MultiDataObject.Entry createSecondaryEntry (MultiDataObject obj, FileObject secondaryFile) {
     String ext = secondaryFile.getExt();
     if (ext.equals(FORM_EXTENSION))
-      return new FileEntry (secondaryFile);
+      return new FileEntry (obj, secondaryFile);
     else
-      return new FileEntry.Numb (secondaryFile);
+      return new FileEntry.Numb (obj, secondaryFile);
   }
 }
 
 /*
  * Log
+ *  6    Gandalf   1.5         3/14/99  Jaroslav Tulach Change of 
+ *       MultiDataObject.Entry.
  *  5    Gandalf   1.4         3/11/99  Ian Formanek    fixed order of form and 
  *       java file
  *  4    Gandalf   1.3         3/10/99  Ian Formanek    Gandalf updated
