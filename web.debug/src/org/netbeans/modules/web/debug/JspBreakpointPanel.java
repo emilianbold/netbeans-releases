@@ -269,8 +269,8 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
     }    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox cboxJspSourcePath;
     private javax.swing.JLabel lblJspSourcePath;
+    private javax.swing.JComboBox cboxJspSourcePath;
     private javax.swing.JLabel lblLineNumber;
     private javax.swing.JTextField tfLineNumber;
     // End of variables declaration//GEN-END:variables
