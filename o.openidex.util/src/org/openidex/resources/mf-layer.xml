@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+  <!-- DTD PROCESSORS ====================================================== -->
+
+   <folder name="xml">
+        <folder name="entities">
+            <folder name="NetBeans_IDE" >
+                <!-- public ID defined by LookXMLProcessor -->
+                <file name="DTD_Looks" url="nbresloc:/org/openidex/nodes/looks/resources/look.dtd" />
+            </folder>    
+        </folder>
+        <folder name="lookups">
+            <folder name="NetBeans_IDE">               
+                <file name="DTD_Looks.instance">
+                    <attr name="instanceClass" stringvalue="org.openide.loaders.Environment$Provider" />
+                    <attr name="instanceCreate" newvalue="org.openidex.nodes.looks.LookEnvironmentProvider" />
+                </file>
+            </folder>
+        </folder>
+    </folder>   
+
+  <!-- SERVICES ============================================================ -->
+
+    <folder name="Looks">
+		<attr name="hidden" boolvalue="true" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openidex/nodes/looks/resources/LookFolder.gif"/>
+
+		<!-- Folder which should contain the look pool -->
+
+	</folder>
+       
+</filesystem>
