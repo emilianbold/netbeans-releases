@@ -410,7 +410,6 @@ public final class BeanInstaller extends Object {
         jar = jar2;
 
       LinkedList list = findJavaBeans(jar);
-      Vector v = null;
       if (selection != null) {
         Vector dest = new Vector();
         StringTokenizer tok = new StringTokenizer(selection, ", ", false);
@@ -435,9 +434,8 @@ public final class BeanInstaller extends Object {
             }
           }
         }
-        v = dest;
+        finishInstall(jar, dest, paletteCategory);
       }
-      finishInstall(jar, v, paletteCategory);
       return true;
     }
   }
@@ -577,6 +575,8 @@ public final class BeanInstaller extends Object {
 
 /*
  * Log
+ *  6    Gandalf   1.5         6/7/99   Ian Formanek    Fixed problem with 
+ *       beans.properties not containing item for JAR archive
  *  5    Gandalf   1.4         6/7/99   Ian Formanek    PaletteCategory is 
  *       created if it does not exist yet
  *  4    Gandalf   1.3         6/7/99   Ian Formanek    Allows to select beans 
