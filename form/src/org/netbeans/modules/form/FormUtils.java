@@ -606,8 +606,10 @@ public class FormUtils
                 continue;
 
             Method writeMethod = prop.getPropertyDescriptor().getWriteMethod();
-            if (writeMethod == null || !writeMethod.getDeclaringClass()
-                                   .isAssignableFrom(targetBean.getClass()))
+            if (writeMethod == null
+                || !prop.canWriteToTarget()
+                || !writeMethod.getDeclaringClass().isAssignableFrom(
+                                                         targetBean.getClass()))
                 continue;
 
             try {
