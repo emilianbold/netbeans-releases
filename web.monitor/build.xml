@@ -202,6 +202,7 @@ Microsystems, Inc. All Rights Reserved.
           <include name="org/netbeans/modules/web/monitor/resources/"/>
           <include name="org/netbeans/modules/web/monitor/MonitorModule**"/>
           <include name="org/netbeans/modules/web/monitor/Bundle.properties"/>
+          <include name="org/netbeans/modules/web/monitor/Bundle_*.properties"/>
         </patternset>
       </fileset>
     </locjar>
