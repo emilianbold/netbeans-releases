@@ -316,7 +316,7 @@
 		children = ();
 		options = {
 			cut = NO;
-			copy = YES;
+			copy = NO;
 			delete = YES;
 		};
 		children_ordering = {
@@ -1801,7 +1801,7 @@
 		class = org.netbeans.modules.db.explorer.nodes.IndexNode;
 		infoclass = org.netbeans.modules.db.explorer.infos.IndexNodeInfo;
 		iconbase = "/org/netbeans/modules/db/resources/index";
-		resultset = (unused,unused,unused,unused,unused,name);
+		resultset = (unused,unused,unused,unique,unused,name);
 		children = ();
 		options = {
 			cut = NO;
@@ -1863,7 +1863,7 @@
 			},
 			{
 				code = unique;
-				name = "Unique";
+				name = "Non-unique";
 				class = java.lang.String;
 				writable = NO;
 			}
@@ -1876,7 +1876,7 @@
 		infoclass = org.netbeans.modules.db.explorer.infos.IndexColumnNodeInfo;
 		iconbaseA = "/org/netbeans/modules/db/resources/indexDown";
 		iconbaseD = "/org/netbeans/modules/db/resources/indexUp";
-		resultset = (catalog,schema,tablename,unique,qual,ixname,type,ordpos,name,ord,card,pages,filter);
+		resultset = (catalog,schema,tablename,unused,qual,ixname,type,ordpos,name,ord,card,pages,filter);
 		options = {
 			cut = NO;
 			copy = NO;
@@ -1908,12 +1908,6 @@
 		properties = (
 			{
 				code = name;
-				writable = NO;
-			},
-			{
-				code = unique;
-				name = "Unique";
-				class = java.lang.String;
 				writable = NO;
 			},
 			{
