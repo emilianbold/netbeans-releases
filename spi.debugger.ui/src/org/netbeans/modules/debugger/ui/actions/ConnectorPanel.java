@@ -97,6 +97,10 @@ Controller {
             NbBundle.getMessage (ConnectorPanel.class, 
                 "CTL_Connect_through_Mnemonic").charAt (0)
         ); // NOI18N
+        cbLabel.getAccessibleContext ().setAccessibleDescription (
+            NbBundle.getMessage (ConnectorPanel.class, 
+                "ACSD_CTL_Connect_through")// NOI18N
+        ); 
         cbLabel.setLabelFor (cbAttachTypes);
 
         GridBagConstraints c = new GridBagConstraints ();
