@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/* $Id$ */
-
 package org.netbeans.modules.form;
 
 import java.io.*;
@@ -41,13 +39,12 @@ import org.netbeans.modules.form.palette.*;
 
 public class ComponentInspector extends ExplorerPanel implements Serializable
 {
-    /** The DesignMode action */
-//    private static DesignModeAction designModeAction = (DesignModeAction)
-//                     SharedClassObject.findObject(DesignModeAction.class, true);
-    /** The TestMode action */
     private static TestAction testAction = (TestAction)
                        SharedClassObject.findObject(TestAction.class, true);
-    /** The action that holds the curent palette state(selection/add mode) */
+
+    private static ComponentInspectorAction inspectorAction =
+        (ComponentInspectorAction)
+            SharedClassObject.findObject(ComponentInspectorAction.class, true);
 
     /** The default width of the ComponentInspector */
     public static final int DEFAULT_INSPECTOR_WIDTH = 250;
@@ -64,14 +61,6 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     
     private static ResourceBundle formBundle = FormEditor.getFormBundle();
     
-    /** The message formatter for Explorer title */
-    private static MessageFormat formatInspectorTitle = new MessageFormat(
-        formBundle.getString("FMT_InspectorTitle")
-        );
-
-    /** A JDK 1.1. serial version UID */
-    //    static final long serialVersionUID = 6802346985641760699L;
-
     /** Currently focused form or null if no form is opened/focused */
     private FormModel formModel;
     private boolean focusingOnModel = false;
@@ -105,7 +94,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         createSplit();
 
         setIcon(inspectorIcon);
-        setName(formBundle.getString("CTL_NoSelection"));
+        setName(formBundle.getString("CTL_InspectorTitle"));
 
         manager.addPropertyChangeListener(new NodeSelectedListener());
     }
@@ -177,7 +166,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         if ((ourMode == null) && workspace.equals(visualWorkspace)) {
             // create new mode for CI and set the bounds properly
             ourMode = workspace.createMode("ComponentInspector",  //NOI18N
-                                           "Component Inspector", // XXX i18n
+                                           formBundle.getString("CTL_InspectorTitle"), // NOI18N
                                            iconURL);
             Rectangle workingSpace = workspace.getBounds();
             ourMode.setBounds(new Rectangle(
@@ -228,8 +217,8 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     private void focusFormImpl(FormModel formModel, int visibility) {
         this.formModel = formModel;
         
-//        designModeAction.setFormModel(formModel);
         testAction.setFormModel(formModel);
+        inspectorAction.setEnabled(formModel != null);
 
         if (formModel == null) {
             // swing memory leak workaround
@@ -263,7 +252,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         String title;
 
         if (formModel == null)
-            setName(formBundle.getString("CTL_NoSelection"));
+            setName(formBundle.getString("CTL_InspectorTitle"));
         else
             setName(formModel.getFormDataObject().getName());
     }
