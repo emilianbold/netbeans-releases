@@ -35,8 +35,22 @@ public class Watches extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new Watches("testBasicWatchFunctionality"));
-        suite.addTest(new Watches("testExtendedWatchFilters"));
+        suite.addTest(new Watches("setupWatchesTests"));
+        suite.addTest(new Watches("testWatchesPublicVariables"));
+        suite.addTest(new Watches("testWatchesProtectedVariables"));
+        suite.addTest(new Watches("testWatchesPrivateVariables"));
+        suite.addTest(new Watches("testWatchesPackagePrivateVariables"));
+        suite.addTest(new Watches("testWatchesFiltersBasic"));
+        suite.addTest(new Watches("testWatchesFiltersLinkedList"));
+        suite.addTest(new Watches("testWatchesFiltersArrayList"));
+        suite.addTest(new Watches("testWatchesFiltersVector"));
+        suite.addTest(new Watches("testWatchesFiltersHashMap"));
+        suite.addTest(new Watches("testWatchesFiltersHashtable"));
+        suite.addTest(new Watches("testWatchesFiltersTreeMap"));
+        suite.addTest(new Watches("testWatchesFiltersTreeSet"));
+        suite.addTest(new Watches("testWatchesFilters1DArray"));
+        suite.addTest(new Watches("testWatchesFilters2DArray"));
+        suite.addTest(new Watches("testWatchesValues"));
         return suite;
     }
     
@@ -53,67 +67,268 @@ public class Watches extends JellyTestCase {
     
     /** tearDown method */
     public void tearDown() {
-        Utilities.deleteAllBreakpoints();
         Utilities.deleteAllWatches();
-        Utilities.closeZombieSessions();
-        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
-        org.netbeans.jellytools.nodes.Node projectNode = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
-        projectNode.select();
-        projectNode.performPopupAction(Utilities.setMainProjectAction);
-        
-        projectNode.performPopupActionNoBlock(Utilities.projectPropertiesAction);
-        Utilities.sleep(2000);
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.projectPropertiesTitle + Utilities.testProjectName);
-        org.netbeans.jellytools.nodes.Node helper = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(dialog), "Run|" + Utilities.runningProjectTreeItem);
-        helper.select();
-        new JTextFieldOperator(dialog, 0).setText("examples.advanced.MemoryView");
-        dialog.ok();
     }
     
-    /**
-     *
-     */
-    public void testBasicWatchFunctionality() {
+    public void setupWatchesTests() {
         ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         org.netbeans.jellytools.nodes.Node projectNode = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction(Utilities.setMainProjectAction);
-        
-        projectNode.performPopupActionNoBlock(Utilities.projectPropertiesAction);
-        Utilities.sleep(2000);
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.projectPropertiesTitle + Utilities.testProjectName);
-        org.netbeans.jellytools.nodes.Node helper = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(dialog), "Run|Running Project");
-        helper.select();
-        new JTextFieldOperator(dialog, 0).setText("examples.advanced.MemoryView");
-        dialog.ok();
 
         JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
         javaNode.performPopupAction(Utilities.openSourceAction);
         Utilities.sleep(2000);
-        EditorOperator editorOperator = new EditorOperator("MemoryView.java");
-        editorOperator.setCaretPosition(103, 1);
-        Utilities.sleep(500);
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
-        new Action(null, null, Utilities.toggleBreakpointShortcut).performShortcut();
+        new EditorOperator("MemoryView.java").setCaretPosition(70, 1);
+        Utilities.sleep(2000);
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
+        new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:70.");
+    }
+    
+    public void testWatchesPublicVariables() {
+        Utilities.showWatchesView();
+        CreateWatch("Vpublic");
+        CreateWatch("Spublic");
+        CreateWatch("inheritedVpublic");
+        CreateWatch("inheritedSpublic");
+        Utilities.sleep(2000);
+        TreeTableOperator jTableOperator = new TreeTableOperator(new TopComponentOperator(Utilities.watchesViewTitle));
+        CheckTTVLine(jTableOperator, 0, "Vpublic", "String", "\"Public Variable\"");
+        CheckTTVLine(jTableOperator, 1, "Spublic", "String", "\"Public Variable\"");
+        CheckTTVLine(jTableOperator, 2, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
+        CheckTTVLine(jTableOperator, 3, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
+    }
+
+    public void testWatchesProtectedVariables() {
+        Utilities.showWatchesView();
+        CreateWatch("Vprotected");
+        CreateWatch("Sprotected");
+        CreateWatch("inheritedVprotected");
+        CreateWatch("inheritedSprotected");
+        Utilities.sleep(2000);
+        TreeTableOperator jTableOperator = new TreeTableOperator(new TopComponentOperator(Utilities.watchesViewTitle));
+        CheckTTVLine(jTableOperator, 0, "Vprotected", "String", "\"Protected Variable\"");
+        CheckTTVLine(jTableOperator, 1, "Sprotected", "String", "\"Protected Variable\"");
+        CheckTTVLine(jTableOperator, 2, "inheritedVprotected", "String", "\"Inherited Protected Variable\"");
+        CheckTTVLine(jTableOperator, 3, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
+    }
+
+    public void testWatchesPrivateVariables() {
+        Utilities.showWatchesView();
+        CreateWatch("Vprivate");
+        CreateWatch("Sprivate");
+        CreateWatch("inheritedVprivate");
+        CreateWatch("inheritedSprivate");
+        Utilities.sleep(2000);
+        TreeTableOperator jTableOperator = new TreeTableOperator(new TopComponentOperator(Utilities.watchesViewTitle));
+        CheckTTVLine(jTableOperator, 0, "Vprivate", "String", "\"Private Variable\"");
+        CheckTTVLine(jTableOperator, 1, "Sprivate", "String", "\"Private Variable\"");
+        CheckTTVLine(jTableOperator, 2, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
+        CheckTTVLine(jTableOperator, 3, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
+    }
+    
+    public void testWatchesPackagePrivateVariables() {
+        Utilities.showWatchesView();
+        CreateWatch("VpackagePrivate");
+        CreateWatch("SpackagePrivate");
+        CreateWatch("inheritedVpackagePrivate");
+        CreateWatch("inheritedSpackagePrivate");
+        Utilities.sleep(2000);
+        TreeTableOperator jTableOperator = new TreeTableOperator(new TopComponentOperator(Utilities.watchesViewTitle));
+        CheckTTVLine(jTableOperator, 0, "VpackagePrivate", "String", "\"Package-private Variable\"");
+        CheckTTVLine(jTableOperator, 1, "SpackagePrivate", "String", "\"Package-private Variable\"");
+        CheckTTVLine(jTableOperator, 2, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
+        CheckTTVLine(jTableOperator, 3, "inheritedSpackagePrivate", "String", "\"Inherited Package-private Variable\"");
+    }
+    
+    public void testWatchesFiltersBasic() {
+        Utilities.showWatchesView();
+        CreateWatch("1==1");
+        CreateWatch("1==0");
+        CreateWatch("Integer.toString(10)");
+        CreateWatch("clazz");
+        CreateWatch("n");
+        Utilities.sleep(2000);
+        TreeTableOperator jTableOperator = new TreeTableOperator(new TopComponentOperator(Utilities.watchesViewTitle));
+        CheckTTVLine(jTableOperator, 0, "1==1", "boolean", "true");
+        CheckTTVLine(jTableOperator, 1, "1==0", "boolean", "false");
+        CheckTTVLine(jTableOperator, 2, "Integer.toString(10)", "String", "\"10\"");
+        CheckTTVLine(jTableOperator, 3, "clazz", "Class", "class java.lang.Runtime");
+        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "clazz").isLeaf())
+            assertTrue("Node \'clazz\' has no child nodes", false);
+        CheckTTVLine(jTableOperator, 4, "n", "int", "50");
+    }
+    
+    public void testWatchesFiltersLinkedList() {
+        Utilities.showWatchesView();
+        CreateWatch("llist");
+        CreateWatch("llist.toString()");
+        CreateWatch("llist.getFirst()");
+        CreateWatch("llist.getLast()");
+        CreateWatch("llist.get(1)");
+        Utilities.sleep(2000);
+        TreeTableOperator jTableOperator = new TreeTableOperator(new TopComponentOperator(Utilities.watchesViewTitle));
+        CheckTTVLine(jTableOperator, 0, "llist", "LinkedList", null);
+        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "llist").isLeaf())
+            assertTrue("Node \'llist\' has no child nodes", false);
+        CheckTTVLine(jTableOperator, 1, "llist.toString()", "String", "\"[0. item, 1. item, 2. item, 3. item, 4. item, 5. item, 6. item, 7. item, 8. item, 9. item, 10. item, 11. item, 12. item, 13. item, 14. item, 15. item, 16. item, 17. item, 18. item, 19. item, 20. item, 21. item, 22. item, 23. item, 24. item, 25. item, 26. item, 27. item, 28. item, 29. item, 30. item, 31. item, 32. item, 33. item, 34. item, 35. item, 36. item, 37. item, 38. item, 39. item, 40. item, 41. item, 42. item, 43. item, 44. item, 45. item, 46. item, 47. item, 48. item, 49. item]\"");
+        CheckTTVLine(jTableOperator, 2, "llist.getFirst()", "String", "\"0. item\"");
+        CheckTTVLine(jTableOperator, 3, "llist.getLast()", "String", "\"49. item\"");
+        CheckTTVLine(jTableOperator, 4, "llist.get(1)", "String", "\"1. item\"");
+    }
+
+    public void testWatchesFiltersArrayList() {
+        Utilities.showWatchesView();
+        CreateWatch("alist");
+        CreateWatch("alist.toString()");
+        CreateWatch("alist.get(2)");
+        Utilities.sleep(2000);
+        TreeTableOperator jTableOperator = new TreeTableOperator(new TopComponentOperator(Utilities.watchesViewTitle));
+        CheckTTVLine(jTableOperator, 0, "alist", "ArrayList", null);
+        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "alist").isLeaf())
+            assertTrue("Node \'alist\' has no child nodes", false);
+        CheckTTVLine(jTableOperator, 1, "alist.toString()", "String", "\"[0. item, 1. item, 2. item, 3. item, 4. item, 5. item, 6. item, 7. item, 8. item, 9. item, 10. item, 11. item, 12. item, 13. item, 14. item, 15. item, 16. item, 17. item, 18. item, 19. item, 20. item, 21. item, 22. item, 23. item, 24. item, 25. item, 26. item, 27. item, 28. item, 29. item, 30. item, 31. item, 32. item, 33. item, 34. item, 35. item, 36. item, 37. item, 38. item, 39. item, 40. item, 41. item, 42. item, 43. item, 44. item, 45. item, 46. item, 47. item, 48. item, 49. item]\"");
+        CheckTTVLine(jTableOperator, 2, "alist.get(2)", "String", "\"2. item\"");
+    }
+    
+    public void testWatchesFiltersVector() {
+        Utilities.showWatchesView();
+        CreateWatch("vec");
+        CreateWatch("vec.toString()");
+        CreateWatch("vec.get(3)");
+        Utilities.sleep(2000);
+        TreeTableOperator jTableOperator = new TreeTableOperator(new TopComponentOperator(Utilities.watchesViewTitle));
+        CheckTTVLine(jTableOperator, 0, "vec", "Vector", null);
+        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "vec").isLeaf())
+            assertTrue("Node \'vec\' has no child nodes", false);
+        CheckTTVLine(jTableOperator, 1, "vec.toString()", "String", "\"[0. item, 1. item, 2. item, 3. item, 4. item, 5. item, 6. item, 7. item, 8. item, 9. item, 10. item, 11. item, 12. item, 13. item, 14. item, 15. item, 16. item, 17. item, 18. item, 19. item, 20. item, 21. item, 22. item, 23. item, 24. item, 25. item, 26. item, 27. item, 28. item, 29. item, 30. item, 31. item, 32. item, 33. item, 34. item, 35. item, 36. item, 37. item, 38. item, 39. item, 40. item, 41. item, 42. item, 43. item, 44. item, 45. item, 46. item, 47. item, 48. item, 49. item]\"");
+        CheckTTVLine(jTableOperator, 2, "vec.get(3)", "String", "\"3. item\"");
+    }
+    
+    public void testWatchesFiltersHashMap() {
+        Utilities.showWatchesView();
+        CreateWatch("hmap");
+        CreateWatch("hmap.containsKey(\"4\")");
+        CreateWatch("hmap.get(\"5\")");
+        CreateWatch("hmap.put(\"6\",\"test\")");
+        Utilities.sleep(2000);
+        TreeTableOperator jTableOperator = new TreeTableOperator(new TopComponentOperator(Utilities.watchesViewTitle));
+        CheckTTVLine(jTableOperator, 0, "hmap", "HashMap", null);
+        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "hmap").isLeaf())
+            assertTrue("Node \'hmap\' has no child nodes", false);
+        CheckTTVLine(jTableOperator, 1, "hmap.containsKey(\"4\")", "boolean", "true");
+        CheckTTVLine(jTableOperator, 2, "hmap.get(\"5\")", "String", "\"5. item\"");
+        CheckTTVLine(jTableOperator, 3, "hmap.put(\"6\",\"test\")", "String", "\"6. item\"");
+    }
+    
+    public void testWatchesFiltersHashtable() {
+        Utilities.showWatchesView();
+        CreateWatch("htab");
+        CreateWatch("htab.containsKey(\"7\")");
+        CreateWatch("htab.get(\"9\")");
+        CreateWatch("htab.put(\"10\", \"test\")");
+        Utilities.sleep(2000);
+        TreeTableOperator jTableOperator = new TreeTableOperator(new TopComponentOperator(Utilities.watchesViewTitle));
+        CheckTTVLine(jTableOperator, 0, "htab", "Hashtable", null);
+        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "htab").isLeaf())
+            assertTrue("Node \'htab\' has no child nodes", false);
+        CheckTTVLine(jTableOperator, 1, "htab.containsKey(\"7\")", "boolean", "true");
+        CheckTTVLine(jTableOperator, 2, "htab.get(\"9\")", "String", "\"9. item\"");
+        CheckTTVLine(jTableOperator, 3, "htab.put(\"10\", \"test\")", "String", "\"10. item\"");
+    }    
+    
+    public void testWatchesFiltersTreeMap() {
+        Utilities.showWatchesView();
+        CreateWatch("tmap");
+        CreateWatch("tmap.containsKey(\"11\")");
+        CreateWatch("tmap.get(\"12\")");
+        CreateWatch("tmap.put(\"13\",\"test\")");
+        Utilities.sleep(2000);
+        TreeTableOperator jTableOperator = new TreeTableOperator(new TopComponentOperator(Utilities.watchesViewTitle));
+        CheckTTVLine(jTableOperator, 0, "tmap", "TreeMap", null);
+        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "tmap").isLeaf())
+            assertTrue("Node \'tmap\' has no child nodes", false);
+        CheckTTVLine(jTableOperator, 1, "tmap.containsKey(\"11\")", "boolean", "true");
+        CheckTTVLine(jTableOperator, 2, "tmap.get(\"12\")", "String", "\"12. item\"");
+        CheckTTVLine(jTableOperator, 3, "tmap.put(\"13\",\"test\")", "String", "\"13. item\"");
+    }
         
-        // create new watches
+    public void testWatchesFiltersTreeSet() {
+        Utilities.showWatchesView();
+        CreateWatch("tset");
+        CreateWatch("tset.contains(\"14. item\")");
+        CreateWatch("tset.iterator()");
+        Utilities.sleep(2000);
+        TreeTableOperator jTableOperator = new TreeTableOperator(new TopComponentOperator(Utilities.watchesViewTitle));
+        CheckTTVLine(jTableOperator, 0, "tset", "TreeSet", null);
+        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "tset").isLeaf())
+            assertTrue("Node \'tset\' has no child nodes", false);
+        CheckTTVLine(jTableOperator, 1, "tset.contains(\"14. item\")", "boolean", "true");
+        CheckTTVLine(jTableOperator, 2, "tset.iterator()", "TreeMap$KeyIterator", null);
+    }        
+        
+    public void testWatchesFilters1DArray() {
+        Utilities.showWatchesView();
+        CreateWatch("policko");
+        CreateWatch("policko.length");
+        CreateWatch("policko[1]");
+        CreateWatch("policko[10]");
+        CreateWatch("pole");
+        CreateWatch("pole.length");
+        CreateWatch("pole[1]");
+        Utilities.sleep(2000);
+        TreeTableOperator jTableOperator = new TreeTableOperator(new TopComponentOperator(Utilities.watchesViewTitle));
+        CheckTTVLine(jTableOperator, 0, "policko", "int[]", null);
+        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "policko").isLeaf())
+            assertTrue("Node \'policko\' has no child nodes", false);
+        CheckTTVLine(jTableOperator, 1, "policko.length", "int", "5");
+        CheckTTVLine(jTableOperator, 2, "policko[1]", "int", "2");
+        CheckTTVLine(jTableOperator, 3, "policko[10]", null, ">Array index \"10\" is out of range <0,4><");
+        CheckTTVLine(jTableOperator, 4, "pole", "int[]", null);
+        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "pole").isLeaf())
+            assertTrue("Node \'pole\' has no child nodes", false);
+        CheckTTVLine(jTableOperator, 5, "pole.length", "int", "50");
+        CheckTTVLine(jTableOperator, 6, "pole[1]", "int", "0");
+    }
+        
+    public void testWatchesFilters2DArray() {
+        Utilities.showWatchesView();
+        CreateWatch("d2");
+        CreateWatch("d2.length");
+        CreateWatch("d2[1]");
+        CreateWatch("d2[1].length");
+        CreateWatch("d2[1][1]");
+        CreateWatch("d2[15].length");
+        Utilities.sleep(2000);
+        TreeTableOperator jTableOperator = new TreeTableOperator(new TopComponentOperator(Utilities.watchesViewTitle));
+        CheckTTVLine(jTableOperator, 0, "d2", "int[][]", null);
+        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "d2").isLeaf())
+            assertTrue("Node \'d2\' has no child nodes", false);
+        CheckTTVLine(jTableOperator, 1, "d2.length", "int", "10");
+        CheckTTVLine(jTableOperator, 2, "d2[1]", "int[]", null);
+        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "d2[1]").isLeaf())
+            assertTrue("Node \'d2[1]\' has no child nodes", false);
+        CheckTTVLine(jTableOperator, 3, "d2[1].length", "int", "20");
+        CheckTTVLine(jTableOperator, 4, "d2[1][1]", "int", "0");
+        CheckTTVLine(jTableOperator, 5, "d2[15].length", null, ">Array index \"15\" is out of range <0,9><");
+    }        
+    
+    public void testWatchesValues() {
+        new EditorOperator("MemoryView.java").setCaretPosition(98, 1);
+        Utilities.sleep(2000);
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
+        new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:98.");
+        
         CreateWatch("free");
         CreateWatch("taken");
         CreateWatch("total");
         CreateWatch("this");
 
-        // start debugger and wait till breakpoint is hit
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
-        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        MainWindowOperator mwo = MainWindowOperator.getDefault();
-        Utilities.sleep(2000);
-        mwo.waitStatusText("Thread main stopped at MemoryView.java:103.");
-        
-        // check watches and values
         Utilities.showWatchesView();
-        TopComponentOperator watchesOper = new TopComponentOperator(Utilities.watchesViewTitle);
-        TreeTableOperator jTableOperator = new TreeTableOperator(watchesOper);
+        TreeTableOperator jTableOperator = new TreeTableOperator(new TopComponentOperator(Utilities.watchesViewTitle));
         Node.Property property;
         int count = 0;
         
@@ -159,203 +374,11 @@ public class Watches extends JellyTestCase {
             assertTrue(e2.getMessage(), false);
         }
        
-        // finish bedugging session
-        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        try {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            mwo.waitStatusText(Utilities.finishedStatusBarText);
-        } catch (TimeoutExpiredException tee) {
-            System.out.println("Debugging session was not killed.");
-            throw(tee);
-        }
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
     }
-
-    public void testExtendedWatchFilters() {
-        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
-        org.netbeans.jellytools.nodes.Node projectNode = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
-        projectNode.select();
-        projectNode.performPopupAction(Utilities.setMainProjectAction);
-        
-        projectNode.performPopupActionNoBlock(Utilities.projectPropertiesAction);
-        Utilities.sleep(2000);
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.projectPropertiesTitle + Utilities.testProjectName);
-        org.netbeans.jellytools.nodes.Node helper = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(dialog), "Run|Running Project");
-        helper.select();
-        new JTextFieldOperator(dialog, 0).setText("examples.advanced.Variables");
-        dialog.ok();
-        
-        // create watches
-        Utilities.sleep(1000);
-        CreateWatch("1==1");
-        CreateWatch("1==0");
-        CreateWatch("Integer.toString(10)");
-        CreateWatch("Vpublic");
-        CreateWatch("Vprotected");
-        CreateWatch("Vprivate");
-        CreateWatch("VpackagePrivate");
-        CreateWatch("Spublic");
-        CreateWatch("Sprotected");
-        CreateWatch("Sprivate");
-        CreateWatch("SpackagePrivate");
-        CreateWatch("inheritedVpublic");
-        CreateWatch("inheritedVprotected");
-        CreateWatch("inheritedVprivate");
-        CreateWatch("inheritedVpackagePrivate");
-        CreateWatch("inheritedSpublic");
-        CreateWatch("inheritedSprotected");
-        CreateWatch("inheritedSprivate");
-        CreateWatch("inheritedSpackagePrivate");
-        CreateWatch("clazz");
-        CreateWatch("n");
-        CreateWatch("llist");
-        CreateWatch("llist.toString()");
-        CreateWatch("llist.getFirst()");
-        CreateWatch("llist.getLast()");
-        CreateWatch("llist.get(1)");
-        CreateWatch("alist");
-        CreateWatch("alist.toString()");
-        CreateWatch("alist.get(2)");
-        CreateWatch("vec");
-        CreateWatch("vec.toString()");
-        CreateWatch("vec.get(3)");
-        CreateWatch("hmap");
-        CreateWatch("hmap.containsKey(\"4\")");
-        CreateWatch("hmap.get(\"5\")");
-        CreateWatch("hmap.put(\"6\",\"test\")");
-        CreateWatch("htab");
-        CreateWatch("htab.containsKey(\"7\")");
-        CreateWatch("htab.get(\"9\")");
-        CreateWatch("htab.put(\"10\", \"test\")");
-        CreateWatch("tmap");
-        CreateWatch("tmap.containsKey(\"11\")");
-        CreateWatch("tmap.get(\"12\")");
-        CreateWatch("tmap.put(\"13\",\"test\")");
-        CreateWatch("tset");
-        CreateWatch("tset.contains(\"14. item\")");
-        CreateWatch("tset.iterator()");
-        CreateWatch("policko");
-        CreateWatch("policko.length");
-        CreateWatch("policko[1]");
-        CreateWatch("policko[10]");
-        CreateWatch("pole");
-        CreateWatch("pole.length");
-        CreateWatch("pole[1]");
-        CreateWatch("d2");
-        CreateWatch("d2.length");
-        CreateWatch("d2[1]");
-        CreateWatch("d2[1].length");
-        CreateWatch("d2[1][1]");
-        CreateWatch("d2[15].length");
-        
-        // start debugging
-        JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|Variables.java");
-        javaNode.select();
-        javaNode.performPopupAction(Utilities.openSourceAction);
-        Utilities.sleep(2000);
-        EditorOperator editorOperator = new EditorOperator("Variables.java");
-        editorOperator.setCaretPosition(53, 1);
-        Utilities.sleep(2000);
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
-        new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
-        MainWindowOperator mwo = MainWindowOperator.getDefault();
-        mwo.waitStatusText("Thread main stopped at Variables.java:53.");
-
-        // verify watches
-        Utilities.showWatchesView();
-        TopComponentOperator watchesOper = new TopComponentOperator(Utilities.watchesViewTitle);
-        TreeTableOperator jTableOperator = new TreeTableOperator(watchesOper);
-        
-        int count = 0;
-        CheckTTVLine(jTableOperator, count++, "1==1", "boolean", "true");
-        CheckTTVLine(jTableOperator, count++, "1==0", "boolean", "false");
-        CheckTTVLine(jTableOperator, count++, "Integer.toString(10)", "String", "\"10\"");
-        CheckTTVLine(jTableOperator, count++, "Vpublic", "String", "\"Public Variable\"");
-        CheckTTVLine(jTableOperator, count++, "Vprotected", "String", "\"Protected Variable\"");
-        CheckTTVLine(jTableOperator, count++, "Vprivate", "String", "\"Private Variable\"");
-        CheckTTVLine(jTableOperator, count++, "VpackagePrivate", "String", "\"Package-private Variable\"");
-        CheckTTVLine(jTableOperator, count++, "Spublic", "String", "\"Public Variable\"");
-        CheckTTVLine(jTableOperator, count++, "Sprotected", "String", "\"Protected Variable\"");
-        CheckTTVLine(jTableOperator, count++, "Sprivate", "String", "\"Private Variable\"");
-        CheckTTVLine(jTableOperator, count++, "SpackagePrivate", "String", "\"Package-private Variable\"");
-        CheckTTVLine(jTableOperator, count++, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
-        CheckTTVLine(jTableOperator, count++, "inheritedVprotected", "String", "\"Inherited Protected Variable\"");
-        CheckTTVLine(jTableOperator, count++, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
-        CheckTTVLine(jTableOperator, count++, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
-        CheckTTVLine(jTableOperator, count++, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
-        CheckTTVLine(jTableOperator, count++, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
-        CheckTTVLine(jTableOperator, count++, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
-        CheckTTVLine(jTableOperator, count++, "inheritedSpackagePrivate", "String", "\"Inherited Package-private Variable\"");
-        CheckTTVLine(jTableOperator, count++, "clazz", "Class", "class java.lang.Runtime");
-        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "clazz").isLeaf())
-            assertTrue("Node \'clazz\' has no child nodes", false);
-        CheckTTVLine(jTableOperator, count++, "n", "int", "50");
-        CheckTTVLine(jTableOperator, count++, "llist", "LinkedList", null);
-        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "llist").isLeaf())
-            assertTrue("Node \'llist\' has no child nodes", false);
-        CheckTTVLine(jTableOperator, count++, "llist.toString()", "String", "\"[0. item, 1. item, 2. item, 3. item, 4. item, 5. item, 6. item, 7. item, 8. item, 9. item, 10. item, 11. item, 12. item, 13. item, 14. item, 15. item, 16. item, 17. item, 18. item, 19. item, 20. item, 21. item, 22. item, 23. item, 24. item, 25. item, 26. item, 27. item, 28. item, 29. item, 30. item, 31. item, 32. item, 33. item, 34. item, 35. item, 36. item, 37. item, 38. item, 39. item, 40. item, 41. item, 42. item, 43. item, 44. item, 45. item, 46. item, 47. item, 48. item, 49. item]\"");
-        CheckTTVLine(jTableOperator, count++, "llist.getFirst()", "String", "\"0. item\"");
-        CheckTTVLine(jTableOperator, count++, "llist.getLast()", "String", "\"49. item\"");
-        CheckTTVLine(jTableOperator, count++, "llist.get(1)", "String", "\"1. item\"");
-        CheckTTVLine(jTableOperator, count++, "alist", "ArrayList", null);
-        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "alist").isLeaf())
-            assertTrue("Node \'alist\' has no child nodes", false);
-        CheckTTVLine(jTableOperator, count++, "alist.toString()", "String", "\"[0. item, 1. item, 2. item, 3. item, 4. item, 5. item, 6. item, 7. item, 8. item, 9. item, 10. item, 11. item, 12. item, 13. item, 14. item, 15. item, 16. item, 17. item, 18. item, 19. item, 20. item, 21. item, 22. item, 23. item, 24. item, 25. item, 26. item, 27. item, 28. item, 29. item, 30. item, 31. item, 32. item, 33. item, 34. item, 35. item, 36. item, 37. item, 38. item, 39. item, 40. item, 41. item, 42. item, 43. item, 44. item, 45. item, 46. item, 47. item, 48. item, 49. item]\"");
-        CheckTTVLine(jTableOperator, count++, "alist.get(2)", "String", "\"2. item\"");
-        CheckTTVLine(jTableOperator, count++, "vec", "Vector", null);
-        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "vec").isLeaf())
-            assertTrue("Node \'vec\' has no child nodes", false);
-        CheckTTVLine(jTableOperator, count++, "vec.toString()", "String", "\"[0. item, 1. item, 2. item, 3. item, 4. item, 5. item, 6. item, 7. item, 8. item, 9. item, 10. item, 11. item, 12. item, 13. item, 14. item, 15. item, 16. item, 17. item, 18. item, 19. item, 20. item, 21. item, 22. item, 23. item, 24. item, 25. item, 26. item, 27. item, 28. item, 29. item, 30. item, 31. item, 32. item, 33. item, 34. item, 35. item, 36. item, 37. item, 38. item, 39. item, 40. item, 41. item, 42. item, 43. item, 44. item, 45. item, 46. item, 47. item, 48. item, 49. item]\"");
-        CheckTTVLine(jTableOperator, count++, "vec.get(3)", "String", "\"3. item\"");
-        CheckTTVLine(jTableOperator, count++, "hmap", "HashMap", null);
-        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "hmap").isLeaf())
-            assertTrue("Node \'hmap\' has no child nodes", false);
-        CheckTTVLine(jTableOperator, count++, "hmap.containsKey(\"4\")", "boolean", "true");
-        CheckTTVLine(jTableOperator, count++, "hmap.get(\"5\")", "String", "\"5. item\"");
-        CheckTTVLine(jTableOperator, count++, "hmap.put(\"6\",\"test\")", "String", "\"6. item\"");
-        CheckTTVLine(jTableOperator, count++, "htab", "Hashtable", null);
-        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "htab").isLeaf())
-            assertTrue("Node \'htab\' has no child nodes", false);
-        CheckTTVLine(jTableOperator, count++, "htab.containsKey(\"7\")", "boolean", "true");
-        CheckTTVLine(jTableOperator, count++, "htab.get(\"9\")", "String", "\"9. item\"");
-        CheckTTVLine(jTableOperator, count++, "htab.put(\"10\", \"test\")", "String", "\"10. item\"");
-        CheckTTVLine(jTableOperator, count++, "tmap", "TreeMap", null);
-        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "tmap").isLeaf())
-            assertTrue("Node \'tmap\' has no child nodes", false);
-        CheckTTVLine(jTableOperator, count++, "tmap.containsKey(\"11\")", "boolean", "true");
-        CheckTTVLine(jTableOperator, count++, "tmap.get(\"12\")", "String", "\"12. item\"");
-        CheckTTVLine(jTableOperator, count++, "tmap.put(\"13\",\"test\")", "String", "\"13. item\"");
-        CheckTTVLine(jTableOperator, count++, "tset", "TreeSet", null);
-        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "tset").isLeaf())
-            assertTrue("Node \'tset\' has no child nodes", false);
-        CheckTTVLine(jTableOperator, count++, "tset.contains(\"14. item\")", "boolean", "true");
-        CheckTTVLine(jTableOperator, count++, "tset.iterator()", "TreeMap$KeyIterator", null);
-        CheckTTVLine(jTableOperator, count++, "policko", "int[]", null);
-        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "policko").isLeaf())
-            assertTrue("Node \'policko\' has no child nodes", false);
-        CheckTTVLine(jTableOperator, count++, "policko.length", "int", "5");
-        CheckTTVLine(jTableOperator, count++, "policko[1]", "int", "2");
-        CheckTTVLine(jTableOperator, count++, "policko[10]", null, ">Array index \"10\" is out of range <0,4><");
-        CheckTTVLine(jTableOperator, count++, "pole", "int[]", null);
-        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "pole").isLeaf())
-            assertTrue("Node \'pole\' has no child nodes", false);
-        CheckTTVLine(jTableOperator, count++, "pole.length", "int", "50");
-        CheckTTVLine(jTableOperator, count++, "pole[1]", "int", "0");
-        CheckTTVLine(jTableOperator, count++, "d2", "int[][]", null);
-        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "d2").isLeaf())
-            assertTrue("Node \'d2\' has no child nodes", false);
-        CheckTTVLine(jTableOperator, count++, "d2.length", "int", "10");
-        CheckTTVLine(jTableOperator, count++, "d2[1]", "int[]", null);
-        if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "d2[1]").isLeaf())
-            assertTrue("Node \'d2[1]\' has no child nodes", false);
-        CheckTTVLine(jTableOperator, count++, "d2[1].length", "int", "20");
-        CheckTTVLine(jTableOperator, count++, "d2[1][1]", "int", "0");
-        CheckTTVLine(jTableOperator, count++, "d2[15].length", null, ">Array index \"15\" is out of range <0,9><");
-        
-        // finish debugging session
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
-        new Action(null, null, Utilities.continueShortcut).performShortcut();
-        mwo.waitStatusText(Utilities.finishedStatusBarText);
-    }
+    
     
     public void CreateWatch(String exp) {
         //new ActionNoBlock(Utilities.runMenu + "|" + Utilities.newWatchItem, null).perform();

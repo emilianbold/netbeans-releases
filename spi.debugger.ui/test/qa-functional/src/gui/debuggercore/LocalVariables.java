@@ -39,7 +39,15 @@ public class LocalVariables extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new LocalVariables("testLocalVariables"));
+        suite.addTest(new LocalVariables("setupLocalVariablesTests"));
+        suite.addTest(new LocalVariables("testLocalVariablesExpand"));
+        suite.addTest(new LocalVariables("testLocalVariablesThisNode"));
+        suite.addTest(new LocalVariables("testLocalVariablesStaticNode"));
+        suite.addTest(new LocalVariables("testLocalVariablesStaticInherited"));
+        suite.addTest(new LocalVariables("testLocalVariablesInheritedNode"));
+        suite.addTest(new LocalVariables("continueLocalVariablesTests"));
+        suite.addTest(new LocalVariables("testLocalVariablesExtended"));
+        suite.addTest(new LocalVariables("finishLocalVariablesTests"));
         return suite;
     }
     
@@ -55,107 +63,98 @@ public class LocalVariables extends JellyTestCase {
     
     /** tearDown method */
     public void tearDown() {
-        Utilities.deleteAllBreakpoints();
-        Utilities.deleteAllWatches();
-        Utilities.closeZombieSessions();
-        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
-        org.netbeans.jellytools.nodes.Node projectNode = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
-        projectNode.select();
-        projectNode.performPopupAction(Utilities.setMainProjectAction);
-        
-        projectNode.performPopupActionNoBlock(Utilities.projectPropertiesAction);
-        Utilities.sleep(2000);
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.projectPropertiesTitle + Utilities.testProjectName);
-        org.netbeans.jellytools.nodes.Node helper = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(dialog), "Run|" + Utilities.runningProjectTreeItem);
-        helper.select();
-        new JTextFieldOperator(dialog, 0).setText("examples.advanced.MemoryView");
-        dialog.ok();
     }
     
-    public void testLocalVariables() {
-        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
-        org.netbeans.jellytools.nodes.Node projectNode = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
+    public void setupLocalVariablesTests() {
+        org.netbeans.jellytools.nodes.Node projectNode = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(new ProjectsTabOperator()), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction(Utilities.setMainProjectAction);
         
-        projectNode.performPopupActionNoBlock(Utilities.projectPropertiesAction);
-        Utilities.sleep(2000);
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.projectPropertiesTitle + Utilities.testProjectName);
-        org.netbeans.jellytools.nodes.Node helper = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(dialog), "Run|Running Project");
-        helper.select();
-        new JTextFieldOperator(dialog, 0).setText("examples.advanced.Variables");
-        dialog.ok();
-        
-        JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|Variables.java");
+        JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
         javaNode.performPopupAction(Utilities.openSourceAction);
         Utilities.sleep(2000);
-        EditorOperator editorOperator = new EditorOperator("Variables.java");
-        
-        // create new line breakpoint
-        editorOperator.setCaretPosition(53, 1);
-        Utilities.sleep(500);
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
-        new Action(null, null, Utilities.toggleBreakpointShortcut).performShortcut();
-        
-        // start debugging
-        editorOperator.setCaretPosition(28, 1);
-        Utilities.sleep(500);
+        new EditorOperator("MemoryView.java").setCaretPosition(45, 1);
+        Utilities.sleep(2000);
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
         new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
-        MainWindowOperator mwo = MainWindowOperator.getDefault();
-        Utilities.sleep(2000);
-        mwo.waitStatusText("Thread main stopped at Variables.java:28.");
-        
-        // show local variables view and check values
+        MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:45.");
+    }
+    
+    public void testLocalVariablesExpand() {
         Utilities.showLocalVariablesView();
-        Utilities.sleep(2000);
-        TopComponentOperator localVarsOper = new TopComponentOperator(Utilities.localVarsViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(localVarsOper);
-        
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));        
         TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
         new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this").expand();
         new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Static").expand();
         new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Inherited").expand();
+    }
+    
+    public void testLocalVariablesThisNode() {
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+        CheckTTVLine(jTableOperator, 2, "Vpublic", "String", "\"Public Variable\"");
+        CheckTTVLine(jTableOperator, 3, "Vprotected", "String", "\"Protected Variable\"");
+        CheckTTVLine(jTableOperator, 4, "Vprivate", "String", "\"Private Variable\"");
+        CheckTTVLine(jTableOperator, 5, "VpackagePrivate", "String", "\"Package-private Variable\"");
+    }
+    
+    public void testLocalVariablesStaticNode() {
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+        CheckTTVLine(jTableOperator, 10, "Spublic", "String", "\"Public Variable\"");
+        CheckTTVLine(jTableOperator, 11, "Sprotected", "String", "\"Protected Variable\"");
+        CheckTTVLine(jTableOperator, 12, "Sprivate", "String", "\"Private Variable\"");
+        CheckTTVLine(jTableOperator, 13, "SpackagePrivate", "String", "\"Package-private Variable\"");
+    }
+    
+    public void testLocalVariablesStaticInherited() {
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+        CheckTTVLine(jTableOperator, 15, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
+        CheckTTVLine(jTableOperator, 16, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
+        CheckTTVLine(jTableOperator, 17, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
+        CheckTTVLine(jTableOperator, 18, "inheritedSpackagePrivate", "String", "\"Inherited Package-private Variable\"");
+    }
+    
+    public void testLocalVariablesInheritedNode() {
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+        CheckTTVLine(jTableOperator, 20, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
+        CheckTTVLine(jTableOperator, 21, "inheritedVprotected", "String", "\"Inherited Protected Variable\"");
+        CheckTTVLine(jTableOperator, 22, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
+        CheckTTVLine(jTableOperator, 23, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
+    }
         
-        int count = 1;
-        CheckTTVLine(jTableOperator, count++, "Vpublic", "String", "\"Public Variable\"");
-        CheckTTVLine(jTableOperator, count++, "Vprotected", "String", "\"Protected Variable\"");
-        CheckTTVLine(jTableOperator, count++, "Vprivate", "String", "\"Private Variable\"");
-        CheckTTVLine(jTableOperator, count++, "VpackagePrivate", "String", "\"Package-private Variable\"");
-        count++; // skip line Static
-        CheckTTVLine(jTableOperator, count++, "Spublic", "String", "\"Public Variable\"");
-        CheckTTVLine(jTableOperator, count++, "Sprotected", "String", "\"Protected Variable\"");
-        CheckTTVLine(jTableOperator, count++, "Sprivate", "String", "\"Private Variable\"");
-        CheckTTVLine(jTableOperator, count++, "SpackagePrivate", "String", "\"Package-private Variable\"");
-        CheckTTVLine(jTableOperator, count++, "class$java$lang$Runtime", null, "null");
-        CheckTTVLine(jTableOperator, count++, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
-        CheckTTVLine(jTableOperator, count++, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
-        CheckTTVLine(jTableOperator, count++, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
-        CheckTTVLine(jTableOperator, count++, "inheritedSpackagePrivate", "String", "\"Inherited Package-private Variable\"");
-        count++;
-        CheckTTVLine(jTableOperator, count++, "inheritedVpublic", "String", "\"Inherited Public Variable\"");
-        CheckTTVLine(jTableOperator, count++, "inheritedVprotected", "String", "\"Inherited Protected Variable\"");
-        CheckTTVLine(jTableOperator, count++, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
-        CheckTTVLine(jTableOperator, count++, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
-        
-        // continue to breakpoint
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
-        new Action(null, null, Utilities.continueShortcut).performShortcut();
+    public void continueLocalVariablesTests() {
+        new EditorOperator("MemoryView.java").setCaretPosition(70, 1);
         Utilities.sleep(2000);
-        mwo.waitStatusText("Thread main stopped at Variables.java:53.");
-        
-        count = 1;
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
+        new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:70.");
+    }
+    
+    public void testLocalVariablesExtended() {
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
+        TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
+        int count = 0;
+        CheckTTVLine(jTableOperator, count++, "this", "MemoryView", null);
+        CheckTTVLine(jTableOperator, count++, "timer", null, "null");
         CheckTTVLine(jTableOperator, count++, "Vpublic", "String", "\"Public Variable\"");
         CheckTTVLine(jTableOperator, count++, "Vprotected", "String", "\"Protected Variable\"");
         CheckTTVLine(jTableOperator, count++, "Vprivate", "String", "\"Private Variable\"");
         CheckTTVLine(jTableOperator, count++, "VpackagePrivate", "String", "\"Package-private Variable\"");
         CheckTTVLine(jTableOperator, count++, "Static", null, null);
+        CheckTTVLine(jTableOperator, count++, "bundle", "PropertyResourceBundle", null);
+        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Static|bundle").isLeaf())
+            assertTrue("Node bundle has no child nodes", false);
+        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Static|msgMemory").isLeaf())
+            assertTrue("Node msgMemory has no child nodes", false);
+        CheckTTVLine(jTableOperator, count++, "msgMemory", "MessageFormat", null);
+        CheckTTVLine(jTableOperator, count++, "UPDATE_TIME", "int", "1000");
         CheckTTVLine(jTableOperator, count++, "Spublic", "String", "\"Public Variable\"");
         CheckTTVLine(jTableOperator, count++, "Sprotected", "String", "\"Protected Variable\"");
         CheckTTVLine(jTableOperator, count++, "Sprivate", "String", "\"Private Variable\"");
         CheckTTVLine(jTableOperator, count++, "SpackagePrivate", "String", "\"Package-private Variable\"");
         CheckTTVLine(jTableOperator, count++, "class$java$lang$Runtime", "Class", "class java.lang.Runtime");
+        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Static|class$java$lang$Runtime").isLeaf())
+            assertTrue("Node class$java$lang$Runtime has no child nodes", false);
         CheckTTVLine(jTableOperator, count++, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
         CheckTTVLine(jTableOperator, count++, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
         CheckTTVLine(jTableOperator, count++, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
@@ -203,16 +202,12 @@ public class LocalVariables extends JellyTestCase {
         CheckTTVLine(jTableOperator, count++, "d2", "int[][]", null);
         if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "d2").isLeaf())
             assertTrue("Node d2 has no child nodes", false);
-        
-        // continue = end of application
-        new Action(null, null, Utilities.continueShortcut).performShortcut();
-        try {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            mwo.waitStatusText(Utilities.finishedStatusBarText);
-        } catch (TimeoutExpiredException tee) {
-            System.out.println("Debugging session did not finished.");
-            throw(tee);
-        }
+    }
+    
+    public void finishLocalVariablesTests() {
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
     }
     
     // check values in TreeTable line

@@ -82,20 +82,16 @@ public class Utilities {
     
     public static void deleteAllBreakpoints() {
         showBreakpointsView();
-        TopComponentOperator breakpointsOper = new TopComponentOperator(breakpointsViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(breakpointsViewTitle));
         if (jTableOperator.getRowCount() > 0)
             new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenu("Delete All");
-        breakpointsOper.close();
     }
     
     public static void deleteAllWatches() {
         showWatchesView();
-        TopComponentOperator watchesOper = new TopComponentOperator(watchesViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(watchesOper);
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(watchesViewTitle));
         if (jTableOperator.getRowCount() > 0)
             new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenu("Delete All");
-        watchesOper.close();
     }
     
     public static void closeZombieSessions() {

@@ -33,6 +33,7 @@ public class StartDebugger extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new StartDebugger("setupStartTests"));
         suite.addTest(new StartDebugger("testRunInDebugger"));
         suite.addTest(new StartDebugger("testRunDebuggerStepInto"));
         suite.addTest(new StartDebugger("testRunDebuggerRunToCursor"));
@@ -55,82 +56,45 @@ public class StartDebugger extends JellyTestCase {
         Utilities.closeZombieSessions();
     }
     
-    public void testRunInDebugger() {
-        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
-        Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
+    public void setupStartTests() {
+        Node projectNode = new Node(new JTreeOperator(new ProjectsTabOperator()), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction(Utilities.setMainProjectAction);
-
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
-        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        MainWindowOperator mwo = MainWindowOperator.getDefault();
-        Utilities.sleep(1000);
-        mwo.waitStatusText(Utilities.runningStatusBarText);
-
-        // finnish bedugging session
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        try {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            mwo.waitStatusText(Utilities.finishedStatusBarText);
-        } catch (TimeoutExpiredException tee) {
-            System.out.println("Debugging session was not killed.");
-            throw(tee);
-        }
-    }
-    
-    public void testRunDebuggerStepInto() {
-        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
-        Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
-        projectNode.select();
-        projectNode.performPopupAction(Utilities.setMainProjectAction);
-
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.stepIntoItem).toString(), null).perform();
-        new Action(null, null, Utilities.stepIntoShortcut).performShortcut();
-        MainWindowOperator mwo = MainWindowOperator.getDefault();
-        Utilities.sleep(1000);
-        mwo.waitStatusText("Thread main stopped at MemoryView.java:241.");
         
-        // finnish bedugging session
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        try {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            mwo.waitStatusText(Utilities.finishedStatusBarText);
-        } catch (TimeoutExpiredException tee) {
-            System.out.println("Debugging session was not killed.");
-            throw(tee);
-        }
-    }
-    
-    public void testRunDebuggerRunToCursor() {
-        ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
-        Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
-        projectNode.select();
-        projectNode.performPopupAction(Utilities.setMainProjectAction);
-
         JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
         javaNode.performPopupAction(Utilities.openSourceAction);
+    }
+    
+    public void testRunInDebugger() {
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
+        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText(Utilities.runningStatusBarText);
 
-        EditorOperator editorOperator = new EditorOperator("MemoryView.java");
-        editorOperator.setCaretPosition(112, 1);
-        
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
-        new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
-        MainWindowOperator mwo = MainWindowOperator.getDefault();
-        Utilities.sleep(1000);
-        mwo.waitStatusText("Thread main stopped at MemoryView.java:112.");
-        
-        // finnish bedugging session
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        try {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            mwo.waitStatusText(Utilities.finishedStatusBarText);
-        } catch (TimeoutExpiredException tee) {
-            System.out.println("Debugging session was not killed.");
-            throw(tee);
-        }
+        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
+    }
+    
+    public void testRunDebuggerStepInto() {
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.stepIntoItem).toString(), null).perform();
+        new Action(null, null, Utilities.stepIntoShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:33.");
+        
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
+    }
+    
+    public void testRunDebuggerRunToCursor() {
+        EditorOperator editorOperator = new EditorOperator("MemoryView.java");
+        editorOperator.setCaretPosition(86, 1);
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
+        new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:86.");
+        
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
     }
 }
