@@ -60,7 +60,6 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * @author pfiala
@@ -156,20 +155,16 @@ public class Utils {
      * dots.
      */
     public static boolean isValidPackageName(String packageName) {
-        if (packageName.length() > 0 && packageName.charAt(0) == '.') {
+        String[] strings = packageName.split("[.]");  // NOI18N
+        if (strings.length == 0) {
             return false;
         }
-        StringTokenizer tokenizer = new StringTokenizer(packageName, "."); // NOI18N
-        while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
-            if (token.length() == 0) {
-                return false;
-            }
-            if (!isJavaIdentifier(token)) {
+        for (int i = 0; i < strings.length; i++) {
+            if (!isJavaIdentifier(strings[i])) {
                 return false;
             }
         }
-        return true;
+        return packageName.charAt(packageName.length() - 1) != '.';
     }
 
     public static void removeInterface(ClassElement classElement, String interfaceName) {
