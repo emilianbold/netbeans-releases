@@ -797,7 +797,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../httpserver/servletapi" target="netbeans"/>
   </target>
-  <target name="all-i18n" depends="init,all-properties,all-java/srcmodel,all-java/project">
+  <target name="all-i18n" depends="init,all-properties,all-java/srcmodel,all-java/project,all-projects/queries">
     <echo message="Building module i18n..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
