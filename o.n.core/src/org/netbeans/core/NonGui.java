@@ -340,10 +340,13 @@ public class NonGui extends NbTopManager implements Runnable {
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
         }
-        finally {
-            showSplashAgain();
-        }
         StartLog.logProgress ("Upgrade wizard consulted"); // NOI18N
+        
+        //
+        // 8.5 - we can show the splash only after the upgrade wizard finished
+        //
+        
+        showSplash ();
 
         // -----------------------------------------------------------------------------------------------------
         // 9. Modules
@@ -387,24 +390,6 @@ public class NonGui extends NbTopManager implements Runnable {
         StartLog.logProgress ("LoaderPool notified"); // NOI18N
         Main.incrementSplashProgressBar(10);
 
-        //-------------------------------------------------------------------------------------------------------
-        // setup wizard
-        /*try {
-                if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                        org.netbeans.core.ui.SetupWizard.showSetupWizard(false, getSplash());
-                    }
-                });
-            }
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
-        }
-        finally {
-            showSplashAgain();
-        }
-        StartLog.logProgress ("SetupWizard done"); // NOI18N
-        */
         Main.incrementSplashProgressBar(10);
         // wait until mounting really occurs
         automount.waitFinished ();
@@ -513,7 +498,7 @@ public class NonGui extends NbTopManager implements Runnable {
      *
      * It does nothing in NonGui implementation.
      */
-    protected void showSplashAgain() {
+    protected void showSplash () {
     }
 
     /** Return splash screen if available.
