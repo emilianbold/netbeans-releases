@@ -230,25 +230,25 @@
       <tocitem text="Specifying the Main Class to Run" target="run.mainclass" />
       <tocitem text="Running Java Sources in a Specific Locale" target="run.locale" />
       <tocitem text="Running a Program on a 64-Bit Java Virtual Machine" target="run.64bit.jvm" />
-    <tocitem text="Setting Run Arguments" >
+    <tocitem text="Configuring the Executor" >
+      <tocitem text="Setting Run Options" target="run.options.jump" />
       <tocitem text="Specifying Arguments for Program Execution" target="run.arguments" />
-      <tocitem text="Passing Arguments to the Java Virtual Machine" target="run.vm_arguments" />
       <tocitem text="Setting an Execution Directory" target="run.execution.directory" />
       <tocitem text="Setting Runtime Options for the Environment" target="run.options" />
-    </tocitem>
-    <tocitem text="Configuring the Executor" >
-      <tocitem text="About" target="run.executor.options"/>
-      <tocitem text="External Executor" target="run.external"/>
-      <tocitem text="Internal Executor" target="run.internal"/>
-      <tocitem text="Applet Executor" target="run.applet"/>
-      <tocitem text="JAR Executor" target="run.jarexecutor"/>
-      <tocitem text="Debugger Executor" target="run.debugexecutor"/>
-      <tocitem text="Ant Script Execution" target="ant.execution"/>
-      <tocitem text="J2EE Server Executor" target="run.j2ee_executor"/>
-      <tocitem text="Specifying the Default Executor" target="run.project" />
-      <tocitem text="Defining a New Executor Type" target="run.new" />
-      <tocitem text="Setting an Executor Type in a Template" target="run.template" />
-      <tocitem text="Removing an Executor Type" target="run.remove" />
+       <tocitem text="Configuring Execution Types" >
+         <tocitem text="Execution Types in the IDE" target="run.executor.options"/>
+         <tocitem text="External Execution" target="run.external"/>
+         <tocitem text="Internal Execution" target="run.internal"/>
+         <tocitem text="Applet Execution" target="run.applet"/>
+         <tocitem text="JAR Execution" target="run.jarexecutor"/>
+         <tocitem text="Debugger Execution" target="run.debugexecutor"/>
+         <tocitem text="Ant Script Execution" target="ant.execution"/>
+         <tocitem text="J2EE Server Execution" target="run.j2ee_executor"/>
+         <tocitem text="Specifying the Default Executor" target="run.project" />
+         <tocitem text="Defining a New Execution Type" target="run.new" />
+         <tocitem text="Setting an Execution Type in a Template" target="run.template" />
+         <tocitem text="Removing an Execution Type" target="run.remove" />
+      </tocitem>
     </tocitem>
   </tocitem>
 

@@ -292,7 +292,6 @@
 <mapID target="compile.javamake" url="compile/javamake.html" />
 
 
-<mapID target="run.jump" url="run/run_jump.html" />
 <mapID target="run.run" url="run/run.html" />
 <mapID target="run.debugmode" url="run/run_debug.html" />
 <mapID target="run.debug.applet" url="run/run_applet.html" />
@@ -300,7 +299,6 @@
 <mapID target="run.options.jump" url="run/run_options_jump.html" />
 <mapID target="run.options" url="run/options.html" />
 <mapID target="run.locale" url="run/locale.html" />
-<mapID target="run.vm_arguments" url="run/vm_arguments.html" />
 <mapID target="run.executor.options" url="run/executor_options.html" />
 <mapID target="run.project" url="run/project.html" />
 <mapID target="run.external" url="run/external.html" />
