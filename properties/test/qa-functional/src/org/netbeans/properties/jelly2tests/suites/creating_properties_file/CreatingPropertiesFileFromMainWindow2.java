@@ -27,7 +27,6 @@ import java.io.File;
 import junit.textui.TestRunner;
 import lib.PropertiesEditorTestCase;
 import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.nodes.FilesystemNode;
 import org.netbeans.jellytools.nodes.PropertiesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
