@@ -126,21 +126,28 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
    * by name.
    */
   private DataFolder findSessionFolder (String name) {
-    DataFolder df = null;
     try {
       FileObject fo = FileSystemPool.getDefault().findResource(name);
-      df = DataFolder.findFolder(fo);
+
+      if (fo == null) {
+        // resource not found, try to create new folder
+        fo = FileSystemPool.getDefault ().getDefaultFileSystem ().getRoot ().createFolder (name);
+      }
+      
+      DataFolder df = df = DataFolder.findFolder(fo);
       df.setSortMode(DataFolder.SortMode.FOLDER_NAMES);
-    } catch (Exception ex) {
-      ex.printStackTrace();
+      return df;
+    } catch (java.io.IOException ex) {
+      throw new InternalError ("Folder not found and cannot be created: " + name);
     }
-    return df;
   }
 
 }
 
 /*
 * Log
+*  7    Gandalf   1.6         2/2/99   Jaroslav Tulach Tries to create non 
+*       existing folders
 *  6    Gandalf   1.5         1/25/99  Jaroslav Tulach Added default project, 
 *       its desktop and changed default explorer in Main.
 *  5    Gandalf   1.4         1/25/99  David Peroutka  support for menus and 
