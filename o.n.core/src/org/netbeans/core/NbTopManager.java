@@ -510,13 +510,23 @@ public abstract class NbTopManager extends TopManager {
 
                     // set different owner if some modal dialog now active
                     NbPresenter presenter = null;
-                    if (NbPresenter.currentModalDialog != null) {
-                        presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog, true);
+                    if (descriptor instanceof DialogDescriptor) {
+                        if (NbPresenter.currentModalDialog != null) {
+                            presenter = new NbDialog((DialogDescriptor) descriptor, NbPresenter.currentModalDialog);
+                        } else {
+                            presenter = new NbDialog
+                                ((DialogDescriptor) descriptor,
+                                 TopManager.getDefault().getWindowManager().getMainWindow());
+                        }
                     } else {
-                        presenter = new NbPresenter
-                            (descriptor,
-                             TopManager.getDefault().getWindowManager().getMainWindow(),
-                             true);
+                        if (NbPresenter.currentModalDialog != null) {
+                            presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog, true);
+                        } else {
+                            presenter = new NbPresenter
+                                (descriptor,
+                                 TopManager.getDefault().getWindowManager().getMainWindow(),
+                                 true);
+                        }
                     }
                     
                     //Bugfix #8551
