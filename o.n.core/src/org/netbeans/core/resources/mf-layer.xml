@@ -288,6 +288,7 @@ Microsystems, Inc. All Rights Reserved.
        <attr name="Tools/Window" boolvalue="true" />
        <folder name="Window">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+          <file name="org-netbeans-core-actions-MakeDominantAction.instance"/>
           <file name="org-openide-actions-UndockAction.instance"/>
           <attr name="org-openide-actions-UndockAction.instance/org-netbeans-core-actions-DockingAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-DockingAction.instance"/>
