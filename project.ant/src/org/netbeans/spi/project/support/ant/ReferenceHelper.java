@@ -1039,24 +1039,6 @@ public final class ReferenceHelper {
     }
     
     /**
-     * Find reference ID for the given AntArtifact. See also 
-     * {@link #findReferenceID(String, String, String)}.
-     */
-    private String findReferenceID(AntArtifact artifact) {
-        Project proj = artifact.getProject();
-        if (proj == null) {
-            throw new IllegalArgumentException("No project associated with " + artifact); // NOI18N
-        }
-        File projDir = FileUtil.toFile(proj.getProjectDirectory());
-        assert projDir != null : proj.getProjectDirectory();
-        String usableID = getUsableReferenceID(ProjectUtils.getInformation(proj).getName());
-        String path = projDir.getAbsolutePath();
-        String id = findReferenceID(usableID, "project.", path); // NOI18N
-        assert id != null : "Did not have a ref ID for " + artifact + " with usable ID " + usableID + " and path " + path + " among " + h.getStandardPropertyEvaluator().getProperties();
-        return id;
-    }
-
-    /**
      * Generate unique reference ID for the given property base name, prefix 
      * and path. See also {@link #findReferenceID(String, String, String)}.
      * @param property project name or jar filename
@@ -1166,7 +1148,12 @@ public final class ReferenceHelper {
                     l.add(null);
                     return l;
                 }
-                assert index < aa.getArtifactLocations().length;
+                if (index >= aa.getArtifactLocations().length) {
+                    // #55413: we no longer have that many items...treat it as dead.
+                    l.add(null);
+                    l.add(null);
+                    return l;
+                }
                 URI uri = aa.getArtifactLocations()[index];
                 l.add(aa);
                 l.add(uri);

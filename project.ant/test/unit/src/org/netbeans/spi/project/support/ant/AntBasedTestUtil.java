@@ -83,7 +83,7 @@ public class AntBasedTestUtil {
      * <code>build-impl.xml</code> is generated from <code>data/build-impl.xsl</code>
      * by a ProjectXmlSavedHook using GeneratedFilesHelper.refreshBuildScript.
      * A ReferenceHelper is also added to its lookup for testing purposes.
-     * An AntArtifactProvider is added which publishes two artifacts:
+     * An {@link AntArtifactProviderMutable} is added which initially publishes two artifacts:
      * one of target 'dojar' type 'jar' with artifact ${build.jar};
      * one of target 'dojavadoc' type 'javadoc' with artifact ${build.javadoc};
      * both using clean target 'clean'.
@@ -92,6 +92,13 @@ public class AntBasedTestUtil {
      */
     public static AntBasedProjectType testAntBasedProjectType() {
         return new TestAntBasedProjectType();
+    }
+    
+    /**
+     * You can adjust which artifacts are supplied.
+     */
+    public interface AntArtifactProviderMutable extends AntArtifactProvider {
+        void setBuildArtifacts(AntArtifact[] arts);
     }
     
     private static final class TestAntBasedProjectType implements AntBasedProjectType {
@@ -206,11 +213,16 @@ public class AntBasedTestUtil {
             
         }
         
-        private final class TestAntArtifactProvider implements AntArtifactProvider {
+        private final class TestAntArtifactProvider implements AntArtifactProviderMutable {
+            
+            private AntArtifact[] arts;
             
             TestAntArtifactProvider() {}
             
             public AntArtifact[] getBuildArtifacts() {
+                if (arts != null) {
+                    return arts;
+                }
                 URI[] uris = null;
                 try {
                     uris = new URI[]{new URI("dist/foo.jar"), new URI("dist/bar.jar")};
@@ -222,6 +234,10 @@ public class AntBasedTestUtil {
                     helper.createSimpleAntArtifact("javadoc", "build.javadoc", helper.getStandardPropertyEvaluator(), "dojavadoc", "clean"),
                     new TestAntArtifact(uris, helper),
                 };
+            }
+            
+            public void setBuildArtifacts(AntArtifact[] arts) {
+                this.arts = arts;
             }
             
         }

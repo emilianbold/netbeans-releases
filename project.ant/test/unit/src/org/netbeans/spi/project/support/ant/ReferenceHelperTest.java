@@ -15,8 +15,10 @@ package org.netbeans.spi.project.support.ant;
 
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.project.Project;
@@ -791,6 +793,121 @@ public class ReferenceHelperTest extends NbTestCase {
         assertNotNull("reference was moved to PRIVATE_PROPERTIES_PATH", refval);
         assertEquals("reference does not contain extra base folder", absolutePath+"/jars/mylib2.jar", refval);
         assertEquals("reference is correctly evaluated", f, h.resolveFile(h.getStandardPropertyEvaluator().evaluate(refval)));
+    }
+
+    /**
+     * Check that adding and removing artifact locations dynamically doesn't break anything.
+     * Cf. #55413 and #55423.
+     */
+    public void testDeletionOfArtifactLocations() throws Exception {
+        final URI[] locations = {
+            URI.create("dist/output1.jar"),
+            URI.create("dist/output2.jar"),
+            URI.create("dist/output3.jar"),
+        };
+        final boolean[] includeLocations = {
+            true,
+            false,
+            true,
+        };
+        class MultiAntArtifact extends AntArtifact {
+            public String getType() {
+                return "jar";
+            }
+            public String getTargetName() {
+                return "build";
+            }
+            public String getCleanTargetName() {
+                return "clean";
+            }
+            public File getScriptLocation() {
+                return sisterh.resolveFile("build.xml");
+            }
+            public URI[] getArtifactLocations() {
+                List/*<URI>*/ locs = new ArrayList();
+                for (int i = 0; i < locations.length; i++) {
+                    if (includeLocations[i]) {
+                        locs.add(locations[i]);
+                    }
+                }
+                return (URI[]) locs.toArray(new URI[locs.size()]);
+            }
+        }
+        AntArtifact art = new MultiAntArtifact();
+        assertFalse("project not initially modified", pm.isModified(p));
+        assertFalse("no refs yet", r.isReferenced(art, locations[0]));
+        assertEquals("added a ref to output1.jar", "${reference.proj2.build}", r.addReference(art, locations[0]));
+        assertEquals("added a ref to output3.jar", "${reference.proj2.build.1}", r.addReference(art, locations[2]));
+        try {
+            r.addReference(art, locations[1]);
+            fail("Should not be permitted to add ref to output2.jar yet");
+        } catch (IllegalArgumentException e) {
+            // Expected.
+        }
+        assertTrue("output1.jar ref'd", r.isReferenced(art, locations[0]));
+        assertTrue("output3.jar ref'd", r.isReferenced(art, locations[2]));
+        try {
+            r.isReferenced(art, locations[1]);
+            fail("Should not be permitted to check ref to output2.jar yet");
+        } catch (IllegalArgumentException e) {
+            // Expected.
+        }
+        // Make sure proj2 actually reports our special provider:
+        Project sisterproj = ProjectManager.getDefault().findProject(sisterprojdir);
+        ((AntBasedTestUtil.AntArtifactProviderMutable) sisterproj.getLookup().lookup(AntBasedTestUtil.AntArtifactProviderMutable.class)).
+            setBuildArtifacts(new AntArtifact[] {art});
+        // Now check findArtifactAndLocation usage.
+        assertEquals("output1.jar found",
+                Arrays.asList(new Object[] {art, locations[0]}),
+                Arrays.asList(r.findArtifactAndLocation("${reference.proj2.build}")));
+        assertEquals("output3.jar found",
+                Arrays.asList(new Object[] {art, locations[2]}),
+                Arrays.asList(r.findArtifactAndLocation("${reference.proj2.build.1}")));
+        // Now add output2.jar to list and see that lookups work somehow.
+        includeLocations[1] = true;
+        assertEquals("output1.jar still there",
+                Arrays.asList(new Object[] {art, locations[0]}),
+                Arrays.asList(r.findArtifactAndLocation("${reference.proj2.build}")));
+        assertEquals("output2.jar now magically referenced instead of output3.jar (but oh well)",
+                Arrays.asList(new Object[] {art, locations[1]}),
+                Arrays.asList(r.findArtifactAndLocation("${reference.proj2.build.1}")));
+        assertEquals("output3.jar now magically referenced (even though we have no such property ourselves)",
+                Arrays.asList(new Object[] {art, locations[2]}),
+                Arrays.asList(r.findArtifactAndLocation("${reference.proj2.build.2}")));
+        // Now *remove* some items and see what happens!
+        includeLocations[0] = false;
+        includeLocations[1] = false;
+        assertEquals("output3.jar now only referent",
+                Arrays.asList(new Object[] {art, locations[2]}),
+                Arrays.asList(r.findArtifactAndLocation("${reference.proj2.build}")));
+        assertEquals("second item no longer exists",
+                Arrays.asList(new Object[] {null, null}),
+                Arrays.asList(r.findArtifactAndLocation("${reference.proj2.build.1}")));
+        assertEquals("third item no longer exists",
+                Arrays.asList(new Object[] {null, null}),
+                Arrays.asList(r.findArtifactAndLocation("${reference.proj2.build.2}")));
+        assertTrue("output3.jar ref'd", r.isReferenced(art, locations[2]));
+        try {
+            r.isReferenced(art, locations[0]);
+            fail("Should not be permitted to check ref to first item any more, oops");
+        } catch (IllegalArgumentException e) {
+            // Expected.
+        }
+        try {
+            r.isReferenced(art, locations[1]);
+            fail("Should not be permitted to check ref to second item any more");
+        } catch (IllegalArgumentException e) {
+            // Expected.
+        }
+        // Now destroy the references and make sure there are no issues.
+        assertTrue("Can really get rid of output3.jar (even though it used to be output1.jar)",
+            r.destroyReference("${reference.proj2.build}"));
+        assertTrue("Can also get rid of what used to be output3.jar somehow - just the property at least",
+            r.destroyReference("${reference.proj2.build.1}"));
+        assertFalse("output3.jar no longer ref'd", r.isReferenced(art, locations[2]));
+        assertEquals("No raw references left", Collections.EMPTY_LIST, Arrays.asList(r.getRawReferences()));
+        assertEquals("No shared properties left", Collections.EMPTY_MAP, h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+        assertEquals("No private properties left", Collections.EMPTY_MAP, h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
     }
     
 }
