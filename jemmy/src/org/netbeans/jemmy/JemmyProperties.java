@@ -102,10 +102,8 @@ public class JemmyProperties {
      * Returns full version string (like 1.0.1-011231)
      */
     public static String getVersion() {
-	String bld = getBuild();
 	return(getMajorVersion() + "." +
-	       getMinorVersion() + 
-	       (bld.equals("") ? "" : ("-" + bld)));
+	       getMinorVersion());
     }
 
     /**
