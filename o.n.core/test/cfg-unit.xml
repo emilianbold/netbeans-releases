@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -46,9 +46,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/ValidateLayer*Test.class"/> 
                 <!-- Can throw OutOfMemoryError: <include name="org/netbeans/core/ValidateClassLinkageTest.class"/> -->
                 <exclude name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
-                <!-- For #36395. Trying to work around in Ant module instead.
-                <include name="org/netbeans/core/execution/TaskThreadGroupGCTest.class"/>
-                -->
             </patternset>
         </testset>
     </testbag>
@@ -109,7 +106,6 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="ide" name="JellyTools_compatibility">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/lib/terminalemulator/TermTest.class"/>
                 <include name="org/netbeans/core/projects/FileStatePropertyTest.class"/>
                 <include name="org/netbeans/core/BundleKeysTest.class"/>
             </patternset>
