@@ -76,7 +76,7 @@ public class FormDataObject extends JavaDataObject {
     componentRefRegistered = false;
   }
 
-  protected JavaEditor createEditorSupport () {
+  protected JavaEditor createJavaEditor () {
     return new FormEditorSupport (getPrimaryEntry (), this);
   }
 
@@ -197,6 +197,7 @@ public class FormDataObject extends JavaDataObject {
 
 /*
  * Log
+ *  11   Gandalf   1.10        3/24/99  Ian Formanek    
  *  10   Gandalf   1.9         3/24/99  Ian Formanek    
  *  9    Gandalf   1.8         3/22/99  Ian Formanek    
  *  8    Gandalf   1.7         3/17/99  Ian Formanek    
