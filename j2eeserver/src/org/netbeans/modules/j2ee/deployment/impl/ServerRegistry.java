@@ -38,7 +38,6 @@ public final class ServerRegistry implements java.io.Serializable {
     public static final String SERVER_NAME = "serverName";
     private static ServerRegistry instance = null;
     public synchronized static ServerRegistry getInstance() {
-        
         if(instance == null) instance = new ServerRegistry();
         return instance;
         
@@ -46,8 +45,8 @@ public final class ServerRegistry implements java.io.Serializable {
         //    return (ServerRegistry) Lookup.getDefault().lookup(ServerRegistry.class);
     }
     
-    private transient Map servers = new HashMap();
-    private transient Map instances = new HashMap();
+    private transient Map servers = null;
+    private transient Map instances = null;
     private transient Collection pluginListeners = new HashSet();
     private transient Collection instanceListeners = new LinkedList();
     
@@ -55,29 +54,49 @@ public final class ServerRegistry implements java.io.Serializable {
     private ServerString defaultInstance;
     
     public ServerRegistry() {
-        
+    }
+    private synchronized void init() {
+        if (servers != null && instances != null)
+            return;
+        long t0 = System.currentTimeMillis();
+        servers = new HashMap();
+        instances = new HashMap();
         Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
         FileObject dir = rep.findResource(DIR_JSR88_PLUGINS);
         dir.addFileChangeListener(new PluginInstallListener());
         FileObject[] ch = dir.getChildren();
-        for(int i = 0; i < ch.length; i++)
+        for(int i = 0; i < ch.length; i++) {
+            //long t1=System.currentTimeMillis();
             addPlugin(ch[i]);
+            //System.out.println("ServerRegistry.addPlugin("+ch[i]+")="+(System.currentTimeMillis()-t1));
+        }
         
         dir = rep.findResource(DIR_INSTALLED_SERVERS);
         dir.addFileChangeListener(new InstanceInstallListener());
         ch = dir.getChildren();
         
-        for(int i = 0; i < ch.length; i++)
+        for(int i = 0; i < ch.length; i++) {
+            //long t1=System.currentTimeMillis();
             addInstance(ch[i]);
+            //System.out.println("ServerRegistry.addInstance("+ch[i]+")="+(System.currentTimeMillis()-t1));
+        }
+        System.out.println("ServerRegistry.init="+(System.currentTimeMillis()-t0));
     }
-    
+    private Map serversMap() {
+        init();
+        return servers;
+    }
+    private Map instancesMap() {
+        init();
+        return instances;
+    }
     private synchronized void addPlugin(FileObject fo) {
         try {
             if(fo.isFolder()) {
                 String name = fo.getName();
-                if(servers.containsKey(name)) return;
+                if(serversMap().containsKey(name)) return;
                 Server server = new Server(fo);
-                servers.put(name,server);
+                serversMap().put(name,server);
                 firePluginListeners(server,true);
             }
             
@@ -91,9 +110,9 @@ public final class ServerRegistry implements java.io.Serializable {
     // PENDING should be private
     synchronized void removePlugin(FileObject fo) {
         String name = fo.getName();
-        if(servers.containsKey(name)) {
-            Server server = (Server) servers.get(name);
-            servers.remove(name);
+        if(serversMap().containsKey(name)) {
+            Server server = (Server) serversMap().get(name);
+            serversMap().remove(name);
             firePluginListeners(server,false);
         }
     }
@@ -137,35 +156,41 @@ public final class ServerRegistry implements java.io.Serializable {
     }
     
     public Collection getServers() {
-        return servers.values();
+        return serversMap().values();
     }
     
     public Collection getInstances() {
-        return instances.values();
+        return instancesMap().values();
     }
     
     public String[] getInstanceURLs() {
-        return (String[]) instances.keySet().toArray(new String[instances.size()]);
+        return (String[]) instancesMap().keySet().toArray(new String[instancesMap().size()]);
     }
     
-    public void checkInstanceExists(String url) throws InstanceCreationException {
+    public void checkInstanceAlreadyExists(String url) throws InstanceCreationException {
         if (getServerInstance(url) != null) {
             String msg = NbBundle.getMessage(ServerRegistry.class, "MSG_InstanceAlreadyExists", url);
             throw new InstanceCreationException(msg);
         }
     }
     
+    public void checkInstanceExists(String url) {
+        if (getServerInstance(url) == null) {
+            String msg = NbBundle.getMessage(ServerRegistry.class, "MSG_InstanceNotExists", url);
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
     public Server getServer(String name) {
-        return (Server) servers.get(name);
+        return (Server) serversMap().get(name);
     }
     
-    public synchronized Collection getServers(PluginListener pl) {
+    public void addPluginListener(PluginListener pl) {
         pluginListeners.add(pl);
-        return getServers();
     }
     
     public ServerInstance getServerInstance(String url) {
-        return (ServerInstance) instances.get(url);
+        return (ServerInstance) instancesMap().get(url);
     }
     
     public void removeServerInstance(String url) {
@@ -178,7 +203,7 @@ public final class ServerRegistry implements java.io.Serializable {
             defaultInstance = null;
         }
         
-        ServerInstance instance = (ServerInstance) instances.remove(url);
+        ServerInstance instance = (ServerInstance) instancesMap().remove(url);
         if (instance != null) {
             ServerString ss = new ServerString(instance);
             fireInstanceListeners(ss, false);
@@ -188,8 +213,8 @@ public final class ServerRegistry implements java.io.Serializable {
     }
     
     public ServerInstance[] getServerInstances() {
-        ServerInstance[] ret = new ServerInstance[instances.size()];
-        instances.values().toArray(ret);
+        ServerInstance[] ret = new ServerInstance[instancesMap().size()];
+        instancesMap().values().toArray(ret);
         return ret;
     }
     
@@ -221,13 +246,24 @@ public final class ServerRegistry implements java.io.Serializable {
     }
     
     private synchronized void writeInstanceToFile(String url, String username, String password) throws IOException {
+        if (url == null) {
+            ErrorManager.getDefault().log(ErrorManager.ERROR, NbBundle.getMessage(ServerRegistry.class, "MSG_NullUrl"));
+            return;
+        }
         Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
         FileObject dir = rep.findResource(DIR_INSTALLED_SERVERS);
+        FileObject instanceFOs[] = dir.getChildren();
+        FileObject instanceFO = null;
+        for (int i=0; i<instanceFOs.length; i++) {
+            if (url.equals(instanceFOs[i].getAttribute(URL_ATTR))) 
+                instanceFO = instanceFOs[i];
+        }
         String name = FileUtil.findFreeFileName(dir,"instance",null);
-        FileObject fo = dir.createData(name);
-        fo.setAttribute(URL_ATTR, url);
-        fo.setAttribute(USERNAME_ATTR, username);
-        fo.setAttribute(PASSWORD_ATTR, password);
+        if (instanceFO == null)
+            instanceFO = dir.createData(name);
+        instanceFO.setAttribute(URL_ATTR, url);
+        instanceFO.setAttribute(USERNAME_ATTR, username);
+        instanceFO.setAttribute(PASSWORD_ATTR, password);
     }
     
     private synchronized void removeInstanceFromFile(String url) {
@@ -242,8 +278,8 @@ public final class ServerRegistry implements java.io.Serializable {
     }
     
     private synchronized boolean addInstanceImpl(String url, String username, String password) {
-        if (instances.containsKey(url)) return false;
-        for(Iterator i = servers.values().iterator(); i.hasNext();) {
+        if (instancesMap().containsKey(url)) return false;
+        for(Iterator i = serversMap().values().iterator(); i.hasNext();) {
             Server server = (Server) i.next();
             try {
                 if(server.handlesUri(url)) {
@@ -251,7 +287,7 @@ public final class ServerRegistry implements java.io.Serializable {
                     if(manager != null) {
                         ServerInstance instance = new ServerInstance(server,url,manager);
                         // PENDING persist url/password in ServerString as well
-                        instances.put(url,instance);
+                        instancesMap().put(url,instance);
                         ServerString str = new ServerString(server.getShortName(),url,null);
                         writeInstanceToFile(url,username,password);
                         fireInstanceListeners(str,true);

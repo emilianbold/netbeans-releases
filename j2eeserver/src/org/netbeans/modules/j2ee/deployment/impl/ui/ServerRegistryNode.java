@@ -18,17 +18,18 @@
  */
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
-import java.awt.Component;
-import java.util.*;
 import java.lang.reflect.InvocationTargetException;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.ErrorManager;
+import org.openide.util.RequestProcessor;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.FilterXNode;
+import java.awt.Component;
+import java.util.*;
 
 /**
  * The server registry node is a node representing the registry in global options.
@@ -36,78 +37,64 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.FilterXNode;
  * @author George FinKlang
  */
 
-public class ServerRegistryNode extends AbstractNode {
+public class ServerRegistryNode extends AbstractNode
+implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
     
     static final String REGISTRY_ICON_BASE = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/ServerRegistry";//NOI18N
     
-    private transient ServerRegistry.PluginListener pluginListener;
-    private transient ServerRegistry.InstanceListener instanceListener;
-    private transient Set keys = new HashSet();
     private transient Map serverNodes = new HashMap();
-    private transient Node[] nodes = null;
     private transient HelpCtx helpCtx;
     
     public ServerRegistryNode() {
         super(new ServerChildren());
+        long t0 = System.currentTimeMillis();
+        setName("");//NOI18N
+        String msg = NbBundle.getBundle(ServerRegistryNode.class).getString("SERVER_REGISTRY_NODE");//NOI18N
+        setDisplayName(msg);
+        setIconBase(REGISTRY_ICON_BASE);
+        
+        System.out.println("Created registry node in "+ (System.currentTimeMillis() - t0) + " msecs.");
+    }
+    
+    void displayNameWithDefaultServer() {
         ServerString defaultInstance = ServerRegistry.getInstance().getDefaultInstance();
-        String msg = NbBundle.getBundle(ServerRegistryNode.class).getString("SERVER_REGISTRY_NODE_NO_DEFAULT");//NOI18N
         if (defaultInstance != null) {
             ServerInstance si = defaultInstance.getServerInstance();
-            msg = NbBundle.getMessage(ServerRegistryNode.class,
+            String msg = NbBundle.getMessage(ServerRegistryNode.class,
             "SERVER_REGISTRY_NODE_DEFAULT",
             ((si == null) ? defaultInstance.getUrl() : si.getDisplayName()));//NOI18N
-        }
-        setDisplayName(msg);
-        setName("");//NOI18N
-        setIconBase(REGISTRY_ICON_BASE);
-        try {
-            
-            pluginListener = new ServerRegistry.PluginListener() {
-                public void serverAdded(Server server) {
-                    //                    System.err.println("Server added " + server);
-                    updateKeys();
-                }
-                public void serverRemoved(Server server) {
-                    //                    System.err.println("Server removed " + server);
-                    updateKeys();
-                }
-            };
-            
-            instanceListener = new ServerRegistry.InstanceListener() {
-                public void instanceAdded(ServerString instance) {
-                    refreshServerNode(instance);
-                }
-                public void instanceRemoved(ServerString instance) {
-                    refreshServerNode(instance);
-                }
-                public void changeDefaultInstance(ServerString oldInstance, ServerString instance) {
-                    //                    System.err.println("Changing default to " + instance);
-                    setInstance(instance == null ? null : instance.getServerInstance());
-                }
-                private void refreshServerNode(ServerString instance) {
-                    Server server = instance.getServer();
-                    Node node = getServerNode(server);
-                    ServerNode serverNode;
-                    if (node instanceof FilterXNode)
-                        serverNode = (ServerNode) ((FilterXNode)node).getXNode();
-                    else
-                        serverNode = (ServerNode) node;
-                    serverNode.refreshChildren();
-                }
-            };
-            
-            ServerRegistry.getInstance().getServers(pluginListener);
-            updateKeys();
-            
-            Collection instances = ServerRegistry.getInstance().getInstances(instanceListener);
-            
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,  e);
+            setDisplayName(msg);
         }
     }
     
+    public void serverAdded(Server server) {
+        updateKeys();
+    }
+    public void serverRemoved(Server server) {
+        updateKeys();
+    }
+    
+    public void instanceAdded(ServerString instance) {
+        refreshServerNode(instance);
+    }
+    public void instanceRemoved(ServerString instance) {
+        refreshServerNode(instance);
+    }
+    public void changeDefaultInstance(ServerString oldInstance, ServerString instance) {
+        setInstance(instance == null ? null : instance.getServerInstance());
+    }
+    private void refreshServerNode(ServerString instance) {
+        Server server = instance.getServer();
+        Node node = getServerNode(server);
+        ServerNode serverNode;
+        if (node instanceof FilterXNode)
+            serverNode = (ServerNode) ((FilterXNode)node).getXNode();
+        else
+            serverNode = (ServerNode) node;
+        serverNode.refreshChildren();
+    }
+    
     private void updateKeys() {
-        //        System.err.println("Updating the children of the server registry");
         ((ServerChildren) getChildren()).updateKeys();
     }
     
@@ -144,14 +131,25 @@ public class ServerRegistryNode extends AbstractNode {
         }
         setDisplayName(message);
     }
-
+    
     private static class ServerChildren extends Children.Keys {
+        private boolean listenersAdded = false;
         
         public ServerChildren() {
-            updateKeys();
         }
         public void updateKeys() {
             setKeys(ServerRegistry.getInstance().getServers());
+        }
+        protected void addNotify() {
+            updateKeys();
+            
+            if (! listenersAdded) {
+                ServerRegistryNode parent = (ServerRegistryNode) getNode();
+                ServerRegistry.getInstance().addPluginListener(parent);
+                ServerRegistry.getInstance().addInstanceListener(parent);
+                parent.displayNameWithDefaultServer();
+                listenersAdded = true;
+            }
         }
         protected Node[] createNodes(Object key) {
             Server s = (Server) key;

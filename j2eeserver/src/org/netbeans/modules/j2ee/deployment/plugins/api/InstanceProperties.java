@@ -12,15 +12,17 @@
  */
 
 /*
- * ConfigBeanCustomizer.java
+ * InstanceProperties.java
  *
  */
 
 package org.netbeans.modules.j2ee.deployment.plugins.api;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.Target;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.impl.InstancePropertiesImpl;
 
 /**
@@ -57,7 +59,7 @@ public abstract class InstanceProperties {
             return null;
         return new InstancePropertiesImpl(inst);
     }
-
+    
     /**
      * Create new instance and returns instance properties for the server instance
      * @param url the url connection string to get the instance deployment manager
@@ -68,7 +70,7 @@ public abstract class InstanceProperties {
         String url, String username, String password) throws InstanceCreationException {
         
         ServerRegistry registry = ServerRegistry.getInstance();
-        registry.checkInstanceExists(url);
+        registry.checkInstanceAlreadyExists(url);
         registry.addInstance(url, username, password);
         ServerInstance inst = registry.getServerInstance(url);
         return new InstancePropertiesImpl(inst);
@@ -80,6 +82,13 @@ public abstract class InstanceProperties {
      */
     public static String[] getInstanceList() {
         return ServerRegistry.getInstance().getInstanceURLs();
+    }
+
+    /**
+     * Return default instance properties.
+     */
+    public static InstanceProperties getDefaultInstance() {
+        return new InstancePropertiesImpl(ServerRegistry.getInstance().getDefaultInstance().getServerInstance());
     }
     
     /**
@@ -113,4 +122,30 @@ public abstract class InstanceProperties {
      * @exception IllegalStateException when instance already removed or not created yet
      */
     public abstract java.util.Enumeration propertyNames() throws IllegalStateException;
+    
+    /**
+     * Is the target server the default J2EE server for deployment?
+     * @param url the URL identifying the admin server
+     * @param targetName name of the target server; null if not target-specific or admin server is also single target.
+     * @return true if the target server or admin server is the default.
+     */
+    public abstract boolean isDefaultInstance();
+    
+    /**
+     * Return DeploymentManager associated with this instance.
+     */
+    public abstract DeploymentManager getDeploymentManager();
+    
+    /**
+     * Return default Target object for the target server from this instance, if any.
+     */
+    public abstract Target getDefaultTarget();
+    
+    /**
+     * Set the target server the default server.
+     * @param url the url of the admin server
+     * @param targetName name of the target server; null if admin server is also single target.
+     */
+    public abstract void setAsDefaultServer(String targetName);
+    
 }

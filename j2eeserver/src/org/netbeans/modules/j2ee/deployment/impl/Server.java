@@ -26,9 +26,9 @@ import org.openide.loaders.*;
 import org.openide.util.Lookup;
 import org.openide.cookies.InstanceCookie;
 import org.openide.nodes.Node;
-import java.util.*;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
+import java.util.*;
 
 
 public class Server implements Node.Cookie {
@@ -44,6 +44,8 @@ public class Server implements Node.Cookie {
     Lookup lkp;
     
     public Server(FileObject fo) throws Exception {
+        long t0 = System.currentTimeMillis();
+        
         name = fo.getName();
         FileObject descriptor = fo.getFileObject("Descriptor");
         if(descriptor == null)
@@ -56,26 +58,30 @@ public class Server implements Node.Cookie {
             factoryCls = factory.getClass ();
         } else {
             FileObject factoryinstance = fo.getFileObject("Factory.instance");
-            if(factoryinstance == null)
-                throw new IllegalStateException("Incorrect server plugin installation");
+            if(factoryinstance == null) {
+                String msg = NbBundle.getMessage(Server.class, "MSG_NoFactoryInstanceClass", name);
+                ErrorManager.getDefault().log(ErrorManager.ERROR, msg);
+                return;
+            }
             DataObject dobj = DataObject.find(factoryinstance);
             InstanceCookie cookie = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
-            if(cookie == null)
-                throw new IllegalStateException("Incorrect server plugin installation");
+            if(cookie == null) {
+                String msg = NbBundle.getMessage(Server.class, "MSG_FactoryFailed", name, cookie);
+                ErrorManager.getDefault().log(ErrorManager.ERROR, msg);
+                return;
+            }
             factoryCls = cookie.instanceClass();
 
             // speculative code depending on the DF implementation and if it registers
             // itself with DFM or not
 
             try {
-    //            System.err.println("Trying to create plugin");
                 factory = (DeploymentFactory) cookie.instanceCreate();
-    //            System.err.println("Created plugin");
             } catch (Exception e) {
-    //            System.err.println("Couldn't create factory instance from Server constructor");
-                e.printStackTrace(System.err);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
+        System.out.println("Create plugin "+name+" in "+(System.currentTimeMillis() - t0));
     }
     
     
@@ -115,8 +121,7 @@ public class Server implements Node.Cookie {
                 try {
                     manager = factory.getDisconnectedDeploymentManager(dep.getDisconnectedString());
                 } catch (Exception e) {
-                    e.printStackTrace(System.err);
-                    // PENDING should remove this server and show error message.
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
         }
@@ -127,7 +132,7 @@ public class Server implements Node.Cookie {
         try {
             return getFactory().handlesURI(uri);
         } catch (Exception e) {
-            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.getLocalizedMessage());
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             return false;
         }
     }
