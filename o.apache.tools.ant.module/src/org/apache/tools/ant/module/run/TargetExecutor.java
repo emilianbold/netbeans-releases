@@ -7,7 +7,7 @@
  *
  * The Original Code is the Ant module
  * The Initial Developer of the Original Code is Jayme C. Edwards.
- * Portions created by Jayme C. Edwards are Copyright (c) 2000.
+ * Portions created by Jayme C. Edwards are Copyright (c) 2001.
  * All Rights Reserved.
  *
  * Contributor(s): Jayme C. Edwards, Jesse Glick
@@ -197,7 +197,8 @@ public class TargetExecutor implements Runnable {
                 project.addDataTypeDefinition ((String) entry.getKey (), (Class) entry.getValue ());
             }
             project.setUserProperty("ant.file", buildFile.getAbsolutePath()); // NOI18N
-            // XXX set also ant.version acc. to org/apache/tools/ant/version.properties?
+            // #14993:
+            project.setUserProperty("ant.version", Main.getAntVersion()); // NOI18N
             Iterator it = properties.entrySet ().iterator ();
             while (it.hasNext ()) {
                 Map.Entry entry = (Map.Entry) it.next ();

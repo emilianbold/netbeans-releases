@@ -7,7 +7,7 @@
  *
  * The Original Code is the Ant module
  * The Initial Developer of the Original Code is Jayme C. Edwards.
- * Portions created by Jayme C. Edwards are Copyright (c) 2000.
+ * Portions created by Jayme C. Edwards are Copyright (c) 2001.
  * All Rights Reserved.
  *
  * Contributor(s): Jesse Glick.
@@ -26,7 +26,7 @@ import org.openide.filesystems.FileSystemCapability;
 import org.openide.options.SystemOption;
 import org.openide.util.*;
 
-import org.apache.tools.ant.Project;
+import org.apache.tools.ant.*;
 
 import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.loader.AntCompilerSupport;
@@ -41,6 +41,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
     public static final String PROP_COMPILER = "compiler"; // NOI18N
     public static final String PROP_EXECUTOR = "executor"; // NOI18N
     public static final String PROP_REUSE_OUTPUT = "reuseOutput"; // NOI18N
+    public static final String PROP_ANT_VERSION = "antVersion"; // NOI18N
     
     private static final String DEF_CLASS_PATH = "netbeans.class.path"; // NOI18N
     private static final String DEF_BOOTCLASS_PATH = "netbeans.bootclass.path"; // NOI18N
@@ -171,6 +172,21 @@ public class AntSettings extends SystemOption implements ChangeListener {
     /** Sets the reuseOutput property. */
     public void setReuseOutput (boolean b) {
         putProperty (PROP_REUSE_OUTPUT, new Boolean (b), true);
+    }
+    
+    // #14993: read-only property for the version of Ant
+    public String getAntVersion() {
+        String v = (String)getProperty(PROP_ANT_VERSION);
+        if (v == null) {
+            try {
+                v = Main.getAntVersion();
+            } catch (BuildException be) {
+                AntModule.err.notify(ErrorManager.INFORMATIONAL, be);
+                v = NbBundle.getMessage(AntSettings.class, "LBL_ant_version_unknown");
+            }
+            putProperty(PROP_ANT_VERSION, v, false);
+        }
+        return v;
     }
     
     public void stateChanged(ChangeEvent e) {
