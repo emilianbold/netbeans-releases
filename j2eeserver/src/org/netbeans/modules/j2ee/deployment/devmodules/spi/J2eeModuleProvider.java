@@ -40,10 +40,9 @@ public abstract class J2eeModuleProvider implements Node.Cookie {
 //    public abstract Context getContext ();
     public abstract ModuleChangeReporter getModuleChangeReporter ();
     
-    /** A folder where confugration data (deployment descriptor, server specific 
-     * configuration, etc.) are stored.
+    /** A folder that contains the module sources
      */
-    public abstract FileObject getConfigFolder ();
+    public abstract FileObject getModuleFolder ();
     
     /** This cookie must be added by modules */
     public static final Node.Cookie cookieToAdd (DataObject obj) {

@@ -42,7 +42,6 @@ public class InitialServerFileDistributor extends ServerProgress {
     ServerString serverString;
     DeploymentTarget dtarget;
     FileDeploymentLayout fileLayout;
-    DeploymentPlanSplitter splitter;
     Target target;
 
     /** Creates a new instance of InitialServerFileDistributor */
@@ -52,7 +51,6 @@ public class InitialServerFileDistributor extends ServerProgress {
         this.dtarget = dtarget;
         this.target = target;
         fileLayout = serverString.getServerInstance().getFileDeploymentLayout();
-        splitter = serverString.getServerInstance().getServer().getDeploymentPlanSplitter();
     }
     
     public File distribute() {
@@ -118,17 +116,6 @@ public class InitialServerFileDistributor extends ServerProgress {
 
             //Pending use childModuleUri for getDeploymentPlanFileNames
             DeployableObject deployable = dcp.getDeployableObject(childModuleUri);
-            //String[] rPaths = fileLayout.getDeploymentPlanFilenames(deployable.getModuleType());
-            String[] rPaths = fileLayout.getDeploymentPlanFilenames(deployable.getType ());
-            File configFile = dtarget.getConfigurationFile();
-            if (rPaths == null || rPaths.length == 0)
-                return;
-
-            File[] paths = new File[rPaths.length];
-            for (int n=0; n<rPaths.length; n++) {
-                paths[n] = new File(FileUtil.toFile(destRoot), rPaths[n]);
-            }
-            splitter.writeDeploymentPlanFiles(config, deployable, paths);
             
         } catch (Exception e) {
             e.printStackTrace();
