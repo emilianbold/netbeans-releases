@@ -628,8 +628,11 @@ class JavaCodeGenerator extends CodeGenerator {
                         } else {
                             generateComponentAddCode(children[i],(RADVisualContainer)comp, initCodeWriter);
                         }
-                        initCodeWriter.write("\n"); // NOI18N
+                    } else if (comp instanceof RADMenuComponent) {
+                        generateMenuAddCode(children[i],(RADMenuComponent)comp, initCodeWriter);
                     } // [PENDING - adding to non-visual containers]
+
+                    initCodeWriter.write("\n"); // NOI18N
                 } else {
                     initCodeWriter.write("\n"); // NOI18N
                     initCodeWriter.flush();
