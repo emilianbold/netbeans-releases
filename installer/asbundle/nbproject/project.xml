@@ -61,6 +61,9 @@
                     </action>
                 </context-menu>
             </view>
+            <subprojects>
+                <project>../lib</project>
+            </subprojects>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
