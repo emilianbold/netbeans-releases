@@ -181,6 +181,23 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return null; //an error
     }
     
+    private TagInfo[] getSortedTagInfos(TagInfo[] tinfos) {
+        Arrays.sort(tinfos, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                TagInfo ti1 = (TagInfo)o1;
+                TagInfo ti2 = (TagInfo)o2;
+                String tname1 = (ti1.getDisplayName() == null ? ti1.getTagName() : ti1.getDisplayName());
+                String tname2 = (ti2.getDisplayName() == null ? ti2.getTagName() : ti2.getDisplayName());
+                if(tname1 == null || tname2 == null) return 0;
+                return tname1.compareTo(tname2);
+            }
+            public boolean equals(Object o) {
+                return o.equals(this);
+            }
+        });
+        return tinfos;
+    }
+    
     private TagLibraryInfo getTagLibrary(String prefix) {
         Map mapper = getPrefixMapper();
         if (mapper != null) {
@@ -479,7 +496,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
 
         TagLibraryInfo info = getTagLibrary(prefix);
         if (info != null) {
-            TagInfo[] tags = info.getTags();
+            TagInfo[] tags = getSortedTagInfos(info.getTags());
             if (tags != null) {
                 String url = (String)helpMap.get(info.getURI());
                 if (url != null && !url.equals("")){
