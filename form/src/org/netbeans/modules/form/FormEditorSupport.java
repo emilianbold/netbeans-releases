@@ -147,6 +147,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
         // create form hierarchy node and add it to SourceChildren
         SourceChildren sc = (SourceChildren)formObject.getNodeDelegate ().getChildren ();
         formRootNode = new RADComponentNode (formManager.getRADForm ().getTopLevelComponent ());
+        enforceNodesCreation (formRootNode);
         sc.add (new RADComponentNode [] { formRootNode });
         
       } else return false;
@@ -156,6 +157,16 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       return false;
     }
     return true;
+  }
+
+  private void enforceNodesCreation (org.openide.nodes.Node node) {
+    org.openide.nodes.Children ch = node.getChildren ();
+    if (ch != org.openide.nodes.Children.LEAF) {
+      org.openide.nodes.Node[] nodes = ch.getNodes ();
+      for (int i = 0; i < nodes.length; i++) {
+        enforceNodesCreation (nodes[i]);
+      }
+    }
   }
 
 // -----------------------------------------------------------------------------
@@ -204,6 +215,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  18   Gandalf   1.17        6/10/99  Ian Formanek    Patched bug which 
+ *       prevented components to be selecteable by mouse before their nodes were
+ *       created
  *  17   Gandalf   1.16        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  16   Gandalf   1.15        5/17/99  Ian Formanek    Fixed bug 1820 - An 
