@@ -33,7 +33,7 @@ final class NbErrorManager extends ErrorManager {
     private static Map map = new WeakHashMap (11);
 
     /** The writer to the log file*/
-    private PrintWriter logWriter = null;
+    private PrintWriter logWriter;
     
    /** assciates each thread with the lastly notified throwable
     * (Thread, Reference (Throwable))
@@ -52,6 +52,23 @@ final class NbErrorManager extends ErrorManager {
     
     static {
         System.setProperty("sun.awt.exception.handler", "org.netbeans.core.NbErrorManager$AWTHandler"); // NOI18N
+    }
+    
+    /** Initializes the log stream.
+     */
+    private PrintWriter getLogWriter () {
+        synchronized (this) {
+            if (logWriter != null) return logWriter;
+        }
+        
+        PrintWriter pw = NbTopManager.get ().createErrorLogger (minLogSeverity);
+        
+        synchronized (this) {
+            if (logWriter == null) {
+                logWriter = pw;
+            }
+            return logWriter;
+        }
     }
 
     /** Adds these values. All the
@@ -75,7 +92,7 @@ final class NbErrorManager extends ErrorManager {
 
         List ll;
         if (o == null) {
-            ll = new LinkedList ();
+            ll = new ArrayList ();
             map.put (t, ll);
         } else {
             ll = (List)o;
@@ -138,7 +155,7 @@ final class NbErrorManager extends ErrorManager {
 
         Exc ex = new Exc (t, severity, ann);
 
-        PrintStream log = TopLogging.getLogOutputStream();
+        PrintWriter log = getLogWriter ();
         
         if (prefix != null)
             log.print ("[" + prefix + "] "); // NOI18N
@@ -152,7 +169,7 @@ final class NbErrorManager extends ErrorManager {
 
     public void log(int severity, String s) {
         if (isLoggable (severity)) {
-            PrintStream log = TopLogging.getLogOutputStream();
+            PrintWriter log = getLogWriter ();
             
             if (prefix != null) {
                 boolean showUniquifier;

@@ -61,13 +61,13 @@ public class Plain extends NbTopManager implements Runnable {
     }
 
 
-  /** Test method to check whether some level of interactivity is enabled.
-  * @param il mask composed of the constants of IL_XXXX
-  * @return true if such level is enabled
-  */
-  public boolean isInteractive (int il) {
-    return (IL_WINDOWS & il) == IL_WINDOWS;
-  }
+    /** Test method to check whether some level of interactivity is enabled.
+    * @param il mask composed of the constants of IL_XXXX
+    * @return true if such level is enabled
+    */
+    public boolean isInteractive (int il) {
+        return (IL_WINDOWS & il) == IL_WINDOWS;
+    }
 
     /** Creates error logger, just plain that prints to System.err
      */
@@ -75,11 +75,11 @@ public class Plain extends NbTopManager implements Runnable {
         return new java.io.PrintWriter (System.err);
     }
     
-  /** Prints the stack trace of an exception.
-  */
-  public void notifyException (Throwable t) {
-    t.printStackTrace();
-  }
+    /** Prints the stack trace of an exception.
+    */
+    public void notifyException (Throwable t) {
+        t.printStackTrace();
+    }
 
   /** */
   public Object notify (org.openide.NotifyDescriptor nd) {
