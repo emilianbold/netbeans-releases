@@ -590,11 +590,6 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="originalFile" stringvalue="Services/org-netbeans-core-IDESettings.settings"/>
                     </file>
 
-                    <file name="Welcome.instance">
-                        <attr name="instanceCreate" newvalue="org.netbeans.core.ui.WelcomeFolderNode" />
-                        <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-                    </file>
-
                     <file name="MIMEResolver.shadow">
                         <attr name="originalFile" stringvalue="Services/MIMEResolver"/>
                     </file>

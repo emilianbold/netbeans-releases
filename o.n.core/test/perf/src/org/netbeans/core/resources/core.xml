@@ -556,11 +556,6 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="instanceCreate" newvalue="org.netbeans.core.ui.ModuleNode" />
         <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
     </file>
-
-    <file name="Welcome.instance">
-        <attr name="instanceCreate" newvalue="org.netbeans.core.ui.WelcomeFolderNode" />
-        <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-    </file>
     -->
 
     <file name="IDESettings.settings" url="IDESettings.settings"/>
