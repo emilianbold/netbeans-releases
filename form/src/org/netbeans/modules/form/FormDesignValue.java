@@ -64,21 +64,21 @@ public interface FormDesignValue extends java.io.Serializable {
     // will be probably added here.
     //
 
-    /** Extended version of FormDesignValue which supports listening on
-     * changes of the design value. */
-    public interface Listener extends FormDesignValue {
-        static final long serialVersionUID =7127443991708952900L;
-
-        /** Attaches specified listener to the design value.
-         * The change event is fired whenever the design value (accessible
-         * via getDesignValue() method call) changes.
-         * @param listener the change listener to add
-         */
-        public void addChangeListener(javax.swing.event.ChangeListener listener);
-
-        /** Deattaches specified listener from the design value.
-         * @param listener the change listener to remove
-         */
-        public void removeChangeListener(javax.swing.event.ChangeListener listener);
-    }
+//    /** Extended version of FormDesignValue which supports listening on
+//     * changes of the design value. */
+//    public interface Listener extends FormDesignValue {
+//        static final long serialVersionUID =7127443991708952900L;
+//
+//        /** Attaches specified listener to the design value.
+//         * The change event is fired whenever the design value (accessible
+//         * via getDesignValue() method call) changes.
+//         * @param listener the change listener to add
+//         */
+//        public void addChangeListener(javax.swing.event.ChangeListener listener);
+//
+//        /** Deattaches specified listener from the design value.
+//         * @param listener the change listener to remove
+//         */
+//        public void removeChangeListener(javax.swing.event.ChangeListener listener);
+//    }
 }
