@@ -125,7 +125,6 @@ public final class Startup {
               
               //XXX Temporarily disabled GTK by default until JDK 1.5 beta 2
               if (uiClassName.indexOf("gtk") >= 0 && !Boolean.getBoolean("useGtk")) {
-                  System.err.println("GTK L&F disabled by default - run with useGtk=true only on versions of JDK 1.5 > beta 1");
                   uiClassName = "javax.swing.plaf.metal.MetalLookAndFeel";
               }
           }
