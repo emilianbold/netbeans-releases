@@ -30,8 +30,6 @@ import org.openide.util.actions.NodeAction;
 
 public class DeleteAction extends NodeAction {
     
-    private static TransactionView tv = null;
-
     public DeleteAction() {}
     /**
      * Sets the name of the action
@@ -50,20 +48,16 @@ public class DeleteAction extends NodeAction {
     public void performAction() { 
 	Node[] nodes = getActivatedNodes();
 	MonitorAction.getController().deleteTransaction(nodes);
-	tv.blank();
+	TransactionView.getInstance().blank();
     }
 
     public void performAction(Node[] nodes) { 
 	MonitorAction.getController().deleteTransaction(nodes);
-	tv.blank();
+	TransactionView.getInstance().blank();
     }
 
    public boolean enable(Node[] nodes) {
 	return true;
-    }
-
-    public static void setTransactionView(TransactionView t) {
-	tv = t;
     }
 
 } // DeleteAction

@@ -83,7 +83,21 @@ class TransactionView extends ExplorerPanel implements
 
     // Misc
     private transient ToolbarToggleButton timeAButton, 	timeDButton,
-	alphaButton, browserCookieButton, savedCookieButton; 
+	alphaButton; 
+
+    /* These buttons were used for the feature that allows the user to
+     * specify whether the browser's cookie should be used or whether
+     * to replace it. In 3.6 ("Promotion B"), it is not
+     * possible to configure the monitor to use user-specified
+     * cookies, but I leave the method, in case it becomes possible in
+     * the future. Basically, we can no longer set the cookie on the
+     * server side (the Servlet APIs does not provide any method for
+     * doing this) but we could technically tell the browser that
+     * issues the replay request to send another cookie (the APIs for
+     * that are not there now). If so, the feature can be
+     * reintroduced. 
+     */ 
+    //private transient ToolbarToggleButton browserCookieButton, savedCookieButton; 
 
     // Sizing and stuff...
     private transient  Dimension logD = new Dimension(250, 400);
@@ -109,8 +123,6 @@ class TransactionView extends ExplorerPanel implements
     private transient ClientDisplay  clientDisplay = null;
     private transient HeaderDisplay  headerDisplay = null;
 
-    private transient EditPanel editPanel = null;
-
     // Handle resizing for larger fonts
     boolean fontChanged = true;
 
@@ -124,8 +136,9 @@ class TransactionView extends ExplorerPanel implements
     static protected Icon timesortAIcon;
     static protected Icon timesortDIcon;
     static protected Icon timestampIcon;
-    static protected Icon browserCookieIcon;
-    static protected Icon savedCookieIcon;
+    // See comment above for variable declaration "browserCookieButton"
+    //static protected Icon browserCookieIcon;
+    //static protected Icon savedCookieIcon;
     static protected ImageIcon frameIcon;
    
     static {
@@ -151,14 +164,15 @@ class TransactionView extends ExplorerPanel implements
 	    new ImageIcon(TransactionView.class.getResource
 			  ("/org/netbeans/modules/web/monitor/client/icons/timestamp.gif")); // NOI18N
 
-	    browserCookieIcon = 
-	    new ImageIcon(TransactionView.class.getResource
-			  ("/org/netbeans/modules/web/monitor/client/icons/browsercookie.gif")); // NOI18N
+	    // See comment above for variable declaration
+	    // "browserCookieButton"
+	    // browserCookieIcon = 
+	    // new ImageIcon(TransactionView.class.getResource
+	    //	  ("/org/netbeans/modules/web/monitor/client/icons/browsercookie.gif")); // NOI18N
 
-
-	    savedCookieIcon = 
-	    new ImageIcon(TransactionView.class.getResource
-			  ("/org/netbeans/modules/web/monitor/client/icons/savedcookie.gif")); // NOI18N
+	    //savedCookieIcon = 
+	    //new ImageIcon(TransactionView.class.getResource
+	    //	  ("/org/netbeans/modules/web/monitor/client/icons/savedcookie.gif")); // NOI18N
 
 	    frameIcon =
 	    new ImageIcon(TransactionView.class.getResource
@@ -183,17 +197,13 @@ class TransactionView extends ExplorerPanel implements
         setIcon(frameIcon.getImage());
 	controller = Controller.getInstance();
 	initialize();
-	DisplayAction.setTransactionView(this);
-	SaveAction.setTransactionView(this);
-	EditReplayAction.setTransactionView(this);
-	DeleteAction.setTransactionView(this);
 	this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_monitorDesc"));
 	this.getAccessibleContext().setAccessibleName(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_monitorName"));
 
 	if (debug) log ("Calling opentransactions from constructor"); // NOI18N
     }
 
-    static TransactionView getInstance() { 
+    static synchronized TransactionView getInstance() { 
 	if(instance == null) 
 	    instance = new TransactionView(); 
 	return instance; 
@@ -405,7 +415,9 @@ class TransactionView extends ExplorerPanel implements
 		}});
 
 
-	// Do we use the browser's cookie or the saved cookie? 
+	// See comment above for variable declaration
+	// "browserCookieButton"
+	/*
 	browserCookieButton = new ToolbarToggleButton(browserCookieIcon, true);
 	browserCookieButton.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("MON_Browser_cookie"));
 	browserCookieButton.addActionListener(new ActionListener() {
@@ -425,6 +437,7 @@ class TransactionView extends ExplorerPanel implements
 		    controller.setUseBrowserCookie(false); 
 		}});
 
+	*/
 
 	ToolbarToggleButton timestampButton = new
 	    ToolbarToggleButton(timestampIcon,
@@ -462,9 +475,11 @@ class TransactionView extends ExplorerPanel implements
 	    };
 	sep.setMaximumSize(new Dimension(10, 10));
 	buttonPanel.add(sep);
+	// See comment above for variable declaration
+	// "browserCookieButton"
+	/*
 	buttonPanel.add(browserCookieButton);
 	buttonPanel.add(savedCookieButton);
-	//browserCookieButton.setSelected(true);
 	sep = new JPanel() {
 		public float getAlignmentX() {
 		    return 0;
@@ -475,6 +490,7 @@ class TransactionView extends ExplorerPanel implements
 	    };
 	sep.setMaximumSize(new Dimension(10, 10));
 	buttonPanel.add(sep);
+	*/
 	buttonPanel.add(timestampButton);
 
 	logPanel = new JPanel();
@@ -577,22 +593,6 @@ class TransactionView extends ExplorerPanel implements
     }
     
     /**
-     * Invoked by EditReplayAction. 
-     */
-    void editTransaction(Node node) {
-	if(debug) log("Editing a transaction"); //NOI18N
-	// Exit if the internal server is not running - the user
-	// should start it before they do this. 
-	if(!controller.checkServer(true)) return;
-	selected = (TransactionNode)node;
-	if(debug) log("Set the selected node to\n" + // NOI18N
-					 selected.toString()); 
-	editData(); 
-	if(debug) log("Finished editTransaction())"); // NOI18N
-    }
-
-
-    /**
      * Listens to events from the tab pane, displays different
      * categories of data accordingly. 
      */
@@ -650,50 +650,6 @@ class TransactionView extends ExplorerPanel implements
 	this.repaint();
 	
 	if(debug) log("Finished showData()"); // NOI18N
-    }
-
-
-    void editData() {
-
-	if(selected == null) {
-	    if(debug) 
-		log("No selected node, why is this?"); // NOI18N 
-	    return;
-	}
-	
-	if(!(selected instanceof TransactionNode)) return;
-		
-	if(debug) log("Now in editData()"); // NOI18N
-	    
-	MonitorData md = null;	    
-	try {
-	    // We retrieve the data from the file system, not from the 
-	    // cache
-	    md = controller.getMonitorData((TransactionNode)selected, 
-					   false,  // get from file
-					   false); // and don't cache
-	}
-	catch(Exception ex) {
-	    if(debug) log(ex.getMessage());
-	    ex.printStackTrace();
-	}
-	
-	if(debug) {
-	    log("Got this far"); // NOI18N
-	    log(md.dumpBeanNode()); 
-	    log("displayType:" + // NOI18N
-			       String.valueOf(displayType));
-	}
-	
-	// Bring up the dialog. 
-	if (editPanel == null) {
-	    editPanel = new EditPanel(md);
-	}
-
-	editPanel.setData(md);
-	editPanel.showDialog();
-
-	if(debug) log("Finished editData()"); // NOI18N
     }
 
     /**

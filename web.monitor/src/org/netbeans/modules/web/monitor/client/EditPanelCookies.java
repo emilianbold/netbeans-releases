@@ -12,7 +12,7 @@
  */
 
 /**
- * EditPanelHeaders.java
+ * EditPanelCookies.java
  *
  *
  * Created: Fri Feb 9 2001
@@ -27,10 +27,11 @@
 
 package org.netbeans.modules.web.monitor.client; 
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import java.awt.event.*;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
@@ -44,13 +45,12 @@ import org.openide.NotifyDescriptor;
 
 import org.netbeans.modules.web.monitor.data.*;
 
-public class EditPanelCookies extends DataDisplay {
+class EditPanelCookies extends DataDisplay {
 
     private final static boolean debug = false;
     
     private DisplayTable cookieTable = null;    
     private MonitorData monitorData = null;
-    private EditPanel editPanel;
     private boolean setCookies = false;
 
     //
@@ -60,23 +60,23 @@ public class EditPanelCookies extends DataDisplay {
     JButton editCookieB;
     JButton deleteCookieB;
     
-    public EditPanelCookies(MonitorData md, EditPanel editPanel) {
+    EditPanelCookies() {
 	super();
-	this.editPanel = editPanel;
-	this.monitorData = md;
     }
 
     //
     // Redesign this, inefficient. 
     //
-    public void redisplayData() {
+    void redisplayData() {
 	setData(monitorData);
+	this.revalidate(); 
+	this.repaint(); 
     }
 
     // We're treating these as if they are all strings at the
     // moment. In reality they can be of different types, though maybe 
     // that does not matter...
-    public void setData(MonitorData md) {
+    void setData(MonitorData md) {
 
 	this.monitorData = md;
 	
@@ -120,11 +120,13 @@ public class EditPanelCookies extends DataDisplay {
 		public void actionPerformed(ActionEvent e) {
 		    String title = NbBundle.getBundle(EditPanelCookies.class).getString("MON_New_cookie"); 
 		    ParamEditor pe = new ParamEditor("", "", //NOI18N
-						     true, true, title);
+						     ParamEditor.Editable.BOTH,
+						     ParamEditor.Condition.COOKIE, 
+						     title);
 
 		    if(debug) log(" Now showing dialog");// NOI18N
 		    
-		    pe.showDialog(true);
+		    pe.showDialog();
 
 		    if(debug) log(" Dialog closed"); // NOI18N
 
@@ -212,7 +214,7 @@ public class EditPanelCookies extends DataDisplay {
 	this.repaint();
     }
     
-    public void showConfirmDialog(String msg) {
+    void showConfirmDialog(String msg) {
 
 	Object[] options = { NotifyDescriptor.OK_OPTION, 
 			   NotifyDescriptor.CANCEL_OPTION 
@@ -234,7 +236,7 @@ public class EditPanelCookies extends DataDisplay {
     }
 
 
-    public void showErrorDialog() {
+    void showErrorDialog() {
 
 	Object[] options = { NotifyDescriptor.OK_OPTION };
 	
@@ -250,7 +252,7 @@ public class EditPanelCookies extends DataDisplay {
     }
 
      
-    public void setEnablings() {
+    void setEnablings() {
 	// Always enable the Add button.
 	newCookieB.setEnabled(true);
 
@@ -259,7 +261,7 @@ public class EditPanelCookies extends DataDisplay {
 	deleteCookieB.setEnabled(selectedRows.length > 0);
     }
 
-    public void setCookieTable() {
+    void setCookieTable() {
 
 	Param[] params = monitorData.getRequestData().getCookiesAsParams(); 
 	cookieTable = new DisplayTable(params, DisplayTable.COOKIES, true);
@@ -284,7 +286,7 @@ public class EditPanelCookies extends DataDisplay {
     }
 
 
-    public void updateCookieHeader() { 
+    void updateCookieHeader() { 
 
 	if(debug) log("updateCookieHeader()"); //NOI18N
 	int numRows = cookieTable.getRowCount(); 
@@ -308,8 +310,8 @@ public class EditPanelCookies extends DataDisplay {
 
     public void repaint() {
 	super.repaint();
-	if (editPanel != null) 
-	    editPanel.repaint();
+	//if (editPanel != null) 
+	//editPanel.repaint();
     }
 
     void log(String s) {

@@ -27,8 +27,11 @@
  */
 package org.netbeans.modules.web.monitor.client; 
 
-import java.awt.event.*;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -46,14 +49,12 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.monitor.data.*;
 
-public class EditPanelQuery extends DataDisplay {
+class EditPanelQuery extends DataDisplay {
 
     private final static boolean debug = false;
 
     private DisplayTable paramTable = null; 
-
     private MonitorData monitorData = null;
-    private EditPanel editPanel;
     private boolean setParams = false;
 
     // Widgets
@@ -62,24 +63,27 @@ public class EditPanelQuery extends DataDisplay {
     JTextField queryStringText;
     JTextField uploadFileText;
  
-    public EditPanelQuery(MonitorData md, EditPanel editPanel) {
+    EditPanelQuery() {
 	super();
-	this.editPanel = editPanel;
-	this.monitorData = md;
     }
 
     // Redesign this, inefficient and prevents us from maintaining
     // sorting state
-    public void redisplayData() {
+    void redisplayData() {
+	if(debug) log("::redisplayData()"); 
 	setData(monitorData);
+	this.revalidate(); 
+	this.repaint(); 
     }
     
-    public void setData(MonitorData md) {
+    void setData(MonitorData md) {
 
+	if(debug) { 
+	    log("setData()"); // NOI18N
+	    log("\tMonitor data is:"); // NOI18N
+	    log("t" + md.dumpBeanNode()); // NOI18N
+	}
 	this.monitorData = md;
-	
-	if(debug) log("setData()"); // NOI18N
-
 	this.removeAll();
 
 	int fullGridWidth = java.awt.GridBagConstraints.REMAINDER;
@@ -105,10 +109,12 @@ public class EditPanelQuery extends DataDisplay {
 	//    only. They can edit the query string as well. 
 	
 	final RequestData rd = monitorData.getRequestData();
+
 	String method = rd.getAttributeValue(EditPanel.METHOD);
 	if (EditPanel.POST.equals(method)) {
 	    queryStringText =
 		new JTextField(rd.getAttributeValue("queryString")); // NOI18N
+
 	    queryStringText.addFocusListener(new FocusListener() {
 		public void focusGained(FocusEvent evt) {
 		}
@@ -126,6 +132,7 @@ public class EditPanelQuery extends DataDisplay {
 				java.awt.GridBagConstraints.NONE,
 				labelInsets,
 				0, 0);
+
 	    addGridBagComponent(this, queryStringText, 0, ++gridy,
 				fullGridWidth, 1, 1.0, 0, 
 				java.awt.GridBagConstraints.WEST,
@@ -134,7 +141,6 @@ public class EditPanelQuery extends DataDisplay {
 				0, 0);
 	}
 	    
-
 	String msg2 = null;
 	Component msg2Label;
 
@@ -148,6 +154,7 @@ public class EditPanelQuery extends DataDisplay {
 				labelInsets,
 				0, 0);
 	    
+
 	    String uploadFileMsg = NbBundle.getBundle(EditPanelQuery.class).getString("MON_Upload_File_Not_Supported");
 	    uploadFileText = new JTextField(uploadFileMsg);
 	    uploadFileText.setEnabled(false);
@@ -227,12 +234,13 @@ public class EditPanelQuery extends DataDisplay {
 
 		    String title = NbBundle.getBundle(EditPanelQuery.class).getString("MON_New_param"); 
 		    ParamEditor pe = new ParamEditor("", "", //NOI18N
-						     true, true,
-						     title, false);
+						     ParamEditor.Editable.BOTH, 
+						     ParamEditor.Condition.NONE, 
+						     title);
 
 		    if(debug) log("Now showing dialog"); // NOI18N
 		    
-		    pe.showDialog(true);
+		    pe.showDialog();
 
 		    if(debug) log("Dialog closed"); // NOI18N
 
@@ -319,7 +327,7 @@ public class EditPanelQuery extends DataDisplay {
 	return gridy;
     }
 
-    public void setEnablings() {
+    void setEnablings() {
 	//
 	// Always enable the Add button.
 	//
@@ -330,13 +338,7 @@ public class EditPanelQuery extends DataDisplay {
 	deleteParamB.setEnabled(selectedRows.length > 0);
     }
 
-    public void repaint() {
-	super.repaint();
-	if (editPanel != null) 
-	    editPanel.repaint();
-    }
-
-    public void setParameters(Param[] newParams) {
+    void setParameters(Param[] newParams) {
 
 	paramTable = new DisplayTable(newParams, DisplayTable.PARAMS, true);
         paramTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(EditPanelQuery.class).getString("ACS_MON_QuerystringTableA11yName"));
@@ -358,7 +360,7 @@ public class EditPanelQuery extends DataDisplay {
     }
     
 
-    public void updateParams() {
+    void updateParams() {
 	int num = paramTable.getRowCount();
 	RequestData rd = monitorData.getRequestData();
 	Param[] params = rd.getParam();
@@ -378,7 +380,7 @@ public class EditPanelQuery extends DataDisplay {
 	}
     }
     
-    public void showConfirmDialog(String msg) {
+    void showConfirmDialog(String msg) {
 
 	Object[] options = { NotifyDescriptor.OK_OPTION, 
 			   NotifyDescriptor.CANCEL_OPTION 
@@ -399,7 +401,7 @@ public class EditPanelQuery extends DataDisplay {
 	    setParams = false;
     }
 
-    public void showErrorDialog() {
+    void showErrorDialog() {
 
 	Object[] options = { NotifyDescriptor.OK_OPTION };
 	

@@ -28,8 +28,9 @@
 
 package org.netbeans.modules.web.monitor.client; 
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
-import java.awt.event.*;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
@@ -44,13 +45,12 @@ import org.openide.NotifyDescriptor;
 
 import org.netbeans.modules.web.monitor.data.*;
 
-public class EditPanelHeaders extends DataDisplay {
+class EditPanelHeaders extends DataDisplay {
 
     private final static boolean debug = false;
     
     private DisplayTable headerTable = null;    
     private MonitorData monitorData = null;
-    private EditPanel editPanel;
     private boolean setParams = false;
 
     //
@@ -60,19 +60,19 @@ public class EditPanelHeaders extends DataDisplay {
     JButton editHeaderB;
     JButton deleteHeaderB;
     
-    public EditPanelHeaders(MonitorData md, EditPanel editPanel) {
+    EditPanelHeaders() {
 	super();
-	this.editPanel = editPanel;
-	this.monitorData = md;
     }
 
     // Replace this. Inefficient and prevents us from maintaining
     // sorting. 
-    public void redisplayData() {
+    void redisplayData() {
 	setData(monitorData);
+	this.revalidate(); 
+	this.repaint(); 
     }
 
-    public void setData(MonitorData md) {
+    void setData(MonitorData md) {
 
 	this.monitorData = md;
 	setHeaderTable();
@@ -115,11 +115,13 @@ public class EditPanelHeaders extends DataDisplay {
 		public void actionPerformed(ActionEvent e) {
 		    String title = NbBundle.getBundle(EditPanelHeaders.class).getString("MON_New_header"); 
 		    ParamEditor pe = new ParamEditor("", "", //NOI18N
-						     true, true, title);
+						     ParamEditor.Editable.BOTH, 
+						     ParamEditor.Condition.HEADER,
+						     title); 
 
 		    if(debug) log("Now showing dialog");// NOI18N
 		    
-		    pe.showDialog(true);
+		    pe.showDialog();
 
 		    if(debug) log("Dialog closed"); // NOI18N
 
@@ -231,7 +233,7 @@ public class EditPanelHeaders extends DataDisplay {
     
 
 
-    public void showConfirmDialog(String msg) {
+    void showConfirmDialog(String msg) {
 
 	Object[] options = { NotifyDescriptor.OK_OPTION, 
 			   NotifyDescriptor.CANCEL_OPTION 
@@ -253,7 +255,7 @@ public class EditPanelHeaders extends DataDisplay {
     }
 
 
-    public void showErrorDialog() {
+    void showErrorDialog() {
 
 	Object[] options = { NotifyDescriptor.OK_OPTION };
 	
@@ -269,7 +271,7 @@ public class EditPanelHeaders extends DataDisplay {
     }
 
      
-    public void setEnablings() {
+    void setEnablings() {
 
 	// Always enable the Add button.
 	newHeaderB.setEnabled(true);
@@ -279,7 +281,7 @@ public class EditPanelHeaders extends DataDisplay {
 	deleteHeaderB.setEnabled(selectedRows.length > 0);
     }
 
-    public void setHeaderTable() {
+    void setHeaderTable() {
 
 	Param[] params = monitorData.getRequestData().getHeaders().getParam();
 	if(params == null) params = new Param[0];
@@ -349,8 +351,8 @@ public class EditPanelHeaders extends DataDisplay {
 
     public void repaint() {
 	super.repaint();
-	if (editPanel != null) 
-	    editPanel.repaint();
+	//if (editPanel != null) 
+	//editPanel.repaint();
     }
 
     void log(String s) {

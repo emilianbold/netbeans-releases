@@ -30,8 +30,6 @@ import org.openide.util.actions.NodeAction;
 
 public class SaveAction extends NodeAction {
 
-    private static TransactionView tv = null;
-    
     public SaveAction() {}
 
     /**
@@ -50,19 +48,14 @@ public class SaveAction extends NodeAction {
 
     public void performAction() { 
 	Node[] nodes = getActivatedNodes();
-	tv.saveTransaction(nodes);
+	TransactionView.getInstance().saveTransaction(nodes);
     }
 
     public void performAction(Node[] nodes) { 
-	tv.saveTransaction(nodes);
+	TransactionView.getInstance().saveTransaction(nodes);
     }
 
     public boolean enable(Node[] nodes) {
 	return true;
     }
- 
-    public static void setTransactionView(TransactionView t) {
-	tv = t;
-    }
-
 } // SaveAction

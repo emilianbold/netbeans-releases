@@ -56,15 +56,15 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.web.monitor.server.Constants;
 import org.netbeans.modules.web.monitor.data.*;
 
-public class Controller  {
+class Controller  {
 
 
     // REPLAY strings - must be coordinated with server.MonitorFilter
-    public final static String REPLAY="netbeans.replay"; //NOI18N
-    public final static String PORT="netbeans.replay.port"; //NOI18N
-    public final static String REPLAYSTATUS="netbeans.replay.status"; //NOI18N
-    public final static String REPLAYSESSION="netbeans.replay.session"; //NOI18N
-    public static final boolean debug = false;
+    final static String REPLAY="netbeans.replay"; //NOI18N
+    final static String PORT="netbeans.replay.port"; //NOI18N
+    final static String REPLAYSTATUS="netbeans.replay.status"; //NOI18N
+    final static String REPLAYSESSION="netbeans.replay.session"; //NOI18N
+    static final boolean debug = false;
     //private transient static boolean starting = true;
 
     // Test server location and port
@@ -78,10 +78,10 @@ public class Controller  {
     private static FileObject saveDir = null;
     private static FileObject replayDir = null;
 
-    public final static String monDirStr = "HTTPMonitor"; // NOI18N
-    public final static String currDirStr = "current"; // NOI18N
-    public final static String saveDirStr = "save"; // NOI18N
-    public final static String replayDirStr = "replay"; // NOI18N
+    final static String monDirStr = "HTTPMonitor"; // NOI18N
+    final static String currDirStr = "current"; // NOI18N
+    final static String saveDirStr = "save"; // NOI18N
+    final static String replayDirStr = "replay"; // NOI18N
 
     // Constant nodes etc we need to know about
     private transient  NavigateNode root = null;
@@ -109,7 +109,7 @@ public class Controller  {
 	registerBrowserListener();
     }
 
-    public static Controller getInstance() { 
+    static Controller getInstance() { 
 	if(instance == null) 
 	    instance = new Controller(); 
 	return instance;
@@ -141,12 +141,12 @@ public class Controller  {
 	    
     }
 
-    public static void removeFiles() { 
+    static void removeFiles() { 
 	if(instance == null) return; 
 	instance.cleanup(); 
     }
 
-    public void cleanup() {
+    void cleanup() {
 	deleteDirectory(currDirStr);
 	removeBrowserListener();
     }
@@ -225,7 +225,7 @@ public class Controller  {
 	return saveDir;
     }
 
-    public boolean haveDirectories() {
+    boolean haveDirectories() {
 	if(currDir == null) {
 	    try {
 		currDir = getCurrDir();
@@ -428,7 +428,7 @@ public class Controller  {
      * data. 
      *
      */
-    public void replayTransaction(Node node) {
+    void replayTransaction(Node node) {
 
 	if(debug) 
 	    log("replayTransaction(Node node) from node " + 
@@ -520,7 +520,7 @@ public class Controller  {
      * Invoked by EditPanel. Replays the transaction corresponding to
      * the selected node. 
      */
-    public void replayTransaction(MonitorData md) 
+    void replayTransaction(MonitorData md) 
 	throws UnknownHostException, IOException  {
 
 	// PENDING - can't make UI changes right now for Sierra
@@ -641,7 +641,7 @@ public class Controller  {
     /**
      *
      */
-    public void replayTransaction(MonitorData md, String status)
+    void replayTransaction(MonitorData md, String status)
 	throws UnknownHostException, IOException  {
 	
 	if(debug) log("replayTransaction(MonitorData md, String status )"); //NOI18N
@@ -705,7 +705,7 @@ public class Controller  {
 	}
     }
 
-    public void saveTransaction(Node[] nodes) {
+    void saveTransaction(Node[] nodes) {
 
 	if(!haveDirectories()) {
 	    // PENDING - report the error properly
@@ -769,7 +769,7 @@ public class Controller  {
      * Invoked by DeleteAction.  Deletes a saved transaction 
      */
 
-    public void deleteTransaction(Node[] nodes) {
+    void deleteTransaction(Node[] nodes) {
 
 	if(!haveDirectories()) {
 	    // PENDING - report the error property
@@ -1046,25 +1046,36 @@ public class Controller  {
      * Sets the machine name and port of the web server. Not used in
      * this version, we do not support remote debugging.
      */
-    public static void setServer(String loc, int p) {
+    static void setServer(String loc, int p) {
 	port = p;
 	server = loc;
 	return;
     }
 
-    public void setComparator(Comparator comp) {
+    void setComparator(Comparator comp) {
 	currTrans.setComparator(comp);
 	savedTrans.setComparator(comp);
     }
 
-    public void setUseBrowserCookie(boolean value) { 
+    /** This method toggles whether the request uses the browser's
+     * cookie or a cookie specified by the user. In 3.6, it is not
+     * possible to configure the monitor to use user-specified
+     * cookies, but I leave the method, in case it becomes possible in
+     * the future. Basically, we can no longer set the cookie on the
+     * server side (the Servlet APIs does not provide any method for
+     * doing this) but we could technically tell the browser that
+     * issues the replay request to send another cookie (the APIs for
+     * that are not there now). If so, the feature can be
+     * reintroduced. 
+     */
+    void setUseBrowserCookie(boolean value) { 
 	useBrowserCookie = value;
 	if(debug) 
 	    log("Setting useBrowserCookie to " + //NOI18N
 		String.valueOf(useBrowserCookie));
     }
 
-    public boolean getUseBrowserCookie() { 
+    boolean getUseBrowserCookie() { 
 	return useBrowserCookie; 
     }
     
@@ -1075,7 +1086,7 @@ public class Controller  {
      * a node on the TransactionView panel from the cache if it is
      * present. This is used to display the data from the node. 
      */
-    public DataRecord getDataRecord(AbstractNode node) {
+    DataRecord getDataRecord(AbstractNode node) {
 	return getDataRecord(node, true);
     }
         
@@ -1085,7 +1096,7 @@ public class Controller  {
      * the cache
      * @return a data record
      */
-    public DataRecord getDataRecord(AbstractNode anode, boolean fromCache) {
+    DataRecord getDataRecord(AbstractNode anode, boolean fromCache) {
 
 	if(debug) log("Entered getDataRecord()"); //NOI18N
 	 
@@ -1150,7 +1161,7 @@ public class Controller  {
      * retrieve 
      * @return a data record
      */
-    public MonitorData getMonitorData(TransactionNode node, 
+    MonitorData getMonitorData(TransactionNode node, 
 				      boolean fromCache,
 				      boolean cacheIt) {
 
@@ -1500,7 +1511,7 @@ public class Controller  {
 	boolean serverGood = false;
 	String serverName = null;
 	
-	public ServerCheck(String name) {
+	ServerCheck(String name) {
 	    serverName = name;
 	}
 	
@@ -1515,7 +1526,7 @@ public class Controller  {
 	    }	 
 	}
 	
-	public boolean isServerGood() {
+	boolean isServerGood() {
 	    return serverGood;
 	}
 	
@@ -1534,20 +1545,24 @@ public class Controller  {
 
 	public int compare(Object o1, Object o2) {
 
-	    if(debug) log("In compareTime"); //NOI18N
+	    if(debug) { 
+		log("In compareTime"); //NOI18N
+		log("Comparing " + String.valueOf(o1) + //NOI18N
+		    " and " + String.valueOf(o2)); //NOI18N
+		log("Cast the nodes"); //NOI18N
+	    }
+
 	    TransactionNode n1 = (TransactionNode)o1;
 	    TransactionNode n2 = (TransactionNode)o2;
 
-	    if(debug) log("Cast the nodes"); //NOI18N
 	    if(debug) {
-		log("Comparing " + String.valueOf(o1) + //NOI18N
-		    " and " + String.valueOf(o2)); //NOI18N
 		try {
 		    log(n1.getID());
 		    log(n2.getID());
 		}
 		catch(Exception ex) {};
 	    }
+
 	    int result;
 	    if(descend)
 		result = n1.getID().compareTo(n2.getID());
@@ -1557,9 +1572,10 @@ public class Controller  {
 	}
     }
 
+    // PENDING 
     // Really dumb way of forcing this, but I couldn't get the tree to 
     // repaint... Will remove this method when that works. 
-    public void updateNodeNames() {
+    void updateNodeNames() {
 	
 	TransactionNode tn;
 	

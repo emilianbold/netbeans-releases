@@ -67,15 +67,10 @@ import org.openide.awt.ToolbarToggleButton;
 import org.netbeans.modules.web.monitor.data.*;
 
 
-public class EditPanel extends javax.swing.JPanel implements
+class EditPanel extends javax.swing.JPanel implements
     ActionListener, ChangeListener {
 
     private final static boolean debug = false;
-
-    
-    //private static final Dimension size = new Dimension(500, 375);
-    //private static final Dimension reqSize = new Dimension(450, 100);
-    //private static final Dimension tableSize = new Dimension(450, 100);
 
     //
     // Code to get the displaying of the tabbed panels correct.
@@ -105,38 +100,75 @@ public class EditPanel extends javax.swing.JPanel implements
     private JButton okButton;
     private JButton cancelButton; 
 
-    private ToolbarToggleButton browserCookieButton, savedCookieButton; 
-    private static boolean useBrowserCookie = true;
+    /* These buttons were used for the feature that allows the user to
+     * specify whether the browser's cookie should be used or whether
+     * to replace it. In 3.6 ("Promotion B"), it is not
+     * possible to configure the monitor to use user-specified
+     * cookies, but I leave the method, in case it becomes possible in
+     * the future. Basically, we can no longer set the cookie on the
+     * server side (the Servlet APIs does not provide any method for
+     * doing this) but we could technically tell the browser that
+     * issues the replay request to send another cookie (the APIs for
+     * that are not there now). If so, the feature can be
+     * reintroduced. 
+     * 
+     * See also (PENDING) for other changes required to reintroduce
+     * this feature. 
+     */ 
+    //private ToolbarToggleButton browserCookieButton, savedCookieButton; 
+    //private static boolean useBrowserCookie = true;
     
-    final public static String METHOD = "method"; //NOI18N
-    final public static String GET = "GET";       //NOI18N
-    final public static String POST = "POST";     //NOI18N
-    final public static String PUT = "PUT";       //NOI18N
-    
-    public EditPanel(MonitorData md) {
-	super();
-	this.monitorData = md;
-	createDataPanel(md);
-	createDialogButtons();
-    }
-    
+    final static String METHOD = "method"; //NOI18N
+    final static String GET = "GET";       //NOI18N
+    final static String POST = "POST";     //NOI18N
+    final static String PUT = "PUT";       //NOI18N
 
-    public void createDataPanel(MonitorData md) {
+    private static EditPanel instance = null; 
 
-	this.removeAll();
-	this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+    static void displayEditPanel(TransactionNode node) { 
+	if(debug) log(":: displayEditPanel()"); 
+	MonitorData md = null;	    
+	try {
+	    // We retrieve the data from the file system, not from the 
+	    // cache
+	    md = Controller.getInstance().getMonitorData((TransactionNode)node, 
+							 false,  // from file
+							 false); // don't cache
+	}
+	catch(Exception ex) {
+	    // We couldn't get the data. 
+	    return; 
+	}
 
-	//Util.setSessionCookieHeader(md);
 	if(md.getRequestData().getAttributeValue(METHOD).equals(POST)) 
 	    Util.removeParametersFromQuery(md.getRequestData());
 
-	queryPanel   = new EditPanelQuery(md, this);
-	requestPanel = new EditPanelRequest(md, this);
-	cookiesPanel = new EditPanelCookies(md, this);
-	serverPanel  = new EditPanelServer(md, this);
-	headersPanel = new EditPanelHeaders(md, this);
+	md.getRequestData().deleteCookie("jsessionid"); 
 
-	if(debug) log("setData()"); //NOI18N
+	if(instance == null) instance = new EditPanel(); 
+	
+	//useBrowserCookie = MonitorAction.getController().getUseBrowserCookie();
+	instance.showDialog(md); 
+    } 
+
+    static synchronized EditPanel getInstance() { 
+	if(instance == null) instance = new EditPanel(); 
+	return instance; 
+    } 
+
+    private EditPanel() {
+
+	if(debug) log("::CONSTRUCTOR"); 
+
+	createDialogButtons();
+
+	this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+	queryPanel   = new EditPanelQuery();
+	requestPanel = new EditPanelRequest();
+	cookiesPanel = new EditPanelCookies();
+	serverPanel  = new EditPanelServer();
+	headersPanel = new EditPanelHeaders();
 
 	JTabbedPane tabs = new JTabbedPane();
         tabs.getAccessibleContext().setAccessibleName(NbBundle.getBundle(EditPanel.class).getString("ACS_MON_Replay_tabsName"));
@@ -158,24 +190,24 @@ public class EditPanel extends javax.swing.JPanel implements
 	this.setMaximumSize(this.getPreferredSize()); 
     }
 
-    public void setData(MonitorData md) {
+    void showDialog(MonitorData md) {
 
-	this.monitorData = md;
-	
-	if(debug) log("in (new) EditPanel.setData()"); //NOI18N
+	if(debug) { 
+	    log("::showDialog"); 
+	    log("\tMonitor data is:"); // NOI18N
+	    log("t" + md.dumpBeanNode()); // NOI18N
+	}
 
-	queryPanel.setData(md);
-	requestPanel.setData(md);
-	cookiesPanel.setData(md);
-	serverPanel.setData(md);
-	headersPanel.setData(md);
-	useBrowserCookie = MonitorAction.getController().getUseBrowserCookie();
-    }
+	this.monitorData = md; 
 
-    public void showDialog() {
+	queryPanel.setData(monitorData);
+	requestPanel.setData(monitorData);
+	cookiesPanel.setData(monitorData);
+	serverPanel.setData(monitorData);
+	headersPanel.setData(monitorData);
 
 	Object[] options = {
-	    createSessionButtonPanel(),
+	    //createSessionButtonPanel(),
 	    sendButton,
 	    cancelButton,
 	};
@@ -191,7 +223,6 @@ public class EditPanel extends javax.swing.JPanel implements
 	
 	dialog = DialogDisplayer.getDefault().createDialog(editDialog);
 	dialog.pack();
-	//dialog.setSize(size);
 	dialog.show();
     }
     
@@ -224,6 +255,7 @@ public class EditPanel extends javax.swing.JPanel implements
 	    if(method.equals(GET)) 
 		Util.composeQueryString(monitorData.getRequestData());
 
+	    /*
 	    if(debug) {
 		log(" useBrowserCookie is " + //NOI18N
 		    String.valueOf(useBrowserCookie));
@@ -236,7 +268,7 @@ public class EditPanel extends javax.swing.JPanel implements
 		log(" md.getRD.getReplace is " + //NOI18N
 		    String.valueOf(monitorData.getRequestData().getReplaceSessionCookie()));				   
 	    }
-
+	    */
 	    try {
 		MonitorAction.getController().replayTransaction(monitorData);
 		dialog.dispose();
@@ -370,6 +402,8 @@ public class EditPanel extends javax.swing.JPanel implements
     }
     
 
+    // See comment for browserCookieButton above
+    /*
     private JToolBar createSessionButtonPanel() { 
 
 	JToolBar buttonPanel = new JToolBar();
@@ -406,6 +440,7 @@ public class EditPanel extends javax.swing.JPanel implements
 	buttonPanel.setSize(buttonPanel.getMinimumSize());
 	return buttonPanel;
     }
+    */
     
     private Component createSeparator() { 
 	JPanel sep = new JPanel() {
@@ -420,7 +455,7 @@ public class EditPanel extends javax.swing.JPanel implements
 	return sep;
     }
 
-    private void log(String s) {
+    private static void log(String s) {
 	System.out.println("EditPanel::" + s); //NOI18N
     }
         

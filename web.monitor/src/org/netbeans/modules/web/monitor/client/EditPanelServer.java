@@ -40,7 +40,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.monitor.data.*;
 
-public class EditPanelServer extends DataDisplay {
+class EditPanelServer extends DataDisplay {
 
     private final static boolean debug = false;
     
@@ -49,15 +49,11 @@ public class EditPanelServer extends DataDisplay {
 
     private MonitorData monitorData = null;
     
-    private EditPanel editPanel;
-    
-    public EditPanelServer(MonitorData md, EditPanel editPanel) {
+    EditPanelServer() { 
 	super();
-	this.editPanel = editPanel;
-	this.monitorData = md;
     }
     
-    public void setData(MonitorData md) {
+    void setData(MonitorData md) {
 
 	this.monitorData = md;
 	setServerTable();
@@ -108,7 +104,7 @@ public class EditPanelServer extends DataDisplay {
 	this.repaint();
     }
 
-    public void setServerTable() {
+    void setServerTable() {
 
 	String[] servercats = { 
 	    NbBundle.getBundle(EditPanelServer.class).getString("MON_Server_name"),
@@ -183,11 +179,11 @@ public class EditPanelServer extends DataDisplay {
 
     public void repaint() {
 	super.repaint();
-	if (editPanel != null) 
-	    editPanel.repaint();
+	//if (editPanel != null) 
+	//editPanel.repaint();
     }
 
-    public void showErrorDialog() {
+    void showErrorDialog() {
 
 	Object[] options = { NotifyDescriptor.OK_OPTION };
 	

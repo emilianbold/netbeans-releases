@@ -295,8 +295,6 @@ public class RequestData extends BaseBean {
      
     public int addCookie(String ckname, String ckvalue) {
 
-	boolean debug = false; 
-
         // Do we have to check for duplicates? 
 	if(debug) 
 	    log("Adding cookie: " + ckname + " " + ckvalue); //NOI18N
@@ -387,7 +385,6 @@ public class RequestData extends BaseBean {
 
     public void deleteCookie(String ckname, String ckvalue) {
 
-	
 	if(debug) log("Deleting cookie: " + ckname + " " + ckvalue); //NOI18N
 	
 	Param[] headers = getHeaders().getParam();
@@ -431,7 +428,7 @@ public class RequestData extends BaseBean {
 		    if(debug) log("Processing cookie: " + //NOI18N
 				  name + " " + value); //NOI18N
 			
-		    if(name.equals(ckname) && value.equals(ckvalue)) 
+		    if(name.equalsIgnoreCase(ckname) && value.equalsIgnoreCase(ckvalue)) 
 			continue;
 		    else {
 			if(debug) log("Keep this cookie"); //NOI18N
@@ -459,24 +456,28 @@ public class RequestData extends BaseBean {
 				     
 	Param[] headers = getHeaders().getParam();
 	// No headers (this should not happen) 
-	if(headers == null || headers.length == 0) return;
-
+	if(headers == null || headers.length == 0) { 
+	    if(debug) log("No headers"); //NOI18N
+	    return;
+	} 
 	int len = headers.length;
 	for(int i=0; i<len; ++i) {
+
+	    if(debug) log("Examining header " + headers[i].getName()); //NOI18N
 
 	    if(!headers[i].getName().equalsIgnoreCase(COOKIE)) 
 		continue; 
 
 	    String oldCookies = headers[i].getValue(); 
 	    
-	    if(oldCookies != null && !oldCookies.trim().equals("")) { //NOI18N
+	    if(oldCookies == null || oldCookies.trim().equals("")) { //NOI18N
+		if(debug) log("No cookies"); //
 		return;
 	    } 
 		
 	    StringBuffer buf = new StringBuffer();
-	    StringTokenizer tok = 
-		new StringTokenizer(headers[i].getValue(),
-				    ";", false); // NOI18N
+	    StringTokenizer tok = new StringTokenizer(headers[i].getValue(),
+						      ";", false); // NOI18N
 	    
 	    while (tok.hasMoreTokens()) {
 		    
@@ -485,7 +486,7 @@ public class RequestData extends BaseBean {
 		if (j > -1) {
 
 		    String name = token.substring(0, j).trim();
-		    if(name.equals(ckname)) continue;
+		    if(name.equalsIgnoreCase(ckname)) continue;
 		    else {
 			if(debug) log("Keep this cookie");//NOI18N
 			String value = 
@@ -497,12 +498,13 @@ public class RequestData extends BaseBean {
 			buf.append(";"); //NOI18N
 		    }
 		}
-		    
-		if(debug) 
-		    log("New cookie string is: " + //NOI18N
-			buf.toString());
 	    }
-	    headers[i].setValue(buf.toString());
+
+	    if(debug) 
+		log("New cookie string is: " + buf.toString()); //NOI18N
+
+	    if(buf.toString().equals("")) getHeaders().removeParam(headers[i]);
+	    else headers[i].setValue(buf.toString());
 	    return;
 	}
 	// If we never find a cookie header we don't need to do

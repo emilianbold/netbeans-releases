@@ -36,7 +36,7 @@ import java.util.Hashtable;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.monitor.data.*;
 
-public class EditPanelRequest extends DataDisplay {
+class EditPanelRequest extends DataDisplay {
 
     private final static boolean debug = false;
 
@@ -47,24 +47,19 @@ public class EditPanelRequest extends DataDisplay {
     };
 
     private DisplayTable requestTable = null; 
-
     private MonitorData monitorData = null;
     
-    private EditPanel editPanel;
-    
-    public EditPanelRequest(MonitorData md, EditPanel editPanel) {
+    EditPanelRequest() { 
 	super();
-	this.editPanel = editPanel;
-	this.monitorData = md;
     }
     
     // Redesign this. It is inefficient and prevents us from
     // maintaining the sorting state
-    public void redisplayData() {
+    void redisplayData() {
 	setData(monitorData);
     }
 
-    public void setData(MonitorData md) {
+    void setData(MonitorData md) {
 
 	this.monitorData = md;
 	if(debug) log("setData()");  // NOI18N
@@ -123,7 +118,7 @@ public class EditPanelRequest extends DataDisplay {
 	this.repaint();
     }
 
-    public void setRequestTable() {
+    void setRequestTable() {
 	
 	String[] requestCategories = { 
 	    NbBundle.getBundle(EditPanelRequest.class).getString("MON_Request_URI"),
@@ -193,8 +188,8 @@ public class EditPanelRequest extends DataDisplay {
 
     public void repaint() {
 	super.repaint();
-	if (editPanel != null) 
-	    editPanel.repaint();
+	//if (editPanel != null) 
+	//  editPanel.repaint();
     }
 
     void log(String s) {

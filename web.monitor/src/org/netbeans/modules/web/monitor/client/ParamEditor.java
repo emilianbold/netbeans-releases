@@ -25,9 +25,8 @@
 
 package org.netbeans.modules.web.monitor.client; 
 
-import javax.swing.*;
-import java.awt.event.*;
-import java.util.*;
+//import java.util.*;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -36,258 +35,265 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
-
 import org.openide.util.NbBundle;
 
-public class ParamEditor extends javax.swing.JPanel implements ActionListener {
+public class ParamEditor extends javax.swing.JPanel {
 
-    private final static boolean debug = false;
-    
-    private static final Dimension size = new Dimension(400, 300);
-    private static final Dimension valueSize = new Dimension(380, 100);
+    private final static boolean debug = false;    
+    private static final Dimension valueSize = new Dimension(300, 50);
 
     // Do we need this to close it?
     private Dialog dialog = null;
+    private Dialog d2 = null;
     private DialogDescriptor editDialog = null;
-    private boolean inputOK = false;
+    private String errorMessage = null; 
+    private boolean dialogOK = false; 
 
-    //
     // Hold the name and value until the widgets are created.
-    //
-    private boolean editable = true;
-    private boolean nameEditable;
-    private boolean valueRequired = true;
     private String name = ""; //NOI18N
     private String value = ""; //NOI18N
-    
-    //
-    // Widgets
-    //
-    private JTextField nameText;
-    private JTextArea  valueText;
-
+    private Editable editable; 
+    private Condition condition; 
     private String title = ""; //NOI18N
-
+    
     //private static boolean repainting = false;
     private boolean repainting = false;
 
-    public ParamEditor(String name, 
-		       String value, 
-		       boolean nameEditable,
-		       boolean valueEditable,
+    public ParamEditor(String name, String value, Editable e, Condition c, 
 		       String title) { 
-	this(name, value, nameEditable, valueEditable, title, true); 
-    }
-
-    public ParamEditor(String name, 
-		       String value, 
-		       boolean nameEditable,
-		       boolean valueEditable,		       String title, 
-		       boolean valueRequired) { 
-	super();
-	if(valueEditable) { 
-	    editable = true;
-	    this.nameEditable = nameEditable;
-	    this.valueRequired = valueRequired;
-	}
-	else { 
-	    editable = false;
-	    this.nameEditable = false;
-	    this.valueRequired = false;
-	}
+	if(debug) log("::CONSTRUCTOR"); 
+	this.name = name; 
+	this.value = value; 
+	this.editable = e; 
+	if(debug) log("\tEditable: " + e.toString()); 
+	this.condition = c; 
+	if(debug) log("\tCondition: " + c.toString()); 
 	this.title = title;
-	setName(name);
-	setValue(value);
-	createPanel();
+	initialize();
     }
 
     public boolean getDialogOK() {
-	return inputOK; 
+	return dialogOK; 
     }
 
     public String getName() {
-	
-	if(debug) System.out.println("Value of name text field: "); //NOI18N
-	if(debug) System.out.println(nameText.getText().trim()); //NOI18N
-	return nameText.getText().trim();
-    }
-    public void setName(String val) {
-	name = val;
-	if (nameText != null) {
-	    nameText.setText(val);
-	}
+	return name; 
     }
 
     public String getValue() {
-	if(debug) System.out.println("Value of value textarea: "); //NOI18N
-	if(debug) System.out.println(valueText.getText().trim()); //NOI18N
-	return valueText.getText().trim();
+	return value; 
     }
-    public void setValue(String val) {
-	value = val;
-	if (valueText != null) {
-	    valueText.setText(val);
-	}
-    }
-	
     
-    public void createPanel() {
+    public void initialize() {
 
-	if(debug) System.out.println("in (new) ParamEditor.createPanel()"); //NOI18N
-
+	if(debug) System.out.println("in (new) ParamEditor.initialize()"); //NOI18N
 	this.setLayout(new GridBagLayout());
-	int gridy = -1;
-	Insets zeroInsets = new Insets(0,0,0,0);
-	Insets textInsets = new Insets(0,5,0,5);
-	int fullGridWidth = java.awt.GridBagConstraints.REMAINDER;
 
-        JLabel nameLabel = new JLabel(NbBundle.getBundle(ParamEditor.class).getString("MON_Name"));
-        nameLabel.setDisplayedMnemonic(NbBundle.getBundle(ParamEditor.class).getString("MON_Name_Mnemonic").charAt(0));
-        nameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ParamEditor.class).getString("ACS_MON_NameA11yDesc"));
-	addGridBagComponent(this, nameLabel, 0, ++gridy,
-			    fullGridWidth, 1, 0, 0, 
-			    java.awt.GridBagConstraints.WEST,
-			    java.awt.GridBagConstraints.NONE,
-			    zeroInsets,
-			    0, 0);
+	// Entity covers entire row
+	GridBagConstraints labelC = new GridBagConstraints();
+	labelC.gridx = 0;                               
+	labelC.gridy = GridBagConstraints.RELATIVE;     
+	labelC.anchor = GridBagConstraints.WEST;         
+	labelC.fill = GridBagConstraints.HORIZONTAL; 
+	labelC.insets = new Insets(4, 15, 4, 15);
+
+	// Initial label
+	GridBagConstraints firstC = new GridBagConstraints();
+	firstC.gridx = 0;
+	firstC.gridy = GridBagConstraints.RELATIVE;     
+	firstC.gridwidth = 1; 
+	firstC.anchor = GridBagConstraints.WEST; 
+	firstC.insets = new Insets(4, 15, 4, 0);
+
+	// Text field
+	GridBagConstraints tfC = new GridBagConstraints();
+	tfC.gridx = GridBagConstraints.RELATIVE;
+	tfC.gridy = 0; 
+	tfC.gridwidth = 7; 
+	tfC.fill = GridBagConstraints.HORIZONTAL;     
+	tfC.insets = new Insets(4, 0, 4, 15);
+
+	// Text area
+	GridBagConstraints taC = new GridBagConstraints();
+	taC.gridx = 0;
+	taC.gridy = GridBagConstraints.RELATIVE;     
+	taC.gridheight = 3; 
+	taC.gridwidth = 8; 
+	taC.fill = GridBagConstraints.BOTH; 
+	taC.anchor = GridBagConstraints.WEST; 
+	taC.insets = new Insets(0, 15, 4, 15);
+
+        JLabel nameLabel = new JLabel(); 
+        nameLabel.setDisplayedMnemonic(NbBundle.getMessage(ParamEditor.class, "MON_Name_Mnemonic").charAt(0));
+        nameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ParamEditor.class, "ACS_MON_NameA11yDesc"));
+
+	String text = NbBundle.getMessage(ParamEditor.class, "MON_Name");
+	text = text.concat(": "); //NOI18N
 	
-	nameText = new JTextField();
-        nameLabel.setLabelFor(nameText);
-        nameText.getAccessibleContext().setAccessibleName(NbBundle.getBundle(ParamEditor.class).getString("ACS_MON_NameTextFieldA11yName"));
-        nameText.setToolTipText(NbBundle.getBundle(ParamEditor.class).getString("ACS_MON_NameTextFieldA11yDesc"));
-	nameText.setText(name);
-	nameText.setBackground(java.awt.Color.white);
-	nameText.setEditable(nameEditable);
-	addGridBagComponent(this, nameText, 0, ++gridy,
-			    fullGridWidth, 1, 0, 0,
-			    java.awt.GridBagConstraints.WEST,
-			    java.awt.GridBagConstraints.HORIZONTAL,
-			    textInsets,
-			    0, 0);
+	if(editable == Editable.BOTH) { 
+	    final JTextField nameText = new JTextField(25);
+	    nameText.addFocusListener(new FocusListener() {
+		public void focusGained(FocusEvent evt) {
+		}
+		public void focusLost(FocusEvent evt) {
+		    name = nameText.getText(); 
+		}
+		}); 
+	    nameLabel.setLabelFor(nameText);
+	    nameText.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ParamEditor.class, "ACS_MON_NameTextFieldA11yName"));
+	    nameText.setToolTipText(NbBundle.getMessage(ParamEditor.class, "ACS_MON_NameTextFieldA11yDesc"));
+	    nameText.setText(name);
+	    nameText.setBackground(java.awt.Color.white);
+	    nameText.setEditable(editable == Editable.BOTH);
 
-        JLabel valueLabel = new JLabel(NbBundle.getBundle(ParamEditor.class).getString("MON_Value"));
-        valueLabel.setDisplayedMnemonic(NbBundle.getBundle(ParamEditor.class).getString("MON_Value_Mnemonic").charAt(0));
-        valueLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ParamEditor.class).getString("ACS_MON_ValueA11yDesc"));
-	addGridBagComponent(this, valueLabel, 0, ++gridy,
-			    fullGridWidth, 1, 0, 0, 
-			    java.awt.GridBagConstraints.WEST,
-			    java.awt.GridBagConstraints.NONE,
-			    zeroInsets,
-			    0, 0);
-
-	valueText = new JTextArea();
-	valueLabel.setLabelFor(valueText);
-        valueText.getAccessibleContext().setAccessibleName(NbBundle.getBundle(ParamEditor.class).getString("ACS_MON_ValueTextAreaA11yName"));
-        valueText.setToolTipText(NbBundle.getBundle(ParamEditor.class).getString("ACS_MON_ValueTextAreaA11yDesc"));
-	valueText.setText(value);
-	if(!editable) {
-	    valueText.setEditable(false);
-	    valueText.setLineWrap(true);
-	    //valueText.setColumns(40);
-	    valueText.setWrapStyleWord(false); 
+	    this.add(nameLabel, firstC); 
+	    this.add(nameText, tfC); 
 	}
+	else { 
+	    this.add(nameLabel, labelC); 
+	    text = text.concat(name); 
+	}
+	nameLabel.setText(text); 
+	    
+	JLabel valueLabel = new JLabel(); 
+	valueLabel.setText(NbBundle.getMessage(ParamEditor.class, "MON_Value").concat(":"));
+        valueLabel.setDisplayedMnemonic(NbBundle.getMessage(ParamEditor.class, "MON_Value_Mnemonic").charAt(0));
+        valueLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ParamEditor.class, "ACS_MON_ValueA11yDesc"));
+	firstC.gridy++; 
+	this.add(valueLabel, labelC); 
+
+	final JTextArea valueText = new JTextArea();
+	valueText.addFocusListener(new FocusListener() {
+		public void focusGained(FocusEvent evt) {
+		}
+		public void focusLost(FocusEvent evt) {
+		    value = valueText.getText();
+		}
+	    }); 
+	valueLabel.setLabelFor(valueText);
+        valueText.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ParamEditor.class, "ACS_MON_ValueTextAreaA11yName"));
+        valueText.setToolTipText(NbBundle.getMessage(ParamEditor.class, "ACS_MON_ValueTextAreaA11yDesc"));
+	if(editable == Editable.NEITHER) {
+	    valueText.setEditable(false);
+	    valueText.setBackground(this.getBackground().darker()); 
+	    valueText.setForeground(Color.BLACK); 
+	    valueText.setBorder(BorderFactory.createLoweredBevelBorder());
+	}
+	valueText.setText(value);
+	valueText.setLineWrap(true);
+	valueText.setWrapStyleWord(false); 
 	
 	JScrollPane scrollpane = new JScrollPane(valueText);
-	scrollpane.setMinimumSize(valueSize);
-
-	addGridBagComponent(this, scrollpane, 0, ++gridy,
-			    fullGridWidth, 1, 1.0, 1.0, 
-			    java.awt.GridBagConstraints.WEST,
-			    java.awt.GridBagConstraints.BOTH,
-			    textInsets,
-			    0, 0);
+	scrollpane.setPreferredSize(valueSize);
+	//scrollpane.setViewportBorder(BorderFactory.createLoweredBevelBorder());
+	this.add(scrollpane, taC); 
 
 	// Housekeeping
-	this.setMaximumSize(this.getPreferredSize()); 
+	// this.setMaximumSize(this.getPreferredSize()); 
 	this.repaint();
     }
 
     public void showDialog() {
-	boolean modal = true;
-	showDialog(modal);
-    }
-    public void showDialog(boolean modal) {
 
-	if(editable) {
-	    editDialog = new DialogDescriptor(this,
-				     title,
-				     modal, 
-				     DialogDescriptor.OK_CANCEL_OPTION,
-				     DialogDescriptor.CANCEL_OPTION,
-				     DialogDescriptor.BOTTOM_ALIGN,
-				     null,
-				     this);
+	if(editable == Editable.NEITHER) {
+	    if(debug) log("Non-modal dialog, OK option only"); 
+	    NotifyDescriptor d = 
+		new NotifyDescriptor(this, title, 
+				     NotifyDescriptor.DEFAULT_OPTION,
+				     NotifyDescriptor.PLAIN_MESSAGE, 
+				     new Object[] { NotifyDescriptor.OK_OPTION },
+				     NotifyDescriptor.OK_OPTION); 
+	    DialogDisplayer.getDefault().notify(d);
 	}
 	else {
-	    editDialog = new DialogDescriptor(this,
-				     title,
-				     modal, 
-				     DialogDescriptor.PLAIN_MESSAGE, 
-				     DialogDescriptor.OK_OPTION,
-				     DialogDescriptor.BOTTOM_ALIGN,
-				     null,
-				     this);
+	    editDialog = new DialogDescriptor
+		(this, title, true, DialogDescriptor.OK_CANCEL_OPTION,
+		 DialogDescriptor.CANCEL_OPTION,
+		 new ActionListener() {
+		     public void actionPerformed(ActionEvent e) {
+			 evaluateInput(); 
+		     }
+		 }); 
+
+	    dialog = DialogDisplayer.getDefault().createDialog(editDialog);
+	    dialog.show();
+	    this.repaint();
 	}
-	dialog = DialogDisplayer.getDefault().createDialog(editDialog);
-	dialog.pack();
-	dialog.setSize(size);
-	dialog.show();
-	this.repaint();
     }
-    
-    
 
     /**
      * Handle user input...
      */
 
-    public void actionPerformed(ActionEvent e) {
-	if (debug)System.out.println("Got action from the dialog");//NOI18N
-	if(editDialog.getValue().equals(DialogDescriptor.OK_OPTION)) {
-	    if(!editable) {
-		dialog.dispose();
-		return;
-	    }
-	    
-	    inputOK = true;
-	    String str = getName(); 
-	    if(str.equals("")) inputOK = false; //NOI18N
-	    if(inputOK && valueRequired) {
-		str = getValue();
-		if(str.equals("")) inputOK = false; //NOI18N
-	    }
-	    if(inputOK) dialog.dispose();
-	    else {
-		editDialog.setValue(NotifyDescriptor.CLOSED_OPTION);
-		notifyBadInput(true);
-	    }
-	}
-	else if (editDialog.getValue().equals(DialogDescriptor.CANCEL_OPTION)) 
+    public void evaluateInput() {
+
+	if (debug) { 
+	    log("::evaluateInput()");//NOI18N
+	} 
+
+	if (editDialog.getValue().equals(NotifyDescriptor.CANCEL_OPTION)) { 
+	    if(debug) log("\tGot cancel"); //NOI18N
 	    dialog.dispose();
-    }
-	
+	    dialogOK = false; 
+	    return; 
+	}
 
-    private void notifyBadInput(boolean both) { 
+	if(debug) log("\tGot OK"); //NOI18N
+	if(editable == Editable.NEITHER) {
+	    if(debug) log("\tNot editable"); //NOI18N
+	    dialog.dispose();
+	    dialogOK = false; 
+	    return;
+	}
+	if(debug) log("Name is " + name); 
+	if(debug) log("Value is " + value); 
 
-	String msg = null; 
-	if(both) msg = NbBundle.getBundle(ParamEditor.class).getString("MON_ParamEditor_NameValue_required"); 
-	else msg = NbBundle.getBundle(ParamEditor.class).getString("MON_ParamEditor_Name_required"); 
+	errorMessage = null; 
 
-	Object[] options = { NotifyDescriptor.OK_OPTION };
-	NotifyDescriptor badInputDialog = 
-	    new NotifyDescriptor(msg,
-				 NbBundle.getBundle(ParamEditor.class).getString("MON_ParamEditor_Input_required"),
-				 NotifyDescriptor.DEFAULT_OPTION,
-				 NotifyDescriptor.ERROR_MESSAGE,
-				 options,
-				 options[0]);
-	DialogDisplayer.getDefault().notify(badInputDialog);
+	if(name.equals("")) 
+	    errorMessage = NbBundle.getMessage(ParamEditor.class, 
+					       "MSG_no_name"); 
+	else if(condition == Condition.COOKIE && name.equalsIgnoreCase("jsessionid"))
+	    errorMessage = NbBundle.getMessage(ParamEditor.class, 
+					       "MSG_no_jsession"); 
+	else if(condition == Condition.VALUE && value.equals("")) 
+	    errorMessage = NbBundle.getMessage(ParamEditor.class, 
+					       "MSG_no_value"); 
+	else if(condition == Condition.HEADER && 
+		name.equalsIgnoreCase("cookie") &&
+		(value.indexOf("jsessionid") > -1 ||
+		 value.indexOf("JSESSIONID") > -1))
+	    errorMessage = NbBundle.getMessage(ParamEditor.class, 
+					       "MSG_no_jsession"); 
+
+	if(debug) log("ErrorMessage: " + errorMessage); 
+
+	if(errorMessage == null) { 
+	    dialog.dispose();
+	    dialogOK = true; 
+	} 
+	else {
+	   editDialog.setValue(NotifyDescriptor.CLOSED_OPTION);
+	   NotifyDescriptor nd = new NotifyDescriptor.Message
+	       (errorMessage, NotifyDescriptor.ERROR_MESSAGE); 
+	    DialogDisplayer.getDefault().notify(nd);
+	}
     }
 
 
@@ -301,27 +307,37 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 	}
     }
 
-    private void addGridBagComponent(Container parent,
-				     Component comp,
-				     int gridx, int gridy,
-				     int gridwidth, int gridheight,
-				     double weightx, double weighty,
-				     int anchor, int fill,
-				     Insets insets,
-				     int ipadx, int ipady) {
-	GridBagConstraints cons = new GridBagConstraints();
-	cons.gridx = gridx;
-	cons.gridy = gridy;
-	cons.gridwidth = gridwidth;
-	cons.gridheight = gridheight;
-	cons.weightx = weightx;
-	cons.weighty = weighty;
-	cons.anchor = anchor;
-	cons.fill = fill;
-	cons.insets = insets;
-	cons.ipadx = ipadx;
-	cons.ipady = ipady;
-	parent.add(comp,cons);
-    }
+    private void log(String s) { 
+	System.out.println("ParamEditor" + s);
+    } 
+
+    static class Editable { 
+	private String editable; 
+
+	private Editable(String editable) { 
+	    this.editable = editable; 
+	}
+    
+	public String toString() { return editable; } 
+
+	public static final Editable BOTH = new Editable("both"); 
+	public static final Editable VALUE = new Editable("value"); 
+	public static final Editable NEITHER = new Editable("neither"); 
+    } 
+
+    static class Condition { 
+	private String condition; 
+
+	private Condition(String condition) { 
+	    this.condition = condition; 
+	}
+    
+	public String toString() { return condition; } 
+
+	public static final Condition NONE = new Condition("none"); 
+	public static final Condition VALUE = new Condition("value"); 
+	public static final Condition COOKIE = new Condition("cookie"); 
+	public static final Condition HEADER = new Condition("header"); 
+    } 
 
 } // ParamEditor

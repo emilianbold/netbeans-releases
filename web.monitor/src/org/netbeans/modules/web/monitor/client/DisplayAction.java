@@ -30,8 +30,6 @@ import org.openide.util.actions.NodeAction;
 
 public class DisplayAction extends NodeAction {
 
-    private static TransactionView tv = null;
-     
     /**
      * Default constructor
      */
@@ -57,21 +55,11 @@ public class DisplayAction extends NodeAction {
     }
     
     public void performAction() { 
-	if(tv == null) return;
-	
 	Node[] nodes = getActivatedNodes();
-	tv.displayTransaction(nodes[0]);
+	TransactionView.getInstance().displayTransaction(nodes[0]);
     }
 
     public void performAction(Node[] nodes) { 
-	if(tv == null) return;
-
-	tv.displayTransaction(nodes[0]);
+	TransactionView.getInstance().displayTransaction(nodes[0]);
     }
-
-    public static void setTransactionView(TransactionView t) {
-	tv = t;
-    }
-    
-
 } // DisplayAction

@@ -61,11 +61,11 @@ public class NameValueCellEditor extends DefaultCellEditor  {
 						       boolean nameEditable,
 						       int row, final int type)  {
 
-	JButton b = new JButton(NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_dots")); // NOI18N
+	JButton b = new JButton(NbBundle.getMessage(NameValueCellEditor.class, "MON_Edit_dots")); // NOI18N
 	if(type == DisplayTable.UNEDITABLE) 
-	    b.setToolTipText(NbBundle.getBundle(NameValueCellEditor.class).getString("MON_DisplayValue")) ;
+	    b.setToolTipText(NbBundle.getMessage(NameValueCellEditor.class, "MON_DisplayValue")) ;
 	else 
-	    b.setToolTipText(NbBundle.getBundle(NameValueCellEditor.class).getString("MON_EditAttribute")) ;
+	    b.setToolTipText(NbBundle.getMessage(NameValueCellEditor.class, "MON_EditAttribute")) ;
 	final NameValueCellEditor ed = new NameValueCellEditor(b,
 							       table,
 							       data,
@@ -105,7 +105,7 @@ public class NameValueCellEditor extends DefaultCellEditor  {
     }
     
     public Object getCellEditorValue() {
-	return NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_dots");
+	return NbBundle.getMessage(NameValueCellEditor.class, "MON_Edit_dots");
     }
  
     public Component getTableCellEditorComponent(JTable table, 
@@ -120,44 +120,58 @@ public class NameValueCellEditor extends DefaultCellEditor  {
 
     public void showParamEditor() {
 
-	ParamEditor pe;
-
-	// The editor is modal unless it is used for viewing only
-	boolean modal = (type > DisplayTable.UNEDITABLE);
-	
 	int currentRow = table.getSelectedRow();
-	String title;
 	TableModel model = table.getModel();
+	String name =  (String)model.getValueAt(currentRow, 0);
+	String value = (String)model.getValueAt(currentRow, 1);
 
+	ParamEditor.Condition condition = ParamEditor.Condition.NONE; 
+	ParamEditor.Editable editable = ParamEditor.Editable.BOTH; 
+	String title = null; 
+	
 	if(debug) 
 	    System.out.println("type = " + String.valueOf(type)); //NOI18N
 
-	if(type == DisplayTable.UNEDITABLE) 
-	    title = NbBundle.getBundle(NameValueCellEditor.class).getString("MON_ParamValue"); 
-	else if(type == DisplayTable.HEADERS) 
-	    title = NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_header"); 
+	if(type == DisplayTable.UNEDITABLE) {
+	    editable = ParamEditor.Editable.NEITHER;
+	    title = NbBundle.getMessage(NameValueCellEditor.class, 
+					"MON_ParamValue"); 
+	}
+	else if(type == DisplayTable.HEADERS) {
+	    title = NbBundle.getMessage(NameValueCellEditor.class, 
+					"MON_Edit_header"); 
+	    condition = ParamEditor.Condition.HEADER; 
+	}
 	else if(type == DisplayTable.PARAMS) 
-	    title = NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_param"); 
-	else if(type == DisplayTable.REQUEST) 
-	    title = NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_request"); 
-	else if(type == DisplayTable.COOKIES) 
-	    title = NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_cookie"); 
-	else if(type == DisplayTable.SERVER) 
-	    title = NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_server"); 
+	    title = NbBundle.getMessage(NameValueCellEditor.class, 
+					"MON_Edit_param");  
+	else if(type == DisplayTable.REQUEST) {
+	    editable = ParamEditor.Editable.VALUE;
+	    title = NbBundle.getMessage(NameValueCellEditor.class, 
+					"MON_Edit_request"); 
+	    condition = ParamEditor.Condition.VALUE;
+	}
+	else if(type == DisplayTable.COOKIES) {
+	    title = NbBundle.getMessage(NameValueCellEditor.class, 
+					"MON_Edit_cookie"); 
+	    condition = ParamEditor.Condition.COOKIE; 
+	}
+	else if(type == DisplayTable.SERVER) {
+	    title = NbBundle.getMessage(NameValueCellEditor.class, 
+					"MON_Edit_server"); 
+	    condition = ParamEditor.Condition.VALUE; 
+	    editable = ParamEditor.Editable.VALUE;
+	}
 	// This should not happen
 	else 
-	    title = NbBundle.getBundle(NameValueCellEditor.class).getString("MON_Edit_value"); 
+	    title = NbBundle.getMessage(NameValueCellEditor.class, "MON_Edit_value"); 
 	
 
-	String name =  (String)model.getValueAt(currentRow, 0);
-	String value = (String)model.getValueAt(currentRow, 1);
-	pe = new ParamEditor(name, 
-			     value, 
-			     nameEditable, 
-			     (type > DisplayTable.UNEDITABLE), 
-			     title);
 
-	pe.showDialog(modal);
+	ParamEditor pe = new ParamEditor(name, value, editable, condition,
+					 title); 
+
+	pe.showDialog(); 
 
 	if(debug) 
 	    System.out.println("NameValueCellEditor::has " + //NOI18N
