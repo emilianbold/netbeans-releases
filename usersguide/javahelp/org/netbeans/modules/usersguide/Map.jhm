@@ -385,7 +385,6 @@
 <mapID target="debug.running.resume" url="debug/running/running_resume.html" />
 <mapID target="debug.running.pause" url="debug/running/pause.html" />
 <mapID target="debug.step" url="debug/running/stepping.html" />
-<mapID target="debug.running.end" url="debug/running/running_end.html" />
 
 <mapID target="debug.variables.jump" url="debug/variables/variables_jump.html" />
 <mapID target="debug.variables.value" url="debug/variables/value.html" />
