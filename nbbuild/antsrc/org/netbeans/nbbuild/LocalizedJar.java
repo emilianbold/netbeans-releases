@@ -40,6 +40,8 @@ import org.apache.tools.ant.types.*;
  * lists of branding or locale identifiers so that NetBeans-based projects can
  * brand or localize NetBeans without having to maintain modified versions of all
  * the individual Ant scripts
+ * Originally this Ant task didn't recognize files below a directory with the
+ * same name as a locale as being localized.  Now it does so by default.
  * <p>Based on <code>&lt;zip&gt;</code> and <code>&lt;jar&gt;</code> tasks in Ant,
  * but not feasible to simply subclass or compose them.
  * @see <a href="http://www.netbeans.org/i18n/">NetBeans I18N documentation</a>
@@ -56,6 +58,7 @@ public class LocalizedJar extends MatchingTask {
     private static long emptyCrc = new CRC32 ().getValue ();
     private List filesets = new LinkedList (); // List<FileSet>
     private File manifest;
+    private boolean checkPathLocale = true ;
 
     /** Locale or branding specifier.
      * Represents a complete locale or branding suffix,
@@ -148,6 +151,15 @@ public class LocalizedJar extends MatchingTask {
      */
     public void setManifest (File manifest) {
 	this.manifest = manifest;
+    }
+
+    /** By default this is true.  If set to false, then this task will
+     * not recognize files below a directory with the same name as a
+     * locale as being localized (unless the simple filename also
+     * includes the locale).
+     */
+    public void setCheckPathLocale( boolean doit) {
+      checkPathLocale = doit ;
     }
 
     public void execute () throws BuildException {
@@ -246,10 +258,14 @@ public class LocalizedJar extends MatchingTask {
         Map brandingMarks = new HashMap (); // Map<File,String>; JAR files to branding (or null for basic JAR, "-" for blank)
         Map router = new HashMap (); // Map<File,Map<String,File>>; JAR files to map of JAR path to actual file (file may be null for dirs)
         {
+	    String localeDir ;
             Iterator it = allFiles.entrySet ().iterator ();
             while (it.hasNext ()) {
                 Map.Entry entry = (Map.Entry) it.next ();
                 String path = (String) entry.getKey ();
+
+//log( "==> Examining file: " + path) ;
+
                 File file = (File) entry.getValue ();
                 // First see if it matches a known branding, locale, or pair of one of each.
                 String testpath = path;
@@ -277,6 +293,26 @@ public class LocalizedJar extends MatchingTask {
                     }
                 }
                 File thisjar; // JAR to send this file to
+
+		// Check if this file has a parent directory with the //
+		// same name as one of the locales.		      //
+		localeDir = checkInLocaleDir( file, locales2) ;
+		if( localeDir != null) {
+		  thisLocale = localeDir ;
+		}
+
+
+/*
+if( thisLocale != null) {
+  log( "    Locale: " + thisLocale) ;
+}
+if( thisBranding != null) {
+  log( "    Branding: " + thisBranding) ;
+}
+if( localeKitFiles.contains( file)) {
+  log( "    Localizable file.") ;
+} */
+
                 if (thisLocale != null || thisBranding != null || localeKitFiles.contains (file)) {
                     String name = jarFile.getName ();
                     // We know jarFile is a *.jar so this is safe:
@@ -455,6 +491,43 @@ public class LocalizedJar extends MatchingTask {
         }
     } // end addToJar()
 
+
+  // If the name of any parent directory of this file is the same as //
+  // one of the locales, return the locale.			     //
+  protected String checkInLocaleDir( File file,
+				     List locales) {
+
+    // See if this functionality is disabled. //
+    if( !checkPathLocale) {
+      return null ;
+    }
+
+    int idx ;
+    String loc, locale_dir, ret = null ;
+    String path = file.getPath() ;
+    Iterator iter = locales.iterator() ;
+
+    // For each locale. //
+    while( iter.hasNext()) {
+      loc = (String) iter.next() ;
+
+      // If the path contains a dir with the same name as the //
+      // locale.					      //
+      locale_dir = new String( file.separator) ;
+      locale_dir += loc ;
+      locale_dir += file.separator ;
+      idx = path.indexOf( locale_dir) ;
+      if( idx != -1) {
+
+	// Stop and return this locale. //
+	ret = loc ;
+	break ;
+      }
+    }
+
+    return( ret) ;
+  }
+
   ////////////////////////////////////////////////////////////////////
   // This section of code supports the feature that this class will //
   // look for global properties that specify locales and brandings  //
@@ -483,7 +556,7 @@ public class LocalizedJar extends MatchingTask {
     prop = getProject().getProperty( var_name) ;
     if( prop != null && !prop.equals( "")) {
       tokenizer = new StringTokenizer( prop, ", ") ;
-      while( tokenizer.hasMoreTokens()) { 
+      while( tokenizer.hasMoreTokens()) {
 	tok = tokenizer.nextToken() ;
 
 	// Add a new entry in the given list. //
