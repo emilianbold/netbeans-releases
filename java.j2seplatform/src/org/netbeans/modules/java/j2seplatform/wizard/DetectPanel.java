@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,6 +22,7 @@ import javax.swing.event.*;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 import org.openide.filesystems.*;
 import org.openide.util.NbBundle;
@@ -50,7 +51,7 @@ import org.openide.WizardDescriptor;
  */
 public class DetectPanel extends javax.swing.JPanel {
 
-    private JavaPlatform platform;
+    private NewJ2SEPlatform platform;
     private ArrayList listeners;
 
     /**
@@ -58,7 +59,7 @@ public class DetectPanel extends javax.swing.JPanel {
      * start the task and update on its completion
      * @param p the platform being customized.
      */
-    public DetectPanel(JavaPlatform p) {
+    public DetectPanel(NewJ2SEPlatform p) {
         initComponents();
         postInitComponents ();
         putClientProperty("WizardPanel_contentData",
@@ -359,16 +360,12 @@ public class DetectPanel extends javax.swing.JPanel {
         private final J2SEWizardIterator  iterator;
         private Collection          changeList = new ArrayList();
         private boolean             detected;
-	private J2SEPlatformImpl    platform;
         private boolean             valid;
         private boolean             firstPass=true;
         private WizardDescriptor    wiz;
 
-        WizardPanel(J2SEWizardIterator iterator) {
-            this.iterator = iterator;
-            JavaPlatform platform = iterator.getPlatform();
-            assert platform instanceof J2SEPlatformImpl;
-	        this.platform = (J2SEPlatformImpl) iterator.getPlatform();
+        WizardPanel(J2SEWizardIterator iterator) {            
+	    this.iterator = iterator;
         }
 
         public void addChangeListener(ChangeListener l) {
@@ -377,9 +374,10 @@ public class DetectPanel extends javax.swing.JPanel {
 
         public java.awt.Component getComponent() {
             if (component == null) {
-                component = new DetectPanel(iterator.getPlatform());
+                NewJ2SEPlatform platform = this.iterator.getPlatform();
+                component = new DetectPanel(platform);
                 component.addChangeListener (this);
-                task = RequestProcessor.getDefault().create(iterator);
+                task = RequestProcessor.getDefault().create(platform);
                 task.addTaskListener(this);
             }
             return component;
@@ -479,8 +477,8 @@ public class DetectPanel extends javax.swing.JPanel {
 	 has entered. Stores user-customized display name into the Platform.
 	 */
         public void storeSettings(Object settings) {
-            if (isValid()) {
-                assert platform instanceof J2SEPlatformImpl;
+            if (isValid()) {                
+                J2SEPlatformImpl platform = this.iterator.getPlatform();
                 String name = component.getPlatformName();
                 platform.setDisplayName (name);
                 String antName = createAntName (name);
@@ -541,7 +539,7 @@ public class DetectPanel extends javax.swing.JPanel {
                 public void run () {
                     component.updateData ();
                     component.jdkName.setEditable(true);
-                    detected = iterator.isValid();
+                    detected = iterator.getPlatform().isValid();
                     checkValid ();
                 }
             });            
@@ -569,28 +567,17 @@ public class DetectPanel extends javax.swing.JPanel {
         }
 
         private static String createAntName (String name) {
-            StringBuffer baseName = new StringBuffer ();
             if (name == null || name.length() == 0) {
                 throw new IllegalArgumentException ();
-            }
-            
-            if (!Character.isJavaIdentifierStart (name.charAt(0))) {
-                baseName.append('_');
-            }
-            for (int i=0; i< name.length(); i++) {
-                char c = name.charAt(i);
-                if (!Character.isJavaIdentifierPart(c) && c !='-' && c!='.') {
-                    c = '_';
-                }
-                baseName.append (c);
-            }
-            String antName = baseName.toString();
+            }                        
+            String antName = PropertyUtils.getUsablePropertyName(name);            
             if (platformExists (antName)) {
+                String baseName = antName;
                 int index = 1;
-                antName = baseName.toString () + Integer.toString (index);
+                antName = baseName + Integer.toString (index);
                 while (platformExists (antName)) {
                     index ++;
-                    antName = baseName.toString () + Integer.toString (index);
+                    antName = baseName + Integer.toString (index);
                 }
             }
             return antName;
