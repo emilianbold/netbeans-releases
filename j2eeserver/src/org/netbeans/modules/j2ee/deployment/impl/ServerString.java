@@ -126,7 +126,7 @@ public class ServerString implements java.io.Serializable {
     }
     
     public Target[] toTargets() {
-        String[] targetNames = getTargets();
+        String[] targetNames = getTargets(true);
         Target[] ret = new Target[targetNames.length];
         for (int i=0; i<targetNames.length; i++)
             ret[i] = getServerInstance().getServerTarget(targetNames[i]).getTarget();
