@@ -551,8 +551,11 @@ public abstract class CLIHandler extends Object {
                                     enterState(42, block);
                                     int howMuch = replyStream.readInt();
                                     byte[] byteArr = new byte[howMuch];
-                                    args.getInputStream().read(byteArr);
-                                    os.write(byteArr);
+                                    int really = args.getInputStream().read(byteArr);
+                                    os.write(really);
+                                    if (really > 0) {
+                                        os.write(byteArr, 0, really);
+                                    }
                                     os.flush();
                                     break;
                                 }
@@ -879,7 +882,12 @@ public abstract class CLIHandler extends Object {
                 os.writeInt(len);
                 os.flush();
                 // read provided data
-                return is.read(b, off, len);
+                int really = is.read ();
+                if (really > 0) {
+                    return is.read(b, off, really);
+                } else {
+                    return really;
+                }
             }
             
         } // end of IS
