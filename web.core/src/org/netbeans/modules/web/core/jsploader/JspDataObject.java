@@ -24,7 +24,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
+import java.util.EventListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -233,7 +235,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
     private void initialize() {
     	firstStart = true;
         listener = new Listener();
-        getPrimaryFile().addFileChangeListener(listener);
+        listener.register (getPrimaryFile());
         addPropertyChangeListener(listener);
         refreshPlugin(false);
     }
@@ -501,10 +503,22 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
     ////// -------- INNER CLASSES ---------
 
     private class Listener extends FileChangeAdapter implements PropertyChangeListener/*, ServerRegistryImpl.ServerRegistryListener */{
+        WeakReference weakListener;
         
         Listener() {
         }
         
+        private void register (FileObject fo) {
+            EventListener el = WeakListeners.create (FileChangeListener.class, this, fo);
+            fo.addFileChangeListener ((FileChangeListener) el);
+            weakListener = new WeakReference (el);
+        }
+        private void unregister (FileObject fo) {
+            FileChangeListener listener = (FileChangeListener) weakListener.get ();
+            if (listener != null) {
+                fo.removeFileChangeListener (listener);
+            }
+        }
         public void propertyChange(PropertyChangeEvent evt) {
             // listening on properties which could affect the server plugin
             // saving the file
@@ -517,9 +531,9 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
             if (PROP_PRIMARY_FILE.equals(evt.getPropertyName()) || 
                 PROP_FILES.equals(evt.getPropertyName())) {
                 if (evt.getOldValue() instanceof FileObject)
-                    ((FileObject)evt.getOldValue()).removeFileChangeListener(this);
+                    unregister ((FileObject)evt.getOldValue());
                 if (evt.getNewValue() instanceof FileObject)
-                    ((FileObject)evt.getNewValue()).addFileChangeListener(this);
+                    register ((FileObject)evt.getNewValue());;
                 refreshPlugin(true);
             }
             // primary file changed or files changed
