@@ -16,6 +16,8 @@ package org.netbeans.modules.editor.options;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
+import java.io.IOException;
+import java.io.ObjectInput;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -57,6 +59,13 @@ import org.openide.TopManager;
 * @version 1.00
 */
 public class BaseOptions extends OptionSupport {
+    
+    /** Latest version of the options. It must be increased
+     * manually when new patch is added to the options.
+     */
+    protected static final int LATEST_OPTIONS_VERSION = 1;
+
+    protected static final String OPTIONS_VERSION_PROP = "optionsVersion";
 
     public static final String ABBREV_MAP_PROP = "abbrevMap"; // NOI18N
     public static final String BASE = "base"; // NOI18N
@@ -128,7 +137,8 @@ public class BaseOptions extends OptionSupport {
         TAB_SIZE_PROP,
         TEXT_LIMIT_LINE_COLOR_PROP,
         TEXT_LIMIT_LINE_VISIBLE_PROP,
-        TEXT_LIMIT_WIDTH_PROP
+        TEXT_LIMIT_WIDTH_PROP,
+        OPTIONS_VERSION_PROP
     };
 
     static final long serialVersionUID =-5469192431366914841L;
@@ -139,14 +149,40 @@ public class BaseOptions extends OptionSupport {
     
     private transient Settings.Initializer coloringMapInitializer;
     
+    /** Version of the options. It's used for patching the options. */
+    private transient int optionsVersion;
+    
     public BaseOptions() {
         this(BaseKit.class, BASE);
     }
 
     public BaseOptions(Class kitClass, String typeName) {
         super(kitClass, typeName);
+        
+        // Create evaluators for indentEngine and formatter
+        setSettingValue(NbEditorDocument.INDENT_ENGINE,
+            new Settings.Evaluator() {
+                public Object getValue(Class kitClass, String settingName) {
+                        return getIndentEngine();
+                }
+            },
+            null
+        );
 
-        getIndentEngine(); // causes initialization of the default indent engine
+        setSettingValue(NbEditorDocument.FORMATTER,
+            new Settings.Evaluator() {
+                public Object getValue(Class kitClass, String settingName) {
+                    IndentEngine eng = getIndentEngine();
+                    return (eng != null)
+                        ? ((eng instanceof FormatterIndentEngine)
+                            ? ((FormatterIndentEngine)eng).getFormatter()
+                            : ((Formatter)new IndentEngineFormatter(getKitClass(), eng)))
+                        : null;
+                }
+            },
+            null
+        );
+
     }
     
     protected void updateSettingsMap(Class kitClass, Map settingsMap) {
@@ -539,11 +575,15 @@ public class BaseOptions extends OptionSupport {
 
 
     public IndentEngine getIndentEngine() {
-        IndentEngine eng = (IndentEngine)getSettingValue(NbEditorDocument.INDENT_ENGINE);
-        
-        if (eng == null) {
+        ServiceType.Handle h = (ServiceType.Handle)getProperty(INDENT_ENGINE_PROP);
+        IndentEngine eng;
+        if (h != null) { // handle already set
+            eng = (IndentEngine)h.getServiceType();
+            
+        } else { // handle not yet set
             // Try to find the default indent engine in Services registry
             eng = findDefaultIndentEngine();
+        
             if (eng != null) { // found
                 setIndentEngine(eng);
             }
@@ -551,24 +591,18 @@ public class BaseOptions extends OptionSupport {
         
         return eng;
     }
-
+    
     public void setIndentEngine(IndentEngine eng) {
-        // Assign a formatter to the Settings
-        Formatter f
-            = (eng != null)
-                ? ((eng instanceof FormatterIndentEngine)
-                    ? ((FormatterIndentEngine)eng).getFormatter()
-                    : ((Formatter)new IndentEngineFormatter(getKitClass(), eng)))
-                : null;
+        // To force serialization of the handle instead of service type
+        putProperty(INDENT_ENGINE_PROP, new ServiceType.Handle(eng), false);
+        
+        refreshIndentEngineSettings();
+    }
 
-        setSettingValue(NbEditorDocument.FORMATTER, f, null);
-        setSettingValue(NbEditorDocument.INDENT_ENGINE, eng, INDENT_ENGINE_PROP);
-        
-        if (debugFormat) {
-            System.err.println("BaseOptions.setIndentEngine(): engine for kitClass=" // NOI18N
-                + getKitClass() + " set to eng=" + eng + ", formatter=" + f); // NOI18N
-        }
-        
+    private void refreshIndentEngineSettings() {
+        // Touches the settings
+        Settings.touchValue(getKitClass(), NbEditorDocument.INDENT_ENGINE);
+        Settings.touchValue(getKitClass(), NbEditorDocument.FORMATTER);
     }
 
     /** Return class of the default indentation engine. */
@@ -588,4 +622,53 @@ public class BaseOptions extends OptionSupport {
         return null;
     }
 
+    public void setOptionsVersion(int optionsVersion) {
+        int oldOptionsVersion = this.optionsVersion;
+        this.optionsVersion = optionsVersion;
+        if (optionsVersion != oldOptionsVersion) {
+            firePropertyChange(OPTIONS_VERSION_PROP,
+                new Integer(oldOptionsVersion), new Integer(optionsVersion));
+        }
+    }
+    
+    public int getOptionsVersion() {
+        return optionsVersion;
+    }
+    
+    public void readExternal(ObjectInput in)
+    throws IOException, ClassNotFoundException {
+        /* Make the current options version to be zero
+         * temporarily to distinguish whether the options
+         * imported were old and the setOptionsVersion()
+         * was not called or whether the options
+         * were new so the options version was set
+         * to the LATEST_OPTIONS_VERSION value.
+         */
+        optionsVersion = 0;
+        
+        // Read the serialized options
+        super.readExternal(in);
+        
+        // Make sure the indent engine settings are propagated
+        // (SharedClassObject.putProperty() is final)
+        refreshIndentEngineSettings();
+
+        // Possibly upgrade the options
+        if (optionsVersion < LATEST_OPTIONS_VERSION) {
+            upgradeOptions(optionsVersion, LATEST_OPTIONS_VERSION);
+        }
+        
+        optionsVersion = LATEST_OPTIONS_VERSION;
+    }
+    
+    /** Upgrade the deserialized options.
+     * @param version deserialized version of the options
+     * @param latestVersion latest version of the options
+     *   that will be set to them after they are upgraded
+     */
+    protected void upgradeOptions(int version, int latestVersion) {
+        // Upgrade in separate class to avoid messing up BaseOptions
+        UpgradeOptions.upgradeOptions(this, version, latestVersion);
+    }
+        
 }

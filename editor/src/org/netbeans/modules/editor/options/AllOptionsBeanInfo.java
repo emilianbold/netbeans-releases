@@ -30,7 +30,8 @@ public class AllOptionsBeanInfo extends BaseOptionsBeanInfo {
 
     public static final String[] PROP_NAMES = new String[] {
                 BaseOptions.KEY_BINDING_LIST_PROP,
-                EDITOR_STATE_PROP
+                EDITOR_STATE_PROP,
+                BaseOptions.OPTIONS_VERSION_PROP
     };
 
     public AllOptionsBeanInfo() {
@@ -49,7 +50,8 @@ public class AllOptionsBeanInfo extends BaseOptionsBeanInfo {
         super.updatePropertyDescriptors();
 
         setHidden(new String[] {
-            EDITOR_STATE_PROP
+            EDITOR_STATE_PROP,
+            BaseOptions.OPTIONS_VERSION_PROP
         });
     }
 

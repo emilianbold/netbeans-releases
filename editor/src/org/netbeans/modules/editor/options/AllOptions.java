@@ -35,7 +35,8 @@ public class AllOptions extends ContextSystemOption {
     static final long serialVersionUID =-5703125420292694573L;
 
     // Initialize global options
-    BaseOptions baseOptions = (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
+    private transient BaseOptions baseOptions
+        = (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
 
     public AllOptions() {
         // Add the initializer for the base options. It will not be removed
@@ -75,6 +76,14 @@ public class AllOptions extends ContextSystemOption {
         baseOptions.setKeyBindingList(list);
     }
 
+    public int getOptionsVersion() {
+        return baseOptions.getOptionsVersion();
+    }
+
+    public void setOptionsVersion(int optionsVersion) {
+        baseOptions.setOptionsVersion(optionsVersion);
+    }
+
     public HashMap getEditorState() {
         return EditorState.getStateObject();
     }
@@ -88,9 +97,28 @@ public class AllOptions extends ContextSystemOption {
     }
     
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        /* Make the current options version to be zero
+         * temporarily to distinguish whether the options
+         * imported were old and the setOptionsVersion()
+         * was not called or whether the options
+         * were new so the options version was set
+         * to the LATEST_OPTIONS_VERSION value.
+         */
+        baseOptions.setOptionsVersion(0);
+
         super.readExternal(in);
         
+        // Possibly upgrade the options
+        int ov = baseOptions.getOptionsVersion();
+        if (ov < BaseOptions.LATEST_OPTIONS_VERSION) {
+            baseOptions.upgradeOptions(ov, BaseOptions.LATEST_OPTIONS_VERSION);
+        }
+        
+        // Now they are at the latest version
+        baseOptions.setOptionsVersion(BaseOptions.LATEST_OPTIONS_VERSION);
+
         refreshContextListeners(); // beanContext was changed in super
+
     }
 
 }

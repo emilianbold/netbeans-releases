@@ -195,7 +195,8 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
         setHidden(new String[] {
             BaseOptions.EXPAND_TABS_PROP,
-            BaseOptions.SPACES_PER_TAB_PROP
+            BaseOptions.SPACES_PER_TAB_PROP,
+            BaseOptions.OPTIONS_VERSION_PROP
         });
 
     }
