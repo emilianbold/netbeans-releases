@@ -37,6 +37,9 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/loaders/*.class"/>                
                 <!-- Don't worry about these, cannot be fixed currently: -->
 		<exclude name="org/openide/loaders/DataFolderTest.class"/> <!-- failing in cont. test -->
+                <!-- following was disabled because of issue #20179 -->
+                <exclude name="org/openide/loaders/DataFolderMoveTest.class"/>
+                <!-- x -->
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart1"/>
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart5"/>
                 <exclude name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart7"/>
