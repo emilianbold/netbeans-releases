@@ -188,7 +188,7 @@ public class Install extends ModuleInstall {
             },
             null,
             DialogDescriptor.DEFAULT_ALIGN,
-            new HelpCtx(Install.class.getName () + ".pending"), // NOI18N
+            null,
             new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     if(evt.getSource() == exitOption) {
@@ -198,6 +198,8 @@ public class Install extends ModuleInstall {
                 }
             }
         );
+        // #33135 - no Help button for this dialog
+        dd.setHelpCtx(null);
 
         if(!getPendingTasks().isEmpty()) {
             root.addNodeListener(new NodeAdapter() {
