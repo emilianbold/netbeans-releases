@@ -361,7 +361,7 @@ is divided into following sections:
                      verbose="true" 
                      xPrintStackTrace="true" 
                      xSerializable="true"
-                     base="${{src.dir}}" 
+                     base="${{build.generated.dir}}/wssrc" 
                      sourceBase="${{src.dir}}" 
                      keep="true" 
                      fork="true" />

@@ -15,7 +15,6 @@ import javax.swing.JLabel;
 import javax.swing.JButton;
 import java.awt.GridBagLayout;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.netbeans.api.project.Project;
@@ -29,11 +28,11 @@ import org.openide.cookies.SourceCookie;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
 import org.netbeans.modules.j2ee.dd.api.webservices.PortComponentHandler;
-import java.util.HashMap;
 import org.openide.filesystems.FileObject;
-import org.openide.src.Identifier;
-import java.util.ArrayList;
-
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.loaders.DataObject;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.common.Util;
 /**
  *
  * @author  rico
@@ -42,11 +41,13 @@ public class MessageHandlerPanel extends JPanel{
     
     private Project project;
     private PortComponent portComponent;
+    private FileObject srcRoot;
     
     /** Creates a new instance of MessageHandlerPanel */
-    public MessageHandlerPanel(Project project, PortComponent portComponent) {
+    public MessageHandlerPanel(Project project, PortComponent portComponent, FileObject srcRoot) {
         this.project = project;
         this.portComponent = portComponent;
+        this.srcRoot = srcRoot;
         initComponents();
         populateHandlers();
     }
@@ -174,9 +175,6 @@ public class MessageHandlerPanel extends JPanel{
                                 accepted = false;
                                 break;
                             }
-                            //assert (classElement != null);
-                            //tblModel.addRow(new String[]{classElement.getName().getFullName()});
-                            
                         }
                         if (!accepted) {
                             NotifyDescriptor.Message notifyDescr =
@@ -211,13 +209,15 @@ public class MessageHandlerPanel extends JPanel{
         }
     }
     private boolean isHandler(ClassElement ce) {
-        //FIX-ME: This is bogus: Handler can use super class that derives from Handler
-        //Is there an equivalent of isAssignableFrom in ClassElement?
-        Identifier[] interfaces = ce.getInterfaces();
-        for(int i = 0; i < interfaces.length; i++){
-            if(interfaces[i].getFullName().equals("javax.xml.rpc.handler.Handler")){
-                return true;
-            }
+        ClassPathProvider cpp = (ClassPathProvider)project.getLookup().lookup(ClassPathProvider.class);
+        assert cpp != null;
+        DataObject dobj = (DataObject)ce.getCookie(DataObject.class);
+        FileObject f = dobj.getPrimaryFile();
+        ClassPath cp = cpp.findClassPath(f, ClassPath.COMPILE);
+        FileObject handlerFO = cp.findResource("javax/xml/rpc/handler/Handler.class");
+        if(handlerFO != null) {
+            ClassElement handlerClassEl = ClassElement.forName("javax.xml.rpc.handler.Handler", handlerFO.getParent());
+            return Util.isAssignableFrom(handlerClassEl, ce.getName().getFullName(), srcRoot);
         }
         return false;
     }
