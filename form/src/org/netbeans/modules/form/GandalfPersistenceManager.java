@@ -585,16 +585,23 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         // initialize layout support from restored code
-        if (visualContainer != null
-            && !visualContainer.getLayoutSupport().initializeLayoutDelegate(true))
-        {
-            System.err.println("[WARNING] Cannot initialize layout support class for container: " // NOI18N
+        if (visualContainer != null) {
+            if (visualContainer.getLayoutSupport().initializeLayoutDelegate(true)) {
+                // layout suppport initialized from the code successfully,
+                // now we can initialize the visual container
+                visualContainer.initSubComponents(childComponents);
+                visualContainer.getLayoutSupport().updatePrimaryContainer();
+            }
+            else {
+                System.err.println("[WARNING] Cannot initialize layout support class for container: " // NOI18N
                                + visualContainer.getName() + " [" // NOI18N
                                + visualContainer.getBeanClass().getName() + "]"); // NOI18N
-            // [this won't work !!]
+                visualContainer.initSubComponents(childComponents);
+                // [this won't work !!]
+            }
         }
-
-        container.initSubComponents(childComponents);
+        else // non-visual container
+            container.initSubComponents(childComponents);
 
         // hack for properties that can't be set until all subcomponents
         // are added to the container
