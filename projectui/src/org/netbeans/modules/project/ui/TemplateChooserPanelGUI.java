@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -476,6 +476,9 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
                     ok = true;
                     break;
                 }
+            } else if (ch[i] instanceof DataFolder && hasChildren (p, ch[i])) {
+                    ok = true;
+                    break;
             }
         }
         return ok;
