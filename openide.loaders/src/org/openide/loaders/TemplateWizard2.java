@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -164,6 +164,9 @@ final class TemplateWizard2 extends javax.swing.JPanel implements DocumentListen
         super.addNotify();
         //Fix for issue 31086, initial focus on Back button 
         newObjectName.requestFocus();
+        getAccessibleContext().setAccessibleDescription(
+            NbBundle.getBundle(TemplateWizard2.class).getString ("ACSD_TemplateWizard2") // NOI18N
+        );
     }
     
     /** Helper implementation of WizardDescription.Panel for TemplateWizard.Panel2.
