@@ -447,7 +447,8 @@ public class JavaCodeGenerator extends CodeGenerator {
       initCodeWriter.write (dl.generateInitCode ((RADVisualContainer)comp));
     }
 
-    if (comp.getAuxValue (AUX_SERIALIZE_TO) == null) {
+    Object genType = comp.getAuxValue (AUX_CODE_GENERATION);
+    if ((genType == null) || VALUE_GENERATE_CODE.equals (genType)) {
       // not serialized ==>> save
       Map changedProps = comp.getChangedProperties ();
       for (Iterator it = changedProps.keySet ().iterator (); it.hasNext ();) {
@@ -516,7 +517,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     
     // process FormAwareEditors
     if (ed instanceof FormAwareEditor) {
-      ((FormAwareEditor)ed).setRADComponent (comp);
+      ((FormAwareEditor)ed).setRADComponent (comp, prop);
     }
     if (ed instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
       ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)ed).attach (new org.openide.nodes.Node[] { comp.getNodeReference () });
@@ -1222,6 +1223,10 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  48   Gandalf   1.47        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
+ *        change, Fixed bug 3307 - The properties of component isn't written 
+ *       into editor after changing generation code from serialization to code 
+ *       generate.
  *  47   Gandalf   1.46        9/10/99  Ian Formanek    Added pre/postcode 
  *       generation
  *  46   Gandalf   1.45        9/6/99   Ian Formanek    Correctly works with 
