@@ -11,6 +11,11 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+// To run me:
+// cd nb_all
+// ant -f nbbuild/build.xml
+// java -classpath core/netbeans/lib/ext/boot.jar:core/netbeans/lib/core.jar:openide/netbeans/lib/openide.jar:performance/src:junit/external/junit-3.7.jar:core/test/perf/src:core/external/xerces-2.0.2.jar:core/external/xml-apis-1.0b2.jar org.netbeans.core.modules.ModuleInitTest
+
 package org.netbeans.core.modules;
 
 import java.io.*;
@@ -86,19 +91,60 @@ public class ModuleInitTest extends Benchmark {
         simpleRun(ModuleInitTest.class);
     }
     
-    public ModuleInitTest(String name) {
-        super(name, new Integer[] {new Integer(0), new Integer(10), new Integer(100), new Integer(1000)});
+    private static Map[] parseParams(String[] ps) {
+        Map[] m = new Map[ps.length];
+        for (int i = 0; i < ps.length; i++) {
+            m[i] = new HashMap(); // Map<String,String|Integer>
+            StringTokenizer tok = new StringTokenizer(ps[i], ",");
+            while (tok.hasMoreTokens()) {
+                String kv = tok.nextToken();
+                int x = kv.indexOf('=');
+                String k = kv.substring(0, x);
+                String v = kv.substring(x + 1);
+                try {
+                    m[i].put(k, new Integer(v));
+                } catch (NumberFormatException nfe) {
+                    m[i].put(k, v);
+                }
+            }
+        }
+        return m;
     }
     
-    private File topdir = new File(new File(System.getProperty("java.io.tmpdir")), "ModuleInitTest");
+    public ModuleInitTest(String name) {
+        super(name, parseParams(new String[] {
+            // Simple scalability test:
+            "modules=0,jarSize=200,layerSize=23",
+            "modules=10,jarSize=200,layerSize=23",
+            "modules=100,jarSize=200,layerSize=23",
+            "modules=1000,jarSize=200,layerSize=23",
+            /* Test manifest caching:
+            "modules=100,jarSize=200,layerSize=0,-Dnetbeans.cache.manifests=false",
+            "modules=100,jarSize=200,layerSize=0,-Dnetbeans.cache.manifests=true",
+            "modules=1000,jarSize=200,layerSize=0,-Dnetbeans.cache.manifests=false",
+            "modules=1000,jarSize=200,layerSize=0,-Dnetbeans.cache.manifests=true",
+            */
+        }));
+    }
+    
+    private static File getTmpDir() {
+        File ramdisk = new File("/dev/shm");
+        if (ramdisk.isDirectory() && ramdisk.canWrite()) {
+            return ramdisk;
+        } else {
+            return new File(System.getProperty("java.io.tmpdir"));
+        }
+    }
+    private File topdir = new File(getTmpDir(), "ModuleInitTest");
     private File homedir = new File(topdir, "home");
     private File skeldir = new File(topdir, "skeluser");
     private File userdir = new File(topdir, "user");
-    private int lastSize = -1;
+    private Map lastParams = null;
     
     protected void setUp() throws Exception {
-        int size = ((Integer)getArgument()).intValue();
-        if (size != lastSize) {
+        Map params = (Map)getArgument();
+        if (!params.equals(lastParams)) {
+            //System.out.println("Setup: " + params);
             if (homedir.exists()) {
                 deleteRec(homedir);
             }
@@ -107,14 +153,14 @@ public class ModuleInitTest extends Benchmark {
             amods.mkdirs();
             File emods = new File(mods, "eager");
             emods.mkdirs();
-            createModules(size, mods, amods, emods);
+            createModules(params, mods, amods, emods);
             new File(homedir, "system").mkdirs();
             // Priming run to create system/Modules directory:
             if (skeldir.exists()) {
                 deleteRec(skeldir);
             }
-            runNB(homedir, skeldir, false);
-            lastSize = size;
+            runNB(homedir, skeldir, false, params);
+            lastParams = params;
         }
         // On every run, copy the primed skeleton user dir to the real location,
         // then start NB with the copied user dir.
@@ -198,7 +244,10 @@ public class ModuleInitTest extends Benchmark {
         }
     }
     
-    private void createModules(int size, File mods, File amods, File emods) throws IOException {
+    private void createModules(Map params, File mods, File amods, File emods) throws IOException {
+        int size = ((Integer)params.get("modules")).intValue();
+        int jarSize = ((Integer)params.get("jarSize")).intValue();
+        int layerSize = ((Integer)params.get("layerSize")).intValue();
         File[] moddirs = {mods, amods, emods}; // indexed by types[n]
         for (int i = 0; i < size; i++) {
             int which = i % cyclesize;
@@ -284,26 +333,20 @@ public class ModuleInitTest extends Benchmark {
                 attr.putValue("OpenIDE-Module-Requires", buf.toString());
             }
             // Files in JAR other than manifest:
-            Map contents = new HashMap(1000); // Map<String,byte[]>
+            Map contents = new TreeMap(); // Map<String,byte[]>
             String locb = nameSlashes + "/Bundle.properties";
             contents.put(locb, ("OpenIDE-Module-Name=Module #" + i + "\n").getBytes());
             attr.putValue("OpenIDE-Module-Localizing-Bundle", locb);
             contents.put(nameSlashes + "/foo", "stuff here\n".getBytes());
             contents.put(nameSlashes + "/subdir/foo", "more stuff here\n".getBytes());
-            for (int j = 0; j < i / 4; j++) {
+            for (int j = 0; j < jarSize; j++) {
                 contents.put(nameSlashes + "/sub/subdir/file" + j, new byte[j]);
             }
             // XML layer:
-            Map layer = new HashMap(i * 4 / 3 + 1); // Map<String,byte[]|null>
-            // Construct a binomial tree, module #i contributing the next 23 files (leaves):
-            int start = i * 23;
-            int end = (i + 1) * 23;
-            /* Unreasonable system to make module #i contrib the next i/5 files:
-            int id5 = i / 5;
-            int im5 = i % 5;
-            int start = 5 * id5 * (id5 - 1) / 2 + id5 * im5;
-            int end = start + id5;
-             */
+            Map layer = new TreeMap(); // Map<String,byte[]|null>
+            // Construct a binomial tree, module #i contributing the next layerSize files (leaves):
+            int start = i * layerSize;
+            int end = (i + 1) * layerSize;
             for (int j = start; j < end; j++) {
                 String filename = "file" + j + ".txt";
                 int bit = 0;
@@ -424,34 +467,45 @@ public class ModuleInitTest extends Benchmark {
     public void testInitModuleSystem() throws Exception {
         int count = getIterationCount();
         for (int i = 0; i < count; i++) {
-            runNB(homedir, userdir, true);
+            runNB(homedir, userdir, true, (Map)getArgument());
         }
     }
     
     private String cp = refinecp(System.getProperty("java.class.path"));
-    //System.err.println("Classpath: " + cp);
     
-    private void runNB(File homedir, File userdir, boolean log) throws IOException {
-        String[] cmd = {
+    private void runNB(File homedir, File userdir, boolean log, Map params) throws IOException {
+        List cmd = new ArrayList(Arrays.asList(new String[] {
             "java",
+            "-Xms24m",
+            "-Xmx96m",
             "-Dorg.openide.TopManager=org.netbeans.core.NonGuiMain",
             "-Dnetbeans.security.nocheck=true",
             "-Dnetbeans.home=" + homedir.getAbsolutePath(),
             "-Dnetbeans.user=" + userdir.getAbsolutePath(),
-            //log ? "-Dorg.netbeans.log.startup=print" : "-Dignore=me",
             "-Dnetbeans.suppress.sysprop.warning=true",
+            "-Dnetbeans.modules.quiet=true",
             "-Dlog=" + log,
             "-classpath",
             cp,
-            "org.netbeans.core.modules.ModuleInitTest$Main",
-        };
-        Process p = Runtime.getRuntime().exec(cmd);
+        }));
+        Iterator it = params.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry e = (Map.Entry)it.next();
+            String key = (String)e.getKey();
+            if (key.startsWith("-D")) {
+                cmd.add(key + "=" + e.getValue());
+            }
+        }
+        //if (log) cmd.add("-Dorg.netbeans.log.startup=print");
+        cmd.add("org.netbeans.core.modules.ModuleInitTest$Main");
+        //System.out.println("Running: " + cmd);
+        Process p = Runtime.getRuntime().exec((String[])cmd.toArray(new String[cmd.size()]));
         new Copier(p.getInputStream(), System.out).start();
         new Copier(p.getErrorStream(), System.err).start();
         try {
             int stat = p.waitFor();
             if (stat != 0) {
-                throw new IOException("Command failed (status " + stat + "): " + Arrays.asList(cmd));
+                throw new IOException("Command failed (status " + stat + "): " + cmd);
             }
         } catch (InterruptedException ie) {
             throw new IOException(ie.toString());
@@ -500,10 +554,10 @@ public class ModuleInitTest extends Benchmark {
         public static void main(String[] x) {
             TopManager.getDefault();
             if (Boolean.getBoolean("log")) {
-                // XXX should GC first to be more accurate!
                 Runtime r = Runtime.getRuntime();
+                r.gc();
                 double megs = (r.totalMemory() - r.freeMemory()) / 1024.0 / 1024.0;
-                System.out.println("Used memory: " + new DecimalFormat("0.00 Mb").format(megs));
+                System.err.println("Used memory: " + new DecimalFormat("0.00 Mb").format(megs));
             }
         }
     }
