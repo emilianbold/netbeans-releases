@@ -391,6 +391,7 @@ public class FormPropertyEditor implements PropertyEditor,
     }
 
     public boolean equals(Object obj) {
-        return modifiedEditor.equals(obj);
+        if (obj == null) return false;
+        return modifiedEditor.hashCode() == obj.hashCode();
     }
 }
