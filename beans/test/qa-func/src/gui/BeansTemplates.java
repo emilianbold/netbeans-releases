@@ -138,8 +138,10 @@ public class BeansTemplates extends JellyTestCase {
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_JAVA_BEAN);
         eo.select(1,5);
+        new EventTool().waitNoEvent(500);
         new DeleteAction().performAPI(eo);
         eo.select(5,8);
+        new EventTool().waitNoEvent(500);
         new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();
@@ -228,6 +230,7 @@ public class BeansTemplates extends JellyTestCase {
         ewo.getEditor();
         EditorOperator eo = new EditorOperator(ewo, NAME_CUSTOMIZER);
         eo.select(1,10);
+        new EventTool().waitNoEvent(500);
         new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();
@@ -256,10 +259,12 @@ public class BeansTemplates extends JellyTestCase {
         ewo.getEditor();
         EditorOperator eo = new EditorOperator(ewo, NAME_PROPERTY_EDITOR);
         eo.select(1,5);
+        new EventTool().waitNoEvent(500);
         new DeleteAction().performAPI(eo);
 //        new EventTool().waitNoEvent(5000);
         
-        eo.select(4,7);
+        eo.select(4,8);
+        new EventTool().waitNoEvent(3500);
         new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();

@@ -1,3 +1,4 @@
+
 public class MyCustomizer extends javax.swing.JPanel {
     
     /** Creates new customizer MyCustomizer */
