@@ -48,6 +48,8 @@ public class PDFDataLoader extends UniFileLoader {
     
     /** Initizalized loader, i.e. its extension list. Overrides superclass method. */
     protected void initialize () {
+        super.initialize();
+
         ExtensionList extensions = new ExtensionList ();
         extensions.addExtension ("pdf"); // NOI18N
         setExtensions (extensions);

@@ -428,12 +428,13 @@ public class ResultModel implements TaskListener {
         
         public void addFoundObjects(Object[] foundObjects) {
             keys.addAll(Arrays.asList(foundObjects));
-            setKeys(keys);
+            setKeys (keys); //??? -> sort (sorted);
         }
 
         public void removeFoundObject(Object foundObject) {
-            if(keys.remove(foundObject))
-                setKeys(keys);
+            if ( keys.remove (foundObject) ) {
+                sort (sorted);
+            }
         }
         
         /** Sorts/unsorts the children nodes. */

@@ -222,19 +222,19 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
     /** Listens on search type PROP_VALID property change and sets
      * customized property accordingly. */
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getSource() == searchType) {
+        if (evt.getSource() == searchType) {
+
             // if Type fires valid property change listens for
             // its invalidity -> mark itself as unmodified
-            if(SearchType.PROP_VALID.equals(evt.getPropertyName()) ) {
+            if (SearchType.PROP_VALID.equals(evt.getPropertyName()) ) {
                 
                 if (evt.getNewValue().equals(new Boolean(false))) {
-                    setCustomized(false);
+                    setCustomized (false);
                     return;
-                } 
-            } 
-            
-            // any modification
-            setCustomized(true);
+                } else {
+                    setCustomized (true);
+                }
+            }
         }
     }
     

@@ -360,8 +360,43 @@ class OpenFile extends Object {
         FileObject[] fObjects = FileUtil.fromFile(f);
 
         // Has found something from already mounted filesystems.
-        if(fObjects.length > 0) {
-            return fObjects[0];
+        if ( fObjects.length > 0 ) {
+            FileObject fileObj = fObjects[0];
+
+            // And if there is more then one possible FileObjects, try to find one in correct package
+            if ( fObjects.length > 1 ) {
+                // Find java file with SAME package
+                if ( fileNameUpper.endsWith (JAVA_EXT) ) {
+                    // file package
+                    String pkg = findJavaPackage (f);
+                
+                    for ( int i = 0; i < fObjects.length; i++ ) {
+                        // FileObject package
+                        String pkg_i = ""; // NOI18N
+                        if ( fObjects[i].isRoot() == false ) {
+                            FileObject parent = fObjects[i].getParent();
+                            pkg_i = parent.getPackageName ('.');
+                        }
+                        
+                        if ( pkg.equals (pkg_i) ) { // yes, this is right package
+                            fileObj = fObjects[i];
+                            break;
+                        }
+                    }
+                } else {
+                    // Find file with the shortest package name
+                    String shortName = fileObj.getPackageName ('.');
+
+                    for ( int i = 1; i < fObjects.length; i++ ) {
+                        String name_i = fObjects[i].getPackageName ('.');
+                        if ( name_i.length() < shortName.length() ) {
+                            fileObj   = fObjects[i];
+                            shortName = name_i;
+                        }
+                    }
+                }
+            }
+            return fileObj;
         }
         
         // Not found. For Java files, it is reasonable to mount the package root.

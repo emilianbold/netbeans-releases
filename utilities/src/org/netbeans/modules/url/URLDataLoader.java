@@ -39,6 +39,8 @@ public class URLDataLoader extends UniFileLoader {
     
     /** Initializes loader. */
     protected void initialize () {
+        super.initialize();
+
         ExtensionList ext = new ExtensionList();
         ext.addExtension("url"); // NOI18N
         setExtensions(ext);
