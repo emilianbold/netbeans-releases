@@ -257,12 +257,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="hidden" methodvalue="org.netbeans.core.ui.MenuWarmUpTask.isMac"/> 
 	</file>
         
-        <file name="BACK_SPACE.instance">
-	    <attr name="instanceClass" stringvalue="org.openide.actions.DeleteAction"/>
-            <!-- Show on mac - macs don't have a Delete key, it should be bound to backspace  -->
-            <attr name="hidden" methodvalue="org.netbeans.core.ui.MenuWarmUpTask.isNotMac"/> 
-        </file>
-
         <file name="C-Y.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.RedoAction"/>
 	</file>
