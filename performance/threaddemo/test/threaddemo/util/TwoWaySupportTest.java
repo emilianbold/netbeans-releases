@@ -27,44 +27,42 @@ public class TwoWaySupportTest extends TestCase {
         junit.textui.TestRunner.run(new junit.framework.TestSuite(TwoWaySupportTest.class));
     }
     
-    /*
+    private Mutex.Privileged p;
+    private SimpleTWS s;
+    
     protected void setUp() throws Exception {
+        p = new Mutex.Privileged();
+        Mutex m = new Mutex(p);
+        s = new SimpleTWS(m);
+        p.enterWriteAccess();
     }
     protected void tearDown() throws Exception {
+        p.exitWriteAccess();
     }
-     */
     
-    public void testBasicUsage() throws Exception {
-        Mutex.Privileged p = new Mutex.Privileged();
-        Mutex m = new Mutex(p);
-        SimpleTWS s = new SimpleTWS(m);
-        p.enterWriteAccess();
+    public void testBasicDerivation() throws Exception {
+        assertNull(s.getValueNonBlocking());
+        assertNull(s.getStaleValueNonBlocking());
+        assertEquals(Arrays.asList(new String[] {"initial", "value"}), s.getValueBlocking());
+        assertEquals(Arrays.asList(new String[] {"initial", "value"}), s.getValueNonBlocking());
+        assertEquals(Arrays.asList(new String[] {"initial", "value"}), s.getStaleValueNonBlocking());
+        s.setString("new value");
+        assertNull(s.getValueNonBlocking());
+        assertEquals(Arrays.asList(new String[] {"initial", "value"}), s.getStaleValueNonBlocking());
+        assertEquals(Arrays.asList(new String[] {"new", "value"}), s.getValueBlocking());
+        assertEquals(Arrays.asList(new String[] {"new", "value"}), s.getValueNonBlocking());
+        assertEquals(Arrays.asList(new String[] {"new", "value"}), s.getStaleValueNonBlocking());
+        s.setString("");
+        assertNull(s.getValueNonBlocking());
+        assertEquals(Arrays.asList(new String[] {"new", "value"}), s.getStaleValueNonBlocking());
         try {
-            assertNull(s.getValueNonBlocking());
-            assertNull(s.getStaleValueNonBlocking());
-            assertEquals(Arrays.asList(new String[] {"initial", "value"}), s.getValueBlocking());
-            assertEquals(Arrays.asList(new String[] {"initial", "value"}), s.getValueNonBlocking());
-            assertEquals(Arrays.asList(new String[] {"initial", "value"}), s.getStaleValueNonBlocking());
-            s.setString("new value");
-            assertNull(s.getValueNonBlocking());
-            assertEquals(Arrays.asList(new String[] {"initial", "value"}), s.getStaleValueNonBlocking());
-            assertEquals(Arrays.asList(new String[] {"new", "value"}), s.getValueBlocking());
-            assertEquals(Arrays.asList(new String[] {"new", "value"}), s.getValueNonBlocking());
-            assertEquals(Arrays.asList(new String[] {"new", "value"}), s.getStaleValueNonBlocking());
-            s.setString("");
-            assertNull(s.getValueNonBlocking());
-            assertEquals(Arrays.asList(new String[] {"new", "value"}), s.getStaleValueNonBlocking());
-            try {
-                Object v = s.getValueBlocking();
-                fail("Should not be computed: " + v.toString());
-            } catch (InvocationTargetException e) {
-                assertEquals("empty string", e.getTargetException().getMessage());
-            }
-            assertNull(s.getValueNonBlocking());
-            assertEquals(Arrays.asList(new String[] {"new", "value"}), s.getStaleValueNonBlocking());
-        } finally {
-            p.exitWriteAccess();
+            Object v = s.getValueBlocking();
+            fail("Should not be computed: " + v.toString());
+        } catch (InvocationTargetException e) {
+            assertEquals("empty string", e.getTargetException().getMessage());
         }
+        assertNull(s.getValueNonBlocking());
+        assertEquals(Arrays.asList(new String[] {"new", "value"}), s.getStaleValueNonBlocking());
     }
     
     // XXX to test:
