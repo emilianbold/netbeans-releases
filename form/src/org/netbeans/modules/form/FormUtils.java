@@ -174,6 +174,8 @@ public class FormUtils
                 "layout", PROP_HIDDEN },
         { javax.swing.JMenuBar.class, CLASS_EXACTLY,
                 "helpMenu", PROP_HIDDEN },
+        { javax.swing.JSpinner.class, CLASS_AND_SUBCLASSES,
+                "model", PROP_PREFERRED },
         { java.applet.Applet.class, CLASS_AND_SUBCLASSES,
                 "appletContext", PROP_HIDDEN,
                 "codeBase", PROP_HIDDEN,
