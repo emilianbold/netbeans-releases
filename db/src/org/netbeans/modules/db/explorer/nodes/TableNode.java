@@ -92,8 +92,10 @@ public class TableNode extends DatabaseNode implements InstanceCookie
 			super.setName(newname);
 			info.put(DatabaseNode.TABLE, newname);
 		} catch (CommandNotSupportedException ex) {
+			TopManager.getDefault().notify(new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 		} catch (Exception ex) {
-			ex.printStackTrace();
+//			ex.printStackTrace();
+			TopManager.getDefault().notify(new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 		}
 	}
 
@@ -255,6 +257,7 @@ public class TableNode extends DatabaseNode implements InstanceCookie
 }
 /*
  * <<Log>>
+ *  14   Gandalf   1.13        2/16/00  Radko Najman    
  *  13   Gandalf   1.12        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  12   Gandalf   1.11        9/23/99  Slavek Psenicka Bug #3311

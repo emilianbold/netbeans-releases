@@ -20,6 +20,8 @@ import java.text.NumberFormat;
 import java.text.DateFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
+
+import org.openide.*;
 import org.openide.util.MapFormat;
 
 import com.netbeans.ddl.*;
@@ -97,7 +99,7 @@ public class CommandBuffer
 		Enumeration cmd_e = commands.elements();
 		while (cmd_e.hasMoreElements()) {
 			DDLCommand e_cmd = (DDLCommand)cmd_e.nextElement();
-			cmds = cmds+e_cmd.getCommand()+"\n";
+			cmds = cmds + e_cmd.getCommand() + "\n";
 		}
 		
 		return cmds;
@@ -131,10 +133,13 @@ public class CommandBuffer
 				if (debugmode) System.out.println(e_cmd);
 				e_cmd.execute();
 			} catch (Exception e) {
-				e.printStackTrace();
+//				e.printStackTrace();
 				boolean exres = false;
-				if (handler != null) exres = handler.shouldContinueAfterException(e);
-				if (!exres) throw new DDLException("command buffer fatal exception: "+e.getMessage());
+				if (handler != null)
+          exres = handler.shouldContinueAfterException(e);
+				if (!exres)
+    			TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+//          throw new DDLException("command buffer fatal exception: "+e.getMessage());
 			}
 		}
 		
@@ -144,6 +149,7 @@ public class CommandBuffer
 
 /*
 * <<Log>>
+*  7    Gandalf   1.6         2/16/00  Radko Najman    
 *  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  5    Gandalf   1.4         9/15/99  Slavek Psenicka 

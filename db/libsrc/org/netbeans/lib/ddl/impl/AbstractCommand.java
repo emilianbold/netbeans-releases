@@ -146,8 +146,8 @@ static final long serialVersionUID =-560515030304320086L;
 		try {
 			fcmd = getCommand();
 		} catch (Exception e) {
-			e.printStackTrace();
-			throw new DDLException("unable to format a command "+format+": "+e.getMessage());
+//			e.printStackTrace();
+			throw new DDLException("Unable to format a command:\n" + format + "\n" + e.getMessage());
 		}
 				
 //		System.out.println(fcmd);		
@@ -155,13 +155,13 @@ static final long serialVersionUID =-560515030304320086L;
 		if (spec.getSpecificationFactory().isDebugMode()) {
 			
 			try {
-			
 				OutputWriter ow = TopManager.getDefault().getStdOut();
 				if (ow != null) ow.println(fcmd);
 				else throw new Exception();	
 					
 			} catch (Exception e) {	
-				e.printStackTrace();
+//				e.printStackTrace();
+				System.out.println(e);
 				System.out.println(fcmd);
 			}
 		}
@@ -177,9 +177,10 @@ static final long serialVersionUID =-560515030304320086L;
 			stat.execute(fcmd);
 			stat.close();
 		} catch (Exception e) {
-			e.printStackTrace();
-			if (opened && fcon != null) spec.closeJDBCConnection();
-			throw new DDLException("unable to execute a command "+fcmd+": "+e.getMessage());
+//			e.printStackTrace();
+			if (opened && fcon != null)
+        spec.closeJDBCConnection();
+			throw new DDLException("Unable to execute a command:\n" + fcmd + "\n" + e.getMessage());
 		}
 		if (opened) spec.closeJDBCConnection();
 	}
@@ -194,12 +195,13 @@ static final long serialVersionUID =-560515030304320086L;
 	public String getCommand()
 	throws DDLException
 	{
-		if (format == null) throw new DDLException("no format specified");
+		if (format == null)
+      throw new DDLException("No format specified");
 		try {
 			Map props = getCommandProperties();
 			return CommandFormatter.format(format, props);
 		} catch (Exception e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 			throw new DDLException(e.getMessage());
 		}
 	}
@@ -228,6 +230,7 @@ static final long serialVersionUID =-560515030304320086L;
 
 /*
 * <<Log>>
+*  14   Gandalf   1.13        2/16/00  Radko Najman    
 *  13   Gandalf   1.12        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  12   Gandalf   1.11        10/12/99 Radko Najman    debug messages removed
