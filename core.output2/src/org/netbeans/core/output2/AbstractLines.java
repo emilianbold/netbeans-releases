@@ -751,7 +751,7 @@ abstract class AbstractLines implements Lines, Runnable {
         try {
             int size = storage.size();
             if (size > 0) {
-                Pattern pat = Pattern.compile (s, Pattern.CASE_INSENSITIVE);
+                Pattern pat = escapePattern(s);
                 CharBuffer buf = storage.getReadBuffer(0, size).asCharBuffer();
                 Matcher m = pat.matcher(buf);
                 if (!m.find(0)) {
@@ -765,6 +765,16 @@ abstract class AbstractLines implements Lines, Runnable {
             ErrorManager.getDefault().notify(ioe);
         }
         return null;
+    }
+    
+    /**
+     * escape all the special regexp characters to simulate plain search using regexp..
+     *
+     */ 
+    static Pattern escapePattern(String s) {
+        // fix for issue #50170, test for this method created, if necessary refine..
+        String replacement = s.replaceAll("([\\(\\)\\[\\]\\^\\*\\.\\$\\{\\}\\?\\+\\\\])", "\\\\$1");
+        return Pattern.compile(replacement, Pattern.CASE_INSENSITIVE);
     }
 
     private void setLastCharCountForWrapCalculation(int lastCharCountForWrapCalculation) {
