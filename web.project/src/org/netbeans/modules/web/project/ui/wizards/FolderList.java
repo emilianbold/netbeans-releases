@@ -14,14 +14,19 @@
 package org.netbeans.modules.web.project.ui.wizards;
 
 
+import java.awt.Color;
 import java.awt.Component;
 import java.io.File;
+import java.text.MessageFormat;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -36,6 +41,8 @@ public final class FolderList extends javax.swing.JPanel {
     public static final String PROP_FILES = "files";    //NOI18N
 
     private String fcMessage;
+    private File projectFolder;
+    private File lastUsedFolder;
 
     /** Creates new form FolderList */
     public FolderList (String label, char mnemonic, String accessibleDesc, String fcMessage,
@@ -67,6 +74,10 @@ public final class FolderList extends javax.swing.JPanel {
         File[] result = new File[files.length];
         System.arraycopy(files, 0, result, 0, files.length);
         return result;
+    }
+
+    public void setProjectFolder (File projectFolder) {
+        this.projectFolder = projectFolder;
     }
 
     public void setFiles (File[] files) {
@@ -161,33 +172,59 @@ public final class FolderList extends javax.swing.JPanel {
         chooser.setDialogTitle(this.fcMessage);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(true);
-        File cd = FoldersListSettings.getDefault().getLastUsedSourceRootFolder();
-        if (cd != null && cd.isDirectory()) {
-            chooser.setCurrentDirectory(cd);
+        if (this.projectFolder != null && this.projectFolder.isDirectory()) {
+            chooser.setCurrentDirectory (this.projectFolder);            
         }
+        else if (this.lastUsedFolder != null && this.lastUsedFolder.isDirectory()) {
+            chooser.setCurrentDirectory (this.lastUsedFolder);
+        }                
         if (chooser.showOpenDialog(this)== JFileChooser.APPROVE_OPTION) {
             File[] files = chooser.getSelectedFiles();
             int[] indecesToSelect = new int[files.length];
             DefaultListModel model = (DefaultListModel)this.roots.getModel();
             for (int i=0, index=model.size(); i<files.length; i++, index++) {
-                model.addElement (FileUtil.normalizeFile(files[i]));
-                indecesToSelect[i] = index;
+                File normalizedFile = FileUtil.normalizeFile(files[i]);
+                int pos = model.indexOf (normalizedFile);
+                if (pos == -1) {
+                    model.addElement (normalizedFile);
+                    indecesToSelect[i] = index;
+                }
+                else {
+                    indecesToSelect[i] = pos;
+                }
             }
             this.roots.setSelectedIndices(indecesToSelect);
             this.firePropertyChange(PROP_FILES, null, null);
-            cd = chooser.getCurrentDirectory();
+            File cd = chooser.getCurrentDirectory();
             if (cd != null) {
-                FoldersListSettings.getDefault().setLastUsedSourceRootFolder(FileUtil.normalizeFile(cd));
+                this.projectFolder = null;
+                this.lastUsedFolder = FileUtil.normalizeFile(cd);
             }
         }
     }//GEN-LAST:event_addButtonActionPerformed
     
     private static class Renderer extends DefaultListCellRenderer {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            File f = (File) value;            
-            return super.getListCellRendererComponent(list, f.getAbsolutePath(), index, isSelected, cellHasFocus);
-        }
-        
+            File f = (File) value;
+            Project p = FileOwnerQuery.getOwner(f.toURI());
+            String message = f.getAbsolutePath();
+            if (p != null) {
+                ProjectInformation info = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+                if (info != null) {
+                    String projectName = info.getDisplayName();
+                    if (projectName != null) {
+                        message = MessageFormat.format (NbBundle.getMessage(FolderList.class,"TXT_RootOwnedByProject"), new Object[] {
+                            message,
+                            projectName});
+                    }
+                }
+            }
+            Component result = super.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
+            if (p!=null) {
+                result.setForeground (new Color(164,0,0));
+            }
+            return result;
+        }        
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
