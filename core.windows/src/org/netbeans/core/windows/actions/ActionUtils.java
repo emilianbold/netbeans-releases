@@ -132,8 +132,8 @@ public abstract class ActionUtils {
             this.tc = tc;
             //Include the name in the label for the popup menu - it may be clicked over
             //a component that is not selected
-            putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, "LBL_CloseWindowAction",
-                new String[] {WindowManagerImpl.getInstance().getTopComponentDisplayName(tc)}));
+            putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, 
+                "LBL_CloseWindowAction")); //NOI18N
         }
         
         public void actionPerformed(ActionEvent evt) {
@@ -170,8 +170,8 @@ public abstract class ActionUtils {
             this.tc = tc;
             //Include the name in the label for the popup menu - it may be clicked over
             //a component that is not selected
-            putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, "LBL_CloseAllButThisAction",
-                new String[] {WindowManagerImpl.getInstance().getTopComponentDisplayName(tc)}));
+            putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, 
+                "LBL_CloseAllButThisAction")); //NOI18N
 
         }
 

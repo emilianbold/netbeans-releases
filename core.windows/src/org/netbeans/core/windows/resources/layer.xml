@@ -46,10 +46,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
             <file name="org-netbeans-core-windows-actions-CloneDocumentAction.instance"/>
             <file name="org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance"/>
-            <file name="org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
             <file name="org-netbeans-core-windows-actions-DocumentsAction.instance"/>
             <file name="org-netbeans-core-windows-actions-NextTabAction.instance"/>
             <file name="org-netbeans-core-windows-actions-PreviousTabAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
         </folder>    
     </folder>
     
@@ -91,11 +91,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="CloseWindowAction.shadow" >
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance" />
             </file>
-            <attr name="CloseWindowAction.shadow/CloseAllButThisAction.shadow" boolvalue="true" />
-            <file name="CloseAllButThisAction.shadow" >
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllButThisAction.instance" />
-            </file>
-            <attr name="CloseAllButThisAction.shadow/MaximizeWindowAction.shadow" boolvalue="true" />
+            <attr name="CloseWindowAction.shadow/MaximizeWindowAction.shadow" boolvalue="true" />
             <file name="MaximizeWindowAction.shadow" >
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance" />
             </file>
@@ -131,12 +127,12 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance"/>
 	</file>
 
-        <file name="CA-F4.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
-	</file>
-
         <file name="C-F4.shadow">
 	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance"/>
+	</file>
+        
+        <file name="A-ESCAPE.shadow">
+	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
 	</file>
 
         <file name="S-ESCAPE.shadow">
