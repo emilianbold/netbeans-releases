@@ -48,6 +48,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 
   private final static MessageFormat nameFormat = new MessageFormat (NbBundle.getBundle (RADComponentNode.class).getString ("FMT_ComponentName"));
+  private final static MessageFormat formNameFormat = new MessageFormat (NbBundle.getBundle (RADComponentNode.class).getString ("FMT_FormName"));
   
   private RADComponent component;
   
@@ -73,8 +74,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   void updateName () {
     Class compClass = component.getBeanClass ();
     if (component instanceof FormContainer) {
-      // [PENDING - handle this better]
-      setDisplayName (getName () + " [form]");
+      Class formClass = ((FormContainer)component).getFormInfo ().getFormInstance ().getClass ();
+      setDisplayName (formNameFormat.format (new Object[] {component.getFormManager ().getFormObject ().getName () , formClass.getName (), Utilities.getShortClassName (formClass) } ));
     } else {
       setDisplayName (nameFormat.format (new Object[] { getName (), compClass.getName (), Utilities.getShortClassName (compClass) } ));
     }
@@ -641,6 +642,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  28   Gandalf   1.27        7/28/99  Ian Formanek    Formatting of top-level 
+ *       form node name
  *  27   Gandalf   1.26        7/25/99  Ian Formanek    Fixed bug with too many 
  *       tools actions (namely those on DataObject.class) being enabled on the 
  *       node
