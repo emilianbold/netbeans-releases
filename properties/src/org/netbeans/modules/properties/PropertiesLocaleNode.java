@@ -56,6 +56,7 @@ public final class PropertiesLocaleNode extends FileEntryNode {
         setDisplayName(Util.getLocaleLabel(fe));
         setIconBase(LOCALE_ICON_BASE);
         setDefaultAction (SystemAction.get(OpenAction.class));
+        setShortDescription(messageToolTip());
 
         getCookieSet().add(((PropertiesDataObject)getFileEntry().getDataObject()).getOpenSupport());
     }
@@ -116,8 +117,17 @@ public final class PropertiesLocaleNode extends FileEntryNode {
 
         super.setName (name);
         setDisplayName(Util.getLocaleLabel(getFileEntry()));
+        setShortDescription(messageToolTip());
     }
 
+    /** Gets tooltip message for this node. Helper method. */
+    private String messageToolTip () {
+        return NbBundle.getMessage (PropertiesEditorSupport.class, "LBL_LocaleNodeToolTip", new Object[] {
+            getFileEntry().getFile().getPackageName('.'),
+            getFileEntry().getFile().getExt()
+        });
+    }
+    
     /** This node can be renamed. Overrides superclass method. */
     public boolean canRename() {
         return getFileEntry().isDeleteAllowed ();
