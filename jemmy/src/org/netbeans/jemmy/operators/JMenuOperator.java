@@ -605,7 +605,11 @@ implements Outputable, Timeoutable{
 	if(choosers.length == 0) {
 	    output.printLine("Pushing menu " + ((JMenu)getSource()).getText());
 	    output.printGolden("Pushing menu " + ((JMenu)getSource()).getText());
-	    push();
+            if(blocking) {
+                push();
+            } else {
+                pushNoBlock();
+            }
 	    return((JMenuItem)getSource());
 	}
 	getEventDispatcher().setOutput(output.createErrorOutput());
