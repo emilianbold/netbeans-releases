@@ -135,7 +135,9 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             wm.setContextPath(contextPath);
 
         Integer index = (Integer) wiz.getProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX);
-        FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
+        if (index != null) {
+            FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
+        }
         wiz.putProperty(WizardProperties.NAME, null); // reset project name
 
         // Returning set of DataObject of project diretory.

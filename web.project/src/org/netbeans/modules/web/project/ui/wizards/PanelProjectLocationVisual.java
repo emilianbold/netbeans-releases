@@ -34,8 +34,13 @@ import org.openide.util.NbBundle;
 
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
     
+    private static final String PROJECT_NAME_FORMATER = getBundleResource("LBL_NPW1_DefaultProjectName"); //NOI18N
+
+    private String generatedProjectName = "";
+    private int generatedProjectNameIndex = 0;
+
     private PanelConfigureProject panel;
-    
+
     /** Creates new form PanelProjectLocationVisual */
     public PanelProjectLocationVisual(PanelConfigureProject panel) {
         initComponents();
@@ -253,18 +258,15 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     void store(WizardDescriptor d) {
         d.putProperty(WizardProperties.PROJECT_DIR, new File(createdFolderTextField.getText().trim()));
         d.putProperty(WizardProperties.NAME, projectNameTextField.getText().trim());
+        final Integer nameIndex = projectNameTextField.getText().equals(generatedProjectName) ?
+                new Integer(generatedProjectNameIndex) : null;
+        d.putProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX, nameIndex);
     }
         
     void read (WizardDescriptor settings) {
-        File projectLocation = (File) settings.getProperty(WizardProperties.PROJECT_DIR);
-        if (projectLocation == null || projectLocation.getParentFile() == null) {
-            projectLocation = ProjectChooser.getProjectsFolder();
-        } else {
-            projectLocation = projectLocation.getParentFile();
+        if (projectLocationTextField.getText().trim().length() == 0) {
+            projectLocationTextField.setText(ProjectChooser.getProjectsFolder().getAbsolutePath());
         }
-        projectLocationTextField.setText(projectLocation.getAbsolutePath());
-        projectNameTextField.setText(getProjectName(settings, projectLocation));
-        projectNameTextField.selectAll();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -277,37 +279,54 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     protected javax.swing.JTextField projectNameTextField;
     // End of variables declaration//GEN-END:variables
 
-    public static String getProjectName(WizardDescriptor wizardDescriptor, File projectLocation) {
-        String projectName = (String) wizardDescriptor.getProperty(WizardProperties.NAME);
-        if (projectName == null || projectName.equals("")) {   //NOI18N
-            int index = FoldersListSettings.getDefault().getNewProjectCount();
-            String formater = getBundleResource("LBL_NPW1_DefaultProjectName"); //NOI18N
-            do {
-                projectName = MessageFormat.format(formater, new Object[]{new Integer(++index)});
-            } while (new File(projectLocation, projectName).exists());
-            wizardDescriptor.putProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX, new Integer(index));
+    public static String getProjectName(int index) {
+        return MessageFormat.format(PROJECT_NAME_FORMATER, new Object[]{String.valueOf(index)});
+    }
+
+    private static int getValidProjectNameIndex(int currentIndex, File projectLocation) {
+        int index = currentIndex > 0 ? currentIndex : FoldersListSettings.getDefault().getNewProjectCount() + 1;
+        if(projectLocation != null) {
+            while (new File(projectLocation, getProjectName(index)).exists()) {
+                index++;
+            }
         }
-        return projectName;
+        return index;
     }
 
     // Implementation of DocumentListener --------------------------------------
     public void changedUpdate(DocumentEvent e) {
-        updateTexts();
+        updateTexts(e);
     }
     
     public void insertUpdate(DocumentEvent e) {
-        updateTexts();
+        updateTexts(e);
     }
     
     public void removeUpdate(DocumentEvent e) {
-        updateTexts();
+        updateTexts(e);
     }
     // End if implementation of DocumentListener -------------------------------
     
     
     /** Handles changes in the project name and project directory
      */
-    private void updateTexts() {
+    private void updateTexts(DocumentEvent e) {
+        if(e.getDocument() == projectLocationTextField.getDocument()) {
+            String projectName = projectNameTextField.getText();
+            if (projectName.equals(generatedProjectName)) {
+                File f = new File(projectLocationTextField.getText().trim());
+                generatedProjectNameIndex = getValidProjectNameIndex(generatedProjectNameIndex, f);
+            } else {
+                generatedProjectNameIndex = 0;
+            }
+            generatedProjectName = generatedProjectNameIndex > 0 ? getProjectName(generatedProjectNameIndex) : null;
+            if(generatedProjectNameIndex > 0) {
+                projectName = generatedProjectName;
+                projectNameTextField.setText(generatedProjectName);
+                projectNameTextField.selectAll();
+            }
+        }
+
         panel.fireChangeEvent(); // Notify that the panel changed
     }
 }

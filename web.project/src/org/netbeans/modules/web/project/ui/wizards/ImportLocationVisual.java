@@ -45,6 +45,9 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     private boolean locationComputed = false;
     private WizardDescriptor wizardDescriptor;
 
+    private String generatedProjectName = "";
+    private int generatedProjectNameIndex = 0;
+
     /** Creates new form TestPanel */
     public ImportLocationVisual (ImportWebProjectWizardIterator.ThePanel panel) {
         this.panel = panel;
@@ -103,9 +106,12 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     
     void read(WizardDescriptor settings) {
         wizardDescriptor = settings;
-        projectNameTextField.setText(PanelProjectLocationVisual.getProjectName(wizardDescriptor,
-                ProjectChooser.getProjectsFolder()));
-        moduleLocationTextField.selectAll();
+        if(generatedProjectNameIndex == 0) {
+            generatedProjectNameIndex = FoldersListSettings.getDefault().getNewProjectCount() + 1;
+            generatedProjectName = PanelProjectLocationVisual.getProjectName(generatedProjectNameIndex);
+            projectNameTextField.setText(generatedProjectName);
+            moduleLocationTextField.selectAll();
+        }
     }
 
     void store (WizardDescriptor settings) {
@@ -117,18 +123,18 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         settings.putProperty (WizardProperties.SOURCE_ROOT, srcRoot);
         settings.putProperty (WizardProperties.NAME, projectNameTextField.getText().trim());
 
-        File projectsDir;
-        if (projectLocationTextField.getText().trim().length() == 0) {
-            projectsDir = ProjectChooser.getProjectsFolder();
-        } else {
-            projectsDir = new File(projectLocationTextField.getText());
+        final String projectLocation = projectLocationTextField.getText().trim();
+        if (projectLocation.length() >= 0) {
+            settings.putProperty (WizardProperties.PROJECT_DIR, new File(projectLocation));
         }
-        settings.putProperty (WizardProperties.PROJECT_DIR, projectsDir);
 
         String contextPath = jTextFieldContextPath.getText().trim();
         if (!contextPath.startsWith("/")) //NOI18N
             contextPath = "/" + contextPath; //NOI18N
         settings.putProperty(WizardProperties.CONTEXT_PATH, contextPath);
+        final Integer nameIndex = projectNameTextField.getText().equals(generatedProjectName) ?
+                new Integer(generatedProjectNameIndex) : null;
+        settings.putProperty(NewWebProjectWizardIterator.PROP_NAME_INDEX, nameIndex);
     }
 
     boolean valid (WizardDescriptor settings) {
