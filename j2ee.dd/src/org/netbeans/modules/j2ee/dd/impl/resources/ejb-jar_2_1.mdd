@@ -525,7 +525,7 @@
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>Query</bean-name>
 		<implements>org.netbeans.modules.j2ee.dd.api.ejb.Query</implements>
-		<extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
+		<extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanSingle</extends>
 	</meta-element>
 	<meta-element>
 		<dtd-name>query-methodType</dtd-name>
