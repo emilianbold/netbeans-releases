@@ -16,6 +16,7 @@ package com.netbeans.developer.modules.loaders.properties;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.*;
+import java.lang.reflect.*;
 import java.util.Iterator;
 import java.text.MessageFormat;
 import javax.swing.event.DocumentListener;
@@ -98,7 +99,6 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent evt) {
         if (isDocumentLoaded()) {
-//System.out.println("document loaded ok " + myEntry.getFile().getName());
           setListening(true);
         }
       }
@@ -143,34 +143,38 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   * @see OpenCookie#open
   */
   public void open () {
-    try {
-      MessageFormat mf = new MessageFormat (NbBundle.getBundle(PropertiesEditorSupport.class).
-        getString ("CTL_PropertiesOpen"));
-      
-      TopManager.getDefault ().setStatusText (mf.format (
-        new Object[] {
-          entry.getFile().getName()
-        }
-      ));
-      synchronized (allEditors) {
-        try {
-          TopComponent editor = (TopComponent)allEditors.getAnyComponent ();
-          editor.requestFocus ();
-System.out.println("opening existing properties edit for " + entry.getFile().getPackageNameExt('/','.'));
-        } catch (java.util.NoSuchElementException ex) {
-          // no opened editor
-          CloneableTopComponent editor = createCloneableTopComponent ();
-          allEditors = editor.getReference ();
-          editor.open ();
-          editor.requestFocus();
-System.out.println("opening new properties edit for " + entry.getFile().getPackageNameExt('/','.'));
-        }
-      }  
-    } finally {
-      TopManager.getDefault ().setStatusText (NbBundle.getBundle(PropertiesEditorSupport.class).
-        getString ("CTL_PropertiesOpened"));
+    CloneableTopComponent editor = openCloneableTopComponent2();
+    editor.requestFocus();
+  }
+  
+  
+  /** Simply open for an editor. */
+  protected final CloneableTopComponent openCloneableTopComponent2() {
+    MessageFormat mf = new MessageFormat (NbBundle.getBundle(PropertiesEditorSupport.class).
+      getString ("CTL_PropertiesOpen"));
+    
+    synchronized (allEditors) {
+      try {
+        CloneableTopComponent ret = (CloneableTopComponent)allEditors.getAnyComponent ();
+        ret.open();
+        return ret;
+      } catch (java.util.NoSuchElementException ex) {
+        // no opened editor
+        TopManager.getDefault ().setStatusText (mf.format (
+          new Object[] {entry.getFile().getName()}));
+        
+        CloneableTopComponent editor = createCloneableTopComponent ();
+        allEditors = editor.getReference ();
+        editor.open();
+        
+        TopManager.getDefault ().setStatusText (NbBundle.getBundle(DataObject.class).getString ("CTL_ObjectOpened"));
+        return editor;
+      }
     }
   }
+
+  
+  
 
   /** Launches the timer for autoreparse */              
   private void initTimer() {
@@ -186,14 +190,18 @@ System.out.println("opening new properties edit for " + entry.getFile().getPacka
   
   /** Returns whether there is an open component (editor or open). */
   public synchronized boolean hasOpenComponent() {
-    if (((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenComponent())
-      return true;
-    return hasOpenEditorComponent();
+    return (hasOpenTableComponent() || hasOpenEditorComponent());
   }  
+  
+  private synchronized boolean hasOpenTableComponent() {
+System.out.println("hasOpenComponent (table) " + myEntry.getFile().getPackageNameExt('/','.') + " " + ((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenComponent());
+    return ((PropertiesDataObject)myEntry.getDataObject()).getOpenSupport().hasOpenComponent();
+  }
 
   /** Returns whether there is an open editor component. */
   public synchronized boolean hasOpenEditorComponent() {
     java.util.Enumeration en = allEditors.getComponents ();
+System.out.println("hasOpenComponent (editor) " + myEntry.getFile().getPackageNameExt('/','.') + " " + en.hasMoreElements ());
     return en.hasMoreElements ();
   }  
 
@@ -203,6 +211,10 @@ System.out.println("opening new properties edit for " + entry.getFile().getPacka
   }
   
   public boolean close() {
+    SaveCookie savec = (SaveCookie) myEntry.getCookie(SaveCookie.class);
+    if (savec != null) {
+      return false;
+    }
 //System.out.println("closing");      
     if (!super.close())
       return false;
@@ -248,20 +260,6 @@ System.out.println("opening new properties edit for " + entry.getFile().getPacka
     return editor;
   }
                 
-  /** Creates the loading task. When the task finishes, attaches a modification lisetner to the document */
-/*  public synchronized Task prepareDocument () {
-    Task t = super.prepareDocument();
-    t.addTaskListener(new TaskListener() {
-      public void taskFinished (Task task) {
-        setListening(true);
-        getDocument().addDocumentListener(getEntryModifL());
-      }
-    });
-    if (t.isFinished()) {
-      System.out.println("a
-    }
-    return t;
-  } */
   
   /** Should test whether all data is saved, and if not, prompt the user
   * to save. Called by my topcomponent when it wants to close its last topcomponent, but the table editor may still be open
@@ -272,6 +270,9 @@ System.out.println("opening new properties edit for " + entry.getFile().getPacka
     SaveCookie savec = (SaveCookie) myEntry.getCookie(SaveCookie.class);
     if (savec != null) {                                                           
       // if the table is open, can close without worries, don't remove the save cookie
+      if (hasOpenTableComponent())
+        return true;
+      
       // PENDING - is not thread safe
       MessageFormat format = new MessageFormat(NbBundle.getBundle(PropertiesEditorSupport.class).
         getString("MSG_SaveFile"));
@@ -503,11 +504,38 @@ System.out.println("opening new properties edit for " + entry.getFile().getPacka
      * @return <code>true</code> if close succeeded
     */
     protected boolean closeLast () {
-      boolean canClose = super.closeLast();
-      if (!canClose)
+      SaveCookie savec = (SaveCookie) entry.getCookie(SaveCookie.class);
+    
+      // instead of super
+      if (!propSupport.canClose ()) {
+        // if we cannot close the last window
         return false;
-      propSupport.closeDocumentEntry();
-      entry.getHandler().reparseNowBlocking();  
+      }
+      try {
+        if (savec == null) {
+          // propSupport.closeDocument (); by reflection
+          Method closeDoc = EditorSupport.class.getDeclaredMethod("closeDocument", new Class[0]);
+          closeDoc.setAccessible(true);
+          closeDoc.invoke(propSupport, new Object[0]);
+        }  
+      
+        /* if (propSupport.lastSelected == this) {
+          propSupport.lastSelected = null; by reflection */
+        Field lastSel = EditorSupport.class.getDeclaredField("lastSelected");
+        lastSel.setAccessible(true);
+        if (lastSel.get(propSupport) == this)
+          lastSel.set(propSupport, null);
+      } 
+      catch (Exception e) { e.printStackTrace(); }  
+      
+      // end super
+      /*boolean canClose = super.closeLast();
+      if (!canClose)
+        return false;*/
+      if (savec == null) {  
+        propSupport.closeDocumentEntry();
+        entry.getHandler().reparseNowBlocking();  
+      }  
       return true;
     }
 
