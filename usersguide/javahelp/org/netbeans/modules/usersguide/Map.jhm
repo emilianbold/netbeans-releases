@@ -1080,8 +1080,11 @@
    <mapID target="rmi_concepts_files" url="rmi/concepts/rmi_concepts_files.html" />
    <mapID target="rmi_concepts_procs" url="rmi/concepts/rmi_concepts_procs.html" />	
    <mapID target="rmi_generating_intro" url="rmi/generating/rmi_generating.html" />	
+   <mapID target="rmi_templates" url="rmi/generating/rmi_templates.html" />
    <mapID target="rmi_generating_client" url="rmi/generating/rmi_generating_client.html" />	
+   <mapID target="rmi_generating_impl" url="rmi/generating/generating_impl.html" />	
    <mapID target="rmi_generating_server" url="rmi/generating/rmi_generating_server.html" />	
+   <mapID target="rmi_mainexample" url="rmi/completing/main-example.html" />
    <mapID target="rmi_completing_client" url="rmi/completing/rmi_completing_client.html" />	
    <mapID target="rmi_completing_server" url="rmi/completing/rmi_completing_server.html" />
    <mapID target="rmi_compiling_client" url="rmi/completing/rmi_compiling_client.html" />	
