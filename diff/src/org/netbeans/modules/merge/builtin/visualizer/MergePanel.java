@@ -1012,6 +1012,8 @@ public class MergePanel extends javax.swing.JPanel {
             kit.read(r, doc, 0);
         } catch (javax.swing.text.BadLocationException e) {
             throw new IOException("Can not locate the beginning of the document."); // NOI18N
+        } finally {
+            r.close();
         }
         kit.install(jEditorPane1);
         jEditorPane1.setDocument(doc);
@@ -1037,6 +1039,8 @@ public class MergePanel extends javax.swing.JPanel {
             kit.read(r, doc, 0);
         } catch (javax.swing.text.BadLocationException e) {
             throw new IOException("Can not locate the beginning of the document."); // NOI18N
+        } finally {
+            r.close();
         }
         kit.install(jEditorPane2);
         jEditorPane2.setDocument(doc);
@@ -1064,6 +1068,8 @@ public class MergePanel extends javax.swing.JPanel {
             kit.read(r, doc, 0);
         } catch (javax.swing.text.BadLocationException e) {
             throw new IOException("Can not locate the beginning of the document."); // NOI18N
+        } finally {
+            r.close();
         }
         kit.install(jEditorPane3);
         jEditorPane3.setDocument(doc);
