@@ -39,10 +39,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.CustomizeProject"/>
             </file>
             
-            <!-- file name="org-netbeans-modules-project-ui-SaveProject.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.SaveProject"/>
-            </file-->
-            
             <file name="org-netbeans-modules-project-ui-SetMainProject.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.SetMainProject"/>
             </file>
@@ -222,11 +218,9 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-modules-project-ui-OpenProjectList.settings" url="openProjectList.settings"/>
     </folder>
     
-    <folder name="Menu"> <!-- Hacking menus -->
+    <folder name="Menu">
     
         <folder name="File">
-            <!-- attr name="SystemFileSystem.localizinggundle" stringvalue="org.netbeans.modules.project.ui.Bundle" /-->
-
             <!-- New actions -->
             
             <file name="org-netbeans-modules-project-ui-NewProject.shadow">
@@ -254,8 +248,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
                         
             <attr name="org-netbeans-modules-project-ui-OpenProject.shadow/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
-            
-            <!-- file name="org-netbeans-modules-openfile-OpenFileAction.instance"/ -->
             
             <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/org-netbeans-modules-project-ui-RecentProjects.shadow" boolvalue="true" />
             
@@ -440,7 +432,6 @@ Microsystems, Inc. All Rights Reserved.
     </folder>    
 
     
-    <!-- Hacking toolbars -->    
     <folder name="Toolbars">
     
         <folder name="File">
@@ -490,8 +481,6 @@ Microsystems, Inc. All Rights Reserved.
                 
     </folder>
         
-    <!-- Shortcuts for the new actions -->    
-    
     <folder name="Shortcuts">
     
         <file name="DS-N.shadow">
@@ -586,7 +575,6 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="Actions">
                     <file name="NewTemplateAction.instance_hidden" />
                     <file name="NewProjectFile.instance">
-                        <!-- attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.Actions$SystemNewFile" / -->
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewFile"/>
                     </file>
                     <attr boolvalue="true" name="NewProjectFile.instance/FileSystemAction.instance" />
