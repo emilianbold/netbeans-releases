@@ -87,7 +87,7 @@ public class CheckLinks extends MatchingTask {
     static RE hrefOrAnchor;
     static {
         try {
-            hrefOrAnchor = new RE("<a\\s+(href|name)=\"([^\"#]+)(#[^\"]+)?\">");
+            hrefOrAnchor = new RE("<(a|img)\\s+(href|name|src)=\"([^\"#]*)(#[^\"]+)?\">");
         } catch (RESyntaxException rese) {
             throw new Error (rese.toString());
         }
@@ -99,12 +99,19 @@ public class CheckLinks extends MatchingTask {
     // 1 - check also that any links from it can be opened
     // 2 - recurse
     public static void scan(Task task, String referrer, URL u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, int recurse) throws IOException {
+        //task.log("scan: u=" + u + " referrer=" + referrer + " okurls=" + okurls + " badurls=" + badurls + " cleanurls=" + cleanurls + " recurse=" + recurse, Project.MSG_DEBUG);
         if (okurls.contains(u) && recurse == 0) {
             // Yes it is OK.
             return;
         }
-        URL base = new URL(u, "");
+        String b = u.toString();
+        int i = b.lastIndexOf('#');
+        if (i != -1) {
+            b = b.substring(0, i);
+        }
+        URL base = new URL(b);
         String frag = u.getRef();
+        //task.log("scan: base=" + base + " frag=" + frag, Project.MSG_DEBUG);
         if (badurls.contains(u) || badurls.contains(base)) {
             task.log(referrer + ": broken link (already reported): " + u, Project.MSG_WARN);
             return;
@@ -126,14 +133,14 @@ public class CheckLinks extends MatchingTask {
             rd = conn.getInputStream ();
         } catch (IOException ioe) {
             task.log(referrer + ": broken link: " + base, Project.MSG_WARN);
+            badurls.add(base);
             badurls.add(u);
             return;
         }
         okurls.add(base);
         Set others = null; // Set<URL>
-        if (recurse > 0 && ! cleanurls.contains(base)) {
+        if (recurse > 0 && cleanurls.add(base)) {
             others = new HashSet(100);
-            cleanurls.add(base);
         }
         try {
             if (recurse == 0 && frag == null) {
@@ -144,26 +151,31 @@ public class CheckLinks extends MatchingTask {
                 task.log("Parsing " + base, Project.MSG_VERBOSE);
                 CharacterIterator it = new StreamCharacterIterator (rd);
                 int idx = 0;
+                Set names = new HashSet(100); // Set<String>
                 while (hrefOrAnchor.match (it, idx)) {
                     // Advance match position past end of expression:
                     idx = hrefOrAnchor.getParenEnd (0);
                     // Get the stuff involved:
-                    String type = hrefOrAnchor.getParen(1);
+                    String type = hrefOrAnchor.getParen(2);
                     if (type.equalsIgnoreCase("name")) {
                         // We have an anchor, therefore refs to it are valid.
-                        String name = hrefOrAnchor.getParen(2);
-                        okurls.add(new URL(base, "#" + name));
-                    } else if (type.equalsIgnoreCase("href")) {
-                        // A link to some other document.
+                        String name = hrefOrAnchor.getParen(3);
+                        if (names.add(name)) {
+                            okurls.add(new URL(base, "#" + name));
+                        } else if (recurse == 1) {
+                            task.log(referrer + ": duplicate anchor name: " + name, Project.MSG_WARN);
+                        }
+                    } else {
+                        // A link to some other document: href=, src=.
                         if (others != null) {
-                            String otherbase = hrefOrAnchor.getParen (2);
-                            String otheranchor = hrefOrAnchor.getParen (3);
+                            String otherbase = hrefOrAnchor.getParen (3);
+                            String otheranchor = hrefOrAnchor.getParen (4);
                             if (!otherbase.startsWith("mailto:")) {
-                                others.add(new URL(base, (otheranchor == null) ? otherbase : otherbase + otheranchor));
+                                URL o = new URL(base, (otheranchor == null) ? otherbase : otherbase + otheranchor);
+                                //task.log("href: " + o);
+                                others.add(o);
                             }
                         } // else we are only checking that this one has right anchors
-                    } else {
-                        throw new IllegalStateException(type);
                     }
                 }
             } else {
