@@ -268,21 +268,7 @@ Microsystems, Inc. All Rights Reserved.
 	    compress="false">
       <locale name="ja"/>
       
-      <!-- Exclude libraries included in openide-fs.jar, openide-util, etc. -->
-      <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
-           <include name="org/openide/**" />
-      </fileset>
-      
-      <fileset dir="src">
-           <!-- But include all localized resources -->
-           <include name="org/openide/**/*_*" />
-
-           <!-- Include also editors package (it is not part of explorer library) -->
-           <include name="org/openide/explorer/propertysheet/editors/*.class"/>
-           <include name="org/openide/explorer/propertysheet/editors/*.properties"/>
-           <exclude name="org/openide/explorer/propertysheet/editors/Enhanced*.class"/>
-
-      </fileset>
+      <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       
       <!-- include also patches -->
       <fileset dir="compat/src">
