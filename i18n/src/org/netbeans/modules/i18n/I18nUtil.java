@@ -40,6 +40,8 @@ import org.openide.util.SharedClassObject;
  */
 public abstract class I18nUtil {
 
+    /** Help ID for i18n module in general. */
+    public static final String HELP_ID_I18N = "internation.internation"; // NOI18N
     /** Help ID for I18N dialog. */
     public static final String HELP_ID_AUTOINSERT = "internation.autoinsert"; // NOI18N
     /** Help ID for I18N form property editor. You can see it in Component inspector. */

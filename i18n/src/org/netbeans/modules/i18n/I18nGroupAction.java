@@ -25,7 +25,7 @@ import org.openide.util.HelpCtx;
 
 
 /**
- * Abstract enclosing class for I18n group actions. Just for sharing static context.
+ * Abstract class for I18n group actions.
  *
  * @author  Peter Zavadsky
  * @see I18nGroupAction.Menu
@@ -57,9 +57,7 @@ public abstract class I18nGroupAction extends SystemAction {
 
     /** Gets help context. Implements abstract superclass method. */
     public HelpCtx getHelpCtx () {
-        return new HelpCtx(I18nGroupAction.class);
+        return new HelpCtx(I18nUtil.HELP_ID_I18N);
     }
-    
-
 
 }
