@@ -206,7 +206,7 @@ public class EditorModule extends ModuleInstall {
                  SearchPatternWrapper spw = (SearchPatternWrapper)evt.getNewValue();
                  SearchPattern spLast = SearchHistory.getDefault().getLastSelected();
                  
-                 if (spw == null){
+                 if (spw == null || spw.getSearchExpression()==null || "".equals(spw.getSearchExpression()) ){ //NOI18N
                      return;
                  }
                  //System.out.println("spw:"+spw);
