@@ -13,17 +13,14 @@
 
 package org.netbeans.modules.favorites;
 
-import java.awt.Image;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
@@ -35,9 +32,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataShadow;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /** List of all actions available for Favorites module.
 * @author   Jaroslav Tulach
@@ -213,6 +212,9 @@ public final class Actions extends Object {
         */
         public boolean enable (Node[] arr) {
             if ((arr == null) || (arr.length == 0)) return false;
+            if (arr.length == 1 && arr[0] instanceof Favorites) return true;
+                
+            
 
             for (int i = 0; i < arr.length; i++) {
                 DataObject dataObject = (DataObject) arr[i].getCookie (DataObject.class);
@@ -293,65 +295,53 @@ public final class Actions extends Object {
         *
         * @param activatedNodes gives array of actually activated nodes.
         */
-        protected void performAction (Node[] activatedNodes) {
-            DataFolder f = Favorites.getFolder();
+        protected void performAction (final Node[] activatedNodes) {
+            final DataFolder f = Favorites.getFolder();            
+            final DataObject [] arr = f.getChildren();
+            final List listAdd = new ArrayList();
             
-            DataObject [] arr = f.getChildren();
-            List listAdd = new ArrayList();
             DataObject createdDO = null;
-            for (int i = 0; i < activatedNodes.length; i++) {
-                DataObject obj = (DataObject)activatedNodes[i].getCookie (DataObject.class);
-                if (obj != null) {
-                    try {
-                        Favorites.ensureShadowsWork (obj.getPrimaryFile());
-                        if (createdDO == null) {
-                            //Select only first node in array added to favorites
-                            createdDO = obj.createShadow(f);
-                            listAdd.add(createdDO);
-                        } else {
-                            listAdd.add(obj.createShadow(f));
-                        }
-                    } catch (java.io.IOException ex) {
-                        ErrorManager.getDefault().notify(ex);
-                    }
-                }
+            Node[] toShadows = activatedNodes; 
+
+            try {
+                if (activatedNodes.length == 1 && activatedNodes[0] instanceof Favorites) {
+                    // show JFileChooser
+                    FileObject fo = chooseFileObject();
+                    if (fo == null) return;
+                    toShadows = new Node[] {DataObject.find(fo).getNodeDelegate()};                
+                } 
+                
+                
+                createdDO = createShadows(f, toShadows, listAdd);    
+                
+                //This is done to set desired order of nodes in view                             
+                reorderAfterAddition(f, arr, listAdd);
+                selectAfterAddition(createdDO);               
+            } catch (DataObjectNotFoundException e) {
+                ErrorManager.getDefault().notify(e);  
             }
-            //This is done to set desired order of nodes in view
-            List listDest = new ArrayList();
-            if (listAdd.size() > 0) {
-                //Insert new nodes just before last (root) node
-                DataObject root = null;
-                //Find root
-                for (int i = 0; i < arr.length; i++) {
-                    FileObject fo = arr[i].getPrimaryFile();
-                    if ("Favorites/Root.instance".equals(fo.getPath())) { //NOI18N
-                        root = arr[i];
-                    }
-                }
-                if (root != null) {
-                    for (int i = 0; i < arr.length; i++) {
-                        if (!root.equals(arr[i])) {
-                            listDest.add(arr[i]);
-                        }
-                    }
-                    listDest.addAll(listAdd);
-                    listDest.add(root);
-                } else {
-                    //Root not found. It should not happen because root is defined in layer
-                    for (int i = 0; i < arr.length; i++) {
-                        listDest.add(arr[i]);
-                    }
-                    listDest.addAll(listAdd);
-                }
-                //Set desired order
-                DataObject [] newOrder = (DataObject []) listDest.toArray(new DataObject[listDest.size()]);
-                try {
-                    f.setOrder(newOrder);
-                } catch (java.io.IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                }
+        }
+
+        /**
+         * 
+         * @return FileObject or null if FileChooser dialog is cancelled
+         */ 
+        private static FileObject chooseFileObject() {
+            FileObject retVal = null;
+            File chooserSelection = null;
+            JFileChooser chooser = new JFileChooser ();
+            chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
+            int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() ); // Sow the chooser
+            if ( option == JFileChooser.APPROVE_OPTION ) {                    
+                chooserSelection = chooser.getSelectedFile();
+                final File selectedFile = FileUtil.normalizeFile(chooserSelection);
+                retVal = FileUtil.toFileObject(selectedFile);
+                assert retVal != null;                        
             }
-            
+            return retVal;
+        }
+
+        private void selectAfterAddition(final DataObject createdDO) {
             final Tab projectsTab = Tab.findDefault();
             projectsTab.open();
             projectsTab.requestActive();
@@ -381,7 +371,66 @@ public final class Actions extends Object {
                 }
             }
         }
-        
+
+        private static DataObject createShadows(final DataFolder favourities, final Node[] activatedNodes, final List listAdd) {
+            DataObject createdDO = null;
+            for (int i = 0; i < activatedNodes.length; i++) {
+                DataObject obj = (DataObject)activatedNodes[i].getCookie (DataObject.class);
+                if (obj != null) {
+                    try {
+                        Favorites.ensureShadowsWork (obj.getPrimaryFile());
+                        if (createdDO == null) {
+                            //Select only first node in array added to favorites
+                            createdDO = obj.createShadow(favourities);
+                            listAdd.add(createdDO);
+                        } else {
+                            listAdd.add(obj.createShadow(favourities));
+                        }
+                    } catch (java.io.IOException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                    }
+                }
+            }
+            return createdDO;
+        }
+
+        private static void reorderAfterAddition(final DataFolder favourities, final DataObject[] children, final List listAdd) {
+            List listDest = new ArrayList();
+            if (listAdd.size() > 0) {
+                //Insert new nodes just before last (root) node
+                DataObject root = null;
+                //Find root
+                for (int i = 0; i < children.length; i++) {
+                    FileObject fo = children[i].getPrimaryFile();
+                    if ("Favorites/Root.instance".equals(fo.getPath())) { //NOI18N
+                        root = children[i];
+                    }
+                }
+                if (root != null) {
+                    for (int i = 0; i < children.length; i++) {
+                        if (!root.equals(children[i])) {
+                            listDest.add(children[i]);
+                        }
+                    }
+                    listDest.addAll(listAdd);
+                    listDest.add(root);
+                } else {
+                    //Root not found. It should not happen because root is defined in layer
+                    for (int i = 0; i < children.length; i++) {
+                        listDest.add(children[i]);
+                    }
+                    listDest.addAll(listAdd);
+                }
+                //Set desired order
+                DataObject [] newOrder = (DataObject []) listDest.toArray(new DataObject[listDest.size()]);
+                try {
+                    favourities.setOrder(newOrder);
+                } catch (java.io.IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+        }
+
         protected boolean asynchronous() {
             return false;
         }

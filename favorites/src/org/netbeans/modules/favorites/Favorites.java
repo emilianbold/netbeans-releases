@@ -126,6 +126,15 @@ final class Favorites extends FilterNode {
         return new RootHandle ();
     }
 
+    public javax.swing.Action[] getActions(boolean context) {
+
+//        Action[] retValue;
+//        
+//        retValue = super.getActions(context);
+//        return retValue;
+        return new Action[] {Actions.add()};
+    }
+
     private static class RootHandle implements Node.Handle {
         static final long serialVersionUID = 1907300072945111595L;
 

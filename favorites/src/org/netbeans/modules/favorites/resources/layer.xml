@@ -73,9 +73,9 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Favorites">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.favorites.Bundle"/>
-        <file name="Root.instance" >
+        <!--<file name="Root.instance" >
             <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Favorites.getRoot" />
-        </file>
+        </file>-->
         <file name="Home.shadow">
             <attr name="originalFile" methodvalue="org.netbeans.modules.favorites.Favorites.getHome" />
             <attr name="originalFileSystem" stringvalue="org.netbeans.modules.masterfs.MasterFileSystem" />

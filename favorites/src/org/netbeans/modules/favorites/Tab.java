@@ -120,7 +120,7 @@ implements OperationListener, Runnable, ExplorerManager.Provider {
     */
     protected TreeView initGui () {
         TreeView view = new BeanTreeView();
-        view.setRootVisible (false);
+        view.setRootVisible (true);
         setLayout(new BorderLayout());
         add (view);
         return view;
