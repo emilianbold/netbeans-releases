@@ -26,10 +26,9 @@
         </tocitem>
         <tocitem text="Creating and Configuring Enterprise Applications" >
             <tocitem text="Creating an Enterprise Application Project" target="ent_app_creating" />
-            <tocitem text="Importing an Existing Enterprise Application" target="tbd" />
-            <tocitem text="Addind a Module to an Enterprise Application" target="tbd" />
-            <tocitem text="Adding a Library to an Enterprise Application" target="tbd" />
-            <tocitem text="Editing an Enterprise Application's Deployment Descriptor" target="tbd" />
+            <tocitem text="Adding a Module to an Enterprise Application" target="add_modules_to_ent_app" />
+	    <tocitem text="Adding an External Resource to an Enterprise Application" target="add_resources_to_ent_app" />
+            <tocitem text="Editing an Enterprise Application's Deployment Descriptor" target="ent_app_configure" />
         </tocitem>
         <tocitem text="Building and Running Enterprise Applications" >
             <tocitem text="Building an Enterprise Application" target="tbd" />
@@ -132,14 +131,20 @@
       </tocitem> <!-- Working With Applets -->
    </tocitem>
    <tocitem text="Configuring Web Applications" >
-            <tocitem text="About Configuring Web Applications" target="tbd" /> 
-	    <tocitem text="Working with Deployment Descriptors"> 
-               <tocitem text="About Working with Deployment Descriptors" target="webmod_editdd" />  
-               <tocitem text="Editing Deployment Descriptors" target="concepts_deploydes" />  
-               <tocitem text="Registering a Filter" target="filter_addtodd"/>
-	       <tocitem text="Registering a Web Application Listener" target="listen_addtodd"/>
-           </tocitem> 
-	   <tocitem text="Adding a Web Application to a J2EE Application" target="tbd" />
+	    <tocitem text="About Configuring Web Applications" target="tbd" />
+	    <tocitem text="context.xml" >
+ 		<tocitem text="About context.xml" target="tbd" />  
+		<tocitem text="Editing context.xml" target="tbd" />
+	    </tocitem>
+            <tocitem text="sun-web.xml" >
+ 		<tocitem text="About sun-web.xml" target="tbd" />  
+		<tocitem text="Editing sun-web.xml" target="tbd" />
+	    </tocitem>
+	    <tocitem text="web.xml" >
+ 		<tocitem text="About web.xml" target="webmod_editdd" />  
+		<tocitem text="Editing web.xml" target="concepts_deploydes" />
+	    </tocitem>
+	    <tocitem text="Adding a Web Application Module to a J2EE Application" target="tbd" />
         </tocitem>
 	<tocitem text="Building and Deploying Web Applications"> 
 	    <tocitem text="About Building Web Applications" target="concepts_war"  />

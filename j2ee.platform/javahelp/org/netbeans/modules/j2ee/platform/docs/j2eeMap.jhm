@@ -114,7 +114,9 @@
     <mapID target="about_ent_apps" url="enterprise/general/about_ent_apps.html" />
     <mapID target="ent_app_process" url="enterprise/general/ent_app_process.html" />
     <mapID target="ent_app_creating" url="enterprise/general/ent_app_creating.html" />
-    
+    <mapID target="add_modules_to_ent_app" url="enterprise/general/add_modules_to_ent_app.html" />
+    <mapID target="add_resources_to_ent_app" url="enterprise/general/add_resources_to_ent_app.html" />
+    <mapID target="ent_app_configure" url="enterprise/general/ent_app_configure.html" />
 
 <!-- End of Enterprise Application help -->
 

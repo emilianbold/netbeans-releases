@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+> -->
+<html>
+<head>
+<meta name="lastupdated" content="2Feb04">
+<!-- p2 -->
+
+<title>Editing an Enterprise Application's Deployment Descriptors</title>
+<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Editing an Enterprise Application's Deployment Descriptors</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p> 
+
+<p>An enterprise application includes two deployment descriptor files:</p>
+<ul>
+	<li>application.xml<br>
+	This J2EE-standard descriptor describes the application, which components it uses,
+	how the components relate to each other, and which resources they use.
+	Entries in this file are automatically generated when you 
+	<a href="add_modules_to_ent_app.html">add a module to the enterprise Application</a>.</li>
+	<li>sun-application.xml<br>
+	This optional descriptor file defines configuration options that are specific to the
+	Sun Java System Application Server.
+        </li>
+</ul>
+<p>Both deployment descriptors are XML files that are stored in
+ the enterprise application's META-INF folder.</p>
+<p><b>To edit the deployment descriptors of an existing enterprise application:</b> </p>
+<ol>
+  <li>In the Projects window, locate the project and expand its 
+  Configuration Files node. Alternatively, in the Files window, 
+  expand the project's <tt>build/META-INF</tt> subfolder after you have built the project. </li>
+  <li>Double-click the node to open the file in the Source Editor 
+    window.</li>
+  <li>Edit the elements. You can use code completion features 
+    to ensure that the elements are syntactically correct.</li>
+  <li>(Optional) Right-click in the Source Editor and choose Validate from the 
+    contextual menu to verify that the document follows the XML schema for web 
+    deployment descriptors.</li>
+</ol>
+<h3>Troubleshooting</h3>
+<p>If the port number of the server changes, the changes to the deployment
+descriptor do not take effect until you restart the web application.</p>
+<table>
+<tr>
+    <th colspan=2 align=left><a name="seealso">See Also</a></th>
+</tr>
+<tr>
+    <td width="23">&nbsp;</td>
+    <td>
+	    <a href="about_ent_apps.html">About Enterprise Applications</a>
+      </td>
+</tr>
+</table> 
+
+
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+  </body>
+</html>
