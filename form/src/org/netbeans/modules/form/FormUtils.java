@@ -255,6 +255,7 @@ public class FormUtils
         { javax.swing.JSeparator.class, CLASS_EXACTLY,
                 "font", PROP_NORMAL },
         { javax.swing.JInternalFrame.class, CLASS_AND_SUBCLASSES,
+                "defaultCloseOperation", PROP_PREFERRED,
                 "visible", PROP_NORMAL },
         { javax.swing.JInternalFrame.class, CLASS_EXACTLY,
                 "menuBar", PROP_HIDDEN,

@@ -204,10 +204,12 @@ public class RADProperty extends FormProperty {
 
         if (enumerationValues == null
             && "defaultCloseOperation".equals(descriptor.getName()) // NOI18N
-            && javax.swing.JDialog.class.isAssignableFrom(
-                                           component.getBeanClass()))
+            && (javax.swing.JDialog.class.isAssignableFrom(
+                                           component.getBeanClass())
+                || javax.swing.JInternalFrame.class.isAssignableFrom(
+                                           component.getBeanClass())))
         {   // hack: enumeration definition is missing in standard Swing
-            // JDialogBeanInfo for defaultCloseOperation property
+            // for JDialog and JInternalFrame defaultCloseOperation property
             enumerationValues = new Object[] {
                 "DISPOSE_ON_CLOSE", new Integer(2), // NOI18N
                         "WindowConstants.DISPOSE_ON_CLOSE", // NOI18N
