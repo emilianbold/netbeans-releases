@@ -69,15 +69,6 @@ public abstract class SearchGroup extends Object {
     /** Set of nodes on which sub-system to search. */
     protected final Set searchRoots = new HashSet(5);
     
-    /**
-     * Objects on which to search. Their types has to be one of those returned
-     * by getSearchObjectClasses method. Can't contain <code>null</code>.
-     * <em>Note:</em> these are objects which could be listen to if their change affect
-     * the result -> in that case the property change with PROP_RESULT name has to be fired
-     * to interested listeners.
-     */
-    protected final Set searchObjects = new HashSet(50);
-
     /** Set of objects which passed the serach. It's usbset of searchObjects. */
     protected final Set resultObjects = new HashSet(50);
 
@@ -237,9 +228,6 @@ public abstract class SearchGroup extends Object {
                 return;
             }
         }
-
-        /* Add search object to the set of searched set. */
-        searchObjects.add(searchObject);
 
         /*
          * Give chance to provide additional things to have possibility
