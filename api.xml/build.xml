@@ -123,6 +123,13 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="javadoc"/>
         <mkdir dir="javadoc"/>
         <javadoc destdir="javadoc" sourcepath="src" packagenames="org.netbeans.api.xml.*,org.netbeans.spi.xml.*">
+             <classpath>        
+                <fileset dir="${nbroot}/openide/netbeans/lib">
+                    <include name="openide*.jar"/>
+                </fileset>
+                <pathelement location="${parserimpl}"/> <!-- JAXP and SAX dependency -->
+                <pathelement location="${jaxp-transform}"/>
+            </classpath>                       
         </javadoc>
     </target>
 

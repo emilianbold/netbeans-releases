@@ -1,11 +1,41 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+   -                 Sun Public License Notice
+   - 
+   - The contents of this file are subject to the Sun Public License
+   - Version 1.0 (the "License"). You may not use this file except in
+   - compliance with the License. A copy of the License is available at
+   - http://www.sun.com/
+   - 
+   - The Original Code is NetBeans. The Initial Developer of the Original
+   - Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+   - Microsystems, Inc. All Rights Reserved.
+  -->
 
-<title>XML Tools Cookies SPI</title>
-  
+<html>
+
+<head><title>XML Tools Cookies SPI</title></head>
+
+<body>
+Classes supporting cookie providers.
+
 <h2>XML Tools Cookies SPI</h2>
-This package contains supports for XML Tools Cookies API providers.
-<p>
-Currently we provide support for <code>DataObject</code> style input sources.
-<code>InputSource</code> generalization would be desired.
-<p>
 
+This package contains supports for XML Tools Cookies API providers.
+
+<h3>Requirements</h3>
+
+Support classes must be:
+<ul>
+  <li>directly useful for common cases (XML is primary file)
+  <li>customizable for special cases
+</ul>
+ 
+<h3>DataObject Supports</h3>
+
+ValidateXMLSupport and CheckXMLSupport are provided for <code>DataObject</code>'s 
+<code>EditorCookie</code> or <codE>FileObject</codE> style input sources.
+
+<h3>Other Supports</h3>
+<code>InputSource</code> generalization may be required.
+
+</body></html>
