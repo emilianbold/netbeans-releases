@@ -314,28 +314,28 @@ is divided into following sections:
                 <xsl:for-each select="/p:project/p:configuration/ear2:data/ear2:web-module-additional-libraries/ear2:library[ear2:path-in-war]">
                     <xsl:variable name="copyto" select=" ear2:path-in-war"/>
                     <xsl:if test="//ear2:web-module-additional-libraries/ear2:library[@files]">
-                      <xsl:if test="@files &gt; 1">
+                      <xsl:if test="(@files &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
                         <xsl:call-template name="copyIterateFiles">
                             <xsl:with-param name="files" select="@files"/>
                             <xsl:with-param name="target" select="concat('${build.dir}/',$copyto)"/>
                             <xsl:with-param name="libfile" select="ear2:file"/>
                         </xsl:call-template>
                       </xsl:if>
-                      <xsl:if test="@files = 1">
+                      <xsl:if test="@files = 1 and (@dirs = 0 or not(@dirs))">
                             <xsl:variable name="target" select="concat('${build.dir}/',$copyto)"/>
                             <xsl:variable name="libfile" select="ear2:file"/>
                             <copy file="{$libfile}" todir="{$target}"/>
                       </xsl:if>
                     </xsl:if>
                     <xsl:if test="//ear2:web-module-additional-libraries/ear2:library[@dirs]">
-                      <xsl:if test="@dirs &gt; 1">
+                      <xsl:if test="(@dirs &gt; 1) or (@files &gt; 0 and (@dirs &gt; 0))">
                         <xsl:call-template name="copyIterateDirs">
                             <xsl:with-param name="files" select="@dirs"/>
                             <xsl:with-param name="target" select="concat('${build.dir}/',$copyto)"/>
                             <xsl:with-param name="libfile" select="ear2:file"/>
                         </xsl:call-template>
                       </xsl:if>
-                      <xsl:if test="@dirs = 1">
+                      <xsl:if test="@dirs = 1 and (@files = 0 or not(@files))">
                             <xsl:variable name="target" select="concat('${build.dir}/',$copyto)"/>
                             <xsl:variable name="libfile" select="ear2:file"/>
                             <copy todir="{$target}">
