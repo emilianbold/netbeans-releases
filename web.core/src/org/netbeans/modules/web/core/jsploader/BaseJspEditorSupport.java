@@ -301,8 +301,11 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
          * and this component is preferred one in it.
          */
         protected void componentActivated() {
-            getEditorPane().addCaretListener(caretListener);
-            super.componentActivated();
+            // Workaround for bug #37188. If the pane is null, don't activate the component.
+            if (getEditorPane() != null){
+                getEditorPane().addCaretListener(caretListener);
+                super.componentActivated();
+            }
         }
         
         /*
