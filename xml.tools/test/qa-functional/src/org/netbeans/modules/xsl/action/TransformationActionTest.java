@@ -38,7 +38,6 @@ public class TransformationActionTest extends JXTest {
     
     /** Performs 'XSL Transformation...' action and checks output. */
     public void testTransformation() throws Exception {
-        fail("\n<a href='http://www.netbeans.org/issues/show_bug.cgi?id=27214'>Fail due #27214</a>");
         
         final String OUT_FILE = "../out/document.html";
         //final String OUT_FILE = "output.html"; //!!!
@@ -46,7 +45,7 @@ public class TransformationActionTest extends JXTest {
         //final String OUT_NODE = "sources" + DELIM + "output"; //!!!
         
         // clear output and display Transformation Dialog
-        DataObject dao = TestUtil.THIS.findData(OUT_FILE);
+        DataObject dao = TestUtil.THIS.findData("out/document.html");
         if (dao != null) /* then */ dao.delete();
         XSLTransformationDialog dialog = transformXML("sources" + DELIM + "document");
         

@@ -22,6 +22,7 @@ import junit.textui.TestRunner;
 import org.netbeans.modules.xml.core.XMLDataObject;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.tax.TreeNamedObjectMap.KeyListener;
+import org.netbeans.tax.TreeDocumentType.DTDIdentity;
 import org.netbeans.tax.event.TreeEventChangeSupport;
 import org.netbeans.tax.event.TreeEventManager;
 import org.netbeans.tests.xml.XTest;
@@ -78,6 +79,7 @@ public class XMLCloneTest extends XTest {
         new Pattern(TreeEventManager.class,                 null,               null,           DifferentChecker.class),
         new Pattern(String.class,                           null,               null,           ImmutableChecker.class),
         new Pattern(TreeName.class,                         null,               null,           ImmutableChecker.class),
+        new Pattern(DTDIdentity.class,                      null,               null,           ImmutableChecker.class),
     };
     
     public void testClone() throws Exception {

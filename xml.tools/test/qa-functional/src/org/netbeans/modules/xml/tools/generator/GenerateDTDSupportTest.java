@@ -83,9 +83,9 @@ public class GenerateDTDSupportTest extends XTest {
         
         GenerateDTDSupport gen = new GenerateDTDSupport(dao);
         // Original: String result = gen.xml2dtd (element, name, encoding);
-        Method m = gen.getClass().getDeclaredMethod("xml2dtd", new Class[] {TreeElement.class, String.class, String.class});
+        Method m = gen.getClass().getDeclaredMethod("xml2dtd", new Class[] {String.class, String.class});
         m.setAccessible(true);
-        String result = (String) m.invoke(gen, new Object[] {element, name, encoding});
+        String result = (String) m.invoke(gen, new Object[] {name, encoding});
         
         // first comment contains variable informations - remove it
         result = TestUtil.replaceString(result, "<!--", "-->", "<!-- REMOVED -->");

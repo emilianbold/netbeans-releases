@@ -3,11 +3,7 @@
 <!-- REMOVED -->
 
 <!--- Put your DTDDoc comment here. -->
-<!ELEMENT Node02-XMLfig (#PCDATA|Node08)*>
-<!ATTLIST Node02-XMLfig
-    Node05 CDATA #IMPLIED
-    Node04 CDATA #IMPLIED
-  >
+<!ELEMENT Node13 EMPTY>
 
 <!--- Put your DTDDoc comment here. -->
 <!ELEMENT Node08 (#PCDATA|Node13)*>
@@ -17,5 +13,9 @@
   >
 
 <!--- Put your DTDDoc comment here. -->
-<!ELEMENT Node13 EMPTY>
+<!ELEMENT Node02-XMLfig (#PCDATA|Node08)*>
+<!ATTLIST Node02-XMLfig
+    Node05 CDATA #IMPLIED
+    Node04 CDATA #IMPLIED
+  >
 
