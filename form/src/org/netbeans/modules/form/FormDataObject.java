@@ -87,84 +87,7 @@ public class FormDataObject extends JavaDataObject {
   * @return help context
   */
   public com.netbeans.ide.util.HelpCtx getHelpCtx () {
-    return new com.netbeans.ide.util.HelpCtx (FormDataObject.class);
-  }
-
-  /** Handles copy of the data object.
-  * @param f target folder
-  * @return the new data object
-  * @exception IOException if an error occures
-  */
-  public DataObject handleCopy (DataFolder df) throws IOException {
-    String suffix = existInFolder(formEntry.getFile(), df.getPrimaryFile ());
-    FileObject ffo = formEntry.copy (df.getPrimaryFile (), suffix);
-    FileObject jfo = getPrimaryEntry ().copy (df.getPrimaryFile (), suffix);
-    FormDataObject fdo = new FormDataObject (ffo, jfo, (FormDataLoader)getMultiFileLoader ());
-//    fdo.instantiated = true;
-    return fdo;
-  }
-
-  /** Check if in specific folder exists fileobject with the same name.
-  * If it exists user is asked for confirmation to rewrite, rename or cancel operation.
-  * @param folder destination folder
-  * @return the suffix which should be added to the name or null if operation is cancelled
-  */
-  private static String existInFolder(FileObject fo, FileObject folder) {
-    String orig = fo.getName ();
-    String name = FileUtil.findFreeFileName(
-      folder, orig, fo.getExt ()
-    );
-    if (name.length () <= orig.length ()) {
-      return "";
-    } else {
-      return name.substring (orig.length ());
-    }
-  }
-  
-  /** Handles creation of new data object from template. This method should
-  * copy content of the template to destination folder and assign new name
-  * to the new object.
-  *
-  * @param df data folder to create object in
-  * @param name name to give to the new object (or <CODE>null</CODE>
-  *    if the name is up to the template
-  * @return new data object
-  * @exception IOException if an error occured
-  */
-  public DataObject handleCreateFromTemplate (
-    DataFolder df, String name
-  ) throws IOException {
-    return super.handleCreateFromTemplate (df, name); // [PENDING temporary]
-/*    if ((name != null) && (!com.netbeans.ide.util.Utilities.isJavaIdentifier (name)))
-      throw new IOException ();
-/*          java.text.MessageFormat.format (
-              javaBundle.getString ("FMT_Not_Valid_Class_Name"),
-              new Object[] { name }
-              )
-          ); * /
-    FileObject ffo = formEntry.createFromTemplate (df, name);
-    FileObject jfo = null;
-    try {
-      jfo = getPrimaryEntry ().createFromTemplate (df, name);
-    } catch (IOException e) { // if the creation of *.java fails, we must remove the created .form
-      FileLock lock = null;
-      try {
-        lock = ffo.lock ();
-        ffo.delete(lock);
-      } catch (IOException e2) {
-        // ignore, what else can we do
-      } finally {
-        if (lock != null)
-          lock.releaseLock();
-      }
-      throw e;
-    }
-    FormDataObject fdo = new FormDataObject (ffo, jfo);
-    fdo.setTemplate(false);
-    fdo.templateInit = true;
-    fdo.instantiated = true;
-    fdo.modifiedInit = true;
-    return fdo; */
+    return null; // [PENDING]
   }
 
   /** Provides node that should represent this data object. When a node for representation
@@ -178,9 +101,7 @@ public class FormDataObject extends JavaDataObject {
   * @see DataNode
   */
   protected Node createNodeDelegate () {
-    FormDataNode node = new FormDataNode (this);
-    node.setDefaultAction (SystemAction.get (OpenAction.class));
-    return node;
+    return new FormDataNode (this);
   }
 
 //--------------------------------------------------------------------
@@ -196,6 +117,8 @@ public class FormDataObject extends JavaDataObject {
 
 /*
  * Log
+ *  15   Gandalf   1.14        4/27/99  Ian Formanek    Fixed bug #1457 - Form 
+ *       DataObject does not have the "Execution" properties
  *  14   Gandalf   1.13        4/26/99  Ian Formanek    
  *  13   Gandalf   1.12        4/4/99   Ian Formanek    Fixed creation from 
  *       template
