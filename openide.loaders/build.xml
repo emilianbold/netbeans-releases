@@ -37,6 +37,8 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_all}/openide/actions/netbeans/lib/openide-actions.jar"/>
         <pathelement location="${nb_all}/openide/explorer/netbeans/lib/openide-explorer.jar"/>
         <pathelement location="${nb_all}/openide/modules/netbeans/lib/openide-modules.jar"/>
+        <!-- By transitivity from text and explorer; needed for Javadoc, apparently: -->
+        <pathelement location="${nb_all}/openide/options/netbeans/lib/openide-options.jar"/>
     </path>
   
     <target name="compile">
