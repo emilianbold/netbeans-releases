@@ -81,6 +81,7 @@ Microsystems, Inc. All Rights Reserved.
                  topdir="."
                  module="netbeans/modules/ant-docs.jar"
                  homepage="http://ant.${homepage.base}/"
+                 needsrestart="false"
                  distribution="http://${dist.base}/ant-docs.nbm">
             <license name="ant-docs-license.txt">
                 <text>For the Ant documentation module itself:</text>
