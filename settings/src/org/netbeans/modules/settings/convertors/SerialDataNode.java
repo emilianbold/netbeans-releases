@@ -996,6 +996,7 @@ public final class SerialDataNode extends DataNode {
     * also the name of the node (sometimes)
     */
     private final class PropL extends Object implements PropertyChangeListener {
+        PropL() {}
         private boolean isChanged = false;
         public void propertyChange(PropertyChangeEvent e) {
             isChanged = true;

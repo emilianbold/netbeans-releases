@@ -387,6 +387,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
      * rules and if all matches returning MIME type.
      */
     private static class FileElement {
+        FileElement() {}
         
         private Type fileCheck = new Type();
         private String mime = null;
@@ -434,6 +435,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
      * We could generate hardwired class bytecode on a fly.
      */
     private static class Type {
+        Type() {}
         private String[] exts;
         private String[] mimes;
         private String[] fatts;

@@ -272,6 +272,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
     
     /** support for reading xml/properties format */
     private static class Reader extends org.xml.sax.helpers.DefaultHandler implements org.xml.sax.ext.LexicalHandler {
+        Reader() {}
 
         private static final String ELM_PROPERTY = "property"; // NOI18N
         private static final String ATR_PROPERTY_NAME = "name"; // NOI18N

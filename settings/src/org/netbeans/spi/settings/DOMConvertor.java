@@ -360,6 +360,7 @@ public abstract class DOMConvertor extends Convertor {
     }
     
     private static class CacheRec {
+        CacheRec() {}
         // key/value are paired as id/settings_object or settings_object/id
         // depends on performed operation (read/write)
         Object key;

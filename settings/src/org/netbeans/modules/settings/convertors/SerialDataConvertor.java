@@ -785,6 +785,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
     
     /** allow to postpone the node creation */
     private static final class NodeConvertor implements InstanceContent.Convertor {
+        NodeConvertor() {}
      
         public Object convert(Object o) {
             SerialDataConvertor convertor = (SerialDataConvertor) o;

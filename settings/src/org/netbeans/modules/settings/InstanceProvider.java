@@ -347,6 +347,7 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
     
     /** allow to postpone the node creation */
     private static final class NodeConvertor implements org.openide.util.lookup.InstanceContent.Convertor {
+        NodeConvertor() {}
      
         public Object convert(Object o) {
             InstanceProvider ip = (InstanceProvider) o;

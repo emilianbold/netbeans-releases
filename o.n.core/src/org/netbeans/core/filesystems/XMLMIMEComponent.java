@@ -177,6 +177,7 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
      * Consequently one instance cannot be run in paralel eliminating need for sync.
      */
     private static class LocalSniffingParser extends ThreadLocal {
+        LocalSniffingParser() {}
         
         private WeakReference wref = null;
         
@@ -328,6 +329,7 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
      * Template smell per resolver and print data per FileObject.
      */
     private static class Smell {
+        Smell() {}
         
         private String[] doctypes = null;
         private String[] pis = null;

@@ -521,6 +521,7 @@ public class OptionsAction extends CallableSystemAction {
             }
             
             private static class H implements Node.Handle {
+                H() {}
                 
                 private static final long serialVersionUID = -5158460093499159177L;
                 

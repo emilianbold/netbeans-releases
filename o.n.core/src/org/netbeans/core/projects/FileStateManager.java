@@ -225,6 +225,7 @@ final class FileStateManager {
     }
     
     private class PropL implements PropertyChangeListener {
+        PropL() {}
         public void propertyChange (PropertyChangeEvent evt) {
             if (SessionManager.PROP_OPEN.equals (evt.getPropertyName ())) {
                 FileObject mfos [] = null;
