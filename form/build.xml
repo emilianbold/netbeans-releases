@@ -17,27 +17,16 @@ Microsystems, Inc. All Rights Reserved.
 <!-- Also should beans/beans.properties really be there, since firststart removes them afterwards? -->
 
 <project name="form" default="nbm" basedir=".">
+  <!-- See core/build.xml for explanation. -->
   <target name="compile">
-    <!-- Bizarrely, compiling all classes together under 1.3 gives symbol-not-found -->
-    <!-- errors for org.openide.awt.ToolbarToggleButton from most palette classes. -->
-    <!-- But compiling the packages separately it works. Go figure. -->
+    <ant dir="../form" target="compile-with-classic-Javac">
+      <property name="build.compiler" value="classic"/>
+    </ant>
+  </target>
+  <target name="compile-with-classic-Javac">
     <javac srcdir="src" destdir="src">
-      <include name="**/form/palette/**"/>
       <classpath>
-        <pathelement location="../core/netbeans/lib/developer.jar"/>
-        <pathelement location="release/lib/ext/AbsoluteLayout.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../openidex/netbeans/modules/openidex.jar"/>
-        <pathelement location="../java/netbeans/modules/java.jar"/>
-        <pathelement location="../clazz/netbeans/modules/clazz.jar"/>
-        <pathelement location="../core/release/lib/ext/parser.jar"/>
-        <pathelement location="../core/release/lib/ext/jaxp.jar"/>
-      </classpath>
-    </javac>
-    <!-- XXX illegally uses org.netbeans.beaninfo classes: -->
-    <javac srcdir="src" destdir="src">
-      <exclude name="**/form/palette/**"/>
-      <classpath>
+        <!-- XXX illegally uses org.netbeans.beaninfo classes: -->
         <pathelement location="../core/netbeans/lib/developer.jar"/>
         <pathelement location="release/lib/ext/AbsoluteLayout.jar"/>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
@@ -68,5 +57,14 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   <target name="nbm" depends="jars,release">
     <zip zipfile="form.nbm" includes="netbeans/" basedir="."/>
+  </target>
+  <target name="clean">
+    <delete dir="src">
+      <include name="**/*.class"/>
+      <include name="**/*.jar"/>
+    </delete>
+    <delete file="manifest-subst.mf"/>
+    <delete file="form.nbm"/>
+    <deltree dir="netbeans"/>
   </target>
 </project>

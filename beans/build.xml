@@ -13,18 +13,14 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="beans" default="nbm" basedir=".">
+  <!-- See core/build.xml for explanation. -->
   <target name="compile">
-    <!-- Placate compiler. -->
+    <ant dir="../beans" target="compile-with-classic-Javac">
+      <property name="build.compiler" value="classic"/>
+    </ant>
+  </target>
+  <target name="compile-with-classic-Javac">
     <javac srcdir="src" destdir="src">
-      <include name="**/org/netbeans/modules/beans/beaninfo/GenerateBeanInfoAction.java"/>
-      <classpath>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-	<pathelement location="../java/netbeans/modules/java.jar"/>
-	<pathelement location="{java.home}/lib/tools.jar"/>
-      </classpath>
-    </javac>
-    <javac srcdir="src" destdir="src">
-      <exclude name="**/org/netbeans/modules/beans/beaninfo/GenerateBeanInfoAction.java"/>
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
 	<pathelement location="../java/netbeans/modules/java.jar"/>
@@ -48,5 +44,14 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   <target name="nbm" depends="jars">
     <zip zipfile="beans.nbm" includes="netbeans/" basedir="."/>
+  </target>
+  <target name="clean">
+    <delete dir="src">
+      <include name="**/*.class"/>
+      <include name="**/*.jar"/>
+    </delete>
+    <delete file="manifest-subst.mf"/>
+    <delete file="beans.nbm"/>
+    <deltree dir="netbeans"/>
   </target>
 </project>
