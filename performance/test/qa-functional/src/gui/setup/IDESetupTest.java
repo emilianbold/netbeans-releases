@@ -36,6 +36,11 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
         ProjectSupport.waitScanFinished();
     }
     
+    public void testOpenFoldersProject() {
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/PerformanceTestFoldersData");
+        ProjectSupport.waitScanFinished();
+    }
+    
     /** 
      * Close Welcome. 
      */
@@ -48,11 +53,6 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
      * Close Memory Toolbar. 
      */
     public void testCloseMemoryToolbar(){
-//        JMenuOperator menu_op = new JMenuOperator(MainWindowOperator.getDefault());
-//        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu("View|Toolbars");
-//        JCheckBoxMenuItemOperator submenu = new JCheckBoxMenuItemOperator(new ContainerOperator(menu_op.getContainers()[0]), "View|Toolbars|Memory"); //NOI18N 
-//        if(submenu.isSelected())
-        
         String MENU = 
             org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/View") + "|" +
             org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle","CTL_ToolbarsListAction") + "|" +

@@ -49,7 +49,7 @@ public class OpenJspFileWithOpenedEditor extends OpenJspFile {
         setXMLEditorCaretFilteringOn();
         fileProject = "PerformanceTestWebApplication";
         fileName = "Test.jsp";
-        menuItem = EDIT;
+        menuItem = OPEN;
         doMeasurement();
     }
     
@@ -58,7 +58,7 @@ public class OpenJspFileWithOpenedEditor extends OpenJspFile {
      */
     public void initialize(){
         super.initialize();
-        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
     }
     
 }

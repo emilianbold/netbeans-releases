@@ -59,7 +59,7 @@ public class SaveModifiedFile extends testUtilities.PerformanceTestCase {
     
     public void initialize(){
         EditorOperator.closeDiscardAll();
-        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
         editorOperator = new EditorOperator("Main.java");
         waitNoEvent(2000);
     }

@@ -53,7 +53,9 @@ Microsystems, Inc. All Rights Reserved.
     <!-- =================== -->
     
     <target name="ide_command_line_suffix" depends="set_bootclasspath_jdk142,set_bootclasspath_jdk150">
-        <property name="xtest.ide.commandline.suffix" value="-J-Xbootclasspath/p:${xtest.tmpdir}/hack_jdk.zip -J-Dorg.netbeans.performance.repeat=5"/>
+        <!--  We are using modified rt.jar instead of hack on the bootclasspath, so if you try to run performance tests on your own jdk uncomment this line
+        <property name="xtest.ide.commandline.suffix" value="-J-Xbootclasspath/p:${xtest.tmpdir}/hack_jdk.zip -J-Dorg.netbeans.performance.repeat=5"/> -->
+        <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5"/>
     </target>
     
     

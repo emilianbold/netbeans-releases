@@ -14,6 +14,10 @@
 package gui.action;
 
 import org.netbeans.jellytools.ProjectsTabOperator;
+
+import org.netbeans.jellytools.actions.MaximizeWindowAction;
+import org.netbeans.jellytools.actions.RestoreWindowAction;
+
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -116,13 +120,11 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
     
     
     public void initialize(){
-        org.netbeans.junit.ide.ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/"+testDataProject);
-        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
         projectTab = new ProjectsTabOperator();
-        projectTab.maximize();
+        new MaximizeWindowAction().performAPI(projectTab);
         
         projectTab.getProjectRootNode("jEdit").collapse();
-        projectTab.getProjectRootNode("PerformanceTestFoldersData").collapse();
+        //projectTab.getProjectRootNode(testDataProject).collapse();
         
         turnOff();
         addClassNameToLookFor("explorer.view");
@@ -131,7 +133,10 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
         
         
     public void prepare() {
-        nodeToBeExpanded = new Node(projectTab.getProjectRootNode(project), pathToFolderNode);
+        if(pathToFolderNode.equals(""))
+            nodeToBeExpanded = projectTab.getProjectRootNode(project);
+        else
+            nodeToBeExpanded = new Node(projectTab.getProjectRootNode(project), pathToFolderNode);
     }
     
     public ComponentOperator open(){
@@ -148,8 +153,8 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
     
     public void shutdown() {
         turnBack();
-        org.netbeans.junit.ide.ProjectSupport.closeProject(testDataProject);
-        projectTab.restore();
+        projectTab.getProjectRootNode(testDataProject).collapse();
+        new RestoreWindowAction().performAPI(projectTab);
     }
 
     protected void turnOff() {

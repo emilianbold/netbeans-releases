@@ -54,7 +54,7 @@ public class OpenJspFile extends OpenFiles {
         setXMLEditorCaretFilteringOn();
         fileProject = "PerformanceTestWebApplication";
         fileName = "Test.jsp";
-        menuItem = EDIT;
+        menuItem = OPEN;
         doMeasurement();
     }
     

@@ -57,7 +57,7 @@ public class OpenFormFileWithOpenedEditor extends OpenFormFile {
      */
     public void initialize(){
         super.initialize();
-        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
     }
     
 }

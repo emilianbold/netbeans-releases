@@ -30,10 +30,13 @@ public class MeasuringSetup extends NbTestCase {
     
     public static Test suite() {
         TestSuite suite = new NbTestSuite("UI Responsiveness Setup suite");
+        
         suite.addTest(new gui.setup.IDESetupTest("testCloseWelcome"));
         suite.addTest(new gui.setup.IDESetupTest("testCloseMemoryToolbar"));
+        suite.addTest(new gui.setup.IDESetupTest("testOpenFoldersProject"));
         suite.addTest(new gui.setup.IDESetupTest("testOpenDataProject"));
         suite.addTest(new gui.setup.IDESetupTest("testOpenWebProject"));
+
         return suite;
     }
     

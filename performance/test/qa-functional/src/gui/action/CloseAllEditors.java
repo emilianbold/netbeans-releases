@@ -17,9 +17,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jellytools.actions.CloseViewAction;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.actions.RefreshFolderAction;
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;

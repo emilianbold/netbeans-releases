@@ -17,8 +17,12 @@ import java.io.File;
 
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+
 import org.netbeans.jellytools.actions.DeleteAction;
+import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.jellytools.actions.RefreshFolderAction;
+import org.netbeans.jellytools.actions.RestoreWindowAction;
+
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 
@@ -87,10 +91,8 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
     }
     
     public void initialize(){
-        org.netbeans.junit.ide.ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/"+"PerformanceTestFoldersData");
-        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
         projectTab = new ProjectsTabOperator();
-        projectTab.maximize();
+        new MaximizeWindowAction().performAPI(projectTab);
         
         projectTab.getProjectRootNode("PerformanceTestData").collapse();
         projectTab.getProjectRootNode("jEdit").collapse();
@@ -136,7 +138,7 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
             foldersNode = new Node(projectNode, gui.Utilities.SOURCE_PACKAGES + "|folders");
             
             new RefreshFolderAction().perform(foldersNode); // foldersNode.performPopupAction("Refresh Folder");
-            waitNoEvent(1000);
+            waitNoEvent(500);
 
             nodeToBeDeleted = new Node(projectNode, gui.Utilities.SOURCE_PACKAGES + "|folders." + folderToBeDeleted + "_delete");
             
@@ -163,8 +165,7 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
     }
 
     public void shutdown() {
-        org.netbeans.junit.ide.ProjectSupport.closeProject("PerformanceTestFoldersData");
-        projectTab.restore();
+        new RestoreWindowAction().performAPI(projectTab);
         setPrintClassNames(false);
         turnBack();
     }

@@ -15,6 +15,10 @@ package gui.window;
 
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
+
+import org.netbeans.jellytools.actions.MaximizeWindowAction;
+import org.netbeans.jellytools.actions.RestoreWindowAction;
+
 import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.Operator;
@@ -51,7 +55,8 @@ public class SetDefaultServerDialog extends testUtilities.PerformanceTestCase {
         
         // show Runtime tab, maximize it and select Server Registry node
         thetab = RuntimeTabOperator.invoke();
-        thetab.maximize();
+        new MaximizeWindowAction().performAPI(thetab);
+        
         Operator.StringComparator thecomparator = new Operator.DefaultStringComparator(false, false);
         thenode = new Node (thetab.tree(), thetab.tree().findPath("Server Registry", thecomparator)); //NOI18N impossible
         thenode.setComparator(thecomparator);
@@ -70,6 +75,6 @@ public class SetDefaultServerDialog extends testUtilities.PerformanceTestCase {
     
     public void shutdown() {
         // restore the original size of Runtime tab
-        thetab.restore();
+        new RestoreWindowAction().performAPI(thetab);
     }
 }

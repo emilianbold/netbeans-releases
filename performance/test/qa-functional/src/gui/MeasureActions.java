@@ -81,11 +81,7 @@ public class MeasureActions  {
         suite.addTest(new SelectCategoriesInNewFile("testSelectGUIForms","Select GUI Forms in New File"));
         suite.addTest(new SelectCategoriesInNewFile("testSelectXML","Select XML in New File"));
         suite.addTest(new SelectCategoriesInNewFile("testSelectOther","Select Other in New File"));
-/*
-        suite.addTest(new ExpandNodesInOptions("testExpandEditorSettings", "Expand node Editor Settings in Tools | Options"));
-        
-        suite.addTest(new ExpandNodesInComponentInspector("testExpandContainerJFrame","Expand Container node in Component Inspector"));
-*/
+
         suite.addTest(new RefreshFolder("testRefreshFolderWith50JavaFiles", "Refresh folder with 50 java files"));
         suite.addTest(new RefreshFolder("testRefreshFolderWith100JavaFiles", "Refresh folder with 100 java files"));
         suite.addTest(new RefreshFolder("testRefreshFolderWith100XmlFiles", "Refresh folder with 100 xml files"));
