@@ -13,18 +13,16 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JPanel;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.tree.TreeSelectionModel;
-import org.netbeans.spi.java.project.support.ui.PackageView;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.openide.cookies.SourceCookie;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerManager.Provider;
-import org.openide.explorer.view.TreeView;
-import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -34,7 +32,6 @@ import org.openide.nodes.Node;
 import org.openide.src.ClassElement;
 import org.openide.src.SourceElement;
 import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
 
 
 
@@ -55,32 +52,25 @@ public class MainClassChooser extends JPanel {
     }
     
     private void initClassesView (FileObject sourcesRoot) {
-        ClassesViewPanel view = (ClassesViewPanel) classesView;
-        TreeView treeView = (TreeView) classesTree;
-        
-        Children ch = null;
-        if (sourcesRoot != null) {
-            ch = PackageView.createPackageView (sourcesRoot);
-        }
-
-        if (ch == null || ch.getNodes (true).length == 0) {
-            ch = new Children.Array ();
-            ch.add (new Node[] { NO_CLASSES_NODE.cloneNode () });
-        }
-
-        Node root = new AbstractNode (ch);
-        treeView.setRootVisible (false);
-        treeView.setSelectionMode (TreeSelectionModel.SINGLE_TREE_SELECTION);
-
-        view.getExplorerManager ().setRootContext (root);
-        view.getExplorerManager ().addPropertyChangeListener (new PropertyChangeListener () {
-            public void propertyChange(PropertyChangeEvent evt) {
+        jMainClassList.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
+        jMainClassList.setListData (getAllMainClasses (sourcesRoot));
+        jMainClassList.addListSelectionListener (new ListSelectionListener () {
+            public void valueChanged (ListSelectionEvent evt) {
                 if (changeListener != null) {
                     changeListener.stateChanged (new ChangeEvent (evt));
                 }
             }
         });
-        treeView.expandNode (root);
+    }
+    
+    // XXX temporary obtain the main classes in project's sources
+    // should be used some query to java sources
+    private Object[] getAllMainClasses (FileObject sourcesRoot) {
+        Set result = new HashSet ();
+        Enumeration en = sourcesRoot.getChildren (true);
+        while (en.hasMoreElements ()) {
+        }
+        return result.toArray ();
     }
 
 
@@ -89,16 +79,7 @@ public class MainClassChooser extends JPanel {
      * @return name of class or null if no class with the main method is selected
      */    
     public String getSelectedMainClass () {
-        
-        Node[] nodes = ((ClassesViewPanel)classesView).getExplorerManager ().getSelectedNodes ();
-
-        // check if this java object has main class
-        if (nodes.length == 1) {
-            // check if it's main class
-            return getMainMethod (nodes[0].getCookie (SourceCookie.class), nodes[0].getName ());
-        }
-        
-        return null;
+        return (String)jMainClassList.getSelectedValue ();
     }
     
     public void addChangeListener (ChangeListener l) {
@@ -160,8 +141,7 @@ public class MainClassChooser extends JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        classesView = new ClassesViewPanel ();
-        classesTree = new BeanTreeView ();
+        jMainClassList = new javax.swing.JList();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -177,14 +157,7 @@ public class MainClassChooser extends JPanel {
         add(jLabel1, gridBagConstraints);
 
         jScrollPane1.setMinimumSize(new java.awt.Dimension(100, 200));
-        classesView.setLayout(new java.awt.GridBagLayout());
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        classesView.add(classesTree, gridBagConstraints);
-
-        jScrollPane1.setViewportView(classesView);
+        jScrollPane1.setViewportView(jMainClassList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -192,35 +165,32 @@ public class MainClassChooser extends JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 12);
         add(jScrollPane1, gridBagConstraints);
 
     }//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane classesTree;
-    private javax.swing.JPanel classesView;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JList jMainClassList;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
-
-    private final class ClassesViewPanel extends JPanel implements Provider/*, Lookup.Provider*/ {
-        private ExplorerManager manager = new ExplorerManager ();
-        private TopComponent comp = new TopComponent ();
-        
-        public ExplorerManager getExplorerManager () {
-            return manager;
-        }
-        
-//        public Lookup getLookup () {
-//            return comp.getLookup ();
+//    // Maybe useless renderer (fit if wanted to reneder Icons)
+//    private static final class MainClassRenderer extends DefaultListCellRenderer {
+//        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+//            String displayName;
+//            if (value instanceof String) {
+//                displayName = (String) value;
+//            } else {
+//                displayName = value.toString ();
+//            }
+//            return super.getListCellRendererComponent (list, displayName, index, isSelected, cellHasFocus);
 //        }
-//        
-    }
+//    }
 
 }

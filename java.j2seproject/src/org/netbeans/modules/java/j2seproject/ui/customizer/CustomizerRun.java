@@ -13,27 +13,9 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import javax.swing.DefaultListModel;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -70,13 +52,13 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel {
     
     public void initValues() {
         
-        //vps.register( jTextFieldMainClass, J2SEProjectProperties.MAIN_CLASS  );
         vps.register (vms, J2SEProjectProperties.MAIN_CLASS);
         vps.register( jTextFieldArgs, J2SEProjectProperties.APPLICATION_ARGS );
         vps.register( vcs, J2SEProjectProperties.RUN_CLASSPATH );
    
-        // XXX Probably remove the button
         jButtonMainClass.setVisible( true );
+        
+        // XXX Probably remove the button
         jButtonEdit.setVisible( false );
     } 
         
