@@ -128,6 +128,9 @@ ToDo:
 
       <!-- config for making NBMs for Daily Alpha Update Centre -->
       <config name="daily-alpha-nbms" modules="${config.daily-alpha-nbms}"/>
+
+      <!-- config for javadoc -->
+      <config name="javadoc" modules="${config.javadoc}"/>
     </configmods>
 
   </target>
@@ -342,6 +345,10 @@ ToDo:
   <target name="all-logger" depends="all-openide,all-core">
     <echo message="Building module logger..."/>
     <ant dir="../logger" target="netbeans"/>
+  </target>
+  <target name="all-lexer" depends="all-openide">
+    <echo message="Building module lexer..."/>
+    <ant dir="../lexer" target="netbeans"/>
   </target>
   <target name="all-makefile" depends="all-openide">
     <echo message="Building module makefile..."/>
@@ -602,7 +609,7 @@ ToDo:
   <target name="nbm" description="Dummy target."/>
 
   <!-- build javadoc for selected modules -->
-  <target name="build-javadoc" depends="init">
+  <target name="build-javadoc" depends="all-openide">
       <for-each startdir=".." target="javadoc" locations="${modules}"/>
   </target>
 
