@@ -33,7 +33,7 @@ public final class NewFileWizard extends TemplateWizard {
     public NewFileWizard( Project p /*, String recommendedTypes[] */ ) {
         this.p = p;
         putProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT, p );
-        format = new MessageFormat (NbBundle.getBundle (NewFileWizard.class).getString ("LBL_NewJavaFileWizard_MessageFormat"));
+        format = new MessageFormat (NbBundle.getBundle (NewFileWizard.class).getString ("LBL_NewFileWizard_MessageFormat"));
         // this.recommendedTypes = recommendedTypes;        
         //setTitleFormat( new MessageFormat( "{0}") );
     }
@@ -43,10 +43,10 @@ public final class NewFileWizard extends TemplateWizard {
         String substitute = (String)getProperty ("NewFileWizard_Title"); // NOI18N
         String title;
         if (substitute == null) {
-            title = NbBundle.getBundle (NewFileWizard.class).getString ("LBL_NewJavaFileWizard_Title"); // NOI18N
+            title = NbBundle.getBundle (NewFileWizard.class).getString ("LBL_NewFileWizard_Title"); // NOI18N
         } else {
             Object[] args = new Object[] {
-                    NbBundle.getBundle (NewFileWizard.class).getString ("LBL_NewJavaFileWizard_Subtitle"), // NOI18N
+                    NbBundle.getBundle (NewFileWizard.class).getString ("LBL_NewFileWizard_Subtitle"), // NOI18N
                     substitute};
             title = format.format (args);
         }
