@@ -75,6 +75,16 @@ public class MergePanel extends javax.swing.JPanel {
     private LinesComponent linesComp2;
     private LinesComponent linesComp3;
     
+    /**
+     * Line numbers in the result document. The indexes are "physical" document line numbers,
+     * and values are "logical" document line numbers. If there is a space inserted (a conflict),
+     * the corresponding document content is not defined and logical document line numbers
+     * do not grow.
+     * If the conflict starts from the beginning of the file, the logical line numbers are '0',
+     * if the conflict is in the middle of the file, the logical line numbers are euqal to
+     * the last logical line before this conflict.
+     * The line numbers start from '1'.
+     */
     private int[] resultLineNumbers;
 
     private ArrayList controlListeners = new ArrayList();
@@ -660,8 +670,10 @@ public class MergePanel extends javax.swing.JPanel {
         //System.out.println("showLine("+line+", "+diffLength+")");
         this.linesComp1.setActiveLine(line);
         this.linesComp2.setActiveLine(line);
-        linesComp2.repaint();
+        this.linesComp3.setActiveLine(line);
         linesComp1.repaint();
+        linesComp2.repaint();
+        linesComp3.repaint();
         int padding = 5;
         if (line <= 5) padding = line/2;
         int off1, off2;
@@ -888,7 +900,7 @@ public class MergePanel extends javax.swing.JPanel {
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         initGlobalSizes();
-                        linesComp1.repaint();
+                        linesComp1.changedAll();
                     }
                 });
             }
@@ -899,7 +911,7 @@ public class MergePanel extends javax.swing.JPanel {
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         initGlobalSizes();
-                        linesComp2.repaint();
+                        linesComp2.changedAll();
                     }
                 });
             }
@@ -910,7 +922,7 @@ public class MergePanel extends javax.swing.JPanel {
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         initGlobalSizes();
-                        linesComp3.repaint();
+                        linesComp3.changedAll();
                     }
                 });
             }
@@ -1044,7 +1056,7 @@ public class MergePanel extends javax.swing.JPanel {
     
     /** Copies a part of one document into another. */
     private void copy(StyledDocument doc1, int line1, int line2, StyledDocument doc2, int line3) throws BadLocationException {
-        int offset1 = org.openide.text.NbDocument.findLineOffset(doc1, line1);
+        int offset1 = org.openide.text.NbDocument.findLineOffset(doc1, line1 - 1);
         int offset2 = (line2 >= 0) ? org.openide.text.NbDocument.findLineOffset(doc1, line2)
                                    : (doc1.getLength() - 1);
         if (offset1 >= offset2) return ;
@@ -1057,7 +1069,7 @@ public class MergePanel extends javax.swing.JPanel {
         doc2.insertString(offset3, text, null);
         // Adjust the line numbers
         if (line2 < 0) line2 = org.openide.text.NbDocument.findLineNumber(doc1, doc1.getLength());
-        int numLines = line2 - line1;
+        int numLines = line2 - line1 + 1;
         //System.out.println("copy("+line1+", "+line2+", "+line3+"): resultLineNumbers.length = "+resultLineNumbers.length);
         /*
         if (line3 >= resultLineNumbers.length) {
@@ -1079,8 +1091,9 @@ public class MergePanel extends javax.swing.JPanel {
         if (resultLineNumbers[line3] == 0 && line3 > 0) resultLineNumbers[line3] = resultLineNumbers[line3 - 1] + 1;
         int resultLine = resultLineNumbers[line3];
         //System.out.println("resultLine = rln["+line3+"] = "+resultLine);
-        linesComp3.insertNumbers(line3, resultLine, numLines);
-        linesComp3.repaint();
+        //System.out.println("insertNumbers("+line3+", "+resultLine+", "+numLines+")");
+        linesComp3.insertNumbers(line3 - 1, resultLine, numLines);
+        linesComp3.changedAll();
         for (int i = 0; i < numLines; i++) resultLineNumbers[line3 + i] = resultLine + i;
     }
     
@@ -1122,11 +1135,12 @@ public class MergePanel extends javax.swing.JPanel {
     
     public void replace(StyledDocument doc1, int line1, int line2,
                         StyledDocument doc2, int line3, int line4) throws BadLocationException {
+        //dumpResultLineNumbers();
         //System.out.println("replace("+line1+", "+line2+", "+line3+", "+line4+")");
-        int offset1 = org.openide.text.NbDocument.findLineOffset(doc1, line1);
+        int offset1 = org.openide.text.NbDocument.findLineOffset(doc1, line1 - 1);
         int offset2 = (line2 >= 0) ? org.openide.text.NbDocument.findLineOffset(doc1, line2)
                                    : (doc1.getLength() - 1);
-        int offset3 = org.openide.text.NbDocument.findLineOffset(doc2, line3);
+        int offset3 = org.openide.text.NbDocument.findLineOffset(doc2, line3 - 1);
         int offset4 = (line4 >= 0) ? org.openide.text.NbDocument.findLineOffset(doc2, line4)
                                    : (doc2.getLength() - 1);
         int length = offset2 - offset1;
@@ -1136,45 +1150,111 @@ public class MergePanel extends javax.swing.JPanel {
         doc2.insertString(offset3, text, null);
         // Adjust the line numbers
         assureResultLineNumbersLength(line4);
-        int lineDiff;
-        if (resultLineNumbers[line3 + 1] <= resultLineNumbers[line3]) {
-            // There are no line numbers defined.
-            int n = resultLineNumbers[line3];
-            for (int i = line3 + 1; i <= line4; i++) resultLineNumbers[i] = ++n;
-            lineDiff = line2 - line1;
-            //System.out.println("insertNumbers("+line3+", "+resultLineNumbers[line3]+", "+lineDiff+")");
-            linesComp3.insertNumbers(line3 + 1, resultLineNumbers[line3 + 1], lineDiff);
-            linesComp3.repaint();
-        } else {
-            lineDiff = line2 - line1 - (line4 - line3);
+        //int lineDiff;
+        int physicalLineDiff = line2 - line1 - (line4 - line3);
+        if (physicalLineDiff > 0) {
+            System.arraycopy(resultLineNumbers, line4 + 1,
+                             resultLineNumbers, line4 + physicalLineDiff + 1,
+                             resultLineNumbers.length - line4 - physicalLineDiff - 1);
+            //System.out.println("arraycopy("+line4+", "+(line4 + physicalLineDiff)+")");
+            //dumpResultLineNumbers();
         }
-        adjustLineNumbers(line4, lineDiff);
+        int lineDiff = (resultLineNumbers[line3] <= resultLineNumbers[line3 - 1])
+                       ? (line2 - line1 + 1)
+                       : (line2 - line1 - (line4 - line3));
+        //if (resultLineNumbers[line3] <= resultLineNumbers[line3 - 1]) {
+            // There are no line numbers defined.
+            //lineDiff = line2 - line1 + 1;
+        int n = resultLineNumbers[line3 - 1];
+        for (int i = line3; i <= line4 + physicalLineDiff; i++) {
+            resultLineNumbers[i] = ++n;
+        }
+            /*
+            for (int i = line4 + lineDiff + 1; i < resultLineNumbers.length; i++) {
+                if (resultLineNumbers[i] != 0) resultLineNumbers[i] += lineDiff;
+                else break;
+            }
+             */
+        //lineDiff = line2 - line1 + 1;
+        //System.out.println("insertNumbers("+line3+", "+resultLineNumbers[line3]+", "+(line2 - line1 + 1)+")");
+        linesComp3.insertNumbers(line3 - 1, resultLineNumbers[line3], line2 - line1 + 1);
+        linesComp3.changedAll();
+        //dumpResultLineNumbers();
+        //} else {
+        //    lineDiff = line2 - line1 - (line4 - line3);
+        //}
+        if (physicalLineDiff < 0) {
+            System.arraycopy(resultLineNumbers, line4 + 1,
+            resultLineNumbers, line4 + physicalLineDiff + 1,
+            resultLineNumbers.length - line4 - 1);
+            //System.out.println("arraycopy("+line4+", "+(line4 + physicalLineDiff)+")");
+            //dumpResultLineNumbers();
+        }
+        adjustLineNumbers(line4 + physicalLineDiff + 1, lineDiff);
     }
+    
+    /*
+    private void dumpResultLineNumbers() {
+        System.out.print("resultLineNum[] = ");
+        boolean was = false;
+        for (int i = 0; i < resultLineNumbers.length; i++) {
+            if (resultLineNumbers[i] == 0 && was) break;
+            if (resultLineNumbers[i] != 0) was = true;
+            System.out.print(resultLineNumbers[i]+", ");
+        }
+        System.out.println("");
+        try {
+            Thread.currentThread().sleep(1000);
+        } catch (InterruptedException iex) {}
+    }
+     */
     
     private void adjustLineNumbers(int startLine, int shift) {
         //System.out.println("adjustLineNumbers("+startLine+", "+shift+")");
         int end = resultLineNumbers.length;
         while (end > 0 && resultLineNumbers[end - 1] == 0) end--;
         int startSetLine = -1;
+        int endSetLine = -1;
+        //resultLineNumbers[startLine] += shift;
         for (int i = startLine; i < end; i++) {
+            resultLineNumbers[i] += shift;
             if (resultLineNumbers[i] <= resultLineNumbers[i - 1]) {
-                if (startLine < 0) {
-                    startLine = i - 1;
+                if (startSetLine > 0) {
+                    //System.out.println("insertNumbers("+startSetLine+", "+resultLineNumbers[startSetLine]+", "+(i - startSetLine)+")");
+                    linesComp3.insertNumbers(startSetLine - 1, resultLineNumbers[startSetLine], i - startSetLine);
+                    linesComp3.changedAll();
+                    //dumpResultLineNumbers();
+                    startSetLine = -1;
+                }
+                if (endSetLine < 0) {
+                    endSetLine = i;
                 }
             } else {
-                if (startLine > 0) {
-                    //System.out.println("insertNumbers("+startLine+", "+resultLineNumbers[startLine]+", "+(i - startLine)+")");
-                    linesComp3.insertNumbers(startLine, resultLineNumbers[startLine], i - startLine);
-                    linesComp3.repaint();
-                    startLine = -1;
+                if (endSetLine > 0) {
+                    //System.out.println("removeNumbers("+endSetLine+", "+(i - endSetLine)+")");
+                    linesComp3.removeNumbers(endSetLine - 1, i - endSetLine);
+                    linesComp3.changedAll();
+                    //dumpResultLineNumbers();
+                    endSetLine = -1;
+                }
+                if (startSetLine < 0) {
+                    startSetLine = i;
                 }
             }
-            resultLineNumbers[i] += shift;
         }
-        if (startLine > 0) {
-            //System.out.println("insertNumbers("+startLine+", "+resultLineNumbers[startLine]+", "+(end - startLine)+" (END))");
-            linesComp3.insertNumbers(startLine, resultLineNumbers[startLine], end - startLine - 1);
-            linesComp3.repaint();
+        if (startSetLine > 0) {
+            //System.out.println("insertNumbers("+startSetLine+", "+resultLineNumbers[startSetLine]+", "+(end - startSetLine)+" (END))");
+            linesComp3.insertNumbers(startSetLine - 1, resultLineNumbers[startSetLine], end - startSetLine);
+            linesComp3.shrink(end - 1);
+            linesComp3.changedAll();
+            //dumpResultLineNumbers();
+        }
+        if (endSetLine > 0) {
+            //System.out.println("removeNumbers("+endSetLine+", "+(end - endSetLine)+" (END))");
+            linesComp3.removeNumbers(endSetLine - 1, end - endSetLine);
+            linesComp3.shrink(end - 1);
+            linesComp3.changedAll();
+            //dumpResultLineNumbers();
         }
     }
     

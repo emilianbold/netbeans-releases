@@ -167,7 +167,7 @@ public class MergeControl extends Object implements ActionListener {
             int n3 = action.getSecondStart() + diffShifts[i][1];
             int n4 = action.getSecondEnd() + diffShifts[i][1];
             //System.out.println("diff = "+n1+", "+n2+", "+n3+", "+n4+"; copy("+(line1 - 1)+", "+(n1-1)+", "+line3+")");
-            if (n1 >= line1) panel.copySource1ToResult(line1 - 1, n1 - 1, line3);
+            if (n1 >= line1) panel.copySource1ToResult(line1, n1 - 1, line3);
             line3 += n1 - line1;
             int length = Math.max(n2 - n1, n4 - n3);
             panel.addEmptyLines3(line3, length + 1);
@@ -177,7 +177,7 @@ public class MergeControl extends Object implements ActionListener {
             line1 = n2 + 1;
         }
         //System.out.println("copy("+(line1 - 1)+", -1, "+line3+")");
-        panel.copySource1ToResult(line1 - 1, -1, line3);
+        panel.copySource1ToResult(line1, -1, line3);
     }
 
     private void showCurrentLine() {
@@ -205,7 +205,7 @@ public class MergeControl extends Object implements ActionListener {
         int line3 = diff.getSecondStart() + shifts[1];
         int line4 = (diff.getType() != Difference.DELETE) ? diff.getSecondEnd() + shifts[1]
                                                           : line3;
-        int rlength;
+        int rlength; // The length of the area before the conflict is resolved
         if (resolvedConflicts.contains(diff)) {
             rlength = (right) ? (line2 - line1) : (line4 - line3);
         } else {
@@ -213,43 +213,47 @@ public class MergeControl extends Object implements ActionListener {
         }
         int shift;
         if (right) {
-            panel.replaceSource2InResult(line3 - 1, line4,
-                                         resultDiffLocations[conflNum] - 1,
+            panel.replaceSource2InResult(line3, line4,
+                                         resultDiffLocations[conflNum],
                                          resultDiffLocations[conflNum] + rlength);
             shift = rlength - (line4 - line3);
         } else {
-            panel.replaceSource1InResult(line1 - 1, line2,
-                                         resultDiffLocations[conflNum] - 1,
+            panel.replaceSource1InResult(line1, line2,
+                                         resultDiffLocations[conflNum],
                                          resultDiffLocations[conflNum] + rlength);
             shift = rlength - (line2 - line1);
         }
         for (int i = conflNum + 1; i < diffs.length; i++) {
-            resultDiffLocations[i] += shift;
+            resultDiffLocations[i] -= shift;
         }
         resolvedConflicts.add(diff);
     }
     
     public void actionPerformed(ActionEvent actionEvent) {
-        String actionCommand = actionEvent.getActionCommand();
-        if (MergePanel.ACTION_FIRST_CONFLICT.equals(actionCommand)) {
-            currentDiffLine = 0;
-            showCurrentLine();
-        } else if (MergePanel.ACTION_LAST_CONFLICT.equals(actionCommand)) {
-            currentDiffLine = diffs.length - 1;
-            showCurrentLine();
-        } else if (MergePanel.ACTION_PREVIOUS_CONFLICT.equals(actionCommand)) {
-            currentDiffLine--;
-            if (currentDiffLine < 0) currentDiffLine = diffs.length - 1;
-            showCurrentLine();
-        } else if (MergePanel.ACTION_NEXT_CONFLICT.equals(actionCommand)) {
-            currentDiffLine++;
-            if (currentDiffLine >= diffs.length) currentDiffLine = 0;
-            showCurrentLine();
-        } else if (MergePanel.ACTION_ACCEPT_RIGHT.equals(actionCommand)) {
-            doResolveConflict(true, currentDiffLine);
-        } else if (MergePanel.ACTION_ACCEPT_LEFT.equals(actionCommand)) {
-            doResolveConflict(false, currentDiffLine);
-        }
+        final String actionCommand = actionEvent.getActionCommand();
+        org.openide.util.RequestProcessor.postRequest(new Runnable() {
+            public void run() {
+                if (MergePanel.ACTION_FIRST_CONFLICT.equals(actionCommand)) {
+                    currentDiffLine = 0;
+                    showCurrentLine();
+                } else if (MergePanel.ACTION_LAST_CONFLICT.equals(actionCommand)) {
+                    currentDiffLine = diffs.length - 1;
+                    showCurrentLine();
+                } else if (MergePanel.ACTION_PREVIOUS_CONFLICT.equals(actionCommand)) {
+                    currentDiffLine--;
+                    if (currentDiffLine < 0) currentDiffLine = diffs.length - 1;
+                    showCurrentLine();
+                } else if (MergePanel.ACTION_NEXT_CONFLICT.equals(actionCommand)) {
+                    currentDiffLine++;
+                    if (currentDiffLine >= diffs.length) currentDiffLine = 0;
+                    showCurrentLine();
+                } else if (MergePanel.ACTION_ACCEPT_RIGHT.equals(actionCommand)) {
+                    doResolveConflict(true, currentDiffLine);
+                } else if (MergePanel.ACTION_ACCEPT_LEFT.equals(actionCommand)) {
+                    doResolveConflict(false, currentDiffLine);
+                }
+            }
+        });
     }
     
 }
