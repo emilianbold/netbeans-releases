@@ -53,13 +53,17 @@ public abstract class XMLGenerateAction extends CookieAction {
     protected void performAction (final Node[] activatedNodes) {
       try {
           for (int i = 0; i < activatedNodes.length; i++) {
-              XMLGenerateCookie gc = (XMLGenerateCookie)activatedNodes[i].getCookie (getOwnCookieClass());
+              Class cake = getOwnCookieClass();
+              XMLGenerateCookie gc = (XMLGenerateCookie)activatedNodes[i].getCookie (cake);
               if (gc != null) {
                   gc.generate ();
+              } else {
+                  throw new IllegalStateException("Missing cookie " + cake);
               }
           }
       } catch (RuntimeException ex) {
-          Util.debug("Generate action failed.", ex); // NOI18N
+          String msg = Util.getString("MSG_action_failed");  //NOI18N
+          Util.notifyException(msg, ex);
       }
     }
 

@@ -149,9 +149,13 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
      * in editor mode.
      */
     public void generate () {
+        
         try {
-            if (getDTD() == null)
+            if (getDTD() == null) {
+                String msg = org.openide.util.NbBundle.getMessage(SAXGeneratorSupport.class, "MSG_invalid_dtd");
+                Util.notifyWarning(msg);
                 return;
+            }
 
             FileObject primFile = DO.getPrimaryFile();
             
@@ -322,7 +326,8 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
         } catch (IOException e) {
             Util.debug ("Ignoring:", e);  // NOI18N
         } finally {
-            GuiUtil.setStatusText(""); // NOI18N
+            String msg = org.openide.util.NbBundle.getMessage(SAXGeneratorSupport.class, "MSG_sax_progress_done");
+            GuiUtil.setStatusText(msg); // NOI18N
         }
     }
 

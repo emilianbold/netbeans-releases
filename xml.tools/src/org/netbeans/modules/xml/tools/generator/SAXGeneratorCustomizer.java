@@ -44,21 +44,21 @@ public class SAXGeneratorCustomizer extends javax.swing.JPanel implements Custom
         sAXGeneratorMethodPanel1 = new org.netbeans.modules.xml.tools.generator.SAXGeneratorMethodPanel();
         sAXGeneratorVersionPanel1 = new org.netbeans.modules.xml.tools.generator.SAXGeneratorVersionPanel();
         sAXGeneratorFilePanel1 = new org.netbeans.modules.xml.tools.generator.SAXGeneratorFilePanel();
-        
+
         setLayout(new java.awt.GridLayout(2, 2));
-        
+
         sAXGeneratorParsletPanel1.setLayout(new java.awt.BorderLayout());
-        
+
         add(sAXGeneratorParsletPanel1);
-        
+
         sAXGeneratorMethodPanel1.setLayout(new java.awt.BorderLayout());
-        
+
         add(sAXGeneratorMethodPanel1);
-        
+
         add(sAXGeneratorVersionPanel1);
-        
+
         add(sAXGeneratorFilePanel1);
-        
+
     }//GEN-END:initComponents
 
     public void setObject(java.lang.Object peer) {
@@ -92,9 +92,9 @@ public class SAXGeneratorCustomizer extends javax.swing.JPanel implements Custom
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.netbeans.modules.xml.tools.generator.SAXGeneratorParsletPanel sAXGeneratorParsletPanel1;
+    private org.netbeans.modules.xml.tools.generator.SAXGeneratorFilePanel sAXGeneratorFilePanel1;
     private org.netbeans.modules.xml.tools.generator.SAXGeneratorMethodPanel sAXGeneratorMethodPanel1;
     private org.netbeans.modules.xml.tools.generator.SAXGeneratorVersionPanel sAXGeneratorVersionPanel1;
-    private org.netbeans.modules.xml.tools.generator.SAXGeneratorFilePanel sAXGeneratorFilePanel1;
     // End of variables declaration//GEN-END:variables
 
 }

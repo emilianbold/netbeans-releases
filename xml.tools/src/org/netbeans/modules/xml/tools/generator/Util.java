@@ -14,7 +14,7 @@ package org.netbeans.modules.xml.tools.generator;
 
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.xml.tools.AbstractUtil;
+import org.netbeans.modules.xml.core.AbstractUtil;
 
 /**
  *
