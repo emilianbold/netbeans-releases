@@ -249,7 +249,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
      * @return  <code>true</code> if the file was successfully open,
      *          <code>false</code> otherwise
      */
-    private final boolean openByCookie(DataObject dataObject,
+    private final boolean openDataObjectByCookie(DataObject dataObject,
                                        int line) {
         Node.Cookie cookie;
         Class cookieClass;
@@ -354,7 +354,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
         
         /* Try to grab an editor/open/view cookie and open the object: */
         setStatusLineOpening(fileName, waiter != null);
-        boolean success = openByCookie(dataObject, line);
+        boolean success = openDataObjectByCookie(dataObject, line);
         clearStatusLine();
         if (success) {
             return true;
