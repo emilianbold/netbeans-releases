@@ -20,6 +20,7 @@ import com.netbeans.ide.util.actions.ActionPerformer;
 import com.netbeans.ide.util.actions.CallableSystemAction;
 
 /** Opens a HTML Browser on the home URL specified in IDESettings.
+* (Or activates last opened).
 *
 * @author Ian Formanek
 */
@@ -54,6 +55,7 @@ public class HTMLViewAction extends CallableSystemAction {
 
 /*
  * Log
+ *  7    Gandalf   1.6         3/12/99  David Simonek   
  *  6    Gandalf   1.5         3/6/99   David Simonek   
  *  5    Gandalf   1.4         3/2/99   David Simonek   icons repair
  *  4    Gandalf   1.3         3/1/99   David Simonek   icons etc..
