@@ -18,9 +18,9 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="init" depends="default.init">
     <patternset id="monitor.files">
-      <include name="${nb.modules.dir}/monitor.jar"/>
-      <include name="${nb.modules/docs.dir}/monitor.jar"/>
-      <include name="${nb.modules.dir}/ext/httpmonitor.jar"/>
+      <include name="${nb.modules.dir}/org-netbeans-modules-web-monitor.jar"/>
+      <include name="${nb.modules/docs.dir}/org-netbeans-modules-web-monitor.jar"/>
+      <include name="${nb.modules.dir}/ext/org-netbeans-modules-web-httpmonitor.jar"/>
     </patternset>
     <path id="core-cp">
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
   <!-- These are the primary targets. -->
 
   <target name="netbeans" depends="jars,javahelp">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/monitor.jar">
+    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/org-netbeans-modules-web-monitor.jar">
       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
         <patternset refID="monitor.files"/>
       </fileset>
@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="netbeans">
     <makenbm file="monitor.nbm"
              productdir="${netbeans.dest.dir}/${cluster.dir}"
-	     module="${nb.modules.dir}/monitor.jar"
+	     module="${nb.modules.dir}/org-netbeans-modules-web-monitor.jar"
 	     homepage="http://monitor.${homepage.base}/"
 	     distribution="http://${dist.base}/monitor.nbm">
       <license file="${license.file}" />
@@ -85,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
       <exclude name="credits.html"/>
     </jhindexer>
     <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/monitor.jar"
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/org-netbeans-modules-web-monitor.jar"
          compress="true">
       <fileset dir="javahelp" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
     </jar>
@@ -134,7 +134,7 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="manifest.mf" tofile="manifest-subst.mf"
           filtering="on"/>
 
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/monitor.jar"
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-web-monitor.jar"
          manifest="manifest-subst.mf"
          compress="false">
       <fileset dir="src">
@@ -153,7 +153,7 @@ Microsystems, Inc. All Rights Reserved.
       server. It will not be deployed correctly if we build a separate 
       version for another language --> 
     <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/httpmonitor.jar"
+    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/org-netbeans-modules-web-httpmonitor.jar"
          compress="false">
 	<fileset dir="src">
         <patternset excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt">

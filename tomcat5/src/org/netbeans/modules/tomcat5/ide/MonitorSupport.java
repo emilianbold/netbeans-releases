@@ -153,7 +153,7 @@ public class MonitorSupport {
         File instDir = tm.getCatalinaHomeDir();
         if (instDir==null) return;
         
-        copyFromIDEInstToDir("modules/ext/httpmonitor.jar"  , instDir, "common/lib/httpmonitor.jar");  // NOI18N
+        copyFromIDEInstToDir("modules/ext/org-netbeans-modules-web-httpmonitor.jar"  , instDir, "common/lib/org-netbeans-modules-web-httpmonitor.jar");  // NOI18N
         copyFromIDEInstToDir("modules/org-netbeans-modules-schema2beans.jar" , instDir, "common/lib/org-netbeans-modules-schema2beans.jar"); // NOI18N
         
         //copyFromIDEInstToDir("modules/ext/monitor-valve.jar", instDir, "server/lib/monitor-valve.jar"); // NOI18N

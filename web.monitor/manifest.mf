@@ -10,5 +10,5 @@ OpenIDE-Module-Requires: org.openide.util.HttpServer$Impl
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.servletapi/1,
   org.netbeans.modules.schema2beans/1
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.13
-Class-Path: docs/monitor.jar
+Class-Path: docs/org-netbeans-modules-web-monitor.jar
 
