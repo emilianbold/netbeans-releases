@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.BufferedInputStream;
 import java.io.OutputStream;
+import java.util.Iterator;
 import java.text.MessageFormat;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
@@ -37,9 +38,13 @@ import com.netbeans.ide.cookies.ViewCookie;
 import com.netbeans.ide.cookies.SaveCookie;
 import com.netbeans.ide.loaders.MultiDataObject;
 import com.netbeans.ide.loaders.DataObject;
+import com.netbeans.ide.filesystems.FileObject;
 import com.netbeans.ide.windows.CloneableTopComponent;
 import com.netbeans.ide.windows.TopComponent;
+import com.netbeans.ide.nodes.NodeAdapter;
+import com.netbeans.ide.nodes.Node;
 import com.netbeans.ide.TopManager;
+import com.netbeans.ide.NotifyDescriptor;
 
  
 /** Support for viewing porperties files (ViewCookie) by opening them in a text editor */
@@ -60,14 +65,32 @@ public class PropertiesEditorSupport extends EditorSupport implements ViewCookie
   /** The type of new lines */
   byte newLineType;
 
+  /** The flag saying if we should listen to the document modifications */
+  private boolean listenToEntryModifs = true;
+
+  /** Listener to the document changes - entry. The superclass holds a saving manager 
+  * for the whole dataobject. */
+  private EntrySavingManager entryModifL;
+
   /** Properties Settings */
   static final PropertiesSettings settings = new PropertiesSettings();
 
   /** Constructor */
   public PropertiesEditorSupport(PropertiesFileEntry entry) {
     super (entry);
+    super.setModificationListening(false);
     setMIMEType ("text/plain");
     initTimer();
+
+    // listen to myself so I can add a listener for changes when the document is loaded
+    addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        if (isDocumentLoaded()) {
+          getDocument().addDocumentListener(getEntryModifL());
+        }
+      }
+    });
+
     //PENDING
     // set actions
     /*setActions (new SystemAction [] {
@@ -80,7 +103,6 @@ public class PropertiesEditorSupport extends EditorSupport implements ViewCookie
   /** Visible view of underlying file entry */
   PropertiesFileEntry myEntry = (PropertiesFileEntry)entry;
   
-   
   /** Focuses existing component to open, or if none exists creates new.
   * @see OpenCookie#open
   */
@@ -149,6 +171,29 @@ public class PropertiesEditorSupport extends EditorSupport implements ViewCookie
     });
   }              
   
+
+  public void saveThisEntry() throws IOException {
+    super.saveDocument();
+    myEntry.setModified(false);
+  }
+
+  /** Utility method which enables or disables listening to modifications
+  * on asociated document.
+  * <P>
+  * Could be useful if we have to modify document, but do not want the
+  * Save and Save All actions to be enabled/disabled automatically.
+  * Initially modifications are listened to.
+  * @param listenToModifs whether to listen to modifications
+  */
+  public void setModificationListening (final boolean listenToModifs) {
+    this.listenToEntryModifs = listenToModifs;
+    if (getDocument() == null) return;
+    if (listenToEntryModifs)
+      getDocument().addDocumentListener(getEntryModifL());
+    else
+      getDocument().removeDocumentListener(getEntryModifL());
+  }
+
   /* A method to create a new component. Overridden in subclasses.
   * @return the {@link Editor} for this support
   */
@@ -156,13 +201,41 @@ public class PropertiesEditorSupport extends EditorSupport implements ViewCookie
     // initializes the document if not initialized
     prepareDocument ();
 
-    DataObject obj = findDataObject ();
-    if (obj == null)
-      System.out.println("object not found");
-    Editor editor = new PropertiesEditor (obj, (PropertiesFileEntry)entry);
+    DataObject obj = myEntry.getDataObject ();
+    Editor editor = new PropertiesEditor (obj, myEntry);
     return editor;
   }
   
+  /** Should test whether all data is saved, and if not, prompt the user
+  * to save.
+  *
+  * @return <code>true</code> if everything can be closed
+  */
+  protected boolean canClose () {
+    SaveCookie savec = (SaveCookie) myEntry.getCookie(SaveCookie.class);
+    if (savec != null) {
+      MessageFormat format = new MessageFormat(NbBundle.getBundle(PropertiesEditorSupport.class).
+        getString("MSG_SaveFile"));
+      String msg = format.format(new Object[] { entry.getFile().getName()});
+      NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_CANCEL_OPTION);
+      Object ret = TopManager.getDefault().notify(nd);
+  
+      if (NotifyDescriptor.CANCEL_OPTION.equals(ret))
+        return false;
+      
+      if (NotifyDescriptor.YES_OPTION.equals(ret)) {
+        try {
+          savec.save();
+        }
+        catch (IOException e) {
+          TopManager.getDefault().notifyException(e);
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   /** Read the file from the stream, filter the guarded section
   * comments, and mark the sections in the editor.
   *
@@ -212,6 +285,33 @@ public class PropertiesEditorSupport extends EditorSupport implements ViewCookie
   }
 
   
+  /** Does part of the cleanup - removes a listener.
+  */
+  private void closeDocumentEntry () {
+    // listen to modifs
+    if (listenToEntryModifs) {
+      getEntryModifL().clearSaveCookie(); // ???
+      if (getDocument() != null) {
+        getDocument().removeDocumentListener(getEntryModifL());
+      }
+    }
+  }
+
+  /** Returns an entry saving manager. */
+  private synchronized EntrySavingManager getEntryModifL () {
+    if (entryModifL == null) {
+      entryModifL = new EntrySavingManager();
+      // listens whether to add or remove SaveCookie
+      myEntry.addPropertyChangeListener(entryModifL);
+    }
+    return entryModifL;
+  }
+                           
+  /** Make modifiedApendix accessible for inner classes. */
+  String getModifiedAppendix() {
+    return modifiedAppendix;
+  }                       
+
   /** Cloneable top component to hold the editor kit.
   */
   class PropertiesEditor extends EditorSupport.Editor {
@@ -221,11 +321,27 @@ public class PropertiesEditorSupport extends EditorSupport implements ViewCookie
                                                                        
     /** Listener for entry's save cookie changes */
     private PropertyChangeListener saveCookieLNode;
+    /** Listener for entry's name changes */
+    private NodeAdapter nodeL;
 
     /** Creates new editor */
     public PropertiesEditor(DataObject obj, PropertiesFileEntry entry) {
       super(obj, PropertiesEditorSupport.this);
       this.entry = entry;
+
+      entry.getNodeDelegate().addNodeListener (
+        new WeakListener.Node(nodeL = 
+        new NodeAdapter () {
+          public void propertyChange (PropertyChangeEvent ev) {
+            if (ev.getPropertyName ().equals (Node.PROP_DISPLAY_NAME)) {
+              updateName();
+            }         
+          }  
+        }
+      ));
+      Node n = entry.getNodeDelegate ();
+      setActivatedNodes (new Node[] { n });
+      
       updateName();
 
       // entry to the set of listeners
@@ -241,6 +357,17 @@ public class PropertiesEditorSupport extends EditorSupport implements ViewCookie
         new WeakListener.PropertyChange(saveCookieLNode));
     }
 
+    /** When closing last view, also close the document.
+     * @return <code>true</code> if close succeeded
+    */
+    protected boolean closeLast () {
+      boolean canClose = super.closeLast();
+      if (!canClose)
+        return false;
+      PropertiesEditorSupport.this.closeDocumentEntry();
+      return true;
+    }
+
     /** Updates the name of this top component according to
     * the existence of the save cookie in ascoiated data object
     */
@@ -252,7 +379,7 @@ public class PropertiesEditorSupport extends EditorSupport implements ViewCookie
       else {
         String name = entry.getFile().getName();
         if (entry.getCookie(SaveCookie.class) != null)
-          setName(name + PropertiesEditorSupport.this.modifiedAppendix);
+          setName(name + PropertiesEditorSupport.this.getModifiedAppendix());
         else
           setName(name);
       }  
@@ -260,6 +387,89 @@ public class PropertiesEditorSupport extends EditorSupport implements ViewCookie
   
   } // end of PropertiesEditor inner class
   
+  /** EntrySavingManager manages two tasks concerning saving:<P>
+  * 1) It tracks changes in document asociated with ther entry and
+  *    sets modification flag appropriately.<P>
+  * 2) This class also implements functionality of SaveCookie interface
+  */
+  private final class EntrySavingManager implements DocumentListener, SaveCookie, PropertyChangeListener {
+
+    /*********** Implementation of the DocumentListener *******/
+
+    /** Gives notification that an attribute or set of attributes changed.
+    * @param ev event describing the action
+    */
+    public void changedUpdate(DocumentEvent ev) {
+      // do nothing - just an attribute
+    }
+
+    /** Gives notification that there was an insert into the document.
+    * @param ev event describing the action
+    */
+    public void insertUpdate(DocumentEvent ev) {
+      modified();
+    }
+
+    /** Gives notification that a portion of the document has been removed.
+    * @param ev event describing the action
+    */
+    public void removeUpdate(DocumentEvent ev) {
+      modified();
+    }
+
+    /** Gives notification that the DataObject was changed.
+    * @param ev PropertyChangeEvent
+    */
+    public void propertyChange(PropertyChangeEvent ev) {
+      if ((ev.getSource() == myEntry) &&
+          (ev.getPropertyName() == PropertiesFileEntry.PROP_MODIFIED)) {
+        
+        if (((Boolean) ev.getNewValue()).booleanValue()) {
+          addSaveCookie();
+        } else {
+          removeSaveCookie();
+        }
+      }
+    }
+
+    /******* Implementation of the Save Cookie *********/
+
+    public void save () throws IOException {
+      // do saving job
+      saveThisEntry();
+    }
+
+    void clearSaveCookie() {
+      // remove save cookie (if save was succesfull)
+      myEntry.setModified(false);
+    }
+
+    /** Sets modification flag.
+    */
+    private void modified () {
+      myEntry.setModified(true);
+    }
+    /** Adds save cookie to the DO.
+    */
+    private void addSaveCookie() {
+      // add Save cookie to the entry       
+      if (myEntry.getCookie(SaveCookie.class) == null) {
+        myEntry.getCookieSet().add(this);
+      }
+      ((PropertiesDataObject)myEntry.getDataObject()).updateModificationStatus();
+    }
+    /** Removes save cookie from the DO.
+    */
+    private void removeSaveCookie() {                   
+      // remove Save cookie from the data object
+      if (myEntry.getCookie(SaveCookie.class) == this) {
+        myEntry.getCookieSet().remove(this);
+      }
+      ((PropertiesDataObject)myEntry.getDataObject()).updateModificationStatus();
+    }
+    
+  } // end of EntrySavingManager inner class
+
 
   /** This stream is able to filter various new line delimiters and replace them by \n.
   */

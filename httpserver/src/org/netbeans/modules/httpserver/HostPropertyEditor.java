@@ -56,23 +56,31 @@ public class HostPropertyEditor extends PropertyEditorSupport {
 
   /** @param text A text for the current value. */
   public void setAsText (String text) {
+//System.out.println("set as text "   + text);
     if (text.equals(LOCALHOST)) {
-//      HttpServerSettings.OPTIONS.setHost(HttpServerSettings.LOCALHOST);
+      //HttpServerSettings.OPTIONS.setHost(HttpServerSettings.LOCALHOST);
       setValue(HttpServerSettings.LOCALHOST);
       return;
     }
     if (text.equals(ANYHOST)) {
-//      HttpServerSettings().OPTIONS.setHost(HttpServerSettings.ANYHOST);
+      //HttpServerSettings.OPTIONS.setHost(HttpServerSettings.ANYHOST);
       setValue(HttpServerSettings.ANYHOST);
       return;
     }
 
     throw new IllegalArgumentException ();
+  }   
+  
+  public void setValue(Object value) {
+//System.out.println("setValue " + value.toString());
+//util.Util.printStackTrace();
+    super.setValue(value);
   }
 }
 
 /*
  * Log
+ *  3    Gandalf   1.2         6/8/99   Petr Jiricka    
  *  2    Gandalf   1.1         5/11/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/7/99   Petr Jiricka    
  * $

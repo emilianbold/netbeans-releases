@@ -102,8 +102,7 @@ public class KeyNode extends AbstractNode {
   /* Destroyes the node
   */
   public void destroy () throws IOException {
-    // PENDING
-    //item.delete ();
+    struct.deleteItem(itemKey);
     super.destroy ();
   }
 
@@ -276,6 +275,7 @@ public class KeyNode extends AbstractNode {
 
 /*
  * <<Log>>
+ *  5    Gandalf   1.4         6/8/99   Petr Jiricka    
  *  4    Gandalf   1.3         6/6/99   Petr Jiricka    
  *  3    Gandalf   1.2         5/16/99  Petr Jiricka    
  *  2    Gandalf   1.1         5/14/99  Petr Jiricka    

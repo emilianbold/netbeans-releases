@@ -316,7 +316,7 @@ debug("PARSING TASK CHECK : " + (parsingTask == null ? "NULL":"NOT NULL"));
   }
 
   private void debug(String hlaska) {
-    System.out.println(pfe.getFile().getName() + " > " + hlaska + "// " + Thread.currentThread().toString());
+//    System.out.println(pfe.getFile().getName() + " > " + hlaska + "// " + Thread.currentThread().toString());
   }
 
   // ======================== The real data holder ==========================
@@ -347,7 +347,6 @@ debug("PARSING TASK CHECK : " + (parsingTask == null ? "NULL":"NOT NULL"));
     * of this class from the memory.
     */
     public void finalize() {     
-//System.out.println("Garbage collecting DataRef");
       if (pfe != null) {
         pfe.getHandler().dataRefReleased(this);
       }

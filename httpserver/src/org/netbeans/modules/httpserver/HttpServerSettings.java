@@ -35,7 +35,7 @@ import com.netbeans.ide.filesystems.FileObject;
 public class HttpServerSettings extends SystemOption implements HttpServer.Impl {
   
   /** generated Serialized Version UID */
-  //static final long serialVersionUID = -2930037136839837001L;
+  static final long serialVersionUID = -2930037136839837001L;
                  
   /** Has this been initialized ? 
   *  Becomes true if a "running" getter or setter is called
@@ -216,6 +216,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
   /** setter for host */
   public void setHost(String h) {
+//System.out.println("Set host : " + h);
     if (h == ANYHOST || h == LOCALHOST)
       host = h;
   }
@@ -283,6 +284,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  7    Gandalf   1.6         6/8/99   Petr Jiricka    
  *  6    Gandalf   1.5         5/31/99  Petr Jiricka    
  *  5    Gandalf   1.4         5/28/99  Petr Jiricka    
  *  4    Gandalf   1.3         5/11/99  Petr Jiricka    

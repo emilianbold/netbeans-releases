@@ -46,7 +46,7 @@ public class HttpServerModule implements ModuleInstall {
   */
   public void restored() {            
     com.netbeans.ide.util.HttpServer.registerServer(HttpServerSettings.OPTIONS);
-//    com.mortbay.Base.Log.instance()._out = new NullWriter();
+    com.mortbay.Base.Log.instance()._out = new NullWriter();
   }
 
   /** Module was uninstalled. */
@@ -81,6 +81,9 @@ public class HttpServerModule implements ModuleInstall {
             config = new NbServer(HttpServerSettings.OPTIONS);
             server = new NbHttpServer(config);
             HttpServerSettings.OPTIONS.runSuccess();
+            System.out.println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
+              getString("CTL_ServerStarted"), new Object[] {new Integer(HttpServerSettings.OPTIONS.getPort())}));
+//            util.Util.printStackTrace();
           } catch (Exception ex) {
             // couldn't start
             ex.printStackTrace();
@@ -107,6 +110,9 @@ public class HttpServerModule implements ModuleInstall {
         // PENDING
       }
       serverThread = null;
+      System.out.println(NbBundle.getBundle(HttpServerModule.class).
+        getString("CTL_ServerStopped"));                            
+//      util.Util.printStackTrace();
     }  
   }
 
@@ -115,6 +121,7 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  11   Gandalf   1.10        6/8/99   Petr Jiricka    
  *  10   Gandalf   1.9         6/1/99   Petr Jiricka    
  *  9    Gandalf   1.8         6/1/99   Petr Jiricka    
  *  8    Gandalf   1.7         5/31/99  Petr Jiricka    

@@ -46,11 +46,11 @@ public class PropertiesStructure extends Element {
   * Looks for changes between the structures and according to them calls update methods.
   */
   public synchronized void update(PropertiesStructure struct) {       
-System.out.println(" ------- OLD -------- ");
+/*System.out.println(" ------- OLD -------- ");
 System.out.println(toString());
 System.out.println(" ------- NEW -------- ");
 System.out.println(struct.toString());
-System.out.println(" -------------------- ");
+System.out.println(" -------------------- ");*/
     boolean structChanged = false;
     Element.ItemElem curItem;
     Element.ItemElem oldItem;

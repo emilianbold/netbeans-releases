@@ -61,6 +61,9 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
   /** generated Serialized Version UID */
   //static final long serialVersionUID = 3328227388376142699L;
 
+  /** the node delegate for this data object */
+  private transient Node nodeDelegate;
+
   /** Name of the template property. */
   public static final String PROP_TEMPLATE = DataObject.PROP_TEMPLATE;
 
@@ -105,6 +108,27 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
   public PresentableFileEntry(MultiDataObject obj, FileObject fo) {
     super (obj, fo);
   }
+
+  /** Creates a node delegate for this entry. */
+  protected abstract Node createNodeDelegate();
+  
+  /** Get the node delegate. Either {@link #createNodeDelegate creates it} (if it does not
+  * already exist) or
+  * returns a previously created instance of it.
+  *
+  * @return the node delegate (without parent) for this data object
+  */
+  public final Node getNodeDelegate () {
+    if (nodeDelegate == null) {
+      synchronized (this) {
+        if (nodeDelegate == null) {
+          nodeDelegate = createNodeDelegate ();
+        }
+      }
+    }
+    return nodeDelegate;
+  }
+
 
   /** Package private method to assign template attribute to a file.
   * Used also from FileEntry.

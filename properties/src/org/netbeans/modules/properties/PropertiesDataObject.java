@@ -78,6 +78,29 @@ public final class PropertiesDataObject extends MultiDataObject {
   /** Returns the support object for JTable-editing. Should be used by all subentries as well */                                       
   public PropertiesOpen getOpenSupport () {
     return opener;
+  }                               
+                                          
+  /** Setter for modification status. Mod.status is handled by events from entries, 
+  * so this method does nothing. */
+  public void setModified(boolean modif) {
+    // do nothing, modification status is handled in other ways
+  }             
+  
+              
+  /** Updates modification status of this dataobject from its entries. */            
+  void updateModificationStatus() {
+    boolean modif = false;
+    if (((PresentableFileEntry)getPrimaryEntry()).isModified())
+      modif = true;
+    else {
+      for (Iterator it = secondaryEntries().iterator(); it.hasNext(); )
+        if (((PresentableFileEntry)it.next()).isModified()) {
+          modif = true;                                     
+          break;
+        } 
+    }     
+                  
+    super.setModified(modif);              
   }
   
   /** Provides node that should represent this data object. When a node for representation
@@ -207,7 +230,7 @@ public final class PropertiesDataObject extends MultiDataObject {
     }
 
     protected Node[] createNodes (Object key) {
-      return new Node[] { new PropertiesLocaleNode((PropertiesFileEntry)key) };
+      return new Node[] { ((PropertiesFileEntry)key).getNodeDelegate() };
     }
 
   } // end of class PropertiesChildren
@@ -216,6 +239,7 @@ public final class PropertiesDataObject extends MultiDataObject {
 
 /*
  * <<Log>>
+ *  11   Gandalf   1.10        6/8/99   Petr Jiricka    
  *  10   Gandalf   1.9         5/16/99  Petr Jiricka    
  *  9    Gandalf   1.8         5/14/99  Petr Jiricka    
  *  8    Gandalf   1.7         5/13/99  Petr Jiricka    

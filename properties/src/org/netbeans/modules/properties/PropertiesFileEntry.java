@@ -80,6 +80,11 @@ public class PropertiesFileEntry extends PresentableFileEntry {
   private void init() {
   }                      
                                   
+  /** Creates a node delegate for this entry. */
+  protected Node createNodeDelegate() {
+    return new PropertiesLocaleNode(this);
+  }
+
   /** Constructs children for this file entry */
   public Children getChildren() {
     return new PropKeysChildren();
@@ -244,13 +249,13 @@ public class PropertiesFileEntry extends PresentableFileEntry {
           switch (evt.getChangeType()) {
             case PropertyBundleEvent.CHANGE_STRUCT:
             case PropertyBundleEvent.CHANGE_ALL:
-System.out.println("got CHANGE_ALL - " + getFile().getName());
+//System.out.println("got CHANGE_ALL - " + getFile().getName());
               mySetKeys();
               break;
             case PropertyBundleEvent.CHANGE_FILE:
               if (evt.getEntryName().equals(getFile().getName()))
                 // if it's me
-System.out.println("got CHANGE_FILE - " + getFile().getName());
+//System.out.println("got CHANGE_FILE - " + getFile().getName());
                 mySetKeys();
               break;
             case PropertyBundleEvent.CHANGE_ITEM:

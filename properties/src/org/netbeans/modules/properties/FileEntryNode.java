@@ -29,6 +29,7 @@ import com.netbeans.ide.util.HelpCtx;
 import com.netbeans.ide.util.RequestProcessor;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.NbBundle;
+import com.netbeans.ide.util.WeakListener;
 import com.netbeans.ide.util.actions.SystemAction;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.loaders.*;
@@ -56,8 +57,9 @@ public class FileEntryNode extends AbstractNode {
   public FileEntryNode (PresentableFileEntry entry, Children ch) {
     super (ch);
     this.entry = entry;   
-    PropL propListener = new PropL ();
-    entry.addPropertyChangeListener (propListener);
+    PropL propListener = new PropL ();                    
+    PropertyChangeListener wl = new WeakListener.PropertyChange(propListener);
+    entry.addPropertyChangeListener (wl);
     entry.getDataObject().addPropertyChangeListener (propListener);
     super.setName (entry.getName ());
 
@@ -135,7 +137,7 @@ public class FileEntryNode extends AbstractNode {
   */
   public Node.Cookie getCookie (Class cl) {
     Node.Cookie c = entry.getCookie (cl);
-    if (c != null) {
+    if (c != null) {                                   
       return c;
     } else {
       return super.getCookie (cl);
@@ -221,14 +223,14 @@ public class FileEntryNode extends AbstractNode {
   */
   private class PropL extends Object implements PropertyChangeListener {
     public void propertyChange (PropertyChangeEvent ev) {
-//System.out.println("FileEntryNode event : " + ev.getPropertyName());
-      //fireChange (ev);
+      fireChange (ev);
     }
   }
 }
 
 /*
  * <<Log>>
+ *  3    Gandalf   1.2         6/8/99   Petr Jiricka    
  *  2    Gandalf   1.1         5/16/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
  * $
