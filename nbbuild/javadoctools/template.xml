@@ -88,10 +88,8 @@ cause it to fail.
             <srcfiles dir=".">
                 <include name="apichanges.xsl"/>
             </srcfiles>
-            <!-- XXX Ant 1.5.1:
             <srcfiles file="${javadoc.apichanges}"/>
             <srcfiles file="${javadoc.arch}"/>
-            -->
         </uptodate>
     </target>
 
@@ -128,7 +126,7 @@ cause it to fail.
             <doctitle>NetBeans ${javadoc.title}</doctitle>
             <header>${javadoc.header}</header>
             <bottom>${javadoc.footer}</bottom>
-            <!-- XXX in Ant 1.5.1 add: <tag name="beaninfo" scope="methods" description="Bean info:"/> -->
+            <tag name="beaninfo" scope="methods" description="Bean info:"/>
         </javadoc>
         <copy todir="${javadoc.out.dir}">
             <fileset refid="javadoc.css.files"/>
@@ -139,7 +137,6 @@ cause it to fail.
         <ant dir="../../libs/external" target="unscramble"/>
         <xmlvalidate file="${javadoc.apichanges}" failonerror="true"/>
         <echo message="in=${javadoc.apichanges} out=${javadoc.out.dir}/apichanges.html style=apichanges.xsl param name=javadoc-url-base expression=http://www.netbeans.org/download/dev/javadoc/${javadoc.name}"/>
-        <!-- XXX does not work with Crimson + Ant 1.4: -->
         <style in="${javadoc.apichanges}" out="${javadoc.out.dir}/apichanges.html" style="apichanges.xsl">
             <param name="javadoc-url-base" expression="http://www.netbeans.org/download/dev/javadoc/${javadoc.name}"/>
         </style>
