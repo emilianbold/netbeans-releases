@@ -240,7 +240,7 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         prop = new ProjectBasedirProperty (bundle.getString ("PROP_basedir"), bundle.getString ("HINT_basedir"));
         props.put (prop);
         // id prop unnecessary, since project name functions as an ID
-        props.put (new ProjectBuildSequenceProperty(proj.getProjectElement()));
+        props.put (new ProjectBuildSequenceProperty(proj));
     }
 
     public void propertyChange (PropertyChangeEvent evt) {
@@ -356,15 +356,21 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
     
     /** Property displaying the build sequence of the whole project. */
     public static class ProjectBuildSequenceProperty extends AntTargetNode.BuildSequenceProperty {
+        
+        /** ProjectCookie. */
+        protected AntProjectCookie proj;
+        
         /** Creates new ProjectBuildSequenceProperty.
          * @param elem the project Element.
          */
-        public ProjectBuildSequenceProperty(Element elem) {
-            super(elem);
+        public ProjectBuildSequenceProperty(AntProjectCookie proj) {
+            super (proj.getProjectElement ());
+            this.proj = proj;
         }
         
         /** Override getTarget of superclass to find default target. */
         public Element getTarget() {
+            el = proj.getProjectElement (); // to be sure that the Element is up to date.
             if (el != null && el.getAttribute("default") != null) { // NOI18N
                 return getTargetElement(el.getAttribute("default"), el); // NOI18N
             }

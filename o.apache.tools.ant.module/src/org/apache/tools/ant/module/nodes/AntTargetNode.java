@@ -137,13 +137,14 @@ public class AntTargetNode extends ElementNode {
             Element proj = (Element) el.getParentNode ();
             if (proj == null) return Collections.EMPTY_SET;
             String me = el.getAttribute ("name"); // NOI18N
-            NodeList nl = proj.getElementsByTagName ("target"); // NOI18N
-            Set s = new HashSet (Math.max (1, nl.getLength () - 1));
+            NodeList nl = proj.getChildNodes();
+            Set s = new HashSet();
             for (int i = 0; i < nl.getLength (); i++) {
-                Element target = (Element) nl.item (i);
-                String name = target.getAttribute ("name"); // NOI18N
-                if (! me.equals (name)) {
-                    s.add (name);
+                if (nl.item (i) instanceof Element) {
+                    Element target = (Element) nl.item (i);
+                    if (target.getTagName().equals("target") && ! me.equals(target.getAttribute("name"))) { // NOI18N
+                        s.add (target.getAttribute ("name")); // NOI18N
+                    }
                 }
             }
             AntModule.err.log ("AntTargetNode.DependsProperty.available=" + s);
@@ -343,7 +344,7 @@ public class AntTargetNode extends ElementNode {
          * @param proj AntProjectCookie of the Ant file
          */
         public BuildSequenceProperty (Element el) {
-            super ("sequenceproperty",
+            super ("buildSequence", // NOI18N
                    String.class,
                    NbBundle.getMessage (AntTargetNode.class, "PROP_target_sequence"),
                    NbBundle.getMessage (AntTargetNode.class, "HINT_target_sequence")
@@ -352,7 +353,7 @@ public class AntTargetNode extends ElementNode {
         }
 
         /** Returns the target of this BuildSequenceProperty. */
-        public Element getTarget() {
+        protected Element getTarget() {
             return el;
         }
         
@@ -397,8 +398,9 @@ public class AntTargetNode extends ElementNode {
             if (targetName == null) return runningList;
             
             // search target, skip it if found
-            for (int x=0; x < runningList.size (); x++) {
-                if (targetName.equals (runningList.get(x))) {
+            Iterator it = runningList.iterator();
+            while (it.hasNext()) {
+                if (targetName.equals (it.next())) {
                     return runningList;
                 }
             }
@@ -411,10 +413,10 @@ public class AntTargetNode extends ElementNode {
             
             // add each target of the dependencies List
             StringTokenizer st = new StringTokenizer(dependsString, ", "); // NOI18N
-            while (st.hasMoreTokens()) {
+            while (st.hasMoreTokens() && runningList != null) {
                 Element dependsTarget = getTargetElement(st.nextToken(), projectElement);
                 if (dependsTarget != null) {
-                    addTarget(runningList, dependsTarget, (pos + 1), projectElement);
+                    runningList = addTarget(runningList, dependsTarget, (pos + 1), projectElement);
                 } else {
                     // target is missing, we return null to indicate that something is wrong
                     return null;
