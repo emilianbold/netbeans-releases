@@ -31,6 +31,7 @@ public class MeasureMenus  {
         suite.addTest(new MainMenu("testViewMenu", "View main menu"));
         suite.addTest(new MainMenu("testBuildMenu", "Build main menu"));
         suite.addTest(new MainMenu("testRunMenu", "Debug main menu"));
+        suite.addTest(new MainMenu("testRefactoringMenu", "Refactoring main menu"));
         suite.addTest(new MainMenu("testVersioningMenu", "Versioning main menu"));
         suite.addTest(new MainMenu("testWindowMenu", "Window main menu"));
         suite.addTest(new MainMenu("testHelpMenu", "Help main menu"));
