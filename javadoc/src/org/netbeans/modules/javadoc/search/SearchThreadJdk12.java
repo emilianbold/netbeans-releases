@@ -270,7 +270,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
         }
 
         public void handleText(char[] data, int pos) {
-
+            
             if ( where == IN_AREF ) {
                 
                 if ( stopOnNext ) {
@@ -311,10 +311,12 @@ class SearchThreadJdk12 extends IndexSearchThread {
                     currentDii = dii;
                     where = IN_DESCRIPTION;
                 }
+                /*
                 else if ( text.substring( 0, Math.min(toFind.length(), text.length()) ).toUpperCase().compareTo( toFind.toUpperCase() ) > 0 ) {
                     // Stop suffering if we are behind the searched words
                     stopOnNext = true;
                 }
+                */
                 else {
                     where = IN_BALAST;
                 }
