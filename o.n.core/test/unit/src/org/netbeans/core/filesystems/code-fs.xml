@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+
+<filesystem>
+    <folder name="root">
+        <file name="root.xml"><![CDATA[<?xml version="1.0"?>
+            <MIME-resolver>
+                <file>
+                    <ext name="xml"/>
+                    <resolver mime="root.xml">
+                        <xml-rule>
+                            <element name="root"/>
+                        </xml-rule>
+                    </resolver>
+                </file>
+            </MIME-resolver>]]>
+        </file>
+
+        <file name="ns.xml"><![CDATA[<?xml version="1.0"?>
+            <MIME-resolver>
+                <file>
+                    <ext name="xml"/>
+                    <resolver mime="ns.xml">
+                        <xml-rule>
+                            <element ns="test"/>
+                        </xml-rule>
+                    </resolver>
+                </file>
+            </MIME-resolver>]]>
+        </file>
+
+        <file name="pid.xml"><![CDATA[<?xml version="1.0"?>
+            <MIME-resolver>
+                <file>
+                    <ext name="xml"/>
+                    <resolver mime="pid.xml">
+                        <xml-rule>
+                            <doctype public-id="test"/>
+                        </xml-rule>
+                    </resolver>
+                </file>
+            </MIME-resolver>]]>
+        </file>
+
+        <file name="magic.xml"><![CDATA[<?xml version="1.0"?>
+            <MIME-resolver>
+                <file>
+                    <magic hex="6161"/>
+                    <resolver mime="magic.xml"/>
+                </file>
+            </MIME-resolver>]]>
+        </file>
+
+        <file name="magic-mask.xml"><![CDATA[<?xml version="1.0"?>
+            <MIME-resolver>
+                <file>
+                    <magic hex="0303" mask="0303"/>
+                    <resolver mime="magic-mask.xml"/>
+                </file>
+            </MIME-resolver>]]>
+        </file>
+
+    </folder>
+</filesystem>

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<filesystem>
+    <folder name="root">
+        <file name="empty.dtd"/>
+        <file name="root.xml"><![CDATA[<?xml version="1.0"?>
+            <root/>]]>
+        </file>
+        <file name="ns.xml"><![CDATA[<?xml version="1.0"?>
+            <ns:root xmlns:ns="test"/>]]>
+        </file>
+        <file name="pid.xml"><![CDATA[<?xml version="1.0"?>
+            <!DOCTYPE root PUBLIC "test" "empty.dtd">
+            <root/>]]>
+        </file>
+        <file name="test.exe"><![CDATA[aaa]]></file>
+        <file name="test.elf"><![CDATA[CCC]]></file>
+    </folder>
+</filesystem>
