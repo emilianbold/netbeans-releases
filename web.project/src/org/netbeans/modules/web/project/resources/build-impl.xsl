@@ -145,6 +145,7 @@ is divided into following sections:
                 <condition property="do.display.browser">
                     <istrue value="${{display.browser}}"/>
                 </condition>
+                <available file="${{conf.dir}}/MANIFEST.MF" property="has.custom.manifest"/>
             </target>
 
             <target name="-post-init">
@@ -549,12 +550,19 @@ is divided into following sections:
                         <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
                     </xsl:call-template>
                 </copy>
+                
                 <copy todir="${{build.web.dir}}">
                   <fileset excludes="${{build.web.excludes}}" dir="${{web.docbase.dir}}">
                    <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
                      <xsl:attribute name="excludes">WEB-INF/classes/** WEB-INF/web.xml WEB/sun-web.xml</xsl:attribute>
                    </xsl:if>
                   </fileset>
+                </copy>
+                
+                <property name="build.meta.inf.dir" value="${{build.web.dir}}/META-INF"/>
+                <mkdir dir="${{build.meta.inf.dir}}"/>
+                <copy todir="${{build.meta.inf.dir}}">
+                    <fileset includes="MANIFEST.MF" dir="${{conf.dir}}"/>
                 </copy>
 
                 <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
@@ -595,14 +603,22 @@ is divided into following sections:
                         <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
                     </xsl:call-template>
                 </copy>
+                
                 <copy todir="${{build.ear.web.dir}}">
                   <fileset excludes="${{build.web.excludes}}" dir="${{web.docbase.dir}}">
                    <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
                      <xsl:attribute name="excludes">WEB-INF/classes/** WEB-INF/web.xml WEB/sun-web.xml</xsl:attribute>
                    </xsl:if>
                   </fileset>
+                  <fileset includes="META-INF/MANIFEST.MF" dir="${{conf.dir}}"/>
                 </copy>
 
+                <property name="build.meta.inf.dir" value="${{build.ear.web.dir}}/META-INF"/>
+                <mkdir dir="${{build.meta.inf.dir}}"/>
+                <copy todir="${{build.meta.inf.dir}}">
+                    <fileset includes="MANIFEST.MF" dir="${{conf.dir}}"/>
+                </copy>
+                
                 <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
                     <xsl:comment>For web services, refresh web.xml and sun-web.xml</xsl:comment>  
                     <copy todir="${{build.web.dir}}" overwrite="true"> 
@@ -737,7 +753,7 @@ is divided into following sections:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
-            <target name="do-dist">
+            <target name="-do-dist-without-manifest" unless="has.custom.manifest">
                 <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
@@ -745,6 +761,20 @@ is divided into following sections:
                     <fileset dir="${{build.web.dir}}"/>
                 </jar>
             </target>
+            
+            <target name="-do-dist-with-manifest" if="has.custom.manifest">
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
+                <dirname property="dist.jar.dir" file="${{dist.war}}"/>
+                <mkdir dir="${{dist.jar.dir}}"/>
+                <jar manifest="${{build.web.dir}}/META-INF/MANIFEST.MF" jarfile="${{dist.war}}" compress="${{jar.compress}}">
+                    <fileset dir="${{build.web.dir}}"/>
+                </jar>
+            </target>
+            
+            <target name="do-dist">
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist,-do-dist-with-manifest,-do-dist-without-manifest</xsl:attribute>
+            </target>
+            
 
             <target name="library-inclusion-in-manifest" depends="compile">
                 <xsl:for-each select="//webproject2:library/webproject2:file">
@@ -763,6 +793,9 @@ is divided into following sections:
                      </copy>
                 </xsl:for-each>
                 <mkdir dir="${{build.ear.web.dir}}/META-INF"/>
+                
+                
+                
                 <manifest file="${{build.ear.web.dir}}/META-INF/MANIFEST.MF" mode="update">
                     <attribute>
                         <xsl:attribute name="name">Class-Path</xsl:attribute>
