@@ -35,6 +35,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.TopManager;
+import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
@@ -52,6 +53,9 @@ import org.openide.util.Utilities;
  * @author  Petr Kuzel
  */
 public class ResultModel implements TaskListener {
+
+    /** For debug purposes. */
+    private static final ErrorManager em = TopManager.getDefault().getErrorManager().getInstance ("org.netbeans.modules.search"); // NOI18N
 
     /** ChangeEvent object being used to notify about the search task finish. */
     private final ChangeEvent EVENT;
@@ -427,11 +431,21 @@ public class ResultModel implements TaskListener {
         }
         
         public void addFoundObjects(Object[] foundObjects) {
+            if ( em.isLoggable (ErrorManager.INFORMATIONAL) ) {
+                em.log ("addFoundObjects: " + Arrays.asList (foundObjects));
+                em.notify (/*ErrorManager.INFORMATIONAL, */new RuntimeException ("++ addFoundObjects"));
+            }
+
             keys.addAll(Arrays.asList(foundObjects));
             setKeys (keys); //??? -> sort (sorted);
         }
 
         public void removeFoundObject(Object foundObject) {
+            if ( em.isLoggable (ErrorManager.INFORMATIONAL) ) {
+                em.log ("removeFoundObjects: " + foundObject);
+                em.notify (/*ErrorManager.INFORMATIONAL, */new RuntimeException ("-- removeFoundObjects"));
+            }
+
             if ( keys.remove (foundObject) ) {
                 sort (sorted);
             }
