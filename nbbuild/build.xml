@@ -3166,7 +3166,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete file="moduleCluster.properties"/>
   </target>
   
-  <target name="localtest" depends="bootstrap,all-xtest/nbjunit" >
+  <!-- more correct but takes too long: <target name="localtest" depends="bootstrap,all-xtest/nbjunit" > -->
+  <target name="localtest" depends="bootstrap" >
     <ant dir="test" />
   </target>
 
@@ -3375,6 +3376,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   
   <target name="check-files-layout" >
     <property name="check.files.layout.template" location="../ide/golden/files-layout.txt" />
+    <property name="check.files.layout.generated" location="build/files-layout.txt" />
   
     <property name="check-file-layout-root" location="${netbeans.dest.dir}" />
     <echo message="${check-file-layout-root}" />
@@ -3389,20 +3391,27 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <map from="${check-file-layout-root}" to="" />
     </pathconvert>
     <mkdir dir="build" />
-    <echo message="${check-file-layout}" file="build/files-layout.txt" />
-    <replace file="build/files-layout.txt" token=",">
+    <echo message="${check-file-layout}" file="${check.files.layout.generated}" />
+    <replace file="${check.files.layout.generated}" token=",">
         <replacevalue><![CDATA[
 ]]></replacevalue>
     </replace>
-    <replace file="build/files-layout.txt" token="\" value="/" />
+    <replace file="${check.files.layout.generated}" token="\" value="/" />
     <condition property="are-they-the-same" >
-        <filesmatch file1="${check.files.layout.template}" file2="build/files-layout.txt" />
+        <filesmatch file1="${check.files.layout.template}" file2="${check.files.layout.generated}" />
     </condition>
+    
+    
+    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="diff" failonerror="no" timeout="60000" >
+      <arg value="-u" />
+      <arg value="${check.files.layout.template}" />
+      <arg value="${check.files.layout.generated}" />
+    </exec>
     
     <fail unless="are-they-the-same" >!
     *** Layout of files has changed! ***
     
-    There has been differences found while comparing file build/files-layout.txt with 
+    Differences were found while comparing file build/files-layout.txt with 
     ${check.files.layout.template}
     This means that the layout of files changed since the previously known one.
     Some files may have been added, some of them may have been removed or renamed. 
@@ -3410,8 +3419,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     Changing the layout may or may not be ok. If you are sure that you want to
     change the layout of files, then update the golden file at 
     ${check.files.layout.template}
-    and run the test once again. If you got this warning without an intention
-    to change the layout of files, think twice wheter your commit is really
+    and run the test once again. If you got this warning without intending
+    to change the layout of files, think twice whether your commit is really
     correct and consider asking for a review first.
     
     Read more about the Verification Framework:
