@@ -25,12 +25,21 @@ import org.netbeans.modules.editor.plain.PlainKit;
 import org.netbeans.modules.editor.java.JCStorage;
 import org.netbeans.modules.editor.java.JCUpdateAction;
 import org.netbeans.modules.editor.options.AllOptions;
+import org.netbeans.modules.editor.options.JavaOptions;
+import org.netbeans.modules.editor.options.HTMLOptions;
+import org.netbeans.modules.editor.options.PlainOptions;
+import org.netbeans.modules.editor.options.JavaPrintOptions;
+import org.netbeans.modules.editor.options.HTMLPrintOptions;
+import org.netbeans.modules.editor.options.PlainPrintOptions;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.TopManager;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.loaders.DataFolder;
+import org.openide.util.SharedClassObject;
+import org.openide.options.SystemOption;
+import org.openide.text.PrintSettings;
 
 import org.openidex.util.Utilities2;
 
@@ -43,9 +52,12 @@ public class EditorModule extends ModuleInstall {
 
     /** Kit replacements that will be installed into JEditorPane */
     KitInfo[] replacements = new KitInfo[] {
-        new KitInfo(PlainKit.PLAIN_MIME_TYPE, PlainKit.class.getName()),
-        new KitInfo(JavaKit.JAVA_MIME_TYPE, JavaKit.class.getName()),
-        new KitInfo(HTMLKit.HTML_MIME_TYPE, HTMLKit.class.getName())
+        new KitInfo(PlainKit.PLAIN_MIME_TYPE, PlainKit.class.getName(),
+            PlainOptions.class, PlainPrintOptions.class),
+        new KitInfo(JavaKit.JAVA_MIME_TYPE, JavaKit.class.getName(),
+            JavaOptions.class, JavaPrintOptions.class),
+        new KitInfo(HTMLKit.HTML_MIME_TYPE, HTMLKit.class.getName(),
+            HTMLOptions.class, HTMLPrintOptions.class)
     };
 
     static final long serialVersionUID =-929863607593944237L;
@@ -72,6 +84,19 @@ public class EditorModule extends ModuleInstall {
         // Settings
         NbEditorSettingsInitializer.init();
 
+        // Options
+        AllOptions ao = (AllOptions) SharedClassObject.findObject(AllOptions.class, true);
+        PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
+        
+        // Start listening on addition/removal of options
+        ao.init();
+
+        for (int i = 0; i < replacements.length; i++) {
+            ao.addOption((SystemOption)SharedClassObject.findObject(replacements[i].optionsClass, true));
+            ps.addOption((SystemOption)SharedClassObject.findObject(replacements[i].printOptionsClass, true));
+        }
+        
+        // Java completion storage init
         FileSystem rfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
         JCStorage.init(rfs.getRoot());
 
@@ -94,6 +119,15 @@ public class EditorModule extends ModuleInstall {
     public void uninstalled() {
 
         org.netbeans.modules.editor.options.ProjectHack.uninstalled();
+        
+        // Options
+        AllOptions ao = (AllOptions) SharedClassObject.findObject(AllOptions.class, true);
+        PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
+
+        for (int i = 0; i < replacements.length; i++) {
+            ao.removeOption((SystemOption)SharedClassObject.findObject(replacements[i].optionsClass, true));
+            ps.removeOption((SystemOption)SharedClassObject.findObject(replacements[i].printOptionsClass, true));
+        }
 
         try {
             Utilities2.removeAction (JCUpdateAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
@@ -131,10 +165,18 @@ public class EditorModule extends ModuleInstall {
 
         /** Class name of the kit that will be registered */
         String newKitClassName;
+        
+        /** Class holding the options for the kit */
+        Class optionsClass;
+        
+        /** Class holding the print options for the kit */
+        Class printOptionsClass;
 
-        KitInfo(String contentType, String newKitClassName) {
+        KitInfo(String contentType, String newKitClassName, Class optionsClass, Class printOptionsClass) {
             this.contentType = contentType;
             this.newKitClassName = newKitClassName;
+            this.optionsClass = optionsClass;
+            this.printOptionsClass = printOptionsClass;
         }
 
     }
