@@ -45,8 +45,11 @@ public abstract class J2eeModuleProvider {
      * <p>This folder can be user for example as a location of server specific 
      * configuration files.</p>
      * </div>
+     * @deprecated Do not use, will be clean up.
      */
-    public abstract FileObject getModuleFolder ();
+    public FileObject getModuleFolder () {
+        return null;
+    }
     
     public final ConfigSupport getConfigSupport () {
         if (confSupp == null) {
@@ -78,13 +81,59 @@ public abstract class J2eeModuleProvider {
         public void setWebContextRoot(String contextRoot);
         public String getWebContextRoot();
         /**
+         * Return a list of file names for current server specific deployment 
+         * descriptor used in this module.
+         */
+        public String [] getDeploymentConfigurationFileNames();
+        /**
+         * Return relative path within the archive or distribution content for the
+         * given server specific deployment descriptor file.
+         * @param deploymentConfigurationFileName server specific descriptor file name
+         * @return relative path inside distribution content.
+         */
+        public String getContentRelativePath(String deploymentConfigurationFileName);
+        /**
          * Reset configuration storage references to make sure memory reclamation on project close.
+         * NOTE: do not use, will be clean up soon
+         * @deprecated
          */
         public void resetStorage();
     }
     
+    /**
+     * Whether to use directory path in storing deployment configuration files.
+     * NOTE: do not use
+     * @deprecated Do not use, will be clean up.
+     */
     public boolean useDirectoryPath() {
         return true;
+    }
+
+    /**
+     * Returns source deployment configuration file object for the given deployment 
+     * configuration file name.  If the file does not exists, module provider need
+     * to create new file.  
+     *
+     * Note: Implementation should override this method and not implement getModuleFolder 
+     * and useDirectoryPath.  For backward compatibility, the default implementation
+     * is based on calls to getModuleFolder and useDirectoryPath which are soon 
+     * to be obsolete.
+     *
+     * @param name file name of the deployement configuration file.
+     * @return non-null FileObject for the deployment configuration file.
+     * @exception java.io.IOException when file creation failure.
+     */
+    public FileObject getDeploymentConfigurationFile(String name) throws java.io.IOException {
+        return getConfigSupportImpl().getConfigurationFO(name);
+    }
+    
+    /**
+     * Finds source deployment configuration file object for the given deployment 
+     * configuration file name.  Return null if the file does not exists.
+     * 
+     */
+    public FileObject findDeploymentConfigurationFile (String name) {
+        return getConfigSupportImpl().findConfigurationFO(name);
     }
     
     /** If the module wants to specify a target server instance for deployment 
@@ -114,12 +163,16 @@ public abstract class J2eeModuleProvider {
         Server oldServer = ServerRegistry.getInstance ().getServer (oldServerID);
 	Server newServer = ServerRegistry.getInstance ().getServer (newServerID);
         if (oldServer != null && !oldServer.equals (newServer)) {
-            ConfigSupportImpl cs = (ConfigSupportImpl) getConfigSupport ();
-            String oldCtxPath = cs.getWebContextRoot(oldServer);
-            cs.resetStorage ();
-            String ctx = cs.getWebContextRoot ();
-            if (ctx == null || ctx.equals ("")) {
-                cs.setWebContextRoot(oldCtxPath);
+
+            if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
+                String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
+                confSupp = null;
+                String ctx = getConfigSupportImpl().getWebContextRoot ();
+                if (ctx == null || ctx.equals ("")) {
+                    getConfigSupportImpl().setWebContextRoot(oldCtxPath);
+                }
+            } else {
+                J2eeModuleProvider.this.confSupp = null;
             }
         }
     }
@@ -128,10 +181,16 @@ public abstract class J2eeModuleProvider {
         
         public void changeDefaultInstance (org.netbeans.modules.j2ee.deployment.impl.ServerString oldInstance, org.netbeans.modules.j2ee.deployment.impl.ServerString newInstance) {
             if (useDefaultServer () && oldInstance == null || ((newInstance != null) && (oldInstance.getPlugin() != newInstance.getPlugin()))) {
-                ConfigSupportImpl cs = (ConfigSupportImpl) getConfigSupport ();
-                String oldCtxPath = cs.getWebContextRoot(oldInstance.getServer ());
-                cs.resetStorage ();
-                cs.setWebContextRoot(oldCtxPath);
+                if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
+                    String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
+                    J2eeModuleProvider.this.confSupp = null;
+                    String ctx = getConfigSupportImpl().getWebContextRoot ();
+                    if (ctx == null || ctx.equals ("")) {
+                        getConfigSupportImpl().setWebContextRoot(oldCtxPath);
+                    }
+                } else {
+                    J2eeModuleProvider.this.confSupp = null;
+                }
             }
         }
         
@@ -141,5 +200,9 @@ public abstract class J2eeModuleProvider {
         public void instanceRemoved (org.netbeans.modules.j2ee.deployment.impl.ServerString instance) {
         }
         
+    }
+    
+    private ConfigSupportImpl getConfigSupportImpl() {
+        return (ConfigSupportImpl) getConfigSupport();
     }
 }

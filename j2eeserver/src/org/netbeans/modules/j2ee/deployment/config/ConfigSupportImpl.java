@@ -16,10 +16,15 @@ package org.netbeans.modules.j2ee.deployment.config;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
+import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.model.*;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.*;
@@ -35,6 +40,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataFolder;
 import org.openide.util.NbBundle;
 
 /*
@@ -44,8 +50,10 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     private J2eeModuleProvider provider;
     private String webContextRootXpath;
     private String webContextRootPropName;
-    private ConfigurationStorage storage;
     private Server fakeServer = null;
+    private java.util.Map relativePaths = null;
+    private String configurationPrimaryFileName = null;
+    private Map allRelativePaths = null;
     
     /** Creates a new instance of ConfigSupportImpl */
     public ConfigSupportImpl (J2eeModuleProvider provider) {
@@ -68,7 +76,12 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         if (fakeServer != null) {
             return fakeServer;
         }
-        return ServerRegistry.getInstance ().getServer (getProvider ().getServerID ());
+        Server s = ServerRegistry.getInstance ().getServer (getProvider ().getServerID ());
+        if (s == null) {
+            //PENDING some ntoifcation.
+            s = ServerRegistry.getInstance().getDefaultInstance().getServer();
+        }
+        return s;
     }
     
     private DConfigBean getWebContextDConfigBean() {
@@ -80,7 +93,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             DConfigBeanRoot configBeanRoot = dc.getDConfigBeanRoot(ddBeanRoot);
             DDBean[] ddBeans = ddBeanRoot.getChildBean(webContextRootXpath);
             if (ddBeans == null || ddBeans.length != 1) {
-                ErrorManager.getDefault ().log (ErrorManager.EXCEPTION, "DDBeans not found");
+                ErrorManager.getDefault ().log (ErrorManager.EXCEPTION, "DDBeans not found"); //NOI18N
                 return null; //better than throw exception
             }
             return configBeanRoot.getDConfigBean(ddBeans[0]);
@@ -92,13 +105,16 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     }
     
     public boolean createInitialConfiguration() {
-        boolean existing = false;
-        File f = getConfigurationFile();
-        if (f.isFile()) {
-            existing = true;
+        try {
+            FileObject fo = findPrimaryConfigurationFO();
+            if (fo == null) {
+                getStorage();
+                return true;
+            }
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
         }
-        getStorage();
-        return existing;
+        return false;
     }
      
     /**
@@ -162,92 +178,129 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     }
     
     public void resetStorage() {
-        storage = null;
-        File f = getConfigurationFile();
-        FileObject fo = null;
-        if (f.isFile()) {
-            fo = getPrimaryConfigurationFO();
-        }
-        if (fo != null) {
-            try {
+        try {
+            FileObject fo = findPrimaryConfigurationFO();
+            if (fo != null) {
                 DataObject dobj = DataObject.find(fo);
                 if (dobj instanceof ConfigDataObject) {
                     ConfigDataObject cdo = (ConfigDataObject) dobj;
                     cdo.resetStorage();
                 }
-            } catch (org.openide.loaders.DataObjectNotFoundException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
+            
+            relativePaths = null;
+            configurationPrimaryFileName = null;
+            
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
     
     //from J2eeDeploymentLookup:
-    
-    //PENDIND should not be public!!!
-    public File getConfigurationFile() {
-        String fname = getConfigurationPrimaryFileName();
-        File savefile = new File(FileUtil.toFile(getProvider().getModuleFolder()).getAbsolutePath()
-        + System.getProperty("file.separator") + fname);
-        // should never happen because there should be alway a default server
-        if (savefile == null) {
-            String msg = NbBundle.getMessage(ConfigSupportImpl.class, "MSG_NoTargetServer");
-            ErrorManager.getDefault().log(ErrorManager.USER, msg);
-        }
-        return savefile;
-    }
-    
-    private String getConfigurationPrimaryFileName() {
-        ModuleType moduleType = (ModuleType) getProvider().getJ2eeModule().getModuleType();
-        DeploymentPlanSplitter dps = getServer ().getDeploymentPlanSplitter();
-        String fname = null;
-        if (dps != null) {
-            String[] fnames = dps.getDeploymentPlanFileNames(moduleType);
-            if (fnames != null && fnames.length > 0) {
-                fname = fnames [0];
-                if(! getProvider().useDirectoryPath()) {
-                    fname = fnames[0].substring(fnames[0].lastIndexOf("/")+1);
-                }
-            }
-        }
-        if (fname == null) {
-            fname = getServer ().getShortName() + ".dpf";
-        }
-        return fname;
-    }
-    
-    private FileObject getPrimaryConfigurationFO() {
+    /**
+     * Note this call is temporary for backward compatibility.  Do not use.
+     */
+    public FileObject findConfigurationFO(String name) {
+        if (name == null)
+            return null;
+        
         FileObject moduleFolder = getProvider().getModuleFolder();
-        String configFileName = getConfigurationPrimaryFileName();
-        FileObject configFO = moduleFolder.getFileObject(configFileName);
+
+        // should not happen, new project should have ovrridden this method to return non-null.
+        if (moduleFolder == null) {
+            throw new IllegalStateException("New J2eeProviderImplementation needs to override this method!"); //NOI18N
+        }
+        
+        if (getProvider().useDirectoryPath()) {
+            name = getContentRelativePath(name);
+            if (name == null)
+                return null;
+        }
+        return moduleFolder.getFileObject(name);
+    }
+    /**
+     * Note this call is temporary for backward compatibility.  Do not use.
+     */
+    public FileObject getConfigurationFO(String name) throws IOException {
+        FileObject moduleFolder = getProvider().getModuleFolder();
+
+        // should not happen, new project should have ovrridden this method to return non-null.
+        if (moduleFolder == null) {
+            throw new IllegalStateException("New J2eeProviderImplementation needs to override this method!"); //NOI18N
+        }
+        
+        if (getProvider().useDirectoryPath()) {
+            name = getContentRelativePath(name);
+        }
+        FileObject configFO = (name == null) ? null : moduleFolder.getFileObject(name);
+        if (configFO == null)
+            configFO = FileUtil.createData(moduleFolder, name);
         return configFO;
     }
-    
-    private FileObject createPrimaryConfigurationFO() throws IOException {
-        FileObject moduleFolder = getProvider().getModuleFolder();
-        return FileUtil.createData(moduleFolder, getConfigurationPrimaryFileName());
+
+    /**
+     * This method save configurations in deployment plan in content directory
+     * and return the fileobject for the plan.  Primary use is for remote deployment
+     * or standard jsr88 deployement.
+     */
+    public File getConfigurationFile() {
+        try {
+            return getDeploymentPlanFileForDistribution();
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+        return null;
     }
-    
-    /** Creates the cache if it does not exist for the selected server */
-    //PENDIND should not be public!!!
-    public ConfigurationStorage getStorage() {
-        storage = null; //do not use cache
-        
+
+    public File getDeploymentPlanFileForDistribution() throws IOException, ConfigurationException {
         FileLock lock = null;
         OutputStream out = null;
         try {
-            File f = getConfigurationFile();
-            FileObject fo = null;
-            if (f.isFile()) {
-                fo = getPrimaryConfigurationFO();
-                if (fo == null) {
-                    //this is a boundary condition that can be met when web
-                    //module is being unmounted and this case it should not
-                    //cause any problems
-                    ErrorManager.getDefault().log(ErrorManager.ERROR,
-                    NbBundle.getMessage(ConfigSupportImpl.class, "MSG_NoConfigurationFO", f));
-                    return null;
-                }
-            } else {
+            FileObject dist = getProvider().getJ2eeModule().getContentDirectory();
+            String planName = getStandardDeploymentPlanName();
+            FileObject plan = dist.getFileObject(planName);
+            if (plan == null) {
+                plan = dist.createData(planName);
+            }
+            lock = plan.lock();
+            out = plan.getOutputStream(lock);
+            getStorage().getDeploymentConfiguration().save(out);
+            return FileUtil.toFile(plan);
+        } finally {
+            if (lock != null) lock.releaseLock();
+            try {
+                if (out != null) out.close();
+            } catch(IOException ioe) {
+                ErrorManager.getDefault().log(ioe.toString());
+            }
+        }
+    }
+    
+    private String getPrimaryConfigurationFileName() {
+        getRelativePaths();
+        
+        if (configurationPrimaryFileName == null)
+            return getStandardDeploymentPlanName();
+        else
+            return configurationPrimaryFileName;
+    }
+
+    private String getStandardDeploymentPlanName() {
+        return ConfigDataLoader.getStandardDeploymentPlanName(getServer());
+    }
+
+    private FileObject findPrimaryConfigurationFO() throws IOException {
+        String configFileName = getPrimaryConfigurationFileName();
+        return getProvider().findDeploymentConfigurationFile(configFileName);
+    }
+
+    /** Creates the cache if it does not exist for the selected server */
+    public ConfigurationStorage getStorage() {
+        FileLock lock = null;
+        OutputStream out = null;
+        try {
+            FileObject primary = findPrimaryConfigurationFO();
+            if (primary == null) {
                 ServerInstance instance = ServerRegistry.getInstance ().getServerInstance (getProvider ().getServerInstanceID ());
                 ModuleDeploymentSupport mds = new ModuleDeploymentSupport(getProvider().getJ2eeModule());
                 DeploymentConfiguration config;
@@ -257,39 +310,35 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                     config = getServer ().getDeploymentManager().createConfiguration(mds.getDeployableObject());
                 }
                 config.getDConfigBeanRoot(mds.getDeployableObject().getDDBeanRoot());
-                DeploymentPlanSplitter dps = getServer ().getDeploymentPlanSplitter();
-                if (dps == null || !hasCustomSupport(dps,mds.getType())) {
+                if (!hasCustomSupport()) {
                     //standard configuration
-                    fo = createPrimaryConfigurationFO();
-                    fo.lock();
-                    out = fo.getOutputStream(lock);
+                    primary.lock();
+                    out = primary.getOutputStream(lock);
                     config.save(out);
                 } else {
                     //server sepecific files
-                    String fnames[] = dps.getDeploymentPlanFileNames(mds.getType());
-                    File files[] = new File [fnames.length];
-                    FileObject moduleFolder =  getProvider().getModuleFolder();
-                    FileObject[] fileObjs = new FileObject[fnames.length];
-                    for (int i = 0; i < files.length; i++) {
-                        String fname = fnames[i];
-                        if(!provider.useDirectoryPath())
-                            fname = fnames[i].substring(fnames[i].lastIndexOf("/")+1);
-                        fileObjs[i] = FileUtil.createData(moduleFolder, fname);
-                        files [i] = FileUtil.toFile(fileObjs[i]);
+                    String[] fnames = getDeploymentConfigurationFileNames();
+                    File[] files = new File[fnames.length];
+                    for (int i = 0; i < fnames.length; i++) {
+                        FileObject fo = getProvider().findDeploymentConfigurationFile(fnames[i]);
+                        if (fo == null) {
+                            fo = getProvider().getDeploymentConfigurationFile(fnames[i]);
+                        }
+                        files[i] = FileUtil.toFile(fo);
+                        if (files[i].getName().equals(getPrimaryConfigurationFileName()))
+                            primary = fo;
                     }
-                    fo = fileObjs[0];
-                    dps.writeDeploymentPlanFiles(config, mds.getDeployableObject(),  files);
+                    getDeploymentPlanSplitter().writeDeploymentPlanFiles(config, mds.getDeployableObject(),  files);
                 }
             }
-            
-            if (fo != null) {
-                DataObject dobj = DataObject.find(fo);
-                storage = (ConfigurationStorage) dobj.getCookie(ConfigurationStorage.class);
-            }
-            
+            DataFolder folder = DataFolder.findFolder(primary.getParent());
+            DataObject dobj = folder.find(primary);
+            // dobj = DataObject.find(primary);
+            return (ConfigurationStorage) dobj.getCookie(ConfigurationStorage.class);
+
         } catch (Exception ex) {
             String msg = NbBundle.getMessage(ConfigSupportImpl.class, "MSG_ConfigStorageFailed",
-            getServer (), getProvider().getModuleFolder());
+            getServer (), getProvider().getJ2eeModule());
             ErrorManager.getDefault().annotate(ex, msg);
             ErrorManager.getDefault().notify(ex);
         } finally {
@@ -300,15 +349,18 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                 ErrorManager.getDefault().log(ioe.toString());
             }
         }
-        
-        if (storage == null) {
-            String msg = NbBundle.getMessage(ConfigSupportImpl.class, "MSG_ConfigStorageFailed",
-            getServer (), getProvider().getModuleFolder());
-            throw new RuntimeException(msg);
-        }
-        return storage;
+        return null;
     }
     
+    private DeploymentPlanSplitter getDeploymentPlanSplitter() {
+        return getServer ().getDeploymentPlanSplitter();
+    }
+    private ModuleType getModuleType() {
+        return (ModuleType) getProvider().getJ2eeModule().getModuleType();
+    }
+    private boolean hasCustomSupport() {
+        return hasCustomSupport(getDeploymentPlanSplitter(), getModuleType());
+    }
     private boolean hasCustomSupport(DeploymentPlanSplitter dps, ModuleType type) {
         if(dps == null) return false;
         return dps.getDeploymentPlanFileNames(type) != null;
@@ -317,4 +369,63 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     private J2eeModuleProvider getProvider () {
         return provider;
     }
+    
+    private Map getRelativePaths() {
+        if (relativePaths != null) 
+            return relativePaths;
+        
+        relativePaths = new HashMap();
+        if (hasCustomSupport()) {
+            String [] paths = getDeploymentPlanSplitter().getDeploymentPlanFileNames(getModuleType());
+            configurationPrimaryFileName = paths[0].substring(paths[0].lastIndexOf("/")+1);
+        
+            collectData(getServer(), relativePaths);
+        }
+        
+        return relativePaths;
+    }
+    
+    private void collectData(Server server, Map map) {
+        if (! this.hasCustomSupport(getDeploymentPlanSplitter(), getModuleType()))
+            return;
+        
+        String [] paths = server.getDeploymentPlanSplitter().getDeploymentPlanFileNames(getModuleType());
+        for (int i=0; i<paths.length; i++) {
+            String name = paths[i].substring(paths[i].lastIndexOf("/")+1);
+            map.put(name, paths[i]);
+        }        
+    }
+    
+    private Map getAllRelativePaths() {
+        if (allRelativePaths != null)
+            return allRelativePaths;
+        
+        allRelativePaths = new HashMap();
+        Collection servers = ServerRegistry.getInstance().getServers();
+        for (Iterator i=servers.iterator(); i.hasNext();) {
+            Server server = (Server) i.next();
+            collectData(server, allRelativePaths);
+        }
+        return allRelativePaths;
+    }
+    
+    public String[] getDeploymentConfigurationFileNames() {
+        if (hasCustomSupport()) {
+            return (String[]) getRelativePaths().keySet().toArray(new String[relativePaths.size()]);
+        }
+        return new String[] { getStandardDeploymentPlanName() };
+    }
+    
+    public String[] getAllDeploymentConfigurationFileNames() {
+            return (String[]) getAllRelativePaths().keySet().toArray(new String[relativePaths.size()]);
+    }
+    
+    public String getContentRelativePath(String configName) {
+        if (! hasCustomSupport()) {
+            return configName; //just return the name so that the .dpf file is writen at the root of dist directory.
+        }
+        return (String) getAllRelativePaths().get(configName);
+    }
+    
+    
 }

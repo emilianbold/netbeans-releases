@@ -103,7 +103,7 @@ public class TargetServer {
         }
         
         J2eeModuleProvider.ConfigSupport configSupport = dtarget.getConfigSupport();
-        if (configSupport != null) {
+        if (J2eeModule.WAR.equals(dtarget.getModule().getModuleType())) {
             contextRoot = configSupport.getWebContextRoot();
         }
         

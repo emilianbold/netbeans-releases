@@ -51,7 +51,7 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
         this.targetName = targetName;
         this.timestamp = timestamp;
         this.contentDirectory = contentDir;
-        this.contextRoot = contextRoot;
+        this.contextRoot = (contextRoot == null) ? "" : contextRoot;
     }
 
     /* wrapper for map/set operation only */

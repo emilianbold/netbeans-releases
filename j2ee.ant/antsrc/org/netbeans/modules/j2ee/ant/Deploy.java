@@ -54,7 +54,9 @@ public class Deploy extends Task {
 
         try {
             String clientUrl = Deployment.getDefault ().deploy (jmp, debugmode, null, clientUrlPart, forceRedeploy);
-            getProject().setProperty("client.url", clientUrl);
+            if (clientUrl != null) {
+                getProject().setProperty("client.url", clientUrl);
+            }
         } catch (Exception ex) {
             throw new BuildException(ex);
         }
