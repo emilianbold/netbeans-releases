@@ -191,7 +191,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         // Special case for default package
         if ( root.equals( parent ) ) {
             PackageNode n = get( parent );
-            if ( n != null && PackageNode.isEmpty( root ) ) {
+            if ( n != null && PackageDisplayUtils.isEmpty( root ) ) {
                 remove( root );
             }
             return;
@@ -719,7 +719,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 // ???
                 return null;
             }
-            return PackageDisplayUtils.getIcon(folder, path.replace('/', '.'));
+            return PackageDisplayUtils.getIcon(folder, path.replace('/', '.'), isLeaf() );
         }
         
         public Image getOpenedIcon(int type) {
@@ -755,24 +755,10 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             if ( dataFolder == null ) {
                 return true;
             }
-            return isEmpty( dataFolder.getPrimaryFile() );
+            return PackageDisplayUtils.isEmpty( dataFolder.getPrimaryFile() );
         }
         
-        private static boolean isEmpty( FileObject fo ) {    
-            FileObject[] kids = fo.getChildren();
-            for( int i = 0; i < kids.length; i++ ) {
-                if ( !kids[i].isFolder() && VisibilityQuery.getDefault().isVisible( kids[i] ) ) {
-                    return false;
-                }  
-                else {
-                    if (!isEmpty(kids[i])) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
+       
         private static boolean isValidPackageName (String name) {
             if (name.length() == 0) {
                 //Fast check of default pkg

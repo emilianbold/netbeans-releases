@@ -89,6 +89,8 @@ public final class PackageDisplayUtils {
         }
     }
 
+     
+    
     /**
      * Find the proper display icon for a package.
      * @param pkg the actual folder
@@ -96,7 +98,14 @@ public final class PackageDisplayUtils {
      * @return an appropriate display icon for it
      */
     public static Image getIcon(FileObject pkg, String pkgname) {
-        if (isEmpty(pkg)) {
+        return getIcon( pkg, pkgname, isEmpty(pkg) );
+    }
+    
+    /** Performance optiomization if the the isEmpty status is alredy known.
+     * 
+     */
+    public static Image getIcon(FileObject pkg, String pkgname, boolean empty ) {
+        if ( empty ) {
             return PACKAGE_EMPTY;
         } else {
             Boolean b = pkg.isValid() ? AccessibilityQuery.isPubliclyAccessible(pkg) : null;
@@ -112,14 +121,20 @@ public final class PackageDisplayUtils {
         }
     }
     
+    
     /**
      * Check whether a package is empty (devoid of files except for subpackages).
      */
-    private static boolean isEmpty(FileObject pkg) {
-        FileObject[] kids = pkg.getChildren();
-        for (int i = 0; i < kids.length; i++) {
-            if (kids[i].isData()) {
+    public static boolean isEmpty( FileObject fo ) {    
+        FileObject[] kids = fo.getChildren();
+        for( int i = 0; i < kids.length; i++ ) {
+            if ( !kids[i].isFolder() && VisibilityQuery.getDefault().isVisible( kids[i] ) ) {
                 return false;
+            }  
+            else {
+                if (!isEmpty(kids[i])) {
+                    return false;
+                }
             }
         }
         return true;
