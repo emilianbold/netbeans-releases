@@ -49,7 +49,7 @@ public class DimensionProperty extends TextFieldProperty {
         DimensionCustomEditorOperator customizer=invokeCustomizer();
         value[0]=customizer.getWidthValue();
         value[1]=customizer.getHeightValue();
-        customizer.cancel();
+        customizer.close();
         return value;
     }
      

@@ -52,7 +52,7 @@ public class StringProperty extends TextFieldProperty {
     public String getStringValue() {
         StringCustomEditorOperator customizer=invokeCustomizer();
         String s=customizer.getStringValue();
-        customizer.cancel();
+        customizer.close();
         return s;
     }
 }

@@ -105,7 +105,7 @@ public class ColorProperty extends Property {
         Color value;
         ColorCustomEditorOperator customizer=invokeCustomizer();
         value=customizer.getColorValue();
-        customizer.cancel();
+        customizer.close();
         return value;
     }
     

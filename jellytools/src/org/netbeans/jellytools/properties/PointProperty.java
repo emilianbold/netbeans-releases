@@ -48,7 +48,7 @@ public class PointProperty extends TextFieldProperty {
         PointCustomEditorOperator customizer=invokeCustomizer();
         value[0]=customizer.getXValue();
         value[1]=customizer.getYValue();
-        customizer.cancel();
+        customizer.close();
         return value;
     }
     

@@ -57,7 +57,7 @@ public class ProcessDescriptorProperty extends TextFieldProperty {
         value[0]=customizer.getProcess();
         value[1]=customizer.getArguments();
         value[2]=customizer.getArgumentKey();
-        customizer.cancel();
+        customizer.close();
         return value;
     }
     

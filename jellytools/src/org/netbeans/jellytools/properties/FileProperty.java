@@ -62,7 +62,7 @@ public class FileProperty extends TextFieldProperty {
         File value;
         FileCustomEditorOperator customizer=invokeCustomizer();
         value=customizer.getFileValue();
-        customizer.cancel();
+        customizer.close();
         return value;
     }
     

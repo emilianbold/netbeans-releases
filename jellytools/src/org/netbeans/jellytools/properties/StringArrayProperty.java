@@ -53,7 +53,7 @@ public class StringArrayProperty extends TextFieldProperty {
         String[] value;
         StringArrayCustomEditorOperator customizer=invokeCustomizer();
         value=customizer.getStringArrayValue();
-        customizer.cancel();
+        customizer.close();
         return value;
     }
     

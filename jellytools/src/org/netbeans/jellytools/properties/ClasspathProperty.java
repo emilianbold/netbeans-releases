@@ -45,7 +45,7 @@ public class ClasspathProperty extends TextFieldProperty {
         String[] value;
         ClasspathCustomEditorOperator customizer=invokeCustomizer();
         value=customizer.getClasspathValue();
-        customizer.cancel();
+        customizer.close();
         return value;
     }
     

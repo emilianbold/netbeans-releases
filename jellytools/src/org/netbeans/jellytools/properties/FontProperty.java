@@ -72,7 +72,7 @@ public class FontProperty extends TextFieldProperty {
         value[0]=customizer.getFontName();
         value[1]=customizer.getFontStyle();
         value[2]=customizer.getFontSize();
-        customizer.cancel();
+        customizer.close();
         return value;
     }
     

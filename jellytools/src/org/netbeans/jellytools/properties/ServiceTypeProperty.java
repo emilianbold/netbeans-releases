@@ -53,7 +53,7 @@ public class ServiceTypeProperty extends TextFieldProperty {
         String value;
         ServiceTypeCustomEditorOperator customizer=invokeCustomizer();
         value=customizer.getServiceTypeValue();
-        customizer.cancel();
+        customizer.close();
         return value;
     }
     

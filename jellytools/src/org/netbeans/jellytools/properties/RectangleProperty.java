@@ -53,7 +53,7 @@ public class RectangleProperty extends TextFieldProperty {
         value[1]=customizer.getYValue();
         value[2]=customizer.getWidthValue();
         value[3]=customizer.getHeightValue();
-        customizer.cancel();
+        customizer.close();
         return value;
     }
     
