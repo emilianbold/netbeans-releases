@@ -71,6 +71,7 @@ public final class AntBridge {
     
     private AntBridge() {}
     
+    private static final String KEY_MAIN_CLASS_PATH = "mainClassPath"; // NOI18N
     private static final String KEY_MAIN_CLASS_LOADER = "mainClassLoader"; // NOI18N
     private static final String KEY_BRIDGE_CLASS_LOADER = "bridgeClassLoader"; // NOI18N
     private static final String KEY_BRIDGE = "bridge"; // NOI18N
@@ -248,7 +249,10 @@ public final class AntBridge {
         err.log("AntBridge.createStuff - loading Ant installation...");
         Map m = new HashMap();
         try {
-            ClassLoader main = createMainClassLoader();
+            List/*<File>*/ mainClassPath = createMainClassPath();
+            err.log("mainClassPath=" + mainClassPath);
+            m.put(KEY_MAIN_CLASS_PATH, classPathToString(mainClassPath));
+            ClassLoader main = createMainClassLoader(mainClassPath);
             m.put(KEY_MAIN_CLASS_LOADER, main);
             ClassLoader bridgeLoader = createBridgeClassLoader(main);
             m.put(KEY_BRIDGE_CLASS_LOADER, bridgeLoader);
@@ -312,16 +316,38 @@ public final class AntBridge {
         }
     }
     
-    private static ClassLoader createMainClassLoader() throws Exception {
+    private static String classPathToString(List/*<File>*/ cp) {
+        StringBuffer b = new StringBuffer();
+        Iterator it = cp.iterator();
+        while (it.hasNext()) {
+            b.append(((File) it.next()).getAbsolutePath());
+            if (it.hasNext()) {
+                b.append(File.pathSeparator);
+            }
+        }
+        return b.toString();
+    }
+    
+    private static String originalJavaClassPath = System.getProperty("java.class.path"); // NOI18N
+    /**
+     * Get the equivalent of java.class.path for the main Ant loader.
+     * Includes everything in the main class loader,
+     * plus the regular system class path (for tools.jar etc.).
+     */
+    public static String getMainClassPath() {
+        return (String) getStuff().get(KEY_MAIN_CLASS_PATH) + File.pathSeparatorChar + originalJavaClassPath;
+    }
+    
+    private static List/*<File>*/ createMainClassPath() throws Exception {
         // Use LinkedHashSet to automatically suppress duplicates.
-        Collection/*<URL>*/ cp = new LinkedHashSet();
+        Collection/*<File>*/ cp = new LinkedHashSet();
         File libdir = new File(AntSettings.getDefault().getAntHomeWithDefault(), "lib"); // NOI18N
         if (!libdir.isDirectory()) throw new IOException("No such Ant library dir: " + libdir); // NOI18N
         err.log("Creating main class loader from " + libdir);
         File[] libs = libdir.listFiles(new JarFilter());
         if (libs == null) throw new IOException("Listing: " + libdir); // NOI18N
         for (int i = 0; i < libs.length; i++) {
-            cp.add(libs[i].toURI().toURL());
+            cp.add(libs[i]);
         }
         NbClassPath extra = AntSettings.getDefault().getExtraClasspath();
         String extrapath = extra.getClassPath();
@@ -331,7 +357,7 @@ public final class AntBridge {
         }
         StringTokenizer tok = new StringTokenizer(extrapath, File.pathSeparator);
         while (tok.hasMoreTokens()) {
-            cp.add(new File(tok.nextToken()).toURI().toURL());
+            cp.add(new File(tok.nextToken()));
         }
         extra = AntSettings.getDefault().getAutomaticExtraClasspath();
         extrapath = extra.getClassPath();
@@ -340,7 +366,7 @@ public final class AntBridge {
         }
         tok = new StringTokenizer(extrapath, File.pathSeparator);
         while (tok.hasMoreTokens()) {
-            cp.add(new File(tok.nextToken()).toURI().toURL());
+            cp.add(new File(tok.nextToken()));
         }
         // XXX note that systemClassLoader will include boot.jar, and perhaps anything else
         // in lib/ext/*.jar, like rmi-ext.jar. Would be nicer to exclude everything NB-specific.
@@ -350,6 +376,16 @@ public final class AntBridge {
         // with the versions used inside NB, which may cause inefficiencies or more memory usage.
         // On the other hand, if ant.jar is in ${java.class.path} (e.g. from a unit test), we
         // have to explicitly mask it out. What a mess...
+        return new ArrayList(cp);
+    }
+    
+    private static ClassLoader createMainClassLoader(List/*<File>*/ mainClassPath) throws Exception {
+        URL[] cp = new URL[mainClassPath.size()];
+        Iterator it = mainClassPath.iterator();
+        int i = 0;
+        while (it.hasNext()) {
+            cp[i++] = ((File) it.next()).toURI().toURL();
+        }
         ClassLoader parent = ClassLoader.getSystemClassLoader();
         if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
             List/*<URL>*/ parentURLs;
@@ -358,9 +394,9 @@ public final class AntBridge {
             } else {
                 parentURLs = null;
             }
-            err.log("AntBridge.createMainClassLoader: cp=" + cp + " parent.urls=" + parentURLs);
+            err.log("AntBridge.createMainClassLoader: cp=" + Arrays.asList(cp) + " parent.urls=" + parentURLs);
         }
-        return new MaskedClassLoader((URL[])cp.toArray(new URL[cp.size()]), parent);
+        return new MaskedClassLoader(cp, parent);
     }
     
     private static ClassLoader createBridgeClassLoader(ClassLoader main) throws Exception {
@@ -869,6 +905,34 @@ public final class AntBridge {
         // nor can append(char,CharSequence)
         // probably does not matter however...
         
+    }
+    
+    // Faking the system property java.class.path for the benefit of a few tasks
+    // that expect it to be equal to the Ant class loader path.
+    
+    private static int fakingJavaClassPath = 0;
+    
+    /**
+     * Fake the system property java.class.path temporarily.
+     * Must be followed by {@link unfakeJavaClassPath} in a finally block.
+     * Reentrant.
+     */
+    public static synchronized void fakeJavaClassPath() {
+        if (fakingJavaClassPath++ == 0) {
+            String cp = getMainClassPath();
+            err.log("Faking java.class.path=" + cp);
+            System.setProperty("java.class.path", cp); // NOI18N
+        }
+    }
+    
+    /**
+     * Reverse the effect of {@link fakeJavaClassPath}.
+     */
+    public static synchronized void unfakeJavaClassPath() {
+        if (--fakingJavaClassPath == 0) {
+            err.log("Restoring java.class.path=" + originalJavaClassPath);
+            System.setProperty("java.class.path", originalJavaClassPath); // NOI18N
+        }
     }
 
 }

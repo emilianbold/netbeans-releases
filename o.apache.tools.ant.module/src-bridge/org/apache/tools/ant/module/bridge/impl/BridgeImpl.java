@@ -13,24 +13,44 @@
 
 package org.apache.tools.ant.module.bridge.impl;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
-import java.util.*;
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.input.InputHandler;
-
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Vector;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DemuxOutputStream;
+import org.apache.tools.ant.IntrospectionHelper;
+import org.apache.tools.ant.Main;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
-import org.apache.tools.ant.module.bridge.*;
+import org.apache.tools.ant.module.bridge.AntBridge;
+import org.apache.tools.ant.module.bridge.BridgeInterface;
+import org.apache.tools.ant.module.bridge.IntrospectionHelperProxy;
 import org.apache.tools.ant.types.EnumeratedAttribute;
+import org.apache.tools.ant.types.Path;
 import org.openide.ErrorManager;
-import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.OutputWriter;
@@ -40,6 +60,8 @@ import org.openide.windows.OutputWriter;
  * @author Jesse Glick
  */
 public class BridgeImpl implements BridgeInterface {
+    
+    private static boolean classpathInitialized = false;
     
     public BridgeImpl() {
     }
@@ -84,6 +106,13 @@ public class BridgeImpl implements BridgeInterface {
     
     public boolean run(File buildFile, List targets, InputStream in, OutputWriter out, OutputWriter err,
                        Properties properties, int verbosity, String displayName) {
+        if (!classpathInitialized) {
+            classpathInitialized = true;
+            // #46171: Ant expects this path to have itself and whatever else you loaded with it,
+            // or AntClassLoader.getResources will not be able to find anything in the Ant loader.
+            Path.systemClasspath = new Path(null, AntBridge.getMainClassPath());
+        }
+        
         boolean ok = false;
         
         // Important for various other stuff.
@@ -98,6 +127,7 @@ public class BridgeImpl implements BridgeInterface {
             AntModule.err.log("Fixing CCL: " + oldCCL + " -> " + newCCL);
         }
         Thread.currentThread().setContextClassLoader(newCCL);
+        AntBridge.fakeJavaClassPath();
         try {
         
         Project project = null;
@@ -233,6 +263,7 @@ public class BridgeImpl implements BridgeInterface {
         });
         
         } finally {
+            AntBridge.unfakeJavaClassPath();
             if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 AntModule.err.log("Restoring CCL: " + oldCCL);
             }
