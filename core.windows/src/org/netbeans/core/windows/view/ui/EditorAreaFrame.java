@@ -60,8 +60,13 @@ public class EditorAreaFrame extends JFrame {
     
     public void toFront() {
         // ignore the window activation event, is not done by user.
-        frametimestamp = 0;
+        frametimestamp = System.currentTimeMillis();
         super.toFront();
+    }
+    
+    public void setVisible(boolean visible) {
+        frametimestamp = System.currentTimeMillis();
+        super.setVisible(visible);
     }
     
     public void setDesktop(Component component) {

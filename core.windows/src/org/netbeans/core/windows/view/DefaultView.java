@@ -229,7 +229,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 if(DEBUG) {
                     debugLog("Active mode changed, mode=" + viewEvent.getNewValue()); // NOI18N
                 }
-
+                System.out.println("active mode changed.");
                 hierarchy.updateDesktop(wsa);
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_TOOLBAR_CONFIGURATION_CHANGED) {
@@ -370,9 +370,8 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                     debugLog("TopComponent array added:" // NOI18N
                         + Arrays.asList((TopComponent[])viewEvent.getNewValue()));
                 }
-
                 hierarchy.updateDesktop(wsa);
-                hierarchy.activateMode(wsa.getActiveModeAccessor());
+//                hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_TOPCOMPONENT_ARRAY_REMOVED) {
                 if(DEBUG) {
                     debugLog("TopComponent array removed:" // NOI18N

@@ -15,6 +15,10 @@
 package org.netbeans.core.windows.view.ui;
 
 
+import java.awt.KeyboardFocusManager;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.io.CharConversionException;
 import javax.swing.plaf.basic.BasicHTML;
 import org.netbeans.core.windows.Constants;
@@ -41,13 +45,12 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
 
     /** JFrame instance representing the separated mode. */
     private final JFrame frame;
-    private long frametimestamp = 0;
 
     /** Creates a DefaultSeparateContainer. */
     public DefaultSeparateContainer(final ModeView modeView, WindowDnDManager windowDnDManager, Rectangle bounds) {
         super(modeView, windowDnDManager); // NOI18N
 
-        frame = new ModeFrame(this);
+        frame = new ModeFrame(this, modeView);
         frame.getContentPane().add(tabbedHandler.getComponent());
         frame.setBounds(bounds);
 
@@ -71,22 +74,6 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
                 modeView.getController().userResizedModeBounds(
                         modeView, DefaultSeparateContainer.this.frame.getBounds());
             }
-        });
-        
-        frame.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent evt) {
-                modeView.getController().userClosingMode(modeView);
-            }
-            
-            public void windowActivated(WindowEvent event) {
-                if (frametimestamp != 0 && System.currentTimeMillis() > frametimestamp + 500) {
-                    modeView.getController().userActivatedModeWindow(modeView);
-                } 
-            }
-            public void windowOpened(WindowEvent event) {
-                frametimestamp = System.currentTimeMillis();
-            }
-            
         });
         
         
@@ -145,11 +132,10 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
     }
     
     protected void updateActive(boolean active) {
-        if(active && !frame.isActive()) {
-            frametimestamp = System.currentTimeMillis();
+        if(active) {
             if (frame.isVisible()) {
                 frame.toFront();
-            } 
+            }
         } 
     }
     
@@ -170,13 +156,41 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
     implements ModeComponent, TopComponentDroppable {
         
         private final AbstractModeContainer abstractModeContainer;
+        private final ModeView modeView;
+        private long frametimestamp = 0;
         
-        public ModeFrame(AbstractModeContainer abstractModeContainer) {
+        public ModeFrame(AbstractModeContainer abstractModeContainer, ModeView view) {
             super(""); // NOI18N
             this.abstractModeContainer = abstractModeContainer;
+            modeView = view;
             // To be able to activate on mouse click.
             enableEvents(java.awt.AWTEvent.MOUSE_EVENT_MASK);
             setIconImage(MainWindow.createIDEImage());
+            addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent evt) {
+                    modeView.getController().userClosingMode(modeView);
+                }
+            
+                public void windowActivated(WindowEvent event) {
+                    if (frametimestamp != 0 && System.currentTimeMillis() > frametimestamp + 500) {
+                        modeView.getController().userActivatedModeWindow(modeView);
+                    } 
+                }
+                public void windowOpened(WindowEvent event) {
+                    frametimestamp = System.currentTimeMillis();
+                }
+            });
+            
+        }
+        
+        public void setVisible(boolean visible) {
+            frametimestamp = System.currentTimeMillis();
+            super.setVisible(visible);
+        }
+        
+        public void toFront() {
+            frametimestamp = System.currentTimeMillis();
+            super.toFront();
         }
         
         public ModeView getModeView() {
