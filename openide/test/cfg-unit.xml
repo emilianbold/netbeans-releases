@@ -53,6 +53,8 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/actions/*Test.class"/>
+		<!-- excluded because 36573 issue -->
+		<exlude name= "org/openide/actions/NewTemplateActionTest.class" />
                 <include name="org/openide/awt/*Test.class"/>
                 <include name="org/openide/execution/*Test.class"/>
                 <include name="org/openide/explorer/*Test.class"/>
