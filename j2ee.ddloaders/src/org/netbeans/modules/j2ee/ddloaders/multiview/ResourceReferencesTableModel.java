@@ -21,7 +21,8 @@ import org.netbeans.modules.j2ee.dd.api.ejb.ResourceRef;
  */
 class ResourceReferencesTableModel extends InnerTableModel {
     private Ejb ejb;
-    private static final String[] COLUMN_NAMES = new String[]{"Name", "Resource type", "Authentication", "Shareable", "Description"};
+    private static final String[] COLUMN_NAMES = new String[]{"Name", "Resource type", "Authentication", "Shareable",
+                                                              "Description"};
     private static final int[] COLUMN_WIDTHS = new int[]{100, 200, 120, 80, 150};
 
     public ResourceReferencesTableModel(Ejb ejb) {
