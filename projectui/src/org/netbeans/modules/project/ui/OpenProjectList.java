@@ -60,20 +60,22 @@ public final class OpenProjectList {
     
     private static OpenProjectList INSTANCE;
     
+    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(OpenProjectList.class.getName());
+    
     /** List which holds the open projects */
-    private List openProjects;
+    private List/*<Project>*/ openProjects;
     
     /** Main project */
     private Project mainProject;
     
     /** List of recently closed projects */
-    RecentProjectList recentProjects;
+    private final RecentProjectList recentProjects;
 
     /** LRU List of recently used templates */
     private List /*<String>*/ recentTemplates;
     
     /** Property change listeners */
-    private PropertyChangeSupport pchSupport;
+    private final PropertyChangeSupport pchSupport;
     
     
     OpenProjectList() {
@@ -532,6 +534,9 @@ public final class OpenProjectList {
         public RecentProjectList( int size ) {
             this.size = size;
             recentProjects = new ArrayList( size );
+            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                ERR.log("created a RecentProjectList: size=" + size);
+            }
         }
         
         public void add( Project p ) {
@@ -539,6 +544,9 @@ public final class OpenProjectList {
             
             if ( index == -1 ) {
                 // Project not in list
+                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    ERR.log("add new recent project: " + p);
+                }
                 if ( recentProjects.size() == size ) {
                     // Need some space for the newly added project
                     recentProjects.remove( size - 1 ); 
@@ -546,6 +554,9 @@ public final class OpenProjectList {
                 recentProjects.add( 0, new ProjectReference( p ) );
             }
             else {
+                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    ERR.log("re-add recent project: " + p);
+                }
                 // Project is in list => just move it to first place
                 recentProjects.remove( index );
                 recentProjects.add( 0, new ProjectReference( p ) );
@@ -555,6 +566,9 @@ public final class OpenProjectList {
         public boolean remove( Project p ) {
             int index = getIndex( p );
             if ( index != -1 ) {
+                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    ERR.log("remove recent project: " + p);
+                }
                 recentProjects.remove( index );
                 return true;
             }
@@ -562,30 +576,43 @@ public final class OpenProjectList {
         }
         
         
-        public List getProjects() {
-            ArrayList result = new ArrayList( recentProjects.size() );
+        public List/*<Project>*/ getProjects() {
+            List/*<Project>*/ result = new ArrayList( recentProjects.size() );
             // Copy the list
-            ArrayList references = new ArrayList( recentProjects );
+            List/*<ProjectReference>*/ references = new ArrayList( recentProjects );
             for ( Iterator it = references.iterator(); it.hasNext(); ) {
                 ProjectReference pRef = (ProjectReference)it.next(); 
                 Project p = pRef.getProject();
                 if ( p == null || !p.getProjectDirectory().isValid() ) {
                     remove( p );        // Folder does not exist any more => remove from
+                    if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                        ERR.log("removing dead recent project: " + p);
+                    }
                 }
                 else {
                     result.add( p );
                 }
+            }
+            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                ERR.log("recent projects: " + result);
             }
             return result;
         }
         
         
         public boolean isEmpty() {
-            return recentProjects.isEmpty();
+            boolean empty = recentProjects.isEmpty();
+            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                ERR.log("recent projects empty? " + empty);
+            }
+            return empty;
         }
         
         public void load() {
-            List URLs = OpenProjectListSettings.getInstance().getRecentProjectsURLs();
+            List/*<URL>*/ URLs = OpenProjectListSettings.getInstance().getRecentProjectsURLs();
+            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                ERR.log("recent project list load: " + URLs);
+            }
             recentProjects.clear(); 
             for ( Iterator it = URLs.iterator(); it.hasNext(); ) {
                 recentProjects.add( new ProjectReference( (URL)it.next() ) );
@@ -600,6 +627,9 @@ public final class OpenProjectList {
                 if ( pURL != null ) {
                     URLs.add( pURL );
                 }
+            }
+            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                ERR.log("recent project list save: " + URLs);
             }
             OpenProjectListSettings.getInstance().setRecentProjectsURLs( URLs );
         }
@@ -633,7 +663,9 @@ public final class OpenProjectList {
                     projectURL = p.getProjectDirectory().getURL();                
                 }
                 catch( FileStateInvalidException e ) {
-                    // Do nothing;
+                    if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                        ERR.log("FSIE getting URL for project: " + p.getProjectDirectory());
+                    }
                 }
             }
             
@@ -648,6 +680,9 @@ public final class OpenProjectList {
                     }
                 }
                 
+                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    ERR.log("no active project reference for " + projectURL);
+                }
                 if ( projectURL != null ) {                    
                     FileObject dir = URLMapper.findFileObject( projectURL );
                     if ( dir != null && dir.isFolder() ) {
@@ -655,15 +690,24 @@ public final class OpenProjectList {
                             p = ProjectManager.getDefault().findProject( dir );
                             if ( p != null ) {
                                 projectReference = new WeakReference( p ); 
+                                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                                    ERR.log("found " + p);
+                                }
                                 return p;
                             }
                         }       
                         catch ( IOException e ) {
                             // Ignore invalid folders
+                            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                                ERR.log("could not load recent project from " + projectURL);
+                            }
                         }
                     }
                 }
                 
+                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+                    ERR.log("no recent project in " + projectURL);
+                }
                 return null; // Empty reference                
             }
             

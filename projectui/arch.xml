@@ -554,9 +554,15 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="exec-property">
-  <p>
-   No.
-  </p>
+  <ul>
+   <li>
+    <api group="property" name="org.netbeans.modules.project.ui.OpenProjectList" type="export" category="private">
+     <p>
+      Error manager logging category for things affecting project list.
+     </p>
+    </api>
+   </li>
+  </ul>
  </answer>
 
 
