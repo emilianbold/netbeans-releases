@@ -27,6 +27,13 @@ public class MeasureActions  {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
 
+        suite.addTest(new ExpandNodesProjectsView("testExpandProjectNode", "Expand Project node"));
+        suite.addTest(new ExpandNodesProjectsView("testExpandSourcePackagesNode", "Expand Source Packages node"));
+        suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith50JavaFiles", "Expand folder with 50 java files"));
+        suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith100JavaFiles", "Expand folder with 100 java files"));
+        suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith100TxtFiles", "Expand folder with 100 txt files"));
+        suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith100XmlFiles", "Expand folder with 100 xml files"));
+
         suite.addTest(new OpenFiles("testOpening20kBJavaFile", "Open Java file (20kB)"));
         suite.addTest(new OpenFilesWithOpenedEditor("testOpening20kBJavaFile", "Open Java file (20kB) if Editor opened"));
 
@@ -36,11 +43,12 @@ public class MeasureActions  {
         suite.addTest(new OpenFiles("testOpening20kBXmlFile", "Open Xml file (20kB)"));
         suite.addTest(new OpenFilesWithOpenedEditor("testOpening20kBXmlFile", "Open Xml file (20kB) if Editor opened"));
         
-//TODO it doesn't work now       suite.addTest(new OpenFiles("testOpening20kBJSPFile", "Open JSP file"));
-//TODO it doesn't work now       suite.addTest(new OpenFilesWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
+//TODO Rises NPE now        suite.addTest(new OpenJspFile("testOpening20kBJSPFile", "Open JSP file"));
+//TODO Rises NPE now        suite.addTest(new OpenJspFileWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
         
         suite.addTest(new OpenFilesNoCloneableEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB)"));
         suite.addTest(new OpenFilesNoCloneableEditorWithOpenedEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB) if Editor opened"));
+        
         suite.addTest(new OpenFilesNoCloneableEditor("testOpening20kBPictureFile", "Open Picture file (20kB)"));
         suite.addTest(new OpenFilesNoCloneableEditorWithOpenedEditor("testOpening20kBPictureFile", "Open Picture file (20kB) if Editor opened"));
         
@@ -53,57 +61,79 @@ public class MeasureActions  {
         
         suite.addTest(new JavaCompletionInEditor("measureTime", "Invoke Code Completion dialog in Editor"));
         suite.addTest(new TypingInEditor("measureTime", "Type a character in Editor"));
-        
-        
-//TODO        suite.addTest(new ExpandNodesInExplorer("testExpandFolderWith50JavaFiles", "Expand folder with 50 java files"));
-//TODO        suite.addTest(new ExpandNodesInExplorer("testExpandFolderWith100JavaFiles", "Expand folder with 100 java files"));
-//TODO        suite.addTest(new ExpandNodesInExplorer("testExpandFolderWith100TxtFiles", "Expand folder with 100 txt files"));
-//TODO        suite.addTest(new ExpandNodesInExplorer("testExpandFolderWith100XmlFiles", "Expand folder with 100 xml files"));
-        
-//TODO        suite.addTest(new RefreshFolder("testRefreshFolderWith50JavaFiles", "Refresh folder with 50 java files"));
-//TODO        suite.addTest(new RefreshFolder("testRefreshFolderWith100JavaFiles", "Refresh folder with 100 java files"));
-//TODO        suite.addTest(new RefreshFolder("testRefreshFolderWith100XmlFiles", "Refresh folder with 100 xml files"));
-//TODO        suite.addTest(new RefreshFolder("testRefreshFolderWith100TxtFiles", "Refresh folder with 100 txt files"));
-        
-//TODO        suite.addTest(new ExpandNodesInNewFromTemplate("testExpandJavaClasses","Expand node Java Classes in New from Template"));
-//TODO        suite.addTest(new ExpandNodesInNewFromTemplate("testExpandGUIForms","Expand node GUI Forms in New from Template"));
-//TODO        suite.addTest(new ExpandNodesInNewFromTemplate("testExpandXML","Expand node XML in New from Template"));
-//TODO        suite.addTest(new ExpandNodesInNewFromTemplate("testExpandOther","Expand node Other in New from Template"));
 
-//TODO        suite.addTest(new ExpandNodesInOptions("testExpandEditorSettings", "Expand node Editor Settings in Tools | Options"));
+        suite.addTest(new CloseEditor("testClosing20kBJavaFile", "Close Java file (20kB)"));
+//TODO Form designer isn't TopComponent        suite.addTest(new CloseEditor("testClosing20kBFormFile", "Close Form file (20kB)"));
+        suite.addTest(new CloseAllEditors("testClosingAllJavaFiles", "Close All Documents if 10 Java files opened"));
         
-//TODO        suite.addTest(new OpenFiles("testOpening20kBWebXMLFile", "Open web.xml file"));
-//TODO        suite.addTest(new OpenFilesWithOpenedEditor("testOpening20kBWebXMLFile", "Open web.xml file if Editor opened"));
+        suite.addTest(new CloseEditorTab("testClosingTab", "Close on tab from Editor window"));
         
-//TODO        suite.addTest(new ExpandNodesInComponentInspector("testExpandContainerJFrame","Expand Container node in Component Inspector"));
+        suite.addTest(new CloseEditorModified("testClosingModifiedJavaFile", "Close modified Java file"));
+        
+        suite.addTest(new SaveModifiedFile("testSaveModifiedJavaFile", "Save modified Java file"));
+
+        suite.addTest(new ExpandNodesInNewFile("testExpandJavaClasses","Expand node Java Classes in New File"));
+        suite.addTest(new ExpandNodesInNewFile("testExpandGUIForms","Expand node GUI Forms in New File"));
+        suite.addTest(new ExpandNodesInNewFile("testExpandXML","Expand node XML in New File"));
+        suite.addTest(new ExpandNodesInNewFile("testExpandOther","Expand node Other in New File"));
+
+        suite.addTest(new ExpandNodesInOptions("testExpandEditorSettings", "Expand node Editor Settings in Tools | Options"));
+        
+        suite.addTest(new ExpandNodesInComponentInspector("testExpandContainerJFrame","Expand Container node in Component Inspector"));
+
+        suite.addTest(new RefreshFolder("testRefreshFolderWith50JavaFiles", "Refresh folder with 50 java files"));
+        suite.addTest(new RefreshFolder("testRefreshFolderWith100JavaFiles", "Refresh folder with 100 java files"));
+        suite.addTest(new RefreshFolder("testRefreshFolderWith100XmlFiles", "Refresh folder with 100 xml files"));
+        suite.addTest(new RefreshFolder("testRefreshFolderWith100TxtFiles", "Refresh folder with 100 txt files"));
+        
+        suite.addTest(new DeleteFolder("testDeleteFolderWith50JavaFiles", "Delete folder with 50 java files"));
+        suite.addTest(new DeleteFolder("testDeleteFolderWith100JavaFiles", "Delete folder with 100 java files"));
+        
+//TODO    suite.addTest(new CreateProject("testCreateJavaApplicationProject", "Create Java Application project"));
+//TODO    suite.addTest(new CreateProject("testCreateJavaLibraryProject", "Create Java Library project"));
+//TODO    suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
+//TODO    suite.addTest(new CreateProject("testCreateJavaProjectWithExistingSources", "Create Java Project with Existing sources"));
+        
+//TODO    suite.addTest(new OpenProject("testOpenJavaApplicationProject", "Open Java Application project"));
+//TODO    suite.addTest(new OpenProject("testOpenJavaLibraryProject", "Open Java Library project"));
+//TODO    suite.addTest(new OpenProject("testOpenWebApplicationProject", "Open Web Application project"));
+//TODO    suite.addTest(new OpenProject("testOpenJavaProjectWithExistingSources", "Open Java Project with Existing sources"));
+        
+//TODO    suite.addTest(new CloseProject("testCloseJavaApplicationProject", "Close Java Application project"));
+        
+//TODO    suite.addTest(new SetMainProject("testSetMainProject", "Set Main project"));
+        
+//TODO    suite.addTest(new BuildProject("testBuildHelloWorld", "Build Hello World project"));
+//TODO    suite.addTest(new CleanAndBuildProject("testCleanAndBuildHelloWorld", "Clean and Build Hello World project"));
+//TODO    suite.addTest(new RunProject("testRunHelloWorld", "Run Hello World project"));
+        
+//TODO    suite.addTest(new CreateNewJavaFile("testCreateNewJavaFile", "Create New Java file"));
+//TODO    suite.addTest(new CreateNewJavaFileIfEditorOpened("testCreateNewJavaFileIfEditorOpened", "Create New Java file if Editor opened"));
+//TODO    suite.addTest(new CreateNewPackage("testCreateNewPackage", "Create New Package"));
+        
+//TODO    suite.addTest(new SelectDocumentIn("testSelectDocumentInProjects", "Select Document In Projects"));
+//TODO    suite.addTest(new SelectDocumentIn("testSelectDocumentInFiles", "Select Document In Files"));
+//TODO    suite.addTest(new SelectDocumentIn("testSelectDocumentInAllFiles", "Select Document In All Files"));
+        
+//TODO    suite.addTest(new SwitchToFile("testSwitchEditorJavaToJava", "Switch editor Java to Java file"));
+//TODO    suite.addTest(new SwitchToFile("testSwitchEditorJavaToForm", "Switch editor Java to Form file"));
+//TODO    suite.addTest(new SwitchToFile("testSwitchEditorFormToJava", "Switch editor Form to Java file"));
+
+//TODO    suite.addTest(new SwitchView("testSwitchToProjects", "Switch to Projects view"));
+//TODO    suite.addTest(new SwitchView("testSwitchToFiles", "Switch to Files view"));
+//TODO    suite.addTest(new SwitchView("testSwitchToAllFiles", "Switch to All Files view"));
+//TODO    suite.addTest(new SwitchView("testSwitchToFavoriteFolders", "Switch to Favorite Folders view"));
+        
+//TODO    suite.addTest(new SlidingWindows("testMinimizeProjects", "Minimize Projects window"));
+//TODO    suite.addTest(new SlidingWindows("testSlideProjects", "Slide Projects window"));
+//TODO    suite.addTest(new SlidingWindows("testAutoHideProjects", "Auto Hide Projects window"));
+
         
         
-//TODO        suite.addTest(new FinishNewFromTemplateWizard("testCreateJavaMainClass","Finish new wizard | create Java Main Class"));
-//TODO        suite.addTest(new FinishNewFromTemplateWizardWithOpenedEditor("testCreateJavaMainClass","Finish new wizard | create Java Main Class if Editor opened"));
+//TODO    suite.addTest(new CompileFile("testCompileFile", "Compile Java file"));
         
-//TODO        suite.addTest(new FinishMountWizardLocalFilesystem("measureTime","Finish mount wizard | Local Filesystem"));
-//TODO        suite.addTest(new FinishMountWizardJARFilesystem("measureTime","Finish mount wizard | JAR Filesystem"));
-        //TODO solve problem with test suite.addTest(new FinishMountWizardCVSFilesystem("measureTime","Finish mount wizard | CVS Filesystem"));
-        
-//TODO        suite.addTest(new UnmountLocalFilesystem("measureTime","Unmount Local Filesystem"));
-//TODO        suite.addTest(new UnmountJARFilesystem("measureTime","Unmount JAR Filesystem"));
-        
-//TODO        suite.addTest(new ExpandJARFilesystemNode("measureTime","Expand JAR Filesystem Node"));
-//TODO        suite.addTest(new ExpandVCSFilesystemNode("measureTime","Expand VCS Filesystem Node"));
-        
-//TODO        suite.addTest(new DeleteFolder("testDeleteFolderWith100JavaFiles", "Delete folder with 100 java files"));
-//TODO        suite.addTest(new DeleteFolder("testDeleteFolderWith500JavaFiles", "Delete folder with 500 java files"));
-        
-//TODO        suite.addTest(new CloseEditor("testClosing20kBJavaFile", "Close Java file (20kB)"));
-//TODO        suite.addTest(new CloseEditor("testClosing20kBFormFile", "Close Form file (20kB)"));
-//TODO        suite.addTest(new CloseAllEditors("testClosing20JavaFiles", "Close All Documents if 20 Java files opened"));
-        
-//TODO        suite.addTest(new CloseEditorTab("testClosingTab", "Close on tab from Editor window"));
-        
-//TODO        suite.addTest(new CloseEditorModified("testClosingModifiedJavaFile", "Close modified Java file"));
-        
-//TODO        suite.addTest(new SaveModifiedFile("testSaveModifiedJavaFile", "Save modified Java file"));
-        
+//TODO    suite.addTest(new AddToFavorites("testAddToFavoritesFolders", "Add to Favorites folders"));
+
         
         return suite;
     }
