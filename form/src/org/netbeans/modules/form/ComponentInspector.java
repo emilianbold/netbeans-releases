@@ -479,9 +479,14 @@ public class ComponentInspector extends TopComponent
 
         public void performAction(SystemAction action) {
             Node[] selected = getExplorerManager().getSelectedNodes();
+
             if (selected == null || selected.length == 0)
                 return;
-            
+
+            for (int i=0; i < selected.length; i++)
+                if (!selected[i].canDestroy())
+                    return;
+
             if (!confirmDelete(selected)) // ExplorerPanel.isConfirmDelete() ??
                 return;
 
