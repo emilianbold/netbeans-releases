@@ -55,7 +55,7 @@ public final class Watch {
      * @param expression expression to watch
      */
     public void setExpression (String expression) {
-        String old = expression;
+        String old = this.expression;
         this.expression = expression;
         pcs.firePropertyChange (PROP_EXPRESSION, old, expression);
     }
