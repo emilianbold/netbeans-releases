@@ -13,16 +13,14 @@
 package org.netbeans.jellytools.properties;
 
 import java.awt.Component;
-import java.awt.Container;
 import javax.swing.JComponent;
+import org.netbeans.core.NbNodeOperation;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
-import org.netbeans.jemmy.operators.Operator;
-
 import org.openide.explorer.propertysheet.PropertySheet;
 
 /**
@@ -61,7 +59,7 @@ public class PropertySheetOperator extends TopComponentOperator {
                                                                          "Properties");
     
     /** Generic constructor
-     * @param editor instance of CloneableEditor
+     * @param instance of PropertySheet
      */    
     public PropertySheetOperator(JComponent sheet) {
         super(sheet);
@@ -69,7 +67,7 @@ public class PropertySheetOperator extends TopComponentOperator {
     
     /** Waits for TopComponent with "Properties" in its name. */
     public PropertySheetOperator() {
-        super(propertiesText);
+        this(propertiesText);
     }
     
     /** Waits for TopComponent with name according to given mode ("No Properties",
@@ -98,7 +96,7 @@ public class PropertySheetOperator extends TopComponentOperator {
      * @see #MODE_PROPERTIES_OF_MULTIPLE_OBJECTS
      */
     public PropertySheetOperator(int mode, String objectName) {
-        super(Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_GlobalProperties", 
+        this(Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_GlobalProperties", 
                                new Object[]{new Integer(mode), objectName}));
     }
     
@@ -107,7 +105,7 @@ public class PropertySheetOperator extends TopComponentOperator {
      * @param sheetName name of sheet to find (e.g. "Properties of MyClass")
      */
     public PropertySheetOperator(String sheetName) {
-        super(sheetName);
+        this(null, sheetName);
     }
     
     /** Waits for TopComponent of PropertySheet with given name in specified
@@ -116,7 +114,10 @@ public class PropertySheetOperator extends TopComponentOperator {
      * @param sheetName name of sheet to find (e.g. "Properties of MyClass")
      */
     public PropertySheetOperator(ContainerOperator contOper, String sheetName) {
-        super(contOper, sheetName);
+        super(waitTopComponent(contOper, sheetName, 0, new PropertySheetSubchooser()));
+        if(contOper != null) {
+            copyEnvironment(contOper);
+        }
     }
     
     /** Waits for non TopComponent PropertySheet in specified ContainerOperator.
@@ -133,7 +134,7 @@ public class PropertySheetOperator extends TopComponentOperator {
      * @param index int index
      */
     public PropertySheetOperator(ContainerOperator contOper, int index) {
-        super((JComponent)waitPropertySheet(contOper, index));
+        super((JComponent)contOper.waitSubComponent(new PropertySheetSubchooser(), index));
         copyEnvironment(contOper);
     }
     
@@ -172,22 +173,21 @@ public class PropertySheetOperator extends TopComponentOperator {
         return new PropertySheetToolbarOperator(this);
     }
     
-    /** Waits for instance of PropertySheet in a container. */
-    private static Component waitPropertySheet(ContainerOperator contOper, int index) {
-        ComponentChooser chooser = new ComponentChooser() {
-            public boolean checkComponent(Component comp) {
-                return comp instanceof PropertySheet;
-            }
-            
-            public String getDescription() {
-                return "org.openide.explorer.propertysheet.PropertySheet";
-            }
-        };
-        return contOper.waitComponent((Container)contOper.getSource(), chooser, index);
-    }
-    
     /** Performs verification by accessing all sub-components */    
     public void verify() {
         tbpPropertySheetTabbedPane();
+    }
+
+    /** SubChooser to determine PropertySheet TopComponent
+     * Used in constructors.
+     */
+    private static final class PropertySheetSubchooser implements ComponentChooser {
+        public boolean checkComponent(Component comp) {
+            return (comp instanceof PropertySheet || comp instanceof NbNodeOperation.Sheet);
+        }
+
+        public String getDescription() {
+            return "org.openide.explorer.propertysheet.PropertySheet";
+        }
     }
 }
