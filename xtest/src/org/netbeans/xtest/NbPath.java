@@ -52,87 +52,102 @@ public class NbPath extends Task {
   
         // prepare netbeans.test.... path
         StringBuffer list = new StringBuffer(1024);
-        listJars(nbhome, "lib/patches", list);
-        listJars(nbhome, "lib", list);
-        listJars(nbhome, "lib/ext", list);
-        listJars(nbhome, "modules", list);
-        listJars(nbhome, "modules/ext", list);
-        getProject().setProperty(NB_LIBRARY_PATH, list.toString());
-
+        if (null == getProject().getProperty(NB_LIBRARY_PATH)) {
+            listJars(nbhome, "lib/patches", list);
+            listJars(nbhome, "lib", list);
+            listJars(nbhome, "lib/ext", list);
+            listJars(nbhome, "modules", list);
+            listJars(nbhome, "modules/ext", list);
+            getProject().setProperty(NB_LIBRARY_PATH, list.toString());
+        }
+        
         list.setLength(0);
-        listJars(nbhome, "lib/patches", list);
-        listJars(nbhome, "lib", list);
-        listJars(nbhome, "lib/ext", list);
-        listJars(System.getProperty("java.home"), "lib", list);
-        getProject().setProperty(NB_CLASS_PATH, list.toString());
-
+        if (null == getProject().getProperty(NB_CLASS_PATH)) {
+            listJars(nbhome, "lib/patches", list);
+            listJars(nbhome, "lib", list);
+            listJars(nbhome, "lib/ext", list);
+            listJars(System.getProperty("java.home"), "lib", list);
+            getProject().setProperty(NB_CLASS_PATH, list.toString());
+        }
+        
         list.setLength(0);
-        listJars(System.getProperty("java.home"), "lib", list);
-        listJars(System.getProperty("Env-JAVA_HOME"), "lib", list);
-        getProject().setProperty(NB_BOOTCLASS_PATH, list.toString());
-
+        if (null == getProject().getProperty(NB_BOOTCLASS_PATH)) {
+            listJars(System.getProperty("java.home"), "lib", list);
+            listJars(System.getProperty("Env-JAVA_HOME"), "lib", list);
+            getProject().setProperty(NB_BOOTCLASS_PATH, list.toString());
+        }
+        
         // prepare ant.class.path property
-        String ant_path = null;
+        String ant_path = getProject().getProperty(ANT_PATH);
         
-        if (null != anthome)
-            ant_path = lookupAnt(anthome);
-        
-        if (null == ant_path && null != System.getProperty("ant.home"))
-            ant_path = lookupAnt(System.getProperty("ant.home"));
-        
-        if (null == ant_path)
-            // will find both optional.jar & ant-optional.jar
-            ant_path = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), 
-                                          new String [] { "ext/ant.jar", "optional.jar" });
+        if (null == ant_path) {
+            if (null != anthome)
+                ant_path = lookupAnt(anthome);
 
-        if (null == ant_path)
-            ant_path = lookupJarsFromPath(System.getProperty("java.class.path", ""), 
-                                          new String [] { "ant.jar", "optional.jar" });
+            if (null == ant_path && null != System.getProperty("ant.home"))
+                ant_path = lookupAnt(System.getProperty("ant.home"));
 
-        if (null == ant_path)
-            ant_path = "";
+            if (null == ant_path)
+                // will find both optional.jar & ant-optional.jar
+                ant_path = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), 
+                                              new String [] { "ext/ant.jar", "optional.jar" });
 
-        getProject().setProperty(ANT_PATH, ant_path);
+            if (null == ant_path)
+                ant_path = lookupJarsFromPath(System.getProperty("java.class.path", ""), 
+                                              new String [] { "ant.jar", "optional.jar" });
+
+            if (null == ant_path)
+                ant_path = "";
+
+            getProject().setProperty(ANT_PATH, ant_path);
+        }
         
         // find junit.jar
-        String junit_jar = null;
-        String junit_jars [] = new String [] { "junit.jar" };
-        junit_jar = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), junit_jars);
-        if (null == junit_jar)
+        String junit_jar = getProject().getProperty(JUNIT_JAR);
+        if (null == junit_jar) {
+            String junit_jars [] = new String [] { "junit.jar" };
             junit_jar = lookupJarsFromPath(System.getProperty("java.class.path", ""), junit_jars);
-        if (null == junit_jar)
-            junit_jar = "";
-        getProject().setProperty(JUNIT_JAR, junit_jar);
+            if (null == junit_jar)
+                junit_jar = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), junit_jars);
+            if (null == junit_jar)
+                junit_jar = "";
+            getProject().setProperty(JUNIT_JAR, junit_jar);
+        }
         
         // find xalan.jar
-        String xalan_jar = null;
-        String xalan_jars [] = new String [] { "xalan.jar" };
-        xalan_jar = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), xalan_jars);
-        if (null == xalan_jar)
+        String xalan_jar = getProject().getProperty(XALAN_JAR);
+        if (null == xalan_jar) {
+            String xalan_jars [] = new String [] { "xalan.jar" };
             xalan_jar = lookupJarsFromPath(System.getProperty("java.class.path", ""), xalan_jars);
-        if (null == xalan_jar)
-            xalan_jar = "";
-        getProject().setProperty(XALAN_JAR, xalan_jar);
-
+            if (null == xalan_jar)
+                xalan_jar = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), xalan_jars);
+            if (null == xalan_jar)
+                xalan_jar = "";
+            getProject().setProperty(XALAN_JAR, xalan_jar);
+        }
+        
         // find xerces.jar
-        String xerces_jar = null;
-        String xerces_jars [] = new String [] { "xerces.jar" };
-        xerces_jar = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), xerces_jars);
-        if (null == xerces_jar)
+        String xerces_jar = getProject().getProperty(XERCES_JAR);
+        if (null == xerces_jar) {
+            String xerces_jars [] = new String [] { "xerces.jar" };
             xerces_jar = lookupJarsFromPath(System.getProperty("java.class.path", ""), xerces_jars);
-        if (null == xerces_jar)
-            xerces_jar = "";
-        getProject().setProperty(XERCES_JAR, xerces_jar);
+            if (null == xerces_jar)
+                xerces_jar = lookupJarsFromPath(getProject().getProperty(NB_LIBRARY_PATH), xerces_jars);
+            if (null == xerces_jar)
+                xerces_jar = "";
+            getProject().setProperty(XERCES_JAR, xerces_jar);
+        }
         
         // prepare xtest.path property
-        String  xtest_home = null;
-        list.setLength(0);
-        addPath(list, appendSlash(xthome) + "lib/xtest.jar");
-        addPath(list, ant_path);
-        addPath(list, junit_jar);
-        addPath(list, xalan_jar);
-        addPath(list, xerces_jar);
-        getProject().setProperty(XTEST_PATH, list.toString());
+        if (null == getProject().getProperty(XTEST_PATH)) {
+            list.setLength(0);
+            addPath(list, appendSlash(xthome) + "lib/xtest.jar");
+            addPath(list, ant_path);
+            addPath(list, junit_jar);
+            addPath(list, xalan_jar);
+            addPath(list, xerces_jar);
+            getProject().setProperty(XTEST_PATH, list.toString());
+        }
     }
 
     private void listJars(String root, String folder, StringBuffer list) {
