@@ -557,7 +557,7 @@ is divided into following sections:
             <target name="-post-compile">
 				<xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
 					<xsl:attribute name="depends">
-						<xsl:for-each select="/p:project2/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
+						<xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
 							<xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
 							<xsl:variable name="wsname2">
 								<xsl:value-of select="webproject2:web-service-name"/>
