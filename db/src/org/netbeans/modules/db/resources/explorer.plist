@@ -90,13 +90,18 @@
 				prefix = "jdbc:oracle:thin:@<HOST>:<PORT>:<SID>";
 			},
 			{
+				name = "PointBase Embedded Server";
+				driver = "com.pointbase.jdbc.jdbcUniversalDriver";
+				prefix = "jdbc:pointbase://embedded[:<PORT>]/<DB>";
+			},
+			{
 				name = "PointBase Mobile Edition";
-				driver = "com.pointbase.jdbc.jdbcDriver";
+				driver = "com.pointbase.jdbc.jdbcUniversalDriver";
 				prefix = "jdbc:pointbase:<DB>";
 			},
 			{
-				name = "PointBase Server Edition";
-				driver = "com.pointbase.net.netJDBCDriver";
+				name = "PointBase Network Server";
+				driver = "com.pointbase.jdbc.jdbcUniversalDriver";
 				prefix = "jdbc:pointbase://<HOST>[:<PORT>]/<DB>";
 			},
 			{
