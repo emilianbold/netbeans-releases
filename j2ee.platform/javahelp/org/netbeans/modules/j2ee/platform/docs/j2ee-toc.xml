@@ -46,15 +46,16 @@
        <tocitem text="About Web Applications" target="intro" />
        <tocitem text="Working with Web Applications" target="mod_process" />
        <tocitem text="Web Application Tasks: Quick Reference" target="mod_quickref"/>
-       <tocitem text="How the IDE Supports Web Application Development" target="webmod_idesupport" />
-       <tocitem text="Which Technology Versions Are Supported" target="webmod_techsupport" />
-       <tocitem text="Upgrading to the J2EE 1.4 Specification" target="spec_version" />
-       <tocitem text="How to Structure a Web Application" target="webmod_struct" />
-       <tocitem text="Where to Put Web Application Files" target="webmod_placefiles" />
+       <tocitem text="About the IDE's Web Development Support" target="webmod_idesupport" />
+       <tocitem text="About the IDE's Technology Version Support" target="webmod_techsupport" />
+       <tocitem text="About the Java BluePrints Source Structure" target="tbd" />
+       <tocitem text="About the Jakarta Source Structure" target="webmod_placefiles" />
     </tocitem> <!-- About Web Applications -->
     
-    <tocitem text="Creating and Editing Web Components">
-      <tocitem text="About Creating Web Components" target="introwebcomps" />	
+    <tocitem text="Creating and Editing Web Applications">
+	   <tocitem text="About Creating Web Applications" target="webmod_struct" />
+	   <tocitem text="Creating a Web Application Project" target="tbd" />
+	   <tocitem text="Upgrading to the J2EE 1.4 Specification" target="spec_version" />
       <tocitem text="JSP"> 
           <tocitem text="About JavaServer Pages Technology" target="concepts_jsp" />
           <tocitem text="About JSP Syntax" target="concepts_jspsyn" />
@@ -172,7 +173,7 @@
        </tocitem> <!-- Deploying Web Applications-->
        
        <tocitem text="Debugging and Testing Web Applications"> 
-            <tocitem text="About Debugging Web Applications" target="jsp_debug"/>
+            <tocitem text="About Debugging and Testing Web Applications" target="jsp_debug"/>
     <!--    <tocitem text="Validating JSP Syntax" target="jsp_validate" />  -->
     	    <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
             <tocitem text="Writing A Debug Target for a Free-Form Web Project" target="proj_webfree_debug" />
@@ -224,7 +225,7 @@
 <tocitem text="Developing Web Services">
 	 <tocitem text="About Web Services" target="about_web_service" />
 	 <tocitem text="Working with Web Services" target="ws_process" />
-	 <tocitem text="Decide How to Implement a Web Service" target="decide_ws" />
+	 <tocitem text="Deciding How to Implement a Web Service" target="decide_ws" />
 	 <tocitem text="Creating a Web Service" target="create_ws" />
 	 <tocitem text="Configuring Web Service Creation" target="create_ws_customize" />
 	 <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
