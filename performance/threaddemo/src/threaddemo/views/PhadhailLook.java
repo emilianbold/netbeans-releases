@@ -123,7 +123,9 @@ final class PhadhailLook extends DefaultLook {
             // XXX currently there is nothing lighter-weight than AbstractLookup: #32203
             super(ph, l, new AbstractLookup(c));
             this.c = c;
-            c.add(ED_KEY, this);
+            if (!ph.hasChildren()) {
+                c.add(ED_KEY, this);
+            }
             ph.addPhadhailListener(this);
             //System.err.println("Created " + this);
             //Thread.dumpStack();

@@ -88,7 +88,7 @@ final class PhadhailNode extends AbstractNode implements PhadhailListener, Phadh
     }
     
     public Node.Cookie getCookie(Class clazz) {
-        if (clazz.isAssignableFrom(PhadhailEditorSupport.class)) {
+        if (clazz.isAssignableFrom(PhadhailEditorSupport.class) && !ph.hasChildren()) {
             if (editor == null) {
                 editor = new PhadhailEditorSupport(ph, this);
             }
