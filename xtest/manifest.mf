@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
 XTest-MajorVersion: 1.2
-XTest-MinorVersion: 9
+XTest-MinorVersion: 10
 XTest-Branch: dev

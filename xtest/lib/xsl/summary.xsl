@@ -135,6 +135,19 @@
 <xsl:template match="TestRun">
 	<xsl:variable name="currentRunID" select="@runID"/>
 	<A NAME="{$currentRunID}"><H2>Test Run</H2></A>
+	
+	<xsl:for-each select="ModuleError">
+			<LI><B><FONT color="#FF0000">
+				Execution failed 
+				in module <xsl:value-of select="@module"/>
+				<xsl:if test="@logfile">, testtype <xsl:value-of select="@testtype"/></xsl:if>.
+				<xsl:if test="@logfile">
+				See <a HREF="../{parent::*/@runID}/logs/{@logfile}">log</a> for details.
+				</xsl:if>
+				</FONT></B>
+			</LI>
+        </xsl:for-each>
+	
 	<UL>
 		<xsl:if test="@name">
 			<LI>Name:<xsl:value-of select="@name"/></LI>

@@ -437,6 +437,8 @@ public class RegenerateXMLTask extends Task{
         // perfrom any check against the testReport - we just
         // replace testRuns in TestReport object (sure, we will take care of includeChildren stuff)
      
+        TreeSet brokenModules = new TreeSet();
+        
         testReport.xmlat_testsPass = 0;
         testReport.xmlat_testsFail = 0;
         testReport.xmlat_testsUnexpectedPass = 0;
@@ -455,6 +457,21 @@ public class RegenerateXMLTask extends Task{
             testReport.xmlat_testsError+=testRuns[i].xmlat_testsError;
             testReport.xmlat_testsTotal+=testRuns[i].xmlat_testsTotal;
             testReport.xmlat_time+=testRuns[i].xmlat_time;
+            
+            if (testRuns[i].xmlel_ModuleError != null && testRuns[i].xmlel_ModuleError.length > 0) {
+                    for (int j=0; j<testRuns[i].xmlel_ModuleError.length; j++) {
+                        brokenModules.add(testRuns[i].xmlel_ModuleError[j].getModule());
+                    }
+            }
+            
+        }
+        if (!brokenModules.isEmpty()) {
+            String modules = "";
+            Iterator iter = brokenModules.iterator();
+            while (iter.hasNext()) {
+                modules += (modules.equals("")?"":",") + (String)iter.next();
+            }
+            testReport.xmlat_brokenModules = modules;
         }
         testReport.xmlel_TestRun = testRuns;
         // try to set the correct date

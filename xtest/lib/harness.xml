@@ -85,6 +85,7 @@ Microsystems, Inc. All Rights Reserved.
             <param name="target.name" value="runtest-helper"/>
             <param name="running.mode" value="run"/>
 	    <param name="xtest.no.mail.results" value="true"/>
+	    <param name="testrun" value="${xtest.results.testrun.dir}/xmlresults/testrun.xml"/>
         </antcall>
         
         <!-- regenerate and transform results. -->
@@ -95,9 +96,6 @@ Microsystems, Inc. All Rights Reserved.
 	<antcall target="mail-results">
             
         </antcall>
-
-        <get-system-property systemProperty="xtest.errors"/>
-        <antcall target="print-errors"/>
 
         <!-- print summary -->
         <property name="xtest.fail.on.failure" value="false"/>
@@ -139,10 +137,6 @@ Microsystems, Inc. All Rights Reserved.
               mailhost="${xtest.mail.mailhost}"/>     
     </target>    
     
-    <target name="print-errors" if="xtest.errors">
-       <echo message="Following ERRORS in test harness or in compilation were found and that's why some tests might not be correctly executed or were not executed at all: ${xtest.errors}"/>
-    </target>      
-
     <target name="runtestsfromdist">
         <ant antfile="build.xml" target="runtests">
             <property name="xtest.source.location" value="ide"/>            
@@ -258,7 +252,8 @@ Microsystems, Inc. All Rights Reserved.
                       targetParamModule="xtest.module"
                       targetParamTesttype="xtest.testtype"
                       targetParamTestAttributes="xtest.attribs"
-                      runningMode="${running.mode}"/>        
+                      runningMode="${running.mode}"
+                      testRun="${testrun}"/>        
     </target>
 
     <target name="buildxtest" depends="setnobuildxtest"

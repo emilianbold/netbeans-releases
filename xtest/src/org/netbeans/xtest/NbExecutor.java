@@ -25,6 +25,8 @@ import org.apache.tools.ant.taskdefs.*;
 
 import java.util.*;
 import java.io.*;
+import org.netbeans.xtest.pe.TestRunInfoTask;
+import org.netbeans.xtest.pe.xmlbeans.ModuleError;
 
 /**
  *
@@ -38,6 +40,7 @@ public class NbExecutor extends Task {
     String targetParamTestType = null;
     String targetParamTestAttributes = null;
     String mode = null;
+    File   testrun;
     
     private static final String[] propertiesToPass = {
                                             "netbeans.home",
@@ -48,8 +51,6 @@ public class NbExecutor extends Task {
                                             "user.dir",
                                             "scrambler"};
 
-    private static final String ERRORS_PROP = "xtest.errors";
-    
     public void setTargetName(String name) {
         this.targetName = name;
     }
@@ -68,6 +69,12 @@ public class NbExecutor extends Task {
     
     public void setRunningMode(String mode) {
         this.mode = mode;
+    }
+    
+    public void setTestRun(File testrun) {
+        if (testrun.getName().startsWith("${"))
+            return;
+        this.testrun = testrun;
     }
     
     public void execute () throws BuildException {
@@ -160,18 +167,14 @@ public class NbExecutor extends Task {
               }
               catch (BuildException e) {
                   String er = findErrorMessage(outputfile);
-                  String msg = "ERROR executing test (module="+test.getModule()+",type="+test.getType()+").\n" +
-                               (outputfile == null ? "" : "Look at " + outputfile.getName() + " for more details.\n") +
-                               er;
-                  log(msg,Project.MSG_ERR);
-                  logError(msg,outputfile);
+                  logError(test.getModule(), test.getType(), outputfile, er);
               }
             }
             if (mode.equalsIgnoreCase("run") && msetup != null) executeStop(msetup);
           }
           catch (BuildException e) {
               log("Exception during executiong test:\n"+e.toString(),Project.MSG_ERR);
-              logError(e.toString(),null);
+              logError("unknown", null, null, e.toString());
           }
         } 
         if (mode.equalsIgnoreCase("run") && setup != null) executeStop(setup);
@@ -213,20 +216,22 @@ public class NbExecutor extends Task {
         return file;
     }
     
-    private void logError(String mess, File f) {
-        String prop = System.getProperty(ERRORS_PROP,"");   
-        prop = prop + "\n" + mess;
-        System.setProperty(ERRORS_PROP,prop);
-        if (f != null) {
-          try {  
-            BufferedWriter wr = new BufferedWriter(new FileWriter(f.getAbsolutePath().substring(0,f.getAbsolutePath().length()-3)+"errors"));
-            wr.write(mess);
-            wr.close();
-          }
-          catch (IOException exp) {
-            log(exp.toString(),Project.MSG_ERR);
-          }
-        }
+    private void logError(String module, String testtype, File logfile, String mess) {
+        log("ERROR when executing module "+module+", testtype "+testtype+". "+(logfile == null ? "" : "Details in " + logfile.getAbsolutePath()+".") + "\nError message: " +  mess,Project.MSG_ERR);
+       
+        if (testrun == null)
+            return;
+        TestRunInfoTask task = (TestRunInfoTask) getProject().createTask( "testruninfo" );
+        task.setOwningTarget(target);
+        task.setTaskName(getTaskName());
+        task.setLocation(location);
+        task.init();
+        
+        //TestRunInfoTask  task = new TestRunInfoTask();
+        ModuleError moduleError = new ModuleError(module, testtype, logfile==null?null:logfile.getName(), mess);
+        task.setOutFile(testrun);
+        task.setModuleError(moduleError);
+        task.execute();
     }
     
     private void executeStart(MConfig.Setup setup) throws BuildException {
@@ -237,7 +242,7 @@ public class NbExecutor extends Task {
         executeSetup(setup.getName()+"_stop", setup.getStopDir(), setup.getStopAntfile(), setup.getStopTarget(), setup.getStopOnBackground(), setup.getStopDelay());
     }
     
-    private void executeSetup(String name, File dir, String antfile, String targetname, boolean onBackground, int delay) throws BuildException {
+    private void executeSetup(final String name, File dir, String antfile, String targetname, boolean onBackground, int delay) throws BuildException {
         if (antfile == null && targetname == null) return;
         final Ant ant = (Ant) project.createTask("ant");
         ant.setOwningTarget(target);
@@ -257,7 +262,7 @@ public class NbExecutor extends Task {
                  }
                  catch (BuildException e) {
                      log("Exception during executiong setup:\n"+e.toString(),Project.MSG_ERR);
-                     logError(e.toString(),outputfile);
+                     logError("setup: "+name, null, outputfile, e.toString());
                  }
                }
            };
@@ -273,7 +278,7 @@ public class NbExecutor extends Task {
             }              
             catch (BuildException e) {
                 log("Exception during executiong setup:\n"+e.toString(),Project.MSG_ERR);
-                logError(e.toString(),outputfile);
+                logError("setup: "+name, null, outputfile, e.toString());
             }
         }
     }

@@ -59,6 +59,8 @@ public class XTestResultsReport extends XMLBean {
     public String   xmlat_webLink;
     // team - id of team which submitted the results
     public String   xmlat_team;
+    // short info from TestRun's ModuleError element
+    public String   xmlat_brokenModules;
     
     // child elements
     public SystemInfo[] xmlel_SystemInfo;
@@ -339,6 +341,20 @@ public class XTestResultsReport extends XMLBean {
     public String getTeam() {
         return xmlat_team;
     }
+
+    /** Getter for property brokenModules.
+     * @return Value of property brokenModules.
+     */
+    public String getBrokenModules() {
+        return xmlat_brokenModules;
+    }
+    
+    /** Setter for property brokenModules.
+     * @param brokenModules New value of property brokenModules.
+     */
+    public void setBrokenModules(String brokenModules) {
+        this.xmlat_brokenModules = brokenModules;
+    }
     
     // read xtest result report (without testruns)
     public void readXTestResultsReport(XTestResultsReport xtr) {
@@ -400,5 +416,6 @@ public class XTestResultsReport extends XMLBean {
     public static XTestResultsReport loadReportFromFile(File reportFile) throws IOException, ClassNotFoundException {
         return loadFromFile(reportFile);
     }
+    
     
 }

@@ -103,12 +103,21 @@ public class PrintSummary extends Task {
                         if (unexpectedMessage != null) {
                             // there was some problem
                             anyUnexpectedFailure = true;
-                            log("TestBag '"+currentTestBag.xmlat_name+"' in module "
+                            log(" TestBag '"+currentTestBag.xmlat_name+"' in module "
                                 +currentTestBag.xmlat_module
-                                +" has encountered an unexpected failure :");
-                            log("  "+unexpectedMessage);
+                                +" has encountered an unexpected failure : "+unexpectedMessage);
                         }
                     }
+                }
+                
+                if (testRun.xmlel_ModuleError != null && testRun.xmlel_ModuleError.length > 0) {
+                    anyUnexpectedFailure = true;
+                    String modules = "";
+                    for (int i=0; i<testRun.xmlel_ModuleError.length; i++) {
+                        modules += (modules.equals("")?"":", ") + testRun.xmlel_ModuleError[i].getModule();
+                    }
+                    log("");
+                    log(" Execution failed in modules: "+modules);
                 }
                  
                 File reportIndex = new File(resultsDir, PEConstants.INDEX_HTML_FILE);

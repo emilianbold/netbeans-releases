@@ -40,7 +40,7 @@ public class TestRunInfoTask extends Task{
     private File outfile;
     private String config;
     private String name;
-    
+    private ModuleError error;
     
     public void setOutFile(File outfile) {
         this.outfile = outfile;
@@ -54,6 +54,9 @@ public class TestRunInfoTask extends Task{
         this.name = name;
     }
     
+    public void setModuleError(ModuleError error) {
+        this.error = error;
+    }
     
     public TestRun getTestRunInfo() {
         TestRun tr = new TestRun();
@@ -71,8 +74,14 @@ public class TestRunInfoTask extends Task{
             tr = (TestRun)XMLBean.getXMLBean(doc);
             //System.out.println("TestRun already created");
             // testrun already created - return
-            log("Test run info already exists - skipping");
-            return;
+            if (error != null) {
+                tr.addModuleError(error);
+                log("Test run info was updated with module error.");
+            }
+            else {
+                log("Test run info already exists - skipping");
+                return;
+            }
         } catch (Exception e) {
             //System.out.println("TestRun not found, have to crete a new one");
             tr = getTestRunInfo();
@@ -86,7 +95,7 @@ public class TestRunInfoTask extends Task{
             log("Cannot save testrun:"+ioe);
             ioe.printStackTrace(System.err);
         } catch (Exception e) {
-            log("XMLBean exception?:+e");
+            log("XMLBean exception?:"+e);
             e.printStackTrace(System.err);           
         }
     }

@@ -114,7 +114,11 @@ public class XMLReporter implements JUnitTestListener {
     }
     
     public void endTest(junit.framework.Test test) {       
-        testsTotal++;        
+        // moved to startTest
+        //testsTotal++;        
+        
+        // test didn't hangs so it isn't error.
+        testsErrors--;
             
         // did the test used workdir ?
         if (test instanceof NbTestCase) {
@@ -198,6 +202,9 @@ public class XMLReporter implements JUnitTestListener {
     }
     
     public void startTest(junit.framework.Test test) {
+        testsTotal++;     
+        // if test hangs, it will be counted as error.
+        testsErrors++;
         
         //System.out.println("reporter:startTest()");
         currentTestCase = new UnitTestCase();

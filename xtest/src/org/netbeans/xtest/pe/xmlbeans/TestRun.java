@@ -20,6 +20,7 @@
 package org.netbeans.xtest.pe.xmlbeans;
 
 import java.io.*;
+import org.netbeans.xtest.pe.xmlbeans.ModuleError;
 
 /**
  *
@@ -213,6 +214,22 @@ public class TestRun extends XMLBean {
         this.XTestResultsReport_id = XTestResultsReport_id;
     }
     
+    /** Setter for property moduleErrors.
+     * @param moduleErrors New value of property moduleErrors.
+     */
+    public void addModuleError(ModuleError moduleError) {
+        //xml_cdata = moduleErrors;
+        if (xmlel_ModuleError == null) {
+            xmlel_ModuleError = new ModuleError[] {moduleError};
+        } else {
+            ModuleError new_ModuleError[] = new ModuleError[xmlel_ModuleError.length+1];
+            for (int i=0; i<xmlel_ModuleError.length; i++)
+                new_ModuleError[i] = xmlel_ModuleError[i];
+            new_ModuleError[xmlel_ModuleError.length] = moduleError;
+            xmlel_ModuleError = new_ModuleError;
+        }
+    }
+    
     // XML attributes
     public java.sql.Timestamp      xmlat_timeStamp;
     public long     xmlat_time;
@@ -233,6 +250,7 @@ public class TestRun extends XMLBean {
     
     // child elements
     public TestBag[]    xmlel_TestBag;
+    public ModuleError[] xmlel_ModuleError;
 
     /** Holds value of property XTestResultsReport_id. */
     private long XTestResultsReport_id;    
@@ -247,4 +265,5 @@ public class TestRun extends XMLBean {
         return (TestRun)xmlBean;
     }
 
+    
 }
