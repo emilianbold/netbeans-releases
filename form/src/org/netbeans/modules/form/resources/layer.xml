@@ -726,9 +726,9 @@ Microsystems, Inc. All Rights Reserved.
         <file name="CS-1.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Form/org-netbeans-modules-form-actions-PaletteAction.instance"/>
         </file>
-        <file name="CS-2.shadow">
+<!--        <file name="CS-2.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Form/org-netbeans-modules-form-actions-InspectorAction.instance"/>
-        </file>
+        </file>-->
     </folder>
 
 
