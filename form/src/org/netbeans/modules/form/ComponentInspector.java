@@ -282,8 +282,21 @@ public class ComponentInspector extends TopComponent
 
     // ---------------
     // actions
-
+    
+    // fix of issue 42082
     private void updatePasteAction() {
+        if(java.awt.EventQueue.isDispatchThread()) {
+            updatePasteActionInAwtThread();
+        } else {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    updatePasteActionInAwtThread();
+                }
+            });
+        }
+    }
+
+    private void updatePasteActionInAwtThread() {
         Node[] selected = getExplorerManager().getSelectedNodes();
         if (selected != null && selected.length == 1) {
             // exactly one node must be selected
