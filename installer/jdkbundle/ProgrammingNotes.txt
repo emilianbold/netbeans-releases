@@ -28,4 +28,7 @@ To build from command line run ant as usual with
 As there is different command line option for every platform it must be run
 separately for every platform.
 
+Build targets for supported platforms are as follows: build-linux,
+build-solaris-sparc, build-solaris-x86, build-windows.
+
 The installers will be generated and placed in the dist/ subdir

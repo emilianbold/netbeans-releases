@@ -5,7 +5,8 @@ Prerequisites
  - JDK 1.4.2 (not JDK 1.5 which uses an incompatible classfile format)
  - external unzip utility on $PATH
  - Unix
- - installers of AS 8.1 PE for all 4 supported platforms
+ - Installers of AS 8.1 PE for all 5 supported platforms: Windows, Linux,
+   Solaris Sparc, Solaris X86, Mac OS X (zip file containing installer).
 
 To build from command line run ant as usual with
 
@@ -14,6 +15,9 @@ To build from command line run ant as usual with
  -Dinstaller.basename=NetBeans-asbundle-20040622
  -Das.installer=/mnt/local/as.installer/sjsas_pe-8_1_2005Q1-linux.bin
  -Dstorage.builder=../../java/storagebuilder/dist/storagebuilder.jar
+
+Build targets for supported platforms are as follows: build-linux,
+build-solaris-sparc, build-solaris-x86, build-windows, build-macosx.
 
 As there is different command line option for every platform it must be run
 separately for every platform.
