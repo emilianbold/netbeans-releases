@@ -1,0 +1,82 @@
+/*
+ *
+ *               Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+body  {font-size: small;
+        font-family: SansSerif;
+        margin-left: 5;
+        margin-right: 5;
+        color: Black;
+        background-color: White}
+
+
+p {font-size: small;
+     margin-top: 10}
+
+
+h2 { font-size: large;
+     font-weight: bold;
+     margin-top: 15;
+     margin-bottom: 0}
+
+
+h3 { font-size: medium;
+     font-weight: bold;
+     margin-top: 10;
+     margin-bottom: 0}
+
+
+h4 { font-size: small;
+     font-weight: bold;
+     margin-top: 10;
+     margin-bottom: 0}
+
+
+ol {margin-top: 5;
+     margin-bottom: 0;
+     margin-left: 16}
+
+
+li {margin-top: 0;
+        margin-bottom: 5}
+        
+li p{margin-top: 5;
+        margin-bottom: 0}
+
+
+ul {margin-top: 5;
+    margin-bottom: 0;
+    margin-left: 14}
+        
+table {
+	border-color: White;
+	border-style: none;
+	margin-top: 5;
+	margin-bottom: 5
+}
+
+
+td {  border-color: White;
+        border-style: none;
+        padding-left: 1;
+        padding-right: 1;
+        padding-top: 1;
+        padding-bottom: 1}
+
+
+th {  border-color: White;
+        border-style: none;
+        padding-left: 1;
+        padding-right: 1;
+        padding-top: 1;
+        padding-bottom: 1}
