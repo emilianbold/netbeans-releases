@@ -97,7 +97,7 @@
 		);	
 		actions = (
 			{
-				name = "Add new driver";
+				name = "AddNewDriver";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddDriverAction;
 			},
 			delimiter,
@@ -143,20 +143,19 @@
 			},
 			{
 				code = url;
+				name = "DriverURL";
 				class = java.lang.String;
-				description = URL;
-				name = "Driver URL";
 				writable = YES;
 			}
 		);
 		actions = (
 			{
-				name = "Add new driver";
+				name = "AddNewDriver";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddDriverAction;
 				node = driverlist;
 			},
 			{
-				name = "Connect using...";
+				name = "ConnectUsing";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.ConnectUsingDriverAction;
 				node = root;
 			},
@@ -181,7 +180,7 @@
 			},
 			delimiter,
 			{
-				name = "Remove driver";
+				name = "RemoveDriver";
 				class = com.netbeans.ide.actions.DeleteAction;
 				node = driverlist;
 				system = YES;
@@ -211,7 +210,7 @@
 		};	
 		actions = (
 			{
-				name = "Add connection";
+				name = "AddConnection";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddConnectionAction;
 				node = root;
 			},
@@ -221,7 +220,7 @@
 				class = com.netbeans.enterprise.modules.db.explorer.actions.ConnectAction;
 			},
 			{
-				name = "Connect as...";
+				name = "ConnectAs";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.ConnectAsAction;
 			},
 			{
@@ -249,7 +248,7 @@
 			},
 			delimiter,
 			{
-				name = "Remove connection";
+				name = "RemoveConnection";
 				class = com.netbeans.ide.actions.DeleteAction;
 				node = driverlist;
 				system = YES;
@@ -258,73 +257,63 @@
 		properties = (
 			{
 				code = db;
-				name = "Database URL";
-				description = "URL of database";
+				name = "DatabaseURL";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = driver;
-				name = "Driver URL";
-				description = "URL of driver";
+				name = "DriverURL";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = user;
 				name = "User";
-				description = "Logged user";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = readonlydatabase;
-				name = "Read only";
-				description = "Database in readonly state";
+				name = "ReadOnly";
 				class = java.lang.Boolean;
 				writable = NO;
 			},
 			{
 				code = groupbysupport;
-				name = "Group by";
-				description = "Database supports GROUP BY clause";
+				name = "GroupBy";
 				class = java.lang.Boolean;
 				writable = NO;
 			},
 			{
 				code = outerjoinsupport;
-				name = "Outer join";
-				description = "Database supports outer joins";
+				name = "OuterJoin";
 				class = java.lang.Boolean;
 				writable = NO;
 			},
 			{
 				code = unionsupport;
-				name = "Union support";
-				description = "Database supports unions";
+				name = "UnionSupport";
 				class = java.lang.Boolean;
 				writable = NO;
 			},
 			{
 				code = dbproduct;
-				name = "Database product";
-				description = "Database product name";
+				name = "DatabaseProduct";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = dbversion;
-				name = "Database version";
-				description = "Database product version";
+				name = "DatabaseVersion";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = rememberpassword;
-				name = "Remember password";
-				description = "Remembers password or not";
+				name = "RememberPassword";
 				class = java.lang.Boolean;
-				writable = YES;
+				writable = NO;
 			}
 		);
 	};
@@ -388,11 +377,11 @@
 		options = {};	
 		actions = (
 			{
-				name = "Create Table";
+				name = "CreateTable";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
 			},
 			{
-				name = "Recreate table";
+				name = "RecreateTable";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateTableAction;
 			},
 			delimiter,
@@ -443,7 +432,8 @@
 		creator = tablelist;
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/table";
 		children = (ilist);
-		resultset = (catalog,schema,name,type,remarks);
+/*		resultset = (catalog,schema,name,type,remarks); */
+		resultset = (catalog,schema,name,type);
 		options = {
 			cut = YES;
 			copy = YES;
@@ -454,27 +444,32 @@
 		};
 		actions = (
 			{
-				name = "Create Table";
+				name = "CreateTable";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateTableAction;
 				node = tablelist;
 			},
 			{
-				name = "Add column";
+				name = "AddColumn";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
 			},
 			{
-				name = "Refresh columns";
+				name = "Refresh";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.RefreshChildrenAction;
 			},
 			delimiter,
 			{
-				name = "Grab structure";
+				name = "GrabStructure";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.GrabTableAction;
 			},
 			{
-				name = "Recreate";
+				name = "RecreateTable";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.RecreateTableAction;
 				node = tablelist;
+			},
+			delimiter,
+			{
+				name = "ViewData";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
 			},
 			delimiter,
 			{
@@ -494,7 +489,7 @@
 			},
 			delimiter,
 			{
-				name = "Remove table";
+				name = "RemoveTable";
 				class = com.netbeans.ide.actions.DeleteAction;
 				system = YES;
 			}
@@ -507,27 +502,24 @@
 			{
 				code = catalog;
 				name = "Catalog";
-				description = "Catalog name";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = schema;
 				name = "Schema";
-				description = "Schema name";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = type;
-				description = "Column Type";
+				name = "ColumnType";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = remarks;
 				name = "Remarks";
-				description = "Remarks";
 				class = java.lang.String;
 				writable = YES;
 			}
@@ -551,9 +543,14 @@
 		};	
 		actions = (
 			{
-				name = "Add column";
+				name = "AddColumn";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
 				node = table;
+			},
+			delimiter,
+			{
+				name = "ViewData";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
 			},
 			delimiter,
 			{
@@ -573,7 +570,7 @@
 			},
 			delimiter,
 			{
-				name = "Remove column";
+				name = "RemoveColumn";
 				class = com.netbeans.ide.actions.DeleteAction;
 				system = YES;
 			}
@@ -586,56 +583,48 @@
 			{
 				code = type;
 				name = "Type";
-				description = "Column Type";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = isnullable;
 				name = "Null";
-				description = "Null allowed for this column";
 				class = java.lang.Boolean;
 				writable = YES;
 			},
 			{
 				code = datatype;
 				name = "Datatype";
-				description = "Data type";
 				class = java.lang.Integer;
 				writable = YES;
 			},
 			{
 				code = coldef;
 				name = "Default";
-				description = "Default value";
 				class = java.lang.String;
 				writable = YES;
 			},
 			{
 				code = columnsize;
-				name = "Column size";
-				description = "Size of column";
+				name = "ColumnSize";
 				class = java.lang.Integer;
 				writable = YES;
 			},
 			{
 				code = decdigits;
-				name = "Decimal digits";
-				description = "Decimal digits";
+				name = "DecimalDigits";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = ordpos;
 				name = "Position";
-				description = "Ordinal position in table";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = remarks;
 				name = "Remarks";
-				description = "Remarks";
 				class = java.lang.String;
 				writable = YES;
 			}
@@ -653,9 +642,14 @@
 		options = {};	
 		actions = (
 			{
-				name = "Add column";
+				name = "AddColumn";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
 				node = table;
+			},
+			delimiter,
+			{
+				name = "ViewData";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
 			},
 			delimiter,
 			{
@@ -688,56 +682,48 @@
 			{
 				code = type;
 				name = "Type";
-				description = "Column Type";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = isnullable;
 				name = "Null";
-				description = "Null allowed for this column";
 				class = java.lang.Boolean;
 				writable = NO;
 			},
 			{
 				code = datatype;
 				name = "Datatype";
-				description = "Data type";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = coldef;
 				name = "Default";
-				description = "Default value";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = columnsize;
-				name = "Column size";
-				description = "Size of column";
+				name = "ColumnSize";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = decdigits;
-				name = "Decimal digits";
-				description = "Decimal digits";
+				name = "DecimalDigits";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = ordpos;
 				name = "Position";
-				description = "Ordinal position in table";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = remarks;
 				name = "Remarks";
-				description = "Remarks";
 				class = java.lang.String;
 				writable = YES;
 			}
@@ -761,9 +747,14 @@
 		};	
 		actions = (
 			{
-				name = "Add column";
+				name = "AddColumn";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
 				node = table;
+			},
+			delimiter,
+			{
+				name = "ViewData";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
 			},
 			delimiter,
 			{
@@ -783,7 +774,7 @@
 			},
 			delimiter,
 			{
-				name = "Remove column";
+				name = "RemoveColumn";
 				class = com.netbeans.ide.actions.DeleteAction;
 				system = YES;
 			}
@@ -796,56 +787,48 @@
 			{
 				code = type;
 				name = "Type";
-				description = "Column Type";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = isnullable;
 				name = "Null";
-				description = "Null allowed for this column";
 				class = java.lang.Boolean;
 				writable = NO;
 			},
 			{
 				code = datatype;
 				name = "Datatype";
-				description = "Data type";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = coldef;
 				name = "Default";
-				description = "Default value";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = columnsize;
-				name = "Column size";
-				description = "Size of column";
+				name = "ColumnSize";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = decdigits;
-				name = "Decimal digits";
-				description = "Decimal digits";
+				name = "DecimalDigits";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = ordpos;
 				name = "Position";
-				description = "Ordinal position in table";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = remarks;
 				name = "Remarks";
-				description = "Remarks";
 				class = java.lang.String;
 				writable = YES;
 			}
@@ -868,11 +851,16 @@
 		};	
 		actions = (
 			{
-				name = "Add column";
+				name = "AddColumn";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddColumnAction;
 				node = table;
 			},
 			delimiter,
+			{
+				name = "ViewData";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+			},
+			delimiter,			
 			{
 				name = "Cut";
 				class = com.netbeans.ide.actions.CutAction;
@@ -890,7 +878,7 @@
 			},
 			delimiter,
 			{
-				name = "Remove column";
+				name = "RemoveColumn";
 				class = com.netbeans.ide.actions.DeleteAction;
 				system = YES;
 			}
@@ -903,56 +891,48 @@
 			{
 				code = type;
 				name = "Type";
-				description = "Column Type";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = isnullable;
 				name = "Null";
-				description = "Null allowed for this column";
 				class = java.lang.Boolean;
 				writable = NO;
 			},
 			{
 				code = datatype;
 				name = "Datatype";
-				description = "Data type";
 				class = java.lang.Integer;
 				writable = YES;
 			},
 			{
 				code = coldef;
 				name = "Default";
-				description = "Default value";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = columnsize;
-				name = "Column size";
-				description = "Size of column";
+				name = "ColumnSize";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = decdigits;
-				name = "Decimal digits";
-				description = "Decimal digits";
+				name = "DecimalDigits";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = ordpos;
 				name = "Position";
-				description = "Ordinal position in table";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = remarks;
 				name = "Remarks";
-				description = "Remarks";
 				class = java.lang.String;
 				writable = YES;
 			}
@@ -984,7 +964,7 @@
 		};	
 		actions = (			
 			{
-				name = "Add index";
+				name = "AddIndex";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddIndexAction;
 			},
 			delimiter,
@@ -1020,16 +1000,16 @@
 		};	
 		actions = (			
 			{
-				name = "Add table column";
+				name = "AddColumn";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddToIndexAction;
 			},
 			{
-				name = "Add index";
+				name = "AddIndex";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.AddIndexAction;
 				node = ilist;
 			},
 			{
-				name = "Refresh columns";
+				name = "Refresh";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.RefreshChildrenAction;
 			},
 			delimiter,
@@ -1050,7 +1030,7 @@
 			},
 			delimiter,
 			{
-				name = "Remove index";
+				name = "RemoveIndex";
 				class = com.netbeans.ide.actions.DeleteAction;
 				node = ilist;
 				system = YES;
@@ -1096,35 +1076,30 @@
 			{
 				code = unique;
 				name = "Unique";
-				description = "Unique columns only";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = qual;
 				name = "Qualifier";
-				description = "Index qualifier";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = filter;
 				name = "Filter";
-				description = "Filter condition";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = ordpos;
 				name = "Position";
-				description = "Ordinal position";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = ord;
 				name = "Ordinal";
-				description = "Up or down";
 				class = java.lang.String;
 				writable = NO;
 			}
@@ -1166,57 +1141,49 @@
 			},
 			{
 				code = pcatalog;
-				name = "Primary catalog";
-				description = "Primary catalog name";
+				name = "PrimaryCatalog";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = pschema;
-				name = "Primary schema";
-				description = "Primary schema name";
+				name = "PrimarySchema";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = pname;
-				name = "Primary table";
-				description = "Primary table name";
+				name = "PrimaryTable";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = pcolname;
-				name = "Primary column";
-				description = "Foreign column name";
+				name = "PrimaryColumn";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = catalog;
-				name = "Foreign catalog";
-				description = "Foreign catalog name";
+				name = "ForeignCatalog";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = schema;
-				name = "Foreign schema";
-				description = "Foreign schema name";
+				name = "ForeignSchema";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = colname;
-				name = "Foreign column";
-				description = "Foreign column name";
+				name = "ForeignColumn";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = keyseq;
-				name = "Key seq";
-				description = "Key seq";
+				name = "KeySeq";
 				class = java.lang.Integer;
 				writable = NO;
 			}
@@ -1238,7 +1205,7 @@
 		};	
 		actions = (
 			{
-				name = "Create view";
+				name = "AddView";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateViewAction;
 			},
 			delimiter,
@@ -1266,6 +1233,7 @@
 		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ViewNodeInfo;
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/view";
 		resultset = (catalog,schema,name,type,remarks);
+		children = ();
 		options = {
 			cut = YES;
 			copy = YES;
@@ -1273,11 +1241,16 @@
 		};	
 		actions = (
 			{
-				name = "Add view";
+				name = "AddView";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateViewAction;
 				node = viewlist;
 			},
 			delimiter,
+			{
+				name = "ViewData";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+			},
+			delimiter,			
 			{
 				name = "Cut";
 				class = com.netbeans.ide.actions.CutAction;
@@ -1295,7 +1268,7 @@
 			},
 			delimiter,
 			{
-				name = "Remove view";
+				name = "RemoveView";
 				class = com.netbeans.ide.actions.DeleteAction;
 				system = YES;
 			}
@@ -1308,7 +1281,6 @@
 			{
 				code = remarks;
 				name = "Remarks";
-				description = "Remarks";
 				class = java.lang.String;
 				writable = YES;
 			}
@@ -1318,11 +1290,17 @@
 	viewcolumn = {
 		name = "Column";
 		class = com.netbeans.enterprise.modules.db.explorer.nodes.LeafNode;
-		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
+		infoclass = com.netbeans.enterprise.modules.db.explorer.infos.ViewColumnNodeInfo;
 		iconbase = "/com/netbeans/enterprise/modules/db/resources/columnView";
 		resultset = (catalog,schema,tablename,name,datatype,typename,columnsize,bufflen,decdigits,radix,nullable,remarks,coldef,reserved1,reserved2,octetlen,ordpos,isnullable);
+		children = ();
 		options = {};	
 		actions = (
+			{
+				name = "ViewData";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+			},
+			delimiter,			
 			{
 				name = "Cut";
 				class = com.netbeans.ide.actions.CutAction;
@@ -1347,42 +1325,36 @@
 			{
 				code = datatype;
 				name = "Datatype";
-				description = "Data type";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = coldef;
 				name = "Default";
-				description = "Default value";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = columnsize;
-				name = "Column size";
-				description = "Size of column";
+				name = "ColumnSize";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = decdigits;
-				name = "Decimal digits";
-				description = "Decimal digits";
+				name = "DecimalDigits";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = ordpos;
 				name = "Position";
-				description = "Ordinal position in table";
 				class = java.lang.Integer;
 				writable = NO;
 			},
 			{
 				code = remarks;
 				name = "Remarks";
-				description = "Remarks";
 				class = java.lang.String;
 				writable = NO;
 			}
@@ -1403,12 +1375,12 @@
 			delete = YES;
 		};	
 		actions = (
-			{
-				name = "Add procedure";
+/*			{
+				name = "AddProcedure";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
 			},
 			delimiter,
-			{
+*/			{
 				name = "Cut";
 				class = com.netbeans.ide.actions.CutAction;
 				system = YES;
@@ -1438,13 +1410,13 @@
 			delete = YES;
 		};	
 		actions = (
-			{
-				name = "Add procedure";
+/*			{
+				name = "AddProcedure";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
 				node = procedurelist;
 			},
 			delimiter,
-			{
+*/			{
 				name = "Cut";
 				class = com.netbeans.ide.actions.CutAction;
 				system = YES;
@@ -1461,7 +1433,7 @@
 			},
 			delimiter,
 			{
-				name = "Remove procedure";
+				name = "RemoveProcedure";
 				class = com.netbeans.ide.actions.DeleteAction;
 				system = YES;
 			}
@@ -1474,14 +1446,12 @@
 			{
 				code = type;
 				name = "Type";
-				description = "Column Type";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = remarks;
 				name = "Remarks";
-				description = "Remarks";
 				class = java.lang.String;
 				writable = NO;
 			}
@@ -1505,13 +1475,13 @@
 			delete = YES;
 		};	
 		actions = (
-			{
-				name = "Add procedure";
+/*			{
+				name = "AddProcedure";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.CreateProcedureAction;
 				node = procedurelist;
 			},
 			delimiter,
-			{
+*/			{
 				name = "Cut";
 				class = com.netbeans.ide.actions.CutAction;
 				system = YES;
@@ -1528,7 +1498,7 @@
 			},
 			delimiter,
 			{
-				name = "Remove table";
+				name = "RemoveTable";
 				class = com.netbeans.ide.actions.DeleteAction;
 				node = procedurelist;
 				system = YES;
@@ -1542,21 +1512,18 @@
 			{
 				code = type;
 				name = "Type";
-				description = "Column Type";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = typename;
-				name = "Data type";
-				description = "Data type";
+				name = "DataType";
 				class = java.lang.String;
 				writable = NO;
 			},
 			{
 				code = remarks;
 				name = "Remarks";
-				description = "Remarks";
 				class = java.lang.String;
 				writable = NO;
 			}

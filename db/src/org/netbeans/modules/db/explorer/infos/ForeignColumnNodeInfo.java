@@ -23,6 +23,6 @@ import com.netbeans.enterprise.modules.db.explorer.infos.*;
 import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 import com.netbeans.enterprise.modules.db.explorer.actions.DatabaseAction;
 
-public class ForeignColumnNodeInfo extends DatabaseNodeInfo
+public class ForeignColumnNodeInfo extends ColumnNodeInfo
 {
 }

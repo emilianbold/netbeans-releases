@@ -45,6 +45,10 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 		}
 	}
 
+	/** Adds view into list
+	* Adds view named name into children list. View should exist.
+	* @param name Name of existing view
+	*/
 	public void addView(String name)
 	throws DatabaseException
 	{
@@ -52,15 +56,13 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 			DatabaseMetaData dmd = getConnection().getMetaData();
 			String[] filter = new String[] {"VIEW"};
 			String catalog = (String)get(DatabaseNode.CATALOG);
-			ResultSet rs = dmd.getTables(catalog, getUser(), null, filter);
-			while (rs.next()) {
-				String fview = rs.getString("TABLE_NAME");
-				if (fview.equals(name)) {
-					DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, rs);
-					if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
-				 	else throw new Exception("unable to create node info for view");
-				}
-			}
+			boolean uc = dmd.storesUpperCaseIdentifiers();
+			String cname = (uc ? name.toUpperCase() : name.toLowerCase());
+			ResultSet rs = dmd.getTables(catalog, getUser(), cname, filter);
+			rs.next();
+			DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, rs);
+			if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
+			else throw new Exception("unable to create node info for view");
 			rs.close();
  		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	

@@ -60,7 +60,6 @@ implements ConnectionOwnerOperations
 			ninfo.setUser(cinfo.getUser());
 			ninfo.setDatabase(cinfo.getDatabase());
 			ninfo.setDatabaseConnection(cinfo);
-			System.out.println("Adding "+cinfo);
 			cons.add(cinfo);
 			DatabaseNode cnode = children.createSubnode(ninfo, true);
 			if (cinfo.getPassword() != null) ((ConnectionNodeInfo)cnode.getInfo()).connect();

@@ -50,26 +50,12 @@ public class DatabaseAction extends CookieAction
 		nodename = name;	
 	}
 
-	protected DatabaseNodeInfo findInfo(DatabaseNodeInfo nodei)
-	{
-		if (nodename == null) return nodei;
-		Node node = nodei.getNode();
-		while(true) {
-			DatabaseNodeInfo ninfo = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-			if (ninfo != null) {
-				DatabaseNode dnode = (DatabaseNode)node;
-				String code = ninfo.getCode();
-				if (code.equals(nodename)) return ninfo;
-				else node = node.getParentNode();
-			} else break;
-		}	
-		
-		return null;
-	}
-	
-	public HelpCtx getHelpCtx() {
-		return HelpCtx.DEFAULT_HELP;
-	}
+    /** Help context where to find more about the paste type action.
+    * @return the help context for this action
+    */
+    public HelpCtx getHelpCtx() {
+      return HelpCtx.DEFAULT_HELP;
+    }
 
 	protected Class[] cookieClasses()
 	{

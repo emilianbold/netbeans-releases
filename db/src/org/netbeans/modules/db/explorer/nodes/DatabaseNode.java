@@ -14,13 +14,11 @@
 package com.netbeans.enterprise.modules.db.explorer.nodes;
 
 import java.io.IOException;
-import java.util.Vector;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Iterator;
+import java.util.*;
 import com.netbeans.ide.*;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.util.MapFormat;
+import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.actions.SystemAction;
 import java.awt.datatransfer.Transferable;
 import com.netbeans.enterprise.modules.db.explorer.*;
@@ -182,6 +180,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
     	Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
     	Vector prop = (Vector)info.get(DatabaseNodeInfo.PROPERTIES);
 		Enumeration prop_i = prop.elements();
+		ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
 		while (prop_i.hasMoreElements()) {
 			boolean canWrite;
 			Map propmap = (Map)prop_i.nextElement();
@@ -201,12 +200,19 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie
 					Class pc = null;
 					pname = (String)propmap.get(DatabaseNodeInfo.NAME);
 					if (info.canAdd(propmap, pname)) {
-						pdesc = (String)propmap.get(DatabaseNodeInfo.DESCRIPTION);
 						pclass = (String)propmap.get(DatabaseNodeInfo.CLASS);
 						canWrite = info.canWrite(propmap, pname, writable);
 						if (pclass.equals("java.lang.Boolean")) pc = Boolean.TYPE;
 						else if (pclass.equals("java.lang.Integer")) pc = Integer.TYPE;
 						else pc = Class.forName(pclass);
+
+						try {
+							pname = bundle.getString(pname);
+							pdesc = bundle.getString(pname+"Description");
+						} catch (MissingResourceException e) {
+							pdesc = "";
+						}
+						
 						psitem = createPropertySupport(key, pc, pname, pdesc, info, canWrite);	
 					}
 				}

@@ -27,6 +27,7 @@ import com.netbeans.ide.nodes.NodeTransfer;
 import com.netbeans.ide.nodes.Node;
 import javax.swing.SwingUtilities;
 import com.netbeans.ide.util.NbBundle;
+import com.netbeans.ide.*;
 
 // Node for Table/View/Procedure things.
 
@@ -52,13 +53,14 @@ public class TableNode extends DatabaseNode
 		DatabaseNodeInfo nfo;
 		Node n = NodeTransfer.node(t, true);
 		if (n != null && n.canDestroy ()) {
-			
+/*			
 			nfo = (TableNodeInfo)n.getCookie(TableNodeInfo.class);
 			if (nfo != null) {
 				System.out.println(nfo.getName()+": table cut/paste allowed");
 				s.add(new TablePasteType((TableNodeInfo)nfo, n));
 				return;
 			}  
+*/
 			nfo = (ColumnNodeInfo)n.getCookie(ColumnNodeInfo.class);
 			if (nfo != null) {
 				System.out.println(nfo.getName()+": column cut/paste allowed");
@@ -67,14 +69,14 @@ public class TableNode extends DatabaseNode
 			}
 			
 		} else {
-			
+/*			
 			nfo = (DatabaseNodeInfo)NodeTransfer.copyCookie(t, TableNodeInfo.class);
 			if (nfo != null) {
 				System.out.println(nfo.getName()+": table copy/paste allowed");
 				s.add(new TablePasteType((TableNodeInfo)nfo, null));
 				return;
 			}
-	
+*/	
 			nfo = (DatabaseNodeInfo)NodeTransfer.copyCookie(t, ColumnNodeInfo.class);
 			if (nfo != null) {
 				System.out.println(nfo.getName()+": column copy/paste allowed");
@@ -185,14 +187,21 @@ public class TableNode extends DatabaseNode
 					String name = info.getName();
 					ColumnNodeInfo coli = (ColumnNodeInfo)info;
 					TableColumn col = coli.getColumnSpecification();
-					Specification spec = (Specification)/*owner*/info.getSpecification();
+					Specification spec = (Specification)ownerinfo.getSpecification();
 					AddColumn cmd = (AddColumn)spec.createCommandAddColumn(ownerinfo.getTable());
 					cmd.getColumns().add(col);
 					cmd.execute();
 					ownerinfo.addColumn(name);
 					if (node != null) node.destroy();
-				} catch (Exception e) {
-					throw new IOException(e.getMessage());
+				} catch (final Exception e) {
+					System.out.println("Unable to process command, "+e.getMessage());
+/*
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to process command, "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+						}
+					});
+*/					
 				}
 			} else throw new IOException("can't find Column owner info");
 			return null;

@@ -39,6 +39,7 @@ public class DatabaseModule extends Object implements ModuleInstall
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         5/21/99  Slavek Psenicka new version
 *  2    Gandalf   1.1         5/14/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
 * $

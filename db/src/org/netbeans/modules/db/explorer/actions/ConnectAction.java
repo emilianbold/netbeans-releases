@@ -38,7 +38,8 @@ public class ConnectAction extends DatabaseAction
 		
 		DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
 		DatabaseNodeInfo nfo = info.getParent(DatabaseNode.CONNECTION);
-		return (nfo.getConnection() == null);
+		if (nfo != null) return (nfo.getConnection() == null);
+		return false;
 	}
 
 	public void performAction(Node[] activatedNodes) 

@@ -71,7 +71,7 @@ public class TableNodeInfo extends DatabaseNodeInfo
 			rs.close();
         
 			// Foreign keys
-        
+/*        
 			System.out.println("Foreign keys");
 			Hashtable fhash = new Hashtable(); 	
 			rs = dmd.getImportedKeys(catalog,user,table);
@@ -82,7 +82,7 @@ public class TableNodeInfo extends DatabaseNodeInfo
 				fhash.put(iname,finfo);
 			}
 			rs.close();
-        
+*/        
 			// Columns
 
 			rs = dmd.getColumns(catalog,user,table,columnname);
@@ -93,8 +93,8 @@ public class TableNodeInfo extends DatabaseNodeInfo
 					nfo = (DatabaseNodeInfo)ihash.get(cname);
 				} else if (ixhash.containsKey(cname)) {
 					nfo = (DatabaseNodeInfo)ixhash.get(cname);
-				} else if (fhash.containsKey(cname)) {
-					nfo = (DatabaseNodeInfo)fhash.get(cname);
+//				} else if (fhash.containsKey(cname)) {
+//					nfo = (DatabaseNodeInfo)fhash.get(cname);
 				} else nfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.COLUMN, rs);
 				children.add(nfo);
 			}

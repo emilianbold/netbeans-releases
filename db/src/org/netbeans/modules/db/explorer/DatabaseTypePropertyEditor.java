@@ -112,6 +112,7 @@ public class DatabaseTypePropertyEditor implements PropertyEditor
 
 /*
  * <<Log>>
+ *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
  *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
  * $
  */

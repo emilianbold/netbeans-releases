@@ -57,7 +57,9 @@ implements TableOwnerOperations
 			DatabaseMetaData dmd = getConnection().getMetaData();
 			String[] filter = new String[] {"TABLE","BASE"};
 			String catalog = (String)get(DatabaseNode.CATALOG);
-			ResultSet rs = dmd.getTables(catalog, getUser(), tname, filter);
+			boolean uc = dmd.storesUpperCaseIdentifiers();
+			String cname = (uc ? tname.toUpperCase() : tname.toLowerCase());
+			ResultSet rs = dmd.getTables(catalog, getUser(), cname, filter);
 			rs.next();
 			DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rs);
 			rs.close();
