@@ -51,11 +51,15 @@ public class JavadocModule extends ModuleInstall {
   */
   public void installed() {
     // Install Search Action
-
+    
     try {
       Utilities2.createAction (SearchDocAction.class, 
         DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help"),
         "ModuleHelp", true, true, false, true);
+      
+      // Create Action in action pool
+      DataFolder helpActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help");
+      InstanceDataObject.create (helpActions, "JavaDocIndexSearch", SearchDocAction.class.getName ());
     } 
     catch (IOException e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) {
@@ -75,6 +79,11 @@ public class JavadocModule extends ModuleInstall {
     try {
       Utilities2.removeAction (SearchDocAction.class,
         DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help"));
+      
+      // remove actions from action pool
+      DataFolder helpActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help");
+      Utilities2.removeAction (SearchDocAction.class, helpActions);
+
     } 
     catch (Exception e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) {
@@ -111,6 +120,7 @@ public class JavadocModule extends ModuleInstall {
     
     // Assign the Ctrl+F1 to JavaDoc Index Search Action
     // [PENDING] should be in installed() whenever global keymap editor is finished
+    /*
     Keymap map = TopManager.getDefault ().getGlobalKeymap ();
     try {
       assign ("C-F1", "com.netbeans.developer.modules.javadoc.search.SearchDocAction", map);
@@ -118,6 +128,7 @@ public class JavadocModule extends ModuleInstall {
       // print and go on
       e.printStackTrace();
     }
+    */
   }
 	
   // UTILITY METHODS ----------------------------------------------------------------------
@@ -126,6 +137,7 @@ public class JavadocModule extends ModuleInstall {
   * @param key key name
   * @param action name of the action
   */
+  /*
   private static void assign (String key, String action, Keymap map) throws ClassNotFoundException {
     KeyStroke str = Utilities.stringToKey (key);
     if (str == null) {
@@ -142,7 +154,7 @@ public class JavadocModule extends ModuleInstall {
     map.addActionForKeyStroke (str, a);
     a.setEnabled( true );
   }
-
+  */
   /** Dynamicaly invokes a method
    */
   private void invokeDynamic( String className, String methodName, FilterFactory factory ) {  
@@ -255,6 +267,8 @@ public class JavadocModule extends ModuleInstall {
 
 /* 
  * Log
+ *  21   Gandalf   1.20        1/10/00  Petr Hrebejk    Bug 4747 - closing of 
+ *       output tab fixed
  *  20   Gandalf   1.19        12/21/99 Jesse Glick     Installing after general
  *       documentation.
  *  19   Gandalf   1.18        10/27/99 Petr Hrebejk    Bug fixes & back button 
