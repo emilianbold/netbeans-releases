@@ -758,8 +758,8 @@ public class JTextComponentOperator extends JComponentOperator
 		}});}
 
     /**Maps <code>JTextComponent.getActions()</code> through queue*/
-    public Action[] getActions() {
-	return((Action[])runMapping(new MapAction("getActions") {
+    public javax.swing.Action[] getActions() {
+	return((javax.swing.Action[])runMapping(new MapAction("getActions") {
 		public Object map() {
 		    return(((JTextComponent)getSource()).getActions());
 		}}));}
