@@ -25,6 +25,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.FocusEvent;
 import java.util.ArrayList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -42,7 +43,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
     public AbstractOutputWindow() {
         pane.addChangeListener (this);
         pane.addPropertyChangeListener (CloseButtonTabbedPane.PROP_CLOSE, this);
-        setFocusable(false);
+        setFocusable(true);
     }
 
     public void propertyChange (PropertyChangeEvent pce) {
@@ -57,6 +58,11 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
     protected abstract void removed (AbstractOutputTab view);
 
     protected void addImpl(Component c, Object constraints, int idx) {
+        setFocusable (false);
+        Component focusOwner = 
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        boolean hadFocus = hasFocus() || isAncestorOf(focusOwner);
+        
         synchronized (getTreeLock()) {
             if (c instanceof AbstractOutputTab) {
                 AbstractOutputTab aop = getInternalTab();
@@ -78,6 +84,13 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
                 } else {
                     super.addImpl (c, constraints, idx);
                 }
+                if (hadFocus) {
+                    //Do not call c.requestFocus() directly, it can be 
+                    //discarded when adding tabs and focus will go to null.
+                    //@see AbstractOutputWindow.requestFocus()
+                    requestFocus();
+                }
+                
                 return;
             }
             super.addImpl(c, constraints, idx);
@@ -149,6 +162,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
                 getComponent(0).getName());
         }        
         revalidate();
+        setFocusable (getComponentCount() == 0);
     }
     
     private AbstractOutputTab getInternalTab() {
@@ -187,6 +201,31 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         }
         tab.setName(name);
     }
+    
+    public void requestFocus() {
+        if (!isShowing()) {
+            return;
+        }
+        AbstractOutputTab tab = getSelectedTab();
+        if (tab != null && pendingFocusRunnable == null) {
+            //Adding the tab may yet need to be processed, so escape the
+            //current event loop via invokeLater()
+            pendingFocusRunnable = new Runnable() {
+                 public void run() {
+                    AbstractOutputTab tab = getSelectedTab();
+                    if (tab != null) {
+                        tab.requestFocus();
+                    }
+                    pendingFocusRunnable = null;
+                 }
+             };
+             SwingUtilities.invokeLater(pendingFocusRunnable);
+        } else {
+            super.requestFocus();
+        }
+    }
+    
+    private Runnable pendingFocusRunnable = null;
 
     /**
      * Updates the component name to include the name of a tab.  If passed null

@@ -56,7 +56,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     public AbstractOutputPane() {
         textView = createTextView();
         init();
-        setFocusable(false);
     }
     
     public int getFontWidth() {
@@ -146,8 +145,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_AS_NEEDED);
         setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_ALWAYS);
         addMouseListener(this);
-//        setOpaque(false);
-//        getViewport().setOpaque(false);
+
         caret.addChangeListener(this);
         Integer i = (Integer) UIManager.get("customFontSize"); //NOI18N
         int size = 11;

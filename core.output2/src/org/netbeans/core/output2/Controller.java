@@ -147,9 +147,9 @@ public class Controller { //XXX public only for debug access to logging code
             win.setSelectedTab(result);
         }
         if (showContainer && !activateContainer) {
-            win.requestVisible();
+            win.requestVisibleForNewTab();
         } else if (activateContainer) {
-            win.requestActive();
+            win.requestActiveForNewTab();
         }
         return result;
     }
@@ -952,7 +952,7 @@ public class Controller { //XXX public only for debug access to logging code
                 
                 win.setSelectedTab(tab);
                 updateName(win, tab);
-                win.requestVisible();
+                win.requestVisibleForNewTab();
                 if (log) log ("Reset on " + tab + " tab displayable " + tab.isDisplayable() + " io " + io + " io.out " + io.out());
                 break;
         }

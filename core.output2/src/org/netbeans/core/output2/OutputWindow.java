@@ -18,7 +18,11 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import java.awt.*;
+import java.awt.event.FocusEvent;
 import java.util.HashSet;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -39,11 +43,12 @@ public class OutputWindow extends AbstractOutputWindow {
     private Controller controller;
     static OutputWindow DEFAULT = null;
     public static final String ICON_RESOURCE =
-        "/org/netbeans/core/resources/frames/output.gif"; // NOI18N
+        "org/netbeans/core/resources/frames/output.gif"; // NOI18N
         
 
     public OutputWindow() {
         this (new Controller());
+        enableEvents(AWTEvent.FOCUS_EVENT_MASK);
     }
 
     protected void closeRequest(AbstractOutputTab tab) {
@@ -82,8 +87,8 @@ public class OutputWindow extends AbstractOutputWindow {
         return DEFAULT;
     }
     /* Singleton accessor reserved for window system ONLY. Used by window system to create
-     * TestComponent00 instance from settings file when method is given. Use <code>findDefault</code>
-     * to get correctly deserialized instance of TestComponent00. */
+     * OutputWindow instance from settings file when method is given. Use <code>findDefault</code>
+     * to get correctly deserialized instance of OutputWindow. */
     public static synchronized OutputWindow getDefault() {
         if (DEFAULT == null) {
             DEFAULT = new OutputWindow();
@@ -108,36 +113,76 @@ public class OutputWindow extends AbstractOutputWindow {
     }
 
     public void requestVisible () {
+        if (Controller.log) Controller.log("Request visible");
+        super.requestVisible();
+    }
+    
+    void requestVisibleForNewTab() {
+        if (Controller.log) Controller.log("Request visible for new tab");
         if (isOpened() && isShowing()) {
             if (!isActivated()) {
-                if (Controller.log) Controller.log ("requestvisible");
                 super.requestVisible();
             }
         } else {
             if (Controller.log) Controller.log ("CALLING OPEN() ON OUTPUT WINDOW!");
             open();
+            super.requestVisible();
+            if (Boolean.TRUE.equals(getClientProperty("isSliding"))) { //NOI18N
+                requestActiveForNewTab();
+            } 
         }
-        super.requestVisible();
     }
-
+    
+    public void processFocusEvent (FocusEvent fe) {
+        super.processFocusEvent (fe);
+        if (Boolean.TRUE.equals(getClientProperty("isSliding"))) { //NOI18N
+            repaint(200);
+        }
+    }
+    
+    public void paintComponent (Graphics g) {
+        super.paintComponent (g);
+        if (hasFocus()) {
+            Insets ins = getInsets();
+            Color col = UIManager.getColor ("controlShadow"); //NOI18N
+            //Draw *some* focus indication
+            if (col == null) col = Color.GRAY;
+            g.drawRect (
+                ins.left + 2,
+                ins.top + 2,
+                getWidth() - (ins.left + ins.right + 4),
+                getHeight() - (ins.top + ins.bottom + 4));
+        }
+    }
+    
+    void requestActiveForNewTab() {
+        requestActive();
+    }
+    
+    public void requestActive() {
+        if (Controller.log) Controller.log("Request active");
+        super.requestActive();
+        requestFocus();
+    }  
+    
     private boolean activated = false;
     protected void componentActivated () {
+        if (Controller.log) Controller.log("ComponentActivated");
         super.componentActivated();
         activated = true;
         controller.notifyActivated (this);
-        AbstractOutputTab tab = getSelectedTab();
-        if (tab != null) {
-             tab.requestFocus();
-        }
+        requestFocus();
     }
-
+    
     protected void componentDeactivated() {
+        if (Controller.log) Controller.log("ComponentDeactivated");
         super.componentDeactivated();
         activated = false;
         controller.notifyDeactivated (this);
     }
-
+    
     protected void removed(AbstractOutputTab view) {
+        if (Controller.log) Controller.log("Removed tab " + view);
         if (Controller.log) Controller.log ("Tab has been removed.  Notifying controller.");
         controller.notifyRemoved(this, (OutputTab) view);
     }
@@ -252,11 +297,9 @@ public class OutputWindow extends AbstractOutputWindow {
                     return;
                 }
             }
-//            } else if ((command == IOEvent.CMD_CREATE || command == IOEvent.CMD_RESET) && !ioe.isConsumed()) {
-                if (Controller.log) Controller.log ("Passing command to controller " + event);
-                controller.performCommand (this, comp, io, command, value, data);
-                ioe.consume();
-//            }
+            if (Controller.log) Controller.log ("Passing command to controller " + event);
+            controller.performCommand (this, comp, io, command, value, data);
+            ioe.consume();
         }
     }
 
