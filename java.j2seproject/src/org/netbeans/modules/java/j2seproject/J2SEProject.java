@@ -33,6 +33,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.j2seproject.queries.CompiledSourceForBinaryQuery;
 import org.netbeans.modules.java.j2seproject.queries.JavadocForBinaryQueryImpl;
+import org.netbeans.modules.java.j2seproject.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.java.j2seproject.ui.J2SECustomizerProvider;
 import org.netbeans.modules.java.j2seproject.ui.J2SEPhysicalViewProvider;
@@ -146,6 +147,7 @@ final class J2SEProject implements Project, AntProjectListener {
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
             new UnitTestForSourceQueryImpl(helper, evaluator()),
+            new SourceLevelQueryImpl(helper, evaluator()),
             sourcesHelper.createSources(),
             helper.createSharabilityQuery(evaluator(), new String[] {
                 "${src.dir}", // NOI18N

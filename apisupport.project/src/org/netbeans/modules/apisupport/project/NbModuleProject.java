@@ -120,6 +120,7 @@ final class NbModuleProject implements Project {
             new SubprojectProviderImpl(this),
             fileBuilt,
             new AccessibilityQueryImpl(this),
+            new SourceLevelQueryImpl(this, evaluator()),
             helper.createSharabilityQuery(eval, new String[0], new String[] {
                 // currently these are hardcoded
                 "build", // NOI18N

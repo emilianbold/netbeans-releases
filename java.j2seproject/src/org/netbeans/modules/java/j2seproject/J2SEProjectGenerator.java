@@ -81,7 +81,8 @@ public class J2SEProjectGenerator {
         ep.setProperty("application.args", "");
         ep.setProperty("jar.compress", "false");
         ep.setProperty("main.class", mainClass == null ? "" : mainClass );
-        ep.setProperty("javac.source", "1.4");
+        ep.setProperty("javac.source", "${default.javac.source}");
+        ep.setProperty("javac.target", "${default.javac.target}");
         ep.setProperty("javac.debug", "true");
         ep.setProperty("javac.deprecation", "false");
         ep.setProperty("javac.test.classpath", new String[]{"${javac.classpath}"+File.pathSeparatorChar,

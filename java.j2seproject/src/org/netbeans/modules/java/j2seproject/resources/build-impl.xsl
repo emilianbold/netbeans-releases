@@ -64,6 +64,10 @@ Microsystems, Inc. All Rights Reserved.
         <fail unless="build.test.results.dir">Must set build.test.results.dir</fail>
         <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
         <fail unless="dist.jar">Must set dist.jar</fail>
+        <xsl:comment>The two properties below are usually overridden</xsl:comment>
+        <xsl:comment>by the active platform. Just a fallback.</xsl:comment>
+        <property name="default.javac.source" value="1.4"/>
+        <property name="default.javac.target" value="1.4"/>
         <xsl:if test="/p:project/p:configuration/j2se:data/j2se:use-manifest">
             <fail unless="manifest.file">Must set manifest.file</fail>
         </xsl:if>
@@ -91,14 +95,14 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${{build.classes.dir}}"/>
         <xsl:choose>
             <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" source="${{javac.source}}" includeantruntime="false" fork="yes" executable="${{platform.javac}}">
+                <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" source="${{javac.source}}" target="${{javac.target}}" includeantruntime="false" fork="yes" executable="${{platform.javac}}">
                     <classpath>
                         <path path="${{javac.classpath}}"/>
                     </classpath>
                 </javac>
             </xsl:when>
             <xsl:otherwise>
-                <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" source="${{javac.source}}" includeantruntime="false">
+                <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" source="${{javac.source}}" target="${{javac.target}}" includeantruntime="false">
                     <classpath>
                         <path path="${{javac.classpath}}"/>
                     </classpath>
@@ -142,7 +146,7 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
                 <javac srcdir="${{task-tmp.src.dir}}" destdir="${{task-tmp.out.dir}}"
                     debug="${{task-tmp.debug}}" deprecation="${{javac.deprecation}}"
-                    source="${{javac.source}}" includes="${{javac.includes}}" includeantruntime="false"
+                    source="${{javac.source}}" target="${{javac.target}}" includes="${{javac.includes}}" includeantruntime="false"
                     fork="yes" executable="${{platform.javac}}">
                     <classpath>
                         <path path="${{task-tmp.classpath}}"/>
@@ -152,7 +156,7 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:otherwise>
                 <javac srcdir="${{task-tmp.src.dir}}" destdir="${{task-tmp.out.dir}}"
                     debug="${{task-tmp.debug}}" deprecation="${{javac.deprecation}}"
-                    source="${{javac.source}}" includes="${{javac.includes}}" includeantruntime="false">
+                    source="${{javac.source}}" target="${{javac.target}}" includes="${{javac.includes}}" includeantruntime="false">
                     <classpath>
                         <path path="${{task-tmp.classpath}}"/>
                     </classpath>
@@ -275,7 +279,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${{build.test.classes.dir}}"/>
         <javac srcdir="${{test.src.dir}}" destdir="${{build.test.classes.dir}}"
                debug="true" deprecation="${{javac.deprecation}}"
-               source="${{javac.source}}" includeantruntime="false">
+               source="${{javac.source}}" target="${{javac.target}}" includeantruntime="false">
             <classpath>
                 <path path="${{javac.test.classpath}}"/>
             </classpath>

@@ -68,6 +68,7 @@ public class J2SEProjectProperties {
     public static final String JAR_COMPRESS = "jar.compress";
     public static final String MAIN_CLASS = "main.class";
     public static final String JAVAC_SOURCE = "javac.source";
+    public static final String JAVAC_TARGET = "javac.target";
     public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath";
     public static final String JAVAC_DEBUG = "javac.debug";
     public static final String JAVAC_DEPRECATION = "javac.deprecation";
@@ -125,7 +126,6 @@ public class J2SEProjectProperties {
         new PropertyDescriptor( DEBUG_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( JAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),
         new PropertyDescriptor( MAIN_CLASS, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( JAVAC_SOURCE, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( JAVAC_DEBUG, PROJECT, BOOLEAN_PARSER ),       
         new PropertyDescriptor( JAVAC_DEPRECATION, PROJECT, BOOLEAN_PARSER ),
@@ -251,7 +251,7 @@ public class J2SEProjectProperties {
         HashMap eProps = new HashMap( 2 );
         eProps.put( PROJECT, antProjectHelper.getProperties( PROJECT ) ); 
         eProps.put( PRIVATE, antProjectHelper.getProperties( PRIVATE ) );
-   
+        
         // Initialize the property map with objects
         for ( int i = 0; i < PROPERTY_DESCRIPTORS.length; i++ ) {
             PropertyDescriptor pd = PROPERTY_DESCRIPTORS[i];
@@ -282,6 +282,8 @@ public class J2SEProjectProperties {
           
                     resolveProjectDependencies();
                     
+                    Boolean defaultPlatform = null;
+                    
                     // Some properties need special handling e.g. if the 
                     // property changes the project.xml files                   
                     for( Iterator it = properties.values().iterator(); it.hasNext(); ) {
@@ -298,8 +300,9 @@ public class J2SEProjectProperties {
                             
                         }   
                         if ( JAVA_PLATFORM.equals( pd.name) && newValueEncoded != null ) {
-                            setPlatform( pi.getNewValueEncoded().equals(
+                            defaultPlatform = Boolean.valueOf(pi.getNewValueEncoded().equals(
                                     JavaPlatformManager.getDefault().getDefaultPlatform().getProperties().get("platform.ant.name")));
+                             setPlatform(defaultPlatform.booleanValue());
                         }
                     }
                     
@@ -308,8 +311,7 @@ public class J2SEProjectProperties {
                     HashMap eProps = new HashMap( 2 );
                     eProps.put( PROJECT, antProjectHelper.getProperties( PROJECT ) ); 
                     eProps.put( PRIVATE, antProjectHelper.getProperties( PRIVATE ) );
-        
-                     
+                    
                     // Set the changed properties
                     for( Iterator it = properties.values().iterator(); it.hasNext(); ) {
                         PropertyInfo pi = (PropertyInfo)it.next();
@@ -328,6 +330,13 @@ public class J2SEProjectProperties {
                                     }
                                     ep.setProperty(pd.name, items);
                                 } else {
+                                    
+                                    // update javac.source and javac.target
+                                    if (JAVA_PLATFORM.equals(pd.name)) {
+                                        assert defaultPlatform != null;
+                                        updateSourceLevel(defaultPlatform.booleanValue(), newValueEncoded, ep);
+                                    }
+                                    
                                     ep.setProperty( pd.name, newValueEncoded );
                                 }
                             }
@@ -346,6 +355,28 @@ public class J2SEProjectProperties {
             ErrorManager.getDefault().notify((IOException)e.getException());
         }
         
+    }
+
+    private void updateSourceLevel(boolean defaultPlatform, String platform, EditableProperties ep) {
+        if (defaultPlatform) {
+            ep.setProperty(JAVAC_SOURCE, "${default.javac.source}"); //NOI18N
+            ep.setProperty(JAVAC_TARGET, "${default.javac.target}"); //NOI18N
+        } else {
+            JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+            for( int i = 0; i < platforms.length; i++ ) {
+                Specification spec = platforms[i].getSpecification();
+                if (!("j2se".equalsIgnoreCase(spec.getName()))) {
+                    continue;
+                }
+                if (platform.equals(platforms[i].getProperties().get("platform.ant.name"))) { //NOI18N
+                    String ver = platforms[i].getSpecification().getVersion().toString();
+                    ep.setProperty(JAVAC_SOURCE, ver);
+                    ep.setProperty(JAVAC_TARGET, ver);
+                    return;
+                }
+            }
+            assert false : "Platform "+platform+" was not found!"; //NOI18N
+        }
     }
     
     private void setPlatform( boolean isDefault ) {
