@@ -61,6 +61,15 @@ public class PlainReporter implements Reporter {
             }
             argument2String(arg[arg.length - 1], sb);
             sb.append(']');
+        } else if (argument instanceof int[]) {
+            int[] arg = (int[]) argument;
+            sb.append('[');
+            for (int i = 0; i < arg.length - 1; i++) {
+                sb.append(Integer.toString(arg[i]));
+                sb.append(',').append(' ');
+            }
+            sb.append(Integer.toString(arg[arg.length - 1]));
+            sb.append(']');
         } else {
             sb.append(argument.toString());
         }
