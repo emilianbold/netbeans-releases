@@ -12,17 +12,14 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!-- Special properties: -->
-<!-- -Dproxy=proxy.netbeans.com:3128 to use an HTTP proxy for building APIs -->
-<!-- -Djdkdocs=.../api (optional) -->
 <!-- Special targets: apiexamples, open-apis -->
+<!-- Special properties: -Djdk-docs-location=...../api -->
 
 <!-- ToDo: modern compile can fail even within openide/src for the same -->
 <!-- reasons other modules need openide-13javac-workaround.jar! -->
 <!-- Not clear how to solve this. Try rerunning build if it happens. -->
 
 <project name="openide" default="netbeans" basedir=".">
-  <property name="jdkdocs" value="public"/>
   <property name="binroot" value=".."/>
 
   <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar" classpath="../nbbuild/nbantext.jar"/>
@@ -108,24 +105,123 @@ Microsystems, Inc. All Rights Reserved.
   <target name="netbeans" depends="jars"/>
 
   <!-- Open API documentation. -->
-
-  <!-- XXX don't build unless out of date -->
-  <!-- XXX preferably would be a special task to do all this stuff... -->
-  <target name="open-apis" depends="open-apis-premessage,open-apis-noproxy,open-apis-proxy"/>
-  <target name="open-apis-noproxy" unless="proxy">
-    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl ${jdkdocs} --zip zip --zipbare --zipandkill --nofastlinks" os="Linux" output="OpenAPIs.log" failonerror="yes"/>
-    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl ${jdkdocs} --zip zip --zipbare --zipandkill --nofastlinks" os="SunOS" output="OpenAPIs.log" failonerror="yes"/>
-    <!-- Missing initial W intentional: -->
-    <exec dir="." command="echo Sorry, no Windows support for building OpenAPIs documentation yet" os="indows" output="con:"/>
+  <!-- XXX should be a task called here to check for dead links... -->
+  <target name="open-apis-check-timestamps" unless="open-apis-force-rebuild">
+    <uptodate property="open-apis-up-to-date" targetfile="OpenAPIs.zip">
+      <srcfiles dir="src">
+        <include name="org/openide/**/*.java"/>
+      </srcfiles>
+      <srcfiles dir="../openidex/src">
+        <include name="org/openidex/**/*.java"/>
+      </srcfiles>
+      <srcfiles dir="api/doc">
+        <include name="org/openide/"/>
+        <include name="overview.html"/>
+        <include name="open-apis.css"/>
+      </srcfiles>
+    </uptodate>
   </target>
-  <target name="open-apis-proxy" if="proxy">
-    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl ${jdkdocs} --zip zip --zipbare --zipandkill --nofastlinks --proxy ${proxy}" os="Linux" output="OpenAPIs.log" failonerror="yes"/>
-    <exec dir="." command="perl api/doc/build --output OpenAPIs --noshowstatus --jdkurl ${jdkdocs} --zip zip --zipbare --zipandkill --nofastlinks --proxy ${proxy}" os="SunOS" output="OpenAPIs.log" failonerror="yes"/>
-    <exec dir="." command="echo Sorry, no Windows support for building OpenAPIs documentation yet" os="Windows NT" output="con:"/>
-    <exec dir="." command="echo Sorry, no Windows support for building OpenAPIs documentation yet" os="Windows 2000" output="con:"/>
+  <target name="open-apis-maybe-skip" if="open-apis-up-to-date">
+    <echo>Not building Open APIs because they are up-to-date...
+To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
+</echo>
   </target>
-  <target name="open-apis-premessage">
-    <echo message="Building Open APIs...warning, this may take a while."/>
+  <target name="open-apis" depends="open-apis-check-timestamps,open-apis-maybe-skip" unless="open-apis-up-to-date">
+    <property name="jdk-docs-location" value="http://java.sun.com/products/jdk/1.2/docs/api"/>
+    <tstamp/>
+    <property name="open-apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2000 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
+    <echo message="Build Open API documentation..."/>
+    <mkdir dir="OpenAPIs"/>
+    <javadoc destdir="OpenAPIs"
+             packagenames="org.openide.*,org.openidex.*"
+             doctitle="NetBeans Open APIs"
+             windowtitle="NetBeans APIs"
+             overview="api/doc/overview.html"
+             bottom="${open-apis-footer}"
+             use="true"
+             splitindex="true"
+             author="false"
+             version="false"
+             maxmemory="64m"
+    >
+      <sourcepath>
+        <pathelement location="api/doc"/>
+        <pathelement location="src"/>
+        <pathelement location="../openidex/src"/>
+      </sourcepath>
+      <classpath>
+        <pathelement location="../core/release/lib/ext/parser.jar"/>
+        <pathelement location="../core/release/lib/ext/regexp.jar"/>
+      </classpath>
+      <!-- XXX update api/doc/package-list to match 1.2, not 1.3, list -->
+      <link href="${jdk-docs-location}"
+            offline="true"
+            packagelistLoc="api/doc"
+      />
+      <group title="&lt;a href=&quot;@TOP@org/openide/modules/doc-files/api.html&quot;&gt;Modules API&lt;/a&gt;"
+             packages="org.openide.modules"/>
+      <group title="&lt;a href=&quot;@TOP@org/openide/TopManager.html&quot;&gt;TopManager&lt;/a&gt; and &lt;a href=&quot;@TOP@org/openide/Places.html&quot;&gt;Places&lt;/a&gt; APIs; &lt;a href=&quot;@TOP@org/openide/doc-files/services-api.html&quot;&gt;Services API&lt;/a&gt;"
+             packages="org.openide"/>
+      <group title="&lt;a href=&quot;@TOP@org/openide/filesystems/doc-files/api.html&quot;&gt;FileSystems API&lt;/a&gt;"
+             packages="org.openide.filesystems"/>
+      <group title="&lt;a href=&quot;@TOP@org/openide/loaders/doc-files/api.html&quot;&gt;DataSystems API&lt;/a&gt;"
+             packages="org.openide.cookies:org.openide.loaders:org.openide.util.datatransfer"/>
+      <group title="&lt;a href=&quot;@TOP@org/openide/explorer/doc-files/api.html&quot;&gt;Explorer API&lt;/a&gt;"
+             packages="org.openide.explorer*"/>
+      <group title="&lt;a href=&quot;@TOP@org/openide/nodes/doc-files/api.html&quot;&gt;Nodes API&lt;/a&gt;"
+             packages="org.openide.nodes"/>
+      <group title="&lt;a href=&quot;@TOP@org/openide/actions/doc-files/api.html&quot;&gt;Actions API&lt;/a&gt;"
+             packages="org.openide.actions:org.openide.util.actions"/>
+      <group title="&lt;a href=&quot;@TOP@org/openide/windows/doc-files/api.html&quot;&gt;Window System API&lt;/a&gt;"
+             packages="org.openide.windows"/>
+      <group title="&lt;a href=&quot;@TOP@org/openide/options/doc-files/api.html&quot;&gt;Options API&lt;/a&gt;"
+             packages="org.openide.options"/>
+      <group title="&lt;a href=&quot;@TOP@org/openide/compiler/doc-files/api.html&quot;&gt;Compiler API&lt;/a&gt;"
+             packages="org.openide.compiler"/>
+      <group title="&lt;a href=&quot;@TOP@org/openide/execution/doc-files/api.html&quot;&gt;Execution API&lt;/a&gt;"
+             packages="org.openide.execution"/>
+      <group title="&lt;a href=&quot;@TOP@org/openide/debugger/doc-files/api.html&quot;&gt;Debugger API&lt;/a&gt;"
+             packages="org.openide.debugger"/>
+      <group title="&lt;a href=&quot;@TOP@org/openide/text/doc-files/api.html&quot;&gt;Editor API&lt;/a&gt;"
+             packages="org.openide.text"/>
+      <group title="&lt;a href=&quot;@TOP@org/openide/src/doc-files/api.html&quot;&gt;Java Hierarchy API&lt;/a&gt;"
+             packages="org.openide.src:org.openide.src.nodes"/>
+      <group title="&lt;a href=&quot;@TOP@org/openide/util/doc-files/api.html&quot;&gt;Utility Classes&lt;/a&gt;"
+             packages="org.openide.awt:org.openide.util:org.openide.util.enum:org.openide.util.io"/>
+      <group title="Proposed APIs"
+             packages="org.openidex.*"/>
+    </javadoc>
+    <copy file="api/doc/open-apis.css" tofile="OpenAPIs/open-apis.css"/>
+    <replace dir="OpenAPIs" token="@JDK@" value="${jdk-docs-location}">
+      <include name="**/doc-files/*.html"/>
+      <include name="**/package-summary.html"/>
+    </replace>
+    <replace dir="OpenAPIs" token="@FOOTER@" value="${open-apis-footer}">
+      <include name="**/doc-files/*.html"/>
+    </replace>
+    <replace file="OpenAPIs/overview-summary.html" token="@DATE@" value="${TODAY}"/>
+    <replace dir="OpenAPIs" token="@TOP@" value="">
+      <include name="*.html"/>
+    </replace>
+    <replace dir="OpenAPIs" token="@TOP@" value="../">
+      <include name="*/*.html"/>
+    </replace>
+    <replace dir="OpenAPIs" token="@TOP@" value="../../">
+      <include name="*/*/*.html"/>
+    </replace>
+    <replace dir="OpenAPIs" token="@TOP@" value="../../../">
+      <include name="*/*/*/*.html"/>
+    </replace>
+    <replace dir="OpenAPIs" token="@TOP@" value="../../../../">
+      <include name="*/*/*/*/*.html"/>
+    </replace>
+    <replace dir="OpenAPIs" token="@TOP@" value="../../../../../">
+      <include name="*/*/*/*/*/*.html"/>
+    </replace>
+    <replace dir="OpenAPIs" token="@TOP@" value="../../../../../../">
+      <include name="*/*/*/*/*/*/*.html"/>
+    </replace>
+    <zip zipfile="OpenAPIs.zip" basedir="OpenAPIs"/>
   </target>
 
   <!-- API examples. -->
@@ -235,9 +331,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="netbeans"/>
     <delete file="openide-13javac-workaround.jar"/>
     <delete dir="OpenAPIs"/>
-    <!-- <delete file="OpenAPIs.zip"/> -->
-    <echo message="Will not remove OpenAPIs.zip, remove it yourself if desired..."/>
-    <delete file="OpenAPIs.log"/>
+    <delete file="OpenAPIs.zip"/>
     <delete dir="examplemodules"/>
     <delete file="api/examples/org/netbeans/examples/modules/minicomposer/templates.jar"/>
   </target>
