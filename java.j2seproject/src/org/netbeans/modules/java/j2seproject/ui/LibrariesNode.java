@@ -596,29 +596,34 @@ final class LibrariesNode extends AbstractNode {
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
             chooser.setMultiSelectionEnabled( true );
             chooser.setDialogTitle( NbBundle.getMessage( LibrariesNode.class, "LBL_AddJar_DialogTitle" ) ); // NOI18N
-            chooser.setFileFilter( new SimpleFileFilter (
-                    NbBundle.getMessage( LibrariesNode.class, "LBL_ZipJarFolderFilter" ),                  // NOI18N
-                    new String[] {"ZIP","JAR"} ) );                                                                 // NOI18N
+            FileFilter fileFilter = new SimpleFileFilter (
+                NbBundle.getMessage( LibrariesNode.class, "LBL_ZipJarFolderFilter" ),   // NOI18N
+                new String[] {"ZIP","JAR"} );   // NOI18N
+            chooser.setFileFilter(fileFilter);                                                                 
             chooser.setAcceptAllFileFilterUsed( false );
             File curDir = FoldersListSettings.getDefault().getLastUsedClassPathFolder();
             chooser.setCurrentDirectory (curDir);
             int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() );
             if ( option == JFileChooser.APPROVE_OPTION ) {
                 File files[] = chooser.getSelectedFiles();
-                addJarFiles( files );
+                addJarFiles( files, fileFilter );
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                 FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
             }
         }
 
-        private void addJarFiles (File[] files) {
+        private void addJarFiles (File[] files, FileFilter fileFilter) {
             J2SEProjectClassPathExtender cpExtender = (J2SEProjectClassPathExtender) project.getLookup().lookup(J2SEProjectClassPathExtender.class);
             if (cpExtender != null) {
                 for (int i=0; i<files.length;i++) {
                     try {
-                        FileObject fo = FileUtil.toFileObject (files[i]);
-                        assert fo != null : files[i];
-                        cpExtender.addArchiveFile(classPathId, fo);
+                        //Check if the file is acceted by the FileFilter,
+                        //user may enter the name of non displayed file into JFileChooser
+                        if (fileFilter.accept(files[i])) {
+                            FileObject fo = FileUtil.toFileObject (files[i]);
+                            assert fo != null : files[i];
+                            cpExtender.addArchiveFile(classPathId, fo);
+                        }
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
                     }
