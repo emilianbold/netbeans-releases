@@ -45,6 +45,7 @@ public class FileSystemBeanInfo extends SimpleBeanInfo {
             desc[0].setShortDescription (bundle.getString("HINT_readOnly"));
             desc[1].setDisplayName (bundle.getString("PROP_valid"));
             desc[1].setShortDescription (bundle.getString("HINT_valid"));
+            desc[1].setExpert (true);
             desc[2].setDisplayName (bundle.getString("PROP_hidden"));
             desc[2].setShortDescription (bundle.getString("HINT_hidden"));
             desc[3].setHidden (true);
