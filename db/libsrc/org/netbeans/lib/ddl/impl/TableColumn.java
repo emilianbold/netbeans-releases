@@ -187,6 +187,10 @@ public class TableColumn extends AbstractTableColumn implements Serializable, Ta
         }
 
         String qdefval = defval;
+        
+        if (charactertypes.contains(spec.getType(type)) && !defval.startsWith(strdelim) && !defval.endsWith(strdelim))
+            qdefval = strdelim + defval + strdelim;
+        
         args.put("column.type", spec.getType(type)); // NOI18N
         if (!nullable) args.put("column.notnull", ""); // NOI18N
         
