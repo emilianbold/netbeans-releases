@@ -114,7 +114,12 @@ implements Executor {
                 // 2) init info about current state
                 ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
                     getCurrentThread ()).getThreadReference ();
-                StackFrame sf = tr.frame (0);
+                StackFrame sf;
+                try {
+                    sf = tr.frame (0);
+                } catch (java.lang.IndexOutOfBoundsException e) {
+                    return; //No frame -> step after thread breakpoint; PATCH 56540
+                }
                 Location l = sf.location ();
                 // 3) create new step request
                 stepRequest = getDebuggerImpl ().getVirtualMachine ().
@@ -134,7 +139,7 @@ implements Executor {
                 getDebuggerImpl ().resume ();
             } catch (IncompatibleThreadStateException e) {
             } catch (VMDisconnectedException e) {
-            }
+            }   
         }
     }
     
