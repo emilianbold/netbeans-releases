@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
     </item>
     <item>
         <summary>We could create 'xml-api' module which will specify API for other xml module; 'xml-core' will implement xml-api. See http://openide.netbeans.org/versioning-policy.html -- org.netbeans.modules.xml.[core.api|api].</summary>
-        <description>We could create 'xml-api' module which will specify API for other xml module; 'xml-core' will implement xml-api. See http://openide.netbeans.org/versioning-policy.html -- org.netbeans.modules.xml.[core.api|api].</description>
+        <description>We could create 'xml-api' module which will specify API for other xml module; 'xml-core' will implement xml-api. See <a href="http://openide.netbeans.org/versioning-policy.html">API &amp; Module Versioning Policy</a> -- org.netbeans.modules.xml.[core.api|api].</description>
     </item>
     <item>
         <summary>XML- and DTD- DataLoader could have common super-class.</summary>
