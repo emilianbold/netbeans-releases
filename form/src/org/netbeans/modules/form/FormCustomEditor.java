@@ -302,32 +302,43 @@ public class FormCustomEditor extends JPanel
         }
         else value = editor.getValue();
 
-        Node[] nodes = ComponentInspector.getInstance().getSelectedNodes();
-        for (int i=0; i < nodes.length; i++) {
-            PropertyEditor pe;
-            if (nodes.length == 1)
-                pe = editor;
+        // set the current property editor to FormPropertyEditor (to be used as
+        // custom editor provider next time; and also for code generation)
+        // - it should be set to all properties (of all nodes selected)
+        if (currentIndex > -1) {
+            Object[] nodes = editor.getPropertyEnv().getBeans();
+            if (nodes == null || nodes.length <= 1) {
+                editor.getProperty().setPreCode(preCode);
+                editor.getProperty().setPostCode(postCode);
+
+                editor.setModifiedEditor(allEditors[currentIndex]);
+                editor.commitModifiedEditor();
+            }
             else {
-                RADComponentCookie radCookie = (RADComponentCookie)
-                                   nodes[i].getCookie(RADComponentCookie.class);
-                if (radCookie != null) {
+                for (int i=0; i < nodes.length; i++) {
+                    if (!(nodes[i] instanceof Node))
+                        break; // these are not nodes...
+
+                    Node node = (Node) nodes[i];
+                    RADComponentCookie radCookie = (RADComponentCookie)
+                                   node.getCookie(RADComponentCookie.class);
+                    if (radCookie == null)
+                        break; // these are not RADComponents...
+
                     RADComponent comp = radCookie.getRADComponent();
                     RADProperty prop = comp.getPropertyByName(
-                                              editor.getProperty().getName());
-                    pe = prop.getPropertyEditor();
-                }
-                else pe = null;
-            }
+                                         editor.getProperty().getName());
+                    PropertyEditor pe = prop.getPropertyEditor();
 
-            if (pe instanceof FormPropertyEditor) {
-                FormPropertyEditor fpe = (FormPropertyEditor) pe;
+                    if (pe instanceof FormPropertyEditor) {
+                        FormPropertyEditor fpe = (FormPropertyEditor) pe;
 
-                fpe.getProperty().setPreCode(preCode);
-                fpe.getProperty().setPostCode(postCode);
+                        fpe.getProperty().setPreCode(preCode);
+                        fpe.getProperty().setPostCode(postCode);
 
-                if (currentIndex > -1) {
-                    fpe.setModifiedEditor(fpe.getAllEditors()[currentIndex]);
-                    fpe.commitModifiedEditor();
+                        fpe.setModifiedEditor(fpe.getAllEditors()[currentIndex]);
+                        fpe.commitModifiedEditor();
+                    }
                 }
             }
         }

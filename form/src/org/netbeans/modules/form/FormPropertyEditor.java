@@ -34,6 +34,7 @@ public class FormPropertyEditor implements PropertyEditor,
     private Object source;
     private FormProperty property;
     private FormPropertyContext propertyContext;
+    private PropertyEnv propertyEnv;
 
     private PropertyEditor modifiedEditor;
     private PropertyEditor[] allEditors;
@@ -59,6 +60,10 @@ public class FormPropertyEditor implements PropertyEditor,
 
     FormPropertyContext getPropertyContext() {
         return propertyContext;
+    }
+
+    PropertyEnv getPropertyEnv() {
+        return propertyEnv;
     }
 
     PropertyEditor getModifiedEditor() {
@@ -361,6 +366,7 @@ public class FormPropertyEditor implements PropertyEditor,
      * the environment to the property editor.
      */
     public void attachEnv(PropertyEnv env) {
+        propertyEnv = env;
         propertyContext.setPropertyEnv(env);
         if (modifiedEditor instanceof ExPropertyEditor)
             ((ExPropertyEditor)modifiedEditor).attachEnv(env);
