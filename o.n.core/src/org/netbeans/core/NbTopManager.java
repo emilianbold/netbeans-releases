@@ -655,14 +655,27 @@ public abstract class NbTopManager extends TopManager {
             NbBundle.getBundle (NbTopManager.class).getString ("MSG_AllSaved"));
     }
 
+    private boolean doingExit=false;
     public void exit ( ) {
+        synchronized (this) {
+            if (doingExit) {
+                return ;
+            }
+            doingExit = true;
+        }
         // save all open files
-        if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
-            if (getModuleSystem().shutDown()) {
-                // save project
-                NbProjectOperation.storeLastProject ();
-
-                Runtime.getRuntime().exit ( 0 );
+        try {
+            if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
+                if (getModuleSystem().shutDown()) {
+                    // save project
+                    NbProjectOperation.storeLastProject ();
+    
+                    Runtime.getRuntime().exit ( 0 );
+                }
+            }
+        } finally {
+            synchronized (this) {
+                doingExit = false; 
             }
         }
     }
