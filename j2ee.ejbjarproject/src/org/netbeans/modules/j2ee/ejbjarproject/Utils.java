@@ -20,11 +20,17 @@ import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.CMPFieldNode;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityNode;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
+import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.EntityAndSessionGenerator;
+import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.EjbGenerationUtil;
+import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.session.SessionGenerator;
+import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.entity.EntityGenerator;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.src.ClassElement;
 import org.openide.src.Identifier;
@@ -102,18 +108,81 @@ public class Utils {
     }
 
     public static void removeInterface(ClassElement beanClass, String interfaceName) {
-        try {
-            beanClass.removeInterface(Identifier.create(interfaceName));
-        } catch (SourceException ex) {
-            notifyError(ex);
+        Identifier[] interfaces = beanClass.getInterfaces();
+        for (int i = 0; i < interfaces.length; i++) {
+            if (interfaceName.equals(interfaces[i].getFullName())) {
+                try {
+                    beanClass.removeInterface(Identifier.create(interfaceName));
+                } catch (SourceException ex) {
+                    notifyError(ex);
+                }
+            }
         }
     }
 
     public static void removeClassFile(FileObject ejbJarFile, String className) {
-        FileObject sourceFile = org.netbeans.modules.j2ee.ejbjarproject.Utils.getSourceFile(ejbJarFile, className);
+        FileObject sourceFile = getSourceFile(ejbJarFile, className);
+        if (sourceFile != null) {
+            try {
+                sourceFile.delete();
+            } catch (IOException e) {
+                notifyError(e);
+            }
+        }
+    }
+
+    public static String getPackage(String fullClassName) {
+        return fullClassName.substring(0, fullClassName.lastIndexOf('.'));
+    }
+
+    public static void addInterfaces(FileObject ejbJarFile, EntityAndSession ejb, boolean local) {
+        EntityAndSessionGenerator generator;
+        if (ejb instanceof Entity) {
+            generator = new EntityGenerator();
+        } else {
+            generator = new SessionGenerator();
+        }
+        String packageName = getPackage(ejb.getEjbClass());
+        FileObject packageFile = getPackageFile(ejbJarFile, packageName);
+        String ejbName = ejb.getEjbName();
         try {
-            sourceFile.delete();
+            String componentInterfaceName;
+            String businessInterfaceName;
+            if (local) {
+                componentInterfaceName = EjbGenerationUtil.getLocalName(packageName, ejbName);
+                componentInterfaceName = generator.generateLocal(packageName, packageFile, componentInterfaceName, ejbName);
+                String homeInterfaceName = EjbGenerationUtil.getLocalHomeName(packageName, ejbName);
+                homeInterfaceName = generator.generateLocalHome(packageName, packageFile, homeInterfaceName, componentInterfaceName, ejbName);
+                ejb.setLocal(componentInterfaceName);
+                ejb.setLocalHome(homeInterfaceName);
+                businessInterfaceName = EjbGenerationUtil.getLocalBusinessInterfaceName(packageName, ejbName);
+            } else {
+                componentInterfaceName = EjbGenerationUtil.getRemoteName(packageName, ejbName);
+                componentInterfaceName = generator.generateRemote(packageName, packageFile, componentInterfaceName, ejbName);
+                String homeInterfaceName = EjbGenerationUtil.getHomeName(packageName, ejbName);
+                homeInterfaceName = generator.generateHome(packageName, packageFile, homeInterfaceName, componentInterfaceName, ejbName);
+                ejb.setRemote(componentInterfaceName);
+                ejb.setHome(homeInterfaceName);
+                businessInterfaceName = EjbGenerationUtil.getBusinessInterfaceName(packageName, ejbName);
+            }
+            ClassElement beanClass = getBeanClass(ejbJarFile, ejb);
+            Identifier[] interfaces = beanClass.getInterfaces();
+            for (int i = 0; i < interfaces.length; i++) {
+                if (businessInterfaceName.equals(interfaces[i].getFullName())) {
+                    ClassElement componentInterface = getClassElement(ejbJarFile, componentInterfaceName);
+                    componentInterface.addInterface(Identifier.create(businessInterfaceName));
+                    SaveCookie sc = (SaveCookie) componentInterface.getCookie(SaveCookie.class);
+                    if (sc != null) {
+                        sc.save();
+                    }
+                    return;
+                }
+            }
+            generator.generateBusinessInterfaces(packageName, packageFile, businessInterfaceName, ejbName,
+                    ejb.getEjbClass(), componentInterfaceName);
         } catch (IOException e) {
+            notifyError(e);
+        } catch (SourceException e) {
             notifyError(e);
         }
     }

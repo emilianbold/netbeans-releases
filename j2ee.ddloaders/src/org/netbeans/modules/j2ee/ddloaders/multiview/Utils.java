@@ -14,6 +14,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.BrowseFolders;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -140,5 +141,17 @@ public class Utils {
 
     public static void removeClassFile(FileObject ejbJarFile, String className) {
         org.netbeans.modules.j2ee.ejbjarproject.Utils.removeClassFile(ejbJarFile, className);
+    }
+
+    public static FileObject getPackageFile(FileObject ejbJarFile, String packageName) {
+        return org.netbeans.modules.j2ee.ejbjarproject.Utils.getPackageFile(ejbJarFile, packageName);
+    }
+
+    public static String getPackage(String ejbClass) {
+        return org.netbeans.modules.j2ee.ejbjarproject.Utils.getPackage(ejbClass);
+    }
+
+    public static void addInterfaces(FileObject ejbJarFile, EntityAndSession ejb, boolean local) {
+        org.netbeans.modules.j2ee.ejbjarproject.Utils.addInterfaces(ejbJarFile, ejb, local);
     }
 }

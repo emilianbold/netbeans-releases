@@ -54,7 +54,8 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         remoteInterfaceCheckBox = new javax.swing.JCheckBox();
         remoteComponentTextField = new javax.swing.JTextField();
         remoteHomeTextField = new javax.swing.JTextField();
-        changeClassesButton = new javax.swing.JButton();
+        moveClassButton = new javax.swing.JButton();
+        renameClassButton = new javax.swing.JButton();
         spacerLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -66,7 +67,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jLabel1, gridBagConstraints);
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_LocalInterface"));
@@ -75,7 +76,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jLabel2, gridBagConstraints);
 
         jLabel3.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_Component"));
@@ -84,7 +85,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jLabel3, gridBagConstraints);
 
         jLabel4.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_Home"));
@@ -93,7 +94,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jLabel4, gridBagConstraints);
 
         jLabel5.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_RemoteInterface"));
@@ -102,7 +103,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jLabel5, gridBagConstraints);
 
         jLabel6.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_Component"));
@@ -111,7 +112,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jLabel6, gridBagConstraints);
 
         jLabel7.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_Home"));
@@ -120,16 +121,17 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jLabel7, gridBagConstraints);
 
         beanClassTextField.setColumns(35);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(beanClassTextField, gridBagConstraints);
 
         localInterfaceCheckBox.setOpaque(false);
@@ -144,18 +146,20 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(localComponentTextField, gridBagConstraints);
 
         localHomeTextField.setColumns(35);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(localHomeTextField, gridBagConstraints);
 
         remoteInterfaceCheckBox.setOpaque(false);
@@ -170,31 +174,43 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(remoteComponentTextField, gridBagConstraints);
 
         remoteHomeTextField.setColumns(35);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(remoteHomeTextField, gridBagConstraints);
 
-        changeClassesButton.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_ChangeClasses"));
+        moveClassButton.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_MoveClass"));
+        moveClassButton.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
-        add(changeClassesButton, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
+        add(moveClassButton, gridBagConstraints);
+
+        renameClassButton.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_RenameClass"));
+        renameClassButton.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
+        add(renameClassButton, gridBagConstraints);
 
         spacerLabel.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -204,7 +220,6 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField beanClassTextField;
-    private javax.swing.JButton changeClassesButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -215,18 +230,16 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
     private javax.swing.JTextField localComponentTextField;
     private javax.swing.JTextField localHomeTextField;
     private javax.swing.JCheckBox localInterfaceCheckBox;
+    private javax.swing.JButton moveClassButton;
     private javax.swing.JTextField remoteComponentTextField;
     private javax.swing.JTextField remoteHomeTextField;
     private javax.swing.JCheckBox remoteInterfaceCheckBox;
+    private javax.swing.JButton renameClassButton;
     private javax.swing.JLabel spacerLabel;
     // End of variables declaration//GEN-END:variables
 
     public JTextField getBeanClassTextField() {
         return beanClassTextField;
-    }
-
-    public JButton getChangeClassesButton() {
-        return changeClassesButton;
     }
 
     public JTextField getLocalComponentTextField() {
@@ -263,5 +276,13 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
 
     public void linkButtonPressed(Object ddBean, String ddProperty) {
 
+    }
+
+    public JButton getMoveClassButton() {
+        return moveClassButton;
+    }
+
+    public JButton getRenameClassButton() {
+        return renameClassButton;
     }
 }

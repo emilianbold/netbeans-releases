@@ -15,23 +15,18 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbImplementationAndInterfacesForm;
-import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbInterfaceForm;
-import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.EjbGenerationUtil;
-import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.entity.EntityGenerator;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.src.ClassElement;
 import org.openide.filesystems.FileObject;
+import org.openide.src.ClassElement;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
 /**
  * @author pfiala
@@ -45,20 +40,56 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
     public EjbImplementationAndInterfacesPanel(final SectionNodeView sectionNodeView, final EntityAndSession ejb) {
         super(sectionNodeView);
         this.ejb = ejb;
-        getBeanClassTextField().setEditable(false);
-        getLocalComponentTextField().setEditable(false);
-        getLocalHomeTextField().setEditable(false);
-        getRemoteComponentTextField().setEditable(false);
-        getRemoteHomeTextField().setEditable(false);
+        final JTextField beanClassTextField = getBeanClassTextField();
+        final JTextField localComponentTextField = getLocalComponentTextField();
+        final JTextField localHomeTextField = getLocalHomeTextField();
+        final JTextField remoteComponentTextField = getRemoteComponentTextField();
+        final JTextField remoteHomeTextField = getRemoteHomeTextField();
+        final JButton moveClassButton = getMoveClassButton();
+        final JButton renameClassButton = getRenameClassButton();
+        beanClassTextField.setEditable(false);
+        localComponentTextField.setEditable(false);
+        localHomeTextField.setEditable(false);
+        remoteComponentTextField.setEditable(false);
+        remoteHomeTextField.setEditable(false);
 
         populateFields();
 
-        getChangeClassesButton().setVisible(false);
-        getChangeClassesButton().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                editValues(sectionNodeView, ejb);
+        FocusListener focusListener = new FocusListener() {
+            public void focusGained(FocusEvent e) {
+                Component component = e.getComponent();
+                if (component instanceof JTextField) {
+                    JTextField textField = ((JTextField) component);
+                    textField.setSelectionStart(0);
+                    textField.setSelectionEnd(textField.getText().length());
+                    moveClassButton.setEnabled(true);
+                    renameClassButton.setEnabled(true);
+                } else {
+                    moveClassButton.setEnabled(false);
+                    renameClassButton.setEnabled(false);
+                }
             }
 
+            public void focusLost(FocusEvent e) {
+                Component component = e.getComponent();
+                if (component instanceof JTextField) {
+                }
+            }
+        };
+        addFocusListener(focusListener);
+
+        //todo:remove following rows
+        moveClassButton.setVisible(false);
+        renameClassButton.setVisible(false);
+        moveClassButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+        });
+        renameClassButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
         });
 
         getLocalInterfaceCheckBox().addActionListener(new ActionListener() {
@@ -82,70 +113,20 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         });
     }
 
-    private static String getPackage(String fullClassName) {
-        return fullClassName.substring(0, fullClassName.lastIndexOf('.'));
-    }
-
     private void addInterfaces(boolean local) {
-        EjbInterfaceForm form = new EjbInterfaceForm();
-        if (openAddDialog(local, form)) {
-            String componentInterfaceName = form.getComponentTextField().getText().trim();
-            String homeInterfaceName = form.getHomeTextField().getText().trim();
-//            new EntityGenerator().
+        String interfaceType = Utils.getBundleMessage(local ? "TXT_Local" : "TXT_Remote");
+        String msg = Utils.getBundleMessage("MSG_AddInterfaces", interfaceType);
+        String title = Utils.getBundleMessage("LBL_AddInterfaces");
+        NotifyDescriptor descriptor = new NotifyDescriptor(msg, title, NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE, null, null);
+        DialogDisplayer.getDefault().notify(descriptor);
+        if (NotifyDescriptor.YES_OPTION == descriptor.getValue()) {
+            EntityAndSession ejb = this.ejb;
+            SectionNodeView sectionNodeView = (SectionNodeView) getSectionView();
+            FileObject ejbJarFile = sectionNodeView.getDataObject().getPrimaryFile();
+            Utils.addInterfaces(ejbJarFile, ejb, local);
+            populateFields();
         }
-    }
-
-    private boolean openAddDialog(boolean local, final EjbInterfaceForm form) {
-        String ejbName = ejb.getEjbName();
-        String pkg = getPackage(ejb.getEjbClass());
-        String defaultComponentInterface = local ?
-                EjbGenerationUtil.getLocalName(pkg, ejbName) : EjbGenerationUtil.getRemoteName(pkg, ejbName);
-        String defaultHomeInterface = local ?
-                EjbGenerationUtil.getLocalHomeName(pkg, ejbName) : EjbGenerationUtil.getHomeName(pkg, ejbName);
-        final DialogDescriptor descriptor = new DialogDescriptor(form, "Add Interfaces");
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        final JTextField componentTextField = form.getComponentTextField();
-        final JTextField homeTextField = form.getHomeTextField();
-        componentTextField.setText(defaultComponentInterface);
-        homeTextField.setText(defaultHomeInterface);
-        DocumentListener documentListener = new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-                validate();
-            }
-
-            public void insertUpdate(DocumentEvent e) {
-                validate();
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                validate();
-            }
-
-            private void validate() {
-                String componentInterface = componentTextField.getText().trim();
-                String homeInterface = homeTextField.getText().trim();
-                boolean isValid;
-                String msg;
-                final String messageId = "MSG_InvalidInterface";
-                if (!Utils.isValidPackageName(componentInterface)) {
-                    isValid = false;
-                    msg = Utils.getBundleMessage(messageId, componentInterface);
-                } else if (!Utils.isValidPackageName(homeInterface)) {
-                    isValid = false;
-                    msg = Utils.getBundleMessage(messageId, homeInterface);
-                } else {
-                    isValid = true;
-                    msg = " ";
-                }
-                form.getErrorLabel().setText(msg);
-                descriptor.setValid(isValid);
-            }
-        };
-        componentTextField.getDocument().addDocumentListener(documentListener);
-        homeTextField.getDocument().addDocumentListener(documentListener);
-        dialog.setVisible(true);
-        boolean b = DialogDescriptor.OK_OPTION == descriptor.getValue();
-        return b;
     }
 
     private void removeInterfaces(boolean local) {
@@ -153,7 +134,7 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         String homeInterface = local ? ejb.getLocalHome() : ejb.getHome();
         String msg = Utils.getBundleMessage("MSG_RemoveInterfaces", componentInterface, homeInterface);
         String interfaceType = Utils.getBundleMessage(local ? "TXT_Local" : "TXT_Remote");
-        String title = Utils.getBundleMessage("LBL_InterfacesRemoval", interfaceType);
+        String title = Utils.getBundleMessage("LBL_RemoveInterfaces", interfaceType);
         NotifyDescriptor descriptor = new NotifyDescriptor(msg, title, NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.WARNING_MESSAGE, null, null);
         DialogDisplayer.getDefault().notify(descriptor);
@@ -173,6 +154,7 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
                 ejb.setHome(null);
             }
         }
+        populateFields();
     }
 
     public void dataFileChanged() {
@@ -195,90 +177,4 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         getRemoteHomeTextField().setText(isRemote ? ejb.getHome() : null);
     }
 
-    private void editValues(final SectionNodeView sectionNodeView, final EntityAndSession ejb) {
-
-        final EjbImplementationAndInterfacesForm form = new EjbImplementationAndInterfacesForm(sectionNodeView);
-
-        String ejbClass = ejb.getEjbClass();
-        final String localComponent = ejb.getLocal();
-        final String localHome = ejb.getLocalHome();
-        final String remoteComponent = ejb.getRemote();
-        final String remoteHome = ejb.getHome();
-
-        form.getChangeClassesButton().setVisible(false);
-        form.setOpaque(false);
-
-        final JCheckBox localInterfaceCheckBox = form.getLocalInterfaceCheckBox();
-        localInterfaceCheckBox.addActionListener(new ActionListener() {
-
-            {
-                localInterfaceCheckBox.setSelected(localComponent != null);
-                actionPerformed(null);
-            }
-
-            public void actionPerformed(ActionEvent e) {
-                final JTextField localComponentTextField = form.getLocalComponentTextField();
-                final JTextField localHomeTextField = form.getLocalHomeTextField();
-                boolean isLocal = localInterfaceCheckBox.isSelected();
-                localInterfaceCheckBox.setSelected(isLocal);
-                localComponentTextField.setEnabled(isLocal);
-                localComponentTextField.setText(isLocal ? localComponent : null);
-                localHomeTextField.setEnabled(isLocal);
-                localHomeTextField.setText(isLocal ? localHome : null);
-            }
-        });
-
-        final JCheckBox remoteInterfaceCheckBox = form.getRemoteInterfaceCheckBox();
-        remoteInterfaceCheckBox.addActionListener(new ActionListener() {
-
-            {
-                remoteInterfaceCheckBox.setSelected(remoteComponent != null);
-                actionPerformed(null);
-            }
-
-            public void actionPerformed(ActionEvent e) {
-                final JTextField remoteComponentTextField = form.getRemoteComponentTextField();
-                final JTextField remoteHomeTextField = form.getRemoteHomeTextField();
-                boolean isRemote = remoteInterfaceCheckBox.isSelected();
-                remoteInterfaceCheckBox.setSelected(isRemote);
-                remoteComponentTextField.setEnabled(isRemote);
-                remoteComponentTextField.setText(isRemote ? remoteComponent : null);
-                remoteHomeTextField.setEnabled(isRemote);
-                remoteHomeTextField.setText(isRemote ? remoteHome : null);
-            }
-        });
-
-        final JTextField beanClassTextField = form.getBeanClassTextField();
-        beanClassTextField.setText(ejbClass);
-
-        final DialogDescriptor descriptor = new DialogDescriptor(form, ""); //NOI18N
-        descriptor.setOptionType(DialogDescriptor.OK_CANCEL_OPTION);
-
-        DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
-
-        if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            if (remoteInterfaceCheckBox.isSelected() != (remoteComponent != null)) {
-                if (remoteComponent == null) {
-                    //todo: remove
-                } else {
-                    //todo:add
-                }
-            } else {
-                //TODO: check names
-
-            }
-            if (localInterfaceCheckBox.isSelected() != (localComponent != null)) {
-                if (localComponent == null) {
-                    //todo: remove
-                } else {
-                    //todo:add
-                }
-
-            } else {
-                //TODO: check names
-
-            }
-        }
-
-    }
 }

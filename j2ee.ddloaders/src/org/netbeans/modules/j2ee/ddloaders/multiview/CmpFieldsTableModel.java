@@ -47,15 +47,6 @@ class CmpFieldsTableModel extends InnerTableModel {
         new EntityHelper(ejbJarFile, entity).addCmpField();
         fireTableDataChanged();
         return getRowCount() - 1;
-// TODO: remove following?
-//        ClassElement beanClass = Utils.getBeanClass(ejbJarFile, entity);
-//        if (new AddCmpFieldAction().addCmpField(beanClass, ejbJarFile)) {
-//            int n = entity.getCmpField().length - 1;
-//            fireTableRowsInserted(n, n);
-//            return n;
-//        } else {
-//            return -1;
-//        }
     }
 
     public void removeRow(int row) {
