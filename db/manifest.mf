@@ -1,6 +1,8 @@
 NetBeans-Module: com.netbeans.enterprise.modules.db/1
 NetBeans-Module-Name: JDBC Support
 NetBeans-Module-Main: com/netbeans/enterprise/modules/db/DatabaseModule.class
+NetBeans-Module-Specification-Version: 1.0
+NetBeans-Module-Implementation-Version: 1.0
 
 Name: com/netbeans/enterprise/modules/db/explorer/nodes/RootNode.class
 NetBeans-Module-Class: Node

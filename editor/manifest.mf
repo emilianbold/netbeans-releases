@@ -1,4 +1,6 @@
 NetBeans-Module: com.netbeans.developer.modules.text/1
 NetBeans-Module-Name: Editor
 NetBeans-Module-Install: com/netbeans/developer/modules/text/EditorModule.class
+NetBeans-Module-Specification-Version: 1.0
+NetBeans-Module-Implementation-Version: 1.0
 
