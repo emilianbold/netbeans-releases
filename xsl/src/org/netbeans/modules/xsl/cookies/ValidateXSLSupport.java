@@ -25,7 +25,7 @@ import org.netbeans.spi.xml.cookies.*;
 
 /**
  * Validates XSL transformation
- * @author Asgeir Orn Asgeirsson
+ * @author asgeir@dimonsoftware.com
  */
 public class ValidateXSLSupport implements ValidateXMLCookie {
     

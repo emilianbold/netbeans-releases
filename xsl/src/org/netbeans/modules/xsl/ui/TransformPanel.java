@@ -330,8 +330,9 @@ public final class TransformPanel extends javax.swing.JPanel {
         
         // XSL Transformation
         boolean notXSL = ( xslDataObject == null );
-        transformComboBox.setEnabled (notXSL);
-        browseXSLTButton.setEnabled (notXSL);
+        transformLabel.setVisible(notXSL);
+        transformComboBox.setVisible (notXSL);
+        browseXSLTButton.setVisible (notXSL);
         if ( data.xsl != null ) {
             transformComboBox.setSelectedItem (data.xsl);
             transformComboBox.setEditable (data.xsl instanceof String);
