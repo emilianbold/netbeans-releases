@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="j2eeserver/test-unit" basedir="." default="all">
     <import file="../../nbbuild/templates/xtest-unit.xml"/>
-    <property name="test.unit.cp.extra" value="../../nbbuild/netbeans/ide5/modules/autoload/ext/xerces-2.6.2.jar:../external/jsr88javax.jar"/>
+    <property name="test.unit.cp.extra" value="../../nbbuild/netbeans/ide5/modules/autoload/ext/xerces-2.6.2.jar:../../nbbuild/netbeans/enterprise1/modules/autoload/ext/jsr88javax.jar"/>
     <property name="test.unit.run.cp.extra" value="../../nbbuild/netbeans/ide5/modules/autoload/ext/xml-commons-dom-ranges-1.0.b2.jar"/>
     
     <target name="runidetest">
