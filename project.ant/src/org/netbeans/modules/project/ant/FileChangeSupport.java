@@ -116,6 +116,7 @@ public final class FileChangeSupport {
                     oldCurrent.removeFileChangeListener(this);
                 }
                 current.addFileChangeListener(this);
+                current.getChildren();//to get events about children
             }
         }
 
