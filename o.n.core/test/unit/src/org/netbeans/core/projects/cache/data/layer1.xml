@@ -8,5 +8,8 @@
             <attr name="x" stringvalue="one"/>
             <attr name="y" stringvalue="one too"/>
         </file>
+        <file name="29356">
+            <attr name="a" methodvalue="org.netbeans.core.projects.cache.CacheManagerTestBaseHid.method"/>
+        </file>
     </folder>
 </filesystem>
