@@ -164,6 +164,9 @@ class OutWriter extends PrintWriter {
         if (checkError()) {
             return;
         }
+        if (lines != null) {
+            ((AbstractLines) lines).markDirty();
+        }
         int lineLength = bb.limit();
         closed = false;
         int start = -1;
@@ -190,20 +193,15 @@ class OutWriter extends PrintWriter {
                 storage.dispose();
             }
         }
-        if (start >= 0 && !terminated) {
+        if (start >= 0 && !terminated && lines != null) {
             if (Controller.verbose) Controller.log (this + ": Wrote " +
                     ((ByteBuffer)bb.flip()).asCharBuffer() + " at " + start);
 
             ((AbstractLines) getLines()).lineWritten (start, lineLength);
 
-            int lineCount = lines.getLineCount();
-            if (lineCount == 20 || lineCount == 10 || lineCount == 1) {
-                //Fire again after the first 20 lines
-                if (Controller.log) Controller.log ("Firing initial write event");
-                ((AbstractLines) getLines()).fire();
-            }
             if (owner != null && owner.hasStreamClosed()) {
                 owner.setStreamClosed(false);
+                ((AbstractLines) getLines()).fire();
             }
         }
     }
@@ -297,6 +295,9 @@ class OutWriter extends PrintWriter {
         closed = true;
         try {
             storage.close();
+            if (lines != null) {
+                ((AbstractLines) getLines()).fire();
+            }
         } catch (IOException ioe) {
             handleException (ioe);
         }
@@ -315,7 +316,9 @@ class OutWriter extends PrintWriter {
             }
             try {
                 getStorage().flush();
-                ((AbstractLines) getLines()).fire();
+                if (lines != null) {
+                    ((AbstractLines) getLines()).fire();
+                }
             } catch (IOException e) {
                 handleException (e);
             }

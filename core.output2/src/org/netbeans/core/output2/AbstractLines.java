@@ -618,11 +618,15 @@ abstract class AbstractLines implements Lines, Runnable {
             return lastWrappedAboveLineCount;
         }
     }
+    
+    void markDirty() {
+        dirty = true;
+    }
 
     public void lineWritten(int start, int lineLength) {
         if (Controller.verbose) Controller.log ("AbstractLines.lineWritten " + start + " length:" + lineLength); //NOI18N
+        int lineCount = 0;
         synchronized (readLock()) {
-            dirty = true;
             setLastWrappedLineCount(-1);
             setLastCharCountForWrapAboveCalculation(-1);
             longestLine = Math.max (longestLine, lineLength);
@@ -632,8 +636,9 @@ abstract class AbstractLines implements Lines, Runnable {
             //If we already have enough lines that we need to cache logical getLine
             //lengths, update the cache - rebuilding it is very expensive
             if (knownLogicalLineCounts != null) {
+                lineCount = lineStartList.size();
                 //This is the index of the getLine we just added
-                int lastline = lineStartList.size()-1;
+                int lastline = lineCount-1;
                 //Get the length of the getLine
                 int len = length(lastline);
 
@@ -656,6 +661,11 @@ abstract class AbstractLines implements Lines, Runnable {
                     knownLogicalLineCounts.add(aboveLineCount, lastline);
                 }
             }
+        }
+        if (lineCount == 20 || lineCount == 10 || lineCount == 1) {
+            //Fire again after the first 20 lines
+            if (Controller.log) Controller.log ("Firing initial write event");
+            fire();
         }
     }
 
