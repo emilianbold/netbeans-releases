@@ -48,6 +48,9 @@ public class DataModel extends AbstractTableModel
     transient private Vector uniqueKeys = new Vector();
 
     static final long serialVersionUID =4162743695966976536L;
+    
+    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
+
     public DataModel()
     {
         super();
@@ -148,9 +151,8 @@ public class DataModel extends AbstractTableModel
         }
     }
 
-    public String getColumnName(int col)
-    {
-        return (String)ColumnItem.getColumnTitles().elementAt(col);
+    public String getColumnName(int col) {
+        return bundle.getString("CreateTable_" + col); //NOI18N
     }
 
     public Class getColumnClass(int c)
