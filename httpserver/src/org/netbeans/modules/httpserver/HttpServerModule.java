@@ -14,6 +14,7 @@
 package com.netbeans.developer.modules.httpserver;
 
 import java.util.Enumeration;
+import java.io.*;
 
 import com.netbeans.ide.modules.ModuleInstall;
 import com.netbeans.ide.execution.Executor;
@@ -45,6 +46,8 @@ public class HttpServerModule implements ModuleInstall {
   */
   public void restored() {            
     com.netbeans.ide.util.HttpServer.registerServer(HttpServerSettings.OPTIONS);
+    com.mortbay.Base.Log.instance()._out = new NullWriter();
+//    System.setProperty("LOG_FILE", new FileOutputStream("c:\\serverout.txt"));
   }
 
   /** Module was uninstalled. */
@@ -100,6 +103,7 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  4    Gandalf   1.3         5/17/99  Petr Jiricka    
  *  3    Gandalf   1.2         5/11/99  Petr Jiricka    
  *  2    Gandalf   1.1         5/10/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/7/99   Petr Jiricka    
