@@ -192,25 +192,3 @@ public class Installer extends ModuleInstall {
         }
     }
 }
-
-/*
- * Log
- *  10   Gandalf   1.9         1/16/00  Jesse Glick     Actions pool; localized 
- *       jars.
- *  9    Gandalf   1.8         1/10/00  Jesse Glick     OpenFile server now 
- *       started differently.
- *  8    Gandalf   1.7         1/5/00   Ian Formanek    NOI18N
- *  7    Gandalf   1.6         1/5/00   Jesse Glick     Should be relative to 
- *       SaveAction, since OB is now installed after OpenFile due to module 
- *       dependencies.
- *  6    Gandalf   1.5         1/4/00   Ian Formanek    
- *  5    Gandalf   1.4         1/4/00   Petr Kuzel      Search module.
- *  4    Gandalf   1.3         1/4/00   Jesse Glick     OpenFile module 
- *       installation.
- *  3    Gandalf   1.2         1/4/00   Ian Formanek    Uses Utilities2 to 
- *       create/remove actions
- *  2    Gandalf   1.1         1/4/00   Ian Formanek    Group and URL 
- *       ModuleInstall code added
- *  1    Gandalf   1.0         1/4/00   Ian Formanek    
- * $
- */
