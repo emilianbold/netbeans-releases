@@ -513,7 +513,7 @@ public final class TestCreator {
             /* Check if the class itself (w/o nested classes) is testable: */
             final int modifiers = jc.getModifiers();
             if ((Modifier.isPublic(modifiers)
-                   || (testPkgPrivateMethods && !Modifier.isPrivate(modifiers)))
+                   || (!skipPkgPrivateClasses && !Modifier.isPrivate(modifiers)))
                 && (!skipAbstractClasses || !Modifier.isAbstract(modifiers))
                 && (Modifier.isStatic(modifiers) || !jc.isInner())
                 && (hasTestableMethods(jc))
