@@ -41,14 +41,13 @@ import org.netbeans.modules.javadoc.comments.AutoCommentAction;
 import org.netbeans.modules.javadoc.search.SearchDocAction;
 import org.netbeans.modules.javadoc.search.DocFileSystem;
 
-import org.netbeans.modules.javadoc.search.environment.JavadocFolder;
 import org.openide.util.RequestProcessor;
 
 /** Class for initializing Javadoc module on IDE startup.
 
  @author Petr Hrebejk
 */
-public class JavadocModule extends ModuleInstall implements java.beans.PropertyChangeListener {
+public class JavadocModule extends ModuleInstall {
 
     /** serialVersionUID */
     private static final long serialVersionUID = 984124010415492146L;
@@ -56,11 +55,6 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
     //private static final String PROP_INSTALL_COUNT = "installCount"; // NOI18N
     
     public static final ErrorManager err = TopManager.getDefault ().getErrorManager ().getInstance ("org.apache.tools.ant.module"); // NOI18N
-
-    /**
-     * Special library folder.
-     */
-    org.netbeans.modules.javadoc.search.environment.JavadocFolder  javadocFolder;
 
     /** By first install of module in the IDE, check whether standard documentation folder
     * exists. If not creates it.
@@ -73,52 +67,14 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
     /** By uninstalling module from the IDE do nothing.
     */
     public void uninstalled () {
-        TopManager.getDefault().removePropertyChangeListener(this);
         // Unmount docs (AutoUpdate should handle actually removing the file):
-        Repository repo = TopManager.getDefault ().getRepository ();
-        Enumeration e = repo.fileSystems ();
-        while (e.hasMoreElements ()) {
-            Object o = e.nextElement ();
-            if (o instanceof GlobalLocalFileSystem) {
-                repo.removeFileSystem ((FileSystem) o); 
-            }
-        }
     }
 
     /** Called on IDE startup. Registers actions for generating documentation
     * on DataFolder and JavaDataObject.
     */
     public void restored() {
-        // Mount docs, or remount if project was discarded:
-        //Integer count = (Integer) getProperty (PROP_INSTALL_COUNT);
-        //int icount = count == null ? 1 : count.intValue () + 1;
-        //putProperty (PROP_INSTALL_COUNT, new Integer (icount));
-        // 1: first install (project is discarded anyway)
-        // 2: first restore as actual user
-        // 3: next restore (project settings incl. Repository loaded)
-        //notify ("JavadocModule: numberOfStarts=" + icount); // NOI18N
-
-        TopManager.getDefault().addPropertyChangeListener(this);
-        
-        org.openide.filesystems.FileObject f = TopManager.getDefault().getRepository().getDefaultFileSystem().
-            findResource("Mount/Javadoc");     //NOI18N
-	//System.err.println("Library folder = " + f);
-        if (f != null) {
-            try {
-                DataObject d = DataObject.find(f);
-		DataFolder df = (DataFolder)d.getCookie(DataFolder.class);
-		if (df == null) {
-		    //System.err.println(f + " is not a folder");
-		} else {
-		    javadocFolder = new org.netbeans.modules.javadoc.search.environment.JavadocFolder(df);
-		}
-            } catch (org.openide.loaders.DataObjectNotFoundException ex) {
-                //System.err.println("Cannot initialize shared library list");
-            }
-        }
-        
-        installJavadocDirectories();    //std directories
-
+       
         // Install the factory for adding JavaDoc property to nodes
         invokeDynamic( "org.netbeans.modules.java.JavaDataObject", // NOI18N
                        "addExplorerFilterFactory", // NOI18N
@@ -132,33 +88,10 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
     /** Invoked on update */
     public void updated(int release, String specVersion) {
         restored();
-        afterUpdate = true;
     }
 
     // UTILITY METHODS ----------------------------------------------------------------------
 
-    /** Assigns a key to an action
-    * @param key key name
-    * @param action name of the action
-    */
-    /*
-    private static void assign (String key, String action, Keymap map) throws ClassNotFoundException {
-      KeyStroke str = Utilities.stringToKey (key);
-      if (str == null) {
-        System.err.println ("Not a valid key: " + key);
-        // go on
-        return;
-      }
-
-      Class actionClass = Class.forName (action);
-
-      // create instance of the action
-      SystemAction a = SystemAction.get (actionClass);
-
-      map.addActionForKeyStroke (str, a);
-      a.setEnabled( true );
-}
-    */
     /** Dynamicaly invokes a method
      */
     private void invokeDynamic( String className, String methodName, FilterFactory factory ) {
@@ -188,128 +121,7 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
             notify (e);
         }
     }
-
-    /** Tries to find standard Javadoc directory, open-api javadoc directrory
-     * and directroy for javadoc output and mounts it into javadoc repository
-     */
-
-    public static void installJavadocDirectories() {
-
-        // Try to find Java documantation
-       final File jdkDocsDir = new File ( System.getProperty ("java.home")  + java.io.File.separator + ".." // NOI18N
-                                     + java.io.File.separator + "docs" ); // NOI18N
-
-        RequestProcessor.postRequest(new Runnable(){
-            public void run(){
-                mount( jdkDocsDir, true );
-            }
-        });
-
-        StdDocletSettingsService sdsTemp = (StdDocletSettingsService)TopManager.getDefault ().getServices ().find (StdDocletSettingsService.class);
-        if( sdsTemp == null ) 
-            sdsTemp = new StdDocletSettingsService(); 
-        // Reseting javadoc output directory is necessary for
-        // multiuser installation
-        String fileSep = System.getProperty ("file.separator");   //NOI18N
-
-        File directory = null;
-
-        try {
-            directory = new File (System.getProperty ("netbeans.user") + fileSep + "javadoc").getCanonicalFile();   //NOI18N
-        }
-        catch ( java.io.IOException e ) {
-            err.notify (ErrorManager.INFORMATIONAL, e);
-            directory = new File (System.getProperty ("netbeans.user") + fileSep + "javadoc").getAbsoluteFile();   //NOI18N
-        }
-
-        if ( System.getProperty ("netbeans.user") != null &&       //NOI18N
-                !System.getProperty ("netbeans.user").equals(System.getProperty ("netbeans.home") ) ) {   //NOI18N
-
-            // Multiuser we need to unmount the old file system
-
-            LocalFileSystem localFS = new GlobalLocalFileSystem();
-            try {
-                File oldDirectory = null;
-                try {
-                    oldDirectory = new File (System.getProperty ("netbeans.home") + fileSep + "javadoc").getCanonicalFile();   //NOI18N
-                }
-                catch ( java.io.IOException e ) {
-                    notify (e);
-                    oldDirectory = new File (System.getProperty ("netbeans.home") + fileSep + "javadoc").getAbsoluteFile();   //NOI18N
-                }
-
-                localFS.setRootDirectory ( oldDirectory );
-                Repository r = TopManager.getDefault ().getRepository ();
-
-                FileSystem fs = r.findFileSystem( localFS.getSystemName() );
-
-                if (fs != null) {
-                    r.removeFileSystem (fs);
-                }
-            }
-            catch (java.io.IOException ex) {
-                notify (ex);
-            }
-            catch (java.beans.PropertyVetoException ex) {
-                notify (ex);
-            }
-        }
-
-        sdsTemp.setDirectory( directory );
-        final File jdOutputDir = sdsTemp.getDirectory();
-
-        if ( !jdOutputDir.isDirectory() )
-            jdOutputDir.mkdirs();
-
-        RequestProcessor.postRequest(new Runnable(){
-            public void run(){
-                mount( jdOutputDir, false );
-            }
-        });
-
-    }
-
-    /** Method finds out wether directory exists and whether it is
-     *  a searchable javadoc directory if so mounts the directory
-     *  into Javadoc repository
-     */
-    static synchronized void mount( File root, boolean testSearchability ) {
-        notify ("JavadocModule.mount: root=" + root); // NOI18N
-  
-        if ((root != null) && (root.isDirectory())) {
-            String dirName = root.getAbsolutePath();
-
-            FileSystemCapability.Bean cap = new FileSystemCapability.Bean();
-            cap.setCompile( false );
-            cap.setExecute( false );
-            cap.setDebug( false );
-            cap.setDoc( true );
-
-            LocalFileSystem localFS = new GlobalLocalFileSystem( cap );
-            localFS.setHidden( true );
-
-            try {
-                localFS.setRootDirectory (new File (dirName));
-                Repository r = TopManager.getDefault ().getRepository ();
-
-                FileSystem fs = r.findFileSystem(localFS.getSystemName());
-
-                if (fs == null) {
-                    if( !testSearchability || DocFileSystem.getDocFileObject( localFS ) != null ) {                        
-                        r.addFileSystem (localFS);
-                        notify ("JavadocModule mounted: " + localFS.getSystemName ()); // NOI18N
-                    }
-                }
-            }
-            catch (java.io.IOException ex) {
-                notify (ex);
-            }
-            catch (java.beans.PropertyVetoException ex) {
-                notify (ex);
-            }
-        }
-    }
-
+    
     // Implementation of java.io.Externalizable ------------------
 
     public void readExternal(final java.io.ObjectInput objectInput )
@@ -368,25 +180,6 @@ public class JavadocModule extends ModuleInstall implements java.beans.PropertyC
             } catch (IntrospectionException ie) {
                 err.notify (ie);
                 return null;
-            }
-        }
-    }
-
-    /** Old project node. */
-    private transient org.openide.nodes.Node oldProjectNode;
-    transient boolean afterUpdate = false;
-
-    /** Listens on project change.
-    */
-    public void propertyChange(final java.beans.PropertyChangeEvent p1) {
-        if (p1.getPropertyName().equals(TopManager.PROP_PLACES)) {
-            org.openide.nodes.Node projectNode = TopManager.getDefault().getPlaces().nodes().projectDesktop();
-            if (!projectNode.equals(oldProjectNode)) {                
-                afterUpdate = false;
-                oldProjectNode = projectNode;
-		if (javadocFolder != null) {
-		    javadocFolder.remount();
-		}
             }
         }
     }

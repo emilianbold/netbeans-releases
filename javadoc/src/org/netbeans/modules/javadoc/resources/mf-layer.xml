@@ -62,6 +62,20 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
 
+  <folder name="Mount">
+    <folder name="Javadoc">
+      <file name="org-netbeans-modules-javadoc-default.xml">
+        <![CDATA[<?xml version="1.0"?>
+            <!DOCTYPE Javadoc PUBLIC "-//NetBeans IDE//DTD JavadocLibrary//EN" "http://www.netbeans.org/dtds/JavadocLibrary-1_0.dtd">
+            <Javadoc>
+                <Folder name="javadoc/"/>
+            </Javadoc>
+            ]]>
+      </file>
+    </folder>
+  </folder>
+
+
 <!--  Services part -->
 
   <folder name="Services">
