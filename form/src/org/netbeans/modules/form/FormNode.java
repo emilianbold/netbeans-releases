@@ -22,6 +22,8 @@ import org.openide.nodes.*;
 import org.openide.cookies.*;
 import org.openide.actions.*;
 import org.openide.util.actions.SystemAction;
+import org.openide.loaders.DataObject;
+
 import org.netbeans.modules.form.actions.*;
 
 /**
@@ -53,7 +55,8 @@ public class FormNode extends AbstractNode implements FormCookie {
     public Node.Cookie getCookie(Class type) {
         Node.Cookie cookie = super.getCookie(type);
         if (cookie == null
-            && (CompilerCookie.class.isAssignableFrom(type)
+            && (DataObject.class.isAssignableFrom(type)
+                || CompilerCookie.class.isAssignableFrom(type)
                 || SaveCookie.class.isAssignableFrom(type)
                 || ExecCookie.class.isAssignableFrom(type)
                 || type.getName().equals("org.openide.cookies.DebuggerCookie") // NOI18N
