@@ -2392,7 +2392,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <chmod file="${netbeans.dest.dir}/bin/netbeans" perm="ugo+rx"/>
     <copy file="../ide/launcher/windows/netbeans.exe" todir="${netbeans.dest.dir}/bin" />
     <copy file="../ide/launcher/windows/nb.exe" todir="${netbeans.dest.dir}/bin" />
-    <copy file="../ide/launcher/macosx/macosx_launcher.dmg" todir="${netbeans.dest.dir}/bin" />
     <copy file="../ide/launcher/os2/netbeans.cmd" todir="${netbeans.dest.dir}/bin" />
 
     <mkdir dir="${netbeans.dest.dir}/etc" />
