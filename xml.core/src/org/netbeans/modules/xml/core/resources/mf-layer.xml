@@ -30,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/XML.html" />
 
             <file name="XMLWizard.xml">
+                <![CDATA[<empty/>]]>
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
