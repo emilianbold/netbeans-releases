@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -11,117 +11,52 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="junit" default="netbeans" basedir=".">
-  <import file="../nbbuild/default.xml"/> 
 
-  <property name="module.license.file" location="${nb_all}/nbbuild/standard-nbm-license.txt"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
-  <target name="init" depends="default.init">
-    <ant dir="external" target="unscramble"/>
-    <patternset id="junit.files">
-      <include name="${nb.modules.dir}/junit.jar"/>
-      <include name="${nb.docs.dir}/junit-3.8.1-api.zip"/>
-      <include name="${nb.modules.dir}/ext/junit*.jar"/>
-    </patternset>
-    <path id="cp">
-      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-      <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
-      <pathelement location="${projects/projectuiapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectuiapi.jar"/>
-      <pathelement location="${java/project.dir}/${nb.modules.dir}/org-netbeans-modules-java-project.jar"/>
-      <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
-      <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
-      <pathelement location="${ant.dir}/${nb.modules.dir}/org-apache-tools-ant-module.jar"/>
-      <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-modules-javacore.jar"/>
-      <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-jmi-javamodel.jar"/>
-      <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-mdr.jar"/>
-      <pathelement location="${mdr/jmi.dir}/${nb.modules.dir}/ext/jmi.jar"/>
-    </path>
-  </target>
-  
+    <target name="files-init" depends="basic-init">
+        <patternset id="module.files">
+            <include name="${module.jar}"/>
+            <include name="${javahelp.jar}" if="has.javahelp"/>
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
+            <include name="${nb.docs.dir}/junit-3.8.1-api.zip"/>
+            <include name="${nb.modules.dir}/ext/junit*.jar"/>
+        </patternset>
+    </target>
 
-  <target name="compile" depends="init">
-    <mkdir dir="build"/>
-    <javac srcdir="src" destdir="build"
-           deprecation="${build.compiler.deprecation}"
-           debug="${build.compiler.debug}"
-           source="1.4">
-    <classpath refid="cp"/>
-    </javac>
-  </target>
+    <target name="netbeans-extra" depends="release"/>
 
-  <target name="jars" depends="compile">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/junit.jar"
-         manifest="manifest-subst.mf"
-         compress="false">
+    <target name="release" depends="init">
+        <ant dir="external" target="unscramble"/>
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
+        <copy file="external/junit-3.8.1-api.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext">
+            <fileset dir="external">
+                <include name="junit*.jar"/>
+            </fileset>
+        </copy>
+    </target>
 
-      <fileset dir="build">
-        <include name="**"/>
-        <excludesfile name="../nbbuild/standard-jar-excludes.txt"/>
-      </fileset>
-      <fileset dir="src">
-        <include name="**"/>
-        <excludesfile name="../nbbuild/standard-jar-excludes.txt"/>
-      </fileset>
-    </jar>
-
-  </target>
-
-  <target name="release" depends="init">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
-    <copy file="external/junit-3.8.1-api.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
-    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext">
-      <fileset dir="external">
-        <include name="junit*.jar"/>
-      </fileset>
-    </copy>
-  </target>
-
-  <target name="netbeans" depends="jars,release">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/junit.jar">
-       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-         <patternset refID="junit.files"/>
-       </fileset>
-    </genlist>
-  </target>
-
-  <target name="nbm" depends="netbeans">
-    <makenbm file="junit.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules.dir}/junit.jar"
-	     homepage="http://junit.${homepage.base}/"
-	     distribution="http://${dist.base}/junit.nbm">
-      <license name="junit-license.txt">
-        <text>For the JUnit module itself:</text>
-        <file location="${module.license.file}"/>
-	<text>For the JUnit framework:</text>
-	<file location="external/ibm-public-license.txt"/>
-      </license>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
-  <target name="clean" depends="init" description="Clean build products.">
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="junit.files"/>
-      </fileset>
-    </delete>
-    <delete dir="build"/>
-    <delete file="manifest-subst.mf"/>
-    <delete file="junit.nbm"/>
-  </target>
-
-  <target name="test" depends="netbeans">
-    <ant dir="test/function"/>
-  </target>
+    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
+        <mkdir dir="build"/>
+        <makenbm file="build/${nbm}"
+                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 module="${module.jar}"
+                 homepage="${nbm.homepage}"
+                 distribution="http://${dist.base}/${nbm}"
+                 needsrestart="${nbm.needs.restart}"
+                 releasedate="${nbm.release.date}"
+		 moduleauthor="${nbm.module.author}">
+            <license name="junit-license.txt">
+                <text>For the JUnit module itself:</text>
+                <file location="${license.file}"/>
+                <text>For the JUnit framework:</text>
+                <file location="external/ibm-public-license.txt"/>
+            </license>
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+        </makenbm>
+    </target>
 
 </project>
