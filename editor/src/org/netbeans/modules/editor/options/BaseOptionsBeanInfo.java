@@ -181,14 +181,14 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
     /** Update various properties of the property descriptors. */
     protected void updatePropertyDescriptors() {
-        setPropertyEditor(BaseOptions.ABBREV_MAP_PROP, AbbrevsEditor.class);
+        setPropertyEditor(BaseOptions.ABBREV_MAP_PROP, AbbrevsEditor.class, false);
         setPropertyEditor(BaseOptions.CARET_TYPE_INSERT_MODE_PROP, CaretTypeEditor.class);
         setPropertyEditor(BaseOptions.CARET_TYPE_OVERWRITE_MODE_PROP, CaretTypeEditor.class);
-        setPropertyEditor(BaseOptions.KEY_BINDING_LIST_PROP, KeyBindingsEditor.class);
-        setPropertyEditor(BaseOptions.COLORING_MAP_PROP, ColoringArrayEditor.class);
+        setPropertyEditor(BaseOptions.KEY_BINDING_LIST_PROP, KeyBindingsEditor.class, false);
+        setPropertyEditor(BaseOptions.COLORING_MAP_PROP, ColoringArrayEditor.class, false);
         setPropertyEditor(BaseOptions.SCROLL_JUMP_INSETS_PROP, ScrollInsetsEditor.class);
         setPropertyEditor(BaseOptions.SCROLL_FIND_INSETS_PROP, ScrollInsetsEditor.class);
-        setPropertyEditor(BaseOptions.MACRO_MAP_PROP, MacrosEditor.class);
+        setPropertyEditor(BaseOptions.MACRO_MAP_PROP, MacrosEditor.class, false);
 
         setExpert(EXPERT_PROP_NAMES);
 
@@ -218,12 +218,17 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         }
         return (PropertyDescriptor)names2PD.get(propName);
     }
-
-    protected void setPropertyEditor(String propName, Class propEditor) {
+    
+    protected void setPropertyEditor(String propName, Class propEditor, boolean canEditAsText) {
         PropertyDescriptor pd = getPD(propName);
         if (pd != null) {
             pd.setPropertyEditorClass(propEditor);
+            pd.setValue("canEditAsText", canEditAsText ? Boolean.TRUE : Boolean.FALSE); //NOI18N
         }
+    }
+
+    protected void setPropertyEditor(String propName, Class propEditor) {
+        setPropertyEditor(propName, propEditor, true);
     }
 
     protected void setExpert(String[] propNames) {
