@@ -94,10 +94,8 @@ public class MethodPicker extends javax.swing.JDialog {
       )
     );
     componentLabel.setText (FormEditor.getFormBundle ().getString ("CTL_CW_Component")); // "Component:"
-    okButton.setText ("OK"); // [PENDING]
-        //com.netbeans.developer.util.NetbeansBundle.getBundle("com.netbeans.developer.locales.BaseBundle").getString ("CTL_OK"));   // "OK");
-    cancelButton.setText ("Cancel"); // [PENDING]
-        //com.netbeans.developer.util.NetbeansBundle.getBundle("com.netbeans.developer.locales.BaseBundle").getString ("CTL_CANCEL")); // "Cancel");
+    okButton.setText (FormEditor.getFormBundle ().getString ("CTL_OK")); // "OK"
+    cancelButton.setText (FormEditor.getFormBundle ().getString ("CTL_CANCEL")); //"Cancel"
     parametersButton.setText (FormEditor.getFormBundle ().getString ("CTL_CW_Parameters")); // "Parameters"
 
     updateButtons ();
@@ -148,7 +146,7 @@ public class MethodPicker extends javax.swing.JDialog {
       ArrayList filtered = new ArrayList ();
       for (int i = 0; i < descs.length; i ++) {
         if (requiredType.isAssignableFrom (descs[i].getMethod ().getReturnType ()) &&
-            (descs[i].getMethod ().getParameterTypes ().length == 0)) // [PENDING - currently we allow only methods without params]
+            (descs[i].getMethod ().getParameterTypes ().length == 0)) // [FUTURE: - currently we allow only methods without params]
         {
           filtered.add (descs[i]);
         }
@@ -174,7 +172,7 @@ public class MethodPicker extends javax.swing.JDialog {
   }
 
   private void updateButtons () {
-    parametersButton.setEnabled (false); // [PENDING - temporarily disabled]
+    parametersButton.setEnabled (false); // [FUTURE: - disabled for now]
     if ((getSelectedComponent () == null) || (getSelectedMethod () == null)) {
       okButton.setEnabled (false);
 //      parametersButton.setEnabled (false);
@@ -346,6 +344,7 @@ public class MethodPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  9    Gandalf   1.8         7/31/99  Ian Formanek    Localization completed
  *  8    Gandalf   1.7         6/29/99  Ian Formanek    Removed incorrect cast
  *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----

@@ -89,10 +89,8 @@ public class PropertyPicker extends javax.swing.JDialog {
       )
     );
     componentLabel.setText (FormEditor.getFormBundle ().getString ("CTL_CW_Component")); // "Component:"
-    okButton.setText ("OK"); // [PENDING]
-//        com.netbeans.developer.util.NetbeansBundle.getBundle("com.netbeans.developer.locales.BaseBundle").getString ("CTL_OK"));   // "OK");
-    cancelButton.setText ("Cancel"); // [PENDING]
-//        com.netbeans.developer.util.NetbeansBundle.getBundle("com.netbeans.developer.locales.BaseBundle").getString ("CTL_CANCEL")); // "Cancel");
+    okButton.setText (FormEditor.getFormBundle ().getString ("CTL_OK")); // "OK"
+    cancelButton.setText (FormEditor.getFormBundle ().getString ("CTL_CANCEL")); // "Cancel"
 
     insidePanel.setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(8, 8, 3, 8)));
     buttonsPanel.setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(0, 5, 5, 5)));
@@ -327,6 +325,7 @@ public class PropertyPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  10   Gandalf   1.9         7/31/99  Ian Formanek    Localization completed
  *  9    Gandalf   1.8         6/29/99  Ian Formanek    Removed incorrect cast
  *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
