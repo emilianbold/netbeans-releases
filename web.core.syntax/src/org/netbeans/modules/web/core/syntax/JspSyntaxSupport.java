@@ -97,7 +97,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     }
     
     protected SyntaxSupport createSyntaxSupport(Class syntaxSupportClass) {
-        if (JavaSyntaxSupport.class.equals(syntaxSupportClass)) {
+        if (syntaxSupportClass.isAssignableFrom (JspJavaSyntaxSupport.class)) {
             return new JspJavaSyntaxSupport(getDocument(), this);
         }
         SyntaxSupport support = super.createSyntaxSupport(syntaxSupportClass);

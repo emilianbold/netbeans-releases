@@ -47,6 +47,7 @@ import org.netbeans.modules.web.core.FeatureFactory;
 
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.ext.CompletionJavaDoc;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.java.JavaCompletion;
 import org.netbeans.editor.ext.java.JavaSyntax;
@@ -108,6 +109,13 @@ public class JSPKit extends NbEditorKit {
             }
         }
         return newSyntax;
+    }
+
+    protected Action[] createActions() {
+        Action[] javaActions = new Action[] {
+                                   new JavaKit.JavaDocShowAction()                                   
+                               };
+        return TextAction.augmentList(super.createActions(), javaActions);
     }
 
     private static class ColoringListener implements PropertyChangeListener {
@@ -205,6 +213,10 @@ public class JSPKit extends NbEditorKit {
         return completion;
     }
 
+    public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
+        return new JspCompletionJavaDoc (extEditorUI);
+    }
+    
     protected void initDocument(BaseDocument doc) {
         doc.addLayer(new JavaDrawLayerFactory.JavaLayer(),
                 JavaDrawLayerFactory.JAVA_LAYER_VISIBILITY);
