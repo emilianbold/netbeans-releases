@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,12 +28,15 @@ import org.openidex.search.SearchGroup;
  * @author  Petr Kuzel
  * @author  Marian Petras
  */
-public final class ResultModel extends Observable {
+public final class ResultModel {
 
     /** maximum number of found objects */
     private static final int COUNT_LIMIT = 500;
     /** */
     private int size = 0;
+    /**
+     */
+    private ResultTreeChildren observer;
     
     /**
      * flag - did number of found objects reach the limit?
@@ -55,6 +58,15 @@ public final class ResultModel extends Observable {
     public ResultModel(List searchTypeList, SearchGroup searchGroup) {
         this.searchTypeList = searchTypeList;
         this.searchGroup = searchGroup;
+    }
+    
+    /**
+     * Sets an observer which will be notified whenever an object is found.
+     *
+     * @param  observer  observer or <code>null</code>
+     */
+    void setObserver(ResultTreeChildren observer) {
+        this.observer = observer;
     }
 
     /**
@@ -98,10 +110,10 @@ public final class ResultModel extends Observable {
      */
     synchronized boolean objectFound(Object object) {
         assert limitReached == false;
-        size++;
-        setChanged();
-        notifyObservers(object);
-        limitReached = size >= COUNT_LIMIT;
+        
+        if ((observer != null) && observer.objectFound(object)) {
+            limitReached = (++size >= COUNT_LIMIT);
+        }
         return !limitReached;
     }
     

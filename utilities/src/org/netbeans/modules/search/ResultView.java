@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
-import java.util.Observable;
-import java.util.Observer;
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractButton;
 import javax.swing.ActionMap;
@@ -61,7 +59,7 @@ import org.openidex.search.SearchType;
  * @author  Marian Petras
  */
 final class ResultView extends TopComponent
-                       implements ExplorerManager.Provider, Observer {
+                       implements ExplorerManager.Provider {
     
     /** */
     private volatile boolean hasResults = false;
@@ -590,7 +588,6 @@ final class ResultView extends TopComponent
         }
         
         if (this.resultModel != null) {
-            this.resultModel.deleteObserver(this);
             if (children != null) {
                 children.clear();
             }
@@ -601,7 +598,7 @@ final class ResultView extends TopComponent
             setChildren(children = new ResultTreeChildren(resultModel));
             hasResults = !children.isEmpty();
             hasDetails = hasResults && children.hasDetails();
-            this.resultModel.addObserver(this);
+            children.setObserver(this);
         } else {
             hasResults = false;
             hasDetails = false;
@@ -628,7 +625,7 @@ final class ResultView extends TopComponent
     
     /**
      */
-    public void update(Observable o, Object foundObject) {
+    public void objectFound(Object foundObject) {
         hasResults = true;
         updateRootDisplayName();
     }
@@ -637,7 +634,7 @@ final class ResultView extends TopComponent
      * Updates the number of found nodes in the name of the root node.
      */
     private void updateRootDisplayName() {
-        int count = resultModel.size();
+        int count = children.getSize();
         setRootNodeText(NbBundle.getMessage(ResultModel.class,
                                             "TXT_RootSearchedNodes",    //NOI18N
                                             Integer.toString(count)));
