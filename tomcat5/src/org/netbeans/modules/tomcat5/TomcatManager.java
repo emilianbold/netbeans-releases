@@ -1062,7 +1062,11 @@ public class TomcatManager implements DeploymentManager {
                 "docBase=\"../server/webapps/manager\"",
                 "docBase=\"balancer\""
             };
-            String passwd = TomcatInstallUtil.generatePassword(8);
+            String passwd = readPassword();
+            if (passwd == null) {
+                passwd = TomcatInstallUtil.generatePassword(8);
+                storePassword(passwd);
+            }
             this.setPassword(passwd);
             String [] patternTo = new String [] { 
                 null, 
@@ -1123,6 +1127,54 @@ public class TomcatManager implements DeploymentManager {
             return null;
         }
         return baseDir;
+    }
+    
+    private final static String PWD_FILENAME = "tomcatpasswd.txt";
+
+    private String readPassword() {
+        FileReader pwdFile = null;
+        LineNumberReader lnr = null;
+        try {
+            pwdFile = new FileReader(System.getProperty("netbeans.user")+System.getProperty("file.separator") + PWD_FILENAME);
+            if (pwdFile == null) {
+                return null;
+            }
+            lnr = new LineNumberReader(pwdFile);
+            String passwd = lnr.readLine();
+            return passwd;
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ioe.toString());
+            return null;
+        } finally {
+            if (lnr != null) {
+                try {
+                    lnr.close();
+                } catch (IOException ioe) {
+                    // just ignore
+                }
+            }
+        }
+    }
+    
+    private void storePassword(String password) {
+        FileWriter pwdFile = null;
+        try {
+            pwdFile = new FileWriter(System.getProperty("netbeans.user")+System.getProperty("file.separator") + PWD_FILENAME);
+            if (pwdFile == null) {
+                return;
+            }
+            pwdFile.write(password);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ioe.toString());
+        } finally {
+            if (pwdFile != null) {
+                try {
+                    pwdFile.close();
+                } catch (IOException ioe) {
+                    // just ignore
+                }
+            }
+        }
     }
     
     /** Copies server.xml file and patches appBase="webapps" to
