@@ -749,7 +749,7 @@ public class FormEditorSupport extends JavaEditor
     protected boolean notifyModified () {
         boolean alreadyModified = isModified();
         boolean retVal = super.notifyModified();
-        if (!alreadyModified) {
+        if ((multiviewTC != null) && !alreadyModified) {
             multiviewTC.setDisplayName(getMVTCDisplayName(formDataObject));
         }
         return retVal;
