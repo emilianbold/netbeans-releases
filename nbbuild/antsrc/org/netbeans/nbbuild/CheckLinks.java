@@ -65,8 +65,8 @@ public class CheckLinks extends MatchingTask {
         Set okurls = new HashSet (1000); // Set<URL>
         // Set of known-bad URLs.
         Set badurls = new HashSet (100); // Set<URL>
-        // Set of base URLs known to be at least openable.
-        Set openableurls = new HashSet(100); // Set<URL>
+        // Set of parsed base HTML URLs known to have had their contents checked.
+        Set cleanurls = new HashSet(100); // Set<URL>
         for (int i = 0; i < files.length; i++) {
             File file = new File (basedir, files[i]);
             URL fileurl;
@@ -77,7 +77,7 @@ public class CheckLinks extends MatchingTask {
             }
             log ("Scanning " + file, Project.MSG_VERBOSE);
             try {
-                scan(this, file.getAbsolutePath(), fileurl, openableurls, okurls, badurls, checkexternal, 1);
+                scan(this, file.getAbsolutePath(), fileurl, okurls, badurls, cleanurls, checkexternal, 1);
             } catch (IOException ioe) {
                 throw new BuildException ("Could not scan " + file, ioe, location);
             }
@@ -98,9 +98,9 @@ public class CheckLinks extends MatchingTask {
     // 0 - just check that it can be opened
     // 1 - check also that any links from it can be opened
     // 2 - recurse
-    public static void scan(Task task, String referrer, URL u, Set openableurls, Set okurls, Set badurls, boolean checkexternal, int recurse) throws IOException {
-        if (okurls.contains(u)) {
-            // Already checked, done.
+    public static void scan(Task task, String referrer, URL u, Set okurls, Set badurls, Set cleanurls, boolean checkexternal, int recurse) throws IOException {
+        if (okurls.contains(u) && recurse == 0) {
+            // Yes it is OK.
             return;
         }
         URL base = new URL(u, "");
@@ -109,18 +109,14 @@ public class CheckLinks extends MatchingTask {
             task.log(referrer + ": broken link (already reported): " + u, Project.MSG_WARN);
             return;
         }
-        if (openableurls.contains(base) && recurse == 0 && frag == null) {
-            // We are just checking opening, done.
-            return;
-        }
         if (! checkexternal && ! "file".equals(u.getProtocol())) {
             task.log("Skipping external link: " + base, Project.MSG_VERBOSE);
-            openableurls.add(base);
+            cleanurls.add(base);
             okurls.add(base);
             okurls.add(u);
             return;
         }
-        task.log("Checking " + u, Project.MSG_VERBOSE);
+        task.log("Checking " + u + " (recursion level " + recurse + ")", Project.MSG_VERBOSE);
         InputStream rd;
         String mimeType;
         try {
@@ -133,14 +129,17 @@ public class CheckLinks extends MatchingTask {
             badurls.add(u);
             return;
         }
-        Set others = new HashSet(100); // Set<URL>
+        okurls.add(base);
+        Set others = null; // Set<URL>
+        if (recurse > 0 && ! cleanurls.contains(base)) {
+            others = new HashSet(100);
+            cleanurls.add(base);
+        }
         try {
-            openableurls.add(base);
             if (recurse == 0 && frag == null) {
                 // That is all we wanted to check.
                 return;
             }
-            okurls.add(base);
             if ("text/html".equals(mimeType)) {
                 task.log("Parsing " + base, Project.MSG_VERBOSE);
                 CharacterIterator it = new StreamCharacterIterator (rd);
@@ -156,7 +155,7 @@ public class CheckLinks extends MatchingTask {
                         okurls.add(new URL(base, "#" + name));
                     } else if (type.equalsIgnoreCase("href")) {
                         // A link to some other document.
-                        if (recurse > 0) {
+                        if (others != null) {
                             String otherbase = hrefOrAnchor.getParen (2);
                             String otheranchor = hrefOrAnchor.getParen (3);
                             others.add(new URL(base, (otheranchor == null) ? otherbase : otherbase + otheranchor));
@@ -174,10 +173,12 @@ public class CheckLinks extends MatchingTask {
         if (! okurls.contains(u)) {
             task.log(referrer + ": broken link: " + u, Project.MSG_WARN);
         }
-        Iterator it = others.iterator();
-        while (it.hasNext()) {
-            URL other = (URL)it.next();
-            scan(task, u.getPath(), other, openableurls, okurls, badurls, checkexternal, recurse == 1 ? 0 : 2);
+        if (others != null) {
+            Iterator it = others.iterator();
+            while (it.hasNext()) {
+                URL other = (URL)it.next();
+                scan(task, u.getPath(), other, okurls, badurls, cleanurls, checkexternal, recurse == 1 ? 0 : 2);
+            }
         }
     }
     

@@ -97,7 +97,7 @@ public class CheckHelpSets extends Task {
         Enumeration e = map.getAllIDs();
         Set okurls = new HashSet(1000); // Set<URL>
         Set badurls = new HashSet(1000); // Set<URL>
-        Set openableurls = new HashSet(1000); // Set<URL>
+        Set cleanurls = new HashSet(1000); // Set<URL>
         while (e.hasMoreElements()) {
             javax.help.Map.ID id = (javax.help.Map.ID)e.nextElement();
             URL u = map.getURLFromID(id);
@@ -105,7 +105,7 @@ public class CheckHelpSets extends Task {
                 throw new BuildException("Bogus map ID: " + id.id, new Location(hsfile.getAbsolutePath()));
             }
             log("Checking ID " + id.id, Project.MSG_VERBOSE);
-            CheckLinks.scan(this, id.id, u, openableurls, okurls, badurls, false, 2);
+            CheckLinks.scan(this, id.id, u, okurls, badurls, cleanurls, false, 2);
         }
     }
     
