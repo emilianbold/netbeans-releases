@@ -166,10 +166,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
      */
     boolean running = false;
     public boolean isRunning() {
-        /* PENDING should this be cached? 
-         * Currently it  checks the status every time, but a check
-         * at first time may be enough (?)
-         */
+        // PENDING should this be cached? see #37937
         return URLWait.waitForStartup (tm, 1000);
 //        return running;
     }
@@ -328,9 +325,9 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
             pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, NbBundle.getMessage (StartTomcat.class, "MSG_waiting"), StateType.RUNNING));
         }
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, "", StateType.COMPLETED));
-        running = command == CommandType.START;
+        running = command.equals (CommandType.START);
         if (startDebugMode) {
-            isDebugMode = (command == CommandType.START);
+            isDebugMode = (command.equals (CommandType.START));
         }
     }
     
@@ -399,8 +396,8 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
                 "conf/Catalina/localhost",   // NOI18N
                 "logs",   // NOI18N
                 "work",   // NOI18N
-                "temp"    // NOI18N
-                /*, "webapps"*/ 
+                "temp",   // NOI18N
+                "webapps" // NOI18N
             };
             for (int i = 0; i<subdirs.length; i++) {
                 File dest = new File (baseDirFO, subdirs [i]);
@@ -415,24 +412,30 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
                 "conf/web.xml",   // NOI18N
                 "conf/Catalina/localhost/admin.xml",   // NOI18N
                 "conf/Catalina/localhost/manager.xml",   // NOI18N
+                "conf/Catalina/localhost/balancer.xml"   // NOI18N
             };
             String [] patternFrom = new String [] { 
                 null, 
                 null, 
-                "appBase=\"webapps\"",   // NOI18N
+                "</Host>",   // NOI18N
                 "</tomcat-users>",   // NOI18N
                 null, 
-                null, 
-                null 
+                "docBase=\"../server/webapps/admin\"", 
+                "docBase=\"../server/webapps/manager\"",
+                "docBase=\"balancer\""
             };
             String [] patternTo = new String [] { 
                 null, 
                 null, 
-                "appBase=\""+new File (homeDir, "webapps").getAbsolutePath ()+"\"",   // NOI18N
+                "<Context path=\"\" docBase=\""+new File (homeDir, "webapps/Root").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
+                "<Context path=\"/jsp-examples\" docBase=\""+new File (homeDir, "webapps/jsp-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
+                "<Context path=\"/servlets-examples\" docBase=\""+new File (homeDir, "webapps/servlets-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
+                "</Host>",   // NOI18N
                 "<user username=\"ide\" password=\"ide_manager\" roles=\"admin,manager\"/>\n</tomcat-users>",   // NOI18N
                 null, 
-                null, 
-                null 
+                "docBase=\""+new File (homeDir, "server/webapps/admin").getAbsolutePath ()+"\"",   // NOI18N
+                "docBase=\""+new File (homeDir, "server/webapps/manager").getAbsolutePath ()+"\"",   // NOI18N
+                "docBase=\""+new File (homeDir, "webapps/balancer").getAbsolutePath ()+"\""   // NOI18N
             };
             for (int i = 0; i<files.length; i++) {
                 // get folder from, to, name and ext
@@ -592,9 +595,9 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     
     public File getDirectoryForModule (TargetModuleID module) {
         TomcatModule tModule = (TomcatModule) module;
-        String moduleFolder = tm.getCatalinaHomeDir ().getAbsolutePath () 
-            + System.getProperty("file.separator") + "webapps" 
-            + System.getProperty("file.separator") + tModule.getPath ().substring (1);
+        String moduleFolder = tm.getCatalinaBaseDir ().getAbsolutePath () 
+            + System.getProperty("file.separator") + "webapps"   //NOI18N
+            + System.getProperty("file.separator") + tModule.getPath ().substring (1); //NOI18N
         File f = new File (moduleFolder);
         return f;
     }
@@ -624,14 +627,14 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     public File getDirectoryForNewApplication (Target target, DeployableObject module, DeploymentConfiguration configuration) {
         if (module.getType ().equals (ModuleType.WAR)) {
             if (configuration instanceof WebappConfiguration) {
-                String moduleFolder = tm.getCatalinaHomeDir ().getAbsolutePath () 
-                    + System.getProperty("file.separator") + "webapps" 
-                    + System.getProperty("file.separator") + ((WebappConfiguration)configuration).getPath ().substring (1);
+                String moduleFolder = tm.getCatalinaBaseDir ().getAbsolutePath () 
+                    + System.getProperty("file.separator") + "webapps"   //NOI18N
+                    + System.getProperty("file.separator") + ((WebappConfiguration)configuration).getPath ().substring (1);  //NOI18N
                 File f = new File (moduleFolder);
                 return f;
             }
         }
-        throw new IllegalArgumentException ("ModuleType:" + module == null ? null : module.getType () + " Configuration:"+configuration);
+        throw new IllegalArgumentException ("ModuleType:" + module == null ? null : module.getType () + " Configuration:"+configuration); //NOI18N
     }
 
     public File getDirectoryForNewModule(File appDir, String uri, DeployableObject module, DeploymentConfiguration configuration) {
