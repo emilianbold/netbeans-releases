@@ -198,21 +198,17 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     
     public void settingsChange(SettingsChangeEvent evt) {
         final boolean visible = isToolBarVisible();        
-        if (SwingUtilities.isEventDispatchThread()){
-            if (visible) {
-                checkPresentersAdded();
-            }
-            setVisible(visible);
-        }else{
-            SwingUtilities.invokeLater(new Runnable() {
+        Runnable r = new Runnable() {
                 public void run() {
                     if (visible) {
                         checkPresentersAdded();
+                    } else {
+                        checkPresentersRemoved();
                     }
                     setVisible(visible);
                 }
-            });
-        }
+             };
+        Utilities.runInEventDispatchThread(r);
     }
     
     private void checkPresentersAdded() {
@@ -223,6 +219,11 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
             addPresenters(baseFolder, mimeFolder);
         }
     }
+    
+    private void checkPresentersRemoved() {
+        presentersAdded = false;        
+        removeAll();
+    }    
 
     /** Get the target toolbar folder for the given mimetype.
      * @param type mime type of the requested toolbar folder
