@@ -51,11 +51,15 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator {
         isFolder = isFolderIterator;
     }
     
+    public static NewFileIterator genericFileIterator () {
+        return new NewFileIterator (false);
+    }
+    
     public static NewFileIterator folderIterator () {
         return new NewFileIterator (true);
     }
     
-    public static NewFileIterator genericFileIterator () {
+    public static NewFileIterator emptyFileIterator () {
         return new NewFileIterator (false);
     }
     

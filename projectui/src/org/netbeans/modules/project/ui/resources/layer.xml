@@ -151,7 +151,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/newFile.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/templatesFile.html"/>
-                <!-- attr name="instantiatingIterator" methodvalue="org.netbeans.modules.project.ui.NewFolderWizardIterator.singleton" -->
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.project.ui.NewFileIterator.emptyFileIterator" />
                 <attr name="templateType_Other" boolvalue="true"/>
             </file>
         </folder>
