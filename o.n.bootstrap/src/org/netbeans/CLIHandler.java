@@ -65,6 +65,9 @@ public abstract class CLIHandler extends Object {
      * Used during later initialization or while NetBeans is up and running.
      */
     public static final int WHEN_INIT = 2;
+    /** Testing output of the threads.
+     */
+    private static StringBuffer OUTPUT;
     
     private int when;
     
@@ -103,18 +106,37 @@ public abstract class CLIHandler extends Object {
      * algorithm in any place in the initialize method.
      */
     private static void enterState(int state, Integer block) {
-        if (block == null) return;
+        StringBuffer output = OUTPUT;
+        if (output != null) {
+            synchronized (output) {
+                // for easier debugging of CLIHandlerTest
+                output.append ("state: ");
+                output.append (state);
+                output.append (" thread: ");
+                output.append (Thread.currentThread());
+                if (block == null) {
+                    output.append ('\n');
+                }
+            }
+        }
         
-        // for easier debugging of CLIHandlerTest
-        //System.err.println("state: " + state + " block: " + block + " thread: " + Thread.currentThread());
+        if (block == null) return;
+
         
         synchronized (block) {
             if (state == block.intValue()) {
+                if (output != null) {
+                    output.append (" blocked\n");
+                }
                 block.notifyAll();
                 try {
                     block.wait();
                 } catch (InterruptedException ex) {
                     throw new IllegalStateException();
+                }
+            } else {
+                if (output != null) {
+                    output.append (" not blocked\n");
                 }
             }
         }
@@ -321,6 +343,11 @@ public abstract class CLIHandler extends Object {
         return doLater == null;
     }
     
+    /** Registers debugging output for tests.
+     */
+    static void registerDebug (StringBuffer sb) {
+        OUTPUT = sb;
+    }
     
     /** Initializes the system by creating lock file.
      *
