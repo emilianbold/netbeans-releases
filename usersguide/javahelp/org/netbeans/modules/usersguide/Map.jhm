@@ -459,7 +459,6 @@
 <mapID target="javadoc.accuracy" url="javadoc/accuracy.html" />
 <mapID target="javadoc.generate" url="javadoc/generate.html" />
 <mapID target="javadoc.search.path" url="javadoc/search_path.html" />
-<mapID target="javadoc.filesystem.configure" url="javadoc/filesystems_configure.html" />
 <mapID target="javadoc.filesystem.unmount" url="javadoc/filesystems_removing.html" />
 <mapID target="javadoc.settings.jump" url="javadoc/settings_jump.html" />
 <mapID target="javadoc.case.sensitive" url="javadoc/case_sensitive.html" />

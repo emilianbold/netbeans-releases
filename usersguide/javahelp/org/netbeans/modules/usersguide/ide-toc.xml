@@ -401,10 +401,8 @@
    <tocitem text="Searching Javadoc Documentation" target="javadoc.search"/>
    <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
    <tocitem text="Checking Code for Javadoc Comments" target="javadoc.accuracy"/>
-   <tocitem text="Mounting a Javadoc Filesystem" target="javadoc.search.path">
-      <tocitem text="Configuring a Javadoc Filesystem" target="javadoc.filesystem.configure"/>
-      <tocitem text="Removing a Javadoc Filesystem" target="javadoc.filesystem.unmount"/>
-    </tocitem>
+   <tocitem text="Mounting a Javadoc Filesystem" target="javadoc.search.path" />
+   <tocitem text="Removing a Javadoc Filesystem" target="javadoc.filesystem.unmount"/>
     <tocitem text="Setting Javadoc Options" target="javadoc.settings.jump">
       <tocitem text="Turning Off Exact Case Matching for Javadoc Searches" target="javadoc.case.sensitive"/>
       <tocitem text="Specifying an Output Directory for Javadoc Files" target="javadoc.output"/>
