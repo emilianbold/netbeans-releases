@@ -76,7 +76,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="tests.specs" value=""/>
     </target>
 
-    <target name="prop_output_init" unless="${tests.specs}">
+    <target name="prop_output_init" unless="${tests.output}">
         <property name="tests.output" value="report/all.xml"/>
     </target>
 
