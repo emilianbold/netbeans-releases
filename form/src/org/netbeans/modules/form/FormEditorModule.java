@@ -58,6 +58,7 @@ public class FormEditorModule implements ModuleInstall {
   // 4. create FormEditor toolbars
     installToolbarActions ();
 
+    restored ();
   }
 
   /** Module installed again. */
@@ -66,6 +67,10 @@ public class FormEditorModule implements ModuleInstall {
     java.beans.PropertyEditorManager.registerEditor (javax.swing.border.Border.class, com.netbeans.developer.explorer.propertysheet.editors.BorderEditor.class);
     FormPropertyEditorManager.registerEditor (javax.swing.ListModel.class, com.netbeans.developer.modules.loaders.form.editors.ListModelFormAwareEditor.class);
     BeanInstaller.autoLoadBeans ();
+
+    // register standard persistence managers
+    PersistenceManager.registerManager (new TuborgPersistenceManager ());
+    PersistenceManager.registerManager (new GandalfPersistenceManager ());
   }
 
   /** Module was uninstalled. */
@@ -482,6 +487,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  25   Gandalf   1.24        7/11/99  Ian Formanek    Persistence managers 
+ *       registered
  *  24   Gandalf   1.23        7/6/99   Ian Formanek    Installs menu and 
  *       toolbar actions...
  *  23   Gandalf   1.22        6/30/99  Ian Formanek    added registration of 
