@@ -83,6 +83,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
      */
     protected final void initiating() {
         edit.prepareDocument();
+        System.err.println("initiating...");//XXX
     }
 
     /**
