@@ -207,7 +207,7 @@ public final class GlobalPathRegistry {
      * Add a listener to the registry.
      * @param l a listener to add
      */
-    public synchronized void addPathRegistryListener(GlobalPathRegistryListener l) {
+    public synchronized void addGlobalPathRegistryListener(GlobalPathRegistryListener l) {
         if (l == null) {
             throw new NullPointerException();
         }
@@ -218,7 +218,7 @@ public final class GlobalPathRegistry {
      * Remove a listener to the registry.
      * @param l a listener to remove
      */
-    public synchronized void removePathRegistryListener(GlobalPathRegistryListener l) {
+    public synchronized void removeGlobalPathRegistryListener(GlobalPathRegistryListener l) {
         if (l == null) {
             throw new NullPointerException();
         }

@@ -82,7 +82,7 @@ public class GlobalPathRegistryTest extends NbTestCase {
     public void testListening() throws Exception {
         assertEquals("initially no paths of type b", Collections.EMPTY_SET, r.getPaths("b"));
         L l = new L();
-        r.addPathRegistryListener(l);
+        r.addGlobalPathRegistryListener(l);
         r.register("b", new ClassPath[] {cp1, cp2});
         GlobalPathRegistryEvent e = l.event();
         assertNotNull("got an event", e);
