@@ -79,7 +79,7 @@ public class DataModel extends AbstractTableModel
 
     public void setValue(Object val, String pname, int row)
     {
-        if( row < getColumnCount() ) {
+        if( row < getRowCount() ) {
             int srow = row, erow = row;
             ColumnItem xcol = (ColumnItem)data.elementAt(row);
             xcol.setProperty(pname, val);
