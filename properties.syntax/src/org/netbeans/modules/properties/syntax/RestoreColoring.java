@@ -7,13 +7,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.properties.syntax;
-
 
 import java.util.MissingResourceException;
 
@@ -25,7 +23,6 @@ import org.openide.text.PrintSettings;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 
-
 /**
  * Instalation class of module properties syntax.
  * 
@@ -33,9 +30,6 @@ import org.openide.util.SharedClassObject;
  */
 public class RestoreColoring extends ModuleInstall {
 
-    /** Generated serial version UID. */
-    private static final long serialVersionUID = 4219541766134557769L;
-    
     /** <code>Localizer</code> passed to editor. */
     private static LocaleSupport.Localizer localizer;
 

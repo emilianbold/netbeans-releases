@@ -7,22 +7,16 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.i18n.form;
 
-
-import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.FormPropertyEditorManager;
-import org.netbeans.modules.form.PersistenceObjectRegistry;
 import org.netbeans.modules.i18n.I18nSupport;
-
-import org.openide.modules.ModuleInstall;
 import org.openide.filesystems.FileObject;
-
+import org.openide.modules.ModuleInstall;
 
 /** 
  * Installation class for i18n to form cross dependency module.
@@ -33,10 +27,6 @@ import org.openide.filesystems.FileObject;
  */
 public class I18nFormCrossModule extends ModuleInstall {
 
-    /** Generated serial version UID. */
-    static final long serialVersionUID =2673802750264867L;
-
-    
     /** Registers property editor in form module and factory in i18n module. */
     public void restored() {
         registerFormPropertyEditor();

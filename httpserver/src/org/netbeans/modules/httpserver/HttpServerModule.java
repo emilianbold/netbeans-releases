@@ -7,33 +7,35 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.httpserver;
 
-import java.util.Enumeration;
-import java.beans.*;
-import java.io.*;
+import java.io.Externalizable;
+import java.io.File;
 import java.net.MalformedURLException;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Vector;
-
-import org.openide.modules.ModuleInstall;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.ErrorManager;
-
 import javax.servlet.ServletContext;
-
+import org.apache.tomcat.context.WebXmlReader;
 import org.apache.tomcat.startup.EmbededTomcat;
 import org.apache.tomcat.core.ContextManager;
 import org.apache.tomcat.core.Context;
 import org.apache.tomcat.logging.TomcatLogger;
-import org.apache.tomcat.context.*;
 import org.apache.tomcat.service.PoolTcpConnector;
-import org.openide.util.*;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.modules.ModuleInstall;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.SharedClassObject;
 
 /**
 * Module installation class for Http Server
@@ -50,8 +52,6 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
     
     private static Thread serverThread;
     private static boolean inSetRunning = false;
-
-    static final long serialVersionUID =8562026516563511530L;
 
     /** Module is being closed. */
     public void close () {

@@ -7,26 +7,23 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.db;
 
+import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInstall;
-
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
-
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 public class DatabaseModule extends ModuleInstall {
-    static final long serialVersionUID =5426465356344170725L;
         
     public void close () {
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("UI/Runtime"); //NOI18N

@@ -7,28 +7,27 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.form;
 
-import java.beans.*;
-import java.util.*;
+import java.beans.Beans;
+import java.beans.Introspector;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.openide.modules.ModuleInstall;
 
 /**
  * Module installation class for Form Editor
  */
-public class FormEditorModule extends ModuleInstall
-{
-    private static final long serialVersionUID = 1573432625099425394L;
+public class FormEditorModule extends ModuleInstall {
 
     private static final String BEANINFO_PATH_AWT = "org.netbeans.modules.form.beaninfo.awt"; // NOI18N
     private static final String BEANINFO_PATH_SWING = "org.netbeans.modules.form.beaninfo.swing"; // NOI18N
 
-    /** Module installed again. */
-    
     public void restored() {
         Beans.setDesignTime(true);
 
@@ -48,7 +47,6 @@ public class FormEditorModule extends ModuleInstall
         Introspector.setBeanInfoSearchPath((String[])paths.toArray(new String[paths.size()]));
     }
 
-    /** Module was uninstalled. */
     public void uninstalled() {
         // Remove beaninfo search path.
         String[] sp = Introspector.getBeanInfoSearchPath();

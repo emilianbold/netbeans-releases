@@ -7,14 +7,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.javadoc;
-
-import java.awt.Image;
-import java.beans.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,21 +21,14 @@ import java.util.LinkedList;
 import org.openide.modules.ModuleInstall;
 import org.openide.windows.TopComponent;
 
-/** Class for initializing Javadoc module on IDE startup.
-
- @author Petr Hrebejk
-*/
+/**
+ * Class for initializing Javadoc module on IDE startup.
+ * @author Petr Hrebejk
+ */
 public final class JavadocModule extends ModuleInstall {
 
-    /** serialVersionUID */
-    private static final long serialVersionUID = 984124010415492146L;
-    
-    private static Collection floatingTopComponents;
+    private static Collection/*<TopComponent>*/ floatingTopComponents;
 
-    protected Object writeReplace(){
-        return null;
-    }
-    
     public synchronized static void registerTopComponent(TopComponent tc) {
         if (floatingTopComponents == null)
             floatingTopComponents = new LinkedList();
