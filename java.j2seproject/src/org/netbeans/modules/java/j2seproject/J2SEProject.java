@@ -144,13 +144,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
             new SourceLevelQueryImpl(evaluator()),
             new J2SESources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
-            helper.createSharabilityQuery(evaluator(), new String[] {
-                "${" + J2SEProjectProperties.SRC_DIR + "}", // NOI18N
-                "${" + J2SEProjectProperties.TEST_SRC_DIR + "}", // NOI18N
-            }, new String[] {
-                "${" + J2SEProjectProperties.DIST_DIR + "}", // NOI18N
-                "${" + J2SEProjectProperties.BUILD_DIR + "}", // NOI18N
-            }),
+            new J2SESharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new J2SEFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl (this.updateHelper),
             new J2SEProjectClassPathExtender(this, this.updateHelper, eval,refHelper),
