@@ -466,11 +466,18 @@ public class FormDesigner extends TopComponent
      * @returns the next or previous component for selection
      */
     RADVisualComponent getNextVisualComponent(boolean forward) {
-        if (selectedComponents.size() != 1 
-            || (!(selectedComponents.get(0) instanceof RADVisualComponent)))
-            return null;
+        RADVisualComponent currentComp = null;
+        int n = selectedComponents.size();
+        if (n > 0) {
+            if (n > 1)
+                return null;
+            Object sel = selectedComponents.get(0);
+            if (sel instanceof RADVisualComponent)
+                currentComp = (RADVisualComponent) sel;
+            else return null;
+        }
 
-        return getNextVisualComponent((RADVisualComponent)selectedComponents.get(0), forward);
+        return getNextVisualComponent(currentComp, forward);
     }
 
     /** @returns the next or prevoius component to component comp
@@ -478,7 +485,7 @@ public class FormDesigner extends TopComponent
     RADVisualComponent getNextVisualComponent(RADVisualComponent comp,
                                               boolean forward) {
         if (comp == null)
-            return null;
+            return topDesignComponent;
         if (getComponent(comp) == null)
             return null;
 

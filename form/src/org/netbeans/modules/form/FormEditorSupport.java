@@ -27,7 +27,7 @@ import org.openide.util.SharedClassObject;
 import org.openide.windows.*;
 
 import org.netbeans.modules.java.JavaEditor;
-import org.netbeans.modules.form.palette.PaletteTopComponent;
+import org.netbeans.modules.form.palette.*;
 import org.netbeans.modules.form.actions.FormEditorAction;
 
 /**
@@ -66,6 +66,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     private static PropertyChangeListener workspacesListener;
     private static PropertyChangeListener settingsListener;
     private static PropertyChangeListener topcompsListener;
+    private static PropertyChangeListener paletteListener;
 
     private UndoRedo.Manager undoManager;
 
@@ -373,6 +374,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         attachFormListener();
         attachSettingsListener();
         attachTopComponentsListener();
+        attachPaletteListener();
     }
 
     /** Finds PersistenceManager that can load and save the form.
@@ -552,6 +554,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
             detachWorkspacesListener();
             detachSettingsListener();
             detachTopComponentsListener();
+            detachPaletteListener();
 
             TopComponent palette = PaletteTopComponent.getInstance();
             palette.setCloseOperation(TopComponent.CLOSE_EACH);
@@ -779,6 +782,35 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
             TopComponent.getRegistry()
                     .removePropertyChangeListener(topcompsListener);
             topcompsListener = null;
+        }
+    }
+
+    private static void attachPaletteListener() {
+        if (paletteListener != null)
+            return;
+
+        paletteListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (CPManager.PROP_MODE.equals(evt.getPropertyName())
+                    && new Integer(PaletteAction.MODE_ADD).equals(
+                                                           evt.getNewValue()))
+                {
+                    FormDesigner designer =
+                        ComponentInspector.getInstance()
+                            .getFocusedForm().getFormDesigner();
+                    designer.requestFocus();
+                    designer.componentActivated();
+                }
+            }
+        };
+
+        CPManager.getDefault().addPropertyChangeListener(paletteListener);
+    }
+
+    private static void detachPaletteListener() {
+        if (paletteListener != null) {
+            CPManager.getDefault().removePropertyChangeListener(paletteListener);
+            paletteListener = null;
         }
     }
 

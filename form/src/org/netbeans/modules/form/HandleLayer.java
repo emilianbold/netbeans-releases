@@ -227,8 +227,21 @@ class HandleLayer extends JPanel
                 Iterator it = formDesigner.getSelectedComponents().iterator();
                 if (it.hasNext()) {
                     RADComponent comp = (RADComponent)it.next();
-                    if (!it.hasNext()) // just one component is selected
-                        formDesigner.startInPlaceEditing(comp);
+                    if (!it.hasNext()) { // just one component is selected
+                        CPManager palette = CPManager.getDefault();
+                        if (palette.getMode() == PaletteAction.MODE_SELECTION) {
+                            // in selection mode SPACE starts in-place editing
+                            formDesigner.startInPlaceEditing(comp);
+                        }
+                        else if (palette.getMode() == PaletteAction.MODE_ADD) {
+                            // in add mode SPACE adds selected item as component
+                            PaletteItem item = palette.getSelectedItem();
+                            formDesigner.getModel().getComponentCreator()
+                                .createComponent(item.getInstanceCookie(),
+                                                 comp, null);
+                            palette.setMode(PaletteAction.MODE_SELECTION);
+                        }
+                    }
                 }
             }
             e.consume();
