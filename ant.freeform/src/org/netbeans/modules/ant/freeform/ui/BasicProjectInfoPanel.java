@@ -14,10 +14,14 @@
 package org.netbeans.modules.ant.freeform.ui;
 
 import java.io.File;
+import java.text.MessageFormat;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.ant.freeform.Util;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileObject;
@@ -119,8 +123,21 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         if (projectFolder.getText().length() == 0) {
             return org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_7");
         }
-        if (getAsFile(projectFolder.getText() + File.separatorChar + "nbproject").exists()) { // NOI18N
+        if (getAsFile(projectFolder.getText() + File.separatorChar + "nbproject").exists()){ // NOI18N
             return org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_8");
+        }
+        Project p;
+        if ((p=FileOwnerQuery.getOwner(getProjectFolder().toURI()))!=null) {
+            ProjectInformation pi = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+            String displayName = (pi == null ? "" : pi.getDisplayName());   //NOI18N
+            return MessageFormat.format(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_9"),
+                new Object[] {displayName});
+        }
+        if ((p=FileOwnerQuery.getOwner(getProjectLocation().toURI()))!=null) {
+            ProjectInformation pi = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+            String displayName = (pi == null ? "" : pi.getDisplayName());   //NOI18N
+            return MessageFormat.format(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_10"),
+                new Object[] {displayName});
         }
         return null;
     }
