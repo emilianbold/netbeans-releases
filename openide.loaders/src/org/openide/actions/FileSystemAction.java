@@ -108,22 +108,20 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
                 while (itBackup.hasNext()) {
                     backupList.add(itBackup.next());
                 }
-                if (foSet != null) {
-                    Iterator it = backupList.iterator ();
-                    while (it.hasNext ()) {
-                        FileObject fo = (FileObject)it.next ();
-                        try {
-                            if (fo.getFileSystem () != fs) {
-                                it.remove ();
-                            }
-                        } catch (FileStateInvalidException ex) {
+                Iterator it = backupList.iterator ();
+                while (it.hasNext ()) {
+                    FileObject fo = (FileObject)it.next ();
+                    try {
+                        if (fo.getFileSystem () != fs) {
                             it.remove ();
                         }
+                    } catch (FileStateInvalidException ex) {
+                        it.remove ();
                     }
-                    Set backSet = new OrderedSet();
-                    backSet.addAll(backupList);
-                    result.put( fs.getActions (backSet) );
                 }
+                Set backSet = new OrderedSet();
+                backSet.addAll(backupList);
+                result.put( fs.getActions (backSet) );
             }
             
             
@@ -354,7 +352,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
                     return i < size;
                 }
                 
-                public Object next() {
+                public Object next() { // XXX should throw NoSuchElementException
                     return objects[i++];
                 }
                 

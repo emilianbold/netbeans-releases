@@ -221,7 +221,7 @@ public class NewTemplateAction extends NodeAction {
         public JPopupMenu getPopupMenu() {
             JPopupMenu popup = super.getPopupMenu();
             if (!initialized) {
-                popup.add(new Item(null, true)); // New... item
+                popup.add(new Item(null)); // New... item
             
                 List privileged = getPrivilegedList();
                 // all fixed items
@@ -230,7 +230,7 @@ public class NewTemplateAction extends NodeAction {
                     DataObject dobj = (DataObject)it.next();
                     if (dobj instanceof DataShadow)
                                 dobj = ((DataShadow)dobj).getOriginal();
-                    popup.add(new Item(dobj, true));
+                    popup.add(new Item(dobj));
                 }
 
                 // all recent items
@@ -241,7 +241,7 @@ public class NewTemplateAction extends NodeAction {
                     if (isValidTemplate (dobj)) {
                         if (addSeparator) popup.add (new JSeparator ()); // separator
                         addSeparator = false;
-                        popup.add (new Item (dobj, false));
+                        popup.add (new Item (dobj));
                     } else {
                         // some template was unvalidated => have to regenerate next time
                         regenerate = true;
@@ -255,11 +255,9 @@ public class NewTemplateAction extends NodeAction {
         
         private class Item extends JMenuItem implements HelpCtx.Provider, ActionListener {
             DataObject template; // Null means no template -> show the chooser
-            boolean fixed;
-            public Item(DataObject template, boolean fixed) {
+            public Item(DataObject template) {
                 super();
                 this.template = template;
-                this.fixed = fixed;
                 
                 setText (template == null ? 
                     NbBundle.getMessage(DataObject.class, "NewTemplateAction") :
