@@ -81,9 +81,11 @@ class FolderComparator extends DataFolder.SortMode implements Comparator {
 
     /** for sorting data objects by names */
     private int compareNames (DataObject obj1, DataObject obj2) {
-        return obj1.getName ().compareTo (
-                   obj2.getName ()
-               );
+        // #35069 - use extension for sorting if displayname is same.
+        //  Otherwise the order of files is random.
+        int part = obj1.getName().compareTo(obj2.getName());
+        return part != 0 ? part :
+            obj1.getPrimaryFile().getExt().compareTo(obj2.getPrimaryFile().getExt());
     }
 
     /** for sorting folders first and then by names */
