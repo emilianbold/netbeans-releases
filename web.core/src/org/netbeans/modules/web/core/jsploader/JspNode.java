@@ -61,6 +61,7 @@ public class JspNode extends DataNode {
     private void initialize () {
         setIconBase(ICON_BASE);
         setDefaultAction (SystemAction.get (OpenAction.class));
+        setShortDescription (NbBundle.getMessage(JspNode.class, "LBL_jspNodeShortDesc"));
     }
 
 
