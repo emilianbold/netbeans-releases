@@ -142,6 +142,7 @@ public class JavaCodeGenerator extends CodeGenerator {
               component.setAuxValue (AUX_VARIABLE_MODIFIER, new Integer(FormEditor.getFormSettings ().getVariablesModifier ()));
             }
             regenerateVariables ();
+            component.getNodeReference ().notifyPropertiesChange ();
           }
   
           public Object getValue () {
@@ -157,6 +158,7 @@ public class JavaCodeGenerator extends CodeGenerator {
             }
             component.setAuxValue (AUX_VARIABLE_MODIFIER, value);
             regenerateVariables ();
+            component.getNodeReference ().notifyPropertiesChange ();
           }
   
           public Object getValue () {
@@ -185,6 +187,7 @@ public class JavaCodeGenerator extends CodeGenerator {
               }
             }
             regenerateInitializer ();
+            component.getNodeReference ().notifyPropertiesChange ();
           }
   
           public Object getValue () {
@@ -212,6 +215,7 @@ public class JavaCodeGenerator extends CodeGenerator {
             }
             component.setAuxValue (AUX_SERIALIZE_TO, value);
             regenerateInitializer ();
+            component.getNodeReference ().notifyPropertiesChange ();
           }
   
           public Object getValue () {
@@ -319,8 +323,12 @@ public class JavaCodeGenerator extends CodeGenerator {
       initCodeWriter.close ();
       // set the text into the guarded block
       synchronized (GEN_LOCK) {
-        initComponentsSection.setText (initCodeBuffer.toString ());
-        clearUndo ();
+        String originalText = initComponentsSection.getText ();
+        String newText = initCodeBuffer.toString ();
+        if (!newText.equals (originalText)) {
+          initComponentsSection.setText (newText);
+          clearUndo ();
+        }
       }
     } catch (IOException e) {
       throw new InternalError (); // cannot happen
@@ -345,8 +353,12 @@ public class JavaCodeGenerator extends CodeGenerator {
       variablesWriter.write ("\n");
       variablesWriter.close ();
       synchronized (GEN_LOCK) {
-        variablesSection.setText (variablesBuffer.toString ());
-        clearUndo ();
+        String originalText = variablesSection.getText ();
+        String newText = variablesBuffer.toString ();
+        if (!newText.equals (originalText)) {
+          variablesSection.setText (newText);
+          clearUndo ();
+        }
       }
     } catch (IOException e) {
       throw new InternalError (); // cannot happen
@@ -450,13 +462,12 @@ public class JavaCodeGenerator extends CodeGenerator {
     Object genType = comp.getAuxValue (AUX_CODE_GENERATION);
     if ((genType == null) || VALUE_GENERATE_CODE.equals (genType)) {
       // not serialized ==>> save
-      Map changedProps = comp.getChangedProperties ();
-      for (Iterator it = changedProps.keySet ().iterator (); it.hasNext ();) {
-        RADComponent.RADProperty rprop = (RADComponent.RADProperty)it.next ();
+      RADComponent.RADProperty[] props = FormEditor.sortChangedProperties (comp.getChangedProperties (), comp.getBeanInfo ().getPropertyDescriptors ());
+      for (int i = 0; i < props.length; i++) {
   /*      if (desc instanceof IndexedPropertyDescriptor) { // [PENDING]
-          generateIndexedPropertySetter (comp, rprop, initCodeWriter);
+          generateIndexedPropertySetter (comp, props[i], initCodeWriter);
         } else { */
-          generatePropertySetter (comp, rprop, initCodeWriter);
+          generatePropertySetter (comp, props[i], initCodeWriter);
   //      }
       }
     }
@@ -997,6 +1008,9 @@ public class JavaCodeGenerator extends CodeGenerator {
               try {
                 lock = serFile.lock ();
                 oos = new java.io.ObjectOutputStream (serFile.getOutputStream (lock));
+                if (comp instanceof RADVisualContainer) {
+                  // [PENDING - remove temporarily the subcomponents]
+                }
                 oos.writeObject (comp.getBeanInstance ());
               } finally {
                 if (oos != null) oos.close ();
@@ -1223,6 +1237,9 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  49   Gandalf   1.48        9/17/99  Ian Formanek    Fixed bug 1825 - 
+ *       Property sheets are not synchronized and bug 2038 - Opening form marks 
+ *       Java source code as modified (*) in Editor.
  *  48   Gandalf   1.47        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
  *        change, Fixed bug 3307 - The properties of component isn't written 
  *       into editor after changing generation code from serialization to code 
