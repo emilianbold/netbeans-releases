@@ -136,6 +136,7 @@ class J2SEActionProvider implements ActionProvider {
             FileObject[] files = findTestSources(context, true);
             p = new Properties();
             p.setProperty("test.includes", ActionUtils.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
+            p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
             targetNames = new String[] {"test-single"}; // NOI18N
         } 
         else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
@@ -189,6 +190,8 @@ class J2SEActionProvider implements ActionProvider {
         } else if (command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_DEBUG_SINGLE)) {
             FileObject file = findSources(context)[0];
             String clazz = FileUtil.getRelativePath(project.getSourceDirectory(), file);
+            p = new Properties();
+            p.setProperty("javac.includes", clazz); // NOI18N
             // Convert foo/FooTest.java -> foo.FooTest
             if (clazz.endsWith(".java")) { // NOI18N
                 clazz = clazz.substring(0, clazz.length() - 5);
@@ -199,7 +202,6 @@ class J2SEActionProvider implements ActionProvider {
                 DialogDisplayer.getDefault().notify(nd);
                 return;
             }
-            p = new Properties();
             if (command.equals (COMMAND_RUN_SINGLE)) {
                 p.setProperty("run.class", clazz); // NOI18N
                 targetNames = (String[])commands.get(COMMAND_RUN_SINGLE);
