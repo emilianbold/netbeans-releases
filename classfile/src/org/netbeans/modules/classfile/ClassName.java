@@ -21,7 +21,6 @@ package org.netbeans.modules.classfile;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.Comparator;
 import java.util.WeakHashMap;
@@ -103,7 +102,7 @@ public final class ClassName implements Comparable, Comparator, Serializable {
 		}
 
 		cn = new ClassName(_type);
-		cache.put(_type, new SoftReference(cn));
+		cache.put(_type, new WeakReference(cn));
 	    }
 	}
 	return cn;
