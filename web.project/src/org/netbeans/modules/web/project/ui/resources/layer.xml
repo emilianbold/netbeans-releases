@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -47,5 +47,8 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="org-netbeans-modules-web-project">
         <file name="web-2.3.xml" url="web-2.3.xml"/>
         <file name="web-2.4.xml" url="web-2.4.xml"/>
+    </folder>
+    <folder name="Services">
+        <file name="org-netbeans-modules-web-project-ui-FoldersList.settings" url="foldersList.settings"/>
     </folder>
 </filesystem>

@@ -15,6 +15,7 @@ package org.netbeans.modules.web.project.ui;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 
+import java.util.Map;
 
 public class FoldersListSettings extends SystemOption {
 
@@ -25,6 +26,8 @@ public class FoldersListSettings extends SystemOption {
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
     
     private static final String SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; //NOI18N
+
+    private static final String LAST_USED_CHOOSER_LOCATIONS = "lastUsedChooserLocations"; //NOI18N
 
     public String displayName() {
         return NbBundle.getMessage (FoldersListSettings.class, "TXT_WebProjectFolderList"); //NOI18N
@@ -54,6 +57,14 @@ public class FoldersListSettings extends SystemOption {
     
     public void setShowAgainBrokenRefAlert(boolean again) {
         this.putProperty(SHOW_AGAIN_BROKEN_REF_ALERT, Boolean.valueOf(again), true);
+    }
+
+    public Map getLastUsedChooserLocations() {
+        return (Map) this.getProperty(LAST_USED_CHOOSER_LOCATIONS);
+    }
+
+    public void setLastUsedChooserLocations(Map map) {
+        this.putProperty(LAST_USED_CHOOSER_LOCATIONS, map, true);
     }
 
     public static FoldersListSettings getDefault () {

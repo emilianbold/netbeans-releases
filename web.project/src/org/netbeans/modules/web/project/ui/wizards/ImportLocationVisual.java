@@ -402,15 +402,17 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     }//GEN-LAST:event_jTextFieldContextPathKeyReleased
 
     private void jButtonPrjLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPrjLocationActionPerformed
-        JFileChooser chooser = createChooser(projectLocationTextField.getText());
-        if (chooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+        JFileChooser chooser = FileChooser.createDirectoryChooser(
+                "ImportLocationVisual.Project", projectLocationTextField.getText()); //NOI18N
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectDir = chooser.getSelectedFile();
             projectLocationTextField.setText( projectDir.getAbsolutePath());
         }            
     }//GEN-LAST:event_jButtonPrjLocationActionPerformed
 
     private void jButtonSrcLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSrcLocationActionPerformed
-        JFileChooser chooser = createChooser(moduleLocationTextField.getText());
+        JFileChooser chooser = FileChooser.createDirectoryChooser(
+                "ImportLocationVisual.Sources", moduleLocationTextField.getText()); //NOI18N
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectDir = chooser.getSelectedFile();
             moduleLocationTextField.setText( projectDir.getAbsolutePath());
@@ -431,21 +433,6 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     public javax.swing.JTextField projectLocationTextField;
     public javax.swing.JTextField projectNameTextField;
     // End of variables declaration//GEN-END:variables
-
-    private static JFileChooser createChooser(String path) {
-        JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, new File(path));
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setAcceptAllFileFilterUsed(false);
-
-        if (path.length() > 0) {
-            File f = new File(path);
-            if (f.exists())
-                chooser.setSelectedFile(f);
-        }
-
-        return chooser;
-    }
 
     /** Handles changes in the project name and project directory
      */
