@@ -114,19 +114,21 @@ System.out.println("initializing " + getClass().getName());
   throws IOException {
     String pathI = request.getPathInfo();
     if (pathI == null) {
-System.out.println("pathI je null");
+System.out.println("classpath pathI je null");
       return false;
     }
     if (pathI.length() == 0) return false;
     if (pathI.charAt(0) == '/') pathI = pathI.substring(1);
-System.out.println("pathI is " + pathI);
+System.out.println("classpath pathI is " + pathI);
     InputStream is = TopManager.getDefault().systemClassLoader().getResourceAsStream(pathI);
-System.out.println("is is " + is);
     if (is == null) return false;
 
     int ind = pathI.lastIndexOf(".");
     String ext = pathI.substring(ind + 1);
     String encoding = FileUtil.getMIMEType(ext);
+    // PENDING - URL com/ behaves incorrectly
+    if (encoding == null)
+      encoding = "thisisabug/inclassloader";
     response.setContentType(encoding);
     // don't know content length
     ServletOutputStream os = response.getOutputStream();
@@ -144,10 +146,10 @@ System.out.println("is is " + is);
   throws IOException {
     String pathI = request.getPathInfo();
     if (pathI == null) {
-System.out.println("pathI je null");
+System.out.println("repository pathI je null");
       return false;
     }  
-System.out.println("pathI is " + pathI);    
+System.out.println("repository pathI is " + pathI);    
     FileObject fo = TopManager.getDefault().getRepository().findResource(pathI);
     if (fo == null) {
       // try with the trailing /
@@ -310,6 +312,7 @@ System.out.println("pathI is " + pathI);
 
 /*
  * Log
+ *  2    Gandalf   1.1         10/4/99  Petr Jiricka    
  *  1    Gandalf   1.0         9/30/99  Petr Jiricka    
  * $
  */
