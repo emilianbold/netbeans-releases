@@ -161,7 +161,6 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
             if (PropertySheet.PROPERTY_DISPLAY_WRITABLE_ONLY.equals(
                                               evt.getPropertyName()))
             {
-                System.out.println("display writable properties changed");
                 FormEditor.getFormSettings().setDisplayWritableOnly(
                                                sheet.getDisplayWritableOnly());
             }
