@@ -464,6 +464,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
 	-->
         <folder name="Modes">
+            
             <file name="explorer.wsmode" url="windowmanager/explorer.wsmode" />
             <folder name="explorer"/>
                 
@@ -475,6 +476,15 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="properties">
                 <file name="properties.wstcref" url="windowmanager/properties/properties.wstcref" />
             </folder>
+            
+            <file name="leftSlidingSide.wsmode" url="windowmanager/leftside.wsmode" />
+            <folder name="leftSlidingSide"/>
+            
+            <file name="rightSlidingSide.wsmode" url="windowmanager/rightside.wsmode" />
+            <folder name="rightSlidingSide"/>
+            
+            <file name="bottomSlidingSide.wsmode" url="windowmanager/bottomside.wsmode" />
+            <folder name="bottomSlidingSide"/>
                 
         </folder>
         
