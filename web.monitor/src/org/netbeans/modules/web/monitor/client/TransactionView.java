@@ -759,4 +759,8 @@ class TransactionView extends ExplorerPanel implements
             return TransactionView.getInstance(); 
         }
     }
+    
+    protected String preferredID() {
+        return "TransactionView"; //NOI18N
+    }
 }
