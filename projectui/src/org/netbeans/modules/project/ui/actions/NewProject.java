@@ -50,6 +50,10 @@ public class NewProject extends BasicAction {
             FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Project" ); //NOI18N                
             wizard = new NewProjectWizard(fo);
         }
+        else {
+            //Reset the inline message
+            wizard.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
+        }
 
         try {
             Set newObjects = wizard.instantiate ();
