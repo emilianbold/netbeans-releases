@@ -2,5 +2,10 @@ OpenIDE-Module: org.netbeans.modules.debugger.ui/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/debugger/ui/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/debugger/ui/CoreUIModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/debugger/resources/mf-layer.xml
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.23
+OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
+  org.netbeans.api.viewmodel/1
 OpenIDE-Module-Specification-Version: 2.3
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Provides: org.netbeans.modules.debugger.ui
+OpenIDE-Module-Public-Packages: org.netbeans.spi.debugger.ui.**

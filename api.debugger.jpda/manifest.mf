@@ -1,4 +1,9 @@
 OpenIDE-Module: org.netbeans.api.debugger.jpda/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/api/debugger/jpda/Bundle.properties
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.23
+OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger/1,
+  org.netbeans.api.viewmodel/1
 OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Package-Dependencies: com.sun.jdi[VirtualMachineManager]
+OpenIDE-Module-Public-Packages: org.netbeans.api.debugger.jpda.**,org.netbeans.spi.debugger.jpda.**
