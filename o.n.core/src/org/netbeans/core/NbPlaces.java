@@ -178,7 +178,9 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
   /** Workspace node for current project. This node can change when project changes.
   */
   public Node projectDesktop () {
-    return NbProjectOperation.getProject ().projectDesktop ();
+    if (NbProjectOperation.getProject () != null)
+      return NbProjectOperation.getProject ().projectDesktop ();
+    else return new AbstractNode (Children.LEAF);
   }
 
   /** Root nodes.
@@ -254,6 +256,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  25   Gandalf   1.24        7/21/99  Ian Formanek    Fixed starup 
+*       NullPointerException
 *  24   Gandalf   1.23        7/11/99  David Simonek   window system change...
 *  23   Gandalf   1.22        7/8/99   Jesse Glick     Context help.
 *  22   Gandalf   1.21        6/28/99  Jaroslav Tulach Debugger types are like 
