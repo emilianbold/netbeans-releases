@@ -2009,7 +2009,38 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
       <ant dir="../xtest" antfile="build.xml" target="netbeans"/>
   </target>
+  
+  <target name="all-contrib/options" depends="init,all-openide,all-openide/loaders">
+    <echo message="Building module contrib/options..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../contrib/options" target="netbeans"/>
+  </target>
+  
+  <target name="all-contrib/optionscore" depends="init,all-openide,all-openide/loaders,all-contrib/options">
+    <echo message="Building module contrib/optionscore..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../contrib/options/optionscore" target="netbeans"/>
+  </target>
 
+  <target name="all-contrib/options/baseoptions" depends="init,all-openide,all-openide/loaders,all-contrib/options">
+    <echo message="Building module contrib/baseoptions..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../contrib/baseoptions" target="netbeans"/>
+  </target>
+  
+  
   <target name="all-contrib/navigator" depends="init,all-openide/looks,all-openide/registry">
     <echo message="Building module contrib/navigator..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
