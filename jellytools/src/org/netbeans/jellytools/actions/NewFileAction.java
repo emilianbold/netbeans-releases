@@ -15,14 +15,14 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle; 
 
-/** Used to call "File|New File..."  main menu item,
- *  or New|File/Folder popup on folder node
- *  or Ctrl+N shortcut.<br>
+/** Used to call "File|New File..."  main menu item, "New|File/Folder" popup menu item,
+ * "org.netbeans.modules.project.ui.actions.NewFile" action
+ * or Ctrl+N shortcut.<br>
  * Usage:
  * <pre>
- *  new NewFileAction().performMenu();
- *  new NewFileAction().performPopup();
- *  new NewFileAction().performShortcut();
+ *    new NewFileAction().performMenu();
+ *    new NewFileAction().performPopup();
+ *    new NewFileAction().performShortcut();
  * </pre>
  * @see Action
  * @see ActionNoBlock
@@ -45,12 +45,12 @@ public class NewFileAction extends ActionNoBlock {
     
     /** Creates new NewFileAction instance. */
     public NewFileAction() {
-        super(menuPath, popupPath + "|" + popupSubPath, null, shortcut);
+        super(menuPath, popupPath + "|" + popupSubPath, "org.netbeans.modules.project.ui.actions.NewFile", shortcut);
     }
 
     /** Create new NewFileAction instance with name of template for
     * popup operation (only popup mode allowed).
-    * @param templateName name of template shown in submenu (e.g. "Main")
+    * @param templateName name of template shown in submenu (e.g. "Java Main Class")
     */
     public NewFileAction(String templateName) {
         super(null, popupPath+"|"+templateName);

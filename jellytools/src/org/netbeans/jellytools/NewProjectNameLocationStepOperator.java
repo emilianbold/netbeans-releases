@@ -123,8 +123,9 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
      */
     public JLabelOperator lblProjectLocation() {
         if(_lblProjectLocation == null) {
-            _lblProjectLocation = new JLabelOperator(this,Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
-                                    "LBL_NWP1_ProjectLocation_Label"));
+            _lblProjectLocation = new JLabelOperator(this,
+                                    Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
+                                                            "LBL_NWP1_ProjectLocation_Label"));
         }
         return _lblProjectLocation;
     }
@@ -148,8 +149,9 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
      */
     public JLabelOperator lblProjectName() {
         if(_lblProjectName == null) {
-            _lblProjectName = new JLabelOperator(this,Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
-                                    "LBL_NWP1_ProjectName_Label"));
+            _lblProjectName = new JLabelOperator(this,
+                                    Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
+                                                            "LBL_NWP1_ProjectName_Label"));
         }
         return _lblProjectName;
     }
@@ -173,8 +175,9 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
      */
     public JLabelOperator lblProjectFolder() {
         if(_lblProjectFolder == null) {
-            _lblProjectFolder = new JLabelOperator(this,Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
-                                    "LBL_NWP1_CreatedProjectFolder_Lablel"));
+            _lblProjectFolder = new JLabelOperator(this,
+                                    Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
+                                                            "LBL_NWP1_CreatedProjectFolder_Lablel"));
         }
         return _lblProjectFolder;
     }
@@ -221,8 +224,9 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
      */
     public JCheckBoxOperator cbSetAsMainProject() {
         if ( _cbSetAsMainProject==null ) {
-            _cbSetAsMainProject = new JCheckBoxOperator(this,Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
-                                    "LBL_NWP1_SetAsMain_CheckBox"));
+            _cbSetAsMainProject = new JCheckBoxOperator(this,
+                                        Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
+                                                                "LBL_NWP1_SetAsMain_CheckBox"));
         }
         return _cbSetAsMainProject;    
     }
@@ -233,8 +237,9 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
      */
     public JCheckBoxOperator cbCreateMainClass() {
         if ( _cbCreateMainClass==null ) {
-            _cbCreateMainClass = new JCheckBoxOperator(this,Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
-                                    "LBL_NWP1_CreateMainClass_CheckBox"));
+            _cbCreateMainClass = new JCheckBoxOperator(this,
+                                        Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
+                                                                "LBL_NWP1_CreateMainClass_CheckBox"));
         }
         return _cbCreateMainClass;    
     }
@@ -256,8 +261,9 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
      */
     public JLabelOperator lblLocation() {
         if(_lblLocation == null) {
-           _lblLocation = new JLabelOperator(this,Bundle.getString("org.netbeans.modules.project.ui.Bundle",
-                                    "LBL_TargetChooser_Location_Label"));
+           _lblLocation = new JLabelOperator(this,
+                                    Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle",
+                                                            "LBL_TargetChooser_Location_Label"));
         }
         return _lblLocation;
     }
@@ -390,8 +396,9 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
      */
     public JLabelOperator lblContextPath() {
         if(_lblContextPath == null) {
-            _lblContextPath = new JLabelOperator(this,Bundle.getString("org.netbeans.modules.web.project.ui.wizards.Bundle", 
-                                                "LBL_NWP1_ContextPath_Label")); //TODO I18N
+            _lblContextPath = new JLabelOperator(this,
+                                            Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", 
+                                                                    "LBL_NWP1_ContextPath_Label"));
         }
         return _lblContextPath;
     }

@@ -13,32 +13,27 @@
 package org.netbeans.jellytools;
 
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.Waitable;
-import org.netbeans.jemmy.Waiter;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import javax.swing.JDialog;
 import javax.swing.JTextField;
 
 /**
  * Handle "Name And Location" panel of the New File wizard.
- * Componentson the panel differs according to type of Object selected.
+ * Components on the panel differs according to type of Object selected.
  * This one contains only basic components.<br>
  * Usage:
  * <pre>
- * NewFileWizardOperator wop = NewFileWizardOperator.invoke();
- * wop.selectCategory("Java Classes");
- * wop.selectFileType("Java Class");
- * wop.next();
- * op = new NewFileNameLocationStepOperator();
- * op.selectLocation("Source Packages");
-   op.selectPackage("org.netbeans.jellytools");
+ *      NewFileWizardOperator wop = NewFileWizardOperator.invoke();
+ *      wop.selectCategory("Java Classes");
+ *      wop.selectFileType("Java Class");
+ *      wop.next();
+ *      NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
+ *      op.selectLocation("Source Packages");
+ *      op.selectPackage("org.netbeans.jellytools");
  * </pre>
- * @tb115823 
+ *
+ * @author tb115823, Jiri.Skrivanek@sun.com
  */
 public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
     
@@ -49,11 +44,9 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
     private JTextFieldOperator  _txtProject;
     private JLabelOperator      _lblCreatedFile;
     private JTextFieldOperator  _txtCreatedFile;
-    private JTextFieldOperator  _txtPackage;
     private JComboBoxOperator   _cboPackage;
     private JComboBoxOperator   _cboLocation;
-        
-    
+     
     /** Returns operator for first label with "Name"
      * @return JLabelOperator
      */
@@ -78,8 +71,6 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
         }
         return _txtObjectName;
     }
-    
-    
     
     /** Returns operator for first label with "Project"
      * @return JLabelOperator
@@ -106,7 +97,6 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
         return _txtProject;
     }
     
-    
     /** Returns operator for label with "Created File:"
      * @return JLabelOperator
      */
@@ -117,8 +107,6 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
         return _lblCreatedFile;
     }
 
-    
-        
     /** Returns operator of text field bind to lblCreatedFile
      * @return JTextOperator
      */
@@ -131,16 +119,6 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
             }
         }
         return _txtCreatedFile;
-    }
-    
-    /** Returns operator of text field Package:
-     * @return JTextOperator
-     */
-    public JTextFieldOperator txtPackage() {
-        if( _txtPackage==null ) {
-            _txtPackage = new JTextFieldOperator(this,2);
-        }
-        return _txtPackage;
     }
     
     /** Returns operator for combo box Location:
@@ -164,15 +142,30 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
         return _cboPackage;
     }
     
-    /** Selects locatin in combo box Location:
-     *
-     */
+    /** Selects location in combo box Location: */
     public void selectLocation(String location) {
         cboLocation().selectItem(location);
     }
     
-    public void selectPackage(String packagename) {
-        cboPackage().selectItem(packagename);
+    /** Selects given package in combo box Package.
+     * @param packageName name of package to be selected
+     */
+    public void selectPackage(String packageName) {
+        cboPackage().selectItem(packageName);
+    }
+    
+    /** Type given package in combo box Package.
+     * @param packageName name of package
+     */
+    public void setPackage(String packageName) {
+        cboPackage().typeText(packageName);
+    }
+
+    /** Sets given object name in the text field.
+     * @param objectName name of object
+     */
+    public void setObjectName(String objectName) {
+        txtObjectName().setText(objectName);
     }
     
     /** Performs verification by accessing all sub-components */    
