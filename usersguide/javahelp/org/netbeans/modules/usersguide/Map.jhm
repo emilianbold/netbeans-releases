@@ -153,7 +153,7 @@
 <mapID target="gui.custompalette.creating" url="gui/custompalette/creating.html" />
 <mapID target="gui.custompalette.removing" url="gui/custompalette/removing.html" />
 <!-- csh page for Component Palette node in options window -->
-<mapID target="gui.options.component-palette" url="gui/csh/palette_options.html" />
+<mapID target="gui.options.component-palette" url="pending.html" />
 <!--TODO need page for options window node -->
 <!-- csh page for event handler dialog box -->
 <mapID target="gui.csh.handlers" url="gui/events/intro.html" />
@@ -683,7 +683,8 @@
 
 <!-- To Do window help -->
 <mapID target="org.netbeans.modules.tasklist.core.TaskNode" url="editing/tasks_viewing.html" />
-<mapID target="org.openide.options.SystemOption" url="editing/tasks_viewing.html" />
+<!--TODO - get unique help ID here - SystemOption is generic and applies to other nodes as well
+<mapID target="org.openide.options.SystemOption" url="editing/tasks_viewing.html" /> -->
 
 <!-- Ant CSH -->
 
@@ -862,7 +863,10 @@
   <mapID target="org.openide.filesystems.RefreshAction" url="objects/objects_refreshing.html" />
   <mapID target="org.openide.text.PrintSettings" url="pending.html" />
   <mapID target="org.openide.loaders.GroupShadow" url="objects/objects_group.html" />
-  <mapID target="org.openide.loaders.InstanceDataObject" url="objects/objects.html" />
+
+  <!--TODO: future: instance objects could use their own topic-->
+  <mapID target="org.openide.loaders.InstanceDataObject" url="pending.html" />
+  
   <mapID target="org.openide.loaders.XMLDataObject" url="objects/objects.html" />
   <mapID target="org.openide.nodes.BeanNode" url="pending.html" />
   <mapID target="org.openide.src.nodes.ElementNode" url="pending.html" />
@@ -996,6 +1000,11 @@
    <mapID target="org.netbeans.core.windows.nodes.WorkspacePoolContext" url="workspace/workspace.html" /> 
    <mapID target="org.netbeans.core.windows.nodes.WorkspacePoolContext$WorkspacePasteType" url="pending.html" /> 
    <mapID target="org.netbeans.core.windows.toolbars.ToolbarConfiguration" url="configure/toolbar.html" /> 
+
+ <!--TODO: add a CSH topic for these nodes; Look & Feel / Menu Bar; Toobars-->  
+   <mapID target="org.netbeans.core.windows.services.MenuFolderNode" url="configure/menu.html" /> 
+   <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/toolbar.html" /> 
+      
    <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />
    <mapID target="org.netbeans.core.actions.NextOutJumpAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.PreviousOutJumpAction" url="pending.html" />
@@ -1247,6 +1256,8 @@
    <mapID target="org.netbeans.modules.form.PropertyPicker" url="pending.html" />
    <mapID target="org.netbeans.core.NbNodeOperation$Sheet" url="pending.html" /> 
    <mapID target="org.netbeans.modules.projects.ProjectManagerAction" url="project/project.html" />
+
+   <!--TODO: write CSH page for Options, or map to something better-->
    <mapID target="org.netbeans.modules.projects.settings.ProjectOption" url="project/project_adding-new.html" />
    <mapID target="org.netbeans.modules.projects.settings.OptionsAction" url="project/project_adding-new.html" />
    <mapID target="org.openide.actions.BuildProjectAction" url="project/project_comp-run-debug.html" />
@@ -1332,7 +1343,10 @@
    <mapID target="org.netbeans.modules.vcs.RetrievingDialog" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.nodes.DebuggerView" url="pending.html" />
    <mapID target="org.netbeans.modules.group.CreateGroupAction" url="pending.html" />
- 
+
+   <!--TODO: future; needs mapping, or ID needs to be removed.Source creation and Management, Version Control Settings, Generic VCS Profiles-->
+   <mapID target="org.netbeans.modules.vcs.advanced.profilesSettings.VcsSettingsNode" url="pending.html" />
+   
    <!--VCS CSH and VCS property sheet helpIDs-->
    <mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem_properties" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />
    <mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem_expert" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />
@@ -1463,19 +1477,23 @@
 -->  
   <mapID target="nodes_server_registry_node_html" url="j2eeserver/nodes/server_registry_node.html" />
 
+<!--these 4 IDs deprecated in NB 3.6-->  
   <mapID target="org.netbeans.modules.j2ee.impl.InstalledServersPanel" url="j2eeserver/nodes/server_registry_node.html" />
   <mapID target="org.netbeans.modules.j2ee.impl.ServerExecutor" url="run/j2ee_executor.html" />
   <mapID target="org.netbeans.modules.j2ee.impl.ServerDebuggerType" url="debug/debugger/j2ee_debugger.html" />
-<!--ID for action as listed in Options | IDE Configuration | Look and Feel | Actions--> 
+  <!--ID for action as listed in Options | IDE Configuration | Look and Feel | Actions--> 
   <mapID target="org.netbeans.modules.j2ee.impl.DeployAction" url="pending.html" />
 
-
+  <mapID target="org.netbeans.modules.j2ee.deployment.execution.ServerDebuggerType" url="debug/debugger/j2ee_debugger.html" />
+  <mapID target="org.netbeans.modules.j2ee.deployment.execution.ServerExecutor" url="run/j2ee_executor.html" />
+  
 <!--PENDING - map these IDs if possible-->
 
   <mapID target="org.netbeans.modules.pdf.PDFSettings" url="pending.html" />
 
 
  <!--Options | Source Creation and Management | Templates-->  
+ <!--TODO: future; create topic on meaning of node + notes on the fact that some templates aren't meant to be manipulated-->
   <mapID target="org.netbeans.core.ui.UINodes$TemplatesNode" url="pending.html" />
   <!--for all subnodes of Templates category-->
   <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnode" url="pending.html" />
@@ -1527,7 +1545,8 @@
    <mapID target="org.openide.actions.FindAction" url="pending.html" />
    <mapID target="org.openide.actions.ReplaceAction" url="pending.html" />
  
-   
+<!--found as ID for subfolders of Actions in Options; probably used in other  places as well-->
+   <mapID target="org.openide.explorer.view.TreeTable" url="pending.html" />
         
 <!--IDs that are conceivably mappable, but for which no topic exists-->
    <mapID target="org.netbeans.core.Main.showTipsOfTheDay" url="pending.html" /> 
