@@ -51,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
         </locjar>
     </target>
 
-    <target name="netbeans" depends="jars">
+    <target name="netbeans" depends="jars" description="Build everything.">
         <genlist targetname="nbm" outputfiledir="netbeans"/>
     </target>
 
