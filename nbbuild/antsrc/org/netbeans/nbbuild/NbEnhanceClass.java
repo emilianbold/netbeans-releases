@@ -67,6 +67,7 @@ public class NbEnhanceClass extends Task {
     public static class Patch {
         String clazz;
         String nbSuperClass;
+        String nbImplements;
         ArrayList members;
         
         
@@ -77,6 +78,9 @@ public class NbEnhanceClass extends Task {
         /** Class in form of java/lang/Object */
         public void setSuper (String s) {
             nbSuperClass = s;
+        }
+        public void setImplements (String s) {
+            nbImplements = s;
         }
         
         public Object createMember () {
@@ -199,6 +203,9 @@ public class NbEnhanceClass extends Task {
                 java.util.Map args = new java.util.HashMap ();
                 if (p.nbSuperClass != null) {
                     args.put ("netbeans.superclass", p.nbSuperClass);
+                }
+                if (p.nbImplements != null) {
+                    args.put ("netbeans.interfaces", p.nbImplements);
                 }
                 if (members != null) {
                     args.put ("netbeans.public", members);

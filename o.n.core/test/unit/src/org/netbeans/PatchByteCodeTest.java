@@ -41,7 +41,7 @@ public class PatchByteCodeTest extends NbTestCase {
         checkPatching (
             "org.openide.explorer.view.BeanTreeView", 
             "data/BeanTreeView.clazz",
-            null
+            null, null
         );
     }
 
@@ -49,7 +49,7 @@ public class PatchByteCodeTest extends NbTestCase {
         checkPatching (
             "org.openide.compiler.CompilerGroup", 
             "data/CompilerGroup.clazz",
-            null
+            null, null
         );
         
         InputStream is = getClass ().getResourceAsStream ("data/CompilerGroup.clazz");
@@ -78,11 +78,31 @@ public class PatchByteCodeTest extends NbTestCase {
         Class c = checkPatching (
             Sample.class.getName (),
             "Sample.class",
-            "java.lang.Throwable"
+            "java.lang.Throwable", 
+            null
         );
         
         c.newInstance ();
     }
+    
+    public void testChangingSetOfSuperInterfaces () throws Exception {
+        Class c = checkPatching (
+            Sample.class.getName (),
+            "Sample.class",
+            "java.lang.Throwable", 
+            new String[] { "org.openide.nodes.Node$Cookie", "java.util.RandomAccess" }
+        );
+        
+        assertEquals ("Super class is throwable", Throwable.class, c.getSuperclass());
+        Class[] ifaces = c.getInterfaces();
+        assertEquals ("Two of them", 2, ifaces.length);
+
+        
+        Object obj = c.newInstance ();
+        assertTrue ("Is instance of Cookie", obj instanceof org.openide.nodes.Node.Cookie);
+        assertTrue ("Is instance of RandomAccess", obj instanceof java.util.RandomAccess);
+    }
+    
     
     public void testPatchingOfFieldsAndMethodsToPublicAndNonFinal () throws Exception {
         InputStream is = getClass ().getResourceAsStream ("Sample.class");
@@ -170,7 +190,7 @@ public class PatchByteCodeTest extends NbTestCase {
     }
         
     private Class checkPatching (
-        String className, String resource, String superclass
+        String className, String resource, String superclass, String[] interfaces
     ) throws Exception {
         if (superclass == null) {
             superclass = PatchByteCodeTest.class.getName ();
@@ -185,6 +205,18 @@ public class PatchByteCodeTest extends NbTestCase {
         
         HashMap args = new HashMap ();
         args.put ("netbeans.superclass", superclass.replace ('.', '/'));
+        
+        if (interfaces != null) {
+            StringBuffer sb = new StringBuffer ();
+            String ap = "";
+            for (int i = 0; i < interfaces.length; i++) {
+                sb.append (ap);
+                sb.append (interfaces[i]);
+                ap = ",";
+            }
+            args.put ("netbeans.interfaces", sb.toString().replace('.', '/'));
+        }
+        
         byte[] res = PatchByteCode.enhanceClass(arr, args);
         PatchClassLoader loader = new PatchClassLoader (className, res);
 

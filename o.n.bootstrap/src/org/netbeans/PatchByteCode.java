@@ -57,6 +57,15 @@ public final class PatchByteCode {
             throw new IllegalStateException (ex.getMessage());
         }
     }
+    private static final String ATTR_INTERFACES = "org.netbeans.interfaces"; // NOI18N
+    private static final byte[] BYTE_INTERFACES;
+    static {
+        try {
+            BYTE_INTERFACES = ATTR_INTERFACES.getBytes("utf-8"); // NOI18N
+        } catch (java.io.UnsupportedEncodingException ex) {
+            throw new IllegalStateException (ex.getMessage());
+        }
+    }
     private static final String ATTR_MEMBER = "org.netbeans.member"; // NOI18N
     private static final byte[] BYTE_MEMBER;
     static {
@@ -107,6 +116,10 @@ public final class PatchByteCode {
     private int superClassNameIndex;
     /** the possiton of found attribute */
     private int superClassNameAttr;
+    /** the index of a string that matches the searched attribute */
+    private int interfacesNameIndex;
+    /** the possiton of found attribute */
+    private int interfacesNameAttr;
     /** the index of a string to patch members of a field */
     private int memberNameIndex = -1;
     /** position of attribute the change the access rights of the class */
@@ -154,6 +167,7 @@ public final class PatchByteCode {
         }
         
         String superClass = (String)args.get ("netbeans.superclass");
+        String interfaces = (String)args.get ("netbeans.interfaces");
         List methods = (List)args.get ("netbeans.public"); // List<String>
         List rename = (List)args.get ("netbeans.rename"); // List<String>
         
@@ -189,6 +203,26 @@ public final class PatchByteCode {
             byte[] sup = new byte[2];
             writeU2 (sup, 0, x);
             pc.addAttribute (ATTR_SUPERCLASS, sup);
+            
+            patched = true;
+        }
+        
+        if (interfaces != null) {
+            java.util.ArrayList tokens = new java.util.ArrayList ();
+            java.util.StringTokenizer tok = new java.util.StringTokenizer (interfaces, ",");
+            while (tok.hasMoreElements()) {
+                tokens.add (tok.nextElement());
+            }
+            String[] ifaces = (String[])tokens.toArray (new String[0]);
+            byte[] sup = new byte[2 + ifaces.length * 2];
+            writeU2 (sup, 0, ifaces.length);
+            
+            for (int i = 0; i < ifaces.length; i++) {
+                int x = pc.addClass (ifaces[i]);
+
+                writeU2 (sup, 2 + i * 2, x);
+            }
+            pc.addAttribute (ATTR_INTERFACES, sup);
             
             patched = true;
         }
@@ -280,7 +314,21 @@ public final class PatchByteCode {
             pc.applyMemberAccessAndNameChanges ();
         }
         
-        return pc.getClassFile ();
+        byte[] result = pc.getClassFile ();
+        if (pc.interfacesNameAttr > 0) {
+            // let's patch interfaces if necessary
+            int numberOfIfaces = pc.readU2 (pc.interfacesNameAttr + 6);
+            int currentIfaces = pc.readU2 (pc.cpEnd + 6);
+            
+            byte[] insert = new byte[result.length + numberOfIfaces * 2];
+            System.arraycopy(result, 0, insert, 0, pc.cpEnd + 6);
+            System.arraycopy(result, pc.interfacesNameAttr + 8, insert, pc.cpEnd + 8, numberOfIfaces * 2);
+            System.arraycopy(result, pc.cpEnd + 8, insert, pc.cpEnd + 8 + numberOfIfaces * 2, result.length - pc.cpEnd - 8);
+            writeU2 (insert, pc.cpEnd + 6, numberOfIfaces + currentIfaces); 
+            result = insert;
+        }
+        
+        return result;
     }
     
     
@@ -644,6 +692,10 @@ public final class PatchByteCode {
             index = memberNameIndex;
         }
         
+        if (ATTR_INTERFACES.equals (name) && interfacesNameIndex > 0) {
+            index = interfacesNameIndex;
+        } 
+        
         if (index == -1) {
             // register new attribute
             index = addConstant (name);
@@ -844,6 +896,15 @@ public final class PatchByteCode {
                     superClassNameIndex = cnt[0];
                 }
 
+                if (compareUtfEntry (BYTE_INTERFACES, pos)) {
+                    // we have found the attribute
+                    if (interfacesNameIndex > 0 && interfacesNameIndex != cnt[0]) {
+                        throw new IllegalStateException (ATTR_INTERFACES + " registered for the second time!"); // NOI18N
+                    }
+
+                    interfacesNameIndex = cnt[0];
+                }
+                
                 if (compareUtfEntry (BYTE_MEMBER, pos)) {
                     // we have found the attribute
                     if (memberNameIndex > 0 && memberNameIndex != cnt[0]) {
@@ -910,7 +971,16 @@ public final class PatchByteCode {
             // we found the attribute
             superClassNameAttr = pos;
         }
-            
+
+        if (name == interfacesNameIndex) {
+            if (interfacesNameAttr > 0 && interfacesNameAttr != pos) {
+                throw new IllegalStateException ("Two attributes with name " + ATTR_INTERFACES); // NOI18N
+            }
+
+            // we found the attribute
+            interfacesNameAttr = pos;
+        }
+        
         if (name == memberNameIndex && containsPatchAttributeAndRename != null) {
             if (containsPatchAttributeAndRename[0] != -1) {
                 throw new IllegalStateException ("Second attribute " + ATTR_MEMBER); // NOI18N
