@@ -137,31 +137,6 @@ public class MainClassChooser extends JPanel {
         changeListener = null;
     }
     
-    private static String getMainMethod (Object obj, String expectedName) {
-        if (obj == null || !(obj instanceof SourceCookie)) {
-            return null;
-        }
-        SourceCookie cookie = (SourceCookie) obj;
-        // check the main class
-        String fullName = null;
-        SourceElement source = cookie.getSource ();
-        ClassElement[] classes = source.getClasses();
-        boolean hasMain = false;
-        for (int i = 0; i < classes.length; i++) {
-          if (expectedName == null || classes[i].getName().getName().equals (expectedName)) {
-            if (classes[i].hasMainMethod()) {
-                hasMain = true;
-                fullName = classes[i].getName ().getFullName ();
-                break;
-            }
-          }
-        }
-        if (hasMain) {
-            return fullName;
-        }
-        return null;
-    }
-    
     // Used only from unit tests to suppress check of main method. If value
     // is different from null it will be returned instead.
     public static Boolean unitTestingSupport_hasMainMethodResult = null;
