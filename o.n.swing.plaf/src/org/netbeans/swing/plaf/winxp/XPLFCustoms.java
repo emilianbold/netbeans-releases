@@ -190,11 +190,9 @@ public final class XPLFCustoms extends LFCustoms {
     private static boolean shouldWeUseTahoma () {
         // don't try to use Tahoma for East Asian languages
         Locale curLocale = Locale.getDefault();
-        if (Locale.JAPANESE.equals(curLocale) ||
-            Locale.KOREAN.equals(curLocale) ||
-            Locale.CHINESE.equals(curLocale) || 
-            Locale.TRADITIONAL_CHINESE.equals(curLocale) ||
-            Locale.SIMPLIFIED_CHINESE.equals(curLocale)) {
+        if (Locale.JAPANESE.getLanguage().equals(curLocale.getLanguage()) ||
+            Locale.KOREAN.getLanguage().equals(curLocale.getLanguage()) ||
+            Locale.CHINESE.getLanguage().equals(curLocale.getLanguage())) {
             return false;
         }
 
