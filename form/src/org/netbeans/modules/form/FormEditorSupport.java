@@ -471,6 +471,10 @@ public class FormEditorSupport extends JavaEditor
     public static FormEditorSupport getFormEditor(FormModel formModel) {
         return (FormEditorSupport) openForms.get(formModel);
     }
+    
+    JEditorPane getEditorPane() {
+        return ((CloneableEditorSupport.Pane)multiviewTC).getEditorPane();
+    }
 
     // ------------
     // loading

@@ -22,6 +22,7 @@ import org.openide.text.IndentEngine;
 import org.openide.util.SharedClassObject;
 import org.openide.loaders.MultiDataObject.Entry;
 
+import org.netbeans.api.editor.fold.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.JavaEditor;
 
@@ -701,6 +702,8 @@ class JavaCodeGenerator extends CodeGenerator {
         // find indent engine to use or imitate
         IndentEngine indentEngine = IndentEngine.find(
                                         formEditorSupport.getDocument());
+        
+        int initComponentsOffset = initComponentsSection.getBegin().getOffset();
 
         // create Writer for writing the generated code in
         StringWriter initCodeBuffer = new StringWriter(1024);
@@ -708,7 +711,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (formSettings.getUseIndentEngine()) // use original indent engine
             initCodeWriter = indentEngine.createWriter(
                                formEditorSupport.getDocument(),
-                               initComponentsSection.getBegin().getOffset(),
+                               initComponentsOffset,
                                initCodeBuffer);
         else
             initCodeWriter = initCodeBuffer;
@@ -719,10 +722,18 @@ class JavaCodeGenerator extends CodeGenerator {
             containerDependentProperties.clear();
 
         try {
+            boolean expandInitComponents = false;
             boolean foldGeneratedCode = formSettings.getFoldGeneratedCode();
             if (foldGeneratedCode) {
-                initCodeWriter.write("// <editor-fold defaultstate=\"collapsed\" desc=\" "); // NOI18N
-                initCodeWriter.write(FormUtils.getBundleString("MSG_GeneratedCode")); // NOI18N
+                String foldDescription = " " + FormUtils.getBundleString("MSG_GeneratedCode"); // NOI18N
+                javax.swing.JEditorPane editorPane = formEditorSupport.getEditorPane();
+                if (editorPane != null) {
+                    FoldHierarchy foldHierarchy = FoldHierarchy.get(editorPane);
+                    Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
+                    expandInitComponents = (fold != null) && foldDescription.equals(fold.getDescription()) && !fold.isCollapsed();
+                }
+                initCodeWriter.write("// <editor-fold defaultstate=\"collapsed\" desc=\""); // NOI18N
+                initCodeWriter.write(foldDescription);
                 initCodeWriter.write("\">\n"); // NOI18N
             }
             initCodeWriter.write("private void initComponents() {\n"); // NOI18N
@@ -836,6 +847,13 @@ class JavaCodeGenerator extends CodeGenerator {
                 newText = indentCode(newText, indentEngine);
 
             initComponentsSection.setText(newText);
+            if (expandInitComponents) {
+                FoldHierarchy foldHierarchy = FoldHierarchy.get(formEditorSupport.getEditorPane());
+                Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
+                if (fold != null) {
+                    foldHierarchy.expand(fold);
+                }
+            }
             clearUndo();
         }
         catch (IOException e) { // should not happen
