@@ -15,6 +15,7 @@ package org.netbeans.modules.favorites;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
@@ -273,12 +275,19 @@ public final class Actions extends Object {
             
             DataObject [] arr = f.getChildren();
             List listAdd = new ArrayList();
+            DataObject createdDO = null;
             for (int i = 0; i < activatedNodes.length; i++) {
                 DataObject obj = (DataObject)activatedNodes[i].getCookie (DataObject.class);
                 if (obj != null) {
                     try {
                         Favorites.ensureShadowsWork (obj.getPrimaryFile());
-                        listAdd.add(obj.createShadow (f));
+                        if (createdDO == null) {
+                            //Select only first node in array added to favorites
+                            createdDO = obj.createShadow(f);
+                        } else {
+                            obj.createShadow(f);
+                        }
+                        listAdd.add(createdDO);
                     } catch (java.io.IOException ex) {
                         ErrorManager.getDefault().notify(ex);
                     }
@@ -320,11 +329,36 @@ public final class Actions extends Object {
                 }
             }
             
-            org.openide.windows.TopComponent projectsTab = Tab.findDefault();
+            final Tab projectsTab = Tab.findDefault();
             projectsTab.open();
             projectsTab.requestActive();
+            //Try to locate newly added node and select it
+            if (createdDO != null) {
+                Node n = Favorites.getNode();
+                Node [] nodes = projectsTab.getExplorerManager().getRootContext().getChildren().getNodes(true);
+                final Node [] toSelect = new Node[1];
+                boolean setSelected = false;
+                for (int i = 0; i < nodes.length; i++) {
+                    if (createdDO.getName().equals(nodes[i].getName())) {
+                        toSelect[0] = nodes[i];
+                        setSelected = true;
+                        break;
+                    }
+                }
+                if (setSelected) {
+                    SwingUtilities.invokeLater(new Runnable () {
+                        public void run() {
+                            try {
+                                projectsTab.getExplorerManager().setSelectedNodes(toSelect);
+                            } catch (PropertyVetoException ex) {
+                                //Nothing to do
+                            }
+                        }
+                    });
+                }
+            }
         }
-
+        
         protected boolean asynchronous() {
             return false;
         }
