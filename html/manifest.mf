@@ -1,5 +1,6 @@
 OpenIDE-Module: com.netbeans.developer.modules.loaders.html/1
 OpenIDE-Module-Name: HTML
+OpenIDE-Module-Install: com/netbeans/developer/modules/loaders/html/HtmlModule.class
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: 1.0
 OpenIDE-Module-Update-Location: http://update.netbeans.com/eap/developer30/updateInfoEAP.xml
