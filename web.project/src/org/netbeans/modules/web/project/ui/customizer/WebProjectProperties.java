@@ -382,9 +382,11 @@ public class WebProjectProperties {
         if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N
             projectProperties.remove( NO_DEPENDENCIES ); // Remove the property completely if not set
         }
-
+        
         // Set new server instance ID
-        setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()), project, projectProperties, privateProperties);
+        if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
+            setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()), project, projectProperties, privateProperties);
+        }
         
         // Set new context path
         try {
@@ -560,7 +562,7 @@ public class WebProjectProperties {
         
 //        return evaluator.getProperty(propertyName);
     }
-
+    
     public void put( String propertyName, Object value ) {
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
         projectProperties.put(propertyName, value);
@@ -572,12 +574,20 @@ public class WebProjectProperties {
     public void store() {
         save();
     }
+    
+    /**
+     * TODO: AB: temporary fix for #54544. We need a way to set properties
+     * without resorting to WPP.
+     */
+    public void setServerInstance(String serverInstanceID) {
+        J2eePlatformUiSupport.setSelectedPlatform(J2EE_SERVER_INSTANCE_MODEL, serverInstanceID);
+    }
 
     /* This is used by CustomizerWSServiceHost */
     void putAdditionalProperty(String propertyName, String propertyValue) {
         additionalProperties.setProperty(propertyName, propertyValue);
     }
-
+    
     private static void setNewServerInstanceValue(String newServInstID, Project project, EditableProperties projectProps, EditableProperties privateProps) {
         // update j2ee.platform.classpath
         String oldServInstID = privateProps.getProperty(J2EE_SERVER_INSTANCE);

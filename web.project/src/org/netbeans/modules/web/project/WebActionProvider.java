@@ -1046,7 +1046,7 @@ class WebActionProvider implements ActionProvider {
     
     private void setServerInstance(String serverInstanceId) {
         WebProjectProperties wpp = new WebProjectProperties (project, updateHelper, project.evaluator(), project.getReferenceHelper());
-        wpp.put (WebProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceId);
+        wpp.setServerInstance(serverInstanceId);
         wpp.store ();
     }
     

@@ -57,6 +57,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -260,7 +261,8 @@ final class LibrariesNode extends AbstractNode {
                         result = new Node[] {PlatformNode.create(eval, platformProperty)};
                         break;
                     case Key.TYPE_J2EE_PLATFORM:
-                        result = new Node[] {J2eePlatformNode.create(eval, platformProperty)};
+                        Project p = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
+                        result = new Node[] {J2eePlatformNode.create(p, eval, platformProperty)};
                         break;
                     case Key.TYPE_PROJECT:
                         result = new Node[] {new ProjectNode(key.getProject(), helper, eval, refHelper, key.getClassPathId(),
