@@ -199,6 +199,11 @@ public class OutputOperator extends TopComponentOperator {
         getActiveOutputTab().wrapText();
     }
     
+    /** Performs clear action on active tab. */
+    public void clear() {
+        getActiveOutputTab().clear();
+    }
+
     /** Performs save as action on active tab. */
     public void saveAs() {
         getActiveOutputTab().saveAs();

@@ -64,11 +64,7 @@ public class OutputTabOperator extends JComponentOperator {
                    new Shortcut(KeyEvent.VK_F3));
     
     private static final Action selectAllAction = 
-        new Action(null,
-                   Bundle.getString("org.netbeans.core.output2.Bundle", 
-                                    "ACTION_SELECT_ALL"),
-                   null,
-                   new Shortcut(KeyEvent.VK_A, InputEvent.CTRL_MASK));
+        new Action(null, null, null, new Shortcut(KeyEvent.VK_A, InputEvent.CTRL_MASK));
 
     private static final Action wrapTextAction = 
         new Action(null,
@@ -85,18 +81,10 @@ public class OutputTabOperator extends JComponentOperator {
                    new Shortcut(KeyEvent.VK_S, InputEvent.CTRL_MASK));
     
     private static final Action nextErrorAction = 
-        new Action(null,
-                   Bundle.getString("org.netbeans.core.output2.Bundle", 
-                                    "ACTION_NEXT_ERROR"),
-                   null,
-                   new Shortcut(KeyEvent.VK_F12, InputEvent.CTRL_MASK));
+        new Action(null, null, null, new Shortcut(KeyEvent.VK_F12));
 
     private static final Action previousErrorAction = 
-        new Action(null,
-                   Bundle.getString("org.netbeans.core.output2.Bundle", 
-                                    "ACTION_PREV_ERROR"),
-                   null,
-                   new Shortcut(KeyEvent.VK_F12));
+        new Action(null, null, null, new Shortcut(KeyEvent.VK_F12, InputEvent.SHIFT_MASK));
 
     private static final Action closeAction = 
         new Action(null,
@@ -105,6 +93,13 @@ public class OutputTabOperator extends JComponentOperator {
                    null,
                    new Shortcut(KeyEvent.VK_F4, InputEvent.CTRL_MASK));
 
+    private static final Action clearAction = 
+        new Action(null,
+                   Bundle.getString("org.netbeans.core.output2.Bundle", 
+                                    "ACTION_CLEAR"),
+                   null,
+                   new Shortcut(KeyEvent.VK_L, InputEvent.CTRL_MASK));
+        
     private static final CopyAction copyAction = new CopyAction();
     private static final FindAction findAction = new FindAction();
 
@@ -370,6 +365,11 @@ public class OutputTabOperator extends JComponentOperator {
     /** Performs close action. */
     public void close() {
         closeAction.perform(outputPaneOperator());
+    }
+    
+    /** Performs clear action. */
+    public void clear() {
+        clearAction.perform(outputPaneOperator());
     }
     
     /** Performs select all action. */
