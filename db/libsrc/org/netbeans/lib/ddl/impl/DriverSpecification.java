@@ -78,7 +78,10 @@ public class DriverSpecification {
             if (!getCatalog().equals("true"))
                 catalog = null;
             if (getSchema().equals("true"))
-                schemaPattern = dmd.getUserName().trim();
+                if (isMSSQLSaUser(dmd))
+                    schemaPattern = "dbo";
+                else
+                    schemaPattern = dmd.getUserName().trim();
             if ((tableNamePattern == null) && (!desc.get("getTables_TableNamePattern").equals("null")))
                 tableNamePattern = (String) desc.get("getTables_TableNamePattern");
             if (desc.get("getTables_Types").equals("null"))
@@ -133,7 +136,10 @@ public class DriverSpecification {
             if (!getCatalog().equals("true"))
                 catalog = null;
             if (getSchema().equals("true"))
-                schemaPattern = dmd.getUserName().trim();
+                if (isMSSQLSaUser(dmd))
+                    schemaPattern = "dbo";
+                else
+                    schemaPattern = dmd.getUserName().trim();
             if ((procedureNamePattern == null) && (!desc.get("getProcedures_ProcedureNamePattern").equals("null")))
                 procedureNamePattern = (String) desc.get("getProcedures_ProcedureNamePattern");
 
@@ -197,7 +203,10 @@ public class DriverSpecification {
             if (!getCatalog().equals("true"))
                 catalog = null;
             if (getSchema().equals("true"))
-                schema = dmd.getUserName().trim();
+                if (isMSSQLSaUser(dmd))
+                    schema = "dbo";
+                else
+                    schema = dmd.getUserName().trim();
 
             if (!desc.get("DriverName").equals("DefaultDriver")) {
                 rs = dmd.getPrimaryKeys(catalog, schema, table);
@@ -263,7 +272,10 @@ public class DriverSpecification {
             if (!getCatalog().equals("true"))
                 catalog = null;
             if (getSchema().equals("true"))
-                schema = dmd.getUserName().trim();
+                if (isMSSQLSaUser(dmd))
+                    schema = "dbo";
+                else
+                    schema = dmd.getUserName().trim();
             if (desc.get("getIndexInfo_Unique").equals("false"))
                 unique = false;
             if (desc.get("getIndexInfo_Approximate").equals("true"))
@@ -339,7 +351,10 @@ public class DriverSpecification {
             if (!getCatalog().equals("true"))
                 catalog = null;
             if (getSchema().equals("true"))
-                schemaPattern = dmd.getUserName().trim();
+                if (isMSSQLSaUser(dmd))
+                    schemaPattern = "dbo";
+                else
+                    schemaPattern = dmd.getUserName().trim();
 
             if (!desc.get("DriverName").equals("DefaultDriver")) {
                 rs = dmd.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
@@ -397,7 +412,10 @@ public class DriverSpecification {
             if (!getCatalog().equals("true"))
                 catalog = null;
             if (getSchema().equals("true"))
-                schemaPattern = dmd.getUserName().trim();
+                if (isMSSQLSaUser(dmd))
+                    schemaPattern = "dbo";
+                else
+                    schemaPattern = dmd.getUserName().trim();
             if ((columnNamePattern == null) && (!desc.get("getProcedureColumns_ColumnNamePattern").equals("null")))
                 columnNamePattern = (String) desc.get("getProcedureColumns_ColumnNamePattern");
 
@@ -461,7 +479,10 @@ public class DriverSpecification {
             if (!getCatalog().equals("true"))
                 catalog = null;
             if (getSchema().equals("true"))
-                schema = dmd.getUserName().trim();
+                if (isMSSQLSaUser(dmd))
+                    schema = "dbo";
+                else
+                    schema = dmd.getUserName().trim();
 
             if (!desc.get("DriverName").equals("DefaultDriver")) {
                 rs = dmd.getExportedKeys(catalog, schema, table);
@@ -523,7 +544,10 @@ public class DriverSpecification {
             if (!getCatalog().equals("true"))
                 catalog = null;
             if (getSchema().equals("true"))
-                schema = dmd.getUserName().trim();
+                if (isMSSQLSaUser(dmd))
+                    schema = "dbo";
+                else
+                    schema = dmd.getUserName().trim();
 
             if (!desc.get("DriverName").equals("DefaultDriver")) {
                 rs = dmd.getImportedKeys(catalog, schema, table);
@@ -574,11 +598,43 @@ public class DriverSpecification {
         }
     }
 
+    //another patches
+    
+    public boolean areViewsSupported(DatabaseMetaData dmd) {
+        try {
+            if (dmd.getDatabaseProductName().trim().equals("PointBase"))
+                return false;
+            else
+                return true;
+        } catch(SQLException exc) {
+            //PENDING
+            return true;
+        }
+    }
+    
+    private boolean isMSSQLSaUser(DatabaseMetaData dmd) {
+        try {
+            String user = dmd.getUserName().trim();
+            
+            if (dmd.getDatabaseProductName().trim().equals("Microsoft SQL Server") && user.equals("sa")) {
+                LinkedList schemas = new LinkedList();
+                ResultSet rs = dmd.getSchemas();
+                
+                while (rs.next())
+                    schemas.add(rs.getString("TABLE_SCHEM").trim());
+                
+                if (schemas.contains(user))
+                    return false;
+                
+                if (schemas.contains("dbo"))
+                    return true;
+            }
+            
+            return false;
+        } catch(SQLException exc) {
+            //PENDING
+            return false;
+        }
+    }
+    
 }
-
-/*
-* <<Log>>
-*  2    Gandalf   1.1         1/26/00  Radko Najman    JDBC-ODBC bridge HACK
-*  1    Gandalf   1.0         1/25/00  Radko Najman    
-* $
-*/
