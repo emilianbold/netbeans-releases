@@ -246,11 +246,12 @@ public class NbTopManager extends TopManager {
     // set different owner if some modal dialog now active
     NbPresenter presenter = null;
     if (NbPresenter.currentModalDialog != null) {
-      presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog);
+      presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog, true);
     } else {
       presenter = new NbPresenter(
         descriptor, 
-        TopManager.getDefault().getWindowManager().getMainWindow()
+        TopManager.getDefault().getWindowManager().getMainWindow(),
+        true
       );
     }
       
