@@ -40,7 +40,7 @@ import org.openide.util.Utilities;
 public class LocationChooser extends javax.swing.JFileChooser  implements PropertyChangeListener {
         
 
-    private static final Dimension PREFERRED_SIZE = new Dimension (500,300);
+    private static final Dimension PREFERRED_SIZE = new Dimension (500,340);
     
     private WizardDescriptor.InstantiatingIterator iterator;
     private LocationChooser.Panel firer;
@@ -49,6 +49,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
 
     public LocationChooser (LocationChooser.Panel firer) {
         super ();
+        this.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         this.setName (NbBundle.getMessage(LocationChooser.class,"TXT_PlatformFolderTitle"));
         this.setFileSelectionMode(DIRECTORIES_ONLY);
         this.setMultiSelectionEnabled(false);
