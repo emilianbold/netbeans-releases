@@ -64,7 +64,9 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="runidetest">
         <executeTests  pluginName="ide">
-            <classpath/>
+            <classpath>
+                <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
+            </classpath>
         </executeTests>
     </target>
     
