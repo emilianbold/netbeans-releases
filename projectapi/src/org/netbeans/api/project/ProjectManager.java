@@ -179,13 +179,14 @@ public final class ProjectManager {
                     try {
                         Project p = createProject(projectDirectory);
                         synchronized (dir2Proj) {
-                            resetLP = true;
                             dir2Proj.notifyAll();
                             if (p != null) {
                                 dir2Proj.put(projectDirectory, new SoftReference(p));
+                                resetLP = true;
                                 return p;
                             } else {
                                 dir2Proj.put(projectDirectory, NO_SUCH_PROJECT);
+                                resetLP = true;
                                 return null;
                             }
                         }
