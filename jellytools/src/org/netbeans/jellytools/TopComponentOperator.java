@@ -68,8 +68,6 @@ import org.openide.windows.TopComponent;
 public class TopComponentOperator extends JComponentOperator {
     
     static {
-        // register NbInternalFrameDriver
-        NbInternalFrameDriver.register();
         // Checks if you run on correct jemmy version. Writes message to jemmy log if not.
         JellyVersion.checkJemmyVersion();
         // need to set timeout for the case it was not set previously
