@@ -93,7 +93,6 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${nbroot}/openide/netbeans/lib">
                 <include name="openide*.jar"/>
         </fileset>
-        <pathelement location="${nbroot}/logger/netbeans/lib/ext/logger.jar"/>
         <pathelement location="${nbroot}/jarpackager/netbeans/modules/jarpackager.jar"/>
         <pathelement location="${nbroot}/debuggerjpda/netbeans/modules/jpdaDebugger.jar"/>
       </classpath>
@@ -144,7 +143,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="openide*.jar"/>
         </fileset>
         <pathelement location="${jdkhome}/lib/tools.jar"/>
-        <pathelement location="${nbroot}/logger/netbeans/lib/ext/logger.jar"/>
         <pathelement location="${nbroot}/jarpackager/netbeans/modules/jarpackager.jar"/>
         <pathelement location="${nbroot}/debuggerjpda/netbeans/modules/jpdaDebugger.jar"/>
         <pathelement location="${nbroot}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
