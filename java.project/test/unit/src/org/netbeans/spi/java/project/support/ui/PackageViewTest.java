@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.ResourceBundle;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
@@ -572,11 +574,25 @@ public class PackageViewTest extends NbTestCase {
             }
         }        
         //Multiple files into source root
+        //Verify preconditions
+        FileObject[] files = ((DataObject)rn1.getCookie(DataObject.class)).getPrimaryFile().getChildren();
+        assertEquals("Invalid initial file count",2,files.length);
+
         t = new ExTransferable.Multi (new Transferable[] {fileNodes[0].clipboardCopy(),
                                                           fileNodes[1].clipboardCopy()});
         pts = rn1.getPasteTypes(t);
         assertEquals ("Multiple files into source root",1, pts.length);        
         pts[0].paste();
+        //Verify that the files was added, the used PasteType is DataFolder's PasteType
+        files = ((DataObject)rn1.getCookie(DataObject.class)).getPrimaryFile().getChildren();
+        assertEquals("Invalid final file count",4,files.length);
+        Set s = new HashSet ();
+        s.add (((DataObject)fileNodes[0].getCookie(DataObject.class)).getPrimaryFile().getNameExt());
+        s.add (((DataObject)fileNodes[1].getCookie(DataObject.class)).getPrimaryFile().getNameExt());
+        for (int i=0; i<files.length; i++) {
+            s.remove (files[i].getNameExt());
+        }
+        assertTrue("The following files were not created: "+s.toString(),s.size()==0);
         assertNodes(rn1.getChildren(), new String[] {
             defaultPackageName,
             "src1test1",
