@@ -77,8 +77,9 @@ public class MainMenu extends testUtilities.PerformanceTestCase {
         testMenu("org.netbeans.core.Bundle","Build");
     }
     
+    //TODO find bundle
     public void testRunMenu(){
-        testMenu("org.netbeans.core.Bundle","Run");
+        testMenu("Run");
     }
     
     public void testVersioningMenu(){
@@ -92,6 +93,13 @@ public class MainMenu extends testUtilities.PerformanceTestCase {
     public void testHelpMenu(){
         testMenu("org.netbeans.core.Bundle","Help");
     }
+    
+    
+    protected void testMenu(String menu){
+        menuPath = menu;
+        doMeasurement();
+    }
+    
     
     protected void testMenu(String bundle, String menu) {
         menuPath = org.netbeans.jellytools.Bundle.getStringTrimmed(bundle,"Menu/"+menu);

@@ -95,12 +95,14 @@ public class MainSubMenus extends testUtilities.PerformanceTestCase {
         testSubMenu("org.netbeans.core.Bundle","View", "Code Folds");
     }
     
+    //TODO find bundle
     public void testRunStackMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Run", "Stack");
+        testSubMenu("Run", "Stack");
     }
     
+    //TODO find bundle
     public void testRunRunOtherMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Run", "Run Other");
+        testSubMenu("Run", "Run Other");
     }
     
     public void testVcsCommnadsMenu(){
@@ -116,7 +118,7 @@ public class MainSubMenus extends testUtilities.PerformanceTestCase {
     }
     
     public void testWinDebuggingMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Window", "Debugging");
+        testSubMenu("org.netbeans.core.Bundle","Window", "Debug");
     }
     
     public void testWinVersioningMenu(){
@@ -126,6 +128,12 @@ public class MainSubMenus extends testUtilities.PerformanceTestCase {
     //TODO open java file
     public void testWinSelectDocumentNodeInMenu(){
         testSubMenu("org.netbeans.core.Bundle","Window", "Select Document Node in");
+    }
+    
+    private void testSubMenu(String mainMenu, String subMenu){
+        mainMenuPath = mainMenu;
+        subMenuPath = subMenu;
+        doMeasurement();
     }
     
     private void testSubMenu(String bundle, String mainMenu, String subMenu) {

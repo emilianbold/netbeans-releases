@@ -52,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <!-- Executor for Measure Startup Time with empty userdir test -->
-    <target name="runcodetest_measure_startup" depends="set_bootclasspath_jdk142, set_bootclasspath_jdk150">
+    <target name="runcodetest_measure_startup" depends="set_bootclasspath_jdk142, set_bootclasspath_jdk150, make_netbeans_executable">
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="jvm">
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
@@ -82,7 +82,7 @@ Microsystems, Inc. All Rights Reserved.
 
         
     <!-- Executor for Measure Complex Startup Time -->
-    <target name="runcodetest_measure_complex_startup" depends="set_bootclasspath_jdk142, set_bootclasspath_jdk150">
+    <target name="runcodetest_measure_complex_startup" depends="set_bootclasspath_jdk142, set_bootclasspath_jdk150, make_netbeans_executable">
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="jvm">
             <property name="xtest.ide.reuse.userdir" value="true"/>
@@ -116,11 +116,15 @@ Microsystems, Inc. All Rights Reserved.
     <target name="copy_original_ide_cfg_file">
         <move file="${netbeans.dest.dir}/etc/netbeans.conf.original" tofile="${netbeans.dest.dir}/etc/netbeans.conf" />
     </target>
-
     
     <!-- Copy and unzip project JEdit from close source path, will be used for Performance tests -->
     <target name="copy_unzip_jedit_project">
         <unzip src="${nbextra.dir}/qa/projectized/jEdit41.zip" dest="${xtest.sketchpad}/"/>
+    </target>
+        
+    <!-- Make ide executable -->
+    <target name="make_netbeans_executable">
+        <chmod perm="ugo+rx" file="${netbeans.dest.dir}/bin/netbeans"/>
     </target>
         
     <!-- ========= -->

@@ -45,12 +45,15 @@ public class MeasureMenus  {
         suite.addTest(new MainSubMenus("testVcsCommnadsMenu", "Versioning | Global Commands main menu"));
         suite.addTest(new MainSubMenus("testToolsI18nMenu", "Tools | Internationalization main menu"));
         suite.addTest(new MainSubMenus("testWinGuiMenu", "Window | GUI Editing main menu"));
-        suite.addTest(new MainSubMenus("testWinDebuggingMenu", "Window | Debugging main menu"));
+        suite.addTest(new MainSubMenus("testWinDebuggingMenu", "Window | Debug main menu"));
         suite.addTest(new MainSubMenus("testWinVersioningMenu", "Window | Versioning main menu"));
         suite.addTest(new MainSubMenus("testWinSelectDocumentNodeInMenu", "Window | Select Document Node in main menu"));
         
-//TODO        suite.addTest(new ProjectNodePopupMenu("testProjectsView", "Project node popup in Projects View"));
-//TODO        suite.addTest(new ProjectNodePopupMenu("testFilesView", "Project node popup in Files View"));
+//TODO        suite.addTest(new ProjectNodeProjectsViewPopupMenu("measureTime", "Project node popup in Projects View"));
+//TODO        suite.addTest(new ProjectNodeFilesViewPopupMenu("measureTime", "Project node popup in Files View"));
+
+//TODO        suite.addTest(new SourcePackagesNodeProjectsViewPopupMenu("measureTime", "Source Packages node popup in Projects View"));
+//TODO        suite.addTest(new TestPackagesNodeProjectsViewPopupMenu("measureTime", "Test Packages node popup in Projects View"));
         
 //TODO        suite.addTest(new LocalFilesystemNodePopupMenu("measureTime", "Local Filesystem node popup"));
 //TODO        suite.addTest(new JarFSNodePopupMenu("measureTime", "Jar Filesystem node popup"));
