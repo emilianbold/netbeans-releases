@@ -64,9 +64,13 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
         ShortcutAndMenuKeyEventProcessor.uninstall();
     }
     
+    private String lastProjectName = null;
     public void setProjectName(String projectName) {
         WindowManagerImpl.assertEventDispatchThread();
-        WindowManagerImpl.getInstance().setProjectName(projectName);
+        if (lastProjectName == null || !lastProjectName.equals(projectName)) {
+            WindowManagerImpl.getInstance().setProjectName(projectName);
+        }
+        lastProjectName = projectName;
     }
     
 }
