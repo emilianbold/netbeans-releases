@@ -28,19 +28,19 @@ in the Port field.</li>
 </ol>
 <p><b>To use a SOCKS proxy:</b></p>
 <p>To run the IDE using a SOCKS proxy, you must pass the SOCKS proxy host and proxy port parameters to the JVM software
-when you start the IDE. On Microsoft Windows machines, use the <tt>ide.cfg</tt> file to pass the parameters. 
+when you start the IDE. On Microsoft Windows machines, use the <i>IDE-HOME</i><tt>/etc/netbeans.conf</tt> file to pass the parameters. 
 On UNIX and Linux machines, you can write a wrapper shell script.</p>
 <p><b>On a Microsoft Windows machine:</b>
 </p>
 <ol>
-<li>In the IDE's installation directory, expand the <tt>bin</tt> directory.</li>
-<li>If an <tt>ide.cfg</tt> file is not there, create one.</li>
-<li>Open <tt>ide.cfg</tt> in a text editor and type:
+<li>In the IDE's installation directory, expand the <tt>etc</tt> directory.</li>
+<li>If an <tt>netbeans.conf</tt> file is not there, create one.</li>
+<li>Open <tt>netbeans.conf</tt> in a text editor and type:
 <p><tt>-J-DsocksProxyHost=</tt><i>SOCKS-SERVER</i> <tt>-J-DsocksProxyPort=1080</tt></p>
 <p>
 For <i>SOCKS-SERVER,</i> use the host name of your SOCKS proxy.
 </p></li>
-<li>Save <tt>ide.cfg</tt> and close it.</li>
+<li>Save <tt>netbeans.conf</tt> and close it.</li>
 <li>Restart the IDE.</li></ol>
 
 
