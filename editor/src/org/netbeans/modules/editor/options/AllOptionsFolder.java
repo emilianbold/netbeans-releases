@@ -161,7 +161,7 @@ public class AllOptionsFolder{
                         if (!(subFolders[i] instanceof DataFolder)) continue;
                         DataFolder subFolder = (DataFolder) subFolders[i];
                         FileObject optionInstance = Repository.getDefault().getDefaultFileSystem().
-                        findResource(subFolder.getPrimaryFile().getPackageName('/')+"/"+AllOptionsFolder.OPTION_FILE_NAME);
+                            findResource(subFolder.getPrimaryFile().getPath()+"/"+AllOptionsFolder.OPTION_FILE_NAME);
                         if (optionInstance == null) continue;
                         try{
                             DataObject optionDO = DataObject.find(optionInstance);

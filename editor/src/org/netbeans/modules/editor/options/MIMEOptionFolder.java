@@ -119,14 +119,14 @@ public class MIMEOptionFolder{
         }
 
         FileObject fo = Repository.getDefault().getDefaultFileSystem().
-        findResource(folder.getPrimaryFile().getPackageName('/')+"/"+folderName); //NOI18N
+            findResource(folder.getPrimaryFile().getPath()+"/"+folderName); //NOI18N
 
         if ( (fo==null) && forceCreation){
             // let's create a DataFolder
             try{
                 DataFolder.create(folder,folderName);
                 fo = Repository.getDefault().getDefaultFileSystem().
-                findResource(folder.getPrimaryFile().getPackageName('/')+"/"+folderName); //NOI18N
+                    findResource(folder.getPrimaryFile().getPath()+"/"+folderName); //NOI18N
             }catch(IOException ioe){
                 return null;
             }
@@ -182,7 +182,7 @@ public class MIMEOptionFolder{
         }
         
         org.openide.filesystems.FileObject f = Repository.getDefault().getDefaultFileSystem().
-        findResource(folder.getPrimaryFile().getPackageName('/')+"/"+subFolder); // NOI18N
+            findResource(folder.getPrimaryFile().getPath()+"/"+subFolder); // NOI18N
         if (f==null) return null;
         
             try {
