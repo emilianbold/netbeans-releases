@@ -33,7 +33,7 @@ import java.awt.event.ContainerListener;
  * @author  Tim Boudreau
  */
 public class GtkToolbarUI extends BasicToolBarUI implements ContainerListener {
-    private Border b = new AdaptiveMatteBorder (true, true, true, true, 3, true);
+    //private Border b = new AdaptiveMatteBorder (true, true, true, true, 3, true);
     /** Creates a new instance of PlainGtkToolbarUI */
     private GtkToolbarUI() {
     }
@@ -44,7 +44,7 @@ public class GtkToolbarUI extends BasicToolBarUI implements ContainerListener {
     
     public void installUI( JComponent c ) {
         super.installUI(c);
-        c.setBorder(b);
+        //c.setBorder(b);
         c.setOpaque(false);
         c.addContainerListener(this);
         installButtonUIs (c);
