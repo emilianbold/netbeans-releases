@@ -15,6 +15,7 @@ package com.netbeans.developer.modules.loaders.form.palette;
 
 import java.io.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.util.*;
 import java.util.jar.*;
 import java.beans.PropertyVetoException;
@@ -74,36 +75,38 @@ public final class BeanInstaller extends Object {
         );
       }
       else {
-        boolean alreadyInstalled = false;
-        Repository rep = TopManager.getDefault().getRepository();
-        JarFileSystem jar2 = (JarFileSystem) rep.findFileSystem(jar.getSystemName());
-        if (jar2 != null) {
-          alreadyInstalled = true;
-          jar = jar2;
-        }
-        
         LinkedList list = findJavaBeans(jar);
         
-        /*
-        BeanSelector sel = new BeanSelector(findJavaBeans(jar));
-        sel.show();
-        */
         if (list.size() == 0)
           return;
 
-        if (!alreadyInstalled) {
-          jar.setHidden(true);
-          rep.addFileSystem(jar);
+        BeanSelector sel = new BeanSelector(list);
+        final Dialog dd[] = new Dialog [1];
+        DialogDescriptor desc = new DialogDescriptor (
+          sel, 
+          bundle.getString("CTL_SelectJB"),
+          true,
+          new ActionListener () { 
+            public void actionPerformed (ActionEvent evt) {
+              dd[0].setVisible (false);
+              dd[0].dispose ();
+            }
+          }
+        );
+        ;
+        dd[0] = TopManager.getDefault ().createDialog (desc);
+        dd[0].show();
+        if (desc.getValue () == NotifyDescriptor.OK_OPTION) {
+        
+          String pal = selectPaletteCategory();
+          if (pal != null) {
+            finishInstall(jar, sel.getSelectedBeans(), pal);
+  /*        TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                                                                      "Changes in the component palette will only take effect after Netbeans Developer have been restarted",
+                                                                      NotifyDescriptor.INFORMATION_MESSAGE)
+          ); */
+          }
         }
-
-        String pal = null; //selectPaletteCategory();
-        if (pal != null)
-          finishInstall(jar, list/*sel.getSelectedBeans()*/, pal);
-/*        TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                                                                    "Changes in the component palette will only take effect after Netbeans Developer have been restarted",
-                                                                    NotifyDescriptor.INFORMATION_MESSAGE)
-        ); */
-                      
       }
     }
   }
@@ -152,6 +155,19 @@ public final class BeanInstaller extends Object {
   * @param pal palettecategory where to place beans.
   */
   private static void finishInstall(JarFileSystem jar, final Collection list, String pal) {
+    boolean alreadyInstalled = false;
+    Repository rep = TopManager.getDefault().getRepository();
+    JarFileSystem jar2 = (JarFileSystem) rep.findFileSystem(jar.getSystemName());
+    if (jar2 != null) {
+      alreadyInstalled = true;
+      jar = jar2;
+    }
+        
+    if (!alreadyInstalled) {
+      jar.setHidden(true);
+      rep.addFileSystem(jar);
+    }
+
     FileObject root = TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot();
     FileObject paletteFolder = root.getFileObject ("Palette");
     if (paletteFolder == null) {
@@ -165,7 +181,6 @@ public final class BeanInstaller extends Object {
     if (category == null) {
       return;
     }
-    
 
     
 /*    progress.setLabel(MessageFormat.format(progressLabel, new Object[] { "" }));
@@ -183,44 +198,7 @@ public final class BeanInstaller extends Object {
           }
 //            progress.setLabel(MessageFormat.format(progressLabel, new Object[] { fo.getName() }));
 //            progress.inc();
-            /*
-            try {
-              Object o = java.beans.Beans.instantiate(loader, fo.getPackageName('.'));
-              if (o == null) {
-                notifyNotFound(fo.getPackageName ('.'));
-                break;
-              }  
-              Class cl = o.getClass ();
-//              PaletteNode n = new PaletteNode (cl, fo.getPackageName ('.'));
-//              n.getIcon(); // resolving Icon invokes loading class.
-//              paletteNodes.addElement (n);
-            }
-            catch (ClassNotFoundException e) {
-              if (e.getMessage () != null)
-                notifyNotFound(e.getMessage());
-              else
-                notifyNotFound (e.getClass ().getName () + ": "+fo.getPackageName ('.'));
-              break;
-            }
-            catch (NoClassDefFoundError e) {
-              if (e.getMessage () != null)
-                notifyNotFound(e.getMessage());
-              else
-                notifyNotFound (e.getClass ().getName () + ": "+fo.getPackageName ('.'));
-              break;
-            }
-            catch (Exception e) {
-              TopManager.getDefault().notifyException(e);
-              break;
-            }
-          }
-//          progress.setLabel(topBundle.getString ("CTL_UpdatingPalette"));
-//          progress.inc ();
-          /*
-          Node[] addNodes = new Node[paletteNodes.size ()];
-          paletteNodes.copyInto (addNodes);
-          pal.add(addNodes);
-          */
+
 //        }
 //        finally {
 //          progress.setVisible (false);
@@ -228,12 +206,6 @@ public final class BeanInstaller extends Object {
 //        }
 //      }
 //    };
-/*    if (sync) {
-      task.run();
-    }
-    else {
-      RequestProcessor.postRequest(task);
-    }*/
   }
 
   private static void createInstance(FileObject folder, String className, String iconName) {
@@ -272,12 +244,30 @@ public final class BeanInstaller extends Object {
   } */
 
   /** Opens dialog and lets user select category, where beans should be installed
-  *
-  private static PaletteCategory selectPaletteCategory() {
+  */
+  private static String selectPaletteCategory() {
     PaletteSelector sel = new PaletteSelector();
-    sel.show();
-    return sel.getSelectedCategory();
-  }*/
+    final Dialog dd[] = new Dialog [1];
+    DialogDescriptor desc = new DialogDescriptor (
+      sel, 
+      bundle.getString("CTL_SelectPalette"),
+      true,
+      new ActionListener () { 
+        public void actionPerformed (ActionEvent evt) {
+          dd[0].setVisible (false);
+          dd[0].dispose ();
+        }
+      }
+    );
+    ;
+    dd[0] = TopManager.getDefault ().createDialog (desc);
+    dd[0].show();
+    if (desc.getValue () == NotifyDescriptor.OK_OPTION) {
+      return sel.getSelectedCategory();
+    } else {
+      return null;
+    }
+  }
 
   /** This method open java.awt.FileDialog and selects
   * the jar file with the module.
@@ -335,7 +325,7 @@ public final class BeanInstaller extends Object {
   /** Auto loading all jars - beans */
   public static void autoLoadBeans() {
     FormLoaderSettings settings = new FormLoaderSettings();
-    java.util.HashMap loadedBeans = settings.getLoadedBeans();
+    java.util.ArrayList loadedBeans = settings.getLoadedBeans();
 
     File globalFolder = new File(System.getProperty("netbeans.home") + File.separator + "beans");
     try {
@@ -368,7 +358,7 @@ public final class BeanInstaller extends Object {
   * @param folder - where to find jars
   * @param loadedBeans - names of jars already loaded (in previous NB sessions)
   */
-  private static void autoLoadFolder(File folder, HashMap loadedBeans) {
+  private static void autoLoadFolder(File folder, ArrayList loadedBeans) {
     if (!folder.exists())
       return;
     
@@ -383,11 +373,11 @@ public final class BeanInstaller extends Object {
 
     String[] categories = ComponentPalette.getDefault ().getPaletteCategories();
     for (int i = 0; i < list.length; i++) {
-      if (list[i].endsWith(JAR_EXT) && (loadedBeans.get(list[i]) == null)) {
+      if (list[i].endsWith(JAR_EXT) && (!loadedBeans.contains(list[i]))) {
         String withoutExt = list[i].substring(0, list[i].length() - JAR_EXT.length());
         String categoryName = details.getProperty(withoutExt, withoutExt);
         if (autoLoadJar(base + list[i], categoryName, details.getProperty(withoutExt + ".beans"))) {
-          loadedBeans.put(list[i], list[i]);
+          loadedBeans.add(list[i]);
         }
       }
     }
@@ -401,12 +391,11 @@ public final class BeanInstaller extends Object {
   */
   private static boolean autoLoadJar(String name, String paletteCategory, String selection) {
     JarFileSystem jar = createJarForName(name);
-    Vector v = null;
     if (jar == null) {
-/*      TopManager.getDefault().notify(
-        new NotifyDescriptor.Message(topBundle.getString("MSG_ErrorInFile"),
+      TopManager.getDefault().notify(
+        new NotifyDescriptor.Message(bundle.getString("MSG_ErrorInFile"),
                                      NotifyDescriptor.ERROR_MESSAGE)
-        ); */
+        ); 
       return false;
     }
     else {
@@ -415,6 +404,7 @@ public final class BeanInstaller extends Object {
         jar = jar2;
 
       LinkedList list = findJavaBeans(jar);
+      Vector v = null;
       if (selection != null) {
         Vector dest = new Vector();
         StringTokenizer tok = new StringTokenizer(selection, ", ", false);
@@ -451,102 +441,44 @@ public final class BeanInstaller extends Object {
   // Inner classes
   //==============================================================================
 
-  /*
-  static class PaletteSelector extends CoronaDialog {
+  
+  static class PaletteSelector extends JPanel {
     private JList list;
-    private ButtonBarButton okButton;
-    private ButtonBarButton cancelButton;
-    private Node[] categories;
-    private boolean stamped = false;
 
-    /** Creates a new ExceptionBox for given exception descriptor. *
+    /** Creates a new ExceptionBox for given exception descriptor. */
     public PaletteSelector() {
       super(null);
+      String[] categories = ComponentPalette.getDefault ().getPaletteCategories();
 
-      setDefaultCloseOperation (javax.swing.JDialog.DO_NOTHING_ON_CLOSE);
-      addWindowListener (new java.awt.event.WindowAdapter () {
-          public void windowClosing (java.awt.event.WindowEvent evt) {
-            closeDlg (false);
-          }
-        }
-      );
-      
-      // attach cancel also to Escape key
-      getRootPane().registerKeyboardAction(
-        new java.awt.event.ActionListener() {
-          public void actionPerformed(java.awt.event.ActionEvent evt) {
-            closeDlg (false);
-          }
-        },
-        javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, 0, true),
-        javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-      );
-   
-
-      setTitle(topBundle.getString("CTL_SelectPalette"));
-      okButton = new ButtonBarButton(topBundle.getString("CTL_Select"));
-      cancelButton = new ButtonBarButton(topBundle.getString("CTL_Cancel"));
-      getButtonBar().setButtons(new ButtonBarButton[0],
-                                new ButtonBarButton[] { okButton, cancelButton });
-
-      okButton.setDefault(true);
-      okButton.setEnabled(false);
-      cancelButton.setEnabled(true);
-
-      categories = PaletteContext.getPaletteContext().getPaletteCategories();
-
-      String[] str = new String[categories.length];
-      for (int i = 0; i < categories.length; i++) {
-        str[i] = categories[i].getDisplayName();
-      }
-      list = new JList(str);
+      list = new JList(categories);
       list.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-      list.addListSelectionListener(new ListSelectionListener() {
+/*      list.addListSelectionListener(new ListSelectionListener() {
         public void valueChanged(ListSelectionEvent evt) {
           okButton.setEnabled(!list.isSelectionEmpty());
         }
       });
-
-      list.addMouseListener(new MouseAdapter() {
+*/
+/*      list.addMouseListener(new MouseAdapter() {
         public void mouseClicked(MouseEvent e) {
           if (e.getClickCount() == 2) {
             closeDlg(true);
           }
         }
       });
-
+[PENDING - doubleclick]
+*/
       BorderLayout layout = new BorderLayout();
       layout.setVgap(5);
       layout.setHgap(5);
-      getCustomPane().setLayout(layout);
-      getCustomPane().add(new JLabel(topBundle.getString("CTL_PaletteCategories")), "North");
-      getCustomPane().add(new JScrollPane (list), "Center");
-      getCustomPane().setBorder(new EmptyBorder(5, 5, 5, 5));
-      center();
+      setLayout(layout);
+      add(new JLabel(bundle.getString("CTL_PaletteCategories")), "North");
+      add(new JScrollPane (list), "Center");
+      setBorder(new EmptyBorder(5, 5, 5, 5));
     }
 
-    /** Called when user presses a button on the ButtonBar.
-    * @param evt The button press event.
-    *
-    protected void buttonPressed(ButtonBar.ButtonBarEvent evt) {
-      closeDlg(evt.getButton() == okButton);
-    }
-
-    void closeDlg(boolean ok) {
-      stamped = ok;
-      setVisible (false);
-      dispose();
-    }
-
-    public PaletteCategory getSelectedCategory() {
-      if (! stamped) return null;
-      int index = list.getSelectedIndex();
-      if (index == -1)
-        return null; // PaletteContext.getPaletteContext().getDefaultCategory();
-      else {
-        return (PaletteCategory) categories[index];
-      }
+    public String getSelectedCategory() {
+      return (String) list.getSelectedValue ();
     }
 
     public Dimension getPreferredSize() {
@@ -555,94 +487,46 @@ public final class BeanInstaller extends Object {
       ret.height = Math.max(ret.height, 250);
       return ret;
     }
-  }  */
+  }  
 
-  /** dialog which allows to select found beans *
-  public static class BeanSelector extends CoronaDialog {
-    private ButtonBarButton installButton;
-    private ButtonBarButton cancelButton;
+  /** dialog which allows to select found beans */
+  public static class BeanSelector extends JPanel {
     private JList list;
-    private Vector selected;
-
-    /** Creates a new ExceptionBox for given exception descriptor. *
-    public BeanSelector(Vector fileObjects) {
+    /** Creates a new ExceptionBox for given exception descriptor. */
+    public BeanSelector(LinkedList fileObjects) {
       super(null);
-      
-      setDefaultCloseOperation (javax.swing.JDialog.DO_NOTHING_ON_CLOSE);
-      addWindowListener (new java.awt.event.WindowAdapter () {
-          public void windowClosing (java.awt.event.WindowEvent evt) {
-            closeDlg (false);
-          }
-        }
-      );
-      
-      // attach cancel also to Escape key
-      getRootPane().registerKeyboardAction(
-        new java.awt.event.ActionListener() {
-          public void actionPerformed(java.awt.event.ActionEvent evt) {
-            closeDlg (false);
-          }
-        },
-        javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, 0, true),
-        javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-      );
-   
-      setTitle(topBundle.getString("CTL_SelectJB"));
-      selected = new Vector();
-      cancelButton = new ButtonBarButton(commonBundle.getString("CancelButton"));
-      installButton = new ButtonBarButton(topBundle.getString("CTL_Install"));
-      getButtonBar().setButtons(new ButtonBarButton[0],
-                                new ButtonBarButton[] { installButton, cancelButton });
+      Object[] arr = new Object[fileObjects.size ()];
+      fileObjects.toArray (arr);
 
-      installButton.setDefault(true);
-      installButton.setEnabled(false);
-
-      list = new JList(fileObjects);
+      list = new JList(arr);
       list.setCellRenderer(new FileObjectRenderer());
 
-      list.addListSelectionListener(new ListSelectionListener() {
-        public void valueChanged(ListSelectionEvent evt) {
-          installButton.setEnabled(!list.isSelectionEmpty());
-        }
-      });
-
-      list.addMouseListener(new MouseAdapter() {
+/*      list.addMouseListener(new MouseAdapter() {
         public void mouseClicked(MouseEvent e) {
           if (e.getClickCount() == 2) {
             closeDlg(true);
           }
         }
       });
-
+[PENDING - doubleclick]
+*/
+// [PENDING - OK/Cancel enabled accorning to selection
       BorderLayout layout = new BorderLayout();
       layout.setVgap(5);
       layout.setHgap(5);
-      getCustomPane().setLayout(layout);
-      getCustomPane().add(new JLabel(topBundle.getString("CTL_SelectBeans")), "North");
-      getCustomPane().add(new JScrollPane (list), "Center");
-      getCustomPane().setBorder(new EmptyBorder(5, 5, 5, 5));
-      center();
+      setLayout(layout);
+      add(new JLabel(bundle.getString("CTL_SelectBeans")), "North");
+      add(new JScrollPane (list), "Center");
+      setBorder(new EmptyBorder(5, 5, 5, 5));
     }
 
-    /** Called when user presses a button on the ButtonBar.
-    * @param evt The button press event.
-    *
-    protected void buttonPressed(ButtonBar.ButtonBarEvent evt) {
-      closeDlg(installButton.equals(evt.getButton()));
-    }
-
-    void closeDlg(boolean ok) {
-      if (ok) {
-        Object[] arr = list.getSelectedValues();
-        for (int i = 0; i < arr.length; i++)
-          selected.addElement(arr[i]);
+    Collection getSelectedBeans() {
+      Object[] sel = list.getSelectedValues ();
+      ArrayList al = new ArrayList (sel.length);
+      for (int i = 0; i < sel.length; i++) { 
+        al.add (sel[i]);
       }
-      setVisible (false);
-      dispose();
-    }
-
-    Vector getSelectedBeans() {
-      return selected;
+      return al;
     }
 
     public Dimension getPreferredSize() {
@@ -651,11 +535,10 @@ public final class BeanInstaller extends Object {
       ret.height = Math.max(ret.height, 250);
       return ret;
     }
-    }  */
+  } 
   
-  /*
   static class FileObjectRenderer extends JLabel implements ListCellRenderer {
-    /** Creates a new NetbeansListCellRenderer *
+    /** Creates a new NetbeansListCellRenderer */
     public FileObjectRenderer() {
       setOpaque(true);
       setBorder(noFocusBorder);
@@ -683,11 +566,13 @@ public final class BeanInstaller extends Object {
       setBorder(cellHasFocus ? hasFocusBorder : noFocusBorder);
       return this;
     }
-  }*/
+  }
 }
 
 /*
  * Log
+ *  4    Gandalf   1.3         6/7/99   Ian Formanek    Allows to select beans 
+ *       and category
  *  3    Gandalf   1.2         6/4/99   Ian Formanek    First cut of 
  *       autoLoadBeans
  *  2    Gandalf   1.1         5/17/99  Petr Hamernik   very simple version of 
