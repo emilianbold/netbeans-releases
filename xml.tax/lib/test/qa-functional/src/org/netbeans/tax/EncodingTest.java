@@ -1,0 +1,120 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.tax;
+
+import java.util.Iterator;
+import junit.textui.TestRunner;
+import org.netbeans.modules.xml.core.XMLDataObject;
+import org.netbeans.tests.xml.XTest;
+import org.openide.cookies.CloseCookie;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+
+/**
+ * <P>
+ * <P>
+ * <FONT COLOR=ÿ#CC3333" FACE="Courier New, Monospaced" SIZE="+1">
+ * <B>
+ * <BR> XML Module API Test: Encoding Test
+ * </B>
+ * </FONT>
+ * <BR><BR><B>What it tests:</B><BR>
+ * Tests check whether the documents saved with different encodings are identical.<BR>
+ *
+ * <BR><B>How it works:</B><BR>
+ * Test doing for each encoding:<BR>
+ * - save document with selected encoding<BR>
+ * - close the document<BR>
+ * - reload the document from disk<BR>
+ * - check if the reloaded document and the original are identical<BR>
+ *
+ * <BR><BR><B>Settings:</B><BR>
+ * None
+ *
+ * <BR><BR><B>Output (Golden file):</B><BR>
+ * DTD for the XML document.<BR>
+ * <BR><B>Possible reasons of failure:</B>
+ * <UL>
+ * <LI type="circle">
+ * <I>None<BR></I>
+ * </LI>
+ * </UL>
+ * <P>
+ */
+
+public class EncodingTest extends XTest {
+    /** Creates new CoreSettingsTest */
+    public EncodingTest(String testName) {
+        super(testName);
+    }
+    
+    public void testEncoding() throws Exception {
+        final String DATA_OBJECT = "encoding.xml";
+        final String NDATA_OBJECT = "newEncoding.xml";
+        
+        XMLDataObject origDataObject = (XMLDataObject) TestUtil.THIS.findData(DATA_OBJECT);
+        if (origDataObject == null) {
+            throw new IllegalStateException("\"" + DATA_OBJECT + "\" data object is not found!");
+        }
+        
+        TreeElement docRoot = origDataObject.getTreeDocument().getDocumentElement();
+        String defEncoding =  origDataObject.getTreeDocument().getEncoding();
+        String gString = TestUtil.THIS.nodeToString(docRoot);
+        DataFolder dataFolder = (DataFolder) TestUtil.THIS.findData("");
+        Iterator encodings = TreeUtilities.getSupportedEncodings().iterator();
+        
+        while (encodings.hasNext()) {
+            String encoding = (String) encodings.next();
+            try {
+                dbg.println("Testing encoding: " + encoding + " ... ");
+                if (encoding.equals(defEncoding)) break;  // Nothing to test.
+                
+                DataObject fo = TestUtil.THIS.findData(NDATA_OBJECT);
+                if (fo != null) {
+                    while (!!! fo.getNodeDelegate().canDestroy()) {
+                        dbg.println("Cannot destroy node Waiting...");
+                        try { Thread.currentThread().sleep(2000); } catch (Exception e){};
+                    }
+                    fo.getNodeDelegate().destroy();
+                    //fo.delete();
+                }
+                
+                XMLDataObject newDataObject = (XMLDataObject) origDataObject.createFromTemplate(dataFolder, "newEncoding");
+                TreeDocument newDoc = newDataObject.getTreeDocument();
+                newDoc.setEncoding(encoding);
+                TestUtil.THIS.saveDataObject(newDataObject);
+                
+                CloseCookie cc = (CloseCookie) newDataObject.getCookie(CloseCookie.class);
+                cc.close();
+                
+                TreeElement newRoot = newDataObject.getTreeDocument().getDocumentElement();
+                String nString = TestUtil.THIS.nodeToString(newRoot);
+                
+                assertEquals("Encoding: " + encoding + ", documents are differ", gString, nString);
+                
+            } catch (Exception ex) {
+                ex.printStackTrace(dbg);
+                fail("Encoding: " + encoding + ", test faill due:\n" + ex);
+            }
+        }
+    }
+    
+    /**
+     * Performs this testsuite.
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) throws Exception {
+        DEBUG = true;
+        TestRunner.run(EncodingTest.class);
+    }
+}
