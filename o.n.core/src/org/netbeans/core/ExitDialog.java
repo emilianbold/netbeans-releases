@@ -148,9 +148,12 @@ class ExitDialog extends JPanel implements java.awt.event.ActionListener {
     /** Exit the IDE
     */
     private void theEnd() {
+        // XXX(-ttran) result must be set before calling setVisible(false)
+        // because this will unblock the thread which called Dialog.show()
+        
+        result = true;
         exitDialog.setVisible (false);
         exitDialog.dispose();
-        result = true;
     }
 
     /** Notification about the save exception
