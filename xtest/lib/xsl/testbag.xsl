@@ -27,6 +27,7 @@
 
 <xsl:template match="TestBag">
 	<H2>Test Bag: <xsl:value-of select="@name"/></H2>
+	<P><A HREF="../../../htmlresults/testreport.html">go back to report</A></P>
 	<xsl:call-template name="summary-table">
 			<xsl:with-param name="table-width">95%</xsl:with-param>
 	</xsl:call-template>

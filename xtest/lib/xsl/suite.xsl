@@ -22,13 +22,14 @@
 <xsl:template match="/">
 	<xsl:call-template name="html-page">
 		<xsl:with-param name="html-title">TestSuite <xsl:value-of select="/UnitTestSuite/@name"/></xsl:with-param>
-	</xsl:call-template>
+	</xsl:call-template>	
 </xsl:template>
 
 
 
 <xsl:template match="UnitTestSuite">	
 	<H2>Test Suite <xsl:value-of select="@name"/></H2>
+	<P><A HREF="../../htmlresults/testbag.html">go back to testbag</A></P>
 	<P>
 		<H3>Summary:</H3>
 		<TABLE width="95%" cellspacing="2" cellpadding="5" border="0">
