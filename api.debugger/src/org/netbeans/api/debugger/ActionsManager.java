@@ -97,7 +97,7 @@ public final class ActionsManager {
     // main public methods .....................................................
 
     private static RequestProcessor requestProcessor;
-    public static RequestProcessor getRequestProcessor () {
+    private static RequestProcessor getRequestProcessor () {
         if (requestProcessor == null)
             requestProcessor = new RequestProcessor ("ActionsManager");
         return requestProcessor;
