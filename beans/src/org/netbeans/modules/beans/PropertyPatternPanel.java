@@ -112,6 +112,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
 
     private void initAccessibility()
     {
+        this.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACSD_IdxPropertyPanelDialog"));
         nameLabel.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACS_IdxPropertyPanel_nameLabelA11yDesc"));
         nameTextField.getAccessibleContext().setAccessibleName(PatternNode.getString("ACS_IdxPropertyPanel_nameTextFieldA11yName"));
         typeLabel.getAccessibleContext().setAccessibleDescription(PatternNode.getString("ACS_IdxPropertyPanel_typeLabelA11yDesc"));
