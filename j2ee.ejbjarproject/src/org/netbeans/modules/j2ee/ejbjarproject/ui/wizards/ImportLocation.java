@@ -57,7 +57,7 @@ final class ImportLocation implements WizardDescriptor.Panel, WizardDescriptor.V
     }
     
     public HelpCtx getHelp() {
-        return null;
+        return new HelpCtx(ImportLocation.class);
     }
     
     public boolean isValid() {
