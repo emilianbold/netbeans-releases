@@ -16,9 +16,8 @@
 	<tocitem text="Using the HTTP Monitor Toolbar" target="monitor_sort" />
 	<!-- monitor_resend is csh for Help button on Edit and replay dialog -->
 	<tocitem text="Editing and Replaying Monitor Data Records" target="monitor_resend" /> 
-	<tocitem text="Saving HTTP Monitor Data Records" target="monitor_store" />  
+	<tocitem text="Saving HTTP Monitor Data Records" target="monitor_store">  
 	<tocitem text="Deleting HTTP Monitor Data Records" target="monitor_delete">
-	<tocitem text="Deploying the HTTP Monitor for a Web Application" target="monitor_servconfig">
 </tocitem>
 </tocitem>
 </toc>

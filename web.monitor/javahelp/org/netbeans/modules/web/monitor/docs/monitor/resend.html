@@ -90,23 +90,11 @@
     in the Method parameter. For instance, change <tt>GET</tt> to <tt>POST</tt>.</li>
 </ol>
 <p><b>To edit cookies:</b></p>
-<p>Session cookies are handled according to the settings 
-      specified on the HTTP Monitor toolbar.
-      <ul>
-      <li>If you click &quot;Use the browser's session 
-      cookie for replay,&quot; the server ignores the values that were saved 
-      when the record was 
-      recorded, and the server uses the cookie that the browser generates.
-      </li>
-      <li>If you click &quot;Use the recorded session cookie for replay,&quot; 
-      the server either uses the cookie that is associated with the record's 
-      session, or, if you edited a cookie, the server uses
-      the edited cookie.
-      </li>
-      <li>If the record header does not include a session cookie, the browser 
-      will not send a cookie.
-      </li>
-      </ul>
+<p>Note that the server ignores the values that were saved 
+when the record was recorded, and the server uses the cookie that 
+the browser generates. If the record header does not include a session 
+cookie, the browser does not send a cookie.</p>
+
      <p>The following steps show how to edit cookies in the
       Cookies tab. You can also edit cookies in the Header tab. 
       Not all servers support the editing of cookies.</p>
