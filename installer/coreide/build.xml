@@ -118,7 +118,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile" depends="init" description="compile custom beans and panels">
     <mkdir dir="build/classes"/>
     
-    <javac destdir="build/classes" srcdir="src" source="1.4" target="1.4" debug="true" debuglevel="line" deprecation="true">
+    <javac destdir="build/classes" srcdir="src" source="1.4" target="1.4" debug="true" deprecation="true">
       <classpath>
         <path refid="ismp.cp"/>
       </classpath>
