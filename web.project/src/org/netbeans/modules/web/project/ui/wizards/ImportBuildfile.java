@@ -22,24 +22,22 @@ import javax.swing.event.DocumentListener;
 
 import org.openide.util.NbBundle;
 
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-
 public class ImportBuildfile extends javax.swing.JPanel implements DocumentListener {
     
     private JButton ok;
-    private String filePath;
+    private File buildFileDir;
     
     /** Creates new form ImportBuildfile */
-    public ImportBuildfile(String filePath, JButton okButton) {
+    public ImportBuildfile(File buildFile, JButton okButton) {
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportBuildfile.class, "ACS_IW_BuildFileDialog_A11YDesc"));  // NOI18N
         
         ok = okButton;
-        this.filePath = filePath;
+        buildFileDir = buildFile.getParentFile();
         ok.setEnabled(false);
         
-        String fileName = filePath + File.separator + GeneratedFilesHelper.BUILD_XML_PATH;
-        String msg = MessageFormat.format(NbBundle.getMessage(ImportBuildfile.class, "LBL_IW_BuildfileDesc_Label"), new String[] {fileName}); //NOI18N
+        String msg = MessageFormat.format(NbBundle.getMessage(ImportBuildfile.class,
+                "LBL_IW_BuildfileDesc_Label"), new String[]{buildFile.getAbsolutePath()}); //NOI18N
         jLabelDesc.setText(msg);
         jTextFieldBuildName.getDocument().addDocumentListener(this);
         jTextFieldBuildName.setText(NbBundle.getMessage(ImportBuildfile.class, "LBL_IW_ProposedName_TextField")); //NOI18N
@@ -142,11 +140,9 @@ public class ImportBuildfile extends javax.swing.JPanel implements DocumentListe
     // End if implementation of DocumentListener -------------------------------
 
     private void updateButton() {
-        jTextFieldCreatedFile.setText(filePath + File.separator + jTextFieldBuildName.getText());
-
-        if (jTextFieldBuildName.getText().trim().length() == 0 || jTextFieldBuildName.getText().trim().equals(GeneratedFilesHelper.BUILD_XML_PATH))
-            ok.setEnabled(false);
-        else
-            ok.setEnabled(true);
-    }    
+        String buildFileName = getBuildName();
+        File buildFile = new File(buildFileDir, buildFileName);
+        jTextFieldCreatedFile.setText(buildFile.getAbsolutePath());
+        ok.setEnabled(!(buildFileName.length() == 0 || buildFile.exists()));
+    }
 }

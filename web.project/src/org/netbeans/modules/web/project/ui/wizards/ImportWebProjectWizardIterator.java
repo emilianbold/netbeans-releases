@@ -15,8 +15,6 @@ package org.netbeans.modules.web.project.ui.wizards;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +35,6 @@ import javax.swing.event.ChangeListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
@@ -54,6 +51,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 
 /**
@@ -157,10 +155,8 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
-    private transient TemplateWizard wiz;
-    
+
     public void initialize(TemplateWizard wiz) {
-        this.wiz = wiz;
         index = 0;
         panels = createPanels();
         // Make sure list of steps is accurate.
@@ -184,7 +180,6 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
     }
     public void uninitialize(TemplateWizard wiz) {
-        this.wiz = null;
         panels = null;
     }
     
@@ -389,11 +384,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             
             moduleLoc = panel.moduleLocationTextField.getText().trim();
         }
-        
-        private boolean isWebModule (FileObject dir) {
-            return guessDocBase (dir) != null && guessJavaRoot (dir) != null;
-        }
-    
+
         //use it as a project root iff it is not sources or document root
         public boolean isSuitableProjectRoot (FileObject dir) {
             FileObject docRoot = guessDocBase (dir);
@@ -402,61 +393,44 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
                 && (srcRoot == null || FileUtil.isParentOf (dir, srcRoot));
         }
     
-        //extra finish dialog        
-        private Dialog dialog;
-            
         public void validate() throws WizardValidationException {
             File dirF = new File(panel.projectLocationTextField.getText());
-            JButton ok = new JButton(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_OK")); //NOI18N
-            ok.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "ACS_IW_BuildFileDialog_OKButton_LabelMnemonic")); //NOI18N
-            ok.setMnemonic(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_BuildFileDialog_OK_LabelMnemonic").charAt(0)); //NOI18N
-            JButton cancel = new JButton(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_Cancel")); //NOI18N
-            cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "ACS_IW_BuildFileDialog_CancelButton_LabelMnemonic")); //NOI18N
-            cancel.setMnemonic(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_BuildFileDialog_Cancel_LabelMnemonic").charAt(0)); //NOI18N
-            
-            final ImportBuildfile ibf = new ImportBuildfile(dirF.getAbsolutePath(), ok);
-            if ((new File(dirF, GeneratedFilesHelper.BUILD_XML_PATH)).exists()) {
-                ActionListener actionListener = new ActionListener() {
-                    public void actionPerformed(ActionEvent event) {
-                        Object src = event.getSource();
-                        if (src instanceof JButton) {
-                            String name = ((JButton) src).getText();
-                            if (name.equals(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_OK"))) { //NOI18N
-                                setBuildfile(ibf.getBuildName());
-                                setImport(true);
-                                closeDialog();
-                            } else if (name.equals(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_Cancel"))) { //NOI18N
-                                NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_CancelConfirmation"), NotifyDescriptor.YES_NO_OPTION); //NOI18N
-                                Object ret = DialogDisplayer.getDefault().notify(ndesc);
-                                if (ret == NotifyDescriptor.YES_OPTION) {
-                                    setImport(false);
-                                    closeDialog();
-                                }
-                            }
-                        }
+            if (!new File(dirF, GeneratedFilesHelper.BUILD_XML_PATH).exists()) {
+                setImport(false);
+                setBuildfile(GeneratedFilesHelper.BUILD_XML_PATH);
+            } else {
+                File buildFile = new File(dirF, getBuildfile());
+                if (buildFile.exists()) {
+                    JButton ok = createButton(
+                            "LBL_IW_Buildfile_OK", "ACS_IW_BuildFileDialog_OKButton_LabelMnemonic", //NOI18N
+                            "LBL_IW_BuildFileDialog_OK_LabelMnemonic"); //NOI18N
+                    JButton cancel = createButton(
+                            "LBL_IW_Buildfile_Cancel", "ACS_IW_BuildFileDialog_CancelButton_LabelMnemonic", //NOI18N
+                            "LBL_IW_BuildFileDialog_Cancel_LabelMnemonic"); //NOI18N
+                    final ImportBuildfile ibf = new ImportBuildfile(buildFile, ok);
+                    DialogDescriptor descriptor = new DialogDescriptor(ibf,
+                            NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_BuildfileTitle"), //NOI18N
+                            true, new Object[]{ok, cancel}, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN,
+                            null, null);
+                    Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+                    dialog.setVisible(true);
+                    if (descriptor.getValue() != ok) {
+                        throw new WizardValidationException(panel.projectLocationTextField, "", "");
                     }
-                };
+                    setImport(true);
+                    setBuildfile(ibf.getBuildName());
+                }
+            }
+        }
 
-                DialogDescriptor descriptor = new DialogDescriptor(
-                    ibf,
-                    NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_BuildfileTitle"), //NOI18N
-                    true,
-                    new Object[] {ok, cancel},
-                    DialogDescriptor.OK_OPTION, 
-                    DialogDescriptor.DEFAULT_ALIGN,
-                    null,
-                    actionListener
-                );
-                
-                dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-                dialog.show();
-            } else
-                return;            
+        private JButton createButton(String labelId, String labelMnemonicId, String mnemonicId) {
+            JButton button = new JButton(NbBundle.getMessage(ImportWebProjectWizardIterator.class, labelId));
+            button.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(ImportWebProjectWizardIterator.class, labelMnemonicId));
+            button.setMnemonic(NbBundle.getMessage(ImportWebProjectWizardIterator.class, mnemonicId).charAt(0));
+            return button;
         }
-        
-        private void closeDialog() {
-            dialog.dispose();
-        }
+
     }
     
     public final class SecondPanel implements WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
@@ -492,10 +466,8 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
                 setErrorMessage("MSG_WebPagesFolderDoesNotExist"); //NOI18N
                 return false;
             }
-            final FileObject webPagesFO = FileUtil.toFileObject(webPagesDir);
-            FileObject projectFO =
-                    FileUtil.toFileObject((File) wizardDescriptor.getProperty(WizardProperties.PROJECT_DIR));
-            if(webPagesFO.equals(projectFO) || FileUtil.isParentOf(webPagesFO, projectFO)) {
+            File projectDir = (File) wizardDescriptor.getProperty(WizardProperties.PROJECT_DIR);
+            if(Utils.isParentOrEqual(webPagesDir, projectDir)) {
                 setErrorMessage("MSG_WebPagesFolderOverlapsProjectFolder"); //NOI18N
                 return false;
             }
@@ -520,7 +492,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
 
         private void setErrorMessage(final String msg) {
-            String s = (msg == null) ? null : NbBundle.getMessage(ImportWebProjectWizardIterator.class, msg); //NOI18N
+            String s = (msg == null) ? null : NbBundle.getMessage(ImportWebProjectWizardIterator.class, msg);
             wizardDescriptor.putProperty("WizardPanel_errorMessage", s); //NOI18N
         }
 

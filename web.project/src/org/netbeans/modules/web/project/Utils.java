@@ -66,7 +66,7 @@ public class Utils {
         }
         return fo;
     }
-    
+
     /**
      * Updates property file at given location of ant based project
      * @param h helper of the project
@@ -77,6 +77,27 @@ public class Utils {
         EditableProperties properties = h.getProperties(path);
         properties.putAll(ep);
         h.putProperties(path, properties);
+    }
+
+    /**
+     * Recursively checks whether the file lies underneath or equals the folder
+     * @param folder the root of folders hierarchy to search in 
+     * @param file the file to search for
+     * @return <code>true</code>, if <code>file</code> lies somewhere underneath or equals the <code>folder</code>,
+     * <code>false</code> otherwise
+     */
+    public static boolean isParentOrEqual(File folder, File file) {
+        if(folder != null || file != null) {
+            folder = FileUtil.normalizeFile(folder);
+            file = FileUtil.normalizeFile(file);
+            while(file != null) {
+                if(file.equals(folder)) {
+                    return true;
+                }
+                file = file.getParentFile();
+            }
+        }
+        return false;
     }
 
     // COPIED FROM TOMCAT
