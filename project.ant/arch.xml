@@ -4,7 +4,7 @@
 ]>
 
 <api-answers
-  question-version="1.23"
+  question-version="1.24"
   module="ant/project"
   author="jglick@netbeans.org"
 >
@@ -29,10 +29,12 @@
 -->
  <answer id="arch-overall">
   <api group="java" name="AntProjectAPI" type="export" category="devel">
+   <p>
    Mostly an SPI for creating project types centered around the Ant build tool.
    Permits Ant-based project types to be registered and supplies various support
    implementations to help satisfy the contract of <code>Project</code> and
    various optional interfaces.
+   </p>
   </api>
  </answer>
 
@@ -71,8 +73,7 @@
 -->
  <answer id="arch-time">
   <p>
-   Largely complete. Some VCS friendliness work, change firing, tests, etc.
-   remains to be done.
+   Mostly complete; see Issuezilla for remaining items.
   </p>
  </answer>
 
@@ -131,7 +132,8 @@
  <answer id="compat-i18n">
   <p>
    Supports localized project display names. Does not support I18N of Ant build
-   scripts.
+   scripts, though I18N of build output is possible (not yet implemented) via
+   <code>AntLogger</code> in the Ant Module API.
   </p>
  </answer>
 
@@ -218,7 +220,7 @@
  <answer id="dep-nb">
   <p>
    Filesystems, Datasystems (limited use and only internally), Project API,
-   Project UI API, General Queries API, Utilities (e.g. <code>Mutex</code>).
+   General Queries API, Utilities (e.g. <code>Mutex</code>).
   </p>
  </answer>
 
@@ -274,10 +276,9 @@
         </question>
 -->
  <answer id="deploy-dependencies">
-  <p>
-   <!-- XXX details -->
-   Regular module dependency.
-  </p>
+  <pre>
+   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.project.ant/0 &gt; @SPECIFICATION-VERSION@
+  </pre>
  </answer>
 
 
@@ -479,7 +480,7 @@
 -->
  <answer id="exec-property">
   <p>
-   No.
+   Standard property evaluators mirror system properties, as does Ant.
   </p>
  </answer>
 
@@ -526,6 +527,7 @@
  <answer id="exec-threading">
   <p>
    Uses the Project API's read-write lock for most purposes.
+   Some classes, such as the file built query implementation, use ad-hoc synchronization.
   </p>
  </answer>
 
@@ -601,6 +603,7 @@
  <answer id="lookup-lookup">
   <p>
    Ant-based project type providers are searched for in lookup.
+   <code>AntArtifactQuery</code> looks for implementations in lookup.
   </p>
  </answer>
 
@@ -619,6 +622,7 @@
   <p>
    The delegating singleton project factory is registered for the Project API to
    find.
+   There is a delegating implementation of <code>AntArtifactQueryImplementation</code>.
   </p>
  </answer>
 
@@ -885,5 +889,40 @@
    No.
   </p>
  </answer>
+
+
+<!--
+        <question id="security-grant" when="final">
+            Does your code grant addition rights to some code?
+            <hint>Avoid using a classloder that adds some extra
+            permissions to loaded code unless realy necessary.
+            Also note that your API implementation
+            can also expose unneeded permissions to enemy code by
+            AccessController.doPrilileged() calls.</hint>
+        </question>
+-->
+ <answer id="security-grant">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="security-policy" when="final">
+            Does your functionality require standard policy file modification?
+            <hint>Your code may pass control to third party code not
+            coming from trusted domain. It covers code downloaded over
+            network or code coming from libraries that are not bundled
+            with NetBeans. Which permissions it needs to grant to which domain?</hint>
+        </question>
+-->
+ <answer id="security-policy">
+  <p>
+   No.
+  </p>
+ </answer>
+
 
 </api-answers>
