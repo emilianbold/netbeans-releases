@@ -411,13 +411,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module innertesters..."/>
     <ant dir="../innertesters" target="netbeans"/>
   </target>
-  <!--
-  <target name="all-j2eeserver/deprecated" depends="all-openide,all-jarpackager,all-debuggercore,all-debuggerjpda,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-core/javahelp">
-    <echo message="Building module j2eeserver(deprecated)..."/>
-    <ant dir="../j2eeserver/deprecated" target="netbeans"/>
-  </target>
-  -->
-  <target name="all-j2eeserver" depends="all-openide,all-debuggercore,all-debuggerjpda,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-j2eeserver/j2eeapis,all-projects/projectapi,build-schema2beans/anttask">
+  <target name="all-j2eeserver" depends="all-openide,all-debuggercore,all-debuggerjpda,all-java/srcmodel,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-j2eeserver/j2eeapis,all-projects/projectapi,build-schema2beans/anttask">
     <echo message="Building module j2eeserver..."/>
     <ant dir="../j2eeserver" target="netbeans"/>
   </target>
@@ -627,22 +621,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module text..."/>
     <ant dir="../text" target="netbeans"/>
   </target>
-  <target name="all-tomcatint/tomcat32" depends="all-openide,all-web">
-    <echo message="Building module tomcatint/tomcat32..."/>
-    <ant dir="../tomcatint/tomcat32" target="netbeans"/>
-  </target>
-  <target name="all-tomcatint/tomcat40" depends="all-openide,all-web/core,all-schema2beans/rt,all-openide/deprecated,all-java/srcmodel,all-openide/execution,all-openide/compiler,all-openide/io,all-debuggercore/oldapi,build-schema2beans/anttask">
-    <echo message="Building module tomcatint/tomcat40..."/>
-    <ant dir="../tomcatint/tomcat40" target="netbeans"/>
-  </target>
-  <target name="all-tomcatint/bundledtomcat" depends="all-tomcatint/tomcat40">
-    <echo message="Building module tomcatint/bundledtomcat..."/>
-    <ant dir="../tomcatint/bundledtomcat" target="netbeans"/>
-  </target>
-  <target name="all-tomcatint/tomcat40autocompile" depends="all-tomcatint/tomcat40">
-    <echo message="Building module tomcatint/tomcat40autocompile..."/>
-    <ant dir="../tomcatint/tomcat40autocompile" target="netbeans"/>
-  </target>
   <target name="all-tomcatint/tomcat5" depends="all-openide,all-ant,all-schema2beans/rt,all-java/srcmodel,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-j2eeserver,all-web/ddapi,build-schema2beans/anttask">
     <echo message="Building module tomcatint/tomcat5..."/>
     <ant dir="../tomcatint/tomcat5" target="netbeans"/>
@@ -731,16 +709,19 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/ddapi..."/>
     <ant dir="../web/ddapi" target="netbeans"/>
   </target>
-  <target name="all-web/project" depends="all-web/servletapi24,all-java/api,all-openide/execution,all-java/platform,all-java/project,all-ant/project,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-projects/queries,all-openide/loaders,all-openide">
+  <target name="all-web/webapi" depends="all-openide/loaders,all-openide,all-schema2beans/rt">
+    <echo message="Building module web/webapi..."/>
+    <ant dir="../web/webapi" target="netbeans" />
+  </target>
+  <target name="all-web/project" depends="all-web/webapi,all-web/servletapi24,all-java/api,all-openide/execution,all-java/platform,all-java/project,all-ant/project,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-projects/queries,all-openide/loaders,all-openide,all-schema2beans/rt">
     <echo message="Building module web/project..."/>
     <ant dir="../web/project" target="netbeans" />
   </target>
-  <!-- XXX illegal dependence on core! -->
-  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-web/ddapi,all-web/project,all-j2eeserver,all-html,all-httpserver,all-debuggercore,all-openidex,all-schema2beans/rt,all-xml/api,all-xml/catalog,all-openide/deprecated,all-java/srcmodel,all-java/api,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects/projectapi,all-web/jspsyntax">
+  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-web/ddapi,all-web/webapi,all-j2eeserver,all-html,all-httpserver,all-debuggercore,all-openidex,all-schema2beans/rt,all-xml/api,all-xml/catalog,all-java/srcmodel,all-java/api,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects/projectapi,all-web/jspsyntax">
     <echo message="Building module web/core..."/>
     <ant dir="../web/core" target="netbeans"/>
   </target>
-  <target name="all-web/jspparser" depends="all-web/servletapi24,all-openide/deprecated,all-openide/compiler,all-openide/execution,all-openide/io">
+  <target name="all-web/jspparser" depends="all-web/servletapi24,all-openide/execution,all-openide/io">
     <echo message="Building module web/jspparser..."/>
     <ant dir="../web/jspparser" target="netbeans"/>
   </target>
@@ -748,7 +729,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/jspsyntax..."/>
     <ant dir="../web/jspsyntax" target="netbeans"/>
   </target>
-  <target name="all-web/jspdebug" depends="all-web/core,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-debuggercore/oldapi">
+  <target name="all-web/jspdebug" depends="all-web/core,all-openide/deprecated,all-java/srcmodel,all-openide/execution,all-debuggercore/oldapi">
     <echo message="Building module web/jspdebug..."/>
     <ant dir="../web/jspdebug" target="netbeans"/>
   </target>
