@@ -199,19 +199,19 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 
         ProjectCustomizer.Category services = ProjectCustomizer.Category.create(
                 WEBSERVICES,
-                "Web Services",
+                bundle.getString( "LBL_Config_WebServices" ), // NOI18N
                 null,
                 null);
                 
         ProjectCustomizer.Category clients = ProjectCustomizer.Category.create(
                 WEBSERVICECLIENTS,
-                "Web Service Clients",
+                bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
                 null,
                 null);
                 
         ProjectCustomizer.Category webServices = ProjectCustomizer.Category.create(
                 WEBSERVICE_CATEGORY,
-                "Web Services",
+                bundle.getString( "LBL_Config_WebServicesCategory" ), // NOI18N
                 null,
                 new ProjectCustomizer.Category[] { services, clients } );
                 
