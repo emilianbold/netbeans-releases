@@ -529,7 +529,7 @@ public class MakeNBM extends MatchingTask {
 		throw new BuildException ("must define alias attribute on <signature/>");
             if (signature.storepass.equals ("?") || !signature.keystore.exists()) {
                 log ("Not signing NBM file " + file + "; no stored-key password provided or keystore (" 
-		     + signature.keystore.toString() + ") doesn't exists", Project.MSG_WARN);
+		     + signature.keystore.toString() + ") doesn't exist", Project.MSG_WARN);
             } else {
                 log ("Signing NBM file " + file);
                 SignJar signjar = (SignJar) project.createTask ("signjar");
