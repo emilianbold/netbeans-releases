@@ -65,6 +65,7 @@ public class PasteInEditor extends org.netbeans.performance.test.utilities.Perfo
         editorOperator1.makeComponentVisible();
         editorOperator1.select(53,443);
         new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_C, KeyEvent.CTRL_MASK)).perform(editorOperator1);
+        waitNoEvent(1000);
         // go to the end of the second file
         editorOperator2.makeComponentVisible();
         editorOperator2.setCaretPositionToLine(23);
@@ -80,7 +81,8 @@ public class PasteInEditor extends org.netbeans.performance.test.utilities.Perfo
     public void shutdown() {
         // close the second file without saving it
         editorOperator2.closeDiscard();
+        editorOperator1.closeDiscard();
         repaintManager().setOnlyEditor(false);
     }
-
+    
 }
