@@ -36,7 +36,8 @@ Microsystems, Inc. All Rights Reserved.
   <target name="jars" depends="compile">
      <jar jarfile="${target_dir}/editor.jar"
            basedir="base"
-	   excludes="base/settings.properties"
+	   excludes="base/run.sh"
+	   manifest="manifest.mf"
            excludesfile="../../nbbuild/standard-jar-excludes.txt"
            compress="false">
      </jar>
@@ -44,7 +45,6 @@ Microsystems, Inc. All Rights Reserved.
 
    <target name="standalone" depends="jars">
      <copy file="base/run.sh" tofile="${target_dir}/run.sh" />
-     <copy file="base/settings.properties" tofile="${target_dir}/settings.properties" />
 
      <mkdir dir="${target_dir}/ParserDB" />
      <copy todir="${target_dir}/ParserDB">
