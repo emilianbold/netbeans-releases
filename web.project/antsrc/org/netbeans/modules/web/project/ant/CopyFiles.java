@@ -40,7 +40,7 @@ public class CopyFiles extends Task {
             
             PathTokenizer tokenizer = new PathTokenizer (getFiles ());
             while (tokenizer.hasMoreTokens ()) {
-                File f = new File (tokenizer.nextToken ());
+                File f = getProject().resolveFile(tokenizer.nextToken());
                 Copy cp = (Copy) getProject ().createTask ("copy");
                 cp.setTodir (getToDir ());
                 cp.setFile (f);
