@@ -95,7 +95,6 @@ public class FormDataLoader extends JavaDataLoader {
                                                          FileObject secondaryFile)
     {
         if (secondaryFile.getExt().equals(FORM_EXTENSION)) {
-            secondaryFile.setImportant(true);
             FileEntry formEntry = new FileEntry(obj, secondaryFile);
             ((FormDataObject)obj).formEntry = formEntry;
             return formEntry;
