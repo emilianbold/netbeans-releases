@@ -62,7 +62,10 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         this.testsPanel.addPropertyChangeListener(this);
     }
 
-    public void initValues(FileObject fo) {
+    public void initValues(FileObject fo) {        
+        ((FolderList) this.sourcePanel).setLastUsedDir(FileUtil.toFile(fo));
+        ((FolderList) this.testsPanel).setLastUsedDir(FileUtil.toFile(fo));
+        
         FileObject guessFO;
         String webPages = ""; //NOI18N
         String libraries = ""; //NOI18N
@@ -175,11 +178,19 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         }
         return null;
     }
-
     
     public void propertyChange(PropertyChangeEvent evt) {
         if (FolderList.PROP_FILES.equals(evt.getPropertyName())) {
             this.dataChanged();
+        } else if (FolderList.PROP_LAST_USED_DIR.equals (evt.getPropertyName())) {
+            if (evt.getSource() == this.sourcePanel) {                
+                ((FolderList)this.testsPanel).setLastUsedDir 
+                        ((File)evt.getNewValue());
+            }
+            else if (evt.getSource() == this.testsPanel) {
+                ((FolderList)this.sourcePanel).setLastUsedDir 
+                        ((File)evt.getNewValue());
+            }
         }
     }
 
