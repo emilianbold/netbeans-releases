@@ -280,9 +280,9 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement path="${junit.path}"/>
 		<pathelement path="${xerces.path}"/>
             </classpath>
-            <include name="**/src/**/*.java"/>
+            <include name="unit/src/**/*.java"/>
             <!-- only temp exclude, should be solved by classpath -->
-            <exclude name="perf/src/**"/> 
+            <!-- <exclude name="perf/src/**"/> -->
         </javac>
     </target>
     
