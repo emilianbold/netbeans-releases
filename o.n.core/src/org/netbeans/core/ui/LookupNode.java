@@ -306,6 +306,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
                         };
                     } else {
                         obj = orig;
+                        node = orig.getNodeDelegate();
                     }
                 }
                 node = new Leaf(node, obj, parent);
