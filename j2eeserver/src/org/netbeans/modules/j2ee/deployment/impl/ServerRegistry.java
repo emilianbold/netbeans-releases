@@ -219,13 +219,13 @@ public final class ServerRegistry implements java.io.Serializable {
             return;
         }
         
-        try {
+//        try {
             addInstanceImpl(url,username,password);
-        } catch(java.io.IOException e) {
+  /*      } catch(java.io.IOException e) {
             String msg = NbBundle.getMessage(ServerRegistry.class, "MSG_ErrorCreateInstance", url);
             InstanceCreationException ice = new InstanceCreationException(msg);
             throw (InstanceCreationException) ErrorManager.getDefault().annotate(ice, e);
-        }
+        }*/
     }
     
     private synchronized void writeInstanceToFile(String url, String username, String password) throws IOException {
