@@ -686,6 +686,9 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 || constr == Constants.RIGHT
                 || constr == Constants.BOTTOM) {
                     controller.userDroppedTopComponentsAroundEditor(tcArray, (String)constr);
+                } else if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
+                || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(tcArray[0])) {
+                    controller.userDroppedTopComponentsIntoEmptyEditor(tcArray);
                 }
             }
         } else if(viewElement instanceof ModeView) {

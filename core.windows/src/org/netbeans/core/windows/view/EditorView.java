@@ -207,6 +207,9 @@ public class EditorView extends ViewElement {
                     return new Rectangle(rect.width - (int)(rect.width * ratio), 0, (int)(rect.width * ratio), rect.height);
                 } else if(side == Constants.BOTTOM) {
                     return new Rectangle(0, rect.height - (int)(rect.height * ratio), rect.width, (int)(rect.height * ratio));
+                } else if(Constants.SWITCH_MODE_ADD_NO_RESTRICT
+                || WindowManagerImpl.getInstance().isTopComponentAllowedToMoveAnywhere(windowDnDManager.getStartingTransfer())) {
+                    return rect;
                 } else {
                     return null;
                 }
