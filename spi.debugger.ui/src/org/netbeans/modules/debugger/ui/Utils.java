@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -36,6 +36,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 
@@ -45,42 +46,6 @@ import org.openide.windows.TopComponent;
 * @author  Jan Jancura
 */
 public class Utils {
-    
-    /**
-     * Creates new node property for the specified object.
-     *
-     * @param  inst  object for which we are creating the new property
-     * @param  type  type of property value
-     *               (e.g. <TT>Boolean.TYPE</TT> for boolean property)
-     * @param  name  internal property name (not displayed)
-     * @param  dispName  property name (displayed)
-     * @param  shortDesc  short description of the property (hint)
-     * @param  getter  name of getter method
-     *                 (if <TT>null</TT>, the property will be write-only)
-     * @param  setter  name of setter method
-     *                 (if <TT>null</TT>, the property will be read-only)
-     * @see org.openide.nodes.PropertySupport.Reflection
-     */
-//    public static Node.Property createProperty (
-//        Object instance, Class type,
-//        String name, String dispName,
-//        String shortDesc,
-//        String getter, String setter
-//    ) {
-//        Node.Property prop;
-//        try {
-//            prop = new PropertySupport.Reflection (
-//                instance, type, getter, setter
-//            );
-//        }
-//        catch (NoSuchMethodException ex) {
-//            throw new IllegalStateException (ex.getMessage ());
-//        }
-//        prop.setName (name);
-//        prop.setDisplayName (dispName);
-//        prop.setShortDescription (shortDesc);
-//        return prop;
-//    }
     
     public static String getIdentifier () {
         EditorCookie e = getCurrentEditorCookie ();
@@ -214,23 +179,7 @@ public class Utils {
 //    }
     
     public static ImageIcon getIcon (String iconBase) {
-        String n = iconBase + ".gif"; // NOI18N
-        if (n.startsWith ("/"))
-            n = n.substring (1);
-        ClassLoader currentClassLoader = (ClassLoader) Lookup.getDefault ().
-            lookup (ClassLoader.class);
-        URL url = currentClassLoader.getResource (n);
-        //		URL url = TopManager.getDefault ().systemClassLoader ().getResource (n);
-        if (url == null) {
-            System.out.println (
-            "Icon: " + n +  // NOI18N
-            " does not exist!" // NOI18N
-            );
-            url = Utils.class.getResource (
-            "org/openide/resources/actions/properties.gif" // NOI18N
-            );
-        }
-        return new ImageIcon (url);
+        return new ImageIcon (Utilities.loadImage (iconBase+".gif"));
     }
     
     /**

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,11 +21,11 @@ import javax.swing.Action;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 
-import org.netbeans.modules.debugger.jpda.ui.Utils;
 import org.netbeans.modules.debugger.jpda.ui.views.SourcesView;
 import org.netbeans.modules.debugger.ui.views.CallStackView;
 
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -48,9 +48,7 @@ public class SourcesViewAction extends AbstractAction {
         );
         putValue (
             Action.SMALL_ICON, 
-            Utils.getIcon (
-                "org/netbeans/modules/debugger/jpda/resources/root" // NOI18N
-            )
+            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/root.gif")) // NOI18N
         );
     }
 
