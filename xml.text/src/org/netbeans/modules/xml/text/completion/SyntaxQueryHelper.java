@@ -136,7 +136,7 @@ public class SyntaxQueryHelper {
         if (element == null) throw new IllegalStateException("There exists a token therefore a syntax element must exist at " + offset + ", too.");
 
         // completion request originates from area covered by DOM, 
-        if (element instanceof SyntaxNode) {
+        if (element instanceof SyntaxNode && ((SyntaxNode)element).getNodeType() != Node.DOCUMENT_TYPE_NODE) {
             completionType = initContext();
         } else {
             // prolog, internal DTD no completition yet
