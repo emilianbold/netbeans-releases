@@ -63,10 +63,6 @@ public class CLIOptions2 extends CLIHandler implements Runnable {
         // moves it to front and requests focus
         f.toFront ();
         
-        java.awt.Component c = java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager ().getFocusOwner ();
-        if (c != null) {
-            c.requestFocus ();
-        }
     }
     
     
