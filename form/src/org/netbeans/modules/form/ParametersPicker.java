@@ -19,14 +19,14 @@ import java.util.Enumeration;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.openide.explorer.propertysheet.NbCustomPropertyEditor;
 import org.openide.util.Utilities;
 
 /** The ParametersPicker is a panel which allows to enter a method parameter data.
 *
 * @author  Ian Formanek
-* @version 1.00, Aug 29, 1998
 */
-public class ParametersPicker extends javax.swing.JPanel {
+public class ParametersPicker extends javax.swing.JPanel implements NbCustomPropertyEditor {
 
   /** Initializes the Form */
   public ParametersPicker(FormManager2 manager, RADComponent sourceComponent, Class requiredType) {
@@ -62,6 +62,69 @@ public class ParametersPicker extends javax.swing.JPanel {
     updateParameterTypes ();
     currentFilledState = isFilled ();
   }
+
+  public void setPropertyValue (RADConnectionPropertyEditor.RADConnectionDesignValue value) {
+    if (value == null) return; // can happen if starting without previously set value
+
+    switch (value.type) {
+      case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_VALUE:
+        valueButton.setSelected (true);
+        valueField.setText (value.value);
+        break;
+      case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_PROPERTY:
+        propertyButton.setSelected (true);
+        selectedComponent = value.radComponent;
+        selectedProperty = value.property;
+        if (selectedComponent instanceof FormContainer) {
+          propertyLabel.setText (selectedProperty.getName ());
+        } else {
+          propertyLabel.setText (selectedComponent.getName () + "." + selectedProperty.getName ());
+        }
+        break;
+      case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_METHOD:
+        methodButton.setSelected (true);
+        selectedComponent = value.radComponent;
+        selectedMethod = value.method;
+        if (selectedComponent instanceof FormContainer) {
+          methodLabel.setText (selectedMethod.getName ());
+        } else {
+          methodLabel.setText (selectedComponent.getName () + "." + selectedMethod.getName ());
+        }
+        break;
+      case RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_CODE:
+      default:
+        codeButton.setSelected (true);
+        codeArea.setText (value.userCode);
+        break;
+    }
+
+    // update enabled state
+    updateParameterTypes ();
+  }
+
+// ----------------------------------------------------------------------------------------
+// NbCustomPropertyEditor implementation
+
+  /** Get the customized property value.
+  * @return the property value
+  * @exception InvalidStateException when the custom property editor does not contain a valid property value
+  *            (and thus it should not be set)
+  */
+  public Object getPropertyValue () throws IllegalStateException {
+    if (!isFilled ()) throw new IllegalStateException ();
+    if (valueButton.isSelected ()) {
+      return new RADConnectionPropertyEditor.RADConnectionDesignValue (requiredType, valueField.getText ());
+    } else if (codeButton.isSelected ()) {
+      return new RADConnectionPropertyEditor.RADConnectionDesignValue (codeArea.getText ());
+    } else if (propertyButton.isSelected ()) {
+      return new RADConnectionPropertyEditor.RADConnectionDesignValue (selectedComponent, selectedProperty);
+    } else if (methodButton.isSelected ()) {
+      return new RADConnectionPropertyEditor.RADConnectionDesignValue (selectedComponent, selectedMethod);
+    } else return null;
+  }
+
+// ----------------------------------------------------------------------------------------
+// end of NbCustomPropertyEditor implementation
 
   public String getPreviewText () {
     if (!isFilled ())
@@ -384,6 +447,8 @@ public class ParametersPicker extends javax.swing.JPanel {
 
 /*
  * Log
+ *  7    Gandalf   1.6         6/27/99  Ian Formanek    Can be used in 
+ *       RADConnectionPropertyEditor as custom editor
  *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  5    Gandalf   1.4         6/1/99   Ian Formanek    Fixed removed event 
