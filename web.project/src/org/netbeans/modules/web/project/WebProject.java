@@ -102,6 +102,8 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     private FileObject libFolder = null;
     private CopyOnSaveSupport css;
     private WebModule apiWebModule;
+    private FileWatch webPagesFileWatch;
+    private FileWatch javaSourceFileWatch;
 
     private class FileWatch implements AntProjectListener, FileChangeListener {
 
@@ -112,8 +114,16 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
 
         public FileWatch(String property) {
             this.propertyName = property;
+        }
+
+        public void init() {
             helper.addAntProjectListener(this);
             updateFileChangeListener();
+        }
+
+        public void reset() {
+            helper.removeAntProjectListener(this);
+            setFileObject(null);
         }
 
         public void updateFileChangeListener() {
@@ -136,6 +146,10 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                 resolvedFile = null;
                 watchRename = false;
             }
+            setFileObject(fo);
+        }
+
+        private void setFileObject(FileObject fo) {
             if (!isEqual(fo, fileObject)) {
                 if (fileObject != null) {
                     fileObject.removeFileChangeListener(this);
@@ -213,8 +227,8 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
         css = new CopyOnSaveSupport();
-        new FileWatch(WebProjectProperties.WEB_DOCBASE_DIR);
-        new FileWatch(WebProjectProperties.SRC_DIR);
+        webPagesFileWatch = new FileWatch(WebProjectProperties.WEB_DOCBASE_DIR);
+        javaSourceFileWatch = new FileWatch(WebProjectProperties.SRC_DIR);
     }
 
     public FileObject getProjectDirectory() {
@@ -615,9 +629,15 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             if (WebPhysicalViewProvider.hasBrokenLinks(helper, refHelper)) {
                 BrokenReferencesSupport.showAlert();
             }
+            webPagesFileWatch.init();
+            javaSourceFileWatch.init();
         }
 
         protected void projectClosed() {
+
+            webPagesFileWatch.reset();
+            javaSourceFileWatch.reset();
+
             // Probably unnecessary, but just in case:
             try {
                 ProjectManager.getDefault().saveProject(WebProject.this);
