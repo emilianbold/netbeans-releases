@@ -2,20 +2,16 @@
 
 <!-- The list of normal or fragment attributes can be specified here, e.g.: -->
 <!--
-    <jsp:directive.attribute name="title"
-                             required="true"/>
-    <jsp:directive.attribute name="author"
-                             required="false"/>
+    <jsp:directive.attribute name="title" required="true"/>
+    <jsp:directive.attribute name="author" required="false"/>
 -->
 
 <!-- Use expression language to work with attributes, e.g.: -->
 <!--
-    <jsp:text>
-      <book>
-        <title>${title}</title>
-        <author>${author}</author>
-      </book>
-    </jsp:text>
+    <jsp:element name="book">
+        <jsp:element name="title">${title}</jsp:element>
+        <jsp:element name="author">${author}</jsp:element>
+    </jsp:element>
 -->
 
 </jsp:root>
@@ -29,11 +25,12 @@ This is an example (books.jspx):
 <jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
           xmlns:tags="urn:jsptagdir:/WEB-INF/tags"
           version="2.0">
-<jsp:directive.page contentType="text/xml;charset=UTF-8"/>
 
-<jsp:text><![CDATA[<books>]]></jsp:text>
-<tags:Book title="Whom The Bells Tolls" author="Ernest Hamingway"/>
-<jsp:text><![CDATA[</books>]]></jsp:text>
+    <jsp:directive.page contentType="text/xml;charset=UTF-8"/>
+
+    <jsp:element name="books">
+        <tags:Book title="Whom The Bells Tolls" author="Ernest Hamingway"/>
+    </jsp:element>
 
 </jsp:root>
 ********************************************************

@@ -13,7 +13,7 @@
 --%>
 
 <%-- Use expression language to work with normal attributes or use --%>
-<%-- the <jsp:invoke> and <jsp:doBody> actions for invoking JSP fragments and tag body: --%>
+<%-- the <jsp:invoke> or <jsp:doBody> actions to invoke JSP fragments or tag body: --%>
 <%--
 <table border=1>
   <tr>
