@@ -1,12 +1,12 @@
 package org.netbeans.qa.form.undoredo;
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -27,13 +27,18 @@ import org.netbeans.jellytools.actions.*;
 
 import org.netbeans.jemmy.operators.*;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import org.netbeans.jellytools.properties.Property;
+import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 
 public class BaseTest extends JellyTestCase {
     EditorOperator editor;
     ComponentInspectorOperator inspector;
-	EditorWindowOperator ewo;
-        
-    /** */    
+    EditorWindowOperator ewo;
+    
+    /** */
     public BaseTest(String testName) {
         super(testName);
     }
@@ -42,25 +47,33 @@ public class BaseTest extends JellyTestCase {
         if (MainFrame.getMainFrame().isMDI())
             org.netbeans.test.oo.gui.jelly.Options.switchToSDI() ;
     }
-    */
+     */
     
    /*
-    public void tearDown() {        
+    public void tearDown() {
         MainFrame mf = MainFrame.getMainFrame();
-            mf.pushMenuNoBlock("File|Save All");    
+            mf.pushMenuNoBlock("File|Save All");
             try {Thread.sleep(15000);} catch (Exception e) {}
             System.out.println("save..");
-    }   
+    }
     */
-        
+    
+    //select tab in PropertySheet
+    public void selectTab(PropertySheetOperator pso, int tabIndex){
+        ComponentSearcher searcher = new ComponentSearcher((Container)pso.getSource());
+        javax.swing.JTabbedPane tPane= JTabbedPaneOperator.findJTabbedPane((Container)pso.getSource(), searcher.getTrueChooser(""));
+        JTabbedPaneOperator tPaneOperator = new JTabbedPaneOperator(tPane);
+        //tPaneOperator.selectPage(tabIndex);//doesn't work
+        tPane.setSelectedIndex(tabIndex);
+    }
+    
     public void testScenario() {
         Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
         
         log("Open clear form");
         FormEditorOperator formWindow;
         String fileName = "clear_JFrame";
-        String packageName = "data";        
-
+        String packageName = "data";
         FormNode node = new FormNode("src|data|clear_JFrame");
         node.open();
         formWindow = new FormEditorOperator();
@@ -78,36 +91,36 @@ public class BaseTest extends JellyTestCase {
         
         //change properties (color)
         inspector.selectComponent("[JFrame]|JPanel1 [JPanel]");
-        new ColorProperty(inspector.properties().getPropertySheetTabOperator("Properties"), "background").setRGBValue(202,234,223);                
-        inspector.selectComponent("[JFrame]|JPanel2 [JPanel]");        
+        new ColorProperty(inspector.properties().getPropertySheetTabOperator("Properties"), "background").setRGBValue(202,234,223);
+        inspector.selectComponent("[JFrame]|JPanel2 [JPanel]");
         new ColorProperty(inspector.properties().getPropertySheetTabOperator("Properties"), "background").setRGBValue(252,34,3);
-                        
+        
         // add JButton1 to JPanel1
-        new Action(null,"Add From Palette|Swing|JButton").performPopup(new Node(inspector.treeComponents(),"[JFrame]|JPanel1 [JPanel]"));        
-                
+        new Action(null,"Add From Palette|Swing|JButton").performPopup(new Node(inspector.treeComponents(),"[JFrame]|JPanel1 [JPanel]"));
+        
         // add JButton2 to JPanel2
-        new Action(null,"Add From Palette|Swing|JButton").performPopup(new Node(inspector.treeComponents(),"[JFrame]|JPanel2 [JPanel]"));        
-                
+        new Action(null,"Add From Palette|Swing|JButton").performPopup(new Node(inspector.treeComponents(),"[JFrame]|JPanel2 [JPanel]"));
+        
         // cut-paste JButton1 from JPanel1 to JPanel2
-        new Action(null,"Cut").performPopup(new Node(inspector.treeComponents(),"[JFrame]|JPanel1 [JPanel]|jButton1 [JButton]"));        
-        new Action(null,"Paste").performPopup(new Node(inspector.treeComponents(),"[JFrame]|JPanel2 [JPanel]"));        
+        new Action(null,"Cut").performPopup(new Node(inspector.treeComponents(),"[JFrame]|JPanel1 [JPanel]|jButton1 [JButton]"));
+        new Action(null,"Paste").performPopup(new Node(inspector.treeComponents(),"[JFrame]|JPanel2 [JPanel]"));
         
         // change properties
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]|jButton1 [JButton]");
         new TextFieldProperty(inspector.properties().getPropertySheetTabOperator("Properties"), "text").setValue("<html><font color='red' size='+3'>QA</font> test");
         
-        // change order        
+        // change order
         new ActionNoBlock(null,"Change Order...").performPopup(new Node(inspector.treeComponents(),"[JFrame]|JPanel2 [JPanel]"));
         NbDialogOperator changeOrder = new NbDialogOperator("Change Order");
         new JListOperator(changeOrder).selectItem(1);
         new JButtonOperator(changeOrder,"Move up").doClick();
         changeOrder.btOK().doClick();
-
+        
         // change generated code
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]|jButton1 [JButton]");
         new TextFieldProperty(inspector.properties().getPropertySheetTabOperator("Properties"), "text").openEditor();
         //inspector.selectNode("[JFrame]" + inspector.delim + "JPanel2 [JPanel]" + inspector.delim + "jButton1 [JButton]");
-        //inspector.switchToTab("Properties");                 
+        //inspector.switchToTab("Properties");
         //inspector.openEditDialog("text");
         FormCustomEditorOperator fceo = new FormCustomEditorOperator("text");
         fceo.advanced();
@@ -120,11 +133,15 @@ public class BaseTest extends JellyTestCase {
         fceo.ok();
 
         // event
-        TextFieldProperty prop = new TextFieldProperty(inspector.properties().getPropertySheetTabOperator("Events"), "actionPerformed");
-        prop.setValue("myAction\n");
+        PropertySheetOperator pso = inspector.properties();
+        selectTab(pso, 2);
+        Property prop = new Property(pso, "actionPerformed");
+        prop.setValue("myAction");
+        selectTab(pso, 0);
+        
         
         //2x
-        for (int i=0;i<2;i++) {           
+        for (int i=0;i<2;i++) {
             // undo
             assertTrue("check in Editor 11b",checkEditor("private void myAction"));
             undo(1);
@@ -219,39 +236,39 @@ public class BaseTest extends JellyTestCase {
         
         undo(11);
         
-        editor.closeDiscard(); 
+        editor.closeDiscard();
         
         log("Test finished");
         
     }
     
-    void undo(int n) {        
+    void undo(int n) {
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-        inspector.selectComponent("[JFrame]");        
-        for (int i=0;i<n;i++) {     
+        inspector.selectComponent("[JFrame]");
+        for (int i=0;i<n;i++) {
             sleep(1000);
-            mainWindow.getToolbarButton(mainWindow.getToolbar("Edit"), "Undo").push();            
+            mainWindow.getToolbarButton(mainWindow.getToolbar("Edit"), "Undo").push();
             sleep(1000);
         }
     }
     
     void redo(int n) {
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-        inspector.selectComponent("[JFrame]");        
-        for (int i=0;i<n;i++) {     
+        inspector.selectComponent("[JFrame]");
+        for (int i=0;i<n;i++) {
             sleep(1000);
-            mainWindow.getToolbarButton(mainWindow.getToolbar("Edit"), "Redo").push();            
+            mainWindow.getToolbarButton(mainWindow.getToolbar("Edit"), "Redo").push();
             sleep(1000);
         }
     }
-   
+    
     void sleep(int ms) {
         try {Thread.sleep(ms);} catch (Exception e) {}
     }
     
     
-    boolean checkEditor(String regexp) {        
-    	editor = ewo.getEditor("clear_JFrame");
+    boolean checkEditor(String regexp) {
+        editor = ewo.getEditor("clear_JFrame");
         sleep(300);
         String editortext = editor.getText();
         // text without escape characters
@@ -262,7 +279,7 @@ public class BaseTest extends JellyTestCase {
             if (ch >= 32)
                 newtext.append(ch);
         }
-        */
+         */
         java.util.StringTokenizer tokenizer = new java.util.StringTokenizer(regexp,",");
         int pos = -1;
         boolean result = true;
@@ -283,7 +300,7 @@ public class BaseTest extends JellyTestCase {
      */
     public static void main(String[] args) {
         System.setProperty("nbjunit.workdir","c:/z");
-        junit.textui.TestRunner.run(suite());    
+        junit.textui.TestRunner.run(suite());
     }
     
     public static junit.framework.Test suite() {
