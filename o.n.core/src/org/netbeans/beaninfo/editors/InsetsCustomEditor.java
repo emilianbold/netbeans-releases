@@ -54,6 +54,21 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
                                new javax.swing.border.EmptyBorder (new java.awt.Insets(5, 5, 5, 5))));
 
         HelpCtx.setHelpIDString (this, InsetsCustomEditor.class.getName ());
+
+        topLabel.setLabelFor(topField);
+        leftLabel.setLabelFor(leftField);
+        bottomLabel.setLabelFor(bottomField);
+        rightLabel.setLabelFor(rightField);
+        
+        topLabel.setDisplayedMnemonic(bundle.getString("CTL_Top_Mnemonic").charAt(0));
+        leftLabel.setDisplayedMnemonic(bundle.getString("CTL_Left_Mnemonic").charAt(0));
+        bottomLabel.setDisplayedMnemonic(bundle.getString("CTL_Bottom_Mnemonic").charAt(0));
+        rightLabel.setDisplayedMnemonic(bundle.getString("CTL_Right_Mnemonic").charAt(0));
+
+        topField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Top"));
+        leftField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Left"));
+        bottomField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Bottom"));
+        rightField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Right"));
     }
 
     public java.awt.Dimension getPreferredSize () {

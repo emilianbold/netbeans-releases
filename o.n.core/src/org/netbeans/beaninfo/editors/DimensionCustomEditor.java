@@ -59,6 +59,9 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
         widthField.setText ("" + dimension.width);    // NOI18N
         heightField.setText ("" + dimension.height);  // NOI18N
         HelpCtx.setHelpIDString (this, DimensionCustomEditor.class.getName ());
+
+        widthField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Width"));
+        heightField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Height"));
     }
 
     public java.awt.Dimension getPreferredSize () {
@@ -106,6 +109,7 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
         java.awt.GridBagConstraints gridBagConstraints2;
         
         jLabel1.setText("jLabel1");
+        jLabel1.setLabelFor(insidePanel);
         gridBagConstraints2 = new java.awt.GridBagConstraints();
         gridBagConstraints2.gridx = 0;
         gridBagConstraints2.gridy = 0;
