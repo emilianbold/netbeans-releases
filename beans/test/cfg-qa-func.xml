@@ -2,7 +2,7 @@
 
 <mconfig name="QA Beans config">
     
-    <testbag testattribs="full" executor="ide" name="testbag_beans_templates" resultsprocessor="qa-beans">
+    <testbag testattribs="validation" executor="ide" name="testbag_beans_templates" resultsprocessor="qa-beans">
         <testset dir="qa-func/src">
             <patternset>
                 <include name="gui/BeansTemplates.class"/> 
@@ -10,7 +10,7 @@
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="full" executor="ide" name="testbag_beans_property" resultsprocessor="qa-beans">
+    <testbag testattribs="validation" executor="ide" name="testbag_beans_property" resultsprocessor="qa-beans">
         <testset dir="qa-func/src">
             <patternset>
                 <include name="gui/CreateNewIndexedProperty.class"/> 
@@ -20,7 +20,7 @@
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="full" executor="ide" name="testbag_beans_event_source" resultsprocessor="qa-beans">
+    <testbag testattribs="validation" executor="ide" name="testbag_beans_event_source" resultsprocessor="qa-beans">
         <testset dir="qa-func/src">
             <patternset>
                 <include name="gui/NewMulticastEventSource.class"/> 
@@ -29,7 +29,7 @@
             </patternset>
         </testset>
     </testbag>
-    <testbag testattribs="full" executor="ide" name="testbag_beans_beaninfo" resultsprocessor="qa-beans">
+    <testbag testattribs="validation" executor="ide" name="testbag_beans_beaninfo" resultsprocessor="qa-beans">
         <testset dir="qa-func/src">
             <patternset>
                 <include name="gui/BeanInfoGeneration.class"/>  
