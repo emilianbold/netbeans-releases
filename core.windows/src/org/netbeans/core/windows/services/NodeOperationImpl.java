@@ -247,9 +247,15 @@ public final class NodeOperationImpl extends NodeOperation {
             });
     }
     
+    /** Not serializable explorer tab used in explore from here.
+     */
     private static class NonPersistentExplorerTab extends NbMainExplorer.ExplorerTab {
         public int getPersistenceType() {
             return PERSISTENCE_NEVER;
+        }
+        
+        protected String preferredID() {
+            return "NonPersistentExplorerTab";
         }
     }
 
