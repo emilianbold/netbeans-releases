@@ -81,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Arguments which will be added into commandline of starting IDE. 
                  example: <property name="xtest.ide.commandline.suffix" value="-J-Dxtest.useclassloader=org.openidex.util"/>
           -->
-        <property name="xtest.ide.commandline.suffix" value="-J-Dnetbeans.windows=mdi -J-Dtest.timeout=90 -J-Ddebugger.jdk11.path=c:\jdk1.1.8"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Dnetbeans.windows=sdi -J-Dtest.timeout=90 -J-Ddebugger.jdk11.path=c:\jdk1.1.8"/>
   	
         <!-- =========================== -->
         <!-- Setting avanced classpathes -->
@@ -227,10 +227,16 @@ Microsystems, Inc. All Rights Reserved.
 	    <!-- If you need e.g. openide.jar, write this:
 	           <pathelement location="../netbeans/lib/openide.jar"/>
  	      -->
-	      <pathelement location="../netbeans/modules/jpdaDebugger.jar"/>
+<!--              
+              <pathelement location="../netbeans/modules/jpdaDebugger.jar"/>
 	      <pathelement location="../../debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
 	      <pathelement location="../../debuggertools/netbeans/modules/toolsDebugger.jar"/>
 	      <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+-->
+              <pathelement location="../../nbbuild/netbeans/modules/jpdaDebugger.jar"/>
+	      <pathelement location="../../nbbuild/netbeans/modules/autoload/debuggerCore.jar"/>
+	      <pathelement location="../../nbbuild/netbeans/modules/toolsDebugger.jar"/>
+	      <pathelement location="../../nbbuild/netbeans/lib/openide.jar"/>
 	</path>
     </target>
         
@@ -257,7 +263,7 @@ Microsystems, Inc. All Rights Reserved.
 	         If you need e.g. your tested module, write this:
 	           <pathelement location="${netbeans.home}/modules/somemodule.jar"/>
  	      -->
-	    <pathelement location="../mymodule.jar"/>     
+	    <pathelement location="unit/apps"/>     
    	</path>
     </target>
     
@@ -275,10 +281,17 @@ Microsystems, Inc. All Rights Reserved.
        	    <!-- If you need e.g. openide.jar, write this:
 	           <pathelement location="../netbeans/lib/openide.jar"/>
  	      -->
+<!--              
 	      <pathelement location="../netbeans/modules/jpdaDebugger.jar"/>
 	      <pathelement location="../../debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
 	      <pathelement location="../../debuggertools/netbeans/modules/toolsDebugger.jar"/>
 	      <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+-->              
+              <pathelement location="../../nbbuild/netbeans/modules/jpdaDebugger.jar"/>
+	      <pathelement location="../../nbbuild/netbeans/modules/autoload/debuggerCore.jar"/>
+	      <pathelement location="../../nbbuild/netbeans/modules/toolsDebugger.jar"/>
+	      <pathelement location="../../nbbuild/netbeans/lib/openide.jar"/>
+              
     	</path>
     </target>
         
@@ -305,7 +318,7 @@ Microsystems, Inc. All Rights Reserved.
 	         If you need e.g. your tested module, write this:
 	           <pathelement location="${netbeans.home}/modules/somemodule.jar"/>
  	      --> 
-	     <pathelement location="../mymodule.jar"/>
+	     <pathelement location="unit/apps"/>
     	</path>
     </target>
     
