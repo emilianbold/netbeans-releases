@@ -98,7 +98,7 @@ public class FormDataLoader extends MultiFileLoader {
   */
   protected MultiDataObject createMultiObject (FileObject primaryFile)
   throws DataObjectExistsException, java.io.IOException {
-    return new FormDataObject(primaryFile, findFile (primaryFile, FORM_EXTENSION), this);
+    return new FormDataObject(findFile (primaryFile, FORM_EXTENSION), primaryFile, this);
   }
 
   /** Creates the right primary entry for given primary file.
@@ -127,6 +127,8 @@ public class FormDataLoader extends MultiFileLoader {
 
 /*
  * Log
+ *  5    Gandalf   1.4         3/11/99  Ian Formanek    fixed order of form and 
+ *       java file
  *  4    Gandalf   1.3         3/10/99  Ian Formanek    Gandalf updated
  *  3    Gandalf   1.2         1/25/99  Ian Formanek    First switch to Gandalf
  *  2    Gandalf   1.1         1/6/99   Ian Formanek    Reflecting change in 
