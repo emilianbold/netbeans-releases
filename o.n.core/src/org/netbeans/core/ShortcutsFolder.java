@@ -239,16 +239,19 @@ final class ShortcutsFolder extends FolderInstance {
 
             boolean defaultsUsed = false;
             HashMap moduleKeyFiles = new HashMap (11);
-
-            FileObject mainFO = systemFS.find (SHORTCUTS_FOLDER, USER_KEYS_FILE, KEYS_EXT);
+            
+            FileObject shortcutsFolder = systemFS.getRoot().getFileObject(SHORTCUTS_FOLDER);
+            if (shortcutsFolder == null) {
+                shortcutsFolder = FileUtil.createFolder (systemFS.getRoot (), SHORTCUTS_FOLDER);
+            }
+            FileObject mainFO = shortcutsFolder.getFileObject(USER_KEYS_FILE, KEYS_EXT);
             if (mainFO == null) {
                 defaultsUsed = true;
                 // if no user-defined shortcuts found, try to use the default ones
-                mainFO = systemFS.find (SHORTCUTS_FOLDER, DEFAULT_KEYS_FILE, KEYS_EXT);
+                mainFO = shortcutsFolder.getFileObject(DEFAULT_KEYS_FILE, KEYS_EXT);
             }
 
             // find all .keys files in the Shortcuts folder,
-            FileObject shortcutsFolder = FileUtil.createFolder (systemFS.getRoot (), SHORTCUTS_FOLDER);
             FileObject[] files = shortcutsFolder.getChildren ();
             for (int i = 0; i < files.length; i++) {
                 String fName = files[i].getName ();
@@ -268,7 +271,7 @@ final class ShortcutsFolder extends FolderInstance {
                 // existing at the point of customization, i.e. their shortcuts are now contained
                 // in the USER_KEYS_FILE and should not be processed
                 //
-                FileObject propsFO = systemFS.find (SHORTCUTS_FOLDER, PROPERTIES_FILE, "properties"); // NOI18N
+                FileObject propsFO = shortcutsFolder.getFileObject(PROPERTIES_FILE, "properties"); // NOI18N
                 if (propsFO != null) {
                     Properties props = new Properties ();
                     try {
@@ -298,7 +301,8 @@ final class ShortcutsFolder extends FolderInstance {
      * the shortcuts folder.
      */
     public static void installBindings (HashMap strokesMap) throws IOException { 
-        FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem ().findResource(SHORTCUTS_FOLDER);
+        FileObject fo = TopManager.getDefault().getRepository().
+            getDefaultFileSystem().getRoot().getFileObject(SHORTCUTS_FOLDER);
         DataFolder f = DataFolder.findFolder(fo);
         for (Iterator it = strokesMap.keySet().iterator(); it.hasNext (); ) {
             KeyStroke key = (KeyStroke)it.next ();
@@ -396,7 +400,8 @@ final class ShortcutsFolder extends FolderInstance {
      * @param List changes - the elements of the List are ChangeRequests
      */
     public static void applyChanges(java.util.List changes) {
-        FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem ().findResource(SHORTCUTS_FOLDER);
+        FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem ().
+            getRoot().getFileObject(SHORTCUTS_FOLDER);
         DataFolder f = DataFolder.findFolder(fo);
         Iterator it = changes.listIterator();
         while (it.hasNext()) {
