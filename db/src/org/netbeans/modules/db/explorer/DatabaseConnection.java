@@ -298,11 +298,13 @@ public class DatabaseConnection implements DBConnection {
             
             return connection;
         } catch (SQLException e) {
-            // hack for Pointbase Network Server
             String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, e.getMessage()}); // NOI18N
-            if(drv.equals(PointbasePlus.DRIVER))
-                if(e.getErrorCode()==PointbasePlus.ERR_SERVER_REJECTED)
-                    message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, db}); // NOI18N
+  
+//commented out for 3.6 release, need to solve for next Studio release
+            // hack for Pointbase Network Server
+//            if(drv.equals(PointbasePlus.DRIVER))
+//                if(e.getErrorCode()==PointbasePlus.ERR_SERVER_REJECTED)
+//                    message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, db}); // NOI18N
 
             propertySupport.firePropertyChange("failed", null, null);
             throw new DDLException(message);
@@ -340,11 +342,13 @@ public class DatabaseConnection implements DBConnection {
                     setConnection(connection);
                     propertySupport.firePropertyChange("connected", null, null);
                 } catch (SQLException e) {
-                    // hack for Pointbase Network Server
                     String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, e.getMessage()}); // NOI18N
-                    if (drv.equals(PointbasePlus.DRIVER))
-                        if (e.getErrorCode() == PointbasePlus.ERR_SERVER_REJECTED)
-                            message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, db}); // NOI18N
+
+//commented out for 3.6 release, need to solve for next Studio release
+                    // hack for Pointbase Network Server
+//                    if (drv.equals(PointbasePlus.DRIVER))
+//                        if (e.getErrorCode() == PointbasePlus.ERR_SERVER_REJECTED)
+//                            message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, db}); // NOI18N
 
                     propertySupport.firePropertyChange("failed", null, null);
                     sendException(new DDLException(message));

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,7 +21,10 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.lib.ddl.impl.SpecificationFactory;
 import org.netbeans.modules.db.explorer.DatabaseOption;
-import org.netbeans.modules.db.explorer.PointbasePlus;
+
+//commented out for 3.6 release, need to solve for next Studio release
+//import org.netbeans.modules.db.explorer.PointbasePlus;
+
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 /** Abstract class that can be used as super class of all data objects that
@@ -48,8 +51,11 @@ public class RootNode extends DatabaseNode {
             sfactory = new SpecificationFactory();
             //initialization listener for debug mode
             initDebugListening();
+            
+//commented out for 3.6 release, need to solve for next Studio release
             //initialization listener for SAMPLE database option
-            initSampleDatabaseListening();
+//            initSampleDatabaseListening();
+            
             DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(null, "root"); //NOI18N
             if (sfactory != null) nfo.setSpecificationFactory(sfactory);
             else throw new Exception(bundle.getString("EXC_NoSpecificationFactory"));
@@ -85,22 +91,23 @@ public class RootNode extends DatabaseNode {
         sfactory.setDebugMode(option.getDebugMode());
     }
 
-    void initSampleDatabaseListening() {
-        if ( (getOption() == null) || (sfactory == null) ) {
-            initSampleDatabaseListening();
-        }
-        option.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent e) {
-                if (e.getPropertyName() != null && e.getPropertyName().equals(DatabaseOption.PROP_AUTO_CONNECTION))
-                    if(((Boolean)e.getNewValue()).booleanValue())
-                        try {
-                            PointbasePlus.addOrConnectAccordingToOption();
-                        } catch (Exception exp) {
-                            exp.printStackTrace();
-                        }
-            }
-        });
-    }
+//commented out for 3.6 release, need to solve for next Studio release
+//    void initSampleDatabaseListening() {
+//        if ( (getOption() == null) || (sfactory == null) ) {
+//            initSampleDatabaseListening();
+//        }
+//        option.addPropertyChangeListener(new PropertyChangeListener() {
+//            public void propertyChange(PropertyChangeEvent e) {
+//                if (e.getPropertyName() != null && e.getPropertyName().equals(DatabaseOption.PROP_AUTO_CONNECTION))
+//                    if(((Boolean)e.getNewValue()).booleanValue())
+//                        try {
+//                            PointbasePlus.addOrConnectAccordingToOption();
+//                        } catch (Exception exp) {
+//                            exp.printStackTrace();
+//                        }
+//            }
+//        });
+//    }
 
     public String getShortDescription() {
         return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_Root"); //NOI18N

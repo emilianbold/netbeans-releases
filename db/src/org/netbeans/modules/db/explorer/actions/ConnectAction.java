@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,7 +35,10 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.PointbasePlus;
+
+//commented out for 3.6 release, need to solve for next Studio release
+//import org.netbeans.modules.db.explorer.PointbasePlus;
+
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialog;
 import org.netbeans.modules.db.explorer.dlg.ConnectPanel;
 import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
@@ -80,18 +83,19 @@ public class ConnectAction extends DatabaseAction {
         Boolean rpwd = (Boolean) nfo.get(DatabaseNodeInfo.REMEMBER_PWD);
         boolean remember = ((rpwd != null) ? rpwd.booleanValue() : false);
 
-        if (PointbasePlus.DATABASE_URL.equals(nfo.getDatabase()) && PointbasePlus.DRIVER.equals(nfo.getDriver()) && PointbasePlus.USER_NAME.equals(nfo.getUser()))
-            try {
-                // add the connection (if needed) and connect to Pointbase SAMPLE database
-                PointbasePlus.addOrConnectAccordingToOption();
-                user = nfo.getUser();
-                pwd = nfo.getPassword();
-                rpwd = (Boolean) nfo.get(DatabaseNodeInfo.REMEMBER_PWD);
-                remember = ((rpwd != null) ? rpwd.booleanValue() : false);
-            } catch(Exception ex) {
-                //ignore the exception and open connect dialog
-//                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-            }
+//commented out for 3.6 release, need to solve for next Studio release
+//        if (PointbasePlus.DATABASE_URL.equals(nfo.getDatabase()) && PointbasePlus.DRIVER.equals(nfo.getDriver()) && PointbasePlus.USER_NAME.equals(nfo.getUser()))
+//            try {
+//                // add the connection (if needed) and connect to Pointbase SAMPLE database
+//                PointbasePlus.addOrConnectAccordingToOption();
+//                user = nfo.getUser();
+//                pwd = nfo.getPassword();
+//                rpwd = (Boolean) nfo.get(DatabaseNodeInfo.REMEMBER_PWD);
+//                remember = ((rpwd != null) ? rpwd.booleanValue() : false);
+//            } catch(Exception ex) {
+//                //ignore the exception and open connect dialog
+////                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+//            }
 
         final DatabaseConnection dbcon = (DatabaseConnection) nfo.getDatabaseConnection();
         
@@ -255,15 +259,16 @@ public class ConnectAction extends DatabaseAction {
                 while (rs.next())
                     schemas.add(rs.getString(1).trim());
         } catch (SQLException exc) {
+//commented out for 3.6 release, need to solve for next Studio release
             // hack for Pointbase Network Server
-            if (dbcon.getDriver().equals(PointbasePlus.DRIVER))
-                if (exc.getErrorCode() == PointbasePlus.ERR_SERVER_REJECTED) {
+//            if (dbcon.getDriver().equals(PointbasePlus.DRIVER))
+//                if (exc.getErrorCode() == PointbasePlus.ERR_SERVER_REJECTED) {
                     String message = MessageFormat.format(bundle.getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); // NOI18N
-                    message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, dbcon.getDatabase()}); // NOI18N
+//                    message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, dbcon.getDatabase()}); // NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
 //                    schema will be set to null
 //                    return true;
-                }
+//                }
         }
 
         return schemaPanel.setSchemas(schemas, schema);

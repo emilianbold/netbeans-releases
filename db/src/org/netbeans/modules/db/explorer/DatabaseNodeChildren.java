@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,8 +24,6 @@ import java.util.ResourceBundle;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.swing.SwingUtilities;
-
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
@@ -35,7 +33,6 @@ import org.openide.util.RequestProcessor;
 import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
 
 //import org.openide.util.Mutex;
 
@@ -102,19 +99,21 @@ public class DatabaseNodeChildren extends Children.Array {
                         if (snode != null)
                             children.add(snode);
                     }
-                    if (getNode() instanceof RootNode) {
-                        // open connection (after initCollection done)
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                try {
-                                    // add connection (if needed) and make the connection to SAMPLE database connected
-                                    PointbasePlus.addOrConnectAccordingToOption();
-                                    } catch(Exception ex) {
-                                        org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-                                    }
-                                }
-                            });
-                    }
+                    
+//commented out for 3.6 release, need to solve for next Studio release
+//                    if (getNode() instanceof RootNode) {
+//                        // open connection (after initCollection done)
+//                        SwingUtilities.invokeLater(new Runnable() {
+//                            public void run() {
+//                                try {
+//                                    // add connection (if needed) and make the connection to SAMPLE database connected
+//                                    PointbasePlus.addOrConnectAccordingToOption();
+//                                    } catch(Exception ex) {
+//                                        org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+//                                    }
+//                                }
+//                            });
+//                    }
                 } catch (Exception e) {
                         e.printStackTrace();
                         children.clear();

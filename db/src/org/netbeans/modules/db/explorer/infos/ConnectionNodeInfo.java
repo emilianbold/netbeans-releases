@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,7 +18,6 @@ import java.sql.Connection;
 import java.text.MessageFormat;
 import java.util.Vector;
 
-import org.openide.nodes.Node;
 
 import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.lib.ddl.DatabaseProductNotFoundException;
@@ -29,8 +28,12 @@ import org.netbeans.lib.ddl.impl.SpecificationFactory;
 import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseOption;
-import org.netbeans.modules.db.explorer.PointbasePlus;
-import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
+
+//commented out for 3.6 release, need to solve for next Studio release
+//import org.netbeans.modules.db.explorer.PointbasePlus;
+//import org.openide.nodes.Node;
+//import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
+
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 
 public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOperations {
@@ -42,19 +45,20 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
         String dburl = getDatabase();
         
         try {
+//commented out for 3.6 release, need to solve for next Studio release
             // check if there is connected connection by Pointbase driver
             // Pointbase driver doesn't permit the concurrently connection
-            if (drvurl.startsWith(PointbasePlus.DRIVER)) {
-                Node n[] = getParent().getNode().getChildren().getNodes();
-                for (int i = 0; i < n.length; i++)
-                    if (n[i] instanceof ConnectionNode) {
-                        ConnectionNodeInfo cinfo = (ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo();
-                        if (cinfo.getDriver().startsWith(PointbasePlus.DRIVER))
-                            if (!(cinfo.getDatabase().equals(dburl)&&cinfo.getUser().equals(getUser())))
-                                if ((cinfo.getConnection()!=null))
-                                    throw new Exception(bundle.getString("EXC_PBConcurrentConn")); // NOI18N
-                    }
-            }
+//            if (drvurl.startsWith(PointbasePlus.DRIVER)) {
+//                Node n[] = getParent().getNode().getChildren().getNodes();
+//                for (int i = 0; i < n.length; i++)
+//                    if (n[i] instanceof ConnectionNode) {
+//                        ConnectionNodeInfo cinfo = (ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo();
+//                        if (cinfo.getDriver().startsWith(PointbasePlus.DRIVER))
+//                            if (!(cinfo.getDatabase().equals(dburl)&&cinfo.getUser().equals(getUser())))
+//                                if ((cinfo.getConnection()!=null))
+//                                    throw new Exception(bundle.getString("EXC_PBConcurrentConn")); // NOI18N
+//                    }
+//            }
 
             DatabaseConnection con = new DatabaseConnection(drvurl, dburl, getUser(), getPassword());
             Connection connection = con.createJDBCConnection();
