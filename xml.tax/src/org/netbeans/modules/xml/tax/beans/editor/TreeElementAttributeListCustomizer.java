@@ -431,19 +431,19 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         }
         
         
-        // Get unique attribute name for added blank rows
-        private String getUniqueName(){
-            int index = 0, i = 0;
-            final String prefix = "attribute-"; // NOI18N
-            String result = prefix + Integer.toString(index);
-            while (i<numRows()){
-                if (result.equals(attrTable.getValueAt(i,0))) {
-                    result = prefix + Integer.toString(++index);
-                    i = 0;
-                } else  ++i;
-            }
-            return result;
-        }
+//         // Get unique attribute name for added blank rows
+//         private String getUniqueName(){
+//             int index = 0, i = 0;
+//             final String prefix = "attribute-"; // NOI18N
+//             String result = prefix + Integer.toString(index);
+//             while (i<numRows()){
+//                 if (result.equals(attrTable.getValueAt(i,0))) {
+//                     result = prefix + Integer.toString(++index);
+//                     i = 0;
+//                 } else  ++i;
+//             }
+//             return result;
+//         }
         
         /**
          */
