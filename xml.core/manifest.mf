@@ -15,6 +15,7 @@ OpenIDE-Module-Module-Dependencies:
  org.openide.execution > 1.0,
  org.openide.io > 1.0
 OpenIDE-Module-Requires: org.openide.TopManager, org.openide.windows.IOProvider
+OpenIDE-Module-Provides: org.netbeans.modules.xml.api.grammar_alpha1
 Class-Path: docs/xml-core.jar
 
 Name: org/netbeans/modules/xml/core/XMLDataLoader.class

@@ -11,4 +11,5 @@ OpenIDE-Module-Module-Dependencies:
  org.netbeans.modules.xml.tax/1 = @BUILD_NUMBER_SUBST@,
  org.netbeans.modules.xml.core/1 = @BUILD_NUMBER_SUBST@,
  org.netbeans.modules.editor/1 > 1.7
+OpenIDE-Module-Provides: org.netbeans.modules.xml.api.grammar_client
 
