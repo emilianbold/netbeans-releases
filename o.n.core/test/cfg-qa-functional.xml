@@ -24,19 +24,38 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="core qa-functional test config">
-  
-    <testbag testattribs="stable" executor="ide" name="testbag_1" resultsprocessor="unit">
+<!-- START Window System testbags -->
+    <testbag testattribs="stable and ide" executor="ide" name="Validation tests - initial position of windows (in ide)" resultsprocessor="unit">
         <testset dir="qa-functional/src">
-            <patternset>
-                <!-- Add your own code tests -->
+            <patternset>                
+                <include name="gui/windowsystem/validation/Validation_Init.class"/>		               
             </patternset>
         </testset>
     </testbag>
-
-    <testbag testattribs="stable" executor="code" name="testbag_2" resultsprocessor="unit">
+    <testbag testattribs="stable and ide" executor="ide" name="Validation tests - docking/attaching/resize/move/project switching (in ide)" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>
-                <!-- Add your own code tests -->
+                <include name="gui/windowsystem/validation/Validation_Docking.class"/>		
+                <include name="gui/windowsystem/validation/Validation_ProjectSwitching.class"/>		
+                <include name="gui/windowsystem/validation/Validation_ResizeMove.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="stable and ide" executor="ide" name="Main Window tests (in ide)" resultsprocessor="unit">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/windowsystem/mainwindow/MainMenu.class"/>		
+            </patternset>
+        </testset>
+    </testbag>
+<!-- END Window System testbags -->
+    
+   <!-- 
+    <testbag testattribs="stable and ide" executor="code" name="testbag_2" resultsprocessor="unit">
+        <testset dir="qa-functional/src">
+            <patternset>
+       
             </patternset>
         </testset>
     </testbag>
@@ -44,11 +63,11 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="dev" executor="code" name="testbag_dev" resultsprocessor="unit">
         <testset dir="qa-functional/src">
             <patternset>
-                <!-- Add your own code tests -->
+       
             </patternset>
         </testset>
     </testbag>
-    
+    -->
     <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
     
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>

@@ -26,9 +26,9 @@ Microsystems, Inc. All Rights Reserved.
 	     from <module>/src or <module>/netbeans to classpath, 
 	     look below to "setting advanced claspathes" part of this target.
           -->
-    
+        <property name="nbextra.dir" location="../../../nbextra"/>
         <!-- List of directories where jars will be searched. -->
-        <property name="xtest.extra.jars.path" location=""/>
+        <property name="xtest.extra.jars.path" location="${nbextra.dir}/jemmy/;${nbextra.dir}/jellytools;${netbeans.home}/lib/"/>
     
         <!-- This jars is used for compilation, execution codetests and also for
              execution ide tests (it means this classpath will be mounted in repository).
@@ -43,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
              this file will be searched in directories specified by property xtest.extra.jars.path 
                  example: <property name="xtest.extra.jars.ide" value="jdbc_driver1.zip;jdbcd_river2.jar"/>
           -->
-        <property name="xtest.extra.jars.ide" value=""/>
+        <property name="xtest.extra.jars.ide" value="jemmy.jar;jelly-nb.jar;openide.jar;core.jar"/>
 
 
         <!-- Arguments which will be added into commandline of starting IDE. 
@@ -87,6 +87,7 @@ Microsystems, Inc. All Rights Reserved.
                    example: <property name="compile.srcdir" value="unit/src1;unit/src2"/>
              -->
            <property name="compile.srcdir" value="qa-functional/src"/>
+	   <property name="compile.excludes" value="**/data/**"/>           
        </ant>
     </target>
 
