@@ -110,8 +110,8 @@ public class DTDDoclet {
 		comment = null;
 	    } else if (child instanceof TreeComment) {
 		comment = decodeComment((TreeComment) child);
-            } else if (child instanceof TreeText) {
-                // do not clear comment
+            } else if (child instanceof TreeText || child instanceof TreeParameterEntityReference) {
+                // do not clear comment #30094
 	    } else {
 		// disable comment
 		comment = null;
