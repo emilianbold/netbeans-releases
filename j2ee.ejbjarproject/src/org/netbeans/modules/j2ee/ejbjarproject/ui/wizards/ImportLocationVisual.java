@@ -820,7 +820,8 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
             try { if (r != null) r.close (); } catch (java.io.IOException ioe) { // ignore this 
             }
         }
-        return null;
+        // AB: fix for #56160: assume the class is in the default package
+        return ""; // NOI18N
     }
 
     private void initServerInstances() {
