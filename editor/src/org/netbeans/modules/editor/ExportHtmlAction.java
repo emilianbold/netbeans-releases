@@ -15,6 +15,7 @@ package org.netbeans.modules.editor;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.nodes.Node;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -60,12 +61,16 @@ public class ExportHtmlAction extends CookieAction {
 
     protected final void performAction(Node[] activatedNodes) {
         EditorCookie ec = (EditorCookie) activatedNodes[0].getCookie (EditorCookie.class);
-        StyledDocument doc = ec.getDocument();
+        StyledDocument doc = null;
+        try {
+            doc = ec.openDocument();
+        } catch (IOException ioe) {
+        }
         if (doc instanceof BaseDocument) {
-            BaseDocument bdoc = (BaseDocument) doc;
-            JTextComponent jtc = Utilities.getLastActiveComponent();
+            final BaseDocument bdoc = (BaseDocument) doc;
+            final JTextComponent jtc = Utilities.getLastActiveComponent();
             Presenter p = new Presenter ();
-            p.setFileName (System.getProperty("user.home")+File.separatorChar+
+            p.setFileName (System.getProperty("user.home")+File.separatorChar+              //NOI18N
                     ((DataObject)bdoc.getProperty (Document.StreamDescriptionProperty)).getPrimaryFile().getName()+HTML_EXT);
             p.setShowLines (((Boolean)SettingsUtil.getValue (bdoc.getKitClass(),SettingsNames.LINE_NUMBER_VISIBLE,
                     Boolean.FALSE)).booleanValue());
@@ -76,39 +81,54 @@ public class ExportHtmlAction extends CookieAction {
             dlg.dispose();
             dlg = null;
             if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-                String file = p.getFileName();
-                boolean lineNumbers = p.isShowLines();
-                boolean open = p.isOpenHtml();
                 boolean selection = p.isSelection();
-                int selectionStart;
-                int selectionEnd;
-                if (selection) {
-                    selectionStart = jtc.getSelectionStart();
-                    selectionEnd = jtc.getSelectionEnd();
-                }
-                else {
-                    selectionStart = 0;
-                    selectionEnd = bdoc.getLength();
-                }
-                try {
-                    export (bdoc, file, lineNumbers, selectionStart, selectionEnd);
-                } catch (IOException ioe) {
-                    NotifyDescriptor nd = new NotifyDescriptor.Message (
-                            MessageFormat.format (NbBundle.getMessage(ExportHtmlAction.class,"ERR_IOError"),
-                                new Object[]{((DataObject)bdoc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile().getNameExt()
-                                +HTML_EXT,file}),    //NOI18N
-                            NotifyDescriptor.ERROR_MESSAGE);
-                    DialogDisplayer.getDefault().notify (nd);
-                    return;
-                }
-                if (open) {
-                    try {
-                        HtmlBrowser.URLDisplayer.getDefault().showURL (new URL (FILE_PROTOCOL+file));
-                    } catch (MalformedURLException mue) {
-                        ErrorManager.getDefault().notify (mue);
-                    }
-                }
+                final String file = p.getFileName();
+                final boolean lineNumbers = p.isShowLines();
+                final boolean open = p.isOpenHtml();
+                final int selectionStart = selection ? jtc.getSelectionStart() : 0;
+                final int selectionEnd = selection ? jtc.getSelectionEnd() : bdoc.getLength();
+                RequestProcessor.getDefault().post(
+                        new Runnable () {
+                            public void run () {
+                                try {
+                                    if (jtc!=null)
+                                        this.setCursor (org.openide.util.Utilities.createProgressCursor (jtc));
+                                    export (bdoc, file, lineNumbers, selectionStart, selectionEnd);
+                                    if (open) {
+                                        HtmlBrowser.URLDisplayer.getDefault().showURL (new URL (FILE_PROTOCOL+file));
+                                    }
+                                } catch (MalformedURLException mue) {
+                                        ErrorManager.getDefault().notify (mue);
+                                } catch (IOException ioe) {
+                                    NotifyDescriptor nd = new NotifyDescriptor.Message (
+                                            MessageFormat.format (NbBundle.getMessage(ExportHtmlAction.class,"ERR_IOError"),
+                                                    new Object[]{((DataObject)bdoc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile().getNameExt()
+                                            +HTML_EXT,file}),    //NOI18N
+                                            NotifyDescriptor.ERROR_MESSAGE);
+                                    DialogDisplayer.getDefault().notify (nd);
+                                    return;
+                                }
+                                finally {
+                                    if (jtc != null) {
+                                        this.setCursor (null);
+                                    }
+                                }
+                            }
+
+
+                            private void setCursor (final Cursor c) {
+                                SwingUtilities.invokeLater (new Runnable () {
+                                        public void run() {
+                                            jtc.setCursor (c);
+                                        }
+                                    });
+                            }
+                        }
+                );
             }
+        }
+        else {
+            ErrorManager.getDefault().log (NbBundle.getMessage(ExportHtmlAction.class,"MSG_DocError."));
         }
     }
 
