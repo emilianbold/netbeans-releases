@@ -4,6 +4,9 @@
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
+            <attr name="Web/Samples" boolvalue="true"/>
+            <attr name="Standard/Samples" boolvalue="true"/>
+            <attr name="Mobile/Samples" boolvalue="true"/>
             <folder name="Samples">
                 <folder name="Web">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.examples.Bundle"/>
