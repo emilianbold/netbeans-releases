@@ -265,10 +265,11 @@ public final class NbSheet extends TopComponent {
             }
         });
     }
-
+/*
     public Dimension getPreferredSize () {
         return new Dimension (250, 400);
     }
+ */
 
     /** Serialize this property sheet */
     public void writeExternal (ObjectOutput out)
