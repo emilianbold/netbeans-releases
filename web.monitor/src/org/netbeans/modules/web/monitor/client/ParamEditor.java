@@ -65,8 +65,8 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
     private boolean editable = true;
     private boolean nameEditable;
     private boolean valueRequired = true;
-    private String name = "";
-    private String value = "";
+    private String name = ""; //NOI18N
+    private String value = ""; //NOI18N
     
     //
     // Widgets
@@ -74,7 +74,7 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
     private JTextField nameText;
     private JTextArea  valueText;
 
-    private String title = "";
+    private String title = ""; //NOI18N
 
     //private static boolean repainting = false;
     private boolean repainting = false;
@@ -115,8 +115,8 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 
     public String getName() {
 	
-	if(debug) System.out.println("Value of name text field: ");
-	if(debug) System.out.println(nameText.getText().trim());
+	if(debug) System.out.println("Value of name text field: "); //NOI18N
+	if(debug) System.out.println(nameText.getText().trim()); //NOI18N
 	return nameText.getText().trim();
     }
     public void setName(String val) {
@@ -127,8 +127,8 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
     }
 
     public String getValue() {
-	if(debug) System.out.println("Value of value textarea: ");
-	if(debug) System.out.println(valueText.getText().trim());
+	if(debug) System.out.println("Value of value textarea: "); //NOI18N
+	if(debug) System.out.println(valueText.getText().trim()); //NOI18N
 	return valueText.getText().trim();
     }
     public void setValue(String val) {
@@ -259,10 +259,10 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 	    
 	    inputOK = true;
 	    String str = getName(); 
-	    if(str.equals("")) inputOK = false;
+	    if(str.equals("")) inputOK = false; //NOI18N
 	    if(inputOK && valueRequired) {
 		str = getValue();
-		if(str.equals("")) inputOK = false;
+		if(str.equals("")) inputOK = false; //NOI18N
 	    }
 	    if(inputOK) dialog.dispose();
 	    else {
@@ -293,11 +293,12 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
     }
 
 
+    // Do we need this?
     public void repaint() {
 	super.repaint();
 	if (dialog != null && !repainting) {
 	    repainting = true;
-	    dialog.repaint(); // hopefully this won't get us into an infinte loop?
+	    dialog.repaint(); 
 	    repainting = false;
 	}
     }

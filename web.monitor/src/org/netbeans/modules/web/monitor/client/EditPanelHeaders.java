@@ -68,34 +68,23 @@ public class EditPanelHeaders extends DataDisplay {
 	this.monitorData = md;
     }
 
-    //
-    // stoopid versio nof redisplayData: nuke it all & start again.
-    //
+    // Replace this. Inefficient and prevents us from maintaining
+    // sorting. 
     public void redisplayData() {
 	setData(monitorData);
     }
 
-    // We're treating these as if they are all strings at the
-    // moment. In reality they can be of different types, though maybe 
-    // that does not matter...
     public void setData(MonitorData md) {
 
 	this.monitorData = md;
-	
-	if(debug) System.out.println("in EditPanelHeaders.setData()"); // NOI18N
+	setHeaderTable();
+	if(debug) log("setData()"); // NOI18N
 	 
 	this.removeAll();
 	
-	// Headers
-	String msg = msgs.getString("MON_HTTP_Headers"); 
-	final RequestData rd = monitorData.getRequestData();
-	Param[] params = rd.getHeaders().getParam();
-
 	int gridy = -1;
 	int fullGridWidth = java.awt.GridBagConstraints.REMAINDER;
 
-	if(params == null) params = new Param[0];
-	setHeaders(params);
 
 	addGridBagComponent(this, createTopSpacer(), 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
@@ -104,8 +93,7 @@ public class EditPanelHeaders extends DataDisplay {
 			    topSpacerInsets,
 			    0, 0);
 
-        headerTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_HTTP_HeadersTableA11yName"));
-        headerTable.setToolTipText(msgs.getString("ACS_MON_HTTP_HeadersTableA11yDesc"));
+	String msg = msgs.getString("MON_HTTP_Headers"); 
 	addGridBagComponent(this, createSortButtonLabel(msg, headerTable, msgs.getString("MON_HTTP_Headers_Mnemonic").charAt(0), msgs.getString("ACS_MON_HTTP_HeadersA11yDesc")), 0, ++gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
@@ -131,21 +119,21 @@ public class EditPanelHeaders extends DataDisplay {
 		    ParamEditor pe = new ParamEditor("", "", //NOI18N
 						     true, true, title);
 
-		    if(debug) System.out.println("Now showing dialog");// NOI18N
+		    if(debug) log("Now showing dialog");// NOI18N
 		    
 		    pe.showDialog(true);
 
-		    if(debug) System.out.println("Dialog closed"); // NOI18N
+		    if(debug) log("Dialog closed"); // NOI18N
 
 		    if (pe.getDialogOK()) {
 
-			if(debug) System.out.println("Dialog returned OK"); // NOI18N
+			if(debug) log("Dialog returned OK"); // NOI18N
 			String name = pe.getName();
 			String value = pe.getValue();
 			Param newParam = new Param(name, value);
 			Headers hd = monitorData.getRequestData().getHeaders();
 			int nth = hd.addParam(newParam);
-			if(debug) System.out.println("Headers are " // NOI18N
+			if(debug) log("Headers are " // NOI18N
 						     + hd.toString()); 
 
 			redisplayData();
@@ -161,7 +149,6 @@ public class EditPanelHeaders extends DataDisplay {
 		public void actionPerformed(ActionEvent e) {
 
 		    int numRows = headerTable.getRowCount();
-		    Headers hd = rd.getHeaders();
 
 		    StringBuffer buf = new StringBuffer
 			(msgs.getString("MON_Confirm_Delete_Headers")); 
@@ -180,6 +167,9 @@ public class EditPanelHeaders extends DataDisplay {
 		    showConfirmDialog(buf.toString()); 
 		    
 		    if(setParams) {
+
+			Headers hd = monitorData.getRequestData().getHeaders();
+
 			for(int i=0; i<numRows; ++i) {
 			    if(headerTable.isRowSelected(i)) {
 
@@ -198,7 +188,6 @@ public class EditPanelHeaders extends DataDisplay {
 			    }
 			}
 			redisplayData();
-			repaint();
 		    }
 		}});
 	
@@ -215,14 +204,7 @@ public class EditPanelHeaders extends DataDisplay {
 			    java.awt.GridBagConstraints.NONE,
 			    buttonInsets,
 			    0, 0);
-	/*
-	addGridBagComponent(this, editHeaderB, ++gridx, gridy,
-			    1, 1, 0, 0, 
-			    java.awt.GridBagConstraints.EAST,
-			    java.awt.GridBagConstraints.NONE,
-			    buttonInsets,
-			    0, 0);
-	*/
+
 	addGridBagComponent(this, deleteHeaderB, ++gridx, gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.EAST,
@@ -231,24 +213,13 @@ public class EditPanelHeaders extends DataDisplay {
 			    0, 0);
 
 	setEnablings();
-	
-	// Housekeeping
+
 	this.setMaximumSize(this.getPreferredSize()); 
 	this.repaint();
     }
     
-    private Param findParam(Param [] myParams, String name, String value) {
+    
 
-	for (int i=0; i < myParams.length; i++) {
-	
-	    Param param = myParams[i];
-	    if (name.equals(param.getName()) &&
-		value.equals(param.getValue()) ) {
-		return param;
-	    }
-	}
-	return null;
-    }
 
     public void showConfirmDialog(String msg) {
 
@@ -289,32 +260,30 @@ public class EditPanelHeaders extends DataDisplay {
 
      
     public void setEnablings() {
-	//
+
 	// Always enable the Add button.
-	//
 	newHeaderB.setEnabled(true);
 
-	int selectedRows[] = headerTable.getSelectedRows();
-	//
-	// The edit button is enabled if exactly one row is selected
-	//
-	//editHeaderB.setEnabled(selectedRows.length == 1);
-
-	//
 	// The delete row button is enabled if any rows are selected.
-	//
+	int selectedRows[] = headerTable.getSelectedRows();
 	deleteHeaderB.setEnabled(selectedRows.length > 0);
     }
 
-    boolean tableModelChanging;
-    public void setHeaders(Param[] newParams) {
-	headerTable = new DisplayTable(newParams, DisplayTable.HEADERS);
-	headerTable.sortByName(true);
+    public void setHeaderTable() {
+
+	Param[] params = monitorData.getRequestData().getHeaders().getParam();
+	if(params == null) params = new Param[0];
 	
+	headerTable = 
+	    new DisplayTable(params, DisplayTable.HEADERS, true);
+	headerTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_HTTP_HeadersTableA11yName"));
+        headerTable.setToolTipText(msgs.getString("ACS_MON_HTTP_HeadersTableA11yDesc"));
+
+
 	ListSelectionModel selma = headerTable.getSelectionModel();
 	selma.addListSelectionListener(new ListSelectionListener() {
 	    public void valueChanged(ListSelectionEvent evt) {
-		if(debug) System.out.println("EditPanelQuery::paramTable list selection listener"); // NOI18N
+		if(debug) log("got list selection event"); // NOI18N
 		setEnablings();
 	    }
 	});
@@ -323,53 +292,49 @@ public class EditPanelHeaders extends DataDisplay {
 	    public void tableChanged(TableModelEvent evt) {
 		
 		if(debug) 
-		    System.out.println("Header table got table changed event"); //NOI18N
-		
-		if (!tableModelChanging) {
-		    tableModelChanging = true;
-		    //
-		    // Loop through the rows and reset the params.
-		    //
-		    int num = headerTable.getRowCount();
-		    Headers hd = monitorData.getRequestData().getHeaders();
-		    Param[] params = hd.getParam();
-		    
-		    boolean inputOK = true;
-		    
-		    for(int i=0; i < num; i++) {
-			String name = (String)headerTable.getValueAt(i, 0);
-			name = name.trim();
-
-			if(debug) 
-			    System.out.println("Name is " + name); //NOI18N
-		       
-			if(name.equals("")) { // NOI18N
-			    headerTable.setValueAt(params[i].getName(), i, 0);
-			    inputOK = false;
-			}
-			String value = (String)headerTable.getValueAt(i, 1);
-			value = value.trim();
-
-			if(debug)
-			    System.out.println("Value is " + value); //NOI18N
-
-			if(value.equals("")) { // NOI18N
-			    headerTable.setValueAt(params[i].getValue(), i, 1);
-			    inputOK = false;
-			}
-			
-			if(!inputOK) {
-			    showErrorDialog();
-			    return;
-			}
-			params[i].setName(name);
-			params[i].setValue(value);
-		    }
-		    headerTable.sortByName();
-		    tableModelChanging = false;
-		}
+		    log("got table changed event"); //NOI18N
+		updateHeaders();
 	    }
 	});
+    }
+    
+    private void updateHeaders() {
+		
+	int num = headerTable.getRowCount();
+	Headers hd = monitorData.getRequestData().getHeaders();
+	Param[] params = hd.getParam();
+		    
+	boolean inputOK = true;
+		    
+	for(int i=0; i < num; i++) {
+	    String name = (String)headerTable.getValueAt(i, 0);
+	    name = name.trim();
+
+	    if(debug) 
+		log("Name is " + name); //NOI18N
+		       
+	    if(name.equals("")) { // NOI18N
+		headerTable.setValueAt(params[i].getName(), i, 0);
+		inputOK = false;
+	    }
+	    String value = (String)headerTable.getValueAt(i, 1);
+	    value = value.trim();
+	    
+	    if(debug)
+		log("Value is " + value); //NOI18N
+	    
+	    if(value.equals("")) { // NOI18N
+		headerTable.setValueAt(params[i].getValue(), i, 1);
+		inputOK = false;
+	    }
+	    
+	    if(!inputOK) {
+		showErrorDialog();
+		return;
+	    }
+	    params[i].setName(name);
+	    params[i].setValue(value);
+	}
     }
 
     public void repaint() {
@@ -377,5 +342,11 @@ public class EditPanelHeaders extends DataDisplay {
 	if (editPanel != null) 
 	    editPanel.repaint();
     }
+
+    void log(String s) {
+	System.out.println("EditPanelHeaders::" + s); //NOI18N
+    }
+    
+
 } // EditPanelHeader
 

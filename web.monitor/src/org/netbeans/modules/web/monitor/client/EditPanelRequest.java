@@ -49,9 +49,13 @@ public class EditPanelRequest extends DataDisplay {
 	msgs.getString("MON_Protocol")
     };
 
+    private static final String [] methodChoices = {
+	EditPanel.GET, 
+	EditPanel.POST, 
+	EditPanel.PUT
+    };
 
     private DisplayTable requestTable = null; 
-    private boolean holdTableChanges = false;
 
     private MonitorData monitorData = null;
     
@@ -63,25 +67,17 @@ public class EditPanelRequest extends DataDisplay {
 	this.monitorData = md;
     }
     
-    // We're treating these as if they are all strings at the
-    // moment. In reality they can be of different types, though maybe 
-    // that does not matter...
+    // Redesign this. It is inefficient and prevents us from
+    // maintaining the sorting state
+    public void redisplayData() {
+	setData(monitorData);
+    }
+
     public void setData(MonitorData md) {
 
 	this.monitorData = md;
-	setRequestTable(requestCategories);
-	
-	if(debug) 
-	    System.out.println("in EditPanelRequest.setData()");  // NOI18N
-			 
-	RequestData rd = monitorData.getRequestData();
-	holdTableChanges = true;
-	requestTable.setValueAt(rd.getAttributeValue("uri"), 0,1); //NOI18N
-	requestTable.setValueAt(rd.getAttributeValue(EditPanel.METHOD),1,1);
-	requestTable.setValueAt(rd.getAttributeValue("protocol"), 2,1);  // NOI18N
-        requestTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_RequestTable_19A11yName"));
-        requestTable.setToolTipText(msgs.getString("ACS_MON_RequestTable_19A11yDesc"));
-	holdTableChanges = false;
+	if(debug) log("setData()");  // NOI18N
+	setRequestTable(); 
 
 	this.removeAll();
 	
@@ -136,17 +132,25 @@ public class EditPanelRequest extends DataDisplay {
 	this.repaint();
     }
 
-    public void setRequestTable(String [] requestCategories) {
+    public void setRequestTable() {
 	
 	requestTable = 
 	    new DisplayTable(requestCategories, DisplayTable.REQUEST);
-	String [] methodChoices = {EditPanel.GET, EditPanel.POST, EditPanel.PUT};
+
+	RequestData rd = monitorData.getRequestData();
+	requestTable.setValueAt(rd.getAttributeValue("uri"), 0,1); //NOI18N
+	requestTable.setValueAt(rd.getAttributeValue(EditPanel.METHOD),1,1);
+	requestTable.setValueAt(rd.getAttributeValue("protocol"), 2,1);  // NOI18N
+
 	requestTable.setChoices(1, 1, methodChoices, false);
+        requestTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_RequestTable_19A11yName"));
+        requestTable.setToolTipText(msgs.getString("ACS_MON_RequestTable_19A11yDesc"));
 
 	requestTable.addTableModelListener(new TableModelListener() {
 		public void tableChanged(TableModelEvent evt) {
 
-		    if (holdTableChanges) return;
+		    if(debug) log("tableChanged"); //NOI18N
+		    
 		    RequestData rd = monitorData.getRequestData();
 
 		    // The query panel depends on the value of the
@@ -175,7 +179,6 @@ public class EditPanelRequest extends DataDisplay {
 				newMethod.equals(EditPanel.GET)) {
 			    Util.addParametersToQuery(rd);
 			}
-			editPanel.resetQueryPanelData();
 		    }
 
 		    //
@@ -197,4 +200,8 @@ public class EditPanelRequest extends DataDisplay {
 	    editPanel.repaint();
     }
 
+    void log(String s) {
+	System.out.println("EditPanelRequest::" + s); //NOI18N
+    }
+    
 } // EditPanelRequest

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<!ELEMENT MonitorData (ClientData, SessionData?, CookiesData?, RequestData, ServletData?, ContextData?,EngineData?)>
+<!ELEMENT MonitorData (ClientData, SessionData?, CookiesData?, RequestData, ServletData?, ContextData?,EngineData?, Dispatches?)>
 <!ATTLIST MonitorData
     resource CDATA #REQUIRED
     timestamp CDATA #REQUIRED
@@ -110,3 +110,10 @@
 <!ELEMENT RequestAttributesOut (Param*)>
 
 <!ELEMENT ContextAttributes (Param*)>
+
+<!ELEMENT Dispatches (DispatchData*)>
+
+<!ELEMENT DispatchData (ClientData, SessionData?, CookiesData?, RequestData, ServletData?, ContextData?,EngineData?, Dispatches?)>
+<!ATTLIST MonitorData
+    resource CDATA #REQUIRED>
+

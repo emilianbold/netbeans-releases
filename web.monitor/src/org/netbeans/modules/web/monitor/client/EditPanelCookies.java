@@ -38,7 +38,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-
 import org.openide.util.NbBundle;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
@@ -83,16 +82,12 @@ public class EditPanelCookies extends DataDisplay {
 
 	this.monitorData = md;
 	
-	if(debug) System.out.println("in RequestDisplay.setData()"); // NOI18N
+	setCookieTable();
 	 
 	this.removeAll();
 	
 	// Cookies
 	String msg = msgs.getString("MON_Cookies_4"); 
-
-	// We get the cookies data from the recorded cookies list
-	Param[] params = monitorData.getRequestData().getCookiesAsParams(); 
-	setCookies(params);
 	 
 	int gridy = -1;
 	int fullGridWidth = java.awt.GridBagConstraints.REMAINDER;
@@ -104,8 +99,6 @@ public class EditPanelCookies extends DataDisplay {
 			    topSpacerInsets,
 			    0, 0);
 
-        cookieTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_CookiesTableA11yName"));
-        cookieTable.setToolTipText(msgs.getString("ACS_MON_CookiesTableA11yDesc"));
 	addGridBagComponent(this, createSortButtonLabel(msg, cookieTable, msgs.getString("MON_Cookies_Mnemonic").charAt(0), msgs.getString("ACS_MON_CookiesA11yDesc")), 0, ++gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
@@ -131,18 +124,18 @@ public class EditPanelCookies extends DataDisplay {
 		    ParamEditor pe = new ParamEditor("", "", //NOI18N
 						     true, true, title);
 
-		    if(debug) System.out.println("Now showing dialog");// NOI18N
+		    if(debug) log(" Now showing dialog");// NOI18N
 		    
 		    pe.showDialog(true);
 
-		    if(debug) System.out.println("Dialog closed"); // NOI18N
+		    if(debug) log(" Dialog closed"); // NOI18N
 
 		    if (pe.getDialogOK()) {
 
-			if(debug) System.out.println("Dialog returned OK"); // NOI18N
+			if(debug) log(" Dialog returned OK"); // NOI18N
 			String name = pe.getName();
 			String value = pe.getValue();
-			System.out.println(name + " " + value);
+			if(debug) log(name + " " + value); //NOI18N
 			monitorData.getRequestData().addCookie(name,value);
 			redisplayData();
 		    }
@@ -176,14 +169,21 @@ public class EditPanelCookies extends DataDisplay {
 			
 			for(int i=0; i<numRows; ++i) {
 			    if(cookieTable.isRowSelected(i)) {
+
+				if(debug) log(" deleting cookie " + //NOI18N
+					      String.valueOf(i));
+		
 				String name =
 				    (String)cookieTable.getValueAt(i, 0); 
 				String value =
-				    (String)cookieTable.getValueAt(i, 1); 
+				    (String)cookieTable.getValueAt(i,
+								   1);
+
+				if(debug) log(name + ":" + value); //NOI18N
 				monitorData.getRequestData().deleteCookie(name, value);
-				redisplayData();
 			    }
 			}
+			redisplayData();
 		    }
 		}});
 	
@@ -214,19 +214,6 @@ public class EditPanelCookies extends DataDisplay {
 	this.repaint();
     }
     
-    private Param findParam(Param [] myParams, String name, String value) {
-
-	for (int i=0; i < myParams.length; i++) {
-	
-	    Param param = myParams[i];
-	    if (name.equals(param.getName()) &&
-		value.equals(param.getValue()) ) {
-		return param;
-	    }
-	}
-	return null;
-    }
-
     public void showConfirmDialog(String msg) {
 
 	Object[] options = { NotifyDescriptor.OK_OPTION, 
@@ -266,79 +253,59 @@ public class EditPanelCookies extends DataDisplay {
 
      
     public void setEnablings() {
-	//
 	// Always enable the Add button.
-	//
 	newCookieB.setEnabled(true);
 
-	int selectedRows[] = cookieTable.getSelectedRows();
-	//
-	// The edit button is enabled if exactly one row is selected
-	//
-	//editCookieB.setEnabled(selectedRows.length == 1);
-
-	//
 	// The delete row button is enabled if any rows are selected.
-	//
+	int selectedRows[] = cookieTable.getSelectedRows();
 	deleteCookieB.setEnabled(selectedRows.length > 0);
     }
 
-    boolean tableModelChanging;
+    public void setCookieTable() {
 
-    public void setCookies(Param[] params) {
+	Param[] params = monitorData.getRequestData().getCookiesAsParams(); 
+	cookieTable = new DisplayTable(params, DisplayTable.COOKIES, true);
 
-	cookieTable = new DisplayTable(params, DisplayTable.COOKIES);
-	cookieTable.sortByName(true);
-	
+        cookieTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_CookiesTableA11yName"));
+        cookieTable.setToolTipText(msgs.getString("ACS_MON_CookiesTableA11yDesc"));
+
 	ListSelectionModel selma = cookieTable.getSelectionModel();
 	selma.addListSelectionListener(new ListSelectionListener() {
 	    public void valueChanged(ListSelectionEvent evt) {
-		if(debug) System.out.println("EditPanelQuery::paramTable list selection listener"); // NOI18N
+		if(debug) log(" list selection event"); // NOI18N
 		setEnablings();
 	    }
 	});
 
 	cookieTable.addTableModelListener(new TableModelListener() {
 	    public void tableChanged(TableModelEvent evt) {
-		if (!tableModelChanging) {
-		    tableModelChanging = true;
-		    //
-		    // Loop through the rows and reset the params.
-		    //
-		    int num = cookieTable.getRowCount();
-		    Param[] params = monitorData.getRequestData().getCookiesAsParams(); 
-		    
-		    boolean inputOK = true;
-		    
-		    for(int i=0; i < num; i++) {
-			String name = (String)cookieTable.getValueAt(i, 0);
-			name = name.trim();
-			if(name.equals("")) { // NOI18N
-			    cookieTable.setValueAt(params[i].getName(), i, 0);
-			    inputOK = false;
-			}
-			String value = (String)cookieTable.getValueAt(i, 1);
-			value = value.trim();
-			if(value.equals("")) { // NOI18N
-			    cookieTable.setValueAt(params[i].getValue(), i, 1);
-			    inputOK = false;
-			}
-			
-			if(!inputOK) {
-			    showErrorDialog();
-			    return;
-			}
-			params[i].setName(name);
-			params[i].setValue(value);
-		    }
-		    cookieTable.sortByName();
-		    tableModelChanging = false;
-		}
+		if(debug) log(" table model changed"); //NOI18N
+		updateCookieHeader();
 	    }
 	});
     }
 
 
+    public void updateCookieHeader() { 
+
+	if(debug) log("updateCookieHeader()"); //NOI18N
+	int numRows = cookieTable.getRowCount(); 
+	if(debug) log("Number of rows is: " + // NOI18N
+		      String.valueOf(numRows));
+	if(numRows == 0) { 
+	    monitorData.getRequestData().setCookieHeader(""); //NOI18N
+	    return; 
+	}
+	StringBuffer buf = new StringBuffer(); 
+	for(int i=0; i<numRows; ++i) { 
+	    if(i>0) buf.append(";"); //NOI18N
+	    buf.append(cookieTable.getValueAt(i,0));
+	    buf.append("="); //NOI18N
+	    buf.append(cookieTable.getValueAt(i,1));
+	}
+	monitorData.getRequestData().setCookieHeader(buf.toString());
+	if(debug) log(" new cookie string is " + buf.toString()); //NOI18N
+    }
 
 
     public void repaint() {
@@ -346,6 +313,11 @@ public class EditPanelCookies extends DataDisplay {
 	if (editPanel != null) 
 	    editPanel.repaint();
     }
+
+    void log(String s) {
+	System.out.println("EditPanelCookies::" + s);//NOI18N
+    }
+
 } // EditPanelCookies
 
 

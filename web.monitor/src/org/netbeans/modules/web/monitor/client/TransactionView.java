@@ -46,6 +46,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children.SortedArray;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
@@ -85,7 +86,7 @@ public class TransactionView extends ExplorerPanel implements
     // Display stuff 
     private transient static ExplorerManager mgr = null;
     private transient BeanTreeView tree = null;
-    private transient TransactionNode selected = null;
+    private transient AbstractNode selected = null;
 
     private transient RequestDisplay requestDisplay = null;
     private transient CookieDisplay  cookieDisplay = null;
@@ -175,9 +176,7 @@ public class TransactionView extends ExplorerPanel implements
 	EditReplayAction.setTransactionView(this);
 	DeleteAction.setTransactionView(this);
 	
-	if (debug) 
-	    System.out.println
-		("Calling opentransactions from constructor"); // NOI18N
+	if (debug) log ("Calling opentransactions from constructor"); // NOI18N
     }
 
     private void initialize() {
@@ -215,7 +214,7 @@ public class TransactionView extends ExplorerPanel implements
 	    OpenTransactionNodesRequest();
 	
 	if(debug) 
-	    System.out.println("OpenTransactionNodesRequest:: " +  // NOI18N
+	    log("OpenTransactionNodesRequest:: " +  // NOI18N
 			       "posting request..."); // NOI18N
 				     
 	RequestProcessor.Task t = 
@@ -226,14 +225,14 @@ public class TransactionView extends ExplorerPanel implements
 	
 	public void run() {
 	    if(debug) 
-		System.out.println("OpenTransactionNodesRequest:: " + // NOI18N
+		log("OpenTransactionNodesRequest:: " + // NOI18N
 				   "running..."); // NOI18N
 	    openTransactionNodes();
 	}
 
 	public void openTransactionNodes() {
 	    if (debug) 
-		System.out.println("TransactionView::openTransactionNodes"); // NOI18N
+		log("TransactionView::openTransactionNodes"); // NOI18N
 	    NavigateNode root = controller.getRoot();
 	    Children ch = root.getChildren();
 	    Node [] nodes = ch.getNodes();
@@ -248,19 +247,19 @@ public class TransactionView extends ExplorerPanel implements
 	    Node [] currChNodes = currCh.getNodes();
 	    int numCN = currChNodes.length;
 	    if(debug)
-		System.out.println("TransactionView::openTransactionNodes. currCHNodes.length = " + numCN); // NOI18N
+		log("TransactionView::openTransactionNodes. currCHNodes.length = " + numCN); // NOI18N
 	    if (numCN > 0) {
 		int selectThisOne = 0;
 		if (timeAButton.isSelected()) {
 		    selectThisOne = numCN - 1;
 		}
-		if(debug) System.out.println("TransactionView::openTransactionNodes. selecting node " + currChNodes[selectThisOne] + "("+selectThisOne+")"); // NOI18N
+		if(debug) log("TransactionView::openTransactionNodes. selecting node " + currChNodes[selectThisOne] + "("+selectThisOne+")"); // NOI18N
 		selectNode(currChNodes[selectThisOne]);
 	    } else {
 		Children savedCh = sn.getChildren();
 		Node [] savedChNodes = savedCh.getNodes();
 		int numSN = savedChNodes.length;
-		if(debug) System.out.println("TransactionView::openTransactionNodes. savedChNodes.length = " + numSN); // NOI18N
+		if(debug) log("TransactionView::openTransactionNodes. savedChNodes.length = " + numSN); // NOI18N
 		if (numSN > 0) {
 		    selectNode(savedChNodes[0]);
 		}
@@ -275,7 +274,7 @@ public class TransactionView extends ExplorerPanel implements
 	    
 	} catch (Exception exc) {
 	    if (debug) {
-		System.out.println("TransactionView::caught exception selecting node. " + exc); // NOI18N
+		log("TransactionView::caught exception selecting node. " + exc); // NOI18N
 		exc.printStackTrace();
 	    }
 	} // safely ignored
@@ -285,12 +284,13 @@ public class TransactionView extends ExplorerPanel implements
      * Invoked from IDE when Monitor is opened. */
     private boolean openedOnceAlready = false;
     public void open(Workspace w) {
+	if(debug) log("open(Workspace w): " + String.valueOf(w)); //NOI18N
 	super.open(w); 
 	setName(msgs.getString("MON_Title"));	
 	String name = w.getName();
 	if (!openedOnceAlready) {
 	    openedOnceAlready = true;
-	    if (debug) System.out.println("Calling opentransactions from open(workspace w)"); // NOI18N
+	    if (debug) log("Calling opentransactions from open(workspace w)"); // NOI18N
 	    controller.getTransactions();
 	    openTransactionNodes();
 	}
@@ -313,6 +313,7 @@ public class TransactionView extends ExplorerPanel implements
      * from here. */
     public void open() {
 	super.open();
+	if(debug) log("open()"); //NOI18N
         requestFocus();
     }
 
@@ -562,45 +563,54 @@ public class TransactionView extends ExplorerPanel implements
      * PENDING - register this as a listener for the display action
      */
     public void displayTransaction(Node node) {
-	if(debug) System.out.println("Displaying a transaction. Node: "  + (node == null ? "null" : node.getName())); //NOI18N
+	if(debug) log("Displaying a transaction. Node: "  + (node == null ? "null" : node.getName())); //NOI18N
 	if (node == null)
 	    return;
 
-	try {
-	    selected = (TransactionNode)node;
-	} catch (ClassCastException ex) {
+	if(node instanceof TransactionNode || 
+	   node instanceof NestedNode) {
+	    try {
+		selected = (AbstractNode)node;
+	    } 
+	    catch (ClassCastException ex) {
+		selected = null;
+		selectNode(null);
+	    }
+	}
+	else {
 	    selected = null;
 	    selectNode(null);
 	}
-	if(debug) System.out.println("Set the selected node to\n" + // NOI18N
+	
+	if(debug) log("Set the selected node to\n" + // NOI18N
 					 (selected == null ? "null" : selected.toString())); // NOI18N
 	showData(); 
-	if(debug) System.out.println("Finished displayTransaction())"); // NOI18N
+	if(debug) log("Finished displayTransaction())"); // NOI18N
     }
 
     public void saveTransaction(Node[] nodes) {
-	if(debug) System.out.println("In saveTransaction())"); // NOI18N
+	if(debug) log("In saveTransaction())"); // NOI18N
 	if((nodes == null) || (nodes.length == 0)) return;
 	controller.saveTransaction(nodes);
 	selected = null;
 	selectNode(null);
 	showData(); 
-	if(debug) System.out.println("Finished saveTransaction())"); // NOI18N
+	if(debug) log("Finished saveTransaction())"); // NOI18N
     }
     
     /**
      * Invoked by EditReplayAction. 
      */
     public void editTransaction(Node node) {
-	if(debug) System.out.println("Editing a transaction"); //NOI18N
+	if(debug) log("Editing a transaction"); //NOI18N
 	// Exit if the internal server is not running - the user
 	// should start it before they do this. 
 	if(!controller.checkServer(true)) return;
 	selected = (TransactionNode)node;
-	if(debug) System.out.println("Set the selected node to\n" + // NOI18N
+	if(debug) log("Set the selected node to\n" + // NOI18N
 					 selected.toString()); 
 	editData(); 
-	if(debug) System.out.println("Finished editTransaction())"); // NOI18N
+	if(debug) log("Finished editTransaction())"); // NOI18N
     }
 
 
@@ -619,51 +629,50 @@ public class TransactionView extends ExplorerPanel implements
     
 
     void showData() {
-
+	 
 	if(selected == null) {
 	    // PENDING
 	    if(debug) 
-		System.out.println("No selected node, why is this?"); // NOI18N
-	    if(debug) System.out.println("  Probably because user selected a non-transaction node (i.e. one of the folders. So we clear the display."); // NOI18N
+		log("No selected node, why is this?"); // NOI18N
+	    if(debug) log("  Probably because user selected a non-transaction node (i.e. one of the folders. So we clear the display."); // NOI18N
 	}
 	
-	if(debug) System.out.println("Now in showData()"); // NOI18N
+	if(debug) log("Now in showData()"); // NOI18N
 	    
-	MonitorData md = null;	    
+	DataRecord dr = null;	    
 	try {
 	    if (selected != null) {
-		md = controller.getMonitorData(selected);
+		dr = controller.getDataRecord(selected);
 	    }
 	}
 	catch(Exception ex) {
-	    if(debug) System.out.println(ex.getMessage());
+	    if(debug) log(ex.getMessage());
 	    ex.printStackTrace();
 	}
 	
 	if(debug) {
-	    System.out.println("Got this far"); // NOI18N
-	    System.out.println((md == null?"null md":md.createTransactionNode(true).toString())); // NOI18N
-	    System.out.println("displayType:" + String.valueOf(displayType)); // NOI18N
+	    log("Got this far"); // NOI18N
+	    log("displayType:" + String.valueOf(displayType)); // NOI18N
 	}
 	
 	
 	if (displayType == 0)
-	    requestDisplay.setData(md);
+	    requestDisplay.setData(dr);
 	else if (displayType == 1)
-	    cookieDisplay.setData(md);
+	    cookieDisplay.setData(dr);
 	else if (displayType == 2)
-	    sessionDisplay.setData(md);
+	    sessionDisplay.setData(dr);
 	else if (displayType == 3)
-	    servletDisplay.setData(md);
+	    servletDisplay.setData(dr);
 	else if (displayType == 4)
-	    contextDisplay.setData(md);
+	    contextDisplay.setData(dr);
 	else if (displayType == 5)
-	    clientDisplay.setData(md);
+	    clientDisplay.setData(dr);
 	else if (displayType == 6)
-	    headerDisplay.setData(md);
+	    headerDisplay.setData(dr);
 	this.repaint();
 	
-	if(debug) System.out.println("Finished showData()"); // NOI18N
+	if(debug) log("Finished showData()"); // NOI18N
     }
 
 
@@ -671,26 +680,31 @@ public class TransactionView extends ExplorerPanel implements
 
 	if(selected == null) {
 	    if(debug) 
-		System.out.println("No selected node, why is this?"); // NOI18N 
+		log("No selected node, why is this?"); // NOI18N 
 	    return;
 	}
 	
-	if(debug) System.out.println("Now in editData()"); // NOI18N
+	if(!(selected instanceof TransactionNode)) return;
+		
+	if(debug) log("Now in editData()"); // NOI18N
 	    
 	MonitorData md = null;	    
 	try {
-	    boolean cached = false;
-	    md = controller.getMonitorData(selected, cached);
+	    // We retrieve the data from the file system, not from the 
+	    // cache
+	    md = controller.getMonitorData((TransactionNode)selected, 
+					   false,  // get from file
+					   false); // and don't cache
 	}
 	catch(Exception ex) {
-	    if(debug) System.out.println(ex.getMessage());
+	    if(debug) log(ex.getMessage());
 	    ex.printStackTrace();
 	}
 	
 	if(debug) {
-	    System.out.println("Got this far"); // NOI18N
-	    System.out.println(md.createTransactionNode(true).toString());
-	    System.out.println("displayType:" + // NOI18N
+	    log("Got this far"); // NOI18N
+	    log(md.dumpBeanNode()); 
+	    log("displayType:" + // NOI18N
 			       String.valueOf(displayType));
 	}
 	
@@ -702,7 +716,7 @@ public class TransactionView extends ExplorerPanel implements
 	editPanel.setData(md);
 	editPanel.showDialog();
 
-	if(debug) System.out.println("Finished editData()"); // NOI18N
+	if(debug) log("Finished editData()"); // NOI18N
     }
 
     /**
@@ -727,18 +741,18 @@ public class TransactionView extends ExplorerPanel implements
 		// Do nothing, this was not a proper node
 		catch(Exception e) {
 		    if(debug) {
-			System.out.println(e.getMessage());
+			log(e.getMessage());
 			e.printStackTrace();
 		    }
 		    selected = null;
 		    if(debug) 
-			System.out.println("Set the selected node to null"); // NOI18N
+			log("Set the selected node to null"); // NOI18N
 		    showData();
 		    return;
 		}
 	    }
 	}
-	if(debug) System.out.println("Finished propertyChange()"); // NOI18N
+	if(debug) log("Finished propertyChange()"); // NOI18N
     }
 
     /**
@@ -773,4 +787,9 @@ public class TransactionView extends ExplorerPanel implements
 	    return this;
 	}
     }
+
+    private void log(String s) {
+	System.out.println("TransactionView::" + s); //NOI18N
+    }
+     
 }

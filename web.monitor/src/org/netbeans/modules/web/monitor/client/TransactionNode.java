@@ -30,9 +30,23 @@ public class TransactionNode extends AbstractNode {
     String id, method, uri, name = null, timestamp = null; 
     boolean current;
     static boolean showTimeStamp = true; 
-   
+
+    /*
     public TransactionNode(String str, boolean current) { 
 	super(Children.LEAF); 
+ 	StringTokenizer st = 
+	    new StringTokenizer(str, Constants.Punctuation.itemSep);
+
+	this.id = st.nextToken(); 
+	this.method = st.nextToken(); 
+	this.uri = st.nextToken(); 
+	this.current = current; 
+
+	setProperties();
+    }
+
+    public TransactionNode(String str, Children ch, boolean current) { 
+	super(ch); 
 	StringTokenizer st = 
 	    new StringTokenizer(str, Constants.Punctuation.itemSep);
 
@@ -44,6 +58,7 @@ public class TransactionNode extends AbstractNode {
 	setProperties();
     }
 
+
     public TransactionNode(String str) { 
 	this(str, true);
     }
@@ -52,10 +67,24 @@ public class TransactionNode extends AbstractNode {
 	this(id, method, uri, true); 
     }
 
+    */
     public TransactionNode(String id, String method, String uri, 
 			   boolean current) {
 	
 	super(Children.LEAF);
+
+	this.id = id;
+	this.method = method;
+	this.uri = uri;
+	this.current = current;
+
+	setProperties();
+    }
+
+    public TransactionNode(String id, String method, String uri, 
+			   Children ch, boolean current) {
+	
+	super(ch);
 
 	this.id = id;
 	this.method = method;
@@ -208,10 +237,12 @@ public class TransactionNode extends AbstractNode {
 	try { 
 	    long ldate = Long.valueOf(id).longValue(); 
 	    Date date = new Date(ldate); 
-	    DateFormat df = 
-		DateFormat.getDateTimeInstance(DateFormat.SHORT, 
-					       DateFormat.SHORT); 
+
 	    StringBuffer buf = new StringBuffer("["); //NOI18N
+	    DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT); 
+	    buf.append(df.format(date)); 
+	    buf.append(" "); //NOI18N
+	    df = DateFormat.getDateInstance(DateFormat.SHORT);
 	    buf.append(df.format(date)); 
 	    buf.append("]"); //NOI18N
 	    timestamp = buf.toString();

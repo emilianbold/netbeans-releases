@@ -36,12 +36,15 @@ Microsystems, Inc. All Rights Reserved.
 
    <folder name="Help">
       <folder name="HelpShortcuts">
+        <!-- Insert helpset under the separator line below the Usersguide help -->
         <attr name="org-netbeans-modules-usersguide-sep.instance/org-netbeans-modules-web-monitor-mainpage.xml" boolvalue="true"/>
+        <!-- Insert helpset under JSP/Servlet Help -->
+        <attr name="org-netbeans-modules-web-ie-mainpage.xml/org-netbeans-modules-web-monitor-mainpage.xml" boolvalue="true"/>
         <file name="org-netbeans-modules-web-monitor-mainpage.xml" url="help-main-ref.xml">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.monitor.Bundle"/>
-          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/monitor/client/icons/menuitem.gif"/>
+          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/monitor/resources/blank.gif"/>
         </file>
-        <attr name="org-netbeans-modules-web-monitor-mainpage.xml/org-netbeans-modules-usersguide-lower-sep.instance" boolvalue="true"/>
+        <attr name="org-netbeans-modules-web-monitor-mainpage.xml/org-netbeans-modules-usersguide-second-sep.instance" boolvalue="true"/>
       </folder>
     </folder>
   </folder>
@@ -68,11 +71,23 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Services">
     
     <folder name="JavaHelp">
+      <!-- Merge after Core IDE Help: -->
       <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-web-monitor-resources-helpset.xml" boolvalue="true"/>
+      <!-- Merge after JSP/Servlet Help: -->
+      <attr name="org-netbeans-modules-web-ie-helpset.xml/org-netbeans-modules-web-monitor-resources-helpset.xml" boolvalue="true"/>
       <file name="org-netbeans-modules-web-monitor-resources-helpset.xml" url="helpset-decl.xml"/>
+      <!-- Merge before 3rd party help: -->
       <attr name="org-netbeans-modules-web-monitor-resources-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
     </folder>
 
   </folder>
   
+  <folder name="Web">
+    <folder name="MonitorSupport">
+        <file name="java-lang-Runnable.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.monitor.MonitorModule.getMonitorStartRunnable" />
+        </file>    
+    </folder>
+  </folder>
+
 </filesystem>

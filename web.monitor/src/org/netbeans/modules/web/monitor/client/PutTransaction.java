@@ -39,8 +39,8 @@ public class PutTransaction extends HttpServlet {
 
     public void doPost(HttpServletRequest req, HttpServletResponse res) 
 	throws ServletException, IOException {
-
-	if(debug) log("PutTransaction::doPost"); //NOI18N
+	 
+	if(debug) log("doPost"); //NOI18N
 	if(currDir == null) {
 	    try { 
 		currDir = Controller.getCurrDir();
@@ -56,66 +56,76 @@ public class PutTransaction extends HttpServlet {
 	// string for this. Don't do that. 
 
 	String id = req.getQueryString(); 
-
+	FileObject fo = null;
+	FileLock lock = null;
+	PrintWriter fout = null, out = null;
+	InputStreamReader isr = null;
+	 
 	try {
-	    if(debug) log("Trying to add the transaction"); //NOI18N
+	    if(debug) log(" Trying to add the transaction"); //NOI18N
 
 	    // PENDING: the id is parsed in TransactionNode. Should
 	    // *not* do that twice - may be it should be parsed here. 
 	    String name = 
 		id.substring(0, id.indexOf(Constants.Punctuation.itemSep));
 		
-	    FileObject fo = currDir.createData(name, "xml"); //NOI18N
-	    FileLock lock = fo.lock();
-	    PrintWriter fout = new PrintWriter(fo.getOutputStream(lock));
-	    
-	    if(debug) log("Reading buffer"); //NOI18N
+	    if(debug) log(" Before creating the file"); //NOI18N
+	    fo = currDir.createData(name, "xml"); //NOI18N
+	    if(debug) log(" After creating the file"); //NOI18N
+	    lock = fo.lock();
+	    if(debug) log(" Got the lock"); //NOI18N
+	    fout = new PrintWriter(fo.getOutputStream(lock));
+	    if(debug) log(" Got the lock, reading buffer"); //NOI18N
 
-	    InputStreamReader isr = 
-		new InputStreamReader(req.getInputStream());
+	    isr = new InputStreamReader(req.getInputStream());
 
 	    char[] charBuf = new char[4096];
 	    int numChars;
 	     
 	    while((numChars = isr.read(charBuf, 0, 4096)) != -1) {
 		fout.write(charBuf, 0, numChars);
-		if(debug) log(new String(charBuf));
+		//if(debug) log(new String(charBuf));
 	    }
-	    
-	    isr.close();
-	    fout.close();
-	    lock.releaseLock();
-	     
-	    if(debug) log("Done reading"); //NOI18N
 
-	    try {
-		MonitorAction.getController().addTransaction(id); 
-	    }
-	    catch(Exception ex) {
-		log("Couldn't add the transaction");  //NOI18N
-		if (debug) 
-		   log("MonitorAction.getController(): " +  //NOI18N
-		       MonitorAction.getController());
-		if (debug) log(ex); 
-	    }
-	    
-	    if(debug) log("...success"); //NOI18N
+ 	    if(debug) log("...success"); //NOI18N
 
 	    res.setContentType("text/plain");  //NOI18N
-	    
-	    PrintWriter out = res.getWriter();
+	    out = res.getWriter();
 	    out.println(Constants.Comm.ACK); 
 	}
-	catch (Exception e) { 
-	    if(debug) log(e); 
+	
+	catch(Exception ex) {
+	    if(debug) log("Couldn't add the transaction");  //NOI18N
+	    if(debug) 
+		log("MonitorAction.getController(): " +  //NOI18N
+		    MonitorAction.getController());
+	    if (debug) log(ex); 
 	}
+	finally {
+	    
+	    try {
+		lock.releaseLock();
+		if(debug) log(" Released the lock"); //NOI18N
+	    }
+	    catch(Exception ex1) { }
+
+	    try { out.close(); }
+	    catch(Exception ex2) { }
+
+	    try { isr.close();}
+	    catch(Exception ex3) { }
+
+	    try { fout.close(); }
+	    catch(Exception ex4) { }
+	}
+	MonitorAction.getController().addTransaction(id); 
     }
 
     // PENDING - deal better with this
     public void doGet(HttpServletRequest req, HttpServletResponse res) 
 	throws ServletException, IOException {
 
-	if(debug) log("PutTransaction::doGet");  //NOI18N
+	if(debug) log("doGet");  //NOI18N
 
 	PrintWriter out = res.getWriter();
 	try { 
@@ -123,7 +133,7 @@ public class PutTransaction extends HttpServlet {
 	    out.println("Shouldn't use GET for this!");  //NOI18N
 	}
 	catch (Exception e) { 
-	    System.out.println(e.getMessage());
+	    if(debug) log(e.getMessage());
 	}
 	try { out.close(); } catch(Exception ex) {}
     }
@@ -136,18 +146,16 @@ public class PutTransaction extends HttpServlet {
     public void init(ServletConfig servletConfig) { 
 
 	this.servletConfig = servletConfig;
-	if(debug) log("PutTransaction::init");  //NOI18N
+	if(debug) log("init");  //NOI18N
     }
     
     public void log(String msg) {
-	//servletConfig.getServletContext().log(msg); 
-	System.err.println(msg);
+	System.out.println("PutTransaction::" + msg); //NOI18N
 	
     }
 
     public void log(Throwable t) {
-	//servletConfig.getServletContext().log(getStackTrace(t)); 
-	System.err.println(getStackTrace(t));
+	log(getStackTrace(t));
     }
 
 

@@ -6,11 +6,11 @@ Use is subject to license terms.
 > -->
 <html>
 <head>
-<meta name="lastupdated" content="11feb02">
+<meta name="lastupdated" content="17april02">
 
 <title>Editing and Replaying Requests</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="StyleSheet" href="ide.css" type="text/css">
+<link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
@@ -19,7 +19,7 @@ Use is subject to license terms.
 <p>You can replay HTTP requests associated with both the Current Records and Saved 
   Records subcategories of the All Records tree view. The executor resends the 
   original HTTP request.</p>
-<table width="648">
+<table>
   <tr> 
     <td valign="top"><img src="../images/tip.gif" alt="Tip"></td>
     <td valign=top align=left> 
@@ -28,6 +28,25 @@ Use is subject to license terms.
       </td>
   </tr>
 </table>
+<p><b>To resend an HTTP Monitor data record to the server:</b></p>
+<ol>
+  <li>Right-click the monitor data record to be replayed.</li>
+  <li>Choose Replay from the contextual menu. The page resulting from the request 
+    appears in the browser you chose.</li>
+</ol>
+<p><b>To edit and then resend a monitor data record:</b></p>
+<ol>
+  <li>Right-click the monitor data record to be edited.</li>
+  <li>Choose Edit and Replay from the contextual menu. The Edit and Replay dialog 
+    box appears. It enables you to modify query parameters, request information, 
+    or headers before sending the request. You can also send the request to a 
+    different server.</li>
+  <li>Edit information about the request.</li>
+  <li>Click Send HTTP request.</li>
+</ol>
+<p>When editing and resending a record, there is a variety of information which 
+  you can edit. The sections below describe the information which can be edited 
+  in HTTP Monitor's Edit and replay dialog.</p>
 <p><b>To edit query parameters:</b></p>
 <ol>
   <li>Click the Query tab, and then click the Add parameter button. The Add Parameter 
@@ -54,8 +73,11 @@ Use is subject to license terms.
     cookie. The Edit Cookie dialog box appears.</li>
   <li>Edit the cookie name and value, and click OK. The edited cookie appears 
     in the Edit and Replay dialog box.</li>
+  <li>To delete a cookie, select the cookie and then click Delete cookies. Use 
+    the shift or Control key in conjunction with Delete cookies to delete multiple 
+    cookies. </li>
 </ol>
-<p><b>To add, delete, and resend a monitor data record with headers:</b></p>
+<p><b>To edit request headers:</b></p>
 <ol>
   <li>To add a header, click the Headers tab and then click the Add header button. 
     The Add Header dialog box appears.</li>
@@ -68,9 +90,6 @@ Use is subject to license terms.
     box appears.</li>
   <li>Type in the new name and value and click OK. The new information is reflected 
     in the Edit and replay dialog box.</li>
-  <li> 
-    <p>To send the monitor data record with the headers,<b> </b>click Send Transaction.</p>
-  </li>
 </ol>
 <p><b>To send a request to a different server:</b></p>
 <ol>
@@ -78,29 +97,9 @@ Use is subject to license terms.
     of HTTP service, click the Server tab and then click the ellipsis button next 
     to the desired server parameter. The Edit Value dialog box appears.</li>
   <li>Type in a value, and click OK. The edited server parameter values appear 
-    in the Edit and Replay dialog box.</li>
+    in the Edit and Replay dialog box. Note that success depends upon the target 
+    server having the monitor filter installed.</li>
 </ol>
-<p><b>To resend the original HTTP Monitor data record to the server:</b></p>
-<ol>
-  <li>Right-click the monitor data record to be replayed.</li>
-  <li>Choose Replay from the contextual menu. The monitor data record appears 
-    in the browser you chose.</li>
-</ol>
-
- <p><b>To edit and then resend a specified monitor data record:</b></p>
-<ol>
-  <li>Right-click the monitor data record to be edited.</li>
-  <li>Choose Edit and Replay from the contextual menu. The Edit and Replay dialog 
-    box appears. It enables you to modify query parameters, request information, 
-    or headers before sending the request. You can also send the request to a 
-    different server providing the server is managed by an instance of the IDE.</li>
-  <li>Edit information about the request.</li>
-  <li>Click Send HTTP request.</li>
-</ol>
-
- 
-
- 
 <table>
               <tr>
               <td valign="top"><img src="../images/tip.gif" alt="Tip"></td>
@@ -113,7 +112,8 @@ Use is subject to license terms.
       then any changes you specify in the Edit and Replay dialog box will be used. 
       If the record header doesn't include a session cookie, then the browser 
       won't send a cookie either. You can edit cookies either in the header or 
-      on the Cookies tab.</td> 
+      on the Cookies tab. Not all servers support this functionality, but it is 
+      supported on Tomcat 4.0.</td> 
               </tr>
               </table>
 
@@ -127,9 +127,9 @@ Use is subject to license terms.
          <tr>
          <td 
 width="23"></td>
-         <td><a href="view.html">Viewing HTTP Monitor Data Records</a><br>
-        <a href="sort.html">Sorting 
-HTTP Monitor Data Records</a><br>
+         <td>
+		<a href="view.html">Viewing HTTP Monitor Data Records</a><br>
+      <a href="sort.html">Using the HTTP Monitor Toolbar</a><br>
         <a href="store.html">Saving HTTP Monitor Data Records</a><br>
         <a href="delete.html">Deleting 
 HTTP Monitor Data Records</a> 

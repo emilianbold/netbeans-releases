@@ -33,7 +33,8 @@ import java.awt.Font;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import org.netbeans.modules.web.monitor.data.MonitorData;
+import org.netbeans.modules.web.monitor.data.DataRecord; 
+import org.netbeans.modules.web.monitor.data.Param; 
 
 abstract public class DataDisplay extends JPanel {
     
@@ -57,9 +58,8 @@ abstract public class DataDisplay extends JPanel {
 	setLayout(new GridBagLayout());
     }
     
-    abstract public void setData(MonitorData md);
+    //abstract public void setData(DataRecord md);
     
-
     void addGridBagComponent(Container parent,
 			     Component comp,
 			     int gridx, int gridy,
@@ -147,6 +147,22 @@ abstract public class DataDisplay extends JPanel {
 	return panel;
     }
 
+    void log(String s) { 
+	System.out.println("DataDisplay::" + s); // NOI18N
+    }
 
+
+    Param findParam(Param [] myParams, String name, String value) {
+
+	for (int i=0; i < myParams.length; i++) {
+	
+	    Param param = myParams[i];
+	    if (name.equals(param.getName()) &&
+		value.equals(param.getValue()) ) {
+		return param;
+	    }
+	}
+	return null;
+    }
 
 } // DataDisplay

@@ -57,7 +57,7 @@ public class HeaderDisplay extends DataDisplay {
     // We're treating these as if they are all strings at the
     // moment. In reality they can be of different types, though maybe 
     // that does not matter...
-    public void setData(MonitorData md) {
+    public void setData(DataRecord md) {
 
 	if(debug) System.out.println("in HeaderDisplay.setData()"); //NOI18N
 
@@ -84,7 +84,7 @@ public class HeaderDisplay extends DataDisplay {
 	    hLabel = createDataLabel(msg);
 	} else {
 	    msg = msgs.getString("MON_HTTP_Headers");
-	    headerTable = new DisplayTable(params);
+	    headerTable = new DisplayTable(params, true);
             headerTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_HTTP_HeadersTableA11yName"));
             headerTable.setToolTipText(msgs.getString("ACS_MON_HTTP_HeadersTableA11yDesc"));
 	    hLabel = createSortButtonLabel(msg, headerTable, msgs.getString("MON_HTTP_Headers_Mnemonic").charAt(0), msgs.getString("ACS_MON_HTTP_HeadersA11yDesc"));

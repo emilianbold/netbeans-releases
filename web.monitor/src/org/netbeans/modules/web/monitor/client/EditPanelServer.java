@@ -25,8 +25,6 @@
 /**
  * Contains the Server sub-panel for the EditPanel
  */
-
-
 package org.netbeans.modules.web.monitor.client; 
 
 import java.awt.event.*;
@@ -66,34 +64,11 @@ public class EditPanelServer extends DataDisplay {
 	this.monitorData = md;
     }
     
-    // We're treating these as if they are all strings at the
-    // moment. In reality they can be of different types, though maybe 
-    // that does not matter...
     public void setData(MonitorData md) {
 
 	this.monitorData = md;
-	setServerTable(servercats);
-	
-	if(debug) System.out.println("in EditPanelServer.setData()"); //NOI18N 
-
-	holdTableChanges = true;	 
-	EngineData ed  = monitorData.getEngineData();
-	if(ed != null) {
-	     
-	    serverTable.setValueAt(ed.getAttributeValue("serverName"), 0, 1); //NOI18N 
-	    serverTable.setValueAt(ed.getAttributeValue("serverPort"), 1, 1); //NOI18N 
-	}
-	// for backwards compatibility
-	else {
-	    ServletData sd = monitorData.getServletData();
-	    serverTable.setValueAt(sd.getAttributeValue("serverName"), 0, 1); //NOI18N 
-	    serverTable.setValueAt(sd.getAttributeValue("serverPort"), 1, 1); //NOI18N 
-	}
-	
-	holdTableChanges = false;
+	setServerTable();
 	this.removeAll();
-
-	// use this for the server! 
 
 	int gridy = -1;
 
@@ -104,8 +79,6 @@ public class EditPanelServer extends DataDisplay {
 			    topSpacerInsets,
 			    0, 0);
 
-        serverTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Exec_serverTableA11yName"));
-        serverTable.setToolTipText(msgs.getString("ACS_MON_Exec_serverTableA11yDesc"));
 	addGridBagComponent(this, createHeaderLabel(msgs.getString("MON_Exec_server"), msgs.getString("MON_Exec_server_Mnemonic").charAt(0), msgs.getString("ACS_MON_Exec_serverA11yDesc"), serverTable),
                             0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
@@ -142,9 +115,29 @@ public class EditPanelServer extends DataDisplay {
 	this.repaint();
     }
 
-    public void setServerTable(String []servercats) {
+    public void setServerTable() {
+
    	serverTable = new DisplayTable(servercats, DisplayTable.SERVER);
+
+	holdTableChanges = true;	 
+	EngineData ed  = monitorData.getEngineData();
+	if(ed != null) {
+	     
+	    serverTable.setValueAt(ed.getAttributeValue("serverName"), 0, 1); //NOI18N 
+	    serverTable.setValueAt(ed.getAttributeValue("serverPort"), 1, 1); //NOI18N 
+	}
+	// for backwards compatibility
+	else {
+	    ServletData sd = monitorData.getServletData();
+	    serverTable.setValueAt(sd.getAttributeValue("serverName"), 0, 1); //NOI18N 
+	    serverTable.setValueAt(sd.getAttributeValue("serverPort"), 1, 1); //NOI18N 
+	}
 	
+	holdTableChanges = false;
+	
+        serverTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Exec_serverTableA11yName"));
+        serverTable.setToolTipText(msgs.getString("ACS_MON_Exec_serverTableA11yDesc"));
+
 	serverTable.addTableModelListener(new TableModelListener() {
 	    public void tableChanged(TableModelEvent evt) {
 
@@ -181,9 +174,8 @@ public class EditPanelServer extends DataDisplay {
 		}
 
 		if(inputOK) {
-		    ServletData sd = monitorData.getServletData();
-		    sd.setAttributeValue("serverName", server); //NOI18N
-		    sd.setAttributeValue("serverPort", portStr); //NOI18N
+		    monitorData.setServerName(server); //NOI18N
+		    monitorData.setServerPort(portStr); //NOI18N
 		}
 		else {
 		    showErrorDialog();
@@ -212,4 +204,9 @@ public class EditPanelServer extends DataDisplay {
 
 	TopManager.getDefault().notify(errorDialog);
     }
+
+    void log(String s) {
+	System.out.println("EditPanelServer::" + s); //NOI18N
+    }
+
 } // EditPanelServer

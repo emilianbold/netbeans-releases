@@ -61,26 +61,26 @@ public class CookieIn extends BaseBean {
        * Get the value of name.
        * @return Value of name.
        */
-    public String getName() {return this.getAttributeValue("name");}
+    public String getName() {return this.getAttributeValue("name");} //NOI18N
     
     /**
        * Set the value of Name.
        * @param v  Value to assign to name.
        */
-    public void setName(String  v) {this.setAttributeValue("name", v);}
+    public void setName(String  v) {this.setAttributeValue("name", v);} //NOI18N
     
 
     /**
        * Get the value of value.
        * @return Value of value.
        */
-    public String getValue() {return this.getAttributeValue("value");}
+    public String getValue() {return this.getAttributeValue("value");} //NOI18N
     
     /**
        * Set the value of value.
        * @param v  Value to assign to value.
        */
-    public void setValue(String  v)  {this.setAttributeValue("value", v);}
+    public void setValue(String  v)  {this.setAttributeValue("value", v);} //NOI18N
     
     //
     static public void addComparator(BeanComparator c)

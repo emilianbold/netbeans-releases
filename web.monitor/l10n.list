@@ -2,3 +2,9 @@ monitor/src/org/netbeans/modules/web/monitor/Bundle.properties
 monitor/src/org/netbeans/modules/web/monitor/client/Bundle.properties
 monitor/src/org/netbeans/modules/web/monitor/data/Bundle.properties
 monitor/src/org/netbeans/modules/web/monitor/server/Bundle.properties
+monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.html
+monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.hs
+monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.xml
+monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.jhm
+monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.css
+monitor/javahelp/org/netbeans/modules/web/monitor/docs/**/*.gif

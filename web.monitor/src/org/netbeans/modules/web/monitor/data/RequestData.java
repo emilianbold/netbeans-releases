@@ -32,7 +32,7 @@ public class RequestData extends BaseBean {
     static public final String REQUESTDATA = "RequestData"; //NOI18N
 
     public final static String JSESSIONID = "JSESSIONID"; // NOI18N
-    
+    public final static String COOKIE = "cookie"; // NOI18N
     static private final boolean debug = false;
     
 
@@ -98,21 +98,6 @@ public class RequestData extends BaseBean {
 
     }
 
-    public void setReplaceSessionCookie(boolean value) { 
-	this.setAttributeValue("replace", String.valueOf(value)); // NOI18N
-    }
-
-    public boolean getReplaceSessionCookie() {
-	try {
-	    if(this.getAttributeValue("replace").equals("true")) // NOI18N
-		return true;
-	}
-	catch(NullPointerException npe) {
-	    // do nothing
-	}
-	return false;
-    }
-
     // This attribute is mandatory
     public void setHeaders(Headers value) {
 	this.setValue(HEADERS, value);
@@ -161,7 +146,7 @@ public class RequestData extends BaseBean {
     // This attribute is an array, possibly empty
     public void setParam(Param[] value)
     {
-	if(debug) System.out.println("setParam(Param[] value)"); //NOI18N
+	if(debug) log("setParam(Param[] value)"); //NOI18N
 	try {
 	    this.setValue(PARAM, value);
 	}
@@ -196,6 +181,25 @@ public class RequestData extends BaseBean {
 	return this.removeValue(PARAM, value);
     }
 
+
+    /* Methods for manipulating the session cookie */ 
+
+    public void setReplaceSessionCookie(boolean value) { 
+	this.setAttributeValue("replace", String.valueOf(value)); // NOI18N
+    }
+
+    public boolean getReplaceSessionCookie() {
+	try {
+	    if(this.getAttributeValue("replace").equals("true")) // NOI18N
+		return true;
+	}
+	catch(NullPointerException npe) {
+	    // do nothing
+	}
+	return false;
+    }
+
+
     public String getSessionID() {
 	return findSessionID(getCookieString());
     }
@@ -206,7 +210,7 @@ public class RequestData extends BaseBean {
 	String cookieStr = null;
 	int len = headers.length;
 	for(int j=0; j<len; ++j) {
-	    if(headers[j].getName().equalsIgnoreCase("cookie")) { //NOI18N
+	    if(headers[j].getName().equalsIgnoreCase(COOKIE)) { 
 		cookieStr = headers[j].getValue();
 		break;
 	    }
@@ -218,7 +222,7 @@ public class RequestData extends BaseBean {
 
     static public String findSessionID(String cookieStr) {
 
-	if(cookieStr == null || cookieStr.equals("")) 
+	if(cookieStr == null || cookieStr.equals("")) //NOI18N
 	    return ""; //NOI18N
 	
 	StringTokenizer tok = new StringTokenizer(cookieStr,
@@ -229,10 +233,6 @@ public class RequestData extends BaseBean {
 	    String token = tok.nextToken();
 	    int i = token.indexOf("="); // NOI18N
 	    if (i > -1) {
-
-		// PENDING (from tomcat source)
-		// the trims here are a *hack* -- this should
-		// be more properly fixed to be spec compliant
 			
 		String name = token.substring(0, i).trim();
 		if(name.equals(JSESSIONID)) {
@@ -244,20 +244,16 @@ public class RequestData extends BaseBean {
 	return ""; //NOI18N
     }
     
-
+    /** 
+     * Gets the cookies as an array of Param from the cookie string in 
+     * the header. If there is no cookie header we return an empty
+     * array. 
+     */
     public Param[] getCookiesAsParams() {
 
-	Param[] headers = getHeaders().getParam();
-	String cookieStr = null;
-	int len = headers.length;
-	for(int j=0; j<len; ++j) {
-	    if(headers[j].getName().equalsIgnoreCase("cookie")) { //NOI18N
-		cookieStr = headers[j].getValue();
-		break;
-	    }
-	}
-	
-	if(cookieStr == null || cookieStr.equals("")) 
+	String cookieStr = getCookieString();
+	 	
+	if(cookieStr == null || cookieStr.equals(""))  //NOI18N
 	    return new Param[0];
 		
 	Vector cookies = new Vector();
@@ -271,26 +267,10 @@ public class RequestData extends BaseBean {
 	    int i = token.indexOf("="); // NOI18N
 	    if (i > -1) {
 
-		// PENDING (from tomcat source)
-		// the trims here are a *hack* -- this should
-		// be more properly fixed to be spec compliant
-			
 		String name = token.substring(0, i).trim();
 		String value = token.substring(i+1, token.length()).trim();
-		
-		// RFC 2109 and bug 
-
 		value=stripQuote(value);
-		    
-		// Do we use the session cookie from the original
-		// request or from the browser?
-		/*
-		if(name.equals(JSESSIONID) && !replaceSession) {
-		    continue;
-		}
-		*/
-		Param  cookie = new Param(name, value);
-		cookies.addElement(cookie);
+		cookies.addElement(new Param(name, value));
 	    }
 	}
 	int numCookies = cookies.size();
@@ -299,167 +279,216 @@ public class RequestData extends BaseBean {
 	    params[k] = (Param)cookies.elementAt(k);
 	
 	return params;
-	
-	    /*
-	      if(!replaceSession) {
-	      // We use the cookie from the browser - now we 
-	      // have to make sure that this is the cookie
-	      // that is recorded by the wrapper too... 
-	      Cookie cks[] = null; 
-	      try { 
-	      cks = request.getCookies();
-	      for(int j=0; j<cks.length; ++j) {
-	      if(cks[j].getName().equals(JSESSIONID)) {
-	      Cookie cookie = new Cookie(JSESSIONID,
-	      cks[j].getValue());
-	      if(debug) context.log("Created cookie"); // NOI18N
-	      localCookies.addElement(cookie);
-	      if(debug) context.log("Added cookie"); // NOI18N
-	      break;
-	      }
-	      }
-	      }
-	      catch(Exception ex) { 
-				// Do nothing, there were no cookies
-				}
-				}
-	    }	
-	    */
     }
-    
 
-    // I am assuming that we don't have to check for duplicate cookies 
-    // here. I could be wrong. 
+    /**
+     * This method is used by EditPanelCookies to add cookies to the
+     * request data prior to a replay. We add the cookie to the 
+     * CookiesIn array, as well as adding the corresponding string to
+     * the header. It is the latter that is used for the replay - the
+     * former is only for display purposes while the user is modifying 
+     * the request. 
+     */
+     
     public void addCookie(String ckname, String ckvalue) {
+
+        // Do we have to check for duplicates? 
+	if(debug) 
+	    log("Adding cookie: " + ckname + " " + ckvalue); //NOI18N
+
+	// Holds the cookie header
+	StringBuffer buf = new StringBuffer();
+	
 	Param[] headers = getHeaders().getParam();
-	String cookieStr = null;
+	if(headers == null) headers = new Param[0]; 
+
+	int len = headers.length;
+
+	// No headers (this should not happen)
+	// Create a set of headers and add a cookie header
+	if(len == 0) { 
+	    buf.append(ckname);
+	    buf.append(";");  //NOI18N
+	    buf.append(ckvalue); 
+	    if(debug) log("New cookie string is " + buf.toString()); //NOI18N
+	    setCookieHeader(buf.toString()); 
+	    return;
+	}
+
+	for(int i=0; i<len; ++i) {
+	    if(!headers[i].getName().equalsIgnoreCase(COOKIE)) 
+		continue; 
+
+	    String oldCookies = headers[i].getValue(); 
+
+	    if(oldCookies != null && !oldCookies.trim().equals("")) { //NOI18N
+		buf.append(oldCookies.trim());
+		buf.append(";"); //NOI18N
+	    } 
+		
+	    buf.append(ckname);
+	    buf.append("=");//NOI18N
+	    buf.append(ckvalue);
+	    headers[i].setValue(buf.toString());
+	    if(debug) log("New cookie string is " + buf.toString()); //NOI18N
+	    return; 
+	}
+	 
+	// There were no cookies, create a new header
+	buf.append(ckname);
+	buf.append(";");  //NOI18N
+	buf.append(ckvalue); 
+	if(debug) log("New cookie string is " + buf.toString()); //NOI18N
+	setCookieHeader(buf.toString()); 
+    }
+
+    public void setCookieHeader(String cookies) { 
+
+
+    	Param[] headers = getHeaders().getParam();
+	if(headers == null) headers = new Param[0];
+
 	int len = headers.length;
 	for(int i=0; i<len; ++i) {
-	    if(headers[i].getName().equalsIgnoreCase("cookie")) { //NOI18N
-		StringBuffer buf = new StringBuffer(headers[i].getValue());
-		buf.append(";"); //NOI18N
-		buf.append(ckname);
-		buf.append("=");//NOI18N
-		buf.append(ckvalue);
-		headers[i].setValue(buf.toString());
-		break;
-	    }
-	}
-    }
+	    if(!headers[i].getName().equalsIgnoreCase(COOKIE)) 
+		continue; 
+
+	    headers[i].setValue(cookies);
+	    return;
+	} 
+
+	// We didn't find a cookie header - create one
+	Param p = new Param(COOKIE, cookies);
+	getHeaders().addParam(p); 
+    } 
+
 
     public void deleteCookie(String ckname, String ckvalue) {
 
-	if(debug) 
-	    System.out.println("Deleting cookie: " + //NOI18N
-			       ckname + " " + ckvalue);
+	
+	if(debug) log("Deleting cookie: " + ckname + " " + ckvalue); //NOI18N
 	
 	Param[] headers = getHeaders().getParam();
-
+	
+	// No headers (this should not happen) 
+	if(headers == null || headers.length == 0) return;
+	 
 	int len = headers.length;
 	for(int i=0; i<len; ++i) {
-	    if(headers[i].getName().equalsIgnoreCase("cookie")) { //NOI18N
 
-		StringBuffer buf = new StringBuffer();
-		StringTokenizer tok = 
-		    new StringTokenizer(headers[i].getValue(),
-					";", false); // NOI18N
+	    if(!headers[i].getName().equalsIgnoreCase(COOKIE)) 
+		continue; 
+
+	    if(debug) log(" found cookie header");//NOI18N
+	     
+	    String oldCookies = headers[i].getValue(); 
 	    
-		while (tok.hasMoreTokens()) {
+	    if(oldCookies == null || oldCookies.trim().equals("")) { //NOI18N
+		if(debug) log(" no cookies!");//NOI18N
+		return;
+	    } 
+
+	    if(debug) log(" old cookie string is " + oldCookies);//NOI18N
+		
+	    StringBuffer buf = new StringBuffer(); 
+	    StringTokenizer tok = 
+		new StringTokenizer(headers[i].getValue(),
+				    ";", false); // NOI18N
+	    
+	    while (tok.hasMoreTokens()) {
 		    
-		    String token = tok.nextToken();
-		    int j = token.indexOf("="); // NOI18N
-		    if (j > -1) {
+		String token = tok.nextToken();
+		int j = token.indexOf("="); // NOI18N
+		if (j > -1) {
 
-			String name = token.substring(0, j).trim();
-			String value = token.substring(j+1, token.length()).trim();
-			// RFC 2109 and bug 
-			value=stripQuote(value);
+		    String name = token.substring(0, j).trim();
+		    String value = token.substring(j+1, token.length()).trim();
+		    value=stripQuote(value);
 
-			if(debug) 
-			    System.out.println("Processing cookie: " + //NOI18N
-			       name + " " + value);
+		    if(debug) log("Processing cookie: " + //NOI18N
+				  name + " " + value); //NOI18N
 			
-			if(name.equals(ckname) && value.equals(ckvalue)) 
-			    continue;
-			else {
-			    if(debug) 
-				System.out.println("Keep this cookie"); //NOI18N
-			    buf.append(name);
-			    buf.append("=");//NOI18N
-			    buf.append(value);
-			    buf.append(";"); //NOI18N
-			}
+		    if(name.equals(ckname) && value.equals(ckvalue)) 
+			continue;
+		    else {
+			if(debug) log("Keep this cookie"); //NOI18N
+			buf.append(name);
+			buf.append("=");//NOI18N
+			buf.append(value);
+			buf.append(";"); //NOI18N
 		    }
-		    
-		    if(debug) 
-			System.out.println("New cookie string is: " + //NOI18N
-					   buf.toString());
 		}
-		headers[i].setValue(buf.toString());
-		break;
+		    
+		if(debug) log("New cookie string is: " + //NOI18N
+			      buf.toString());
 	    }
+	    headers[i].setValue(buf.toString());
+	    return;
 	}
+	// In this case if we don't find the cookie string, we don't
+	// need to do anything
     }
 
     public void deleteCookie(String ckname) {
 
-	if(debug) 
-	    System.out.println("Deleting cookie: " + //NOI18N
-			       ckname); 
-	
+	if(debug) log("Deleting cookie: " + ckname); //NOI18N
+				     
 	Param[] headers = getHeaders().getParam();
+	// No headers (this should not happen) 
+	if(headers == null || headers.length == 0) return;
 
 	int len = headers.length;
 	for(int i=0; i<len; ++i) {
-	    if(headers[i].getName().equalsIgnoreCase("cookie")) { //NOI18N
 
-		StringBuffer buf = new StringBuffer();
-		StringTokenizer tok = 
-		    new StringTokenizer(headers[i].getValue(),
-					";", false); // NOI18N
+	    if(!headers[i].getName().equalsIgnoreCase(COOKIE)) 
+		continue; 
+
+	    String oldCookies = headers[i].getValue(); 
 	    
-		while (tok.hasMoreTokens()) {
+	    if(oldCookies != null && !oldCookies.trim().equals("")) { //NOI18N
+		return;
+	    } 
+		
+	    StringBuffer buf = new StringBuffer();
+	    StringTokenizer tok = 
+		new StringTokenizer(headers[i].getValue(),
+				    ";", false); // NOI18N
+	    
+	    while (tok.hasMoreTokens()) {
 		    
-		    String token = tok.nextToken();
-		    int j = token.indexOf("="); // NOI18N
-		    if (j > -1) {
+		String token = tok.nextToken();
+		int j = token.indexOf("="); // NOI18N
+		if (j > -1) {
 
-			String name = token.substring(0, j).trim();
-			if(name.equals(ckname)) continue;
-			else {
-			    if(debug) 
-				System.out.println("Keep this cookie");//NOI18N
-			    String value = 
-				token.substring(j+1, token.length()).trim(); 
-			    value=stripQuote(value);
-			    buf.append(name);
-			    buf.append("=");//NOI18N
-			    buf.append(value);
-			    buf.append(";"); //NOI18N
-			}
+		    String name = token.substring(0, j).trim();
+		    if(name.equals(ckname)) continue;
+		    else {
+			if(debug) log("Keep this cookie");//NOI18N
+			String value = 
+			    token.substring(j+1, token.length()).trim(); 
+			value=stripQuote(value);
+			buf.append(name);
+			buf.append("=");//NOI18N
+			buf.append(value);
+			buf.append(";"); //NOI18N
 		    }
-		    
-		    if(debug) 
-			System.out.println("New cookie string is: " + //NOI18N
-					   buf.toString());
 		}
-		headers[i].setValue(buf.toString());
-		break;
+		    
+		if(debug) 
+		    log("New cookie string is: " + //NOI18N
+			buf.toString());
 	    }
+	    headers[i].setValue(buf.toString());
+	    return;
 	}
+	// If we never find a cookie header we don't need to do
+	// anything
     }
     
 
     /**
-     *
-     * Strips quotes from the start and end of the cookie string
-     * This conforms to RFC 2109. See comment to processCookies(). 
-     * 
-     * @param value            a <code>String</code> specifying the cookie 
-     *                         value (possibly quoted).
-     *
-     * @see #setValue
-     *
+     * @param value a <code>String</code> specifying the cookie value
+     * (possibly quoted). 
      */
     public static String stripQuote( String value )  {
 	
@@ -590,6 +619,9 @@ public class RequestData extends BaseBean {
 	return new RequestData();
     }
 
+    public void log(String s) { 
+	System.out.println("RequestData::" + s); //NOI18N
+    }
 
 }
 

@@ -44,16 +44,25 @@ import java.io.*;
 import java.net.*;
 
 import java.text.MessageFormat; 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
+import org.openide.cookies.InstanceCookie;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.execution.NbClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.nodes.Node;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Children.SortedArray;
 import org.openide.options.*;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 // Note dependency on other module! 
@@ -102,10 +111,11 @@ public class Controller  {
     private Hashtable currBeans = null;
     private Hashtable saveBeans = null;
     
-    //private Node[] transactionNodes = null;
-    //private Node[] savedNodes = null;
-
     private transient Comparator comp = null;
+
+    private HtmlBrowser.BrowserComponent browser = null;
+    private SettingsListener browserListener = null;
+    private SystemOption settings = null;
 
     private boolean useBrowserCookie = true;
     
@@ -113,8 +123,8 @@ public class Controller  {
 
 	currBeans = new Hashtable();
 	saveBeans = new Hashtable();
-	
 	createNodeStructure();
+	registerBrowserListener();
     }
 
     /**
@@ -139,10 +149,13 @@ public class Controller  {
 	Children children = new Children.Array();
 	children.add(kids);
 	root = new NavigateNode(children);
+
+	    
     }
 
     public void cleanup() {
 	deleteDirectory(currDirStr);
+	removeBrowserListener();
     }
 
     /**
@@ -150,7 +163,7 @@ public class Controller  {
      */
     void addTransaction(String str) {
 	TransactionNode[] nodes = new TransactionNode[1];
-	nodes[0] = new TransactionNode(str);
+	nodes[0] = createTransactionNode(str);
 	currTrans.add(nodes);
     }
 
@@ -412,8 +425,18 @@ public class Controller  {
 	    log("Replay transaction from node " + node.getName()); // NOI18N
 		
 	if(!checkServer(true)) return;
-	TransactionNode tn = (TransactionNode)node;
-	MonitorData md = getMonitorData(tn);
+
+	TransactionNode tn = null; 
+	try {
+	    tn = (TransactionNode)node;
+	}
+	catch(ClassCastException cce) {
+	    if(debug) 
+		log("Selected node was not a transaction node");//NOI18N
+	    return;
+	}
+	
+	MonitorData md = getMonitorData(tn, false, false);
 	if(!useBrowserCookie) 
 	    md.getRequestData().setReplaceSessionCookie(true);
 
@@ -504,7 +527,7 @@ public class Controller  {
 	throws UnknownHostException, IOException  {
 	
 	if(debug)
-	    log("Controller::replayTransaction(MD)"); //NOI18N
+	    log("replayTransaction(MD)"); //NOI18N
 	
 	FileLock lock = null;
 	OutputStream out = null;
@@ -640,15 +663,15 @@ public class Controller  {
 	}
 
 	Node[] newNodes = new Node[nodes.length];
-	TransactionNode oldNode; 
+	TransactionNode mvNode; 
 	String id;
 	 
 	for(int i=0; i < nodes.length; ++i) {
 	    
-	    oldNode = (TransactionNode)nodes[i];
-	    id = oldNode.getID();
+	    mvNode = (TransactionNode)nodes[i];
+	    id = mvNode.getID();
 	    
-	    if(debug) log("Controller: Saving " + id); //NOI18N 
+	    if(debug) log(" Saving " + id); //NOI18N 
 
 	    if(currBeans.containsKey(id)) 
 		saveBeans.put(id, currBeans.remove(id)); 
@@ -664,9 +687,9 @@ public class Controller  {
 		if(debug) log(fold.getName());
 		fold.delete(lock);
 		lock.releaseLock();
-					      
-		newNodes[i] = new TransactionNode(id, oldNode.getMethod(), 
-						  oldNode.getURI(), false);
+
+		mvNode.setCurrent(false);
+		newNodes[i] = mvNode;
 	    }
 	    catch(Exception ex) {
 		// PENDING report properly
@@ -784,6 +807,8 @@ public class Controller  {
 
     void getTransactions() {
 
+	if(debug) log("getTransactions"); //NOI18N 
+       
 	if(!haveDirectories()) {
 	    // PENDING - report the error property
 	    // This should not happen
@@ -791,109 +816,51 @@ public class Controller  {
 	    return;
 	}
 
-	FileLock lock = null;
 	Enumeration e = null;
-	Vector nodes = null; 
-	InputStreamReader in = null;
-	 
-
+	Vector nodes = new Vector(); 
+	int numtns = 0;
+	TransactionNode[] tns = null;
+	FileObject fo = null;
+	String id = null;
+	MonitorData md = null;
+	
 	currTrans.remove(currTrans.getNodes());
-	nodes = new Vector();
+	if(debug) log("getTransactions removed old nodes"); //NOI18N 
 
 	e = currDir.getData(false);
 	while(e.hasMoreElements()) {
 
-	    FileObject fo = (FileObject) e.nextElement();
-	    String id = fo.getName();
+	    fo = (FileObject)e.nextElement();
+	    id = fo.getName();
 	    if(debug) 
 		log("getting current transaction: " + id); //NOI18N 
 		    
-	    
-	    if(currBeans.containsKey(id)) {
-		MonitorData md = (MonitorData)(currBeans.get(id));
-		nodes.add(md.createTransactionNode(true)); 
-	    }
-	    else {
-		try {
-		    lock = fo.lock();
-		    in = new InputStreamReader(fo.getInputStream());
-		    MonitorData md = MonitorData.createGraph(in);
-		    currBeans.put(id, md);
-		    nodes.add(md.createTransactionNode(true));
-		}
-		catch(IOException ioe) {
-		    String message = ioe.getMessage();
-		    if(message == null || message.equals("")) //NOI18N
-			message = resBundle.getString("MON_Bad_input");
-		    log(message);
-		    if (debug) ioe.printStackTrace();
-		}
-		catch(Exception ex) {
-		    log(resBundle.getString("MON_Bad_input"));
-		    if(debug) ex.printStackTrace();
-		}
-		finally {
-		    try {
-			in.close();
-		    }
-		    catch(Throwable t) {}
-
-		    try {
-			lock.releaseLock();
-		    }
-		    catch(Throwable t) {}
-		}
-	    }
+	    // Retrieve the monitordata
+	    md = retrieveMonitorData(id, currDir); 
+	    nodes.add(createTransactionNode(md, true)); 
 	}
 	    
-	int numtns = nodes.size();
-	TransactionNode[] tns = new TransactionNode[numtns]; 
+	numtns = nodes.size();
+ 	tns = new TransactionNode[numtns]; 
 	for(int i=0;i<numtns;++i) 
 	    tns[i] = (TransactionNode)nodes.elementAt(i);
 	currTrans.add(tns);
-	// end of region
 
-	// Get the saved transactions
+
 	savedTrans.remove(savedTrans.getNodes());
 	nodes = new Vector();
-
 	e = saveDir.getData(false);
 	while(e.hasMoreElements()) {
 
-	    FileObject fo = (FileObject) e.nextElement();
-	    String id = fo.getName();
+	    fo = (FileObject)e.nextElement();
+	    id = fo.getName();
 	    if(debug) 
-		log("getting saved transaction: " + id); //NOI18N 
-		    
-	    
-	    if(saveBeans.containsKey(id)) {
-		MonitorData md = (MonitorData)(saveBeans.get(id));
-		nodes.add(md.createTransactionNode(false)); 
-	    }
-	    else {
-		try {
-		    lock = fo.lock();
-		    in = new InputStreamReader(fo.getInputStream());
-		    MonitorData md = MonitorData.createGraph(in);
-		    saveBeans.put(id, md);
-		    nodes.add(md.createTransactionNode(false));
-		}
-		catch(Exception ex) {
-		    // PENDING report properly
-		}
-		finally {
-		    try {
-			in.close();
-		    }
-		    catch(Throwable t) {}
-		    
-		    try {
-			lock.releaseLock();
-		    }
-		    catch(Throwable t) {}
-		}
-	    }
+		log("getting current transaction: " + id); //NOI18N 
+	    // Retrieve the monitordata 
+	    md = retrieveMonitorData(id, saveDir); 
+	    nodes.add(createTransactionNode(md, false)); 
 	}
+	 
 	numtns = nodes.size();
 	tns = new TransactionNode[numtns]; 
 	for(int i=0;i<numtns;++i) {
@@ -904,8 +871,131 @@ public class Controller  {
 	}
 	savedTrans.add(tns);
     }
-    
 	    
+    private TransactionNode createTransactionNode(String str) {
+
+	if(debug) log("createTransactionNode(String)"); //NOI18N 
+	
+	String id = 
+	    str.substring(0, str.indexOf(Constants.Punctuation.itemSep));
+	if(debug) log ("id is " + id); //NOI18N 
+	// Retrieve the monitordata 
+	MonitorData md = retrieveMonitorData(id, currDirStr); 
+	return createTransactionNode(md, true);
+    }
+    
+
+    private TransactionNode createTransactionNode(MonitorData md, boolean current) {
+
+	if(debug) log("createTransactionNode(MonitorData)"); //NOI18N 
+	Dispatches dis = md.getDispatches();
+	TransactionNode node = null;
+	
+	// No dispatched requests, we add a regular transaction node
+	if(dis == null || dis.sizeDispatchData() == 0 ) {
+	    
+	    if(debug) log("No dispatched requests"); //NOI18N 
+	    
+	    node = new TransactionNode(md.getAttributeValue("id"), // NOI18N
+				       md.getAttributeValue("method"), // NOI18N
+				       md.getAttributeValue("resource"), //NOI18N
+				       current); // NOI18N
+	}
+	else {
+
+	    int numChildren = dis.sizeDispatchData();
+	    if(debug) log("We had some dispatched requests: " + //NOI18N 
+			  String.valueOf(numChildren));
+	    if(debug) log("\t for id " + //NOI18N 
+			  md.getAttributeValue("resource")); //NOI18N 
+	    // Create all the children. 1
+	    Children.Array nested = new Children.Array();
+	    
+	    // First we create an array of children that has the same
+	    // size as the set of nodes. 
+	    NestedNode[] nds = new NestedNode[numChildren];
+	    for(int i=0; i<numChildren; ++i) {
+		if(debug) { 
+		    log("Getting a new monitor data object"); //NOI18N 
+		    log(dis.getDispatchData(i).getAttributeValue("resource")); //NOI18N 
+		}
+		nds[i] = createNestedNode(dis.getDispatchData(i),
+					  md.getAttributeValue("method"), // NOI18N
+					  null, i); 
+	    }
+	    
+	    nested.add(nds);
+	    node = new TransactionNode(md.getAttributeValue("id"), // NOI18N
+				       md.getAttributeValue("method"), // NOI18N
+				       md.getAttributeValue("resource"), //NOI18N
+				       nested, current); // NOI18N
+
+	}
+	return node;
+    }
+    
+
+    private NestedNode createNestedNode(DispatchData dd, 
+					String method,
+					int[] locator,
+					int index) {
+
+
+	Dispatches dis = dd.getDispatches();
+	NestedNode node = null;
+
+	int[] newloc = null;
+	if(locator != null) {
+	    newloc = new int[locator.length + 1];
+	    int j=0;
+	    while(j<locator.length) { 
+		newloc[j] = locator[j];
+		++j;
+	    }
+	    newloc[j]=index;
+	}
+	else {
+	    newloc = new int[1]; 
+	    newloc[0] = index;
+	    
+	}
+	
+	// No dispatched requests, we add a regular transaction node
+	if(dis == null || dis.sizeDispatchData() == 0 ) {
+
+	    node = new NestedNode(dd.getAttributeValue("resource"),// NOI18N
+				  method, newloc); 
+	}
+
+	else {
+	    int numChildren = dis.sizeDispatchData();
+	    // Create all the children. 
+	    Children.Array nested = new Children.Array();
+	    //Comparator comp = new CompTime(true);
+	    
+	    // Can we have a null comparator? This order should be
+	    // fixed. 
+	    //nested.addComparator(comp);
+	    
+	    // First we create an array of children that has the same
+	    // size as the set of nodes. 
+	    
+	    NestedNode[] nds = new NestedNode[numChildren];
+	    for(int i=0; i<numChildren; ++i) {
+		nds[i] = createNestedNode(dis.getDispatchData(i),
+					  method, newloc, i); 
+	    }
+	    
+	    nested.add(nds);
+	    
+	    node = new NestedNode(dd.getAttributeValue("resource"), // NOI18N
+				  method, nested, newloc); 
+	}
+	return node;
+	
+    }
+
+
     /**
      * Sets the machine name and port of the web server. Not used in
      * this version, we do not support remote debugging.
@@ -932,17 +1022,92 @@ public class Controller  {
 	return useBrowserCookie; 
     }
     
-    // PENDING - should just pass the ID to replay, would be more
-    // efficient. 
+    /**
+     * @param node A node on the Monitor GUI
+     * @return a data record
+     * Convenience method - this gets the DataRecord corresponding to
+     * a node on the TransactionView panel from the cache if it is
+     * present. This is used to display the data from the node. 
+     */
+    public DataRecord getDataRecord(AbstractNode node) {
+	return getDataRecord(node, true);
+    }
+        
+    /**
+     * @param node A node on the Monitor GUI
+     * @param fromCache true if it is OK to get the data record from
+     * the cache
+     * @return a data record
+     */
+    public DataRecord getDataRecord(AbstractNode anode, boolean fromCache) {
 
-    public MonitorData getMonitorData(TransactionNode node) {
-	return getMonitorData(node, true);
+	if(debug) log("Entered getDataRecord()"); //NOI18N
+	 
+	if(anode instanceof TransactionNode) {
+
+	    if(debug) log("TransactionNode"); //NOI18N
+	    
+	    // Since this method is used to retrieve data records for
+	    // the purposes of displaying the transaction, we cache
+	    // the result
+	    return (DataRecord)(getMonitorData((TransactionNode)anode,
+					       fromCache, true));
+	}
+	else if(anode instanceof NestedNode) {
+
+	    NestedNode node = (NestedNode)anode;
+	    
+	    if(debug) log(node.toString()); 
+
+	    int index[] = node.getIndex();
+
+	    AbstractNode parent = (AbstractNode)node.getParentNode();
+	    if(parent == null) {
+		if(debug) log("null parent, something went wrong!"); //NOI18N
+		return null;
+	    }
+	    
+	    while(parent != null && !(parent instanceof TransactionNode)) {
+		if(debug) log("Parent is not transaction node"); //NOI18N
+		if(debug) log(parent.toString()); 
+		parent = (AbstractNode)(parent.getParentNode());
+	    }
+	    
+	    if(debug) log("We got the transaction node"); //NOI18N
+
+	    // We get the data record, from cache if it is present,
+	    // and cache the node also
+	    DataRecord dr = 
+		(DataRecord)(getMonitorData((TransactionNode)parent,
+					    true, true));
+	    int[] nodeindex = node.getIndex();
+	    
+	    int c = 0;
+	    while(c<nodeindex.length) {
+		if(debug) log("Doing the data record cycle"); //NOI18N
+		if(debug) log(String.valueOf(c) + ":" + //NOI18N
+			      String.valueOf(nodeindex[c])); 
+		Dispatches dis = dr.getDispatches();
+		dr = (DataRecord)dis.getDispatchData(nodeindex[c]);
+		++c;
+	    }
+	    return dr;
+	}
+	return null;
     }
     
-    public MonitorData getMonitorData(TransactionNode node, boolean cached) {
+    /**
+     * @param node A node on the Monitor GUI
+     * @param fromCache true if it is OK to get the data record from
+     * the cache
+     * @param cacheIt true if it is OK to cache the data that we
+     * retrieve 
+     * @return a data record
+     */
+    public MonitorData getMonitorData(TransactionNode node, 
+				      boolean fromCache,
+				      boolean cacheIt) {
 
-	if(debug) log("Entered getMonitorData()"); //NOI18N 
-	
 	String id = node.getID();
 	Hashtable ht = null;
 	FileObject dir = null;
@@ -962,24 +1127,23 @@ public class Controller  {
 	    log("using directory " + dir.getName()); //NOI18N 
 	}
 
-	if (!cached) {
-	    return retrieveMonitorData(id, dir);
-	}
-	
-	if(!ht.containsKey(id)) {
-	    if(debug) 
-		log("Node is not in the hashtable yet"); //NOI18N 
-	    MonitorData md = retrieveMonitorData(id, dir);
-	    ht.put(id, md);
-	}
-        
-	return (MonitorData)ht.get(id);
+	if(fromCache && ht.containsKey(id)) 
+	    return (MonitorData)(ht.get(id));
+	    
+	MonitorData md = retrieveMonitorData(id, dir);
+	if(cacheIt) ht.put(id, md);
+	return md;
     }
 
+    /**
+     * @param id The ID of the record
+     * @param dirS The name of the directory in which the transaction
+     * resides 
+     **/    
     MonitorData retrieveMonitorData(String id, String dirS) {
 
 	if(debug) 
-	    log("Controller::retrieveMonitorData(String, String)"); //NOI18N 
+	    log("retrieveMonitorData(String, String)"); //NOI18N 
 	if(!haveDirectories()) {
 	    // PENDING - report the error property
 	    log("Couldn't get the directory"); //NOI18N 
@@ -1000,7 +1164,7 @@ public class Controller  {
     MonitorData retrieveMonitorData(String id, FileObject dir) {
 
 	if(debug)
-	    log("Controller::retrieveMonitorData(String, FileObject)"); //NOI18N 
+	    log("retrieveMonitorData(String, FileObject)"); //NOI18N 
 	if(!haveDirectories()) {
 	    // PENDING - report the error property
 	    log("Couldn't get the directory"); //NOI18N 
@@ -1026,7 +1190,7 @@ public class Controller  {
 	    md = MonitorData.createGraph(in);
 	} 
 	catch(Exception ex) {
-	    log("Controller couldn't read the file..."); //NOI18N 
+	    log(" couldn't read the file..."); //NOI18N 
 	    ex.printStackTrace();
 	}
 	finally {
@@ -1068,8 +1232,7 @@ public class Controller  {
 		serverRunning = false; 
 	    }
 	    else if(!setting.isRunning()) {
-		if(debug) 
-		    System.out.println("Now starting the internal server");
+		if(debug) log("Now starting the internal server"); // NOI18N
 		setting.setRunning(true);
 	    }
 	    if(!setting.isRunning()) {
@@ -1092,7 +1255,7 @@ public class Controller  {
 		msg = resBundle.getString("MON_NoServer");
 	    }
 	    
-	    msg = msg.concat(" ");
+	    msg = msg.concat(" "); //NOI18N
 	    msg = msg.concat(resBundle.getString("MON_Start_server"));
 		
 	    NotifyDescriptor noServerDialog = 
@@ -1110,8 +1273,8 @@ public class Controller  {
     private void showReplay(URL url) throws UnknownHostException,
 	                                    IOException {
 	
-	if(debug) log("Controller::showReplay()"); // NOI18N
-	if(debug) log("Controller::showReplay() url is " + url.toString()); // NOI18N
+	if(debug) log("showReplay()"); // NOI18N
+	if(debug) log("showReplay() url is " + url.toString()); // NOI18N
 	// First we check that we can find a host of the name that's
 	// specified 
 	ServerCheck sc = new ServerCheck(url.getHost());
@@ -1126,11 +1289,11 @@ public class Controller  {
 	t.stop();
 	if(!sc.isServerGood()) {
 	    if(debug) 
-		log("Controller::showReplay(): No host"); // NOI18N
+		log("showReplay(): No host"); // NOI18N
 	    throw new UnknownHostException();
 	}
 	
-	if(debug) log("Controller::performed server check"); // NOI18N
+	if(debug) log("performed server check"); // NOI18N
 
 	// Next we see if we can connect to the server
 	try {
@@ -1139,27 +1302,160 @@ public class Controller  {
 	    server = null;
 	}
 	catch(UnknownHostException uhe) {
-	    if(debug) log("Controller::showReplay(): uhe2"); // NOI18N
+	    if(debug) log("showReplay(): uhe2"); // NOI18N
 	    throw uhe;
 	}
 	catch(IOException ioe) {
 	    if(debug) 
-		log("Controller::showReplay(): No service"); // NOI18N
+		log("showReplay(): No service"); // NOI18N
 	    throw ioe;
 	}
 	
-	if(debug) log("Controller::showReplay(): reaching the end..."); // NOI18N
-	// Finally we ask the browser to show it
-	org.netbeans.modules.web.core.WebExecUtil.showInBrowser(url,"text/html"); // NOI18N
-	 
+	if(debug) log("showReplay(): reaching the end..."); // NOI18N
+
+	if(browser == null) 
+	    browser = 
+		new HtmlBrowser.BrowserComponent(getFactory(), true, true);
+	
+	if(browser != null) {
+	    browser.setURL(url);
+	    browser.open();
+	    if(!browser.isShowing()) browser.setVisible(true);
+	    
+	}
+    }
+
+    /* 
+     * Get a factory objects for browsers. 
+     */
+    private  HtmlBrowser.Factory getFactory() {
+
+	if(debug) log("getFactory()"); //NOI18N
+	try {
+
+	    FileObject fo = 
+		TopManager.getDefault().getRepository().getDefaultFileSystem()
+		.findResource("Services/Browsers"); //NOI18N
+	    DataFolder folder = DataFolder.findFolder(fo);
+	    DataObject[] dobjs = folder.getChildren();
+	    for(int i = 0; i<dobjs.length; ++i) {
+		Object attr = 
+		    dobjs[i].getPrimaryFile()
+		    .getAttribute("DEFAULT_BROWSER"); //NOI18N
+		if(attr instanceof Boolean) {
+		    if(Boolean.TRUE.equals(attr)) {
+			try {
+			    Object factory = 
+				((InstanceCookie)dobjs[i].getCookie
+				 (InstanceCookie.class)).instanceCreate(); 
+			    if(debug) log("found the factory"); //NOI18N
+			    return (HtmlBrowser.Factory)factory;
+			}
+			catch (java.io.IOException ex) {}
+			catch (ClassNotFoundException ex) {}
+		    }
+		}
+	    }
+	    // There was no default browser set yet. Use the first 
+	    // attribute that is not hidden. 
+	    for (int i = 0; i<dobjs.length; ++i) {
+		Object attr = 
+		    dobjs[i].getPrimaryFile().getAttribute("hidden"); // NOI18N
+		if(!Boolean.TRUE.equals(attr)) {
+		    try {
+			Object factory = 
+			    ((InstanceCookie)dobjs[i].getCookie 
+			     (InstanceCookie.class)).instanceCreate ();
+			if(debug) log("Found a factory"); // NOI18N
+			return(HtmlBrowser.Factory)factory;
+		    }
+		    catch (java.io.IOException ex) {}
+		    catch (ClassNotFoundException ex) {}
+		}
+	    }
+                
+	    Lookup.Result result = 
+		Lookup.getDefault().lookup
+		(new Lookup.Template (HtmlBrowser.Factory.class));
+	    java.util.Iterator it = result.allInstances().iterator();
+	    if(it.hasNext()) {
+		if(debug) log("used lookup"); //NOI18N
+		return (HtmlBrowser.Factory)it.next ();
+	    }
+	    else return null;
+	}
+	catch (Exception ex) {
+	    TopManager.getDefault ().notifyException (ex);
+	}
+	return null;	 
+    }
+
+    /** 
+     * Registers a listener to core events so that we know if the
+     * browser has changed on the system. 
+     */
+    private void registerBrowserListener() {
+        FileObject fo = TopManager.getDefault ().getRepository().getDefaultFileSystem().findResource("Services/org-netbeans-core-IDESettings.settings"); // NOI18N
+        if (fo != null) {
+            try {
+                DataObject dobj = DataObject.find(fo);
+                InstanceCookie.Of ic = 
+		    (InstanceCookie.Of)dobj.getCookie(InstanceCookie.Of.class);
+                if(ic.instanceOf(SystemOption.class)) {
+                    try {
+                        settings = (SystemOption)ic.instanceCreate();
+                        browserListener = new SettingsListener(settings);
+			settings.addPropertyChangeListener(browserListener);
+		    }
+                    catch (IOException ex) {
+                    }
+                    catch (ClassNotFoundException ex) {
+		    }
+                }
+            }
+            catch (DataObjectNotFoundException ex) {
+                if(debug)TopManager.getDefault().notifyException(ex);
+            }
+        }
+    }
+
+
+    /** 
+     * Removes the listener which detectes whether the browser setting
+     * has changed on the system.
+     */
+    private void removeBrowserListener() {
+	if(settings == null || browserListener == null) return;
+	try {
+	    settings.removePropertyChangeListener(browserListener);
+	}
+	catch(Exception ex) {
+	}
     }
 
     // PENDING - use the logger instead
     private static void log(final String s) {
-	System.out.println(s);
+	System.out.println("Controller::" + s); //NOI18N
     }
     
 
+    class SettingsListener implements PropertyChangeListener {
+	
+	private SystemOption source;
+
+	public SettingsListener(SystemOption source) {
+	    this.source = source;
+	}
+	
+	public void propertyChange(PropertyChangeEvent evt)  {
+	    if(debug) 
+		log("SettingsListener got property change event"); //NOI18N
+	    if("WWWBrowser".equals(evt.getPropertyName())) { //NOI18N
+		browser = null;
+	    }
+	}
+    }
+     
     
     /**
      * Does the server we try to replay on exist? 

@@ -8,62 +8,53 @@ license terms.
 <html>
 <head>
 <meta name="lastupdated" 
-content="20feb02">
+content="18april02">
 
 
 <title>Monitoring Data Flow on the Web Server</title>
 <meta 
 http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link 
-rel="StyleSheet" href="ide.css" type="text/css">
+rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 </head>
 
 <body>
 
 <h2>Monitoring Data Flow on the Web Server</h2>
 
-The HTTP Monitor gathers data about HTTP requests that are processed by the servlet 
-engine. For each HTTP request that is processed, the monitor records data about 
-the incoming request, the data states maintained on the server, and the servlet 
-environment. You can view data, store data for future sessions, and replay and 
-edit previous requests. HTTP monitor data records are stored until you exit the 
-IDE, unless you explicitly request otherwise. 
-<h3>Displaying the HTTP Monitor</h3>
-<p>You can view data about JSP and servlet file execution at any time. To start 
-  the HTTP Monitor from the main menu bar, choose Debug <img src="../images/arrow.gif" 
+<p>The HTTP Monitor gathers data about HTTP requests that are processed by the 
+  servlet engine. For each HTTP request that is processed, the monitor records 
+  data about the incoming request, the data states maintained on the server, and 
+  the servlet environment. You can view data, store data for future sessions, 
+  and replay and edit previous requests. HTTP monitor data records are stored 
+  until you exit the IDE, unless you explicitly save them. You can view data about 
+  JSP and servlet file execution at any time. </p>
+<p><b>To start the HTTP Monitor:</b></p>
+<ul>
+  <li> From the main menu bar, choose Debug <img src="../images/arrow.gif" 
 width="6" height="13" alt="and choose"> HTTP Monitor or View <img src="../images/arrow.gif" 
-width="6" height="13" alt="and choose"> HTTP Monitor.</p>
-<p>The HTTP Monitor requires the internal web server to execute to receive data 
-  from the execution web server. In other words, the HTTP Monitor does not record 
-  data unless the IDE's internal HTTP service is running. If the internal HTTP 
-  service is not running, you can view previously recorded data, but you cannot 
-  replay data or view new data. </p>
-<table width="566">
-  <tr>
-    <td valign=top align=left width="14"><img 
-src="../images/tip.gif" alt="Tip"></td>
-    <td valign=top align=left width="540"> 
-      <p>To display the HTTP Monitor toolbar button at the end of the full debugging 
-        toolbar, click the Debugging tab in the main window. The HTTP Monitor 
-        appears automatically when the debugger is running.</p>
-      </td>
-  </tr>
-</table>
+width="6" height="13" alt="and choose"> HTTP Monitor</li>
+  <li>In the Debugging workspace, on the Debug (Full) toolbar, click <img src="../images/monicon.gif" width="21" height="20">.</li>
+  <li>The HTTP starts automatically when you debug JSP pages and servlets.</li>
+</ul>
+<p>The HTTP Monitor starts the HTTP server automatically. If the internal HTTP 
+  service is not running, HTTP Monitor will automatically start it when attempting 
+  to record or view data. </p>
+<p>Note that the HTTP server is not the same as the Internal Tomcat web server 
+  instance, and therefore cannot be configured using the Tomcat node in the Server 
+  Registry on the Runtime pane of the Explorer.</p>
 <table>
-         <tr>
-         <th colspan=2 
-align=left>See also</th>
-         </tr>
-         <tr>
-         <td 
-width="23"></td>
-         <td><a href="view.html">Viewing 
-HTTP Monitor Data Records</a><br>
-        <a href="sort.html">Sorting HTTP Monitor Data Records</a><br>
-        <a 
-href="store.html">Saving HTTP Monitor Data Records</a>
-      </td>
-  </tr>
+<tr>
+<th colspan=2 align=left>See also</th>
+</tr>
+<tr>
+<td width="23"></td>
+<td>
+<a href="view.html">Viewing HTTP Monitor Data Records</a><br>
+      <a href="sort.html">Using the HTTP Monitor Toolbar</a><br>
+<a href="store.html">Saving HTTP Monitor Data Records</a>
+</td>
+</tr>
 </table>
 <hr>
 <small><a href="../credits.html">Legal Notices</a> 

@@ -25,8 +25,6 @@
 /**
  * Contains the Query sub-panel for the EditPanel
  */
-
-
 package org.netbeans.modules.web.monitor.client; 
 
 import java.awt.event.*;
@@ -60,9 +58,7 @@ public class EditPanelQuery extends DataDisplay {
     private EditPanel editPanel;
     private boolean setParams = false;
 
-    //
     // Widgets
-    //
     JButton    newParamB;
     JButton    deleteParamB;
     JTextField queryStringText;
@@ -74,21 +70,18 @@ public class EditPanelQuery extends DataDisplay {
 	this.monitorData = md;
     }
 
-    //
-    // stoopid versio nof redisplayData: nuke it all & start again.
-    //
+    // Redesign this, inefficient and prevents us from maintaining
+    // sorting state
     public void redisplayData() {
 	setData(monitorData);
     }
     
-    // We're treating these as if they are all strings at the
-    // moment. In reality they can be of different types, though maybe 
-    // that does not matter...
     public void setData(MonitorData md) {
 
 	this.monitorData = md;
 	
-	if(debug) System.out.println("in EditPanelQuery.setData()"); // NOI18N
+	if(debug) log("setData()"); // NOI18N
+
 	this.removeAll();
 
 	int fullGridWidth = java.awt.GridBagConstraints.REMAINDER;
@@ -239,20 +232,19 @@ public class EditPanelQuery extends DataDisplay {
 						     true, true,
 						     title, false);
 
-		    if(debug) System.out.println("Now showing dialog"); // NOI18N
+		    if(debug) log("Now showing dialog"); // NOI18N
 		    
 		    pe.showDialog(true);
 
-		    if(debug) System.out.println("Dialog closed"); // NOI18N
+		    if(debug) log("Dialog closed"); // NOI18N
 
 		    if (pe.getDialogOK()) {
 
-			if(debug) System.out.println("Dialog returned OK"); // NOI18N
+			if(debug) log("Dialog returned OK"); // NOI18N
 			String name = pe.getName();
 			String value = pe.getValue();
 			Param newParam = new Param(name, value);
-			RequestData rd = monitorData.getRequestData();
-			int nth = rd.addParam(newParam);
+			monitorData.getRequestData().addParam(newParam);
 			redisplayData();
 		    }
 		}});
@@ -304,7 +296,6 @@ public class EditPanelQuery extends DataDisplay {
 			    }
 			}
 			redisplayData();
-			repaint();
 		    }
 		}});
 	int gridx = -1;
@@ -330,35 +321,14 @@ public class EditPanelQuery extends DataDisplay {
 	return gridy;
     }
 
-    /**
-     * find the param with the given name and value from the list.
-     */
-    private Param findParam(Param [] myParams, String name, String value) {
-	for (int i=0; i < myParams.length; i++) {
-	    Param param = myParams[i];
-	    if (name.equals(param.getName()) &&
-		value.equals(param.getValue()) ) {
-		return param;
-	    }
-	}
-	return null;
-    }
-
     public void setEnablings() {
 	//
 	// Always enable the Add button.
 	//
 	newParamB.setEnabled(true);
 
-	int selectedRows[] = paramTable.getSelectedRows();
-	//
-	// The edit button is enabled if exactly one row is selected
-	//
-	//editParamB.setEnabled(selectedRows.length == 1);
-
-	//
 	// The delete row button is enabled if any rows are selected.
-	//
+	int selectedRows[] = paramTable.getSelectedRows();
 	deleteParamB.setEnabled(selectedRows.length > 0);
     }
 
@@ -368,53 +338,48 @@ public class EditPanelQuery extends DataDisplay {
 	    editPanel.repaint();
     }
 
-    boolean tableModelChanging = false;
     public void setParameters(Param[] newParams) {
-	paramTable = new DisplayTable(newParams, DisplayTable.PARAMS);
+
+	paramTable = new DisplayTable(newParams, DisplayTable.PARAMS, true);
         paramTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_QuerystringTableA11yName"));
         paramTable.setToolTipText(msgs.getString("ACS_MON_QuerystringTableA11yDesc"));
-	paramTable.sortByName(true);
+
 	ListSelectionModel selma = paramTable.getSelectionModel();
 	selma.addListSelectionListener(new ListSelectionListener() {
 	    public void valueChanged(ListSelectionEvent evt) {
-		if(debug) System.out.println("EditPanelQuery::paramTable list selection listener"); // NOI18N
+		if(debug) log("paramTable list selection listener"); // NOI18N
 		setEnablings();
 	    }
 	});
 
 	paramTable.addTableModelListener(new TableModelListener() {
 	    public void tableChanged(TableModelEvent evt) {
-		if (!tableModelChanging) {
-		    tableModelChanging = true;
-		    //
-		    // Loop through the rows and reset the params.
-		    //
-		    int num = paramTable.getRowCount();
-		    RequestData rd = monitorData.getRequestData();
-		    Param[] params = rd.getParam();
-		    
-		    for(int i=0; i < num; i++) {
-			String name = (String)paramTable.getValueAt(i, 0);
-			name = name.trim();
-			if(name.equals("")) {
-			    paramTable.setValueAt(params[i].getName(), 
-						  i, 0);
-			    showErrorDialog();
-			    return;
-			}
-			String value = (String)paramTable.getValueAt(i, 1);
-			value = value.trim();
-			params[i].setName(name);
-			params[i].setValue(value);
-		    }
-		    paramTable.sortByName();
-		    tableModelChanging = false;
-		}
+		updateParams();
 	    }
-	});
+	    });
     }
+    
 
-
+    public void updateParams() {
+	int num = paramTable.getRowCount();
+	RequestData rd = monitorData.getRequestData();
+	Param[] params = rd.getParam();
+		    
+	for(int i=0; i < num; i++) {
+	    String name = (String)paramTable.getValueAt(i, 0);
+	    name = name.trim();
+	    if(name.equals("")) { //NOI18N
+		paramTable.setValueAt(params[i].getName(), i, 0);
+		showErrorDialog();
+		return;
+	    }
+	    String value = (String)paramTable.getValueAt(i, 1);
+	    value = value.trim();
+	    params[i].setName(name);
+	    params[i].setValue(value);
+	}
+    }
+    
     public void showConfirmDialog(String msg) {
 
 	Object[] options = { NotifyDescriptor.OK_OPTION, 
@@ -452,5 +417,8 @@ public class EditPanelQuery extends DataDisplay {
     }
 
 
+    void log(String s) {
+	System.out.println("EditPanelQuery::" + s); //NOI18N
+    }
 
 } // EditPanel

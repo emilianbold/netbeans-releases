@@ -33,10 +33,7 @@ import org.openide.util.NbBundle;
 
 class SortButton extends JButton {
 
-    private static final int NEUTRAL = 0;
-    private static final int A2Z = 1;
-    private static final int Z2A = 2;
-    private int state = NEUTRAL;
+    private int state = DisplayTable.NEUTRAL;
      
     static protected Icon[] icon = new Icon[3];
     static {
@@ -48,6 +45,8 @@ class SortButton extends JButton {
 				("/org/netbeans/modules/web/monitor/client/icons/z2a.gif")); // NOI18N
     }
     
+    private static final boolean debug = false;
+        
     public SortButton(final DisplayTable dt) {    
 	
 	super();
@@ -56,31 +55,43 @@ class SortButton extends JButton {
 	this.setBorderPainted(false);
         this.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("ACS_SortButtonUnsortedA11yDesc"));
 	
-	state = NEUTRAL;
+	state = DisplayTable.NEUTRAL;
 	
 	this.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
+	
+		    if(debug) log("Sort requested"); //NOI18N
+		    
 		    state++;
 		    state=state%3;
+
+		    if(debug) log("State is: " + String.valueOf(state)); //NOI18N
 		    JButton b = (JButton)e.getSource();
 		    b.setIcon(icon[state]); 
 		    
-		    if(state == NEUTRAL)
+		    if(state == DisplayTable.NEUTRAL)
                     {
 			// PENDING
-			dt.noSorting();
                         SortButton.this.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("ACS_SortButtonUnsortedA11yDesc"));
                     }
-		    else if(state == A2Z) {
-			dt.setSortAscending(true);
-			dt.sortByName();
+		    else if(state == DisplayTable.A2Z) {
                         SortButton.this.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("ACS_SortButtonSortAZA11yDesc"));
-		    } else if(state == Z2A) {
-			dt.setSortAscending(false);
-			dt.sortByName();
+		    } else if(state == DisplayTable.Z2A) {
                         SortButton.this.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("ACS_SortButtonSortZAA11yDesc"));
                     }
+		    dt.setSorting(state);
 		}
 	    });
     }
+
+    int getMode() { 
+	return state;
+    }
+
+    private void log(String s) {
+	System.out.println("SortButton::" + s); //NOI18N
+    }
+    
+	
+
 } // SortButton

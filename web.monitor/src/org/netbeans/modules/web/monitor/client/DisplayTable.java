@@ -21,7 +21,6 @@
  * @version
  */
 
-// PENDING - tidy up this one, the editable variable is dodgy...
 
 package org.netbeans.modules.web.monitor.client;
 
@@ -43,12 +42,18 @@ public class DisplayTable extends JTable {
 
     private static final boolean debug = false;
      
+    // Type of data displayed
     public static final int UNEDITABLE = 0;
     public static final int REQUEST = 1;
     public static final int SERVER = 2;
     public static final int HEADERS = 3;
     public static final int PARAMS = 4;
     public static final int COOKIES = 5;
+
+    // Sorting states
+    public static final int NEUTRAL = 0;
+    public static final int A2Z = 1;
+    public static final int Z2A = 2;
 
     private static final ResourceBundle msgs =
        NbBundle.getBundle(TransactionView.class);  
@@ -60,30 +65,52 @@ public class DisplayTable extends JTable {
 
     private TableCellEditor[][] cellEditors = null;
 
-    /** determines whether the names of a table are editable or not.
-     */
+    // Can we edit the fields?
     private boolean editableNames = false;
     private int editable = UNEDITABLE;
-    private boolean sortAscending = true;
+
+    // Do we sort? 
+    private int sort = NEUTRAL;
+    private boolean sortable = false; 
 
     public DisplayTable(String[] categories) {
-	this(categories, null, UNEDITABLE);
+	this(categories, null, UNEDITABLE, false);
     }
 
+    public DisplayTable(String[] categories, boolean sortable) {
+	this(categories, null, UNEDITABLE, sortable);
+    }
+
+
     public DisplayTable(String[] categories, int editable) {
-	this(categories, null, editable);
+	this(categories, null, editable, false);
+    }
+
+    public DisplayTable(String[] categories, int editable, boolean sortable) {
+	this(categories, null, editable, sortable);
     }
 
     public DisplayTable(String[] names, String[] values) {
-	this(names, values, UNEDITABLE);
+	this(names, values, UNEDITABLE, false);
+    }
+
+
+    public DisplayTable(String[] names, String[] values, boolean sortable) {
+	this(names, values, UNEDITABLE, sortable);
     }
 
     public DisplayTable(String[] names, String[] values, int editable) {
-	super();
+	this(names, values, editable, false); 
+    } 
 
+    public DisplayTable(String[] names, String[] values, int editable, 
+			boolean sortable) {
+	
+	super();
 	numRows = names.length;
 	editableNames = false;
 	this.editable = editable;
+	this.sortable = sortable;
 	
 	data = new Object[numRows][numCols];
 	cellEditors = new TableCellEditor[numRows][numCols];
@@ -99,26 +126,37 @@ public class DisplayTable extends JTable {
 		NameValueCellEditor.createCellEditor((JTable)this, data,
 						     false, i, editable);
 	}
-	setMyModel(data, editable > UNEDITABLE);
+	setMyModel(data, editable > UNEDITABLE); 
 	setup();
     }
-
+    
     public DisplayTable(Param[] params) {
-	this(params, UNEDITABLE);
+	this(params, UNEDITABLE, false);
     }
+
+    public DisplayTable(Param[] params, boolean sortable) {
+	this(params, UNEDITABLE, sortable);
+    }
+   
     
     public DisplayTable(Param[] params, int editable) {
+	this(params, editable, false);
+    }
+    
+
+    public DisplayTable(Param[] params, int editable, boolean sortable) {
 
 	super();
 
-	numRows = params.length;
 	if(editable < 3) 
 	    editableNames = false; 
 	else
 	    editableNames = true; 
 
 	this.editable = editable; 
+	this.sortable = sortable;
 
+	numRows = params.length;
 	data = new Object[numRows][numCols];
 	cellEditors = new TableCellEditor[numRows][numCols];
 	for(int i=0; i<numRows; ++i) {
@@ -137,17 +175,18 @@ public class DisplayTable extends JTable {
 	setBorderAndColorScheme();
 	Dimension margins = new Dimension(6, 4);
 	setIntercellSpacing(margins);
+	sort();
     }
 
     /**
      * Set the border and colors for the table.
      * Depends on whether the table is ediable or not.
      */
-    public void setBorderAndColorScheme() {
+    private void setBorderAndColorScheme() {
 	setBorderAndColorScheme(editable != UNEDITABLE); 
     }
 
-    public void setBorderAndColorScheme(boolean editable) {
+    private void setBorderAndColorScheme(boolean editable) {
 	Color bg;
 	this.setBorder(BorderFactory.createLoweredBevelBorder());
 	if (!editable) { 
@@ -161,15 +200,12 @@ public class DisplayTable extends JTable {
     }
     
     /**
-     * Set the choices used for a cell.
-     * This makes the cell use a combo box for its editor.
-     * If editable is true, then the combobox is set to editable.
-     *
-     * This method has been superceded. Remove from RequestPanel. 
+     * Creates a combobox for a cell editor. 
      *
      * @return the combobox that is used as the editor.
      */
-    public JComboBox setChoices(int row, int col, String[] choices, boolean editable) {
+    public JComboBox setChoices(int row, int col, String[] choices,
+				boolean editable) { 
 	JComboBox box = new JComboBox(choices);
 	box.setEditable(editable);
 	TableCellEditor ed = new DefaultCellEditor(box);
@@ -195,42 +231,31 @@ public class DisplayTable extends JTable {
 	return ed;
     }
 
-    public void setSortAscending(boolean ascending) {
-	this.sortAscending = ascending;
+    public void setSorting(int state) {
+	sort = state; 
+	if(getModel() instanceof DisplayTableSorter)
+	    ((DisplayTableSorter)getModel()).sort(sort); 
     }
 
-    public void sortByNameAscending() {
-	((SortingModel)getModel()).sort(true); 
-    }
-
-    public void sortByNameDescending() {
-	((SortingModel)getModel()).sort(false); 
-    }
-
-    public void sortByName() {
-	((SortingModel)getModel()).sort(sortAscending); 
-    }
-
-    public void sortByName(boolean asc) {
-	((SortingModel)getModel()).sort(asc); 
-    }
-    
-    public void noSorting() {
-	if(debug) System.out.println("Neutral sorting selected"); //NOI18N
-	//setMyModel(data, EDITABLE > UNEDITABLE);
+    public void sort() {
+	if(getModel() instanceof DisplayTableSorter)
+	    ((DisplayTableSorter)getModel()).sort(sort); 
     }
 
     private void setMyModel(Object[][] data, boolean canEdit) {
 	 
-		
-	SortingModel sorter = new SortingModel(data, canEdit, 
-					       editable > 2); 
-	
-	super.setModel(sorter);
-	
-	// PENDING - I can't get the column size to shrink the way I'd 
-	// like it. This works in the AttValTable but not here for
-	// some reason.
+	DisplayTableModel model = new DisplayTableModel(data, 
+							canEdit, 
+							editable > 2); 
+	if(sortable) {
+	    DisplayTableSorter sorter = new DisplayTableSorter(model); 
+	    setModel(sorter);
+	}
+	else {
+	    setModel(model);
+	}
+
+	// PENDING - the column size does not shrink the way it should 
 	TableColumnModel tcm = getColumnModel();
 	if (tcm.getColumnCount() > 0) {
 	    TableColumn column = tcm.getColumn(0);     
@@ -239,28 +264,13 @@ public class DisplayTable extends JTable {
 	}
     }
 
-    /**
-     * Check if the cell is being edited and return that value instead.
-     */
-    public Object getPossiblyEditingValueAt(int row, int col) {
-	if (isEditing()) {
-	    int editR = getEditingRow();
-	    int editC = getEditingColumn();
-
-	    if (row == editR && col == editC) {
-		TableCellEditor tce = getCellEditor(editR, editC);
-		tce.stopCellEditing();
-	    }
-	}
-	return getValueAt(row, col);
-    }
-	
     public void addTableModelListener(TableModelListener tml) {
 	TableModel tableModel = getModel();
 	if (tableModel != null) {
 	    tableModel.addTableModelListener(tml);
 	}
     }
+
     public void removeTableModelListener(TableModelListener tml) {
 	TableModel tableModel = getModel();
 	if (tableModel != null) {
@@ -268,14 +278,12 @@ public class DisplayTable extends JTable {
 	}
     }
 
-    // We're treating these as if they are all strings at the
-    // moment. In reality they can be of different types, though maybe 
-    // that does not matter...
-    public void reset() {
-	for(int i=0; i<numRows; ++i) setValueAt("", i, 1); //NOI18N
-    }
-
     public Object[][] getData() {
 	return data;
     }
+
+    private void log(String s) {
+	System.out.println("DisplayTable::" + s);  //NOI18N
+    }
+
 } // DisplayTable

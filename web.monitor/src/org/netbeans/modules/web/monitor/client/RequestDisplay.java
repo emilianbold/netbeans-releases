@@ -31,6 +31,10 @@ import org.openide.util.NbBundle;
 import java.util.ResourceBundle;
 import java.awt.Component;
 
+// Can this go into displayTable? 
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+
 public class RequestDisplay extends DataDisplay {
     
     private final static boolean debug = false;
@@ -49,6 +53,7 @@ public class RequestDisplay extends DataDisplay {
 
 
     private DisplayTable dt = null; 
+    DisplayTable paramTable = null;
         
     public RequestDisplay() {
 
@@ -59,7 +64,7 @@ public class RequestDisplay extends DataDisplay {
     // We're treating these as if they are all strings at the
     // moment. In reality they can be of different types, though maybe 
     // that does not matter...
-    public void setData(MonitorData md) {
+    public void setData(DataRecord md) {
 
 	if(debug) System.out.println("in RequestDisplay.setData()"); //NOI18N
 	this.removeAll();
@@ -110,8 +115,7 @@ public class RequestDisplay extends DataDisplay {
 	// add the parameters
 
 	Param[] params2 = rd.getParam();
-	String msg2 = "";
-	DisplayTable paramTable = null;
+	String msg2 = ""; //NOI18N
 	Component queryDataLabel = null;
 	boolean bad = false;
 	
@@ -142,7 +146,13 @@ public class RequestDisplay extends DataDisplay {
 	    
 	} else {
 	    msg2 = msgs.getString("MON_Parameters");
-	    paramTable = new DisplayTable(params2);
+	    paramTable = new DisplayTable(params2, true);
+	    paramTable.addTableModelListener(new TableModelListener() {
+		public void tableChanged(TableModelEvent evt) {
+		    paintTable();
+		}});
+	    
+
             paramTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_ParametersTableA11yName"));
             paramTable.setToolTipText(msgs.getString("ACS_MON_ParametersTableA11yDesc"));
 	    queryDataLabel = createSortButtonLabel(msg2, paramTable, msgs.getString("MON_Parameters_Mnemonic").charAt(0), msgs.getString("ACS_MON_ParametersA11yDesc"));
@@ -254,4 +264,11 @@ public class RequestDisplay extends DataDisplay {
 	this.setMaximumSize(this.getPreferredSize()); 
 	this.repaint();
     }
+
+    void paintTable() 
+    {
+	paramTable.repaint();
+    }
+    
+
 } // RequestDisplay

@@ -67,7 +67,7 @@ public class CookieDisplay extends DataDisplay {
     // We're treating these as if they are all strings at the
     // moment. In reality they can be of different types, though maybe 
     // that does not matter...
-    public void setData(MonitorData md) {
+    public void setData(DataRecord md) {
 
 	if(debug) System.out.println("in CookieDisplay.setData()"); //NOI18N
 	this.removeAll();

@@ -19,8 +19,9 @@ import org.netbeans.modules.schema2beans.*;
 import java.beans.*;
 import java.util.*;
 import java.io.*;
+import org.netbeans.modules.web.monitor.client.TransactionNode;
 
-public class MonitorData extends BaseBean implements DataRecord {
+public class DispatchData extends BaseBean implements DataRecord {
 
     private final static boolean debug = false;
     
@@ -33,41 +34,14 @@ public class MonitorData extends BaseBean implements DataRecord {
     static public final String SERVLETDATA = "ServletData"; // NOI18N
     static public final String CONTEXTDATA = "ContextData"; // NOI18N
     static public final String ENGINEDATA = "EngineData"; // NOI18N
-    static public final String MONITORDATA = "MonitorData"; // NOI18N
     static public final String DISPATCHES = "Dispatches"; // NOI18N
 
-    public MonitorData() {
-	this(null, Common.USE_DEFAULT_VALUES);
-    }
-
-    public MonitorData(Node doc, int options) {
-	this(Common.NO_DEFAULT_VALUES);
-	if (doc == null)
-	    {
-		doc = GraphManager.createRootElementNode(MONITORDATA);
-		if (doc == null)
-		    throw new RuntimeException("failed to create a new DOM root!"); // NOI18N
-	    }
-	Node n = GraphManager.getElementNode(MONITORDATA, doc);
-	if (n == null)
-	    throw new RuntimeException("doc root not found in the DOM graph!"); // NOI18N
-
-	this.graphManager.setXmlDocument(doc);
-
-	// Entry point of the createBeans() recursive calls
-	this.createBean(n, this.graphManager());
-	this.initialize(options);
+    public DispatchData() {
+	this(Common.USE_DEFAULT_VALUES);
     }
     
-    public MonitorData(int options) {
-	super(MonitorData.comparators, new GenBeans.Version(1, 0, 6));
-	// The graph manager is allocated in the bean root
-	this.graphManager = new GraphManager(this);
-
-	this.createRoot(MONITORDATA, MONITORDATA,
-			Common.TYPE_1 | Common.TYPE_BEAN, MonitorData.class);
-
-	// Properties (see root bean comments for the bean graph)
+    public DispatchData(int options) {
+	super(comparators, new GenBeans.Version(1, 0, 6));
 	this.createProperty("ClientData", CLIENTDATA,  // NOI18N
 			    Common.TYPE_1 | Common.TYPE_BEAN | Common.TYPE_KEY, 
 			    ClientData.class);
@@ -221,20 +195,6 @@ public class MonitorData extends BaseBean implements DataRecord {
 	this.createAttribute(ENGINEDATA, "serverName", "ServerName",  // NOI18N
 			     AttrProp.CDATA | AttrProp.IMPLIED,
 			     null, null);
-
-	this.createAttribute("resource", "Resource",  // NOI18N
-			     AttrProp.CDATA | AttrProp.REQUIRED,
-			     null, null);
-	this.createAttribute("timestamp", "Timestamp",  // NOI18N
-			     AttrProp.CDATA | AttrProp.REQUIRED,
-			     null, null);
-	this.createAttribute("id", "Id",  // NOI18N
-			     AttrProp.CDATA | AttrProp.REQUIRED,
-			     null, null);
-	this.createAttribute("method", "Metod",  // NOI18N
-			     AttrProp.CDATA | AttrProp.REQUIRED,
-			     null, null);
-
 	this.createProperty("Dispatches", DISPATCHES,  // NOI18N
 			    Common.TYPE_0_1 | Common.TYPE_BEAN | Common.TYPE_KEY, 
 			    Dispatches.class);
@@ -491,56 +451,6 @@ public class MonitorData extends BaseBean implements DataRecord {
 	    p.removePCListener(l);
     }
 
-    //
-    // This method returns the root of the bean graph
-    // Each call creates a new bean graph from the specified DOM graph
-    //
-    public static MonitorData createGraph(Node doc) {
-	return new MonitorData(doc, Common.NO_DEFAULT_VALUES);
-    }
-
-    public static MonitorData createGraph(java.io.Reader reader)
-	throws IOException {
-	try {
-	    return MonitorData.createGraph(reader, false);
-	}
-	catch(IOException ioe) {
-	    throw ioe;
-	}
-    }
-
-    public static MonitorData createGraph(java.io.Reader reader, 
-					  boolean validate) throws IOException {
-	try {
-	    InputSource insource = new InputSource(reader);
-	    insource.setEncoding("UTF-8"); // NOI18N
-	    Document doc = 
-		GraphManager.createXmlDocument(insource, validate);
-	    return MonitorData.createGraph(doc);
-	}
-	catch (Throwable t) {
-	    throw new IOException();
-	}
-    }
-
-    //
-    // This method returns the root for a new empty bean graph
-    //
-    public static MonitorData createGraph() {
-	return new MonitorData();
-    }
-
-    public void write(OutputStream out) throws IOException {
-	throw new RuntimeException("Don't do this!");  // NOI18N
-    }
-    
-    public void write(Writer writer) throws IOException {
-        try {
-            this.write(writer, "UTF-8"); // NOI18N
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
-        }
-    }
     
     // Dump the content of this bean returning it as a String
     public void dump(StringBuffer str, String indent) {
@@ -615,15 +525,4 @@ public class MonitorData extends BaseBean implements DataRecord {
 	this.dump(str, "\n  "); // NOI18N
 	return str.toString();
     }
-
-    /*
-    public TransactionNode createTransactionNode(boolean current) {
-	TransactionNode node = 
-	    new TransactionNode(this.getAttributeValue("id"), // NOI18N
-				this.getAttributeValue("method"), // NOI18N
-				this.getAttributeValue("resource")); // NOI18N
-	node.setCurrent(current);
-	return node;
-    }
-    */
 }

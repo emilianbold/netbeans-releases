@@ -26,6 +26,7 @@ package  org.netbeans.modules.web.monitor.client;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.windows.Workspace;
 
 
 public class MonitorAction extends CallableSystemAction {
@@ -35,10 +36,11 @@ public class MonitorAction extends CallableSystemAction {
     private static final boolean debug = false;
      
     public MonitorAction() {
-	if(controller == null) controller = new Controller();
+	getController();
     }
-  
+
     protected static Controller getController() {
+	if(controller == null) controller = new Controller();
 	return controller;
     }
     
@@ -46,7 +48,6 @@ public class MonitorAction extends CallableSystemAction {
 	return NbBundle.getBundle(MonitorAction.class).getString("MON_HTTP_Transaction_13");
     }
   
-    /** No help yet. */
     public HelpCtx getHelpCtx () {
 	return new HelpCtx (MonitorAction.class);
     }
@@ -66,11 +67,11 @@ public class MonitorAction extends CallableSystemAction {
 	
 	if (tv == null) { 
 	    if(debug) 
-		System.out.println("Transaction view to be created by: " + //NOI18N 
+		log("Transaction view to be created by: " + //NOI18N 
 				   "performAction"); //NOI18N
-	    tv = new TransactionView(controller);
+	    tv = new TransactionView(getController());
 	    if(debug) 
-		System.out.println("Transaction view was created by: " + //NOI18N
+		log("Transaction view was created by: " + //NOI18N
 				   "performAction"); //NOI18N
 	} 
 	tv.open(); 
@@ -82,9 +83,22 @@ public class MonitorAction extends CallableSystemAction {
      * monitor. 
      */
     public static void runMonitor() {
+	if(debug) log("runMonitor()"); //NOI18N
 	if (tv == null) 
-	    tv = new TransactionView(controller);
+	    tv = new TransactionView(getController());
 	tv.open(); 
+    }  
+
+    /**
+     * This method is used by the JSP/servlet debugger to start the
+     * monitor. 
+     */
+    public static void runMonitor(Workspace workspace) {
+	if(debug) log("runMonitor(workspace)" + //NOI18N
+		      workspace.toString());
+	if (tv == null) 
+	    tv = new TransactionView(getController());
+	tv.open(workspace); 
     }  
 
     /**
@@ -93,7 +107,7 @@ public class MonitorAction extends CallableSystemAction {
      * starts it from the debugging menu. 
      */
     public static void setProperties(String server, int port) {
-	if(controller != null) controller.setServer(server, port); 
+	getController().setServer(server, port); 
     }  
 
     /**
@@ -104,6 +118,10 @@ public class MonitorAction extends CallableSystemAction {
     public static void cleanupMonitor() {
 	// Controller is null when running headless
 	if(controller != null) controller.cleanup(); 
+    }
+
+    public static void log(String s) {
+	log("MonitorAction::" + s); //NOI18N
     }
 }
 

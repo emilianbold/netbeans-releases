@@ -69,7 +69,7 @@ public class Util  {
 	    if(name.equals("")) continue;  //NOI18N
 
 	    if (value != null) value = value.trim();
-	    else value = "";
+	    else value = ""; //NOI18N
 	    
 	    if(i>0) buf.append('&'); // NOI18N
 	    buf.append(name);

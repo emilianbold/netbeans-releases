@@ -25,10 +25,7 @@
  * TO DO FOR THIS CLASS: 
  *
  * For PUT requests, the only option on the data panel should be to
- * upload a file. You might not want to go ahead with that one yet,
- * because the DTD doesn't support it. :) We can submit an RFE for
- * this and only allow GET and POST in Pilsen as far as I am concerned 
- * :)
+ * upload a file. 
  *
  * For POST requests, the user should be able to choose between
  * uploading a file or editing parameters. 
@@ -47,6 +44,8 @@ import java.awt.event.*;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
+import java.io.File; //debugging only
+import java.io.PrintWriter; // debugging only
 
 import java.net.*;
 import java.text.*;
@@ -75,9 +74,9 @@ public class EditPanel extends javax.swing.JPanel implements
     private static final ResourceBundle msgs =
 	NbBundle.getBundle(TransactionView.class);
     
-    private static final Dimension size = new Dimension(500, 375);
-    private static final Dimension reqSize = new Dimension(450, 100);
-    private static final Dimension tableSize = new Dimension(450, 100);
+    //private static final Dimension size = new Dimension(500, 375);
+    //private static final Dimension reqSize = new Dimension(450, 100);
+    //private static final Dimension tableSize = new Dimension(450, 100);
 
     //
     // Code to get the displaying of the tabbed panels correct.
@@ -89,7 +88,7 @@ public class EditPanel extends javax.swing.JPanel implements
     private static final int DISPLAY_TYPE_SERVER  = 3; 
     private static final int DISPLAY_TYPE_HEADERS = 4;
 
-    private transient  Dimension tabD = new Dimension(450,327);
+    private transient  Dimension tabD = new Dimension(450,280);
 
     private EditPanelQuery   queryPanel;
     private EditPanelRequest requestPanel;
@@ -127,11 +126,8 @@ public class EditPanel extends javax.swing.JPanel implements
 
 	this.removeAll();
 	this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-	//this.add(createButtonPanel());
-	
-	// Replace the session cookie with the actual value of the
-	// session
-	Util.setSessionCookieHeader(md);
+
+	//Util.setSessionCookieHeader(md);
 	if(md.getRequestData().getAttributeValue(METHOD).equals(POST)) 
 	    Util.removeParametersFromQuery(md.getRequestData());
 
@@ -141,9 +137,8 @@ public class EditPanel extends javax.swing.JPanel implements
 	serverPanel  = new EditPanelServer(md, this);
 	headersPanel = new EditPanelHeaders(md, this);
 
-	if(debug) System.out.println("in (new) EditPanel.setData()"); //NOI18N
+	if(debug) log("setData()"); //NOI18N
 
-	
 	JTabbedPane tabs = new JTabbedPane();
 	tabs.setPreferredSize(tabD);
 	tabs.addTab(msgs.getString("MON_Query_Panel_Tab"),   queryPanel);
@@ -165,7 +160,7 @@ public class EditPanel extends javax.swing.JPanel implements
 
 	this.monitorData = md;
 	
-	if(debug) System.out.println("in (new) EditPanel.setData()"); //NOI18N
+	if(debug) log("in (new) EditPanel.setData()"); //NOI18N
 
 	queryPanel.setData(md);
 	requestPanel.setData(md);
@@ -175,21 +170,12 @@ public class EditPanel extends javax.swing.JPanel implements
 	useBrowserCookie = MonitorAction.getController().getUseBrowserCookie();
     }
 
-    public void resetQueryPanelData() {
-	resetQueryPanelData(monitorData);
-    }
-
-    public void resetQueryPanelData(MonitorData monitorData) {
-	queryPanel.redisplayData();
-    }
-
     public void showDialog() {
 
 	Object[] options = {
 	    createSessionButtonPanel(),
-	    //createSeparator(),
-            sendButton,
-            cancelButton
+	    sendButton,
+	    cancelButton,
 	};
 	
 	editDialog = new DialogDescriptor(this, 
@@ -198,12 +184,12 @@ public class EditPanel extends javax.swing.JPanel implements
 					  options,
 					  options[1],
 					  DialogDescriptor.BOTTOM_ALIGN,
-					  null,
+					  new HelpCtx("monitor_resend"), //NOI18N
 					  this);
 	
 	dialog = TopManager.getDefault().createDialog(editDialog);
 	dialog.pack();
-	dialog.setSize(size);
+	//dialog.setSize(size);
 	dialog.show();
     }
     
@@ -216,7 +202,7 @@ public class EditPanel extends javax.swing.JPanel implements
 	
 	boolean debug = false;
 	
-	if(debug) System.out.println("EditPanel got action"); //NOI18N
+	if(debug) log("actionPerformed()"); //NOI18N
 	 
 	String str = new String();
         Object value = editDialog.getValue();
@@ -228,7 +214,7 @@ public class EditPanel extends javax.swing.JPanel implements
             str = value.toString();
 	if(str.equals(msgs.getString("MON_Send"))) {
 	 
-	    if(debug) System.out.println("EditPanel got SEND"); //NOI18N
+	    if(debug) log(" got SEND"); //NOI18N
 
 	    String method =
 		monitorData.getRequestData().getAttributeValue(METHOD); 
@@ -237,16 +223,16 @@ public class EditPanel extends javax.swing.JPanel implements
 		Util.composeQueryString(monitorData.getRequestData());
 
 	    if(debug) {
-		System.out.println("useBrowserCookie is " + //NOI18N
-				   String.valueOf(useBrowserCookie));
+		log(" useBrowserCookie is " + //NOI18N
+		    String.valueOf(useBrowserCookie));
 	    }
 	    
 	    if(!useBrowserCookie) 
 		monitorData.getRequestData().setReplaceSessionCookie(true);
 
 	    if(debug) {
-		System.out.println("md.getRD.getReplace is " + //NOI18N
-				   String.valueOf(monitorData.getRequestData().getReplaceSessionCookie()));				   
+		log(" md.getRD.getReplace is " + //NOI18N
+		    String.valueOf(monitorData.getRequestData().getReplaceSessionCookie()));				   
 	    }
 
 	    try {
@@ -262,7 +248,7 @@ public class EditPanel extends javax.swing.JPanel implements
 		};
 
 		Object[] args = {
-		    monitorData.getServletData().getAttributeValue("serverName"), //NOI18N
+		    monitorData.getServerName(),
 		};
 		
 		MessageFormat msgFormat = new MessageFormat
@@ -287,8 +273,8 @@ public class EditPanel extends javax.swing.JPanel implements
 		};
 
 		Object[] args = {
-		    monitorData.getServletData().getAttributeValue("serverName"), //NOI18N
-		    monitorData.getServletData().getAttributeValue("serverPort"), //NOI18N
+		    monitorData.getServerName(), 
+		    monitorData.getServerPortAsString(), 
 		};
 
 		MessageFormat msgFormat = new MessageFormat
@@ -309,32 +295,35 @@ public class EditPanel extends javax.swing.JPanel implements
 	    dialog.dispose();
     }
 
-    /*
-    public HelpCtx getHelpContext() {
-	// PENDING
-	String helpID = msgs.getString("MON_Edit_Panel_Help_ID"); // NOI18N
-	return new HelpCtx( helpID );
-    }
-    */
-
-    private void setParameters(Param[] newParams) {
-	queryPanel.setParameters(newParams);
-    }
-
-    private void setHeaders(Param[] newParams) {
-	headersPanel.setHeaders(newParams);
-    }
-    
     /**
      * Listens to events from the tab pane, displays different
      * categories of data accordingly. 
      */
     public void stateChanged(ChangeEvent e) {
 	if (debug) 
-	    System.out.println("EditPanel::statChanged. e = " + e); //NOI18N
+	    log("stateChanged. e = " + e); //NOI18N
 	JTabbedPane p = (JTabbedPane)e.getSource();
 	displayType = p.getSelectedIndex();
-	if (debug) System.out.println("EditPanel::statChanged. displayType = " + displayType); //NOI18N
+
+	if(debug) {
+	    log("stateChanged. displayType = " + displayType); //NOI18N
+	    try {
+		StringBuffer buf = new StringBuffer
+		    (System.getProperty("java.io.tmpdir")); // NOI18N
+		buf.append(System.getProperty("file.separator")); // NOI18N
+		buf.append("tab.xml"); // NOI18N
+		File file = new File(buf.toString()); 
+		FileOutputStream fout = new FileOutputStream(file);
+		PrintWriter pw2 = new PrintWriter(fout);
+		monitorData.write(pw2);
+		pw2.close();
+		fout.close();
+		log("Wrote replay data to " + // NOI18N 
+		    file.getAbsolutePath()); 
+	    }
+	    catch(Throwable t) {
+	    }
+	}
 	showData();
     }
     
@@ -342,8 +331,8 @@ public class EditPanel extends javax.swing.JPanel implements
     void showData() {
 
 	if(debug) { 
-	    System.out.println("Now in showData()"); //NOI18N
-	    System.out.println("displayType:" //NOI18N
+	    log("Now in showData()"); //NOI18N
+	    log("displayType:" //NOI18N
 			       + String.valueOf(displayType));
 	}
 
@@ -358,7 +347,7 @@ public class EditPanel extends javax.swing.JPanel implements
 	else if (displayType == DISPLAY_TYPE_HEADERS)
 	    headersPanel.setData(monitorData);
 
-	if(debug) System.out.println("Finished showData()"); //NOI18N
+	if(debug) log("Finished showData()"); //NOI18N
     }
 
 
@@ -412,10 +401,10 @@ public class EditPanel extends javax.swing.JPanel implements
 
 	buttonPanel.add(browserCookieButton);
 	buttonPanel.add(savedCookieButton);
+	buttonPanel.setSize(buttonPanel.getMinimumSize());
 	return buttonPanel;
     }
     
-
     private Component createSeparator() { 
 	JPanel sep = new JPanel() {
 		public float getAlignmentX() {
@@ -428,5 +417,9 @@ public class EditPanel extends javax.swing.JPanel implements
 	sep.setMinimumSize(new Dimension(10, 10));
 	return sep;
     }
-    
+
+    private void log(String s) {
+	System.out.println("EditPanel::" + s); //NOI18N
+    }
+        
 } // EditPanel

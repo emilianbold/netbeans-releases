@@ -116,28 +116,6 @@ public class CookiesData extends BaseBean {
 	return this.removeValue(COOKIEIN, value);
     }
 
-    /*
-    // Get the session id. Returns "" if there was no session. 
-    public String getSessionID() {
-	CookieIn[] cookies = getCookieIn();
-	for(int i=0; i<cookies.length; ++i) {
-	    if(cookies[i].getAttributeValue("name").equals(JSESSIONID)) //NOI18N
-		return cookies[i].getAttributeValue("value"); //NOI18N
-	}
-	return "";
-    }
-
-
-    // Set the session id. 
-    public void getSessionID(String id) {
-	CookieIn[] cookies = getCookieIn();
-	for(int i=0; i<cookies.length; ++i) {
-	    if(cookies[i].getAttributeValue("name").equals(JSESSIONID)) //NOI18N
-		cookies[i].setAttributeValue("value",id); //NOI18N
-	}
-    }
-    */ 
-
     // This attribute is an array, possibly empty
     public void setCookieOut(int index, CookieOut value) {
 	this.setValue(COOKIEOUT, index, value);
@@ -223,10 +201,6 @@ public class CookiesData extends BaseBean {
     public void dump(StringBuffer str, String indent) {
 	String s;
 	BaseBean n;
-
-	str.append(indent);
-	str.append("Replace=" + // NOI18N
-		   this.getAttributeValue("replace") + "\n");  // NOI18N
 
 	str.append(indent);
 	str.append("CookieIn["+this.sizeCookieIn()+"]"); // NOI18N
