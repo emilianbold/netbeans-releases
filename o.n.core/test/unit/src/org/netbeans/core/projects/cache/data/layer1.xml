@@ -12,4 +12,7 @@
             <attr name="a" methodvalue="org.netbeans.core.projects.cache.CacheManagerTestBaseHid.method"/>
         </file>
     </folder>
+    <folder name="baz">
+        <file name="thingy"/>
+    </folder>
 </filesystem>
