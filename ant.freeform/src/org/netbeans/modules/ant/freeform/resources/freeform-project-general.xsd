@@ -158,8 +158,8 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                 <xsd:element name="source-file" minOccurs="0" maxOccurs="unbounded">
                     <xsd:complexType>
                         <xsd:sequence>
-                            <xsd:element name="location" type="substitutable-text"/>
                             <xsd:element name="label" type="xsd:token" minOccurs="0"/>
+                            <xsd:element name="location" type="substitutable-text"/>
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
@@ -178,8 +178,9 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                 <xsd:element name="action">
                     <xsd:complexType>
                         <xsd:sequence>
+                            <xsd:element name="script" minOccurs="0" type="substitutable-text"/>
                             <xsd:element name="label" type="xsd:token"/>
-                            <xsd:element name="target" type="xsd:token"/>
+                            <xsd:element name="target" minOccurs="0" maxOccurs="unbounded" type="xsd:token"/>
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
