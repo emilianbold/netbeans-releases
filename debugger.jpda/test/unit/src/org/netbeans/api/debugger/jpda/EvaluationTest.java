@@ -13,6 +13,8 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import org.netbeans.api.debugger.DebuggerManager;
+
 /**
  * Tests evaluation of various expressions.
  *
@@ -21,72 +23,144 @@ package org.netbeans.api.debugger.jpda;
 public class EvaluationTest  extends DebuggerJPDAApiTestBase {
 
     private JPDASupport     support;
-    private JPDADebugger    debugger;
 
-    public EvaluationTest(String s) {
-        super(s);
+    
+    public EvaluationTest (String s) {
+        super (s);
     }
 
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected void setUp () throws Exception {
+        super.setUp ();
+        JPDASupport.removeAllBreakpoints ();
+        DebuggerManager.getDebuggerManager ().addBreakpoint (
+            LineBreakpoint.create (
+                "org.netbeans.api.debugger.jpda.testapps.EvalApp",
+                28
+            )
+        );
         support = JPDASupport.attach (
             "org.netbeans.api.debugger.jpda.testapps.EvalApp"
         );
-        debugger = support.getDebugger();
+        support.waitState (JPDADebugger.STATE_STOPPED);
     }
 
-    public void testStaticEvaluation() throws Exception {
+    public void testStaticEvaluation () throws Exception {
         try {
-            checkEval("1", 1);
-            checkEval("4.3", 4.3);
-            checkEval("ix", 74);
+            checkEval ("1", 1);
+            checkEval ("4.3", 4.3);
+            checkEval ("ix", 74);
 
-            checkEvalFails("this");
-            checkEvalFails("NoSuchClass.class");
+            checkEvalFails ("this");
+            checkEvalFails ("NoSuchClass.class");
         } finally {
-            support.doFinish();
+            support.doFinish ();
         }
     }
 
-    public void testStaticExpressions() throws Exception {
+    public void testStaticExpressions () throws Exception {
         try {
-            checkEval("ix * fx", 740.0f);
-            checkEval("sx % 3", 1);
+            checkEval ("ix * fx", 740.0f);
+            checkEval ("sx % 3", 1);
 
-            checkEvalFails("ix * fx ** fx");
+            checkEvalFails ("ix * fx ** fx");
         } finally {
-            support.doFinish();
+            support.doFinish ();
         }
     }
 
-    private void checkEval(String expression, int value) throws InvalidExpressionException {
-        Variable var = debugger.evaluate(expression);
-        assertEquals("Evaluation of expression failed (wrong value): " + expression, value, Integer.parseInt(var.getValue()), 0);
-        assertEquals("Evaluation of expression failed (wrong type of result): " + expression, "int", var.getType());
-    }
-
-    private void checkEval(String expression, float value) throws InvalidExpressionException {
-        Variable var = debugger.evaluate(expression);
-        assertEquals("Evaluation of expression failed (wrong value): " + expression, value, Float.parseFloat(var.getValue()), 0);
-        assertEquals("Evaluation of expression failed (wrong type of result): " + expression, "float", var.getType());
-    }
-
-    private void checkEval(String expression, double value) throws InvalidExpressionException {
-        Variable var = debugger.evaluate(expression);
-        assertEquals("Evaluation of expression failed (wrong value): " + expression, value, Double.parseDouble(var.getValue()), 0);
-        assertEquals("Evaluation of expression failed (wrong type of result): " + expression, "double", var.getType());
-    }
-
-    private void checkEval(String expression, String type, String value) throws InvalidExpressionException {
-        Variable var = debugger.evaluate(expression);
-        assertEquals("Evaluation of expression failed (wrong value): " + expression, value, var.getValue());
-        assertEquals("Evaluation of expression failed (wrong type of result): " + expression, type, var.getType());
-    }
-
-    private void checkEvalFails(String expression) {
+    private void checkEval (String expression, int value) {
         try {
-            Variable var = debugger.evaluate(expression);
-            fail("Evaluation of expression was unexpectedly successful: " + expression + " = " + var.getValue());
+            Variable var = support.getDebugger ().evaluate (expression);
+            assertEquals (
+                "Evaluation of expression failed (wrong value): " + expression, 
+                value, 
+                Integer.parseInt (var.getValue ()), 0
+            );
+            assertEquals (
+                "Evaluation of expression failed (wrong type of result): " + 
+                    expression, 
+                "int", 
+                var.getType ()
+            );
+        } catch (InvalidExpressionException e) {
+            fail (
+                "Evaluation of expression was unsuccessful: " + e
+            );
+        }
+    }
+
+    private void checkEval(String expression, float value) {
+        try {
+            Variable var = support.getDebugger ().evaluate (expression);
+            assertEquals (
+                "Evaluation of expression failed (wrong value): " + expression, 
+                value, 
+                Float.parseFloat (var.getValue ()), 
+                0
+            );
+            assertEquals (
+                "Evaluation of expression failed (wrong type of result): " + 
+                    expression, 
+                "float", 
+                var.getType ()
+            );
+        } catch (InvalidExpressionException e) {
+            fail (
+                "Evaluation of expression was unsuccessful: " + e
+            );
+        }
+    }
+
+    private void checkEval (String expression, double value) {
+        try {
+            Variable var = support.getDebugger ().evaluate (expression);
+            assertEquals (
+                "Evaluation of expression failed (wrong value): " + expression, 
+                value, 
+                Double.parseDouble (var.getValue ()), 
+                0
+            );
+            assertEquals (
+                "Evaluation of expression failed (wrong type of result): " + 
+                    expression, 
+                "double", 
+                var.getType ()
+            );
+        } catch (InvalidExpressionException e) {
+            fail (
+                "Evaluation of expression was unsuccessful: " + e
+            );
+        }
+    }
+
+    private void checkEval (String expression, String type, String value) {
+        try {
+            Variable var = support.getDebugger ().evaluate (expression);
+            assertEquals (
+                "Evaluation of expression failed (wrong value): " + expression, 
+                value, 
+                var.getValue ()
+            );
+            assertEquals (
+                "Evaluation of expression failed (wrong type of result): " +  
+                    expression, 
+                type, 
+                var.getType ()
+            );
+        } catch (InvalidExpressionException e) {
+            fail (
+                "Evaluation of expression was unsuccessful: " + e
+            );
+        }
+    }
+
+    private void checkEvalFails (String expression) {
+        try {
+            Variable var = support.getDebugger ().evaluate (expression);
+            fail (
+                "Evaluation of expression was unexpectedly successful: " + 
+                expression + " = " + var.getValue ()
+            );
         } catch (InvalidExpressionException e) {
             // its ok
             return;

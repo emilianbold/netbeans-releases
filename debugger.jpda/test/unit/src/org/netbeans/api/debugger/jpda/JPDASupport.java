@@ -197,6 +197,14 @@ public class JPDASupport implements DebuggerManagerListener {
         return jpdaDebugger;
     }
     
+    public static void removeAllBreakpoints () {
+        Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
+            getBreakpoints ();
+        int i, k = bs.length;
+        for (i = 0; i < k; i++)
+            DebuggerManager.getDebuggerManager ().removeBreakpoint (bs [i]);
+    }
+    
     
     // other methods ...........................................................
     
@@ -268,6 +276,23 @@ public class JPDASupport implements DebuggerManagerListener {
         return Runtime.getRuntime ().exec (cmdArray);
     }
     
+    public String toString () {
+        switch (jpdaDebugger.getState ()) {
+            case JPDADebugger.STATE_DISCONNECTED:
+                return "Debugger finished.";
+            case JPDADebugger.STATE_RUNNING:
+                return "Debugger running.";
+            case JPDADebugger.STATE_STARTING:
+                return "Debugger starting.";
+            case JPDADebugger.STATE_STOPPED:
+                CallStackFrame f = jpdaDebugger.getCurrentCallStackFrame ();
+                return "Debugger stopped: " +
+                    f.getClassName () + "." + 
+                    f.getMethodName () + ":" + 
+                    f.getLineNumber (null);
+        }
+        return super.toString ();
+    }
     
     // DebuggerListener ........................................................
 

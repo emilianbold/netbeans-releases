@@ -26,7 +26,8 @@ public class LocalVariablesTest extends DebuggerJPDAApiTestBase {
     private JPDASupport     support;
     private JPDADebugger    debugger;
 
-    private static final String CLASS_NAME = "org.netbeans.api.debugger.jpda.testapps.LocalVariablesApp";
+    private static final String CLASS_NAME = 
+        "org.netbeans.api.debugger.jpda.testapps.LocalVariablesApp";
 
     public LocalVariablesTest(String s) {
         super(s);
@@ -38,9 +39,7 @@ public class LocalVariablesTest extends DebuggerJPDAApiTestBase {
 
     public void testWatches() throws Exception {
         try {
-            ClassLoader cl = this.getClass().getClassLoader();
-            URL url = cl.getResource(CLASS_NAME.replace('.', '/') + ".class");
-            LineBreakpoint lb = LineBreakpoint.create(url.toString(), 34);
+            LineBreakpoint lb = LineBreakpoint.create (CLASS_NAME, 34);
             dm.addBreakpoint(lb);
 
             support = JPDASupport.attach (CLASS_NAME);

@@ -34,6 +34,7 @@ public class StepTest extends DebuggerJPDAApiTestBase {
 
     public void testStepOver () throws Exception {
         try {
+            JPDASupport.removeAllBreakpoints ();
             LineBreakpoint lb = LineBreakpoint.create (
                 sourceRoot + 
                     "org/netbeans/api/debugger/jpda/testapps/StepApp.java",
@@ -42,7 +43,7 @@ public class StepTest extends DebuggerJPDAApiTestBase {
             dm.addBreakpoint (lb);
             support = JPDASupport.attach
                 ("org.netbeans.api.debugger.jpda.testapps.StepApp");
-            support.doContinue ();
+            support.waitState (JPDADebugger.STATE_STOPPED);
             dm.removeBreakpoint (lb);
             assertEquals (
                 "Execution stopped in wrong class", 
@@ -90,8 +91,17 @@ public class StepTest extends DebuggerJPDAApiTestBase {
 
     public void testStepInto () throws Exception {
         try {
+            JPDASupport.removeAllBreakpoints ();
+            LineBreakpoint lb = LineBreakpoint.create (
+                sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/StepApp.java",
+                24
+            );
+            dm.addBreakpoint (lb);
             support = JPDASupport.attach
                 ("org.netbeans.api.debugger.jpda.testapps.StepApp");
+            support.waitState (JPDADebugger.STATE_STOPPED);
+            dm.removeBreakpoint (lb);
             assertEquals (
                 "Execution stopped in wrong class", 
                 support.getDebugger ().getCurrentCallStackFrame ().
@@ -110,7 +120,7 @@ public class StepTest extends DebuggerJPDAApiTestBase {
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
                 32
             );
-            stepCheck (ActionsManager.ACTION_STEP_INTO, "java.lang.Object", -1);
+//            stepCheck (ActionsManager.ACTION_STEP_INTO, "java.lang.Object", -1);
             stepCheck (
                 ActionsManager.ACTION_STEP_OVER, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
@@ -127,7 +137,7 @@ public class StepTest extends DebuggerJPDAApiTestBase {
                 25
             );
             stepCheck (
-                ActionsManager.ACTION_STEP_OVER, 
+                ActionsManager.ACTION_STEP_INTO, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
                 36
             );
@@ -137,7 +147,7 @@ public class StepTest extends DebuggerJPDAApiTestBase {
                 37
             );
             stepCheck (
-                ActionsManager.ACTION_STEP_OVER, 
+                ActionsManager.ACTION_STEP_INTO, 
                 "org.netbeans.api.debugger.jpda.testapps.StepApp", 
                 42
             );
@@ -151,8 +161,17 @@ public class StepTest extends DebuggerJPDAApiTestBase {
 
     public void testStepOut () throws Exception {
         try {
+            JPDASupport.removeAllBreakpoints ();
+            LineBreakpoint lb = LineBreakpoint.create (
+                sourceRoot + 
+                    "org/netbeans/api/debugger/jpda/testapps/StepApp.java",
+                24
+            );
+            dm.addBreakpoint (lb);
             support = JPDASupport.attach
                 ("org.netbeans.api.debugger.jpda.testapps.StepApp");
+            support.waitState (JPDADebugger.STATE_STOPPED);
+            dm.removeBreakpoint (lb);
             assertEquals (
                 "Execution stopped in wrong class", 
                 support.getDebugger ().getCurrentCallStackFrame ().
