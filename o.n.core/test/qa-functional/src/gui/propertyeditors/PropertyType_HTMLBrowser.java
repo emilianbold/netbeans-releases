@@ -49,14 +49,14 @@ public class PropertyType_HTMLBrowser extends PropertyEditorsTest {
     }
     
     public void testByComboExternal(){
-        propertyValue_L = "External Browser (Command Line)";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.extbrowser.Bundle", "Services/Browsers/SimpleExtBrowser.settings"); // External Browser (Command Line)
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;
         setByCombo(propertyName_L, propertyValue_L, true);
     }
     
     public void testByComboSWINGBrowser(){
-        propertyValue_L = "Swing HTML Browser";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.ui.Bundle", "Services/Browsers/SwingBrowser.ser"); // Swing HTML Browser
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;
         setByCombo(propertyName_L, propertyValue_L, true);

@@ -44,13 +44,12 @@ public class PropertyType_BooleanO extends PropertyEditorsTest {
     }
     
     public void testByComboFalse(){
-        propertyValue_L = "False";
+        propertyValue_L = Boolean.FALSE.toString().substring(0,1).toUpperCase()+Boolean.FALSE.toString().substring(1);
         setByCombo(propertyName_L, propertyValue_L, true);
     }
     
     public void testByComboTrue(){
-        //propertyValue_L = Boolean.TRUE.toString();
-        propertyValue_L = "True";
+        propertyValue_L = Boolean.TRUE.toString().substring(0,1).toUpperCase()+Boolean.TRUE.toString().substring(1);
         setByCombo(propertyName_L, propertyValue_L, true);
     }
     

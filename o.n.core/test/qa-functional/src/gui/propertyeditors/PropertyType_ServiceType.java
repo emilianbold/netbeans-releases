@@ -51,35 +51,35 @@ public class PropertyType_ServiceType extends PropertyEditorsTest {
     }
     
     public void testByCombo(){
-        propertyValue_L = "NetBeans Update Center Alpha";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.resources.Bundle", "Services/AutoupdateType/autoupdate_xml_type_2.settings"); // NetBeans Update Center Alpha
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCombo(propertyName_L, propertyValue_L, true);
     }
     
     public void testCustomizerOk(){
-        propertyValue_L = "Status";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.vcscore.search.Bundle", "CTL_StatusCriterion"); // Status
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCustomizerOk(propertyName_L, true);
     }
     
     public void testCustomizerCancel(){
-        propertyValue_L = "Type";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.search.types.Bundle", "Services/SearchType/org-netbeans-modules-search-ObjectTypeType.settings"); // Type
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCustomizerCancel(propertyName_L, false);
     }
     
     public void testCustomizerOk_platform(){
-        propertyValue_L = "NetBeans Update Center Beta";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.resources.Bundle", "Services/AutoupdateType/autoupdate_xml_type_1.settings"); // NetBeans Update Center Beta
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCustomizerOk(propertyName_L, true);
     }
     
     public void testCustomizerCancel_platform(){
-        propertyValue_L = "NetBeans Update Center";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.resources.Bundle", "Services/AutoupdateType/autoupdate_xml_type.settings"); // NetBeans Update Center
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCustomizerCancel(propertyName_L, false);

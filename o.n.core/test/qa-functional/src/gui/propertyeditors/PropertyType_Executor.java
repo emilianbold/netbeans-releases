@@ -51,35 +51,35 @@ public class PropertyType_Executor extends PropertyEditorsTest {
     }
     
     public void testByCombo(){
-        propertyValue_L = "(do not execute)";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.execution.beaninfo.editors.Bundle", "LAB_NoExecutor"); // (do not execute)
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCombo(propertyName_L, propertyValue_L, true);
     }
     
     public void testCustomizerOk(){
-        propertyValue_L = "External Execution";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.execution.beaninfo.Bundle", "CTL_ProcessExecutor"); // External Execution
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCustomizerOk(propertyName_L, true);
     }
     
     public void testCustomizerCancel(){
-        propertyValue_L = "Internal Execution";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.execution.beaninfo.Bundle", "CTL_ThreadExecutor"); // Internal Execution
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCustomizerCancel(propertyName_L, false);
     }
     
     public void testCustomizerOk_platform(){
-        propertyValue_L = "(do not execute)";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.execution.beaninfo.editors.Bundle", "LAB_NoExecutor"); // (do not execute)
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCustomizerOk(propertyName_L, true);
     }
     
     public void testCustomizerCancel_platform(){
-        propertyValue_L = "(do not execute)";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.execution.beaninfo.editors.Bundle", "LAB_NoExecutor"); // (do not execute)
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCustomizerCancel(propertyName_L, false);

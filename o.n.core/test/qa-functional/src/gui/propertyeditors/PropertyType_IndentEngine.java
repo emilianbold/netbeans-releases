@@ -52,35 +52,35 @@ public class PropertyType_IndentEngine extends PropertyEditorsTest {
     }
     
     public void testByCombo(){
-        propertyValue_L = "No Indentation";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.beaninfo.Bundle", "LAB_IndentEngineDefault"); // No Indentation
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCombo(propertyName_L, propertyValue_L, true);
     }
     
     public void testCustomizerOk(){
-        propertyValue_L = "Java Indentation Engine";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.editor.java.Bundle", "LAB_JavaIndentEngine"); // Java Indentation Engine
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCustomizerOk(propertyName_L, true);
     }
     
     public void testCustomizerCancel(){
-        propertyValue_L = "Simple Indentation Engine";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.editor.options.Bundle", "LAB_SimpleIndentEngine"); // Simple Indentation Engine
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCustomizerCancel(propertyName_L, false);
     }
     
     public void testCustomizerOk_platform(){
-        propertyValue_L = "No Indentation";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.beaninfo.Bundle", "LAB_IndentEngineDefault"); // No Indentation
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCustomizerOk(propertyName_L, true);
     }
     
     public void testCustomizerCancel_platform(){
-        propertyValue_L = "No Indentation";
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.beaninfo.Bundle", "LAB_IndentEngineDefault"); // No Indentation
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCustomizerCancel(propertyName_L, false);

@@ -49,7 +49,6 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     
     protected static NbDialogOperator propertyCustomizer;
     
-    //protected static NbDialogOperator beanCustomizer = null;
     protected static FrameOperator propertiesWindow = null;
     
     private static final String CAPTION = "\n===========================";
@@ -127,8 +126,6 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
             err.println(CAPTION + " Trying to set value by in-place {name="+propertyName+" / value="+propertyValue+"} .");
             propertyInitialValue = getValue(propertyName);
             
-            //H1 PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
-            //H1 new TextFieldProperty(propertiesTab, propertyName).setValue(propertyValue);
             ((TextFieldProperty) findProperty(propertyName, "TextFieldProperty")).setValue(propertyValue);
             
             err.println(CAPTION + " Trying to set value by in-place {name="+propertyName+" / value="+propertyValue+"}  - finished.");
@@ -149,8 +146,6 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValue+"} .");
             propertyInitialValue = getValue(propertyName);
             
-            //H1 PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
-            //H1 new ComboBoxProperty(propertiesTab, propertyName).setValue(propertyValue);
             ((ComboBoxProperty) findProperty(propertyName,"ComboBoxProperty")).setValue(propertyValue);
             
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValue+"}  - finished.");
@@ -171,8 +166,6 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValueIndex+"} .");
             propertyInitialValue = getValue(propertyName);
             
-            //H1 PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
-            //H1 new ComboBoxProperty(propertiesTab, propertyName).setValue(propertyValueIndex);
             ((ComboBoxProperty) findProperty(propertyName, "ComboBoxProperty")).setValue(propertyValueIndex);
             
             err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValueIndex+"}  - finished.");
@@ -207,16 +200,8 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
      * @return Property Customizer 
      */    
     public static NbDialogOperator openAndGetPropertyCustomizer(String propertyName) {
-        // open Property Editor
-        //err.println(CAPTION + " Trying to open Property Customizer{"+JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout")+"}.");
-
-        //H1 PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
-        //H1 new Property(propertiesTab, propertyName).openEditor();
         findProperty(propertyName, "").openEditor();
-        
-        //err.println(CAPTION + " Trying to open Property Customizer - finished.");
         propertyCustomizer = findPropertyCustomizer(propertyName);
-        
         return propertyCustomizer;
     }
     
@@ -231,7 +216,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
      * @return Informational dialog
      */    
     public NbDialogOperator getInformationDialog() {
-        String title = "Information";
+        String title = "Information";                           // NOI18N
         err.println(CAPTION + " Waiting dialog {"+title+"} .");
         NbDialogOperator dialog = new NbDialogOperator(title);
         err.println(CAPTION + " Waiting dialog {"+title+"} - finished.");
@@ -243,14 +228,8 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
      * @return value of property 
      */    
     public String getValue(String propertyName) {
-        String returnValue;
-        
-        //H1 PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
-        //H1 returnValue = new Property(propertiesTab, propertyName).getValue();
-        returnValue = findProperty(propertyName, "").getValue();
-        
+        String returnValue = findProperty(propertyName, "").getValue();
         err.println("GET VALUE = [" + returnValue + "].");
-        
         return returnValue;
     }
     
@@ -259,10 +238,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
      * @return founded Property Customizer
      */    
     private static NbDialogOperator findPropertyCustomizer(String propertyName){
-        //err.println(CAPTION + " Trying to find Property Customizer.");
-        NbDialogOperator propertyCustomizer = new NbDialogOperator(propertyName);
-        //err.println(CAPTION + " Trying to find Property Customizer - finished.");
-        return propertyCustomizer;
+        return new NbDialogOperator(propertyName);
     }
     
     /** Verify exceptation value.
@@ -309,26 +285,25 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     }
     
     
+    /** Reinitialize Workplace. */
     public static FrameOperator reInitializeWorkplace() {
         propertiesWindow = null;
         return openPropertySheet();
     }
     
-    /* Initialize Workplace.
-     */
+    /** Initialize Workplace. */
     public static FrameOperator initializeWorkplace() {
         return openPropertySheet();
     }
     
-    /* Open property sheet (bean customizer).
-     */
+    /** Open property sheet (bean customizer). */
     private static FrameOperator openPropertySheet() {
         String waitFrameTimeout = "FrameWaiter.WaitFrameTimeout";
         long findTimeout = JemmyProperties.getCurrentTimeout(waitFrameTimeout);
         JemmyProperties.setCurrentTimeout(waitFrameTimeout, 3000);
 
         try{
-            propertiesWindow = new FrameOperator("Properties of TestNode");
+            propertiesWindow = new FrameOperator("Properties of TestNode");  // NOI18N
         }catch(org.netbeans.jemmy.TimeoutExpiredException exception){
            new PropertiesTest();
            propertiesWindow = new FrameOperator("Properties of TestNode");
@@ -336,24 +311,11 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         
         JemmyProperties.setCurrentTimeout(waitFrameTimeout, findTimeout);
         
-/*        
-        if(propertiesWindow==null){
-            new PropertiesTest();
-            // beanCustomizer = new TopComponentOperator(Bundle.getString("org.openide.nodes.Bundle", "Properties"));
-            //beanCustomizer = new TopComponentOperator(Bundle.getString("org.netbeans.core.Bundle","CTL_FMT_LocalProperties",new Object[] {new Integer(1), "TestN"}));
-            propertiesWindow = new FrameOperator("Properties of TestNode");
-            
-            // Next code doesn't work because seDefaultStringComparator sets comparator for all Operators
-            // PropertySheetOperator.setDefaultStringComparator(new Operator.DefaultStringComparator(true, true));
-        }
-        //err.println(CAPTION + " Trying to run PropertiesTest - finished.");
-*/        
         return propertiesWindow;
     }
     
     
-    /* H1
-     * Find Property in Property Sheet and return them. 
+     /** Find Property in Property Sheet and return them. 
      * This is first hack for new Jelly2, because it isn't possible to set String Comparator only for one operator.
      * @param propertyName name of property
      * @param type  TextFieldProperty - textfield property, ComboBoxProperty - combobox property
@@ -378,38 +340,8 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
         return property;
     }
     
-/*
-    public String hackForJamPropertyButtonGetValue(String value) {
-        // line 246 in JamPropertyButton , call getValue return not right value but some truncated value
-        // this is the same code as for getValue, means excpectation value must be the same as this one
-        return value.substring(value.lastIndexOf(':') + 2); // extra ++ for space
-    }
- */
-    
     public void tearDown() {
         closeAllModal();
-        
-        /*
-        FileSystem fs = new FileSystems().getFileSystem(PropertyEditorsSupport.getFS("data", "ClearJFrameWithPropertyEditorTestBean", "java"));
-        if(useForm)
-            ExplorerNode.find(fs, "data, ClearJFrameWithPropertyEditorTestBean").getActions().save();
-         */
-        
-        /*
-        if(lastTest) {
-            Editor e = Editor.find();
-            e.switchToTab(PropertyEditorsSupport.beanName);
-            e.pushPopupMenu("Save");
-        }
-         */
-        
-        /*
-        if(useForm && lastTest) {
-            org.netbeans.test.oo.gui.jelly.FileSystem fs = new org.netbeans.test.oo.gui.jelly.FileSystems().getFileSystem(PropertyEditorsSupport.getFS(PropertyEditorsSupport.Resources, "ClearJFrameWithPropertyEditorTestBean", "java"));
-            org.netbeans.test.oo.gui.jelly.ExplorerNode.find(fs, PropertyEditorsSupport.Resources+", "+"ClearJFrameWithPropertyEditorTestBean").select();
-            org.netbeans.test.oo.gui.jelly.MainFrame.getMainFrame().pushFileMenu("Save");
-        }
-         */
     }
     
     /** Print full stack trace to log files, get message and log to test results if test fails.
