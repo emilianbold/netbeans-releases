@@ -213,6 +213,7 @@ public final class ClassPath {
         this.impl = impl;
         this.pListener = new SPIListener ();
         this.impl.addPropertyChangeListener (this.pListener);
+        this.propSupport = new PropertyChangeSupport (this);
     }
 
     /**
@@ -361,20 +362,15 @@ public final class ClassPath {
                     this.rootsListener.addRoot (entry.getURL());
                 }
             }
-        }
-        if (propSupport == null) {
-            propSupport = new PropertyChangeSupport(this);
-        }
+        }        
         propSupport.addPropertyChangeListener(l);
     }
 
     /**
      * Removes the listener registered by <code>addPropertyChangeListener</code>/
      */
-    public final void removePropertyChangeListener(PropertyChangeListener l) {
-        if (propSupport != null) {
-            propSupport.removePropertyChangeListener(l);
-        }
+    public final void removePropertyChangeListener(PropertyChangeListener l) {        
+        propSupport.removePropertyChangeListener(l);        
     }
 
     /**
@@ -417,9 +413,7 @@ public final class ClassPath {
      * @param oldV old value
      * @param newV new value
      */
-    final void firePropertyChange(String what, Object oldV, Object newV) {
-	if (propSupport == null)
-	    return;
+    final void firePropertyChange(String what, Object oldV, Object newV) {	
 	propSupport.firePropertyChange(what, oldV, newV);
     }
 
@@ -641,9 +635,9 @@ public final class ClassPath {
                     }
                     ClassPath.this.entriesCache = null;
                     ClassPath.this.rootsCache = null;
-                    ClassPath.this.firePropertyChange (PROP_ENTRIES,null,null);
-                    ClassPath.this.firePropertyChange (PROP_ROOTS,null,null);
                 }
+                ClassPath.this.firePropertyChange (PROP_ENTRIES,null,null);
+                ClassPath.this.firePropertyChange (PROP_ROOTS,null,null);
             }
         }
     }
