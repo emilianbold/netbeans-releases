@@ -38,9 +38,15 @@ public class ViewRuntimeTabAction extends SystemAction {
 
     
     public void actionPerformed(ActionEvent evt) {
-        TopComponent runtimeTab = NbMainExplorer.MainTab.createEnvironmentTab();
+        final TopComponent runtimeTab = NbMainExplorer.MainTab.createEnvironmentTab();
         runtimeTab.open();
         runtimeTab.requestFocus();
+        // FIXME #28757 The above request isn't enough! Needs to be investigated.
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                runtimeTab.requestDefaultFocus();
+            }
+        });
     }
 
     public HelpCtx getHelpCtx() {
