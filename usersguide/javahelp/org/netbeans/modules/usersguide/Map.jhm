@@ -928,8 +928,8 @@
    <mapID target="org.netbeans.modules.editor.options.BaseOptionsBeanInfo$KeyBindingListPropertyEditor" url="shortcuts/kybdshortcuts.html" />
    <mapID target="org.netbeans.modules.editor.options.BaseOptionsBeanInfo$AbbrevMapEditor" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.CompilerTypeEditor$NoCompiler" url="pending.html" />
-   <mapID target="org.netbeans.modules.javadoc.search.Jdk12SearchType" url="javadoc/searchengine.html" /> 
-   <mapID target="org.netbeans.modules.javadoc.search.Jdk12SearchType_japan" url="javadoc/searchengine.html" /> 
+   <mapID target="org.netbeans.modules.javadoc.search.Jdk12SearchType" url="javadoc/jdk_search_engine.html" /> 
+   <mapID target="org.netbeans.modules.javadoc.search.Jdk12SearchType_japan" url="javadoc/japanese_search_engine.html" /> 
 
    <mapID target="org.netbeans.modules.javadoc.search.IndexSearch" url="pending.html" /> 
    <mapID target="org.netbeans.modules.javadoc.comments.AutoCommentTopComponent" url="pending.html" />
