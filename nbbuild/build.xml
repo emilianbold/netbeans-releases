@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -105,6 +105,9 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="set-buildnumber" unless="buildnumber">
     <tstamp>
     	<format property="buildnumber" pattern="yyMMdd"/>
+    </tstamp>
+    <tstamp>
+    	<format property="buildday" pattern="d MMM yyyy" locale="en" />
     </tstamp>
   </target>
 
@@ -2905,7 +2908,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo file="${netbeans.dest.dir}/build_info">NetBeans dev build
 ------------------
 Number:   ${buildnumber}
-Date:     ${TODAY}
+Date:     ${buildday}
 Branding:
 Branch:   trunk
 Tag:
@@ -2934,9 +2937,11 @@ Tag:
     </zip>
     
     <!-- package the zip file with extra files not to be included in regular product package-->
+    <!--
     <zip destfile="NetBeans-${buildnum}-build-extra-data.zip" update="true" duplicate="preserve">
         <zipfileset dir="${netbeans.dest.dir}" prefix="${netbeans.dest}" includes="${nb-extra-files}"/>
     </zip>
+    -->
 
     <echo>Build created; see NetBeans-${buildnum}.zip (in nbbuild/).
 If you like, you may run the IDE straight from
@@ -3325,7 +3330,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
              nonavbar="true"
              author="false"
              version="false"
-             bottom="Built on ${TODAY}"
+             bottom="Built on ${buildday}"
     >
       <classpath refid="bootstrap-cp"/>
       <link href="http://nagoya.apache.org/gump/javadoc/ant/build/javadocs" offline="true" packagelistloc="antsrc"/>
