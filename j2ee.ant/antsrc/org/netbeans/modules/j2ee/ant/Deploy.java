@@ -25,6 +25,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.openide.filesystems.*;
 import org.apache.tools.ant.Project;
 import javax.enterprise.deploy.spi.Target;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 
 /**
  * Ant task that starts the server if needed and deploys module to the server
@@ -51,9 +52,9 @@ public class Deploy extends Task {
 
         J2eeDeploymentLookup jdl = null;
         try {
-            FileObject[] fobs = FileUtil.fromFile(getProject().getBaseDir());
-            fobs[0].refresh(); // without this the "build" directory is not found in filesystems
-            jdl = (J2eeDeploymentLookup) FileOwnerQuery.getOwner(fobs[0]).getLookup().lookup(J2eeDeploymentLookup.class);
+            FileObject fob = FileUtil.toFileObject(getProject().getBaseDir());
+            fob.refresh(); // without this the "build" directory is not found in filesystems
+            jdl = (J2eeDeploymentLookup) FileOwnerQuery.getOwner(fob).getLookup().lookup(J2eeDeploymentLookup.class);
         } catch (Exception e) {
             throw new BuildException(e);
         }
@@ -116,11 +117,24 @@ public class Deploy extends Task {
             if (targs != null && targs.length > 0) {
                 t = targs[0];
             }
-            String h = server.getServerInstance().getStartServer().getDebugInfo(t).getHost();
-            String p = Integer.toString(server.getServerInstance().getStartServer().getDebugInfo(t).getPort());
             
+            ServerDebugInfo sdi = server.getServerInstance().getStartServer().getDebugInfo(t);
+            if (sdi == null) {
+                throw new BuildException("Error retrieving debug info from server");
+            }
+            String h = sdi.getHost();
+            String transport = sdi.getTransport();
+            String address = "";                                                //NOI18N
+            
+            if (transport.equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                address = sdi.getShmemName();
+            } else {
+                address = Integer.toString(sdi.getPort());
+            }
+            
+            getProject().setProperty("jpda.transport", transport);
             getProject().setProperty("jpda.host", h);
-            getProject().setProperty("jpda.port", p);
+            getProject().setProperty("jpda.address", address);
         }
         
     }
