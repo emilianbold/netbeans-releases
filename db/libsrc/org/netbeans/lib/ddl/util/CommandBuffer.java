@@ -156,16 +156,3 @@ public class CommandBuffer
         return executionWithException;
     }
 }
-
-/*
-* <<Log>>
-*  7    Gandalf   1.6         2/16/00  Radko Najman    
-*  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  5    Gandalf   1.4         9/15/99  Slavek Psenicka 
-*  4    Gandalf   1.3         9/10/99  Slavek Psenicka 
-*  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
-*       org.openide ----
-*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
-* $
