@@ -83,6 +83,7 @@ Microsystems, Inc. All Rights Reserved.
   org.netbeans.modules.xml.multiview/1 = 1.0-release41,
   org.netbeans.libs.xerces/1"/>
                 <attribute name="OpenIDE-Module-Implementation-Version" value="${web.core.impl.version}"/>
+                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
             </manifest>
             <fileset dir="${build.classes.dir}"/>
         </jar>
