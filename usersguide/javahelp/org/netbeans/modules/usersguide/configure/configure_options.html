@@ -8,84 +8,74 @@
 <html>
 <head>
 <title>Using the Options Window</title>
-<link rel="stylesheet" href="../ide.css" type="text/css"></head>
+<link rel="stylesheet" href="../ide.css" type="text/css">
+</head>
 <body>
 <h2>Using the Options Window</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-
-<p>You can use the Options window to change any of the IDE's configurable settings. You can apply 
-specific settings globally or by project.</p>
-
-<p>The left pane of the window contains a tree view of all of the configurable 
-  items in the IDE. The column under the Show Levels (&lt;&lt;) button displays 
-  the <img src="images/project.gif" alt="Project Setting">&nbsp; icon for settings 
-  that have a configuration specific to the current project. The right pane displays 
-  a property sheet, which contains the names and values of the settings for the 
-  item selected in the left pane.</p>
-
-<p><b>To open the Options window:</b></p>
-<ul>
-<li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options.</li>
-</ul>
-
-<p>To edit a setting, click the setting's value in the property sheet. 
-<ul>
-<li>If the value is a string,  
-you can edit the value inline and press Enter to save the change.</li>
-<li>If a drop-down arrow appears when you click the value, you can click the arrow and select the 
-value from the combo box.</li>
-<li>If an ellipsis (...) button appears, you can click the ellipsis button to open a property editor.</li>
-</ul>
-
+<p>You can use the Options window to change any of the IDE's configurable settings.
+  You can apply specific settings globally or at the user level.</p>
+<p>The left pane of the window lists all of the IDE's configurable items in tree
+  view and a table view displaying the levels at which settings are stored. 
+  The right pane displays a property sheet, which contains the names and
+  values of the settings for the item selected in the left pane.</p>
+  
+<h3>Editing Settings in the Options Window </h3>
+<p>To edit IDE options:</p>
+<ol>
+  <li>Open the Options window by choosing Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options.
+  <!--<li>If you want to specify settings at the User or
+    Default level, click the Show Levels
+    (&lt;&lt;)
+    cell to display a table view of the IDE's settings by level.-->
+  <li>Navigate to and select the node for the option you want to configure.</li>
+  <li>Enter the setting's value in the property sheet.
+    <ul>
+      <li>If the setting is a string, you edit the value inline and press
+        Enter to save the change.</li>
+      <li>If a combo box  appears when you select the option's node, click
+        the arrow to select the value.</li>
+      <li>If an ellipsis (...) button appears when you select the option node,
+        click it to open the property's editor.</li>
+    </ul>
+	      <p>The specified value is applied at the User level for the selected option.
+</ol>
 <h3>Levels of Settings</h3>
-
-<p>The IDE can store settings at three levels:</p>
-
+<p>The IDE can store settings at two levels:</p>
 <ul>
-<li><b>Default.</b>&nbsp;  Holds the default settings that come with the IDE installation. You cannot change 
-the default settings, but you can override the default settings at the user level or project level.
-If you modify a setting that is defined only in the Default level, a definition with your modified values 
-is moved to the User or Project level. </li>
-<li><b>User.</b>&nbsp;  Like default settings, settings defined at the User level apply to all of your projects. Settings 
-defined at the User level override settings at the Default level.</li>
-<li><b>Project.</b>&nbsp;  Settings configured at the Project level apply only to the project in which they are configured. 
-Any settings configured at the Project level override user settings and default settings. </li>
+  <li><b>Default.</b>&nbsp;Initial settings  provided with the IDE installation.
+    The IDE's default settings cannot be altered, however, they can be overriden
+    by   defining them at the  User level. </li>
+  <li><b>User.</b>&nbsp;Settings defined at the User level
+    that override settings at the Default level.    </li>
+  <!--<li><b>Project.</b>&nbsp;  Settings configured at the Project level apply only to the project in which they are configured. 
+Any settings configured at the Project level override user settings and default settings. </li>-->
 </ul>
-
-<p>By default, changes to general IDE settings are applied at the User 
-level. Changes to settings that are more likely to vary by project 
-are applied at the Project level. For example, unless you specify otherwise, 
-changes to settings for compiling, running, and debugging are applied to the Project level.</p>
-
-<p>The cells in the column under the Show Levels (&lt;&lt;) button indicate whether the corresponding settings 
-are defined at the level of the current project or not. If the cell corresponding to the node you are configuring 
-is empty, any changes that you have made in the property sheet are applied at the User level. If the cell 
-contains the <img src="images/project.gif" alt="Project Setting">&nbsp;icon, any changes that you have made 
-in the property sheet are applied only to the current project. </p>
-
-<p>You can see a table view of how the settings are stored by clicking the 
-Show Levels (&lt;&lt;) cell. There are columns for project, user, and default settings. Each row 
-represents a group of settings.
-
-<p>The following table defines the icons used to indicate the levels for settings.</p>
-
+<p><p>The following table defines the icons used to indicate the levels at which
+  settings are applied.</p>
 <table border="1" cellpadding="5" cellspacing="0">
-<tr>
-<th scope="col"><b>Icon</b></th>
-<th scope="col"><b>Description</b></th>
-</tr>
-
-<tr><td><img src="images/setting-defined.gif" alt=" "></td>
-<td>The settings for the corresponding node are defined at the level indicated in the column's title. Any changes made 
-to those settings apply at that level.</td></tr>
-<tr><td><img src="images/setting-inherited.gif" alt=" "></td><td>The settings for the corresponding node are 
-inherited from a higher level.</td></tr>
-<tr><td><img src="images/setting-ignored.gif" alt=" "></td><td>The settings for the corresponding node are 
-ignored.</td></tr>
+  <tr>
+    <th scope="col"><b>Icon</b></th>
+    <th scope="col"><b>Description</b></th>
+  </tr>
+  <tr>
+    <td><img src="images/setting-defined.gif" alt=" "></td>
+    <td>The settings for the corresponding options are defined at the level indicated
+      in the column's title. Any changes made to those settings apply at that
+      level.</td>
+  </tr>
+  <tr>
+    <td><img src="images/setting-inherited.gif" alt=" "></td>
+    <td>The settings for the corresponding options are inherited from a higher
+      level.</td>
+  </tr>
+  <tr>
+    <td><img src="images/setting-ignored.gif" alt=" "></td>
+    <td>The settings for the corresponding options are ignored at the indicated
+      level.</td>
+  </tr>
 </table>
-
-
-<p><b>To configure a setting only for the current project:</b></p>
+<!--<p><b>To configure a setting only for the current project:</b></p>
 <ol>
 <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options.</li>
 <li>In the top row of cells, click the Show Levels (&lt;&lt;) cell to display the 
@@ -96,88 +86,78 @@ Define Here.
 <p>The <img src="images/project.gif" alt="Project Setting">&nbsp;icon appears in the
 Show Levels (&lt;&lt;) column.</p></li>
 <li>In the property sheet, configure the desired settings.</li>
-</ol>
-
-<p><b>To configure a setting for all projects:</b></p>
+</ol>-->
+<h4>To define an option's value at the User level:</h4>
 <ol>
-<li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options.</li>
-<li>In the top row of cells, click the Show Levels (&lt;&lt;) cell to display the 
-levels for the settings.</li>
-<li>Navigate to and select the node for the settings you want to configure.</li>
-<li>Click the cell in the User column for the settings node you have selected. Choose 
-Define Here.
-<p>The <img src="images/project.gif" alt="Project Setting">&nbsp;icon appears in 
-the Show Levels (&lt;&lt;) column.</p></li>
-<li>In the property sheet, configure the desired settings.</li>
+  <li>Select the node for the option you want to configure.</li>
+  <li>Click the cell in the User column for the options node you  selected.
+  <li>Choose Define Here.
+    <p>The <img src="images/setting-defined.gif" alt=" ">&nbsp;icon appears in
+      the User column.</p>
+  </li>
+  <li>In the property sheet, configure the desired settings.
+    <p>The default values for the selected options are overidden with the new
+      values. 
+  </li>
 </ol>
-
+<h4>To revert to the default settings for an option:</h4>
+<ol>
+  <li>Select the node for the option you want to configure.</li>
+  <li>Click the cell in the Default column for the options node you selected.
+  <li>Choose Revert Definition.
+    <p>A dialogue appears prompting you to check your work.
+  <li>If you are sure you want to remove the selected option's User-level configuration,
+    click Yes.
+    <p>The default values for the selected options are restored. The <img src="images/setting-defined.gif" alt=" ">&nbsp;icon
+      appears in the Default column and the <img src="images/setting-inherited.gif" alt=" ">&nbsp;icon
+      appears in the User column.</p>
+  </li>
+</ol>
+<p>
 <table>
-<tr>
-<td valign="top"><img src="../images/tip.gif" alt="Note"></td>
-<td valign="top" align=left>
-If you create a user-level definition for a setting that already has a project-level definition for the current project, 
-the project-level definition is removed. However, the user-level definition does not override project-level definitions 
-for other projects.
-</td>
-</tr>
+  <tr>
+    <td valign="top"><img src="../images/tip.gif" alt="Note"></td>
+    <td valign="top" align=left>When reverting to default settings, the IDE removes
+      any values stored at the User level for the selected option.</td>
+  </tr>
 </table>
-
-<p><b>To revert from a project setting to a user setting:</b></p>
-<ol>
-<li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options.</li>
-<li>In the top row of cells, click the Show Levels (&lt;&lt;) cell to display the 
-levels for the settings.</li>
-<li>Navigate to and select the node for the settings you want to configure.</li>
-<li>Click the cell in the User column for the settings node you have selected. Choose 
-Revert Definition.
-<p>You are then prompted to check your work. Make sure you want to remove that node's configuration for 
-the current project. If you click Yes, the project reverts to the setting stored at the User 
-level.</p></li>
-</ol>
-
-
-<p><b>To revert to the default setting:</b></p>
-<ol>
-<li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options.</li>
-<li>In the top row of cells, click the Show Levels (&lt;&lt;) cell to display the 
-levels for the settings.</li>
-<li>Navigate to and select the node for the settings you want to configure.</li>
-<li>Click the cell in the Default column for the settings node you have selected. Choose 
-Revert Definition.
-<p>You are then prompted to check your work. Make sure you want to remove that node's configuration for 
-the current project. If you click Yes, the project reverts to using the setting stored at the Default 
-level.</p></li>
-</ol>
-
-
 <table>
-<tr>
-<th colspan=2 align=left><a name="seealso">See Also</a></th>
-</tr>
-<tr>
-<td width="23"></td>
-<td>
-<a href="../java/java_sources.html">Specifying Java Settings for a Project</a><br>
-<a href="../compile/default.html">Specifying the Default Compiler Type</a><br>
-<a href="../run/project.html">Specifying the Default Executor</a><br>
-<a href="../debug/debugger/project_default.html">Specifying the Default Debugger </a><br><br>
-<a href="../javadoc/searchengine.html">Specifying the Default Javadoc Search Engine</a><br>
-<a href="../javadoc/externaljavadoc.html">Specifying the Default Javadoc Executor</a><br>
-<a href="../javadoc/doclet.html">Configuring Doclet Properties</a><br>
-      <a href="../webbrowser/webbrowser.html">Using a Web Browser With the IDE</a> 
+  <tr>
+    <th colspan=2 align=left><a name="seealso">See Also</a></th>
+  </tr>
+  <tr>
+    <td width="23"></td>
+    <td>
+	  <!--<a href="../java/java_sources.html">Specifying Java Settings for a Project</a><br>
+      <a href="../compile/default.html">Specifying the Default Compiler Type</a><br>
+      <a href="../run/project.html">Specifying the Default Executor</a><br>
+      <a href="../debug/debugger/project_default.html">Specifying the Default
+      Debugger </a><br>
       <br>
-      <br>
-<a href="toolbar.html">Configuring Toolbars</a><br>
-<a href="system_settings.html">Configuring System Settings</a><br>
-<a href="output.html">Customizing the Output Window</a>
-</td></tr>
+      <a href="../javadoc/searchengine.html">Specifying the Default Javadoc Search
+      Engine</a><br>
+      <a href="../javadoc/externaljavadoc.html">Specifying the Default Javadoc
+      Executor</a><br>
+      <a href="../javadoc/doclet.html">Configuring Doclet Properties</a><br>
+      <a href="../webbrowser/webbrowser.html">Using a Web Browser With the IDE</a> <br>
+      <br>-->
+      <a href="configure_about.html">About Configuring the IDE</a><br>
+      <a href="configure_startup-switches.html">IDE Startup Parameters</a><br>
+      <a href="java/java_sources.html">Configuring General Java Settings</a> </td>
+  </tr>
 </table>
-
 <HR>
 <small><a href="../credits.html">Legal Notices</a></small>
 <table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table></body>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
 </html>
