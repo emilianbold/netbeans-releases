@@ -25,7 +25,7 @@ public class EjbProjectConstants {
     /**
      * Constant representing the ejb jar artifact
      */
-    public static final String ARTIFACT_TYPE_EJBJAR = "j2ee_ear_archive"; //NOI18N
+    public static final String ARTIFACT_TYPE_EJBJAR = "j2ee_archive"; //NOI18N
 
     /**
      * Constant representing an ejb jar artifact to be packaged as a part of an ear archive.
