@@ -267,6 +267,44 @@ class BracketCompletion {
         return addRightBrace;
     }
     
+    /**
+     * Returns position of the first unpaired closing paren/brace/bracket from the caretOffset
+     * till the end of caret row. If there is no such element, position after the last non-white
+     * character on the caret row is returned.
+     */
+    static int getRowOrBlockEnd(BaseDocument doc, int caretOffset) throws BadLocationException {
+        int rowEnd = Utilities.getRowLastNonWhite(doc, caretOffset) + 1;
+        int parenBalance = 0;
+        int braceBalance = 0;
+        int bracketBalance = 0;
+        ExtSyntaxSupport ssup = (ExtSyntaxSupport)doc.getSyntaxSupport();
+        TokenItem token = ssup.getTokenChain(caretOffset, rowEnd);
+        while (token != null && token.getOffset() < rowEnd) {
+            switch (token.getTokenID().getNumericID()) {
+                case JavaTokenContext.LPAREN_ID:
+                    parenBalance++;
+                    break;
+                case JavaTokenContext.RPAREN_ID:
+                    if (parenBalance-- == 0)
+                        return token.getOffset();
+                case JavaTokenContext.LBRACE_ID:
+                    braceBalance++;
+                    break;
+                case JavaTokenContext.RBRACE_ID:
+                    if (braceBalance-- == 0)
+                        return token.getOffset();
+                case JavaTokenContext.LBRACKET_ID:
+                    bracketBalance++;
+                    break;
+                case JavaTokenContext.RBRACKET_ID:
+                    if (bracketBalance-- == 0)
+                        return token.getOffset();
+            }
+            token = token.getNext();
+        }
+        return rowEnd;
+    } 
+    
   /** 
    * Counts the number of braces starting at dotPos to the end of the
    * document. Every occurence of { increses the count by 1, every
