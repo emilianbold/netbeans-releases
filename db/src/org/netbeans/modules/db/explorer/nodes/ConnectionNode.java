@@ -29,6 +29,7 @@ import com.netbeans.ddl.*;
 import com.netbeans.ddl.impl.SpecificationFactory;
 import com.netbeans.ddl.impl.Specification;
 import com.netbeans.ddl.adaptors.*;
+import com.netbeans.enterprise.modules.db.explorer.*;
 import com.netbeans.enterprise.modules.db.explorer.infos.DatabaseNodeInfo;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseConnection;
@@ -50,8 +51,8 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 		
 		String url = info.getDatabase();
 		DatabaseOption option = RootNode.getOption();
-		Vector cons = option.geConnections();
-		Enumeration cons = drvs.elements();
+		Vector cons = option.getConnections();
+		Enumeration enu = cons.elements();
 		while (enu.hasMoreElements()) {
 			DatabaseConnection dburl = (DatabaseConnection)enu.nextElement();
 			if (dburl.getDatabase().equals(url)) {
@@ -76,8 +77,8 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 	{
 		String url = getInfo().getDatabase();
 		DatabaseOption option = RootNode.getOption();
-		Vector cons = option.geConnections();
-		Enumeration cons = drvs.elements();
+		Vector cons = option.getConnections();
+		Enumeration enu = cons.elements();
 		while (enu.hasMoreElements()) {
 			DatabaseConnection dburl = (DatabaseConnection)enu.nextElement();
 			if (dburl.getDatabase().equals(url)) {
