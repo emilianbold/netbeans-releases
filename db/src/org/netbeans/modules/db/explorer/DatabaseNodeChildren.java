@@ -13,89 +13,144 @@
 
 package org.netbeans.modules.db.explorer;
 
-import java.util.Map;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Vector;
-import java.util.Arrays;
+import java.util.ResourceBundle;
 import java.util.TreeSet;
-import java.sql.*;
+import java.util.Vector;
+
 import javax.swing.SwingUtilities;
-import org.openide.options.SystemOption;
+
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+
 import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
-import org.netbeans.modules.db.DatabaseModule;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.netbeans.modules.db.explorer.nodes.RootNode;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
+public class DatabaseNodeChildren extends Children.Array {
+    
+    private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
-public class DatabaseNodeChildren extends Children.Array
-{
-    protected Collection initCollection()
-    {
-        DatabaseNodeInfo nodeinfo = ((DatabaseNode)getNode()).getInfo();
-        java.util.Map nodeord = (java.util.Map)nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
-        boolean sort = nodeinfo.getName().equals("Drivers") ? false : true; //NOI18N
-        TreeSet children = new TreeSet(new NodeComparator(nodeord, sort));
-
-        try {
-            Vector chlist = nodeinfo.getChildren();
-            
-            for (int i=0;i<chlist.size();i++) {
-                Node snode = null;
-                Object sinfo = chlist.elementAt(i);
-
-                if (sinfo instanceof DatabaseNodeInfo) {
-                    DatabaseNodeInfo dni = (DatabaseNodeInfo) sinfo;
-
-                    // aware! in this method is clone of instance dni created    
-                    snode = createNode(dni);
-                    
-                }
-                else
-                    if (sinfo instanceof Node)
-                        snode = (Node)sinfo;
-                if (snode != null)
-                    children.add(snode);
+    private TreeSet children;
+    private transient PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
+    private static Object sync = new Object(); // synchronizing object
+    
+    private PropertyChangeListener listener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent event) {
+            if (event.getPropertyName().equals("finished")) { //NOI18N
+                remove(getNodes()); //remove wait node
+                nodes = getCh(); // change children ...
+                refresh(); // ... and refresh them
+                removeListener();
             }
-            if(getNode() instanceof RootNode) { 
-                // open connection (after initCollection done)
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        try {
-                            // add connection (if needed) and make the connection to SAMPLE database connected
-                            PointbasePlus.addOrConnectAccordingToOption();
-                            } catch(Exception ex) {
-                                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-                            }
-                        }
-                    });
-            }
-        } catch (Exception e) {
-                e.printStackTrace();
-                children.clear();
         }
+    };
 
-        return children;
+    protected Collection initCollection() {
+        propertySupport.addPropertyChangeListener(listener);
+
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run () {
+                DatabaseNodeInfo nodeinfo = ((DatabaseNode)getNode()).getInfo();
+                java.util.Map nodeord = (java.util.Map)nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
+                boolean sort = nodeinfo.getName().equals("Drivers") ? false : true; //NOI18N
+                TreeSet children = new TreeSet(new NodeComparator(nodeord, sort));
+
+                try {
+                    Vector chlist;
+                    synchronized (sync) {
+                        chlist = nodeinfo.getChildren();
+                    }
+
+                    for (int i=0;i<chlist.size();i++) {
+                        Node snode = null;
+                        Object sinfo = chlist.elementAt(i);
+
+                        if (sinfo instanceof DatabaseNodeInfo) {
+                            DatabaseNodeInfo dni = (DatabaseNodeInfo) sinfo;
+
+                            // aware! in this method is clone of instance dni created    
+                            snode = createNode(dni);
+
+                        }
+                        else
+                            if (sinfo instanceof Node)
+                                snode = (Node)sinfo;
+                        if (snode != null)
+                            children.add(snode);
+                    }
+                    if (getNode() instanceof RootNode) { 
+                        // open connection (after initCollection done)
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                try {
+                                    // add connection (if needed) and make the connection to SAMPLE database connected
+                                    PointbasePlus.addOrConnectAccordingToOption();
+                                    } catch(Exception ex) {
+                                        org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                                    }
+                                }
+                            });
+                    }
+                } catch (Exception e) {
+                        e.printStackTrace();
+                        children.clear();
+                }
+
+                setCh(children);
+                propertySupport.firePropertyChange("finished", null, null); //NOI18N
+            }
+        }, 0);
+        
+        TreeSet ts = new TreeSet();
+        ts.add(createWaitNode());
+        return ts;
+    }
+    
+    /* Creates and returns the instance of the node
+    * representing the status 'WAIT' of the node.
+    * It is used when it spent more time to create elements hierarchy.
+    * @return the wait node.
+    */
+    private Node createWaitNode () {
+        AbstractNode n = new AbstractNode(Children.LEAF);
+        n.setName(bundle.getString("WaitNode")); //NOI18N
+        n.setIconBase("org/netbeans/modules/db/resources/wait"); //NOI18N
+        return n;
     }
 
-    class NodeComparator implements Comparator
-    {
+    private TreeSet getCh() {
+        return children;
+    }
+    
+    private void setCh(TreeSet children) {
+        this.children = children;
+    }
+    
+    private void removeListener() {
+        propertySupport.removePropertyChangeListener(listener);
+    }
+    
+    class NodeComparator implements Comparator {
         private java.util.Map map = null;
         private boolean sort;
 
-        public NodeComparator(java.util.Map map, boolean sort)
-        {
+        public NodeComparator(java.util.Map map, boolean sort) {
             this.map = map;
             this.sort = sort;
         }
 
-        public int compare(Object o1, Object o2)
-        {
+        public int compare(Object o1, Object o2) {
             if (! sort)
                 return 1;
             
@@ -106,21 +161,24 @@ public class DatabaseNodeChildren extends Children.Array
             
             int o1val, o2val, diff;
             Integer o1i = (Integer)map.get(o1.getClass().getName());
-            if (o1i != null) o1val = o1i.intValue();
-            else o1val = Integer.MAX_VALUE;
+            if (o1i != null)
+                o1val = o1i.intValue();
+            else
+                o1val = Integer.MAX_VALUE;
             Integer o2i = (Integer)map.get(o2.getClass().getName());
-            if (o2i != null) o2val = o2i.intValue();
-            else o2val = Integer.MAX_VALUE;
+            if (o2i != null)
+                o2val = o2i.intValue();
+            else
+                o2val = Integer.MAX_VALUE;
 
             diff = o1val-o2val;
-            if (diff == 0) return ((DatabaseNode)o1).getInfo().getName().compareTo(((DatabaseNode)o2).getInfo().getName());
+            if (diff == 0)
+                return ((DatabaseNode)o1).getInfo().getName().compareTo(((DatabaseNode)o2).getInfo().getName());
             return diff;
         }
     }
 
-    public DatabaseNode createNode(DatabaseNodeInfo info)
-    {
-        String ncode = (String)info.get(DatabaseNodeInfo.CODE);
+    public DatabaseNode createNode(DatabaseNodeInfo info) {
         String nclass = (String)info.get(DatabaseNodeInfo.CLASS);
         DatabaseNode node = null;
 
@@ -135,16 +193,14 @@ public class DatabaseNodeChildren extends Children.Array
         return node;
     }
 
-    public DatabaseNode createSubnode(DatabaseNodeInfo info, boolean addToChildrenFlag)
-    throws DatabaseException
-    {
+    public DatabaseNode createSubnode(DatabaseNodeInfo info, boolean addToChildrenFlag) throws DatabaseException {
         DatabaseNode subnode = createNode(info);
         if (subnode != null && addToChildrenFlag) {
             DatabaseNodeInfo ninfo = ((DatabaseNode)getNode()).getInfo();
             ninfo.getChildren().add(info);
             
             //workaround for issue #31617, children should be initialized if they are not
-            getNodes();
+//            getNodes();
 
             if (isInitialized())
                 add(new Node[] {subnode});
@@ -156,24 +212,17 @@ public class DatabaseNodeChildren extends Children.Array
     /** Creating the database connection to Pointbase SAMPLE database acording of setting PointbaseModule, if module is installed.
      */
     private void createPointbaseConnection() {
-
         try {
-            
             // only test for PointBase module
-            Class settings = Class.forName
-                             ("com.sun.forte4j.pointbase.PointBaseSettings", // NOI18N
-                             false, this.getClass().getClassLoader());
+            Class.forName("com.sun.forte4j.pointbase.PointBaseSettings", false, this.getClass().getClassLoader()); // NOI18N
 
             // load the method for creating connection
-            Class restore = Class.forName
-                            ("com.sun.forte4j.pointbase.util.CreatorConnection", // NOI18N
-                             false, this.getClass().getClassLoader());
+            Class restore = Class.forName("com.sun.forte4j.pointbase.util.CreatorConnection", false, this.getClass().getClassLoader()); // NOI18N
 
             Method addOrConnectMethod = restore.getMethod ("addOrConnectPointbase", null); // NOI18N
 
             // call it
             addOrConnectMethod.invoke (restore.newInstance(), null);
-
         } catch (ClassNotFoundException e) {
         } catch (NoSuchMethodException e) {
         } catch (InvocationTargetException e) {
