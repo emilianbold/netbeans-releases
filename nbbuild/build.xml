@@ -1266,6 +1266,54 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <echo message="Run `ant real-clean' if desired."/>
   </target>
 
+<!-- This section contains properties and targets used to build -->
+<!-- Solaris packages.                                          -->
+
+  <property name="solpkg-pkgproto" value="pkgproto"/>
+  <property name="solpkg-pkgmk" value="pkgmk"/>
+  <property name="solpkg-proto-file" value="prototype"/>
+  <property name="solpkg-actual-dir" value="to-be-specified"/>
+  <property name="solpkg-pkg-dir" value="to-be-specified"/>
+  <property name="solpkg-pkg-dest-dir" value="to-be-specified"/>
+
+  <!-- You can run this target to create the prototype file and create -->
+  <!-- the package, or if you need to modify the prototype file before -->
+  <!-- building the package, you can run the two subtargets            -->
+  <!-- separately.                                                     -->
+  <target name="solpkg-build" depends="solpkg-pkgproto,solpkg-pkgmk"
+          description="Generate a prototype file and create a Solaris package."/>
+
+  <!-- This creates the pkg prototype file for a given directory and -->
+  <!-- its files.                                                    -->
+  <target name="solpkg-pkgproto"
+          description="Generate a prototype file.">
+    <exec executable="rm" failonerror="yes">
+      <arg value="-rf"/>
+      <arg value="${solpkg-proto-file}"/>
+    </exec>
+    <exec executable="${solpkg-pkgproto}" output="${solpkg-proto-file}" 
+          failonerror="yes">
+      <arg value="${solpkg-actual-dir}=${solpkg-pkg-dir}"/>
+    </exec>
+  </target>
+
+  <!-- This creates the Solaris pkg for a given prototype file, pkginfo -->
+  <!-- file, and directory.                                             -->
+  <target name="solpkg-pkgmk"
+          description="Create a Solaris package.">
+    <exec executable="${solpkg-pkgmk}" failonerror="yes">
+      <arg value="-o"/>
+      <arg value="-f"/>
+      <arg value="${solpkg-proto-file}"/>
+      <arg value="-r"/>
+      <arg value="${solpkg-actual-dir}"/>
+      <arg value="-d"/>
+      <arg value="${solpkg-pkg-dest-dir}"/>
+    </exec>
+  </target>
+
+<!-- End of Solaris package section. -->
+
   <target name="print-selected-modules" depends="init" description="Prints list of modules to build in selected moduleconfig.">
     <echo message="modules=${allmodules}"/>
   </target>
