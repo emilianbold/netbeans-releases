@@ -24,10 +24,9 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="experimental" executor="ide" name="Breakpoints" resultsprocessor="qa-unit">
+    <testbag testattribs="full,breakpoints" executor="ide" name="Breakpoints" resultsprocessor="qa-unit">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/test/debugger/Util/GuiRunDebugger.class"/>
                 <include name="org/netbeans/test/debugger/breakpoints/clazz/HotspotClassBreakpointTestCase.class"/>
                 <include name="org/netbeans/test/debugger/breakpoints/conditional/HotspotConditionalBreakpointTestCase.class"/>
                 <include name="org/netbeans/test/debugger/breakpoints/disabled/HotspotDisabledBreakpointTestCase.class"/>
@@ -42,19 +41,25 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="experimental" executor="ide" name="Bugs" resultsprocessor="qa-unit">
+    <testbag testattribs="full,bugs" executor="ide" name="Bugs" resultsprocessor="qa-unit">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/test/debugger/Util/GuiRunDebugger.class"/>
                 <include name="org/netbeans/test/debugger/bugs/HotspotBugsTestCase.class"/>
             </patternset>
         </testset>
     </testbag>
 
-    <testbag testattribs="experimental" executor="ide" name="Watches" resultsprocessor="qa-unit">
+    <testbag testattribs="gui" executor="ide" name="GUI" resultsprocessor="qa-unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/test/debugger/Util/GuiRunDebugger.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="full,watches" executor="ide" name="Watches" resultsprocessor="qa-unit">
+        <testset dir="unit/src">
+            <patternset>
                 <include name="org/netbeans/test/debugger/watches/HotspotBasicWatchesTestCase.class"/>
                 <include name="org/netbeans/test/debugger/parser/HotspotBasicEvaluationTestCase.class"/>
             </patternset>
