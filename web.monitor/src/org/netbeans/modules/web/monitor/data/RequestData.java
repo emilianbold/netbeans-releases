@@ -292,6 +292,8 @@ public class RequestData extends BaseBean {
      
     public void addCookie(String ckname, String ckvalue) {
 
+	boolean debug = false; 
+
         // Do we have to check for duplicates? 
 	if(debug) 
 	    log("Adding cookie: " + ckname + " " + ckvalue); //NOI18N
@@ -307,8 +309,9 @@ public class RequestData extends BaseBean {
 	// No headers (this should not happen)
 	// Create a set of headers and add a cookie header
 	if(len == 0) { 
+	    if(debug) log("We had a cookie header with no value");
 	    buf.append(ckname);
-	    buf.append(";");  //NOI18N
+	    buf.append("=");  //NOI18N
 	    buf.append(ckvalue); 
 	    if(debug) log("New cookie string is " + buf.toString()); //NOI18N
 	    setCookieHeader(buf.toString()); 
@@ -319,6 +322,7 @@ public class RequestData extends BaseBean {
 	    if(!headers[i].getName().equalsIgnoreCase(COOKIE)) 
 		continue; 
 
+	    if(debug) log("Found cookie header");
 	    String oldCookies = headers[i].getValue(); 
 
 	    if(oldCookies != null && !oldCookies.trim().equals("")) { //NOI18N
@@ -326,6 +330,7 @@ public class RequestData extends BaseBean {
 		buf.append(";"); //NOI18N
 	    } 
 		
+	    if(debug) log("appended ; to cookie string");
 	    buf.append(ckname);
 	    buf.append("=");//NOI18N
 	    buf.append(ckvalue);
@@ -335,8 +340,9 @@ public class RequestData extends BaseBean {
 	}
 	 
 	// There were no cookies, create a new header
+	if(debug) log("We had no cookie header");
 	buf.append(ckname);
-	buf.append(";");  //NOI18N
+	buf.append("=");  //NOI18N
 	buf.append(ckvalue); 
 	if(debug) log("New cookie string is " + buf.toString()); //NOI18N
 	setCookieHeader(buf.toString()); 
@@ -369,7 +375,8 @@ public class RequestData extends BaseBean {
 	if(debug) log("Deleting cookie: " + ckname + " " + ckvalue); //NOI18N
 	
 	Param[] headers = getHeaders().getParam();
-	
+	boolean noCookie = false; 
+
 	// No headers (this should not happen) 
 	if(headers == null || headers.length == 0) return;
 	 
@@ -380,7 +387,7 @@ public class RequestData extends BaseBean {
 		continue; 
 
 	    if(debug) log(" found cookie header");//NOI18N
-	     
+
 	    String oldCookies = headers[i].getValue(); 
 	    
 	    if(oldCookies == null || oldCookies.trim().equals("")) { //NOI18N
@@ -422,8 +429,9 @@ public class RequestData extends BaseBean {
 		if(debug) log("New cookie string is: " + //NOI18N
 			      buf.toString());
 	    }
-	    headers[i].setValue(buf.toString());
-	    return;
+	    if(buf.toString().equals("")) getHeaders().removeParam(headers[i]);
+	    else headers[i].setValue(buf.toString());
+	    break;
 	}
 	// In this case if we don't find the cookie string, we don't
 	// need to do anything
