@@ -470,10 +470,16 @@ public class RADComponentNode extends FormNode
                     return;
             }
             else if (component instanceof RADVisualContainer
-                     && transComp instanceof RADVisualComponent) {
-                // pasting a visual component
+                     && transComp instanceof RADVisualComponent)
+            {   // pasting a visual component
+                // check general cut conditions
                 if (cut && !canPasteCut(transComp))
                     return;
+
+                Class transClass = transComp.getBeanClass();
+                if (java.awt.Window.class.isAssignableFrom(transClass)
+                        || java.applet.Applet.class.isAssignableFrom(transClass))
+                    return; // cannot copy Window or Applet to another component
             }
             else return; // not allowed combination of source/target
 

@@ -129,6 +129,14 @@ class CopySupport {
                 return null;
 
             if (!fromCut) { // pasting copy of RADComponent
+                // cannot copy Window or Applet to another component
+                if (targetContainer instanceof RADVisualContainer) {
+                    Class cls = sourceComponent.getBeanClass();
+                    if (java.awt.Window.class.isAssignableFrom(cls)
+                            || java.applet.Applet.class.isAssignableFrom(cls))
+                        return null;
+                }
+
                 targetForm.getComponentCreator()
                     .copyComponent(sourceComponent, targetContainer);
                 return null;

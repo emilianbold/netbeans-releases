@@ -194,7 +194,8 @@ public class MetaComponentCreator {
             newComp = new RADComponent();
 
         newComp.initialize(formModel);
-        newComp.setStoredName(sourceComp.getName());
+        if (sourceComp != sourceComp.getFormModel().getTopRADComponent())
+            newComp.setStoredName(sourceComp.getName());
 
         try {
             newComp.initInstance(sourceComp.getBeanClass());
