@@ -14,6 +14,8 @@
 package org.netbeans.core.actions;
 
 import org.openide.TopManager;
+import org.openide.awt.HtmlBrowser;
+import org.openide.windows.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.ActionPerformer;
@@ -21,8 +23,8 @@ import org.openide.util.actions.CallableSystemAction;
 
 import org.netbeans.core.IDESettings;
 
-/** Opens a HTML Browser on the home URL specified in IDESettings.
-* (Or activates last opened).
+/** Activates last opened HTML browser or opens a HTML Browser on the home URL 
+ *  specified in IDESettings using TopManager.showUrl().
 *
 * @author Ian Formanek
 */
@@ -43,16 +45,49 @@ public class HTMLViewAction extends CallableSystemAction {
             getString("CTL_OpeningBrowser")
         );
         try {
-            tm.showUrl (new java.net.URL (
-                org.openide.awt.HtmlBrowser.getHomePage ()
-            ));
+            boolean notFound = true;
+            
+            // is browser open on current workspace?
+            Workspace workspace = tm.getWindowManager ().getCurrentWorkspace ();
+            Mode mode = workspace.findMode (HtmlBrowser.BrowserComponent.MODE_NAME);
+            if (mode != null) {
+                TopComponent [] comps = mode.getTopComponents ();
+                if (comps.length > 0) {
+                    comps[0].open ();
+                    comps[0].requestFocus ();
+                    notFound = false;
+                }
+            }
+            // is it open on any workspace?
+            if (notFound) {
+                Workspace [] workspaces = tm.getWindowManager ().getWorkspaces ();
+                if (workspaces != null) {
+                    for (int i=0; i<workspaces.length; i++) {
+                        mode = workspaces[i].findMode (HtmlBrowser.BrowserComponent.MODE_NAME);
+                        if (mode != null) {
+                            TopComponent [] comps = mode.getTopComponents ();
+                            if (comps.length > 0) {
+                                comps[0].open ();
+                                comps[0].requestFocus ();
+                                notFound = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (notFound) {
+                tm.showUrl (new java.net.URL (
+                    HtmlBrowser.getHomePage ()
+                ));
+            }
         } catch (java.net.MalformedURLException e) {
-            if (!org.openide.awt.HtmlBrowser.getHomePage ().
+            if (!HtmlBrowser.getHomePage ().
               startsWith ("http://")
             ) {
                 try {
                     tm.showUrl (new java.net.URL (
-                        "http://" + org.openide.awt.HtmlBrowser.getHomePage ()
+                        "http://" + HtmlBrowser.getHomePage ()
                     ));
                 } catch (java.net.MalformedURLException e1) {
                     tm.showUrl (IDESettings.getRealHomeURL ());
@@ -73,26 +108,3 @@ public class HTMLViewAction extends CallableSystemAction {
     }
 
 }
-
-/*
- * Log
- *  14   Gandalf   1.13        1/12/00  Ales Novak      i18n
- *  13   Gandalf   1.12        1/5/00   Jan Jancura     Bug 4872
- *  12   Gandalf   1.11        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  11   Gandalf   1.10        6/24/99  Jesse Glick     Gosh-honest HelpID's.
- *  10   Gandalf   1.9         6/22/99  Ian Formanek    employed DEFAULT_HELP
- *  9    Gandalf   1.8         6/8/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  8    Gandalf   1.7         3/26/99  Ian Formanek    Fixed use of obsoleted 
- *       NbBundle.getBundle (this)
- *  7    Gandalf   1.6         3/12/99  David Simonek   
- *  6    Gandalf   1.5         3/6/99   David Simonek   
- *  5    Gandalf   1.4         3/2/99   David Simonek   icons repair
- *  4    Gandalf   1.3         3/1/99   David Simonek   icons etc..
- *  3    Gandalf   1.2         1/21/99  David Simonek   Removed references to 
- *       "Actions" class
- *  2    Gandalf   1.1         1/7/99   Ian Formanek    fixed resource names
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- */
