@@ -237,17 +237,11 @@ public class BridgeImpl implements BridgeInterface {
                 custom.scanProject(defs);
                 // #8993: also try to refresh masterfs...this is hackish...
                 // cf. also RefreshAllFilesystemsAction
-                File[] roots = File.listRoots();
-                assert roots != null && roots.length > 0 : "Could not list file roots to refresh";
-                FileObject random = FileUtil.toFileObject(roots[0]);
-                assert random != null : "Could not get a represent file object from masterfs";
-                FileSystem fs;
-                try {
-                    fs = random.getFileSystem();
-                } catch (FileStateInvalidException e) {
-                    throw new AssertionError(e);
-                }
-                fs.refresh(false);
+                FileSystem[] allFileSystems = getFileSystems();
+                for (int i = 0; i < allFileSystems.length; i++) {
+                    FileSystem fs = allFileSystems[i];
+                    fs.refresh(false);                    
+                }                                
                 gutProject(p2);
                 if (!isAnt16()) {
                     // #36393 - memory leak in Ant 1.5.
@@ -269,7 +263,32 @@ public class BridgeImpl implements BridgeInterface {
         
         return ok;
     }
-    
+
+    private FileSystem[] getFileSystems() {
+        File[] roots = File.listRoots();
+        Set allRoots = new LinkedHashSet ();
+        assert roots != null && roots.length > 0 : "Could not list file roots to refresh";
+        
+        for (int i = 0; i < roots.length; i++) {
+            File root = roots[i];
+            FileObject random = FileUtil.toFileObject(root);            
+            if (random == null) continue;
+        
+            FileSystem fs;
+            try {
+                fs = random.getFileSystem();
+                allRoots.add(fs);
+            } catch (FileStateInvalidException e) {
+                throw new AssertionError(e);
+            }            
+        }        
+        FileSystem[] retVal = new FileSystem [allRoots.size()];
+        allRoots.toArray(retVal);
+        assert retVal.length > 0 : "Could not get a filesystem  for project files from masterfs";
+        
+        return retVal;
+    }
+
     private static void addCustomDefs(Project project) throws BuildException, IOException {
         long start = System.currentTimeMillis();
         if (AntBridge.getInterface().isAnt16()) {
