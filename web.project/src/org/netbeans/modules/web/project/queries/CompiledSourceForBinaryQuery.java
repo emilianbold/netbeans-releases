@@ -67,6 +67,9 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         if (hasSources(binaryRoot, WebProjectProperties.BUILD_CLASSES_DIR)) {   //NOI18N
             src = this.sourceRoots;
         }
+        else if (hasSources(binaryRoot, WebProjectProperties.BUILD_EAR_CLASSES_DIR)) {   //NOI18N
+            src = this.sourceRoots;
+        }
         else if (hasSources (binaryRoot, WebProjectProperties.DIST_WAR)) {      //NOI18N
             src = this.sourceRoots;
         }

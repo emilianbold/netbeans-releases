@@ -66,7 +66,6 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 
 import org.netbeans.jmi.javamodel.*;
 import java.lang.reflect.Modifier;
-import java.net.URL;
 import java.util.HashSet;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
@@ -74,7 +73,8 @@ import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
+
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
@@ -508,17 +508,30 @@ class WebActionProvider implements ActionProvider {
                                 AntProjectHelper serverHelper = wss.getAntProjectHelper();
                                 String dcp = serverHelper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.DEBUG_CLASSPATH);
                                 if (dcp != null) {
-                                    //remove beginning colon ':'
-                                    if (dcp.charAt(0) == ':')
-                                        dcp = dcp.substring(1, dcp.length());
-                                    clientDCP.append(serverProject.getProjectDirectory().getPath() + "/" + dcp + ":");
+                                    String[] pathTokens = PropertyUtils.tokenizePath(dcp);
+                                    for (int i = 0; i < pathTokens.length; i++) {
+                                        try {
+                                            File f = new File(pathTokens[i]);
+                                            if (!f.isAbsolute()) 
+                                                pathTokens[i] = serverProject.getProjectDirectory().getPath() + "/" + pathTokens[i];
+                                        }
+                                        catch (Exception e) {/*no action should be taken*/}
+                                        clientDCP.append(pathTokens[i] + ":");
+                                    }
                                 }
+                                
                                 String wdd = serverHelper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
                                 if (wdd != null) {
-                                    //remove beginning colon ':'
-                                    if (wdd.charAt(0) == ':')
-                                        wdd = wdd.substring(1, wdd.length());
-                                    clientWDD.append(serverProject.getProjectDirectory().getPath() + "/" + wdd + ":");
+                                    String[] pathTokens = PropertyUtils.tokenizePath(wdd);
+                                    for (int i = 0; i < pathTokens.length; i++) {
+                                        try {
+                                            File f = new File(pathTokens[i]);
+                                            if (!f.isAbsolute()) 
+                                                pathTokens[i] = serverProject.getProjectDirectory().getPath() + "/" + pathTokens[i];
+                                        }
+                                        catch (Exception e) {/*no action should be taken*/}
+                                        clientWDD.append(pathTokens[i] + ":");
+                                    }
                                 }
                             }
                         }
