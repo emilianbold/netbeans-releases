@@ -8,3 +8,6 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Short-Description: Enables debugging with the JPDA debugger implementation.
 OpenIDE-Module-Long-Description: The JPDA Debugger module enables you to debug applications
   using the Java Platform Debugging Architecture.
+
+Name: org/netbeans/modules/debugger/jpda/JPDADebuggerProjectSettings.class
+OpenIDE-Module-Class: Option
