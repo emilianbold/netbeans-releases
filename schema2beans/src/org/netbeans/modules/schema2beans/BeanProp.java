@@ -1279,7 +1279,7 @@ public class BeanProp implements BaseProperty {
 	    b.notifyBeansForChange(oldValue, value, name);
 	}
     }
-    /** Checking attr value for correct chars, replace incorrect chars with blank characters
+    /** Checking attr value for correct chars, replace illegal chars with '?'
      */
     private String normalizedAttrValue(String value) {
         if (value==null) return null;
@@ -1289,7 +1289,7 @@ public class BeanProp implements BaseProperty {
             if (XMLUtil.isAttrContent((int)ch)) {
                 sb.append(ch);
             } else {
-                sb.append(' ');
+                sb.append('?'); // illegal character replaced by '?'
             }
         }
         return sb.toString();
