@@ -374,6 +374,14 @@ public final class TabDisplayer extends JComponent {
     public String getCommandAtPoint(Point p) {
         return getUI().getCommandAtPoint (p);
     }
+    
+    public void registerShortcuts(JComponent comp) {
+        getUI().registerShortcuts(comp);
+    }
+    
+    public void unregisterShortcuts(JComponent comp) {
+        getUI().unregisterShortcuts(comp);
+    }
 
     /**
      * Notifies all registered listeners about the event.

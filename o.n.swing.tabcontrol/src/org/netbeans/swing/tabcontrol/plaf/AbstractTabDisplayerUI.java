@@ -320,6 +320,16 @@ public abstract class AbstractTabDisplayerUI extends TabDisplayerUI {
         return scratchPoint;
     }
 
+    /** Does nothing, no shortcuts */
+    public void unregisterShortcuts(JComponent comp) {
+        // no operation
+    }
+    
+    /** Does nothing, no shortcuts */
+    public void registerShortcuts(JComponent comp) {
+        // no operation
+    }
+    
     /**
      * A property change listener which will repaint the selected tab when the
      * &quot;active&quot; property changes on the tab displayer

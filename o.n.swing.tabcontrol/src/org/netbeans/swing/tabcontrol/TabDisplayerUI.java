@@ -182,5 +182,9 @@ public abstract class TabDisplayerUI extends ComponentUI {
      * @return An index which may be equal to the size of the data model
      */
     public abstract int dropIndexOfPoint (Point p);
+    
+    public abstract void registerShortcuts (JComponent comp);
+        
+    public abstract void unregisterShortcuts (JComponent comp);
 
 }

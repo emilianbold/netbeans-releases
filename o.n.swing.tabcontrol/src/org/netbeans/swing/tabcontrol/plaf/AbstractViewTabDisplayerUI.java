@@ -25,6 +25,8 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -35,6 +37,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.swing.tabcontrol.LocationInformer;
+import org.netbeans.swing.tabcontrol.TabbedContainer;
 
 /**
  * Basic UI class for view tabs - non scrollable tabbed displayer, which shows all
@@ -63,6 +66,10 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     protected static IconLoader iconCache = new IconLoader();
     
     private PinButton pinButton;
+
+    /** Pin action */
+    private final Action pinAction = new PinAction();
+    private static final String PIN_ACTION = "pinAction";
 
     public AbstractViewTabDisplayerUI (TabDisplayer displayer) {
         super (displayer);
@@ -99,6 +106,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         if (pinButton != null) {
             displayer.remove(pinButton);
             pinButton.removeActionListener(controller);
+            pinButton = null;
         }
         layoutModel = null;
         selectionModel = null;
@@ -292,7 +300,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         
         return pinButton;
     }
-
+    
     /** Subclasses should create and return pin button instance, parametrized
      * to given orientation
      * @see PinButton
@@ -307,6 +315,39 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         return new PinButton(normalIcons, null, null);
     }
 
+    /** Reaction to pin button / pin shortcut toggle. Does nothing itself,but
+     * produces event for outer window system.
+     */
+    private void performPinAction() {
+        // pin button only active on selected index, so this is safe here
+        int index = getSelectionModel().getSelectedIndex();
+        PinButton pinB = getPinButton(index);
+        if (pinB != null) {
+            if (TabDisplayer.ORIENTATION_CENTER.equals(pinB.getOrientation())) {
+                shouldPerformAction(TabDisplayer.COMMAND_DISABLE_AUTO_HIDE, index, null);
+            } else {
+                shouldPerformAction(TabDisplayer.COMMAND_ENABLE_AUTO_HIDE, index, null);
+            }
+            // XXX - what to do if action was not consumed? nothing?
+        }
+    }
+    
+    /** Registers shortcut for enable/ disable auto-hide functionality */
+    public void unregisterShortcuts(JComponent comp) {
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
+            remove(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE,
+                                InputEvent.CTRL_DOWN_MASK));
+        comp.getActionMap().remove(PIN_ACTION);
+    }
+
+    /** Registers shortcut for enable/ disable auto-hide functionality */
+    public void registerShortcuts(JComponent comp) {
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
+            put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE,
+                                InputEvent.CTRL_DOWN_MASK), PIN_ACTION);
+        comp.getActionMap().put(PIN_ACTION, pinAction);
+    }
+    
     public Polygon getExactTabIndication(int index) {
         // TBD - the same code is copied in ScrollableTabsUI, should be shared
         // if will not differ
@@ -672,15 +713,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         /** Implementation of ActionListener. Reacts to pin button clicks
          */
         public void actionPerformed(ActionEvent e) {
-            PinButton pinButton = (PinButton)e.getSource();
-            // pin button only active on selected index, so this is safe here
-            int index = getSelectionModel().getSelectedIndex();
-            if (TabDisplayer.ORIENTATION_CENTER.equals(pinButton.getOrientation())) {
-                shouldPerformAction(TabDisplayer.COMMAND_DISABLE_AUTO_HIDE, index, null);
-            } else {
-                shouldPerformAction(TabDisplayer.COMMAND_ENABLE_AUTO_HIDE, index, null);
-            }
-            // XXX - what to do if action was not consumed???
+            performPinAction();
         }
         
     } // end of Controller
@@ -725,5 +758,13 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         }
         
     } // end of PinButton
+
+    /** Executes enable / disable auto-hide mode */
+    private final class PinAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            performPinAction();
+        }
+    } // end of PinAction
+    
     
 }

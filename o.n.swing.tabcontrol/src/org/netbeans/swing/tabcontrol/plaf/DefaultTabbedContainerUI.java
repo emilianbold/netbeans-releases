@@ -226,6 +226,7 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
      */
     protected void installTabDisplayer() {
         container.add(tabDisplayer, BorderLayout.NORTH);
+        tabDisplayer.registerShortcuts(container);
     }
 
     /**
@@ -339,6 +340,7 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
     protected void uninstallDisplayers() {
         container.remove(contentDisplayer);
         container.remove(tabDisplayer);
+        tabDisplayer.unregisterShortcuts(container);
         contentDisplayer.removeAll();
         contentDisplayer = null;
         tabDisplayer = null;
