@@ -126,7 +126,7 @@
   </tocitem>
   <tocitem text="Updating the Parser Database" target="editing.parserdatabase"/>
   <tocitem text="Deleting Parser Database Files" target="editing.deleting-pdb"/>
-  <tocitem text="Saving and Sharing Source Editor Settings" target="editing.xmlsettings"/>
+  <tocitem text="Sharing Source Editor Settings" target="editing.xmlsettings"/>
   <tocitem text="Configuring the Source Editor" target="editing.configuring">    
     <tocitem text="Source Editor Properties" target="editing.javaeditor-props"/>
     <tocitem text="Annotation Properties" target="editing.configuring.annotations"/>
