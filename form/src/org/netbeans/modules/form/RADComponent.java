@@ -170,6 +170,8 @@ public class RADComponent {
   public void setName (String value) {
     if ((componentName != null) && (componentName.equals (value))) return; // same name => no change
     if (getFormManager ().getVariablesPool ().findVariableType (value) != null) return; // variable already exist => ignore
+    if (!org.openide.util.Utilities.isJavaIdentifier (value)) return;
+
     String oldName = componentName;
     componentName = value;
     if (oldName != null) {
@@ -1066,6 +1068,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  35   Gandalf   1.34        7/28/99  Ian Formanek    Fixed bug 1851 - One can
+ *       use a java keywords as variable names .
  *  34   Gandalf   1.33        7/28/99  Ian Formanek    Fixed problem with 
  *       explicite editors when the Tuborg format is preserved (i.e. the 
  *       advanced features not used)
