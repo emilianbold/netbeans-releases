@@ -182,6 +182,7 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
+                <!-- XXX permit also separator -->
             </xsd:choice>
         </xsd:sequence>
     </xsd:complexType>

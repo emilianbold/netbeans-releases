@@ -54,8 +54,7 @@ public class ActionsTest extends TestBase {
         } catch (IllegalArgumentException e) {
             // Good.
         }
-        // XXX actually test running the action? how to know when it is done though? there is no API for that...
-        // when Ant logger API is available, could provide a null InputOutput impl, and test that the right messages are logged
+        // XXX actually test running the action? see e.g. ant or java/project unit tests
     }
     
 }
