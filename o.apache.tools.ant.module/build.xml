@@ -96,10 +96,10 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <jar jarfile="test/ant.jar" manifest="manifest-subst.mf" compress="false">
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="javahelp" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset src="release/modules/ext/ant.jar" excludes="META-INF/MANIFEST.MF"/>
-      <fileset src="release/modules/ext/optional.jar" excludes="META-INF/MANIFEST.MF"/>
+      <zipfileset src="release/modules/ext/ant.jar" excludes="META-INF/MANIFEST.MF"/>
+      <zipfileset src="release/modules/ext/optional.jar" excludes="META-INF/MANIFEST.MF"/>
     </jar>
-    <nbinstall module="test/ant.jar" action="reinstall"/>
+    <nbinstaller module="test/ant.jar" action="reinstall"/>
   </target>
 
   <target name="clean">
