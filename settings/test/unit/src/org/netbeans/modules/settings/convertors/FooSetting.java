@@ -21,9 +21,13 @@ import java.util.Properties;
  */
 public class FooSetting {
     private final static String PROP_PROPERTY1 = "property1";
+    private final static String PROP_NAME = "name";
     
     /** Holds value of property property1. */
     private String property1;
+    
+    /** Holds value of property name. */
+    private String name = "defaultName";
     
     /** Utility field used by bound properties. */
     private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
@@ -65,19 +69,41 @@ public class FooSetting {
         propertyChangeSupport.firePropertyChange(PROP_PROPERTY1, oldProperty1, property1);
     }
     
+    /** Getter for property name.
+     * @return Value of property name.
+     */
+    public String getName() {
+        return this.name;
+    }
+    
+    /** Setter for property name.
+     * @param name New value of property name.
+     */
+    public void setName(String name) {
+        String oldName = this.name;
+        this.name = name;
+        propertyChangeSupport.firePropertyChange(PROP_NAME, oldName, name);
+    }
+    
     private void readProperties(Properties p) {
         property1 = p.getProperty(PROP_PROPERTY1);
+        String _name = p.getProperty(PROP_NAME);
+        if (_name != null) name = _name;
     }
     
     private void writeProperties(Properties p) {
-        if (property1 == null) return;
-        p.setProperty(PROP_PROPERTY1, property1);
+        if (property1 != null) {
+            p.setProperty(PROP_PROPERTY1, property1);
+        }
+        if (name != null) {
+            p.setProperty(PROP_NAME, name);
+        }
     }
     
     public String toString() {
         return this.getClass().getName() + '@' +
             Integer.toHexString(System.identityHashCode(this)) +
-            '[' + property1 + ']';
+            '[' + property1 + ", " + name + ']';
     }
     
     public boolean equals(Object obj) {
