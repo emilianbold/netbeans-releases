@@ -20,6 +20,7 @@
 package org.netbeans.modules.form;
 
 import org.openide.*;
+import org.openide.nodes.*;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
@@ -288,16 +289,27 @@ public class FormCustomEditor extends JPanel
         else
             value = editor.getValue(); 
 
-        editor.getProperty().setPreCode(preCode);
-        editor.getProperty().setPostCode(postCode);
+        Node[] nodes = ComponentInspector.getInstance().getSelectedNodes();
+        for(int i=0; i<nodes.length; i++) {
+            RADProperty[] props = ((RADComponentNode)nodes[i]).getRADComponent().getAllBeanProperties();
+            PropertyEditor pe = getPropertyEditorFromSelectedNode(props, (RADProperty)(editor.getProperty()));
+            
+            if (pe != null && pe instanceof FormPropertyEditor) {
+                FormPropertyEditor fpe = (FormPropertyEditor)pe;
+                
+                fpe.getProperty().setPreCode(preCode);
+                fpe.getProperty().setPostCode(postCode);
 
-        if (currentEditor != null) {
-            editor.setModifiedEditor(currentEditor);
-            editor.commitModifiedEditor();
+                if (currentEditor != null) {
+                    fpe.setModifiedEditor(currentEditor);
+                    fpe.commitModifiedEditor();
+                }
+            }
         }
 
         return value;
     }
+
 
     public PropertyEditor getCurrentPropertyEditor() {
         int index = editorsCombo.getSelectedIndex();
@@ -309,4 +321,18 @@ public class FormCustomEditor extends JPanel
         int index = editorsCombo.getSelectedIndex();
         return (index == -1) ? null : allCustomEditors[index];
     }
+
+
+    private PropertyEditor getPropertyEditorFromSelectedNode(RADProperty[] props, RADProperty prop) {
+        if (props == null || prop == null)
+            return null;
+        
+        String propName = prop.getName();
+        
+        for (int i=0; i<props.length; i++)
+            if (props[i].getName().equals(propName)) 
+                return props[i].getPropertyEditor();
+        return null;
+    }
+
 }
