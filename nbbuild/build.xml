@@ -513,13 +513,9 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module monitor..."/>
     <ant dir="../monitor" target="netbeans"/>
   </target>
-  <target name="all-mdr" depends="all-openide,all-openide/deprecated,all-openide/loaders,all-openidex,all-contrib/naming"><!-- XXX no more openidex/looks -->
+  <target name="all-mdr" depends="all-openide,all-openide/deprecated,all-openide/loaders,all-openidex">
     <echo message="Building module mdr..."/>
     <ant dir="../mdr" target="netbeans"/>
-  </target>
-  <target name="all-mdr/samples/xml" depends="all-openide,all-openidex,all-xml/core,all-mdr"><!-- XXX no more openidex/looks -->
-    <echo message="Building module mdr/samples/xml..."/>
-    <ant dir="../mdr/samples/xml" target="netbeans"/>
   </target>
   <target name="all-multicompile" depends="all-openide,all-openide/compiler,all-openide/execution">
     <echo message="Building module multicompile..."/>
