@@ -30,7 +30,9 @@ Microsystems, Inc. All Rights Reserved.
         <!-- XXX -->
         <property name="nbextra.dir" location="../../../nbextra"/>
         <!-- List of directories where jars will be searched. -->
-        <property name="xtest.extra.jars.path" location="${nbextra.dir}/jemmy/;${nbextra.dir}/jellytools"/>
+        <property name="jemmy.home" location="../../jemmy/builds"/>
+        <property name="jelly.home" location="../../jellytools/builds"/>
+        <property name="xtest.extra.jars.path" location="${jemmy.home};${jelly.home}"/>
     
         <!-- This jars is used for compilation, execution codetests and also for
              execution ide tests (it means this classpath will be mounted in repository).

@@ -16,8 +16,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="set_classpath">
 
-        <property location="../../../nbextra/jemmy" name="jemmy.home"/>
-        <property location="../../../nbextra/jellytools" name="jelly.home"/>
+        <property name="jemmy.home" location="../../jemmy/builds"/>
+        <property name="jelly.home" location="../../jellytools/builds"/>
         <property location="../../../nb_all/a11y" name="a11y.home"/>
 
         <property name="xtest.extra.jars.path" value="${jemmy.home};${jelly.home};${a11y.home}/tests"/>

@@ -23,8 +23,8 @@ Microsystems, Inc. All Rights Reserved.
 	     or <module>/netbeans isn't available. 
           -->            
          
-        <property location="../../../nbextra/jemmy" name="jemmy.home"/>
-        <property location="../../../nbextra/jellytools" name="jelly.home"/>
+        <property name="jemmy.home" location="../../jemmy/builds"/>
+        <property name="jelly.home" location="../../jellytools/builds"/>
 		 
         <!-- List of directories where jars will be searched. -->
         <property name="xtest.extra.jars.path" value="${jemmy.home};${jelly.home}"/>
