@@ -76,7 +76,6 @@ public class EclipseUtils {
      * <code>workspaceDir</code>.
      */
     public static boolean isRegularWorkSpace(File workspaceDir) {
-        System.out.println("MK> calling: FileUtil.toFileObject(FileUtil.normalizeFile(\"" + workspaceDir + "\"))");
         FileUtil.toFileObject(FileUtil.normalizeFile(workspaceDir));
         return workspaceDir != null
                 && FileUtil.toFileObject(FileUtil.normalizeFile(workspaceDir)) != null
