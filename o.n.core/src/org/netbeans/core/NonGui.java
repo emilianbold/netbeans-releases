@@ -536,32 +536,9 @@ public class NonGui extends NbTopManager implements Runnable {
     	    StartLog.logProgress ("ModuleSystem created"); // NOI18N
             fireSystemClassLoaderChange();
 
-            int bootModules = 0;
-            int knownModules = 0;
-            int scannedModules = 0;
-            try
-            {
-                ClassLoader loader = ModuleSystem.class.getClassLoader();
-                Enumeration e = loader.getResources("META-INF/MANIFEST.MF"); // NOI18N
-                while (e.hasMoreElements())
-                {
-                    e.nextElement();
-                    bootModules++;
-                }
-            }
-            catch (IOException ex)
-            {
-                getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
-            }
-//            System.out.println("Boot Modules: " + bootModules);
-
-            moduleSystem.readList();
-            knownModules = moduleSystem.getKnownModules().size();
-//            System.out.println("Known Modules: " + knownModules);
-            scannedModules = moduleSystem.getScannedModules().size();
-//            System.out.println("Scanned Modules: " + scannedModules);
-            Main.setSplashMaxSteps(bootModules + knownModules + knownModules + knownModules + scannedModules + 80);
+            Main.addToSplashMaxSteps(40); // additional steps after loading all modules
             moduleSystem.loadBootModules();
+            moduleSystem.readList();
             moduleSystem.scanForNewAndRestore();
     	    StartLog.logEnd ("Modules initialization"); // NOI18N
         }
