@@ -228,6 +228,9 @@ public class TargetExecutor implements Runnable {
             return;
         }
         
+        // Don't hog the CPU, the build might take a while:
+        Thread.currentThread().setPriority((Thread.MIN_PRIORITY + Thread.NORM_PRIORITY) / 2);
+        
         ok = AntBridge.getInterface().run(buildFile, pcookie.getFileObject(), targetNames,
                                           out, err, properties, verbosity, outputStream == null);
     }
