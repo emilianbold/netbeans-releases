@@ -110,6 +110,9 @@ Microsystems, Inc. All Rights Reserved.
             	<file name="DTD_Mode_Properties_1_1" url="nbresboot:/org/netbeans/core/windows/resources/mode-properties1_1.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Mode Properties 1.1//EN"/>
             	</file>
+                <file name="DTD_Mode_Properties_1_2" url="nbresboot:/org/netbeans/core/windows/resources/mode-properties1_2.dtd">
+                        <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Mode Properties 1.2//EN"/>
+                </file>
             	<file name="DTD_Top_Component_in_Mode_Properties_1_0" url="nbresboot:/org/netbeans/core/windows/resources/tc-ref1_0.dtd">
                 	<attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Top Component in Mode Properties 1.0//EN"/>
             	</file>
