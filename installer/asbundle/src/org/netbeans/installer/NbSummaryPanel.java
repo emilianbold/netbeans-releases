@@ -180,7 +180,7 @@ public class NbSummaryPanel extends TextDisplayPanel
         if (Util.isWindowsOS()) {
             summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description51,netbeans.exe)";
         } else if (Util.isMacOSX()) {
-            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description52,netbeans)";
+            summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description52)";
         } else {
             summaryMessage += "$L(org.netbeans.installer.Bundle,SummaryPanel.description51,netbeans)";
         }
