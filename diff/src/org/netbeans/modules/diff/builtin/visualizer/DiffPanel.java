@@ -85,6 +85,8 @@ public class DiffPanel extends javax.swing.JPanel {
         initActions();
         jSplitPane1.setResizeWeight(0.5);
         putClientProperty("PersistenceType", "Never");
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_DiffPanelA11yName"));  // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_DiffPanelA11yDesc"));  // NOI18N
     }
 
     /** This method is called from within the constructor to

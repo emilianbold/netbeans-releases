@@ -62,6 +62,10 @@ public class DiffPresenter extends javax.swing.JPanel {
         propSupport = new PropertyChangeSupport(this);
         initComponents();
         initMyComponents();
+        providerLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "LBL_Provider_Mnemonic").charAt(0));  // NOI18N
+        visualizerLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "LBL_Visualizer_Mnemonic").charAt(0));  // NOI18N
+        providerLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "ACS_ProviderA11yDesc"));  // NOI18N
+        visualizerLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "ACS_VisualizerA11yDesc"));  // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -163,6 +167,9 @@ public class DiffPresenter extends javax.swing.JPanel {
             //gridBagConstraints.weightx = 1.0;
             gridBagConstraints.gridx = 1;
             servicesPanel.add(panel, gridBagConstraints);
+            providerLabel.setLabelFor(panel);
+            panel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "ACS_ProviderPropertyPanelA11yName"));  // NOI18N
+            panel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "ACS_ProviderPropertyPanelA11yDesc"));  // NOI18N
         }
         if (diffInfo.isChooseVisualizers()) {
             try {
@@ -182,6 +189,8 @@ public class DiffPresenter extends javax.swing.JPanel {
             model = new DefaultPropertyModel (this, pd);
             panel = new PropertyPanel (model, PropertyPanel.PREF_INPUT_STATE);
             panel.setChangeImmediate(false);
+            panel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "ACS_VisualizerPropertyPanelA11yName"));  // NOI18N
+            panel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "ACS_VisualizerPropertyPanelA11yDesc"));  // NOI18N
 
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
@@ -189,6 +198,7 @@ public class DiffPresenter extends javax.swing.JPanel {
             //gridBagConstraints.weightx = 1.0;
             gridBagConstraints.gridx = 3;
             servicesPanel.add(panel, gridBagConstraints);
+            visualizerLabel.setLabelFor(panel);
         }
         providerLabel.setVisible(diffInfo.isChooseProviders());
         visualizerLabel.setVisible(diffInfo.isChooseVisualizers());
