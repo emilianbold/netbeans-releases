@@ -164,25 +164,32 @@ public final class EclipseProject implements Comparable {
         return rootsLabels;
     }
     
-    /** Returns all libraries on the project classpath. */
-    public File[] getAllLibrariesFiles() {
-        Collection libs = cp.getLibraries(); // internal libraries
-        Collection extLibs = cp.getExternalLibraries(); // external libraries
-        Collection ulJars = getUserLibrariesJars(); // jars in user libraries
-        Collection variables = cp.getVariables();
-        File[] files = new File[libs.size() + extLibs.size() + ulJars.size() + variables.size()];
-        int i = 0;
-        for (Iterator it = libs.iterator(); it.hasNext(); ) {
-            files[i++] = new File(((ClassPathEntry)it.next()).getAbsolutePath());
+    /**
+     * Returns all libraries on the project classpath as Collection of
+     * <code>java.io.File</code>s.
+     */
+    public Collection getAllLibrariesFiles() {
+        Collection files = new ArrayList();
+        // internal libraries
+        for (Iterator it = cp.getLibraries().iterator(); it.hasNext(); ) {
+            files.add(new File(((ClassPathEntry)it.next()).getAbsolutePath()));
+            
         }
-        for (Iterator it = extLibs.iterator(); it.hasNext(); ) {
-            files[i++] = new File(((ClassPathEntry)it.next()).getAbsolutePath());
+        // external libraries
+        for (Iterator it = cp.getExternalLibraries().iterator(); it.hasNext(); ) {
+            files.add(new File(((ClassPathEntry)it.next()).getAbsolutePath()));
         }
-        for (Iterator it = ulJars.iterator(); it.hasNext(); ) {
-            files[i++] = new File((String) it.next());
+        // jars in user libraries
+        for (Iterator it = getUserLibrariesJars().iterator(); it.hasNext(); ) {
+            files.add(new File((String) it.next()));
         }
-        for (Iterator it = variables.iterator(); it.hasNext(); ) {
-            files[i++] = new File(((ClassPathEntry)it.next()).getAbsolutePath());
+        // variables
+        for (Iterator it = cp.getVariables().iterator(); it.hasNext(); ) {
+            ClassPathEntry entry = (ClassPathEntry)it.next();
+            // in case a variable wasn't resolved
+            if (entry.getAbsolutePath() != null) {
+                files.add(new File(entry.getAbsolutePath()));
+            }
         }
         return files;
     }
@@ -250,11 +257,21 @@ public final class EclipseProject implements Comparable {
     void setAbsolutePathForEntry(ClassPathEntry entry) {
         // set abs. path default (null)
         entry.setAbsolutePath(null);
-        
         if (entry.getType() == ClassPathEntry.TYPE_VARIABLE) {
-            Workspace.Variable var = getVariable(entry);
-            if (var != null) {
-                entry.setAbsolutePath(var.getLocation());
+            String rawPath = entry.getRawPath();
+            int slashIndex = rawPath.indexOf('/');
+            if (slashIndex != -1) {
+                Workspace.Variable parent = getVariable(
+                        rawPath.substring(0, slashIndex));
+                if (parent != null) {
+                    entry.setAbsolutePath(parent.getLocation() +
+                            rawPath.substring(slashIndex));
+                }
+            } else {
+                Workspace.Variable var = getVariable(entry);
+                if (var != null) {
+                    entry.setAbsolutePath(var.getLocation());
+                }
             }
             return;
         }
@@ -284,11 +301,10 @@ public final class EclipseProject implements Comparable {
     }
     
     /**
-     * Recongises if a given entry represents variable. If yes returns variable
-     * it represents otherwise null. Note that this method returns null if
-     * workspace wasn't set for this project.
+     * Find variable for the given variable rawPath. Note that this method 
+     * returns <code>null</code> if workspace wasn't set for the project.
      */
-    Workspace.Variable getVariable(ClassPathEntry entry) {
+    private Workspace.Variable getVariable(String rawPath) {
         if (workspace == null) {
             // workspace wasn't set for this project
             return null;
@@ -297,7 +313,7 @@ public final class EclipseProject implements Comparable {
         if (variables != null) {
             for (Iterator it = workspace.getVariables().iterator(); it.hasNext(); ) {
                 Workspace.Variable variable = (Workspace.Variable) it.next();
-                if (variable.getName().equals(entry.getRawPath())) {
+                if (variable.getName().equals(rawPath)) {
                     return variable;
                 }
             }
@@ -306,10 +322,19 @@ public final class EclipseProject implements Comparable {
     }
     
     /**
+     * Recongises if a given entry represents variable. If yes returns variable
+     * it represents otherwise null. Note that this method returns null if
+     * workspace wasn't set for this project.
+     */
+    private Workspace.Variable getVariable(ClassPathEntry entry) {
+        return getVariable(entry.getRawPath());
+    }
+    
+    /**
      * Recongises if a given entry represents link. If yes returns link it
      * represents otherwise null.
      */
-    ClassPath.Link getLink(ClassPathEntry entry) {
+    private ClassPath.Link getLink(ClassPathEntry entry) {
         if (links != null) {
             for (Iterator it = links.iterator(); it.hasNext(); ) {
                 ClassPath.Link link = (ClassPath.Link) it.next();

@@ -185,13 +185,12 @@ final class Importer {
         roots.putRoots(rootURLs, labels);
         
         // add libraries to classpath
-        File[] eclLibs = eclProject.getAllLibrariesFiles();
-        for (int i = 0; i < eclLibs.length; i++) {
-            if (eclLibs[i].exists()) {
-                FileObject eclLib = FileUtil.toFileObject(eclLibs[i]);
-                nbProjectClassPath.addArchiveFile(eclLib);
+        for (Iterator it = eclProject.getAllLibrariesFiles().iterator(); it.hasNext(); ) {
+            File eclLib = (File) it.next();
+            if (eclLib.exists()) {
+                nbProjectClassPath.addArchiveFile(FileUtil.toFileObject(eclLib));
             } else {
-                logWarning(eclLibs[i] + " doesn't exist. Skipping..."); // NOI18N
+                logWarning(eclLib + " doesn't exist. Skipping..."); // NOI18N
             }
         }
         
@@ -305,7 +304,8 @@ final class Importer {
             prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
         } else {
-            logWarning("Setting of platform for " + eclProject.getName() + "failed.");
+            logWarning("Setting of platform for project \"" 
+                    + eclProject.getName() + "\" failed.");
         }
     }
     
