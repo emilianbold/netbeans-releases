@@ -1070,17 +1070,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
     
     <mkdir dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.system.dir}/Modules"/>
-    <mkdir dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.modules.dir}/autoload"/>
-    <mkdir dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.modules.dir}/eager"/>
     <createmodulexml xmldir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.system.dir}/Modules">
       <enabled dir="${netbeans.dest.dir}/${one.cluster.dir}">
         <include name="${nb.modules.dir}/*.jar"/>
       </enabled>
       <autoload dir="${netbeans.dest.dir}/${one.cluster.dir}">
-        <include name="${nb.modules.dir}/autoload/*.jar"/>
+        <include name="${nb.modules/autoload.dir}/*.jar"/>
       </autoload>
       <eager dir="${netbeans.dest.dir}/${one.cluster.dir}">
-        <include name="${nb.modules.dir}/eager/*.jar"/>
+        <include name="${nb.modules/eager.dir}/*.jar"/>
       </eager>
     </createmodulexml>
   </target>
@@ -1409,6 +1407,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
               deptargetprefix="all-"
               failonerror="${stop.when.clean.error}" />
     <echo message="Run `ant real-clean' if desired."/>
+    <delete dir="${netbeans.dest}"/>
   </target>
 
 <!-- This section contains properties and targets used to build -->

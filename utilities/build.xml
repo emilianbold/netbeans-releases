@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
       <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
       <pathelement location="${openidex.dir}/${nb.modules/autoload.dir}/openidex.jar"/>
-      <pathelement location="${core/javahelp.dir}/${nb.modules/autoload.dir}/javahelp-api.jar"/>
+      <pathelement location="${core/javahelp.dir}/${nb.modules.dir}/org-netbeans-modules-javahelp.jar"/>
       <pathelement location="clisrc"/>
     </path>
     <path id="cli-cp">

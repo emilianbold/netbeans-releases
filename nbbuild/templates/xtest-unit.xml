@@ -22,8 +22,10 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Synch the following property loads with NbModuleProject.makeEvalDefs: -->
         <property file="../nbproject/private/private.properties"/>
         <property file="../nbproject/project.properties"/>
-        <parseprojectxml project=".." modulesxml="${nb_all}/nbbuild/templates/modules.xml" publicpackagesproperty="public.packages" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" codenamebasedashesproperty="code.name.base.dashes" autoload="${is.autoload}" eager="${is.eager}" modulejardirproperty="module.jar.dir" moduleclasspathproperty="module.classpath"/>
-        
+        <parseprojectxml project=".." modulesxml="${nb_all}/nbbuild/templates/modules.xml" codenamebasedashesproperty="code.name.base.dashes" moduleclasspathproperty="module.classpath"/>
+        <property name="module.jar.dir" value="${nb.modules.dir}"/>
+        <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
+        <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
         <property name="build.compiler.debug" value="true"/>
         <property name="build.compiler.source" value="1.4"/>
         <property name="build.compiler.deprecation" value="true"/>

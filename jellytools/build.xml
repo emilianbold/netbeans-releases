@@ -32,9 +32,9 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
         <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-        <pathelement location="${core/term.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
-        <pathelement location="${core/windows.dir}/${nb.modules.dir}/core-windows.jar"/>
-        <pathelement location="${core/output.dir}/${nb.modules/autoload.dir}/core-output.jar"/>
+        <pathelement location="${core/term.dir}/${nb.modules.dir}/org-netbeans-lib-terminalemulator.jar"/>
+        <pathelement location="${core/windows.dir}/${nb.modules.dir}/org-netbeans-core-windows.jar"/>
+        <pathelement location="${core/output.dir}/${nb.modules.dir}/org-netbeans-core-output.jar"/>
         <pathelement location="../jemmy/jemmy.jar"/>
         <pathelement location="../xtest/external/junit-3.8.1.jar"/>
         <pathelement location="../xtest/nbjunit/netbeans/modules/ext/nbjunit.jar"/>

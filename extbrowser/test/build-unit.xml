@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
 	<path id="compiletest.classpath">        
 	    <pathelement location="../../nbbuild/netbeans/modules/extbrowser.jar"/>
 	    <pathelement location="../../nbbuild/netbeans/lib/openide.jar"/>
-            <pathelement location="../../nbbuild/netbeans/modules/autoload/openide-execution.jar"/>
+            <pathelement location="../../nbbuild/netbeans/modules/org-openide-execution.jar"/>
 	</path>
         <property name="xtest.extra.jars" refid="compiletest.classpath"/>
 

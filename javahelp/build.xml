@@ -17,7 +17,8 @@ Microsystems, Inc. All Rights Reserved.
     <target name="files-init" depends="basic-init">
         <patternset id="module.files">
             <include name="${module.jar}"/>
-            <include name="${nb.modules/autoload.dir}/ext/jh*.jar"/>
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
+            <include name="${nb.modules.dir}/ext/jh*.jar"/>
         </patternset>
     </target>
 
@@ -42,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext">
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext">
             <fileset dir="../external">
                 <include name="jh*.jar"/>
             </fileset>

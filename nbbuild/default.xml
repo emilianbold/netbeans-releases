@@ -15,6 +15,9 @@
   <taskdef name="getmodulename"
          classname="org.netbeans.nbbuild.GetModuleName"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
+  <taskdef name="createmodulexml"
+         classname="org.netbeans.nbbuild.CreateModuleXML"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
 
   <target name="init" depends="setup-jdkhome">
     <!-- Gets the module name -->

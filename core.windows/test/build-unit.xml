@@ -158,7 +158,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- XXX -->
                 <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
                 <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
-                <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+                <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
                 <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
 
 	        <pathelement path="${junit.path}"/>
@@ -177,9 +177,9 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- XXX -->
                 <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
                 <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
-                <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+                <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
                 <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
-		<pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
+		<pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-lib-terminalemulator.jar"/>
                 
 	        <pathelement path="${junit.path}"/>
 		<pathelement path="${xerces.path}"/>
@@ -204,9 +204,9 @@ Microsystems, Inc. All Rights Reserved.
             <!-- XXX -->
            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
            <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
-           <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+           <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
            <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
-           <pathelement location="${core/output.dir}/${nb.modules/autoload.dir}/core-output.jar"/>
+           <pathelement location="${core/output.dir}/${nb.modules.dir}/org-netbeans-core-output.jar"/>
     	</path>
     </target>
         
@@ -223,7 +223,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- XXX -->
            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
            <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
-           <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+           <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
            <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
            <pathelement location="../../output/src"/>
            <pathelement location="../../execution/src"/>
@@ -242,9 +242,9 @@ Microsystems, Inc. All Rights Reserved.
             <!-- XXX -->
            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
            <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
-           <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+           <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
            <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
-           <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
+           <pathelement location="${core.dir}/${nb.modules.dir}/org-netbeans-lib-terminalemulator.jar"/>
     	</path>
     </target>
     

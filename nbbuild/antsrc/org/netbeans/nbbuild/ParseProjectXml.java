@@ -52,22 +52,6 @@ public final class ParseProjectXml extends Task {
         modulesXml = f;
     }
 
-    private boolean autoload;
-    /**
-     * Set whether this is an autoload module.
-     */
-    public void setAutoload(boolean b) {
-        autoload = b;
-    }
-
-    private boolean eager;
-    /**
-     * Set whether this is an eager module.
-     */
-    public void setEager(boolean b) {
-        eager = b;
-    }
-
     private String publicPackagesProperty;
     /**
      * Set the property to set a list of
@@ -113,15 +97,6 @@ public final class ParseProjectXml extends Task {
      */
     public void setCodeNameBaseDashesProperty(String s) {
         codeNameBaseDashesProperty = s;
-    }
-
-    private String moduleJarDirProperty;
-    /**
-     * Set the property to set the module JAR directory to, based on
-     * whether this is an autoload or eager or regular module.
-     */
-    public void setModuleJarDirProperty(String s) {
-        moduleJarDirProperty = s;
     }
 
     private String moduleClassPathProperty;
@@ -211,24 +186,6 @@ public final class ParseProjectXml extends Task {
                 if (codeNameBaseDashesProperty != null) {
                     String cnb = getCodeNameBase(pDoc);
                     define(codeNameBaseDashesProperty, cnb.replace('.', '-'));
-                }
-                if (moduleJarDirProperty != null) {
-                    if (eager && autoload) {
-                        throw new BuildException("Cannot be both eager and autoload at once", getLocation());
-                    }
-                    String orig;
-                    if (eager) {
-                        orig = "nb.modules/eager.dir";
-                    } else if (autoload) {
-                        orig = "nb.modules/autoload.dir";
-                    } else {
-                        orig = "nb.modules.dir";
-                    }
-                    String val = getProject().getProperty(orig);
-                    if (val == null) {
-                        throw new BuildException("No value for " + orig, getLocation());
-                    }
-                    define(moduleJarDirProperty, val);
                 }
                 if (moduleClassPathProperty != null) {
                     if (modulesXml == null) {
@@ -381,7 +338,12 @@ public final class ParseProjectXml extends Task {
             Element cnbEl = XMLUtil.findElement(el, "cnb", null);
             me.cnb = XMLUtil.findText(cnbEl);
             Element jarEl = XMLUtil.findElement(el, "jar", null);
-            me.jar = XMLUtil.findText(jarEl);
+            if (jarEl == null) {
+                // Default uses just cnb.
+                me.jar = "modules/" + me.cnb.replace('.', '-') + ".jar";
+            } else {
+                me.jar = XMLUtil.findText(jarEl);
+            }
             entries.put(me.cnb, me);
         }
         Element data = getConfig(pDoc);

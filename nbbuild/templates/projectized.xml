@@ -25,9 +25,19 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Synch the following property loads with NbModuleProject.makeEvalDefs: -->
         <property file="nbproject/private/private.properties"/>
         <property file="nbproject/project.properties"/>
-        <parseprojectxml project="." modulesxml="${nb_all}/nbbuild/templates/modules.xml" publicpackagesproperty="public.packages" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" codenamebasedashesproperty="code.name.base.dashes" autoload="${is.autoload}" eager="${is.eager}" modulejardirproperty="module.jar.dir" moduleclasspathproperty="module.classpath"/>
+        <parseprojectxml project="." modulesxml="${nb_all}/nbbuild/templates/modules.xml" publicpackagesproperty="public.packages" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" codenamebasedashesproperty="code.name.base.dashes" moduleclasspathproperty="module.classpath"/>
+        <property name="module.jar.dir" value="${nb.modules.dir}"/>
         <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
+        <condition property="is.regular">
+            <not>
+                <or>
+                    <isset property="is.autoload"/>
+                    <isset property="is.eager"/>
+                    <equals arg1="${module.jar.dir}" arg2="${nb.lib.dir}"/>
+                </or>
+            </not>
+        </condition>
         <property name="nbm" value="${code.name.base.dashes}.nbm"/>
         <property name="build.compiler.debug" value="true"/>
         <property name="build.compiler.deprecation" value="true"/>
@@ -46,6 +56,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="files-init" depends="basic-init">
         <patternset id="module.files">
             <include name="${module.jar}"/>
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
         </patternset>
     </target>
 
@@ -137,8 +148,37 @@ Microsystems, Inc. All Rights Reserved.
         <nbinstaller module="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" action="reinstall"/>
     </target>
 
+    <!-- Can insert extra stuff in here, like release, etc.: -->
     <target name="netbeans-extra"/>
-    <target name="netbeans" depends="init,jar,netbeans-extra">
+
+    <target name="module-xml-regular" if="is.regular">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules"/>
+        <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
+            <enabled dir="${netbeans.dest.dir}/${cluster.dir}">
+                <include name="${module.jar}"/>
+            </enabled>
+        </createmodulexml>
+    </target>
+
+    <target name="module-xml-autoload" if="is.autoload">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules"/>
+        <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
+            <autoload dir="${netbeans.dest.dir}/${cluster.dir}">
+                <include name="${module.jar}"/>
+            </autoload>
+        </createmodulexml>
+    </target>
+
+    <target name="module-xml-eager" if="is.eager">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules"/>
+        <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
+            <eager dir="${netbeans.dest.dir}/${cluster.dir}">
+                <include name="${module.jar}"/>
+            </eager>
+        </createmodulexml>
+    </target>
+
+    <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,module-xml-eager">
         <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${module.jar}">
             <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
                 <patternset refid="module.files"/>

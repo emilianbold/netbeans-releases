@@ -188,7 +188,7 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${netbeans.home}/modules/autoload/xml-api.jar"/>
             <pathelement location="${netbeans.home}/modules/xml-catalog.jar"/>
             <pathelement location="${netbeans.home}/modules/autoload/xml-core.jar"/>
-            <pathelement location="${netbeans.home}/modules/autoload/openide-execution.jar"/>
+            <pathelement location="${netbeans.home}/modules/org-openide-execution.jar"/>
             <pathelement location="${netbeans.home}/modules/xml-syntax.jar"/>
             <pathelement location="${netbeans.home}/modules/xml-text-edit.jar"/>
             <pathelement location="${netbeans.home}/modules/xml-tools.jar"/>

@@ -26,10 +26,10 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="../../openide/openide-13javac-workaround.jar"/>
             <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
             <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-            <pathelement location="${java/srcmodel.dir}/${nb.modules/autoload.dir}/java-src-model.jar"/>
-            <pathelement location="${java/api.dir}/${nb.modules/autoload.dir}/java-api.jar"/>
-<!--            <pathelement location="${debuggercore/oldapi.dir}/${nb.modules/autoload.dir}/openide-debugger.jar"/> -->
-            <pathelement location="${projects/queries.dir}/${nb.modules/autoload.dir}/org-netbeans-modules-queries.jar"/>
+            <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
+            <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
+<!--            <pathelement location="${debuggercore/oldapi.dir}/${nb.modules.dir}/org-openide-debugger.jar"/> -->
+            <pathelement location="${projects/queries.dir}/${nb.modules.dir}/org-netbeans-modules-queries.jar"/>
 
 <!--            <pathelement path="${junit.path}"/> -->
             <pathelement path="${xerces.path}"/>
@@ -44,19 +44,19 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="../../openide/openide-13javac-workaround.jar"/>
             <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
             <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-            <pathelement location="${java/srcmodel.dir}/${nb.modules/autoload.dir}/java-src-model.jar"/>
-            <pathelement location="${java/api.dir}/${nb.modules/autoload.dir}/java-api.jar"/>
-<!--            <pathelement location="${debuggercore/oldapi.dir}/${nb.modules/autoload.dir}/openide-debugger.jar"/> -->
-            <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
-            <pathelement location="${openide/execution/deprecated.dir}/${nb.modules/autoload.dir}/org-openide-execution-deprecated.jar"/>
+            <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
+            <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
+<!--            <pathelement location="${debuggercore/oldapi.dir}/${nb.modules.dir}/org-openide-debugger.jar"/> -->
+            <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
+            <pathelement location="${openide/execution/deprecated.dir}/${nb.modules.dir}/org-openide-execution-deprecated.jar"/>
             <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
-            <pathelement location="${core/output.dir}/${nb.modules/autoload.dir}/core-output.jar"/>
-            <pathelement location="${core/term.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
-            <pathelement location="${java.dir}/${nb.modules.dir}/java.jar"/>
+            <pathelement location="${core/output.dir}/${nb.modules.dir}/org-netbeans-core-output.jar"/>
+            <pathelement location="${core/term.dir}/${nb.modules.dir}/org-netbeans-lib-terminalemulator.jar"/>
+            <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
             <pathelement location="${classfile.dir}/${nb.modules/autoload.dir}/classfile.jar"/>
             <pathelement location="${clazz.dir}/${nb.modules.dir}/clazz.jar"/>
-            <pathelement location="${projects/queries.dir}/${nb.modules/autoload.dir}/org-netbeans-modules-queries.jar"/>
-            <pathelement location="${java/platform.dir}/${nb.modules/autoload.dir}/javaplatform.jar"/>
+            <pathelement location="${projects/queries.dir}/${nb.modules.dir}/org-netbeans-modules-queries.jar"/>
+            <pathelement location="${java/platform.dir}/${nb.modules.dir}/org-netbeans-modules-java-platform.jar"/>
 
 <!--            <pathelement path="${junit.path}"/> -->
             <pathelement path="${xerces.path}"/>

@@ -28,15 +28,15 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar" />
             <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
             <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
-            <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+            <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
             <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
-            <pathelement location="${core/output.dir}/${nb.modules/autoload.dir}/org-netbeans-core-output.jar"/>
-            <pathelement location="${core/execution.dir}/${nb.modules/autoload.dir}/org-netbeans-core-execution.jar"/>
+            <pathelement location="${core/output.dir}/${nb.modules.dir}/org-netbeans-core-output.jar"/>
+            <pathelement location="${core/execution.dir}/${nb.modules.dir}/org-netbeans-core-execution.jar"/>
             <!-- project support classpath -->
-            <pathelement location="${projects/projectapi.dir}/${nb.modules/autoload.dir}/org-netbeans-modules-projectapi.jar"/>
+            <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
             <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>
             <pathelement location="${java/j2seproject.dir}/${nb.modules.dir}/org-netbeans-modules-java-j2seproject.jar"/>
-            <pathelement location="${ant/project.dir}/${nb.modules/autoload.dir}/org-netbeans-modules-project-ant.jar"/>
+            <pathelement location="${ant/project.dir}/${nb.modules.dir}/org-netbeans-modules-project-ant.jar"/>
             <!-- use junit with already compiled extensions -->        
             <pathelement location="../../lib/xtest.jar"/>
             <pathelement location="../../lib/xtest-junit-testrunner.jar"/>

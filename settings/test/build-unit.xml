@@ -153,7 +153,7 @@ Microsystems, Inc. All Rights Reserved.
               <include name="openide*.jar" />
             </fileset>
             <pathelement location="../../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-            <pathelement location="../netbeans/modules/autoload/core-settings.jar"/>
+            <pathelement location="../netbeans/modules/org-netbeans-modules-settings.jar"/>
 	</path>
     </target>
         
@@ -185,7 +185,7 @@ Microsystems, Inc. All Rights Reserved.
 	         If you need e.g. your tested module, write this:
 	           <pathelement location="${netbeans.home}/modules/somemodule.jar"/>
  	      -->
-            <pathelement location="../netbeans/modules/autoload/core-settings.jar"/>
+            <pathelement location="../netbeans/modules/org-netbeans-modules-settings.jar"/>
             <pathelement location="../../../openide/openide-13javac-workaround.jar"/>
             <fileset dir="../../../openide/netbeans/lib">
               <include name="openide*.jar" />
@@ -208,7 +208,7 @@ Microsystems, Inc. All Rights Reserved.
        	    <!-- If you need e.g. openide.jar, write this:
 	           <pathelement location="../netbeans/lib/openide.jar"/>
  	      -->
-            <pathelement location="../netbeans/modules/autoload/core-settings.jar"/>
+            <pathelement location="../netbeans/modules/org-netbeans-modules-settings.jar"/>
             <pathelement location="../../../openide/netbeans/lib/openide.jar"/>
             <pathelement location="../../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
             <fileset dir="../../netbeans/lib">
@@ -228,7 +228,7 @@ Microsystems, Inc. All Rights Reserved.
 	           <pathelement location="../src"/>
  	      -->
             <pathelement location="../src"/>
-            <pathelement location="../netbeans/modules/autoload/core-settings.jar"/>
+            <pathelement location="../netbeans/modules/org-netbeans-modules-settings.jar"/>
             <pathelement location="../../../openide/netbeans/lib/openide.jar"/>
             <pathelement location="../../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
             <fileset dir="../../netbeans/lib">
@@ -248,7 +248,7 @@ Microsystems, Inc. All Rights Reserved.
 	         If you need e.g. your tested module, write this:
 	           <pathelement location="${netbeans.home}/modules/somemodule.jar"/>
  	      --> 
-            <pathelement location="${netbeans.home}/modules/autoload/core-settings.jar"/>
+            <pathelement location="${netbeans.home}/modules/org-netbeans-modules-settings.jar"/>
             <pathelement location="${netbeans.home}/lib/openide.jar"/>
             <pathelement location="${netbeans.home}/lib/openide-loaders.jar"/>
             <fileset dir="${netbeans.home}/lib">

@@ -31,6 +31,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <target name="files-init" depends="basic-init">
         <patternset id="ant.files">
             <include name="${module.jar}"/>
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
             <include name="ant/nblib/bridge.jar"/>
             <include name="ant/lib/**"/>
         </patternset>

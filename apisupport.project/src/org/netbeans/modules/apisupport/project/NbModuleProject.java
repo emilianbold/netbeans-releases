@@ -271,13 +271,7 @@ final class NbModuleProject implements Project {
         stock.put("cluster.dir", "netbeans"); // NOI18N
         Map/*<String,String>*/ defaults = new HashMap();
         defaults.put("code.name.base.dashes", getName().replace('.', '-')); // NOI18N
-        if ("true".equals(proj.getProperty("is.autoload"))) { // NOI18N
-            defaults.put("module.jar.dir", "${nb.modules/autoload.dir}"); // NOI18N
-        } else if ("true".equals(proj.getProperty("is.eager"))) { // NOI18N
-            defaults.put("module.jar.dir", "${nb.modules/eager.dir}"); // NOI18N
-        } else {
-            defaults.put("module.jar.dir", "${nb.modules.dir}"); // NOI18N
-        }
+        defaults.put("module.jar.dir", "${nb.modules.dir}"); // NOI18N
         defaults.put("module.jar.basename", "${code.name.base.dashes}.jar"); // NOI18N
         defaults.put("module.jar", "${module.jar.dir}/${module.jar.basename}"); // NOI18N
         defaults.put("manifest.mf", "manifest.mf"); // NOI18N

@@ -26,10 +26,10 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${openidex.dir}/${nb.modules/autoload.dir}/openidex.jar"/>
         <pathelement location="${editor.dir}/${nb.modules.dir}/editor.jar"/>
         <pathelement location="${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
-        <pathelement location="${debuggercore.dir}/${nb.modules/autoload.dir}/debuggerCore.jar"/>
-        <pathelement location="${debuggerjpda.dir}/${nb.modules.dir}/jpdaDebugger.jar"/>
-        <pathelement location="${java/api.dir}/${nb.modules/autoload.dir}/java-api.jar"/>
-        <pathelement location="${java.dir}/${nb.modules.dir}/java.jar"/>
+        <pathelement location="${debuggercore.dir}/${nb.modules.dir}/org-netbeans-modules-debugger-core.jar"/>
+        <pathelement location="${debuggerjpda.dir}/${nb.modules.dir}/org-netbeans-modules-debugger-jpda.jar"/>
+        <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
+        <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
         <pathelement location="${html.dir}/${nb.modules.dir}/html.jar"/>
         <pathelement location="${web/core.dir}/${nb.modules.dir}/jsp.jar"/>
         <pathelement location="${web/jspsyntax.dir}/${nb.modules.dir}/jsp-syntax.jar"/>
@@ -37,9 +37,9 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
         <pathelement location="${openide/deprecated.dir}/${nb.modules/autoload.dir}/openide-deprecated.jar"/> <!-- XXX -->
         <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
-        <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
-        <pathelement location="${debuggercore/oldapi.dir}/${nb.modules/autoload.dir}/openide-debugger.jar"/>
-        <pathelement location="${java/srcmodel.dir}/${nb.modules/autoload.dir}/java-src-model.jar"/>
+        <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
+        <pathelement location="${debuggercore/oldapi.dir}/${nb.modules.dir}/org-openide-debugger.jar"/>
+        <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
         <pathelement location="${jdkhome}/lib/tools.jar"/>
 	<pathelement location="${j2eeserver.dir}/${nb.modules/autoload.dir}/j2eeserver.jar"/>
     </path>

@@ -98,10 +98,18 @@ public class CreateModuleXML extends Task {
         Collections.sort(disabledNames);
         Collections.sort(autoloadNames);
         Collections.sort(eagerNames);
-        log("Enabled modules: " + enabledNames);
-        log("Disabled modules: " + disabledNames);
-        log("Autoload modules: " + autoloadNames);
-        log("Eager modules: " + eagerNames);
+        if (!enabledNames.isEmpty()) {
+            log("Enabled modules: " + enabledNames);
+        }
+        if (!disabledNames.isEmpty()) {
+            log("Disabled modules: " + disabledNames);
+        }
+        if (!autoloadNames.isEmpty()) {
+            log("Autoload modules: " + autoloadNames);
+        }
+        if (!eagerNames.isEmpty()) {
+            log("Eager modules: " + eagerNames);
+        }
     }
     
     private void scanModules(FileSet fs, boolean isEnabled, boolean isAutoload, boolean isEager, List names) throws BuildException {
@@ -119,6 +127,21 @@ public class CreateModuleXML extends Task {
                     Attributes attr = m.getMainAttributes();
                     String codename = attr.getValue("OpenIDE-Module");
                     if (codename == null) throw new BuildException("Not a module: " + module);
+                    int idx = codename.lastIndexOf('/');
+                    String codenamebase;
+                    int rel;
+                    if (idx == -1) {
+                        codenamebase = codename;
+                        rel = -1;
+                    } else {
+                        codenamebase = codename.substring(0, idx);
+                        rel = Integer.parseInt(codename.substring(idx + 1));
+                    }
+                    File xml = new File(xmldir, codenamebase.replace('.', '-') + ".xml");
+                    if (xml.exists()) {
+                        log("Will not overwrite " + xml + "; skipping...");
+                        continue;
+                    }
                     String displayname = attr.getValue("OpenIDE-Module-Name");
                     if (displayname == null) {
                         String bundle = attr.getValue("OpenIDE-Module-Localizing-Bundle");
@@ -155,18 +178,7 @@ public class CreateModuleXML extends Task {
                     }
                     if (displayname == null) displayname = codename;
                     names.add(displayname);
-                    int idx = codename.lastIndexOf('/');
-                    String codenamebase;
-                    int rel;
-                    if (idx == -1) {
-                        codenamebase = codename;
-                        rel = -1;
-                    } else {
-                        codenamebase = codename.substring(0, idx);
-                        rel = Integer.parseInt(codename.substring(idx + 1));
-                    }
                     String spec = attr.getValue("OpenIDE-Module-Specification-Version");
-                    File xml = new File(xmldir, codenamebase.replace('.', '-') + ".xml");
                     OutputStream os = new FileOutputStream(xml);
                     try {
                         PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
