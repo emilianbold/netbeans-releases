@@ -39,13 +39,13 @@ Microsystems, Inc. All Rights Reserved.
         Builds, and runs the project <xsl:value-of select="/project:project/project:display-name"/>.
     </description>
     <target name="default">
-        <xsl:attribute name="depends">jar,javadoc</xsl:attribute>
+        <xsl:attribute name="depends">dist,javadoc</xsl:attribute>
         <xsl:attribute name="description">Build whole project.</xsl:attribute>
     </target>
-    <target name="jar">
-        <xsl:attribute name="description">Build JAR.</xsl:attribute>
+    <target name="dist">
+        <xsl:attribute name="description">Build WAR file.</xsl:attribute>
         <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">jar</xsl:attribute>
+            <xsl:attribute name="target">dist</xsl:attribute>
         </ant>
     </target>
     <target name="compile">

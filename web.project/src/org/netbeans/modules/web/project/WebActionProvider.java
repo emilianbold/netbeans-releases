@@ -89,9 +89,9 @@ class WebActionProvider implements ActionProvider {
     public WebActionProvider(WebProject project, AntProjectHelper antProjectHelper) {
         
         commands = new HashMap();
-            commands.put(COMMAND_BUILD, new String[] {"jar"}); // NOI18N
+            commands.put(COMMAND_BUILD, new String[] {"dist"}); // NOI18N
             commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
-            commands.put(COMMAND_REBUILD, new String[] {"clean", "jar"}); // NOI18N
+            commands.put(COMMAND_REBUILD, new String[] {"clean", "dist"}); // NOI18N
             commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
             commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
             commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N

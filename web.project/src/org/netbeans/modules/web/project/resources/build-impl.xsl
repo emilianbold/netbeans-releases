@@ -62,7 +62,7 @@ Microsystems, Inc. All Rights Reserved.
         <fail unless="build.classes.dir">Must set build.classes.dir</fail>
         <fail unless="dist.javadoc.dir">Must set dist.javadoc.dir</fail>
         <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
-        <fail unless="dist.jar">Must set dist.jar</fail>
+        <fail unless="dist.war">Must set dist.war</fail>
         <xsl:if test="/p:project/p:configuration/web:data/web:use-manifest">
             <fail unless="manifest.file">Must set manifest.file</fail>
         </xsl:if>
@@ -125,13 +125,6 @@ Microsystems, Inc. All Rights Reserved.
     </target> 
 
 
-    <target name="validate-single" depends="init">
-        <fail unless="jsp.includes">Must select some files in the IDE or set jsp.includes</fail>
-        <nbjspvalidate webmodule="${{web.docbase.dir}}">
-            <fileset dir="${{web.docbase.dir}}" includes="${{jsp.includes}}"/>
-        </nbjspvalidate>
-    </target>
-    
     <target name="compile-single" depends="init,deps-jar">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
 
@@ -171,7 +164,7 @@ Microsystems, Inc. All Rights Reserved.
         </xsl:choose>        
     </target>
     
-    <target name="jar" depends="init,compile">
+    <target name="dist" depends="init,compile">
         <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
         <mkdir dir="${{dist.jar.dir}}"/>
         <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
