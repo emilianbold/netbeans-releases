@@ -114,6 +114,14 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
         return true;
     }
 
+    public void setLayoutToContainer(Container container,
+                                     Container containerDelegate)
+    {   // overriding this method because BoxLayout referential instance
+        // (from MetaLayout) cannot be used directly in meta container
+        containerDelegate.setLayout(cloneLayoutInstance(container,
+                                                        containerDelegate));
+    }
+
     // ------------
 
     protected LayoutManager createDefaultLayoutInstance() {
