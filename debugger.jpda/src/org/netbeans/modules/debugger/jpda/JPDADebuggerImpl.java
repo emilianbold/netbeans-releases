@@ -302,18 +302,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
             try {
                 if (virtualMachine != null) {
                     Process process = virtualMachine.process ();
-                    if (process != null) {
+                    if (process != null)
                         virtualMachine.exit (0);
-                        // the process should be destroyed by VM.exit (0), 
-                        // however it seems there are some problems with 
-                        // hanging processes on Solaris so let's try
-                        // to destroy the process explicitly
-                        if (process != null)
-                            process.destroy ();
-                    } else
-                    // TODO: use some property from the debuginfo
-                        virtualMachine.exit (0);
-//                        virtualMachine.dispose ();
+                    else
+                        virtualMachine.dispose ();
                 }
             } catch (VMDisconnectedException e) {
             }
