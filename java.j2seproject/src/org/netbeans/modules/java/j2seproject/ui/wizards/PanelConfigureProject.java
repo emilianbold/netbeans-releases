@@ -17,6 +17,7 @@ import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
@@ -78,11 +79,19 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor)settings;        
         component.read (wizardDescriptor);
+        
+        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
+        // this name is used in NewProjectWizard to modify the title
+        Object substitute = ((JComponent)component).getClientProperty ("NewProjectWizard_Title"); // NOI18N
+        if (substitute != null) {
+            wizardDescriptor.putProperty ("NewProjectWizard_Title", substitute); // NOI18N
+        }
     }
     
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor)settings;
         component.store(d);
+        ((WizardDescriptor)d).putProperty ("NewProjectWizard_Title", null); // NOI18N
     }
     
 }

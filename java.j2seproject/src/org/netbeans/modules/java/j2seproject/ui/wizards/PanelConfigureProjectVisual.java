@@ -46,20 +46,21 @@ public class PanelConfigureProjectVisual extends JPanel {
         initComponents();
                 
 
+        setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NameAndLoc"));
         if (type == NewJ2SEProjectWizardIterator.TYPE_APP) {
             projectLocationPanel = new PanelProjectLocationVisual( panel );
-            setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaAppNameAndLoc"));
+            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaApp"));
             jSeparator1.setVisible(true);
         }                       
         else if (type == NewJ2SEProjectWizardIterator.TYPE_LIB) {
             projectLocationPanel = new PanelProjectLocationVisual( panel );
             jSeparator1.setVisible (false);
-            setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLibNameAndLoc"));            
+            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLib"));
         }
         else {
             projectLocationPanel = new PanelSourceFolders ( panel );
             jSeparator1.setVisible(true);
-            this.setName (NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaExtSourcesNameLoc"));
+            putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_JavaExtSources"));
         }
         locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );
         optionsPanel = new PanelOptionsVisual( panel, type );

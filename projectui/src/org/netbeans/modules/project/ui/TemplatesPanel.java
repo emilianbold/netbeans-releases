@@ -22,6 +22,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -38,9 +39,10 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
     
     public void readSettings (Object settings) {
         TemplateWizard wd = (TemplateWizard) settings;
-        wd.setTitle( "New File - Choose File Type" );
-        wd.putProperty( "WizardPanel_contentData", new String[] { "Choose Template", "..." } ); // NOI18N
-        wd.putProperty( "WizardPanel_contentSelectedIndex", new Integer( 0 ) ); // NOI18N
+        wd.putProperty ("WizardPanel_contentSelectedIndex", new Integer (0)); // NOI18N
+        wd.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
+                NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
+                NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Dots")}); // NOI18N
         ((TemplatesPanelGUI)this.getComponent()).read (wd);
     }
     
@@ -73,6 +75,7 @@ public class TemplatesPanel implements WizardDescriptor.Panel {
     public synchronized Component getComponent() {
         if (this.panel == null) {
             this.panel = new TemplatesPanelGUI (this);
+            this.panel.setName (NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Name")); // NOI18N
         }
         return this.panel;
     }
