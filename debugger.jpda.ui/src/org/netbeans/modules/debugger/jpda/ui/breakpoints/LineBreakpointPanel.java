@@ -14,6 +14,7 @@
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
 import javax.swing.JPanel;
+import javax.swing.JOptionPane;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -196,7 +197,12 @@ public class LineBreakpointPanel extends JPanel implements Controller {
      * @return whether customizer can be closed
      */
     public boolean ok () {
-        if (!isValid()) return false;
+        if (!isFilled()) {
+            JOptionPane.showMessageDialog(this,
+                java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle")
+                    .getString("MSG_No_Line_Number_Spec"));
+            return false;
+        }
         actionsPanel.ok ();
         breakpoint.setLineNumber(Integer.parseInt(tfLineNumber.getText().trim()));
         breakpoint.setCondition (tfCondition.getText ());
@@ -222,6 +228,10 @@ public class LineBreakpointPanel extends JPanel implements Controller {
      * is valid
      */
     public boolean isValid () {
+        return true;
+    }
+    
+    boolean isFilled () {
         try {
             int line = Integer.parseInt(tfLineNumber.getText().trim());
             return line > 0;

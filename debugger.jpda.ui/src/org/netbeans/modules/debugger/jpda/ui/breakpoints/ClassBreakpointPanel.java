@@ -7,6 +7,7 @@
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
 import javax.swing.JPanel;
+import javax.swing.JOptionPane;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
@@ -229,6 +230,12 @@ public class ClassBreakpointPanel extends JPanel implements Controller {
      * @return whether customizer can be closed
      */
     public boolean ok () {
+        if (! isFilled()) {
+            JOptionPane.showMessageDialog(this,
+                java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle")
+                    .getString("MSG_No_Class_Name_Spec"));
+            return false;
+        }
         actionsPanel.ok ();
         String className = tfPackageName.getText ().trim ();
         if (className.length () > 0)
@@ -278,6 +285,11 @@ public class ClassBreakpointPanel extends JPanel implements Controller {
         return true;
     }
     
+    boolean isFilled () {
+        if (tfClassName.getText().trim ().length() > 0)
+            return true;
+        return false;
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbBreakpointType;

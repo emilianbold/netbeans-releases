@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.JPanel;
+import javax.swing.JOptionPane;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
@@ -265,6 +266,12 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller {
      * @return whether customizer can be closed
      */
     public boolean ok () {
+        if (! isFilled()) {
+            JOptionPane.showMessageDialog(this,
+                java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle")
+                    .getString("MSG_No_Exception_Class_Name_Spec"));
+            return false;
+        }
         actionsPanel.ok ();
         String className = ((String) tfPackageName.getText ()).trim ();
         if (className.length () > 0)
@@ -308,6 +315,13 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller {
      */
     public boolean isValid () {
         return true;
+    }
+    
+    boolean isFilled () {
+        if (((String) cbExceptionClassName.getSelectedItem ())
+            .trim ().length() > 0)
+            return true;
+        return false;
     }
     
     
