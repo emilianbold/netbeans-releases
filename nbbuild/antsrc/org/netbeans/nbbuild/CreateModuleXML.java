@@ -74,9 +74,9 @@ public class CreateModuleXML extends Task {
     private List eagerNames = new ArrayList(10); // List<String>
     
     public void execute() throws BuildException {
-        if (xmldir == null) throw new BuildException("Must set xmldir attribute", location);
+        if (xmldir == null) throw new BuildException("Must set xmldir attribute", getLocation());
         if (!xmldir.exists ()) {
-            if (!xmldir.mkdirs ()) throw new BuildException ("Cannot create directory " + xmldir, location);
+            if (!xmldir.mkdirs()) throw new BuildException("Cannot create directory " + xmldir, getLocation());
         }
         if (enabled.isEmpty() && disabled.isEmpty() && autoload.isEmpty() && eager.isEmpty()) {
             log("Warning: <createmodulexml> with no modules listed", Project.MSG_WARN);
@@ -116,13 +116,13 @@ public class CreateModuleXML extends Task {
     }
     
     private void scanModules(FileSet fs, boolean isEnabled, boolean isAutoload, boolean isEager, List names) throws BuildException {
-        FileScanner scan = fs.getDirectoryScanner(project);
+        FileScanner scan = fs.getDirectoryScanner(getProject());
         File dir = scan.getBasedir();
         String[] kids = scan.getIncludedFiles();
         for (int i = 0; i < kids.length; i++) {
             File module = new File(dir, kids[i]);
-            if (! module.exists()) throw new BuildException("Module file does not exist: " + module, location);
-            if (! module.getName().endsWith(".jar")) throw new BuildException("Only *.jar may be listed, check the fileset: " + module, location);
+            if (!module.exists()) throw new BuildException("Module file does not exist: " + module, getLocation());
+            if (!module.getName().endsWith(".jar")) throw new BuildException("Only *.jar may be listed, check the fileset: " + module, getLocation());
             try {
                 JarFile jar = new JarFile(module);
                 try {
@@ -215,7 +215,7 @@ public class CreateModuleXML extends Task {
                     jar.close();
                 }
             } catch (IOException ioe) {
-                throw new BuildException("Caught while processing " + module + ": " + ioe, ioe, location);
+                throw new BuildException("Caught while processing " + module + ": " + ioe, ioe, getLocation());
             }
         }
     }

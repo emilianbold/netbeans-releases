@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.nbbuild;
@@ -80,11 +80,11 @@ public class Repeat extends Task {
     /** Execute this task. */
     public void execute () throws BuildException {        
         if ( values.isEmpty() ) {
-            throw new BuildException ("You must set at least one value!", location);
+            throw new BuildException("You must set at least one value!", getLocation());
         }
 
         if ( target == null ) {
-            throw new BuildException ("Target must be set!", location);
+            throw new BuildException("Target must be set!", getLocation());
         }
 
         Iterator it = values.iterator();
@@ -93,9 +93,9 @@ public class Repeat extends Task {
 
             log ("Process '" + val + "' location with '" + target + "' target ...", Project.MSG_VERBOSE);
             
-            CallTarget antCall = (CallTarget) project.createTask ("antcall");
+            CallTarget antCall = (CallTarget) getProject().createTask("antcall");
             antCall.init();
-            antCall.setLocation (location);
+            antCall.setLocation(getLocation());
             
             // ant.setDir (dir);
             antCall.setTarget (target);

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -74,7 +74,7 @@ public class NbPatchClass extends MatchingTask {
             log("Setting FileSet's dir to \"" + f.getParentFile().getAbsolutePath() + "\"", Project.MSG_DEBUG );
             xfs.setIncludes(f.getName());
             log("Setting FileSet's include to \"" + f.getName() + "\"",Project.MSG_DEBUG );
-            DirectoryScanner ds = xfs.getDirectoryScanner(project);
+            DirectoryScanner ds = xfs.getDirectoryScanner(getProject());
             String[] files = ds.getIncludedFiles();
             if (files.length < 1) {
                 log ("FileSet is empty, source doesn't doesn't exist (" + f.getParentFile().getAbsolutePath() + ")", Project.MSG_VERBOSE);
@@ -109,7 +109,7 @@ public class NbPatchClass extends MatchingTask {
         for (int i=0; i<filesets.size() && fs_empty; i++) {
             FileSet n = (FileSet) filesets.elementAt(i);
             if ( n != null ) {
-                DirectoryScanner ds = n.getDirectoryScanner(project);
+                DirectoryScanner ds = n.getDirectoryScanner(getProject());
                 String[] files = ds.getIncludedFiles();
                 File bdir = ds.getBasedir();
                 if (files.length < 1) log ("FileSet is empty, doesn't have included files", Project.MSG_VERBOSE);
@@ -159,7 +159,7 @@ public class NbPatchClass extends MatchingTask {
         for (int i=0; i<filesets.size(); i++) {
             FileSet n = (FileSet) filesets.elementAt(i);
             if ( n != null ) {
-                DirectoryScanner ds = n.getDirectoryScanner(project);
+                DirectoryScanner ds = n.getDirectoryScanner(getProject());
                 String[] files = ds.getIncludedFiles();
                 File bdir = ds.getBasedir();
                 for (int k=0; k <files.length; k++) {

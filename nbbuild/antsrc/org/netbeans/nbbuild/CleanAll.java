@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -92,8 +92,8 @@ public class CleanAll extends Task {
     /** Resolve compile-time dependencies and use them for cleaning */
     private void resolveDependencies () throws BuildException {
         Target dummy = new Target ();
-        String dummyName = "nbmerge-" + target.getName ();
-        targets = project.getTargets ();
+        String dummyName = "nbmerge-" + getOwningTarget().getName();
+        targets = getProject().getTargets();
         while (targets.contains (dummyName))
             dummyName += "-x";
         dummy.setName (dummyName);
@@ -101,10 +101,10 @@ public class CleanAll extends Task {
             String module = (String) modules.elementAt (i);
             dummy.addDependency (deptargetprefix + module);
         }
-        project.addTarget (dummy);
-        Vector fullList = project.topoSort(dummyName, targets);
+        getProject().addTarget(dummy);
+        Vector fullList = getProject().topoSort(dummyName, targets);
         // Now remove earlier ones: already done.
-        Vector doneList = project.topoSort(getOwningTarget().getName(), targets);
+        Vector doneList = getProject().topoSort(getOwningTarget().getName(), targets);
         List todo = new ArrayList(fullList.subList(0, fullList.indexOf(dummy)));
         todo.removeAll(doneList.subList(0, doneList.indexOf(getOwningTarget())));
 
@@ -129,7 +129,7 @@ public class CleanAll extends Task {
         }
         
         if (topdir == null && topdirs == null) {
-            throw new BuildException ("You must set at least one topdir attribute", location);
+            throw new BuildException("You must set at least one topdir attribute", getLocation());
         }
         
         if (resolvedependencies) resolveDependencies();
@@ -138,9 +138,9 @@ public class CleanAll extends Task {
             topdir = topdirs[j];            
             for (int i = 0; i < modules.size (); i++) {
                 String module = (String) modules.elementAt (i);
-                Ant ant = (Ant) project.createTask ("ant");
+                Ant ant = (Ant) getProject().createTask("ant");
                 ant.init ();                
-                ant.setLocation (location);
+                ant.setLocation(getLocation());
                 File fl = new File(topdir.getAbsolutePath () + 
                     File.separatorChar + module + File.separatorChar + "build.xml");                
                 if (! fl.exists()) {                    
@@ -156,19 +156,19 @@ public class CleanAll extends Task {
                         (ant, new Object[] { topdir.getAbsolutePath () + File.separatorChar + module });
                     }
                 } catch (Exception e) {
-                    throw new BuildException ("Could not set 'dir' attribute on Ant task", e, location);
+                    throw new BuildException("Could not set 'dir' attribute on Ant task", e, getLocation());
                 }
                 ant.setTarget (targetname);
                 try {
                     log("Process '"+ module + "' location with '" + targetname + "' target", Project.MSG_INFO);
                     ant.execute ();
-                } catch (BuildException BE) {
+                } catch (BuildException be) {
                     if (failonerror) {
-                        throw new BuildException(BE.getMessage(), BE, location);
+                        throw new BuildException(be.getMessage(), be, getLocation());
                     } else {
                         log("Target \"" + targetname + "\" failed in module \"" + module + "\"", Project.MSG_WARN);
                         log(fl.getAbsolutePath());
-                        log(BE.getMessage());
+                        log(be.getMessage());
                         String fname = fl.getAbsolutePath();
                         failedmodules.addElement( fname );
                     }

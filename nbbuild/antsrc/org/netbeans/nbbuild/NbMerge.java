@@ -163,8 +163,8 @@ public class NbMerge extends Task {
         // eliminate duplicates when analyzing dependencies! Ecch.
         // build fixed modules first
         dummy = new Target ();
-        dummyName = "nbmerge-" + target.getName ();
-        targets = project.getTargets ();
+        dummyName = "nbmerge-" + getOwningTarget().getName();
+        targets = getProject().getTargets();
         while (targets.contains (dummyName))
             dummyName += "-x";
         dummy.setName (dummyName);
@@ -172,12 +172,12 @@ public class NbMerge extends Task {
             String fixedmodule = (String) buildfixedmodules.elementAt (i);
             dummy.addDependency (targetprefix + fixedmodule);
         }
-        project.addTarget (dummy);
+        getProject().addTarget(dummy);
 
-        project.setProperty("fixedmodules-built",  "1" );
-        Vector fullList = project.topoSort(dummyName, targets);
+        getProject().setProperty("fixedmodules-built",  "1" );
+        Vector fullList = getProject().topoSort(dummyName, targets);
         // Now remove earlier ones: already done.
-        Vector doneList = project.topoSort(getOwningTarget().getName(), targets);
+        Vector doneList = getProject().topoSort(getOwningTarget().getName(), targets);
         List todo = new ArrayList(fullList.subList(0, fullList.indexOf(dummy)));
         todo.removeAll(doneList.subList(0, doneList.indexOf(getOwningTarget())));
         Iterator targit = todo.iterator();
@@ -206,15 +206,15 @@ public class NbMerge extends Task {
             for (int i = 0; i < buildmodules.size (); i++) {
                 module = (String) buildmodules.elementAt (i);
                 dummy = new Target ();
-                dummyName = "nbmerge-" + target.getName () + "-" + module;
+                dummyName = "nbmerge-" + getOwningTarget().getName() + "-" + module;
                 while (targets.contains (dummyName))
                     dummyName += "-x";
                 dummy.setName (dummyName);
                 dummy.addDependency (targetprefix + module);
-                project.addTarget (dummy);
-                Vector fullList = project.topoSort(dummyName, targets);
+                getProject().addTarget(dummy);
+                Vector fullList = getProject().topoSort(dummyName, targets);
                 // Now remove earlier ones: already done.
-                Vector doneList = project.topoSort(getOwningTarget().getName(), targets);
+                Vector doneList = getProject().topoSort(getOwningTarget().getName(), targets);
                 List todo = new ArrayList(fullList.subList(0, fullList.indexOf(dummy)));
                 todo.removeAll(doneList.subList(0, doneList.indexOf(getOwningTarget())));
                 
@@ -244,7 +244,7 @@ public class NbMerge extends Task {
     
     public void execute () throws BuildException {
         if (topdirs.isEmpty ()) {
-            throw new BuildException ("You must set at least one topdir attribute", location);
+            throw new BuildException("You must set at least one topdir attribute", getLocation());
         }
 
         buildfixedmodules.addAll(fixedmodules);
@@ -295,14 +295,14 @@ public class NbMerge extends Task {
                         bm = bm.substring( 1, bm.length() - 1);
                         if (bm.length() > 0 ) {
                             log("Setting property \"" + builtmodulesproperty + "\" to new value " + bm); //, Project.MSG_VERBOSE);
-                            project.setUserProperty(builtmodulesproperty, bm);
+                            getProject().setUserProperty(builtmodulesproperty, bm);
                         }
                     }
                 }
             }
             
         } else {
-            throw new BuildException("No modules were built", location);
+            throw new BuildException("No modules were built", getLocation());
         }
         
     }
@@ -313,9 +313,9 @@ public class NbMerge extends Task {
         Iterator it = suppress.iterator ();
         while (it.hasNext ()) {
             Suppress s = (Suppress) it.next ();
-            if (s.iftest != null && project.getProperty (s.iftest) == null) {
+            if (s.iftest != null && getProject().getProperty(s.iftest) == null) {
                 continue;
-            } else if (s.unlesstest != null && project.getProperty (s.unlesstest) != null) {
+            } else if (s.unlesstest != null && getProject().getProperty(s.unlesstest) != null) {
                 continue;
             }
             log ("Suppressing locale: " + s.locale);

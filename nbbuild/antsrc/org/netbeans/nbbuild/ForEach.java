@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.nbbuild;
@@ -27,7 +27,6 @@ import org.apache.tools.ant.Task;
  * If target name is not specified than name of current target is used.
  *
  * @author  Libor Kramolis
- * @version 0.2
  */
 public class ForEach extends Task {
     private static final boolean DEBUG = false;
@@ -80,8 +79,8 @@ public class ForEach extends Task {
     
     /** Execute this task. */
     public void execute () throws BuildException {        
-        if ( locations.isEmpty() ) {
-            throw new BuildException ("You must set at least one location!", location);
+        if (locations.isEmpty()) {
+            throw new BuildException("You must set at least one location!", getLocation());
         }
 
         if ( target == null ) {
@@ -91,9 +90,9 @@ public class ForEach extends Task {
         }
         File baseDir;
 	if ( startdir == null ) {
-          baseDir = project.getBaseDir();
+            baseDir = getProject().getBaseDir();
         } else {
-	  baseDir = new File( project.getBaseDir(), startdir );
+            baseDir = new File(getProject().getBaseDir(), startdir);
         }
 
         Iterator it = locations.iterator();
@@ -102,9 +101,9 @@ public class ForEach extends Task {
 
             if ( ECHO ) log ("Process '" + dirName + "' location with '" + target + "' target ...");
             
-            Ant ant = (Ant) project.createTask ("ant");
+            Ant ant = (Ant) getProject().createTask("ant");
             ant.init();
-            ant.setLocation (location);
+            ant.setLocation(getLocation());
             
             File dir = new File (baseDir, dirName);
             ant.setDir (dir);

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,7 +56,7 @@ public class LocJHIndexer extends MatchingTask {
     else {
 
       // Else look for the global property. //
-      prop = project.getProperty( "locjhindexer.jhall") ;
+      prop = getProject().getProperty("locjhindexer.jhall");
       if( prop != null) {
 	ret = prop ;
       }
@@ -87,7 +87,7 @@ public class LocJHIndexer extends MatchingTask {
     if( locales != null) {
       return( locales) ;
     }
-    return( project.getProperty( "locjhindexer.locales")) ;
+    return(getProject().getProperty("locjhindexer.locales"));
   }
 
   public void execute() throws BuildException {
@@ -106,7 +106,7 @@ public class LocJHIndexer extends MatchingTask {
       throw new BuildException( "Must specify the locales attribute") ;
 
     // I couldn't get it to work unless I explicitly added the task def here. //
-    project.addTaskDefinition( "jhindexer", JHIndexer.class) ;
+    getProject().addTaskDefinition("jhindexer", JHIndexer.class);
 
     // For each locale. //
     tokenizer = new StringTokenizer( locs, ", ") ;
@@ -156,7 +156,7 @@ public class LocJHIndexer extends MatchingTask {
   protected void RunForLocale( String locale) throws BuildException {
     JHIndexer jhindexer ;
 
-    jhindexer = (JHIndexer) project.createTask( "jhindexer") ;
+    jhindexer = (JHIndexer) getProject().createTask("jhindexer");
     jhindexer.init() ;
 
     jhindexer.setIncludes( locale + "/**/*.htm*") ;

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -209,7 +209,7 @@ public class LocalizedJar extends MatchingTask {
             }
             Iterator it = filesets.iterator ();
             while (it.hasNext ()) {
-                scanners.add (((FileSet) it.next ()).getDirectoryScanner (project));
+                scanners.add(((FileSet) it.next()).getDirectoryScanner(getProject()));
             }
             it = scanners.iterator ();
             while (it.hasNext ()) {
@@ -236,7 +236,7 @@ public class LocalizedJar extends MatchingTask {
         {
             Iterator it = localeKits.iterator ();
             while (it.hasNext ()) {
-                FileScanner scanner = ((FileSet) it.next ()).getDirectoryScanner (project);
+                FileScanner scanner = ((FileSet) it.next()).getDirectoryScanner(getProject());
                 File thisBaseDir = scanner.getBasedir ();
                 String[] files = scanner.getIncludedFiles ();
                 for (int i = 0; i < files.length; i++) {
@@ -470,7 +470,7 @@ if( localeKitFiles.contains( file)) {
                     if (! jar.delete ()) {
                         msg += " (and the JAR is probably corrupt but I could not delete it)";
                     }
-                    throw new BuildException (msg, ioe, location);
+                    throw new BuildException(msg, ioe, getLocation());
                 }
             }
         }
@@ -622,9 +622,9 @@ if( localeKitFiles.contains( file)) {
 
     // Otherwise use the global property value, if set. //
     else {
-      s = project.getProperty( "locjar.warnMissingDir") ;
+      s = getProject().getProperty("locjar.warnMissingDir");
       if( s != null && !s.trim().equals( "")) {
-	ret = project.toBoolean( s) ;
+	ret = getProject().toBoolean(s);
       }
     }
 
@@ -651,7 +651,7 @@ if( localeKitFiles.contains( file)) {
 
 	// Print warning if the dir doesn't exist. //
 	fileset = (FileSet) iter.next() ;
-	dir = fileset.getDir( project) ;
+	dir = fileset.getDir(getProject());
 	if( dir != null && !dir.exists()) {
 	  ret = true ;
 	  printMissingDirWarning( dir) ;
@@ -668,8 +668,8 @@ if( localeKitFiles.contains( file)) {
 
   protected boolean shouldWriteSrcDir() {
     boolean ret = false ;
-    String s = project.getProperty( "locjar.writeSrcDir") ;
-    if( s != null && project.toBoolean( s)) {
+    String s = getProject().getProperty("locjar.writeSrcDir");
+    if( s != null && getProject().toBoolean(s)) {
       ret = true ;
     }
     return( ret) ;

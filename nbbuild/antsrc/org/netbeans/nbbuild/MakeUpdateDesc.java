@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,8 +19,8 @@ import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import java.io.File;
+import java.io.IOException;
 import java.util.Vector;
-
 
 /** Makes an XML file representing update information from NBMs.
  *
@@ -147,7 +147,7 @@ public class MakeUpdateDesc extends MatchingTask {
                 for (int j=0; j<g.filesets.size(); j++) {
 		    FileSet n = (FileSet) g.filesets.elementAt(j);
                     if ( n != null ) {
-                        DirectoryScanner ds = n.getDirectoryScanner(project);
+                        DirectoryScanner ds = n.getDirectoryScanner(getProject());
                         String[] files = ds.getIncludedFiles();
                         File bdir = ds.getBasedir();
                         for (int k=0; k <files.length; k++) {
@@ -235,23 +235,25 @@ public class MakeUpdateDesc extends MatchingTask {
                     }
                     for (int fsi=0; fsi < g.filesets.size(); fsi++) {
                         FileSet fs = (FileSet) g.filesets.elementAt(fsi);
-                        DirectoryScanner ds = fs.getDirectoryScanner(project);
+                        DirectoryScanner ds = fs.getDirectoryScanner(getProject());
                         String[] files = ds.getIncludedFiles();
                         for (int fid=0; fid < files.length; fid++) {
-                            File n_file = new File(fs.getDir(project), files[fid]);
+                            File n_file = new File(fs.getDir(getProject()), files[fid]);
                             try {
                                 long size = n_file.length ();
                                 java.util.zip.ZipFile zip = new java.util.zip.ZipFile (n_file);
                                 try {
                                     java.util.zip.ZipEntry entry = zip.getEntry ("Info/info.xml"); //NOI18N
-                                    if (entry == null)
-                                        throw new BuildException ("NBM " + n_file + " was malformed: no Info/info.xml", location);
+                                    if (entry == null) {
+                                        throw new BuildException ("NBM " + n_file + " was malformed: no Info/info.xml", getLocation());
+                                    }
                                     java.io.InputStream is = zip.getInputStream (entry);
                                     try {
                                         java.io.BufferedReader r = new java.io.BufferedReader (new java.io.InputStreamReader (is, "UTF-8")); //NOI18N
                                         String line = r.readLine ();
-                                        if (! line.startsWith ("<?xml")) //NOI18N
-                                            throw new BuildException ("Strange info.xml line: " + line, location);
+                                        if (!line.startsWith ("<?xml")) { //NOI18N
+                                            throw new BuildException("Strange info.xml line: " + line, getLocation());
+                                        }
                                         // next line probably blank, no problem though
                                     INFOXML:
                                         while ((line = r.readLine ()) != null) {
@@ -283,7 +285,7 @@ public class MakeUpdateDesc extends MatchingTask {
                                                         line2 = pomline.substring (idx2);
                                                         log ("distribution line2: \"" + line2 + "\"", Project.MSG_DEBUG);
                                                     } else {
-                                                        throw new BuildException ("Strange info.xml line: " + line, location);
+                                                        throw new BuildException("Strange info.xml line: " + line, getLocation());
                                                     }
                                                     String newline = line1 + dist_base + "/" + n_file.getName() + line2;
                                                     if (!newline.equals(line)) {
@@ -302,8 +304,9 @@ public class MakeUpdateDesc extends MatchingTask {
                                             idx = line.indexOf (licenseMarker);
                                             if (idx != -1) {
                                                 int idx2 = line.indexOf ("\"", idx + licenseMarker.length ()); //NOI18N
-                                                if (idx2 == -1)
-                                                    throw new BuildException ("Strange info.xml line: " + line, location);
+                                                if (idx2 == -1) {
+                                                    throw new BuildException("Strange info.xml line: " + line, getLocation());
+                                                }
                                                 String name = line.substring (idx + licenseMarker.length (), idx2);
                                                 // [PENDING] ideally would compare the license texts to make sure they actually match up
                                                 boolean copy = ! licenseNames.contains (name);
@@ -330,8 +333,8 @@ public class MakeUpdateDesc extends MatchingTask {
                                 } finally {
                                     zip.close ();
                                 }
-                            } catch (java.io.IOException ioe) {
-                                throw new BuildException("Cannot access nbm file: " + n_file, ioe, location);
+                            } catch (IOException ioe) {
+                                throw new BuildException("Cannot access nbm file: " + n_file, ioe, getLocation());
                             }
                         }
 		    }
@@ -351,9 +354,9 @@ public class MakeUpdateDesc extends MatchingTask {
                 os.flush ();
 		os.close ();
 	    }
-	} catch (java.io.IOException ioe) {
+	} catch (IOException ioe) {
 	    desc.delete ();
-	    throw new BuildException ("Cannot create update description", ioe, location);
+	    throw new BuildException("Cannot create update description", ioe, getLocation());
 	}
     }
 

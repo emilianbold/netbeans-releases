@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -81,7 +81,7 @@ public class GenerateJavadoc extends Task
     public void execute () throws BuildException {
 
         if (topdirs.isEmpty ()) {
-            throw new BuildException ("You must set at least one topdir attribute", location);
+            throw new BuildException("You must set at least one topdir attribute", getLocation());
         }
 
 /*        Delete delete = (Delete) project.createTask ("delete");
@@ -90,7 +90,7 @@ public class GenerateJavadoc extends Task
         delete.init ();
         delete.setLocation (location);
         delete.execute ();*/
-        Path path = new Path( project );
+        Path path = new Path(getProject());
         for (int j = 0; j < topdirs.size (); j++) {
             File topdir = (File) topdirs.get (j);
             for (int i = 0; i < modules.size (); i++) {
@@ -99,17 +99,17 @@ public class GenerateJavadoc extends Task
                 if (! sources.exists ()) { //testing existination of 'javadoc-temp' dir if existing - skiping dafult source dirs...
                     sources = new File (new File (topdir, module), "src/");
                     if (sources.exists ())
-                        path.append(new Path( project, sources.getPath()));
+                        path.append(new Path(getProject(), sources.getPath()));
                     sources = new File (new File (topdir, module), "libsrc/");
                     if (sources.exists ())
-                        path.append(new Path( project, sources.getPath()));
+                        path.append(new Path(getProject(), sources.getPath()));
                 }
                 else {
-                    path.append(new Path( project, sources.getPath()));
+                    path.append(new Path(getProject(), sources.getPath()));
                 }
             }
         }
-        Javadoc javaDoc = (Javadoc) project.createTask("javadoc");
+        Javadoc javaDoc = (Javadoc) getProject().createTask("javadoc");
         javaDoc.setSourcepath( path );
         
         javaDoc.setDestdir( dest );

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -319,13 +319,13 @@ public class MakeLNBM extends MatchingTask {
             // workaround for typical bug in build script
             this.distribution = "http://" + distribution; //NOI18N
         } else {
-            throw new BuildException("Distribution URL is empty, check build.xml file", location);
+            throw new BuildException("Distribution URL is empty, check build.xml file", getLocation());
         }
         // check the URL
         try {
             URI uri = java.net.URI.create(this.distribution);
         } catch (IllegalArgumentException ile) {
-            throw new BuildException ("Distribution URL \""+this.distribution+"\" is not a valid URI", ile, location);
+            throw new BuildException("Distribution URL \"" + this.distribution + "\" is not a valid URI", ile, getLocation());
         }
     }
     public Blurb createLicense () {
@@ -351,12 +351,15 @@ public class MakeLNBM extends MatchingTask {
     }
 
     public void execute () throws BuildException {
-	if (file == null)
-	    throw new BuildException ("must set file for makenbm", location);
-        if (manifest == null && module == null && reqManOrMod())
-            throw new BuildException ("must set module for makenbm", location);
-        if (manifest != null && module != null)
-            throw new BuildException("cannot set both manifest and module for makenbm", location);
+	if (file == null) {
+	    throw new BuildException("must set file for makenbm", getLocation());
+        }
+        if (manifest == null && module == null && reqManOrMod()) {
+            throw new BuildException("must set module for makenbm", getLocation());
+        }
+        if (manifest != null && module != null) {
+            throw new BuildException("cannot set both manifest and module for makenbm", getLocation());
+        }
 	// Will create a file Info/info.xml to be stored alongside netbeans/ contents.
 	File infodir = new File (topdir, "Info"); //NOI18N
 	infodir.mkdirs ();
@@ -387,13 +390,13 @@ public class MakeLNBM extends MatchingTask {
                         } else {
                             // Not found in main JAR, check locale variant JAR.
                             File variant = new File(new File(module.getParentFile(), "locale"), module.getName()); //NOI18N
-                            if (! variant.isFile()) throw new BuildException(bundlename + " not found in " + module, location);
+                            if (!variant.isFile()) throw new BuildException(bundlename + " not found in " + module, getLocation());
                             long vmMod = variant.lastModified();
                             if (mostRecentInput < vmMod) mostRecentInput = vmMod;
                             ZipFile variantjar = new ZipFile(variant);
                             try {
                                 bundleentry = variantjar.getEntry(bundlename);
-                                if (bundleentry == null) throw new BuildException(bundlename + " not found in " + module + " nor in " + variant, location);
+                                if (bundleentry == null) throw new BuildException(bundlename + " not found in " + module + " nor in " + variant, getLocation());
                                 InputStream is = variantjar.getInputStream(bundleentry);
                                 try {
                                     p.load(is);
@@ -417,7 +420,7 @@ public class MakeLNBM extends MatchingTask {
                     modulejar.close();
                 }
             } catch (IOException ioe) {
-                throw new BuildException("exception while reading " + module, ioe, location);
+                throw new BuildException("exception while reading " + module, ioe, getLocation());
             }
         } // else we will read attr later if info file is out of date
 	boolean skipInfo = false;
@@ -439,7 +442,7 @@ public class MakeLNBM extends MatchingTask {
                         manifestStream.close ();
                     }
                 } catch (IOException e) {
-                    throw new BuildException ("exception when reading manifest " + manifest, e, location);
+                    throw new BuildException("exception when reading manifest " + manifest, e, getLocation());
                 }
             } // else we read attr before
 	    try {
@@ -452,7 +455,7 @@ public class MakeLNBM extends MatchingTask {
 		    if( attr != null) {
 		      String codenamebase = attr.getValue ("OpenIDE-Module"); //NOI18N
 		      if (codenamebase == null)
-			throw new BuildException ("invalid manifest, does not contain OpenIDE-Module", location);
+			throw new BuildException("invalid manifest, does not contain OpenIDE-Module", getLocation());
 		      // Strip major release number if any.
 		      codenamebase = getCodenameBase( codenamebase) ;
 		      ps.println ("<module codenamebase=\"" + xmlEscape(codenamebase) + "\""); //NOI18N
@@ -472,13 +475,13 @@ public class MakeLNBM extends MatchingTask {
 		    if (distribution != null) {
                         ps.println ("        distribution=\"" + xmlEscape(distribution) + "\""); //NOI18N
                     } else {
-                        throw new BuildException ("NBM distribution URL is not set", location);
+                        throw new BuildException("NBM distribution URL is not set", getLocation());
                     }
 		    // Here we only write a name for the license.
 		    if (license != null) {
 			String name = license.getName ();
 			if (name == null)
-			    throw new BuildException ("Every license must have a name or file attribute", location);
+			    throw new BuildException("Every license must have a name or file attribute", getLocation());
                         ps.println ("        license=\"" + xmlEscape(name) + "\""); //NOI18N
 		    }
 		    ps.println ("        downloadsize=\"0\""); //NOI18N
@@ -587,21 +590,21 @@ public class MakeLNBM extends MatchingTask {
 		    infoStream.close ();
 		}
 	    } catch (IOException e) {
-		throw new BuildException ("exception when creating Info/info.xml", e, location);
+		throw new BuildException("exception when creating Info/info.xml", e, getLocation());
 	    }
 	}
 
 	// JAR it all up together.
 	long jarModified = file.lastModified (); // may be 0
 	//log ("Ensuring existence of NBM file " + file);
-	Jar jar = (Jar) project.createTask ("jar"); //NOI18N
+	Jar jar = (Jar) getProject().createTask("jar"); //NOI18N
 	jar.setJarfile (file);
 	//jar.setBasedir (topdir.getAbsolutePath ());
         jar.setCompress(true);
 	//jar.createInclude ().setName ("netbeans/"); //NOI18N
 	//jar.createInclude ().setName ("Info/info.xml"); //NOI18N
         jar.addFileset (getFileSet());
-	jar.setLocation (location);
+	jar.setLocation(getLocation());
 	jar.init ();
 	jar.execute ();
 	// Maybe sign it.
@@ -617,7 +620,7 @@ public class MakeLNBM extends MatchingTask {
 		     + signature.keystore.toString() + ") doesn't exist", Project.MSG_WARN);
             } else {
                 log ("Signing NBM file " + file);
-                SignJar signjar = (SignJar) project.createTask ("signjar"); //NOI18N
+                SignJar signjar = (SignJar) getProject().createTask("signjar"); //NOI18N
                 //I have to use Reflection API, because there was changed API in ANT1.5
                 try {
                     try {
@@ -655,7 +658,7 @@ public class MakeLNBM extends MatchingTask {
                 }
                 signjar.setStorepass (signature.storepass);
                 signjar.setAlias (signature.alias);
-                signjar.setLocation (location);
+                signjar.setLocation(getLocation());
                 signjar.init ();
                 signjar.execute ();
             }
@@ -693,7 +696,7 @@ public class MakeLNBM extends MatchingTask {
                 jar.close();
             }
         } else {
-            throw new IOException(location + "must give either 'manifest' or 'module' on <makenbm>");
+            throw new IOException(getLocation() + "must give either 'manifest' or 'module' on <makenbm>");
         }
     }
 
@@ -799,9 +802,9 @@ public class MakeLNBM extends MatchingTask {
       req = manOrModReq ;
     }
     else {
-      s = project.getProperty( "makenbm.manOrModReq") ; //NOI18N
+      s = getProject().getProperty("makenbm.manOrModReq"); //NOI18N
       if( s != null && !s.equals( "")) { //NOI18N
-	req = project.toBoolean( s) ;
+	req = getProject().toBoolean(s);
       }
     }
 

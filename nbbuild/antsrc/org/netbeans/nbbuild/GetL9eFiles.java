@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -126,8 +126,8 @@ public class GetL9eFiles extends Task {
 
     // Use the l10n task to read the list file and get a list of the //
     // localizable files.					     //
-    project.addTaskDefinition( "l10nTask", L10nTask.class) ;
-    l10nTask = (L10nTask) project.createTask( "l10nTask") ;
+    getProject().addTaskDefinition("l10nTask", L10nTask.class);
+    l10nTask = (L10nTask) getProject().createTask("l10nTask");
     l10nTask.init() ;
     l10nTask.setLocalizableFile( listFile) ;
     l10nTask.setExcludePattern( excludes) ;
@@ -151,7 +151,7 @@ public class GetL9eFiles extends Task {
 	  } catch (IOException ioe) {
 	    String msg = "Failed to copy " + fromFile.getPath() + " to " +
 	      toFile.getPath() + " due to " + ioe.getMessage();
-	    throw new BuildException(msg, ioe, location);
+	    throw new BuildException(msg, ioe, getLocation());
 	  }
 	}
       }

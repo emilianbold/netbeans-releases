@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -208,15 +208,15 @@ public class JHIndexer extends MatchingTask {
                 }
             }
         }
-        Delete delete = (Delete) project.createTask ("delete");
+        Delete delete = (Delete) getProject().createTask("delete");
         delete.setDir (db);
         delete.init ();
-        delete.setLocation (location);
+        delete.setLocation(getLocation());
         delete.execute ();
-        Mkdir mkdir = (Mkdir) project.createTask ("mkdir");
+        Mkdir mkdir = (Mkdir) getProject().createTask("mkdir");
         mkdir.setDir (db);
         mkdir.init ();
-        mkdir.setLocation (location);
+        mkdir.setLocation(getLocation());
         mkdir.execute ();
         String maxbranding = null;
         if (!brandings.isEmpty()) {
@@ -226,18 +226,18 @@ public class JHIndexer extends MatchingTask {
             // the branding token, and this will mess up the search database: it needs
             // to store just the simple file name with no branding infix.
             File tmp = new File(System.getProperty("java.io.tmpdir"), "jhindexer-branding-merge");
-            delete = (Delete)project.createTask("delete");
+            delete = (Delete) getProject().createTask("delete");
             delete.setDir(tmp);
             delete.init();
-            delete.setLocation(location);
+            delete.setLocation(getLocation());
             delete.execute();
             tmp.mkdir();
             // Start with the base files.
-            Copy copy = (Copy)project.createTask("copy");
+            Copy copy = (Copy) getProject().createTask("copy");
             copy.setTodir(tmp);
             copy.addFileset(fileset);
             copy.init();
-            copy.setLocation(location);
+            copy.setLocation(getLocation());
             copy.execute();
             // Now branded filesets. Must be done in order of branding, so that
             // more specific files override generic ones.
@@ -250,7 +250,9 @@ public class JHIndexer extends MatchingTask {
             Iterator it = brandings.iterator();
             while (it.hasNext()) {
                 BrandedFileSet s = (BrandedFileSet)it.next();
-                if (maxbranding != null && !s.branding.startsWith(maxbranding + "_")) throw new BuildException("Illegal branding: " + s.branding, location);
+                if (maxbranding != null && !s.branding.startsWith(maxbranding + "_")) {
+                    throw new BuildException("Illegal branding: " + s.branding, getLocation());
+                }
                 maxbranding = s.branding; // only last one will be kept
                 String[] suffixes = {
                     ".html",
@@ -261,7 +263,7 @@ public class JHIndexer extends MatchingTask {
                 };
                 for (int i = 0; i < suffixes.length; i++) {
                     String suffix = suffixes[i];
-                    copy = (Copy)project.createTask("copy");
+                    copy = (Copy) getProject().createTask("copy");
                     copy.setTodir(tmp);
                     copy.setOverwrite(true);
                     copy.addFileset(s);
@@ -272,12 +274,12 @@ public class JHIndexer extends MatchingTask {
                     m.setFrom("*_" + s.branding + suffix);
                     m.setTo("*" + suffix);
                     copy.init();
-                    copy.setLocation(location);
+                    copy.setLocation(getLocation());
                     copy.execute();
                     if (locale != null) {
                         // Possibly have e.g. x_f4j_ja.html.
                         suffix = "_" + locale + suffix;
-                        copy = (Copy)project.createTask("copy");
+                        copy = (Copy) getProject().createTask("copy");
                         copy.setTodir(tmp);
                         copy.setOverwrite(true);
                         copy.addFileset(s);
@@ -288,7 +290,7 @@ public class JHIndexer extends MatchingTask {
                         m.setFrom("*_" + s.branding + suffix);
                         m.setTo("*" + suffix);
                         copy.init();
-                        copy.setLocation(location);
+                        copy.setLocation(getLocation());
                         copy.execute();
                     }
                 }
@@ -296,9 +298,9 @@ public class JHIndexer extends MatchingTask {
             // Now replace basedir & files with this temp dir.
             basedir = tmp;
             FileSet tmpf = new FileSet();
-            tmpf.setProject(project);
+            tmpf.setProject(getProject());
             tmpf.setDir(tmp);
-            files = tmpf.getDirectoryScanner(project).getIncludedFiles();
+            files = tmpf.getDirectoryScanner(getProject()).getIncludedFiles();
         }
         log ("Running JavaHelp search database indexer...");
         try {
@@ -321,7 +323,7 @@ public class JHIndexer extends MatchingTask {
                 } finally {
                     os.close ();
                 }
-                AntClassLoader loader = new AntClassLoader (project, classpath);
+                AntClassLoader loader = new AntClassLoader(getProject(), classpath);
                 try {
                     Class clazz = loader.loadClass ("com.sun.java.help.search.Indexer");
                     Method main = clazz.getMethod ("main", new Class[] { String[].class });
@@ -336,15 +338,15 @@ public class JHIndexer extends MatchingTask {
                     }
                     main.invoke(null, new Object[] {args.toArray(new String[args.size()])});
                 } catch (InvocationTargetException ite) {
-                    throw new BuildException ("Could not run indexer", ite.getTargetException (), location);
+                    throw new BuildException("Could not run indexer", ite.getTargetException(), getLocation());
                 } catch (Exception e) { // ClassNotFoundException, NoSuchMethodException, ...
-                    throw new BuildException ("Could not run indexer", e, location);
+                    throw new BuildException("Could not run indexer", e, getLocation());
                 }
             } finally {
                 config.delete ();
             }
         } catch (IOException ioe) {
-            throw new BuildException ("Could not make temporary config file", ioe, location);
+            throw new BuildException("Could not make temporary config file", ioe, getLocation());
         }
         if (maxbranding != null) {
             // Now rename search DB files to include branding suffix.

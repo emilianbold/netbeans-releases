@@ -120,7 +120,7 @@ public class LocMakeNBM extends Task {
     }
 
     // I couldn't get it to work unless I explicitly added the task def here. //
-    project.addTaskDefinition( "makelnbm", MakeLNBM.class) ;
+    getProject().addTaskDefinition("makelnbm", MakeLNBM.class);
 
     // Get a list of the locales for which localized files exist. //
     stok = new StringTokenizer( locs, ",") ;
@@ -153,7 +153,7 @@ public class LocMakeNBM extends Task {
 
     // Delete the Info directory if desired. //
     if( deleteInfo) {
-      del = (Delete) project.createTask( "delete") ;
+      del = (Delete) getProject().createTask("delete");
       del.init() ;
       del.setDir( new File( topDir.getAbsolutePath() + File.separator + "Info")) ;
       del.execute() ;
@@ -167,7 +167,7 @@ public class LocMakeNBM extends Task {
       switchInfo( true, locale) ;
     }
 
-    makenbm = (MakeLNBM) project.createTask( "makelnbm") ;
+    makenbm = (MakeLNBM) getProject().createTask("makelnbm");
     makenbm.init() ;
 
     makenbm.setModInfo( modInfo) ;
@@ -244,7 +244,7 @@ public class LocMakeNBM extends Task {
    */
   protected File getLicenseFile( String locale) {
     String license_prop_name = locale + ".license.file" ;
-    String license_prop = project.getProperty( license_prop_name) ;
+    String license_prop = getProject().getProperty(license_prop_name);
     File license = null ;
     if( license_prop != null) {
       license = new File( license_prop ) ;
@@ -290,7 +290,7 @@ public class LocMakeNBM extends Task {
     addLocalePatterns( fs, loc) ;
 
     // See if there are any localized files for this locale. //
-    String[] inc_files = fs.getDirectoryScanner( project).getIncludedFiles() ;
+    String[] inc_files = fs.getDirectoryScanner(getProject()).getIncludedFiles();
     if( inc_files.length == 0) {
       ret = false ;
     }
@@ -370,7 +370,7 @@ public class LocMakeNBM extends Task {
 
   protected String getGlobalProp( String name) {
     String ret ;
-    ret = project.getProperty( name) ;
+    ret = getProject().getProperty(name);
 
     // Don't return empty strings or strings whose value contains a //
     // property that isn't set.					    //

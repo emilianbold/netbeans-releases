@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -55,7 +55,7 @@ public class CheckHelpSets extends Task {
         Iterator it = filesets.iterator();
         while (it.hasNext()) {
             FileSet fs = (FileSet)it.next();
-            FileScanner scanner = fs.getDirectoryScanner(project);
+            FileScanner scanner = fs.getDirectoryScanner(getProject());
             File dir = scanner.getBasedir();
             String[] files = scanner.getIncludedFiles();
             for (int i = 0; i < files.length; i++) {

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -59,12 +59,12 @@ public class CheckLicense extends Task {
     }
 
     public void execute () throws BuildException {
-        if (fragment == null) throw new BuildException ("You must supply a fragment", location);
-        if (filesets.isEmpty ()) throw new BuildException ("You must supply at least one fileset", location);
+        if (fragment == null) throw new BuildException("You must supply a fragment", getLocation());
+        if (filesets.isEmpty ()) throw new BuildException("You must supply at least one fileset", getLocation());
         Iterator it = filesets.iterator ();
         try {
             while (it.hasNext ()) {
-                FileScanner scanner = ((FileSet) it.next ()).getDirectoryScanner (project);
+                FileScanner scanner = ((FileSet) it.next()).getDirectoryScanner(getProject());
                 File baseDir = scanner.getBasedir ();
                 String[] files = scanner.getIncludedFiles ();
                 log ("Looking for " + fragment + " in " + files.length + " files in " + baseDir.getAbsolutePath ());
@@ -90,7 +90,7 @@ public class CheckLicense extends Task {
                 }
             }
         } catch (IOException ioe) {
-            throw new BuildException ("Could not open files to check licenses", ioe, location);
+            throw new BuildException("Could not open files to check licenses", ioe, getLocation());
         }
     }
 

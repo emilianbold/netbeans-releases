@@ -131,9 +131,9 @@ public class Arch extends Task implements ErrorHandler {
             
         } catch (SAXParseException ex) {
             log(ex.getSystemId() + ":" + ex.getLineNumber() + ": " + ex.getLocalizedMessage(), Project.MSG_ERR);
-            throw new BuildException(questionsFile.getAbsolutePath() + " is malformed or invalid", ex, location);
+            throw new BuildException(questionsFile.getAbsolutePath() + " is malformed or invalid", ex, getLocation());
         } catch (Exception ex) {
-            throw new BuildException ("File " + questionsFile + " cannot be parsed: " + ex.getLocalizedMessage(), ex, location);
+            throw new BuildException ("File " + questionsFile + " cannot be parsed: " + ex.getLocalizedMessage(), ex, getLocation());
         }
 
         questions = readElements (q, "question");

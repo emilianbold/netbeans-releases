@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,8 +56,8 @@ public class PrintCvsModules extends Task {
 
         buildmodules.addAll(modules);
         Target dummy = new Target ();
-        dummyName = "nbmerge-" + target.getName ();
-        targets = project.getTargets ();
+        dummyName = "nbmerge-" + getOwningTarget().getName();
+        targets = getProject().getTargets();
         while (targets.contains (dummyName))
             dummyName += "-x";
         dummy.setName (dummyName);
@@ -65,12 +65,12 @@ public class PrintCvsModules extends Task {
             String module = (String) buildmodules.elementAt (i);
             dummy.addDependency (targetprefix + module);
         }
-        project.addTarget (dummy);
+        getProject().addTarget(dummy);
 
-        Vector fullList = project.topoSort(dummyName, targets);
+        Vector fullList = getProject().topoSort(dummyName, targets);
         log("fullList is " + fullList, Project.MSG_VERBOSE);
         // Now remove earlier ones: already done.
-        Vector doneList = project.topoSort(getOwningTarget().getName(), targets);
+        Vector doneList = getProject().topoSort(getOwningTarget().getName(), targets);
         List todo = new ArrayList(fullList.subList(0, fullList.indexOf(dummy)));
         log("todo is " + todo.toString(), Project.MSG_VERBOSE);
         todo.removeAll(doneList.subList(0, doneList.indexOf(getOwningTarget())));

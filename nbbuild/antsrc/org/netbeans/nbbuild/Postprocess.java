@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -88,7 +88,7 @@ public class Postprocess extends Task {
             byte[] b = new byte[len];
             FileInputStream is = new FileInputStream (file);
             try {
-                if (is.read(b) != len) throw new BuildException("Failed to read whole file", location);
+                if (is.read(b) != len) throw new BuildException("Failed to read whole file", getLocation());
             } finally {
                 is.close ();
             }
@@ -130,7 +130,7 @@ public class Postprocess extends Task {
             
             byte[] newbytes = newString.getBytes("ISO8859_1");
             if (newbytes.length != oldString.getBytes("ISO8859_1").length) {
-                throw new BuildException("Strings to replace must be equal in length", location);
+                throw new BuildException("Strings to replace must be equal in length", getLocation());
             }
             while ((pos = arr.indexOf(oldString, pos + 1)) != -1) {
                 System.arraycopy(newbytes, 0, b, pos, newbytes.length);
@@ -140,7 +140,7 @@ public class Postprocess extends Task {
             return cnt;
             
         } catch (UnsupportedEncodingException e) {
-            throw new BuildException("Error replacing text", e, location);
+            throw new BuildException("Error replacing text", e, getLocation());
         }
     }
         

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -74,7 +74,7 @@ public class MakeListOfNBM extends Task {
             jar = new JarFile(module);
             attr = jar.getManifest().getMainAttributes();
         } catch (IOException ex) {
-            throw new BuildException( "Can't get manifest attributes", ex, location );
+            throw new BuildException("Can't get manifest attributes", ex, getLocation());
         } finally {
             try {
                 if (jar != null) jar.close();
@@ -82,8 +82,9 @@ public class MakeListOfNBM extends Task {
         }
       
         String codename = attr.getValue("OpenIDE-Module");
-        if (codename == null)
-            throw new BuildException("invalid manifest, does not contain OpenIDE-Module", location);
+        if (codename == null) {
+            throw new BuildException("invalid manifest, does not contain OpenIDE-Module", getLocation());
+        }
         
         String versionSpecNum = attr.getValue("OpenIDE-Module-Specification-Version");
         if (versionSpecNum == null) {

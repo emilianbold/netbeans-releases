@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,10 +56,10 @@ public class MakeLayer extends MatchingTask {
     
     public void execute()  throws BuildException {
         if (topdir == null) {
-            throw new BuildException ("You must set at topdir attribute", location);
+            throw new BuildException("You must set at topdir attribute", getLocation());
         }
         if (dest == null) {
-            throw new BuildException("You must specify output file", location);
+            throw new BuildException("You must specify output file", getLocation());
         }
         UpToDate upToDate = (UpToDate) this.getProject().createTask( "uptodate" );
         fileset.setDir( topdir );
@@ -76,7 +76,7 @@ public class MakeLayer extends MatchingTask {
             layerFile = new FileWriter(dest);
         }
         catch (IOException e) {
-            throw new BuildException(e.fillInStackTrace(),location);
+            throw new BuildException(e, getLocation());
         }
         
         FileScanner scanner = getDirectoryScanner (topdir);
@@ -88,7 +88,7 @@ public class MakeLayer extends MatchingTask {
                 layerFile.write(("  url=\""+aFileName.getAbsolutePath().substring(topdir.getAbsolutePath().length()+lengthAdjust)+"\"/>\n").replace(File.separatorChar,'/'));
             }
             catch(IOException ex) {
-                throw new BuildException(ex.fillInStackTrace(),location);
+                throw new BuildException(ex, getLocation());
             }
         }
         
@@ -96,7 +96,7 @@ public class MakeLayer extends MatchingTask {
             layerFile.close();
         }
         catch (IOException e) {
-            throw new BuildException(e.fillInStackTrace(),location);
+            throw new BuildException(e, getLocation());
         }
     }
 }

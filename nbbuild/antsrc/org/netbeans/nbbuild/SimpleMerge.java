@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -101,11 +101,11 @@ public class SimpleMerge extends Task {
 
     public void execute () throws BuildException {
         if (topdirs.isEmpty ()) {
-            throw new BuildException ("You must set at least one topdir attribute", location);
+            throw new BuildException("You must set at least one topdir attribute", getLocation());
         }
         
         if (subdirs.isEmpty ()) {
-            throw new BuildException ("You must set at least one subdir attribute", location);
+            throw new BuildException("You must set at least one subdir attribute", getLocation());
         }
 
         log ( "Starting merge to " + dest.getAbsolutePath() );
@@ -120,14 +120,14 @@ public class SimpleMerge extends Task {
 			log ("Dir " + subdir + " does not exist, skipping...", Project.MSG_WARN);
 			continue;
 		    }
-		    Copy copy = (Copy) project.createTask ("copy");
+		    Copy copy = (Copy) getProject().createTask("copy");
 		    FileSet fs = new FileSet ();
 		    fs.setDir (subdir);
 		    copy.addFileset (fs);
 		    copy.setTodir (dest);
 		    copy.setIncludeEmptyDirs (true);
 		    copy.init ();
-		    copy.setLocation (location);
+		    copy.setLocation(getLocation());
 		    copy.execute ();
                 }
             }

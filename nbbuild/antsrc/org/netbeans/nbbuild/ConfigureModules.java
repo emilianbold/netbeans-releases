@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -85,23 +85,23 @@ public class ConfigureModules extends Task {
 
     public void execute () throws BuildException {
 	if (property == null || config == null)
-	    throw new BuildException ("Must set both the property and selectedconfig attributes", location);
+	    throw new BuildException("Must set both the property and selectedconfig attributes", getLocation());
 	Iterator it = configs.iterator ();
 	while (it.hasNext ()) {
 	    Config c = (Config) it.next ();
 	    if (config.equals (c.name)) {
 		String value = c.modules;
 		if (value == null)
-		    throw new BuildException ("Missing modules attribute for config " + config, location);
-		if (project.getProperty (property) == null) {
-		    project.setProperty (property, value);
+		    throw new BuildException("Missing modules attribute for config " + config, getLocation());
+		if (getProject().getProperty(property) == null) {
+		    getProject().setProperty(property, value);
 		} else {
 		    log ("Note: not overriding property " + property, Project.MSG_VERBOSE);
 		}
 		return;
 	    }
 	}
-	throw new BuildException ("Unrecognized module configuration: " + config + "; pick from: " + configs, location);
+	throw new BuildException("Unrecognized module configuration: " + config + "; pick from: " + configs, getLocation());
     }
 
 }
