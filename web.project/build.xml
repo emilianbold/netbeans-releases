@@ -45,6 +45,9 @@ Microsystems, Inc. All Rights Reserved.
                 <excludesfile name="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
             </fileset>
         </jar>
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/ant/sources">
+            <fileset dir="antsrc" includes="**/*.java"/>
+        </copy>
     </target>
 
     <target name="netbeans-extra" depends="ant-extra"/>
