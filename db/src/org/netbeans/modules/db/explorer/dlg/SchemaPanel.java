@@ -110,6 +110,10 @@ public class SchemaPanel extends JPanel {
         for(int i=0;i<items.size();i++){
             schemas.addItem(items.elementAt(i));
         }
+        if((items.size()==0)||(items.size()==1)){
+            // schema in the items is not or is only one
+            return true;
+        }
         int idx = items.indexOf(schema);
         if (idx == -1)
             idx = items.indexOf(schema.toLowerCase());

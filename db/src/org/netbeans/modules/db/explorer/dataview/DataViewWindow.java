@@ -61,9 +61,11 @@ public class DataViewWindow extends TopComponent {
         try {
             bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
+            Node tempNode = node;
+            while(!(tempNode instanceof ConnectionNode))
+                tempNode = tempNode.getParentNode();
             setName(bundle.getString("CommandEditorTitle")+ //NOI18N
-                " " + info.getUser() + //NOI18N
-                "@" + info.getParent(DatabaseNode.CONNECTION).getName() + " "); //NOI18N
+                " " + tempNode.getDisplayName()); //NOI18N
             setBorder(new EmptyBorder(new Insets(5,5,5,5)));
             GridBagLayout layout = new GridBagLayout();
             GridBagConstraints con = new GridBagConstraints ();

@@ -31,6 +31,7 @@ import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.dlg.UnsupportedDatabaseDialog;
+import org.netbeans.modules.db.explorer.PointbasePlus;
 
 public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOperations {
     
@@ -44,12 +45,12 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
         try {
             // check if there is connected connection by Pointbase driver
             // Pointbase driver doesn't permit the concurrently connection
-            if (drvurl.startsWith("com.pointbase.jdbc.jdbcUniversalDriver")) {
+            if (drvurl.startsWith(PointbasePlus.DRIVER)) {
                 Node n[] = getParent().getNode().getChildren().getNodes();
                 for (int i = 0; i < n.length; i++)
                     if(n[i] instanceof ConnectionNode) {
                         ConnectionNodeInfo cinfo = (ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo();
-                        if(cinfo.getDriver().startsWith("com.pointbase.jdbc.jdbcUniversalDriver")) //NOI18N
+                        if(cinfo.getDriver().startsWith(PointbasePlus.DRIVER))
                             if(!(cinfo.getDatabase().equals(dburl)&&cinfo.getUser().equals(getUser())))
                                 if((cinfo.getConnection()!=null))
                                     throw new Exception(bundle.getString("EXC_PBConcurrentConn")); // NOI18N
@@ -73,9 +74,6 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             }
             put(DBPRODUCT, spec.getProperties().get(DBPRODUCT));
 
-            if(getSchema()==null)
-                throw new DatabaseException("Database schema is not set");
-            
             setSpecification(spec);
 
             drvSpec = factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());

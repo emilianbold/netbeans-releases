@@ -77,6 +77,8 @@ public class ConnectAction extends DatabaseAction {
                 public void actionPerformed(ActionEvent event) {
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
                         dlg.setException(null);
+                        String oldUser = nfo.getUser();
+                        String oldSchema = nfo.getSchema();
                         nfo.setUser(basePanel.getUser());
                         nfo.setPassword(basePanel.getPassword());
                         if (basePanel.rememberPassword())
@@ -91,6 +93,8 @@ public class ConnectAction extends DatabaseAction {
                             if(dlg!=null) dlg.close();
                         } catch (Exception exc) {
                             //exc.printStackTrace();
+                            nfo.setUser(oldUser);
+                            nfo.setSchema(oldSchema);
                             String message = MessageFormat.format(bundle.getString("ERR_UnableToConnect"), new String[] {exc.getMessage()}); // NOI18N
                             TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                         }

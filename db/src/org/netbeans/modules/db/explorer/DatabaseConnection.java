@@ -176,7 +176,12 @@ public class DatabaseConnection implements DBConnection {
     public String getName()
     {
         if(name==null)
-            name = MessageFormat.format(bundle.getString("ConnectionNodeUniqueName"), // NOI18N
+            if((getSchema()==null)||(getSchema().length()==0))
+                name = MessageFormat.format(bundle.getString("ConnectionNodeUniqueName"), // NOI18N
+                        new String[] {getDatabase(), getUser(), 
+                        bundle.getString("SchemaIsNotSet")});
+            else
+                name = MessageFormat.format(bundle.getString("ConnectionNodeUniqueName"), // NOI18N
                         new String[] {getDatabase(), getUser(), getSchema()});
         return name;
     }
@@ -334,6 +339,8 @@ public class DatabaseConnection implements DBConnection {
         //		rpwd = (Boolean)in.readObject();
         rpwd = new Boolean(false);
         name = (String)in.readObject();
+        if(name!=null)
+            schema=null;
         name = null;
         name = getName();
     }
@@ -348,12 +355,14 @@ public class DatabaseConnection implements DBConnection {
 //        out.writeObject(pwd);
         out.writeObject(schema);
         //		out.writeObject(rpwd);
-        out.writeObject(name);
-        try{Thread.sleep(1000);}catch(Exception e){}
+        out.writeObject(null);
     }
 
     public String toString() {
-        return "Driver:" + drv + "Database:" + db + "User:" + usr + "Schema:" + schema;
+        return "Driver:" + drv +
+                "Database:" + db.toLowerCase() + 
+                "User:" + usr.toLowerCase() + 
+                "Schema:" + schema.toLowerCase();
     }
 
 }
