@@ -29,6 +29,9 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Root directory of the file browsers: -->
     <property name="testdir" location="/tmp"/>
 
+    <!-- Logging config file: -->
+    <property name="logging.properties" location="logging.properties"/>
+
     <path id="build.cp">
         <pathelement location="${openide.jar}"/>
         <pathelement location="${looks.jar}"/>
@@ -87,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
             <arg file="${testdir}"/>
             <jvmarg value="-Xmx256m"/>
             <jvmarg value="-ea"/>
-            <sysproperty key="java.util.logging.config.file" file="logging.properties"/>
+            <sysproperty key="java.util.logging.config.file" file="${logging.properties}"/>
         </java>
     </target>
     
