@@ -106,7 +106,7 @@ public class I18nOptions extends SystemOption {
     public void setInitJavaCode(String initJavaCode) {
         // Make sure it is sane.
         if(initJavaCode == null)
-            throw new NullPointerException();
+            return;
         
         // Stores in class-wide state and fires property changes if needed:
         putProperty(PROP_INIT_JAVA_CODE, initJavaCode, true);
@@ -125,7 +125,7 @@ public class I18nOptions extends SystemOption {
     public void setReplaceJavaCode(String replaceJavaCode) {
         // Make sure it is sane.
         if(replaceJavaCode == null)
-            throw new NullPointerException();
+            return;
         
         // Stores in class-wide state and fires property changes if needed:
         putProperty(PROP_REPLACE_JAVA_CODE, replaceJavaCode, true);
@@ -144,7 +144,7 @@ public class I18nOptions extends SystemOption {
     public void setRegularExpression(String regExp) {
         // Make sure it is sane.
         if(regExp == null)
-            throw new NullPointerException();
+            return;
         
         // Stores in class-wide state and fires property changes if needed:
         putProperty(PROP_REGULAR_EXPRESSION, regExp, true);
@@ -176,7 +176,7 @@ public class I18nOptions extends SystemOption {
     public void setLastResource(DataObject lastResource) {
         // Make sure it is sane.        
         if(lastResource == null)
-            throw new NullPointerException();
+            return;
         
         putProperty(PROP_LAST_RESOURCE, lastResource.getPrimaryFile().getPackageNameExt('/', '.'), true);
     }
