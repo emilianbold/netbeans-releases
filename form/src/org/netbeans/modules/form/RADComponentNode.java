@@ -512,36 +512,44 @@ public class RADComponentNode extends AbstractNode
     private boolean canPasteMenuComponent(RADMenuItemComponent sourceMenuComp,
                                           boolean cut) {
         boolean canPaste = false;
+        boolean canPasteAWT = false;
+        boolean canPasteSwing = false;        
 
         if (!(component instanceof RADMenuComponent)) {
             // target component is not a menu component
             if (component instanceof FormContainer) {
                 // target component is the form
                 int sourceMenuType = sourceMenuComp.getMenuItemType();
-                canPaste = sourceMenuType == RADMenuItemComponent.T_MENUBAR
-                        || sourceMenuType == RADMenuItemComponent.T_JMENUBAR
-                        || sourceMenuType == RADMenuItemComponent.T_POPUPMENU
-                        || sourceMenuType == RADMenuItemComponent.T_JPOPUPMENU;
+                canPasteAWT = sourceMenuType == RADMenuItemComponent.T_MENUBAR
+                           || sourceMenuType == RADMenuItemComponent.T_POPUPMENU;
+                canPasteSwing = sourceMenuType == RADMenuItemComponent.T_JMENUBAR
+                             || sourceMenuType == RADMenuItemComponent.T_JPOPUPMENU;
             }
         }
         else { // target component is some menu container
             int menuType = ((RADMenuComponent)component).getMenuItemType();
             int sourceMenuType = sourceMenuComp.getMenuItemType();
+            
+            if (menuType == RADMenuItemComponent.T_MENUBAR)
+                canPasteAWT = sourceMenuType == RADMenuItemComponent.T_MENU;
 
-            if (menuType == RADMenuItemComponent.T_MENUBAR
-                    || menuType == RADMenuItemComponent.T_JMENUBAR) {
-                // target component is a menu bar - only menus are allowed
-                canPaste = sourceMenuType == RADMenuItemComponent.T_MENU
-                        || sourceMenuType == RADMenuItemComponent.T_JMENU;
+            if (menuType == RADMenuItemComponent.T_JMENUBAR)
+                canPasteSwing = sourceMenuType == RADMenuItemComponent.T_JMENU;
+            
+            if (menuType == RADMenuItemComponent.T_MENU || menuType == RADMenuItemComponent.T_POPUPMENU) {
+                canPasteAWT = ((sourceMenuType & RADMenuItemComponent.MASK_AWT) == RADMenuItemComponent.MASK_AWT)
+                              && sourceMenuType != RADMenuItemComponent.T_MENUBAR
+                              && sourceMenuType != RADMenuItemComponent.T_POPUPMENU;
             }
-            else { // target component is a menu - menus and menu items allowed
-                canPaste = sourceMenuType != RADMenuItemComponent.T_MENUBAR
-                        && sourceMenuType != RADMenuItemComponent.T_JMENUBAR
-                        && sourceMenuType != RADMenuItemComponent.T_POPUPMENU
-                        && sourceMenuType != RADMenuItemComponent.T_JPOPUPMENU;
+            
+            if (menuType == RADMenuItemComponent.T_JMENU || menuType == RADMenuItemComponent.T_JPOPUPMENU) {
+                canPasteSwing = ((sourceMenuType & RADMenuItemComponent.MASK_SWING) == RADMenuItemComponent.MASK_SWING)
+                              && sourceMenuType != RADMenuItemComponent.T_JMENUBAR
+                              && sourceMenuType != RADMenuItemComponent.T_JPOPUPMENU;
             }
         }
 
+        canPaste = canPasteAWT || canPasteSwing;        
         return canPaste && cut ?
                  canPasteCut(sourceMenuComp) : canPaste;
     }

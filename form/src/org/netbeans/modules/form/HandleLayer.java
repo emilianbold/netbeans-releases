@@ -523,6 +523,20 @@ class HandleLayer extends JPanel
         }
 
         formDesigner.setSelectedComponent(newMenuComp);
+        
+        if (formInfo instanceof JMenuBarContainer && MenuBar.class.isAssignableFrom(item.getItemClass())) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                FormEditor.getFormBundle().getString("MSG_AWTMenu2SwingNotApplicable"),
+                                                     NotifyDescriptor.INFORMATION_MESSAGE));
+            
+        }
+        
+        if (formInfo instanceof MenuBarContainer && JMenuBar.class.isAssignableFrom(item.getItemClass())) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                FormEditor.getFormBundle().getString("MSG_SwingMenu2AWTNotApplicable"),
+                                                     NotifyDescriptor.INFORMATION_MESSAGE));
+            
+        }        
     }
 
     private void showContextMenu(Point popupPos) {
