@@ -125,6 +125,37 @@ public class IdxPropertyPattern extends PropertyPattern {
                                       boolean niGetter, boolean niWithReturn,
                                       boolean niSetter, boolean niWithSet ) throws SourceException {
 
+        return create(patternAnalyser, name, type, mode, bound, constrained, withField, withReturn, withSet, withSupport, niGetter, niWithReturn, niSetter, niWithSet, false, false );
+    }
+    /** Creates new indexed property pattern with extended options
+     * @param patternAnalyser patternAnalyser which creates this Property.
+     * @param name Name of the Property.
+     * @param type Type of the Property.
+     * @param mode {@link #READ_WRITE Mode} of the new property.
+     * @param bound Is the Property bound?
+     * @param constrained Is the property constrained?
+     * @param withField Should be the private field for this property genareted?
+     * @param withReturn Generate return statement in getter?
+     * @param withSet Generate seter statement for private field in setter.
+     * @param withSupport Generate PropertyChange support?
+     * @param niGetter Non-indexed getter method
+     * @param niWithReturn Generate return statement in non-indexed getter?
+     * @param niSetter Non-indexed setter method
+     * @param niWithSet Generate set field statement in non-indexed setter?
+     * @param useSupport use change support without prompting
+     * @param fromField signalize that all action are activatet on field
+     * @throws SourceException If the Property can't be created in the source.
+     * @return Newly created PropertyPattern.
+     */
+    static IdxPropertyPattern create( PatternAnalyser patternAnalyser,
+                                      String name, String type,
+                                      int mode, boolean bound, boolean constrained,
+                                      boolean withField, boolean withReturn,
+                                      boolean withSet, boolean withSupport,
+                                      boolean niGetter, boolean niWithReturn,
+                                      boolean niSetter, boolean niWithSet,
+                                      boolean useSupport, boolean fromField ) throws SourceException {
+
         IdxPropertyPattern ipp = new IdxPropertyPattern( patternAnalyser );
 
         ipp.name = name;
@@ -137,9 +168,16 @@ public class IdxPropertyPattern extends PropertyPattern {
         }
 
         // Generate field
-        if ( withField || withSupport ) {
+        if ( ( withField || withSupport ) && !fromField ) {
             if ( ipp.type != null )
+            try {
                 ipp.generateField( true );
+            } catch (SourceException e) {
+                TopManager.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                        PatternNode.getString("MSG_Cannot_Create_Field"),
+                        NotifyDescriptor.WARNING_MESSAGE));
+            }
         }
 
 
@@ -152,13 +190,24 @@ public class IdxPropertyPattern extends PropertyPattern {
             boolean boundSupport = bound;
             boolean constrainedSupport = constrained;
 
-            if( boundSupport )
-                if( ( supportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  ipp.getDeclaringClass()), "PropertyChangeSupport")) != null )
-                    boundSupport = false;
-            if( constrainedSupport )
-                if( ( vetoSupportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  ipp.getDeclaringClass()), "VetoableChangeSupport")) != null )
-                    constrainedSupport = false;
-
+            
+            if( !useSupport ){
+                if( boundSupport )
+                    if( ( supportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  ipp.getDeclaringClass()), "PropertyChangeSupport")) != null )
+                        boundSupport = false;
+                if( constrainedSupport )
+                    if( ( vetoSupportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  ipp.getDeclaringClass()), "VetoableChangeSupport")) != null )
+                        constrainedSupport = false;
+            }
+            else {
+                if( boundSupport )
+                    if( ( supportName = EventSetInheritanceAnalyser.getInheritanceEventSupportName(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  ipp.getDeclaringClass()), "PropertyChangeSupport")) != null )
+                        boundSupport = false;
+                if( constrainedSupport )
+                    if( ( vetoSupportName = EventSetInheritanceAnalyser.getInheritanceEventSupportName(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  ipp.getDeclaringClass()), "VetoableChangeSupport")) != null )
+                        constrainedSupport = false;
+            }
+            
             if ( boundSupport )
                 supportName = BeanPatternGenerator.supportField( ipp.getDeclaringClass() );
             if ( constrainedSupport )
@@ -171,7 +220,8 @@ public class IdxPropertyPattern extends PropertyPattern {
         }
 
         if ( mode == READ_WRITE || mode == READ_ONLY ) {
-            ipp.generateIndexedGetterMethod( BeanPatternGenerator.idxPropertyGetterBody( name, withReturn ), true );
+            if( (fromField && withReturn) || !fromField )
+                ipp.generateIndexedGetterMethod( BeanPatternGenerator.idxPropertyGetterBody( name, withReturn ), true );
             if ( ipp.type != null && niGetter )
                 ipp.generateGetterMethod( BeanPatternGenerator.propertyGetterBody( name, niWithReturn), true );
         }
@@ -180,8 +230,9 @@ public class IdxPropertyPattern extends PropertyPattern {
             ipp.generateIndexedSetterMethod( BeanPatternGenerator.idxPropertySetterBody( name, ipp.getType(),
                 bound, constrained, withSet, withSupport, supportName, vetoSupportName ), constrained, true );
             */
-            ipp.generateIndexedSetterMethod( BeanPatternGenerator.idxPropertySetterBody( name, ipp.getIndexedType(),
-                                             bound, constrained, withSet, withSupport, supportName, vetoSupportName ), constrained, true );
+            if( (fromField && withSet) || !fromField )
+                ipp.generateIndexedSetterMethod( BeanPatternGenerator.idxPropertySetterBody( name, ipp.getIndexedType(),
+                                                 bound, constrained, withSet, withSupport, supportName, vetoSupportName ), constrained, true );
 
             if ( ipp.type != null && niSetter )
                 ipp.generateSetterMethod( BeanPatternGenerator.propertySetterBody( name, ipp.getType(),

@@ -91,14 +91,9 @@ class EventSetInheritanceAnalyser extends Object {
         return findSupport(parent, supportName);    //Try to search recursively            
     }
 
-    static String showInheritanceEventDialog( MemberElement me , String supportTypeName){
-        ElementFormat format = new ElementFormat("{n}({p})");
-        String supportName = null;
+    static String showInheritanceEventDialog( MemberElement me , String supportTypeName){        
+        String supportName = getInheritanceEventSupportName(me, supportTypeName);
         if( me != null ){
-            if( me instanceof MethodElement )
-                supportName = format.format(((MethodElement)me));
-            else
-                supportName = me.getName().getFullName();   //prepare for later usage
             Object msgfields[] = new Object[] {me.getDeclaringClass().getName().getFullName(), supportTypeName };
             String msg = MessageFormat.format(PatternNode.getString("MSG_Inheritance_Found"), msgfields);
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( msg , NotifyDescriptor.YES_NO_OPTION );
@@ -108,5 +103,17 @@ class EventSetInheritanceAnalyser extends Object {
             }
         }        
         return null;
+    }
+    
+    static String getInheritanceEventSupportName( MemberElement me , String supportTypeName){
+        ElementFormat format = new ElementFormat("{n}({p})");
+        String supportName = null;
+        if( me != null ){
+            if( me instanceof MethodElement )
+                supportName = format.format(((MethodElement)me));
+            else
+                supportName = me.getName().getFullName();   //prepare for later usage            
+        }        
+        return supportName;
     }
 }

@@ -134,13 +134,39 @@ public class PropertyPattern extends Pattern {
                                    boolean withField, boolean withReturn,
                                    boolean withSet, boolean withSupport ) throws SourceException {
 
+        return create(patternAnalyser, name, type, mode, bound, constrained, withField, withReturn, withSet, withSupport, false, false);
+    }
+    
+    /** Creates new property pattern with extended options
+     * @param patternAnalyser patternAnalyser which creates this Property.
+     * @param name Name of the Property.
+     * @param type Type of the Property.
+     * @param mode {@link #READ_WRITE Mode} of the new property.
+     * @param bound Is the Property bound?
+     * @param constrained Is the property constrained?
+     * @param withField Should be the private field for this property genareted?
+     * @param withReturn Generate return statement in getter?
+     * @param withSet Generate seter statement for private field in setter.
+     * @param withSupport Generate PropertyChange support?
+     * @param useSupport use change support without prompting
+     * @param fromField signalize that all action are activatet on field
+     * @throws SourceException If the Property can't be created in the source.
+     * @return Newly created PropertyPattern.
+     */
+    static PropertyPattern create( PatternAnalyser patternAnalyser,
+                                   String name, String type,
+                                   int mode, boolean bound, boolean constrained,
+                                   boolean withField, boolean withReturn,
+                                   boolean withSet, boolean withSupport, 
+                                   boolean useSupport, boolean fromField ) throws SourceException {
+
         PropertyPattern pp = new PropertyPattern( patternAnalyser );
 
         pp.name = name;
         pp.type = Type.parse( type );
 
         // Generate field
-        if ( withField || withSupport ) {
+        if ( ( withField || withSupport ) && !fromField ) {
             try {
                 pp.generateField( true );
             } catch (SourceException e) {
@@ -161,12 +187,22 @@ public class PropertyPattern extends Pattern {
             boolean boundSupport = bound;
             boolean constrainedSupport = constrained;
             
-            if( boundSupport )
-                if( ( supportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  pp.getDeclaringClass()), "PropertyChangeSupport")) != null )
-                    boundSupport = false;
-            if( constrainedSupport )
-                if( ( vetoSupportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  pp.getDeclaringClass()), "VetoableChangeSupport")) != null )
-                    constrainedSupport = false;
+            if( !useSupport ){
+                if( boundSupport )
+                    if( ( supportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  pp.getDeclaringClass()), "PropertyChangeSupport")) != null )
+                        boundSupport = false;
+                if( constrainedSupport )
+                    if( ( vetoSupportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  pp.getDeclaringClass()), "VetoableChangeSupport")) != null )
+                        constrainedSupport = false;
+            }
+            else{
+                if( boundSupport )
+                    if( ( supportName = EventSetInheritanceAnalyser.getInheritanceEventSupportName(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  pp.getDeclaringClass()), "PropertyChangeSupport")) != null )
+                        boundSupport = false;
+                if( constrainedSupport )
+                    if( ( vetoSupportName = EventSetInheritanceAnalyser.getInheritanceEventSupportName(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  pp.getDeclaringClass()), "VetoableChangeSupport")) != null )
+                        constrainedSupport = false;                
+            }
 
             if ( boundSupport )
                 supportName = BeanPatternGenerator.supportField( pp.getDeclaringClass() );
