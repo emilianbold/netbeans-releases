@@ -358,14 +358,22 @@ public final class OpenProjectList {
     private static void notifyOpened(Project p) {
         ProjectOpenedHook hook = (ProjectOpenedHook)p.getLookup().lookup(ProjectOpenedHook.class);
         if (hook != null) {
-            ProjectOpenedTrampoline.DEFAULT.projectOpened(hook);
+            try {
+                ProjectOpenedTrampoline.DEFAULT.projectOpened(hook);
+            } catch (RuntimeException e) {
+                ErrorManager.getDefault().notify(e);
+            }
         }
     }
     
     private static void notifyClosed(Project p) {
         ProjectOpenedHook hook = (ProjectOpenedHook)p.getLookup().lookup(ProjectOpenedHook.class);
         if (hook != null) {
-            ProjectOpenedTrampoline.DEFAULT.projectClosed(hook);
+            try {
+                ProjectOpenedTrampoline.DEFAULT.projectClosed(hook);
+            } catch (RuntimeException e) {
+                ErrorManager.getDefault().notify(e);
+            }
         }
     }
     
