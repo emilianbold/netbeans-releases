@@ -18,6 +18,7 @@ import org.openide.util.Utilities;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.beans.PropertyEditor;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
@@ -29,6 +30,9 @@ import javax.swing.border.EmptyBorder;
  * @author  Ian Formanek
  */
 public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEditor {
+
+  private static final int DEFAULT_WIDTH  = 350;
+  private static final int DEFAULT_HEIGHT = 350;
 
 // -----------------------------------------------------------------------------
 // Private variables
@@ -148,6 +152,11 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
     }
   }
 
+  public Dimension getPreferredSize () {
+    Dimension inh = super.getPreferredSize ();
+    return new Dimension (Math.max (inh.width, DEFAULT_WIDTH), Math.max (inh.height, DEFAULT_HEIGHT));
+  }
+
 // -----------------------------------------------------------------------------
 // EnhancedCustomPropertyEditor implementation
 
@@ -196,6 +205,8 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
 /*
  * Log
+ *  15   Gandalf   1.14        9/6/99   Ian Formanek    Fixed bug 3187 - 
+ *       Property editor of layout, model (and maybe more) could be bigger.
  *  14   Gandalf   1.13        8/17/99  Ian Formanek    Furhet improved value 
  *       used for multiple editors, employed NamedPropertyEditor
  *  13   Gandalf   1.12        8/17/99  Ian Formanek    Fixed work with multiple
