@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
           <include name="openide*.jar" />
         </fileset>
         <pathelement location="${binroot}/core/release/modules/ext/webserver.jar"/>
-        <pathelement location="${binroot}/webserver/release/modules/ext/webserver.jar"/>
+        <pathelement location="${binroot}/httpserver/release/modules/ext/webserver.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/servlet.jar"/>
       </classpath>
     </javac>
