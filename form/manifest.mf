@@ -1,0 +1,5 @@
+Netbeans-Module: Version 1.00
+Netbeans-Module-Name: Form Module
+
+Name: com/netbeans/developer/modules/loaders/form/FormDataLoader.class
+Netbeans-Module-Class: Loader
