@@ -48,14 +48,16 @@ public class RuntimeTabOperator extends TopComponentOperator {
     
     /** Search for Runtime TopComponent through all IDE. */    
     public RuntimeTabOperator() {
-        //find everywhere
-        super(RUNTIME_CAPTION);
+        this(null);
     }
     
     /** Search for RuntimeTopComponent inside given Container
      * @param contOper parent Container */    
     public RuntimeTabOperator(ContainerOperator contOper) {
-        super(contOper, RUNTIME_CAPTION);
+        super(waitTopComponent(contOper, RUNTIME_CAPTION, 0, new RuntimeTabSubchooser()));
+        if(contOper != null) {
+            copyEnvironment(contOper);
+        }
     }
 
     /** invokes RuntimeTab and returns new instance of RuntimeTabOperator
@@ -83,5 +85,19 @@ public class RuntimeTabOperator extends TopComponentOperator {
     /** Performs verification by accessing all sub-components */    
     public void verify() {
         tree();
+    }
+    
+    /** SubChooser to determine TopComponent is instance of 
+     * org.netbeans.core.NbMainExplorer$MainTab
+     * Used in constructor.
+     */
+    private static final class RuntimeTabSubchooser implements ComponentChooser {
+        public boolean checkComponent(Component comp) {
+            return comp.getClass().getName().endsWith("MainTab");
+        }
+        
+        public String getDescription() {
+            return "org.netbeans.core.NbMainExplorer$MainTab";
+        }
     }
 }

@@ -49,14 +49,16 @@ public class ProjectsTabOperator extends TopComponentOperator {
     
     /** Search for Projects TopComponent through all IDE. */    
     public ProjectsTabOperator() {
-        //find everywhere
-        super(PROJECT_CAPTION);
+        this(null);
     }
     
     /** Search for Projects TopComponent inside given Container
      * @param contOper parent Container */    
     public ProjectsTabOperator(ContainerOperator contOper) {
-        super(contOper, PROJECT_CAPTION);
+        super(waitTopComponent(contOper, PROJECT_CAPTION, 0, new ProjectsTabSubchooser()));
+        if(contOper != null) {
+            copyEnvironment(contOper);
+        }
     }
 
     /** invokes ProjectsTab and returns new instance of ProjectsTabOperator
@@ -84,5 +86,19 @@ public class ProjectsTabOperator extends TopComponentOperator {
     /** Performs verification by accessing all sub-components */    
     public void verify() {
         tree();
+    }
+    
+    /** SubChooser to determine TopComponent is instance of 
+     * org.netbeans.modules.projects.CurrentProjectNode$ProjectsTab
+     * Used in constructor.
+     */
+    private static final class ProjectsTabSubchooser implements ComponentChooser {
+        public boolean checkComponent(Component comp) {
+            return comp.getClass().getName().endsWith("ProjectsTab");
+        }
+        
+        public String getDescription() {
+            return "org.netbeans.modules.projects.CurrentProjectNode$ProjectsTab";
+        }
     }
 }
