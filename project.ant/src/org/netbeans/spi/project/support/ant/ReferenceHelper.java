@@ -624,7 +624,15 @@ public final class ReferenceHelper {
                         path = file.getAbsolutePath();
                     }
                     EditableProperties props = h.getProperties(propertiesFile);
-                    String fileID = PropertyUtils.getUsablePropertyName(file.getName());
+                    String fileID = file.getName();
+                    // if the file is folder then add to ID string also parent folder name,
+                    // i.e. if external source folder name is "src" the ID will
+                    // be a bit more selfdescribing, e.g. project-src in case
+                    // of ID for ant/project/src directory.
+                    if (file.isDirectory() && file.getParentFile() != null) {
+                        fileID = file.getParentFile().getName()+"-"+file.getName();
+                    }
+                    fileID = PropertyUtils.getUsablePropertyName(fileID);
                     String prop = findReferenceID(fileID, "file.reference.", file.getAbsolutePath());
                     if (prop == null) {
                         prop = generateUniqueID(fileID, "file.reference.", file.getAbsolutePath()); // NOI18N

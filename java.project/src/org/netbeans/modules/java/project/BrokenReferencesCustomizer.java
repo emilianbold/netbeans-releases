@@ -134,6 +134,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
                 chooser = ProjectChooser.projectChooser();
             } else {
                 chooser = new JFileChooser();
+                chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             }
             int option = chooser.showOpenDialog(null);
             if (option == JFileChooser.APPROVE_OPTION) {

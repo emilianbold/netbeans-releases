@@ -141,7 +141,11 @@ public class BrokenReferencesModel extends AbstractListModel {
             
             // XXX: there will be API in PropertyUtils for listing of Ant 
             // prop names in String. Consider using it here.
-            String[] vals = PropertyUtils.tokenizePath(evaluator.getProperty(ps[i]));
+            String prop = evaluator.getProperty(ps[i]);
+            if (prop == null) {
+                continue;
+            }
+            String[] vals = PropertyUtils.tokenizePath(prop);
             
             // XXX: perhaps I could check here also that correctly resolved
             // path point to an existing file? For foreign file references it
