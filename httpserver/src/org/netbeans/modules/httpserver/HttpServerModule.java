@@ -34,6 +34,7 @@ import org.apache.tomcat.core.ContextManager;
 import org.apache.tomcat.core.ServerConnector;
 import org.apache.tomcat.core.ServletWrapper;
 import org.apache.tomcat.core.Context;
+import org.apache.tomcat.logging.TomcatLogger;
 import org.apache.tomcat.context.*;
 import org.apache.tomcat.service.SimpleTcpConnector;
 
@@ -178,6 +179,9 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
     private static ContextManager buildServer() throws Exception {
         HttpServerSettings op = HttpServerSettings.OPTIONS;
 
+        NbLogger logger = new NbLogger();
+        logger.setName("tc_log");
+
         ContextManager cm = new ContextManager();
         cm.setDebug(0);
 
@@ -231,6 +235,21 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
 
         cm.init();
         return cm;
+    }
+
+    private static class NbLogger extends TomcatLogger {
+        public NbLogger() {
+            super();
+        }
+
+        protected void realLog(String message) {
+        }
+
+        protected void realLog(String message, Throwable t) {
+        }
+    
+        public void flush() {
+        }
     }
 
 }
