@@ -54,6 +54,12 @@ public class Attributes extends DefaultAttributes {
         this.attributePrefix = preparePrefix(mountPoint);
     }
 
+    public Attributes(AbstractFileSystem.Info info, AbstractFileSystem.Change change, AbstractFileSystem.List list) {
+        super(info, change, list);
+        this.list = list;
+        this.attributePrefix = "";
+    }
+    
     private String preparePrefix(File fileSystemRoot) {
         fileSystemRoot = FileUtil.normalizeFile(fileSystemRoot);
         String rootPath = fileSystemRoot.getAbsolutePath().replace('\\', '/');

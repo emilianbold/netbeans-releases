@@ -33,6 +33,9 @@ import org.openide.util.actions.Presenter;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /** Action that presents standard file system-related actions.
@@ -93,10 +96,13 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
             /* At present not allowed to construct actions for selected nodes on more filesystems - its safe behaviour
              * If this restriction will be considered as right solution, then code of this method can be simplified
              */
-            if (fsSet.size () == 0 || fsSet.size() > 1) return createMenu (org.openide.util.Enumerations.empty(), popUp, lookup);
+            if (fsSet.size () == 0 || fsSet.size() > 1) {
+                return createMenu (org.openide.util.Enumerations.empty(), popUp, lookup);
+            }
             
             Iterator entrySetIt = fsSet.entrySet ().iterator();
             LinkedList result = new LinkedList ();
+            Set backSet = new OrderedSet();
 
             while (entrySetIt.hasNext()) {
                 Map.Entry entry = (Map.Entry)entrySetIt.next();
@@ -117,16 +123,19 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
                     } catch (FileStateInvalidException ex) {
                         it.remove ();
                     }
-                }
-                Set backSet = new OrderedSet();
+                }                
                 backSet.addAll(backupList);
                 result.addAll (java.util.Arrays.asList (fs.getActions (backSet)));
             }
             
             
-            return createMenu (Collections.enumeration (result), popUp, lookup);
+            return createMenu (Collections.enumeration (result), popUp, createProxyLookup(lookup, backSet)/*lookup*/);
         }
         return NONE;
+    }
+
+    private static ProxyLookup createProxyLookup(final Lookup lookup, final Set backSet) {
+        return new ProxyLookup(new Lookup[] {lookup, Lookups.fixed(backSet.toArray(new FileObject [backSet.size()]))});
     }
 
     /** Creates list of menu items that should be used for given
@@ -142,7 +151,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
             Action a = (Action)en.nextElement ();
             
             // Retrieve context sensitive action instance if possible.
-            if(lookup != null && a instanceof ContextAwareAction) {
+            if(lookup != null && a instanceof ContextAwareAction) {                
                 a = ((ContextAwareAction)a).createContextAwareInstance(lookup);
             }
             
@@ -398,5 +407,5 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
         }
         
         
-    } // end of DelegateAction
+    } // end of DelegateAction    
 }
