@@ -216,7 +216,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.println ();
                     
                 } else {
-                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_0.dtd\">"); //NOI18N
+                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.3//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_3.dtd\">"); //NOI18N
                     pw.println ("<module_updates timestamp=\"" + date + "\">"); //NOI18N
                     pw.println ();
                 }
