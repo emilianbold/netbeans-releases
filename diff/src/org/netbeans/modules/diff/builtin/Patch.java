@@ -470,6 +470,7 @@ public class Patch extends Reader {
                 line = br.readLine();
                 if (line == null) break;
             }
+            if (line == null) continue;
             int[] intervals = new int[4];
             try {
                 readUnifiedNums(line, UNIFIED_MARK.length(), intervals);
