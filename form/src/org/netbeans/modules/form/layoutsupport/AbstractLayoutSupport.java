@@ -189,7 +189,10 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
                 allProperties = new FormProperty[allPropsList.size()];
                 allPropsList.toArray(allProperties);
             }
-            else allProperties = new FormProperty[0];
+            else {
+                allProperties = new FormProperty[0];
+                propertySets = new Node.PropertySet[0];
+            }
         }
         return propertySets;
     }
