@@ -46,7 +46,7 @@ public class ConfigureShortcutsAction extends org.openide.util.actions.CallableS
     }
 
     public String iconResource () {
-        return "org/netbeans/core/resources/actions/configureShortcuts.gif"; // NOI18N
+        return null; //"org/netbeans/core/resources/actions/configureShortcuts.gif"; // NOI18N
     }
 
     public HelpCtx getHelpCtx() {
