@@ -15,9 +15,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTable;
-import org.netbeans.core.windows.NbPresenter;
-import org.netbeans.core.windows.frames.InternalFrameTypeImpl;
-import org.netbeans.core.windows.frames.TopFrameTypeImpl;
+// TODO - import org.netbeans.core.windows.services.NbPresenter;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.operators.*;
@@ -54,7 +52,8 @@ public class JellyComponentGenerator extends ComponentGenerator {
     protected ComponentOperator createOperator(Component comp) {
         if (comp instanceof PropertySheet) return new PropertySheetOperator((JComponent)comp);
         if (comp instanceof TopComponent) return new TopComponentOperator((JComponent)comp);
-        if (comp instanceof NbPresenter) {
+        // TODO if (comp instanceof NbPresenter) {
+        if (comp instanceof JDialog) {
            NbDialogOperator dlg = new NbDialogOperator((JDialog)comp);
            JLabel l;
            if (((l=JLabelOperator.findJLabel((Container)comp, "Steps", true, true))!=null)&&(l.getLabelFor() instanceof JList)) {
@@ -65,7 +64,6 @@ public class JellyComponentGenerator extends ComponentGenerator {
            }
            return dlg;
         }
-        if (comp instanceof TopFrameTypeImpl || comp instanceof InternalFrameTypeImpl) return new NbFrameOperator((Container)comp);
         if (comp.getClass().getName().equals("org.openide.explorer.view.TreeTable")) return new TreeTableOperator((JTable)comp);
         return super.createOperator(comp);
     }
