@@ -20,19 +20,20 @@ package org.netbeans.jellytools;
  */
 
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.AWTEventListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintStream;
 import javax.swing.JDialog;
 
-import junit.framework.*;
 import org.netbeans.junit.*;
 
 import org.netbeans.jemmy.*;
-import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
@@ -102,6 +103,9 @@ public class JellyTestCase extends NbTestCase {
      */
     public void runBare() throws Throwable {
         initEnvironment();
+        // workaround for JDK bug 4924516 (see below)
+        Toolkit.getDefaultToolkit().addAWTEventListener(distributingHierarchyListener, 
+                                                        HierarchyEvent.HIERARCHY_EVENT_MASK);
         // wait 
         new EventTool().waitNoEvent(1000);
         try {
@@ -136,6 +140,9 @@ public class JellyTestCase extends NbTestCase {
             } else {
                 throw th;
             }
+        } finally {
+            // workaround for JDK bug 4924516 (see below)
+            Toolkit.getDefaultToolkit().removeAWTEventListener(distributingHierarchyListener);
         }
     }
     
@@ -233,5 +240,45 @@ public class JellyTestCase extends NbTestCase {
         testStatus = true;
     }
     
+    /* Workaround for JDK bug http://developer.java.sun.com/developer/bugParade/bugs/4924516.html.
+     * Also see issue http://www.netbeans.org/issues/show_bug.cgi?id=32466.
+     * ------------------------------------------------------------------------------------------
+     * It can be removed when it is fixed (probably in JDK1.5.0). The following
+     * listener is added to Toolkit at runBare() method and removed when it finishes. 
+     * It distributes HierarchyEvent to all listening components and its subcomponents.
+     */
+    private static final DistributingHierarchyListener 
+                distributingHierarchyListener = new DistributingHierarchyListener();
     
+    private static class DistributingHierarchyListener implements AWTEventListener {
+        
+        public DistributingHierarchyListener() {
+        }
+        
+        public void eventDispatched(java.awt.AWTEvent aWTEvent) {
+            HierarchyEvent hevt = null;
+            if (aWTEvent instanceof HierarchyEvent) {
+                hevt = (HierarchyEvent) aWTEvent;
+            }
+            if (hevt != null && ((HierarchyEvent.SHOWING_CHANGED & hevt.getChangeFlags()) != 0)) {
+                distributeShowingEvent(hevt.getComponent(), hevt);
+            }
+        }
+        
+        private static void distributeShowingEvent(Component c, HierarchyEvent hevt) {
+            HierarchyListener[] hierarchyListeners = c.getHierarchyListeners();
+            if (hierarchyListeners != null) {
+                for (int i = 0; i < hierarchyListeners.length; i++) {
+                    hierarchyListeners[i].hierarchyChanged(hevt);
+                }
+            }
+            if (c instanceof Container) {
+                Container cont = (Container) c;
+                int n = cont.getComponentCount();
+                for (int i = 0; i < n; i++) {
+                    distributeShowingEvent(cont.getComponent(i), hevt);
+                }
+            }
+        }
+    }
 }
