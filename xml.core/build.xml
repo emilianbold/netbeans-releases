@@ -30,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
+  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
   <taskdef name="genjavadoc" classname="org.netbeans.nbbuild.GenerateJavadoc" classpath="${nbext_root}/nbantext.jar"/>
 
@@ -77,7 +78,12 @@ Microsystems, Inc. All Rights Reserved.
   <target name="javahelp">
   </target>
 
-  <target name="netbeans" depends="jars,release,javahelp"/>
+  <target name="netbeans" depends="jars,release,javahelp">
+    <copy todir="../netbeans">
+      <fileset dir="netbeans"/>
+    </copy>
+    <genlist targetname="nbm" outputfiledir="${nbext_root}/netbeans"/>
+  </target>
 
   <target name="nbm" depends="netbeans">
     <delete dir="Info"/>

@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
     <for-each locations="${submodules}"/>
   </target>
 
-  <target name="jars" depends="init,compile">
+  <target name="jars" depends="init">
     <for-each locations="${submodules}"/>
   </target>
 
@@ -44,17 +44,23 @@ Microsystems, Inc. All Rights Reserved.
     <for-each locations="${submodules}"/>
   </target>
 
-  <target name="netbeans" depends="jars,release,javahelp"/>
+  <target name="netbeans">
+    <mkdir dir="netbeans"/>
+    <for-each locations="${submodules}"/>
+  </target>
 
-  <target name="nbm" depends="netbeans">
+  <target name="nbm">
     <for-each locations="${submodules}"/>
   </target>
 
   <target name="clean">
+    <delete dir="netbeans"/>
     <for-each locations="${submodules}"/>
   </target>
 
-  <target name="all" depends="clean,nbm" />
+  <target name="all">
+    <for-each locations="${submodules}"/>
+  </target>
 
   <target name="javadoc">
     <for-each locations="${submodules}"/>
