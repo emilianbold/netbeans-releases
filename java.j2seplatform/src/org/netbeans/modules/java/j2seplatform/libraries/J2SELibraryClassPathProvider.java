@@ -43,7 +43,7 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
         }
         for (int i=0; i< libraries.length; i++) {
             if (J2SELibraryTypeProvider.LIBRARY_TYPE.equalsIgnoreCase(libraries[i].getType())) {
-                List resources = Util.getResourcesRoots(libraries[i].getContent (J2SELibraryTypeProvider.VOLUME_TYPE_SRC));
+                List resources = libraries[i].getContent (J2SELibraryTypeProvider.VOLUME_TYPE_SRC);
                 ClassPath sourcePath = ClassPathSupport.createClassPath((URL[]) resources.toArray(new URL[resources.size()]));
                 FileObject root;
                 if ((root = sourcePath.findOwnerRoot(file))!=null) {
@@ -52,7 +52,7 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
                         return sourcePath;
                     }
                     else if (ClassPath.COMPILE.equals(type)) {
-                        resources = Util.getResourcesRoots(libraries[i].getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH));
+                        resources = libraries[i].getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
                         return ClassPathSupport.createClassPath((URL[]) resources.toArray(new URL[resources.size()]));
                     }
                     else if (ClassPath.BOOT.equals(type)) {

@@ -94,24 +94,6 @@ public class Util {
          return makeSpec(version);
     }
 
-    /**
-     * Process a list of URLs, producing the archive root for archive file URLs.
-     * @param archives a list of URLs which may include some archive files and some not
-     * @return a similar list of URLs, with the archive root used in place of each archive file
-     */
-    public static List/*<URL>*/ getResourcesRoots(List/*<URL>*/ archives) {
-        assert archives != null;
-        List/*<URL>*/ result = new ArrayList ();
-        for (Iterator it = archives.iterator(); it.hasNext();) {
-            URL url = (URL) it.next();
-            if (FileUtil.isArchiveFile(url)) {
-                url = FileUtil.getArchiveRoot(url);
-            }
-            result.add (url);
-        }
-        return result;
-    }
-
 
     public static FileObject findTool (String toolName, Collection installFolders) {
         assert toolName != null;

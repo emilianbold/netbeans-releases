@@ -19,12 +19,12 @@ import java.util.List;
 import java.util.ArrayList;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.ErrorManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 
 /**
  * Finds the locations of sources for various libraries.
@@ -44,19 +44,26 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
             String type = libs[i].getType ();
             if (J2SELibraryTypeProvider.LIBRARY_TYPE.equalsIgnoreCase(type)) {
                 // XXX could cache various portions of this calculation - profile it...
-                List classes = Util.getResourcesRoots(libs[i].getContent("classpath"));    //NOI18N
+                List classes = libs[i].getContent("classpath");    //NOI18N
                 for (Iterator it = classes.iterator(); it.hasNext();) {
                     URL entry = (URL) it.next();
-                    if (entry.equals(binaryRoot)) {
-                        List src = Util.getResourcesRoots(libs[i].getContent("src"));              //NOI18N
-                        List result = new ArrayList ();
-                        for (Iterator sit = src.iterator(); sit.hasNext();) {
-                            FileObject sourceRootURL = URLMapper.findFileObject((URL) sit.next());
-                            if (sourceRootURL!=null) {
-                                result.add (sourceRootURL);
+                    FileObject file = URLMapper.findFileObject (entry);
+                    if (file != null) {
+                        try {
+                            if (file.getURL().equals(binaryRoot)) {
+                                List src = libs[i].getContent("src");              //NOI18N
+                                List result = new ArrayList ();
+                                for (Iterator sit = src.iterator(); sit.hasNext();) {
+                                    FileObject sourceRootURL = URLMapper.findFileObject((URL) sit.next());
+                                    if (sourceRootURL!=null) {
+                                        result.add (sourceRootURL);
+                                    }
+                                }
+                                return (FileObject[]) result.toArray(new FileObject[result.size()]);
                             }
+                        } catch (FileStateInvalidException e) {
+                            ErrorManager.getDefault().notify(e);
                         }
-                        return (FileObject[]) result.toArray(new FileObject[result.size()]);
                     }
                 }
             }

@@ -50,7 +50,7 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
                     if (!J2SELibraryTypeProvider.LIBRARY_TYPE.equalsIgnoreCase(type)) {
                         continue;
                     }
-                    List jars = Util.getResourcesRoots(libs[i].getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH));    //NOI18N
+                    List jars = libs[i].getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH);    //NOI18N
                     Iterator it = jars.iterator();
                     while (it.hasNext()) {
                         URL entry = (URL)it.next();
@@ -58,7 +58,7 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
                         if (file != null) {
                             try {
                                 if (b.equals(file.getURL())) {
-                                    List l = Util.getResourcesRoots(libs[i].getContent(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC));
+                                    List l = libs[i].getContent(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC);
                                     return (URL[])l.toArray(new URL[l.size()]);
                                 }
                             } catch (FileStateInvalidException e) {
