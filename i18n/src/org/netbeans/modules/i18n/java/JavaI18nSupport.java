@@ -106,8 +106,21 @@ public class JavaI18nSupport extends I18nSupport {
     public I18nString getDefaultI18nString(HardCodedString hcString) {
         I18nString i18nString = new JavaI18nString(this);
         
-        if(i18nString.getSupport().getResourceHolder().getResource() == null && I18nUtil.getOptions().getLastResource2() != null)
-            i18nString.getSupport().getResourceHolder().setResource(I18nUtil.getOptions().getLastResource2());
+        final ResourceHolder resourceHolder
+                = i18nString.getSupport().getResourceHolder();
+        if (resourceHolder.getResource() == null) {
+            DataObject lastResource = I18nUtil.getOptions().getLastResource2();
+            if (lastResource != null) {
+                FileObject sourceFile = sourceDataObject.getPrimaryFile();
+                FileObject bundleFile = lastResource.getPrimaryFile();
+                ClassPath execClassPath = ClassPath
+                                          .getClassPath(sourceFile,
+                                                        ClassPath.EXECUTE);
+                if (execClassPath.getResourceName(bundleFile) != null) {
+                    resourceHolder.setResource(lastResource);
+                }
+            }
+        }
 
         if(hcString == null)
             return i18nString;
