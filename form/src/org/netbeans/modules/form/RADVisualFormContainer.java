@@ -389,6 +389,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         }
         getFormManager ().setEncoding ((String) value);
       }
+    
       
       public Object getValue () {
         Object value = getFormManager ().getEncoding ();
@@ -550,6 +551,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         String newValue = (String) encodingList.get (value);
         if (newValue == null) newValue = value;
         setValue (newValue);
+        if (!getFormManager ().getFormObject ().isModified ()) {
+          getFormManager ().getFormObject ().setModified (true);
+        }
+        
       }
       public String getAsText () {
         return getValue ().toString ();
@@ -584,6 +589,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  23   Gandalf   1.22        1/11/00  Pavel Buzek     
  *  22   Gandalf   1.21        1/10/00  Pavel Buzek     #5088
  *  21   Gandalf   1.20        1/5/00   Ian Formanek    NOI18N
  *  20   Gandalf   1.19        12/14/99 Pavel Buzek     
