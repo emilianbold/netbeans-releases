@@ -192,7 +192,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
             
             // #17221. Don't reparse invalid or virtual file.
             if(entry.getFile().isValid() && !entry.getFile().isVirtual()) {
-                entry.getHandler().reparseNowBlocking();
+                entry.getHandler().autoParse();
             }
         }
     }
