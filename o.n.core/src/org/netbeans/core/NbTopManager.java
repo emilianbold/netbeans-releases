@@ -815,6 +815,11 @@ public abstract class NbTopManager extends TopManager {
     /** The default lookup for the system.
      */
     public static final class Lkp extends ProxyLookup {
+        /** task that initializes the lookup */
+        private Task initTask;
+        /** thread that initialized the task and has to recieve good results */
+        private Thread initThread;
+        
         /** Initialize the lookup to delegate to NbTopManager.
         */
         public Lkp () {
@@ -948,50 +953,74 @@ public abstract class NbTopManager extends TopManager {
 
             if (lookup instanceof Lkp) {
                 Lkp lkp = (Lkp)lookup;
-
-                
-                    FileObject services = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Services");
-                    Lookup nue;
-                    if (services != null) {
-                        StartLog.logProgress("Got Services folder"); // NOI18N
-                        FolderLookup f = new FolderLookup(DataFolder.findFolder(services), "SL["); // NOI18N
-                        f.addTaskListener(new ConvertorListener());
-                        StartLog.logProgress("created FolderLookup"); // NOI18N
-                        nue = f.getLookup();
-                    } else {
-                        nue = Lookup.EMPTY;
-                    }
-                    
-                    // extend the lookup
-                    Lookup[] arr = new Lookup[] {
-                        lkp.getLookups ()[0], // TMLookup
-                        lkp.getLookups()[1], // metaInfServicesLookup; still keep classpath one till later...
-                        // Include initialErrorManagerLookup provisionally, until the folder lookup
-                        // is actually ready and usable
-                        lkp.getLookups()[2], // initialErrorManagerLookup
-                        NbTopManager.get ().getInstanceLookup (),
-                        nue,
-                        NbTopManager.get().getModuleSystem().getManager().getModuleLookup(),
-                    };
-		    StartLog.logProgress ("prepared other Lookups"); // NOI18N
-
-                    lkp.setLookups (arr);
-		    StartLog.logProgress ("Lookups set"); // NOI18N
-                    
-                    // Also listen for changes in modules, as META-INF/services/ would change:
-                    get().getModuleSystem().getManager().addPropertyChangeListener(new ConvertorListener());
+                lkp.initializeLookup ();
             }
-	    StartLog.logEnd ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
         }
         
-        /* for testing only:
-        protected void beforeLookup(Lookup.Template t) {
-            super.beforeLookup(t);
-            if (t.getType() == ErrorManager.class) {
-                System.err.println("looking up ErrorManager; lookups=" + getLookups() + " length=" + getLookups().length); // NOI18N
+        private synchronized void initializeLookup () {
+            initTask = RequestProcessor.getDefault().post (new Runnable () {
+                public void run () {
+                    doInitializeLookup ();
+                }
+            }, 0, Thread.MAX_PRIORITY);
+            initThread = Thread.currentThread();
+        }
+            
+        final void doInitializeLookup () {
+            FileObject services = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Services");
+            Lookup nue;
+            if (services != null) {
+                StartLog.logProgress("Got Services folder"); // NOI18N
+                FolderLookup f = new FolderLookup(DataFolder.findFolder(services), "SL["); // NOI18N
+                f.addTaskListener(new ConvertorListener());
+                StartLog.logProgress("created FolderLookup"); // NOI18N
+                nue = f.getLookup();
+            } else {
+                nue = Lookup.EMPTY;
+            }
+
+            // extend the lookup
+            Lookup[] arr = new Lookup[] {
+                getLookups ()[0], // TMLookup
+                getLookups()[1], // metaInfServicesLookup; still keep classpath one till later...
+                // Include initialErrorManagerLookup provisionally, until the folder lookup
+                // is actually ready and usable
+                getLookups()[2], // initialErrorManagerLookup
+                NbTopManager.get ().getInstanceLookup (),
+                nue,
+                NbTopManager.get().getModuleSystem().getManager().getModuleLookup(),
+            };
+            StartLog.logProgress ("prepared other Lookups"); // NOI18N
+
+            setLookups (arr);
+            StartLog.logProgress ("Lookups set"); // NOI18N
+
+            // Also listen for changes in modules, as META-INF/services/ would change:
+            get().getModuleSystem().getManager().addPropertyChangeListener(new ConvertorListener());
+            
+	    StartLog.logEnd ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
+            
+            synchronized (this) {
+                // clear the task again
+                initTask = null;
+                initThread = null;
             }
         }
-         */
+        
+        protected void beforeLookup(Lookup.Template templ) {
+            Task t;
+            Thread h;
+            synchronized (this) {
+                t = initTask;
+                h = initThread;
+            }
+            
+            if (t != null && h == Thread.currentThread ()) {
+                t.waitFinished();
+            }
+            
+            super.beforeLookup(templ);
+        }
     }
     
     
