@@ -24,7 +24,7 @@ import org.xml.sax.*;
 /**
  * Utility class collecting library methods related to XML processing.
  *
- * @author  Ales Kemr
+ * @author  Petr Kuzel
  */
 public final class XMLUtil extends Object {
 
