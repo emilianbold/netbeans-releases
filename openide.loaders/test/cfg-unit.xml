@@ -32,6 +32,10 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="">
             <patternset>
                 <include name="org/openide/awt/*Test.class"/>
+                <include name="org/openide/loaders/TemplateWizardTest.class/testNextOnIterImpl"/>
+
+                <!-- excluded because issue #46587, issue #46589-->
+                <exclude name="org/openide/loaders/TemplateWizardTest.class/testNextOnIterImplWithNotification"/>
             </patternset>
         </testset>
     </testbag>
