@@ -371,7 +371,7 @@ public class AbstractButtonOperator extends JComponentOperator
 		    changeSelection(((Boolean)param).booleanValue());
 		    return(null);
 		}
-	    }, new Boolean(selected));
+	    }, selected ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /**
@@ -442,7 +442,7 @@ public class AbstractButtonOperator extends JComponentOperator
         if(((AbstractButton)getSource()).getText() != null) {
             result.put("Text", ((AbstractButton)getSource()).getText());
         }
-	result.put("Selected", new Boolean(((AbstractButton)getSource()).isSelected()).toString());
+	result.put("Selected", ((AbstractButton)getSource()).isSelected() ? "true" : "false");
 	return(result);
     }
 

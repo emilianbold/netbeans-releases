@@ -163,7 +163,7 @@ public class FormLoaderSettings extends SystemOption {
             return;
         useIndentEngine = value;
         firePropertyChange(PROP_USE_INDENT_ENGINE,
-                           new Boolean(!value), new Boolean(value));
+                           !value ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public boolean getGenerateOnSave() {
@@ -175,7 +175,7 @@ public class FormLoaderSettings extends SystemOption {
             return;
         generateOnSave = value;
         firePropertyChange(PROP_GENERATE_ON_SAVE,
-                           new Boolean(!value), new Boolean(value));
+                           !value ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /** Getter for the sortEventSets option */
@@ -302,8 +302,8 @@ public class FormLoaderSettings extends SystemOption {
         boolean oldValue = applyGridToPosition;
         applyGridToPosition = value;
         firePropertyChange(PROP_APPLY_GRID_TO_POSITION,
-                           new Boolean(oldValue),
-                           new Boolean(applyGridToPosition));
+                           oldValue ? Boolean.TRUE : Boolean.FALSE,
+                           applyGridToPosition ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /** Getter for the applyGridToSize option */
@@ -318,8 +318,8 @@ public class FormLoaderSettings extends SystemOption {
         boolean oldValue = applyGridToSize;
         applyGridToSize = value;
         firePropertyChange(PROP_APPLY_GRID_TO_SIZE,
-                           new Boolean(oldValue),
-                           new Boolean(applyGridToSize));
+                           oldValue ? Boolean.TRUE : Boolean.FALSE,
+                           applyGridToSize ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /** Getter for the variablesLocal option. */
@@ -344,8 +344,8 @@ public class FormLoaderSettings extends SystemOption {
             variablesModifier &= CodeVariable.FINAL;
 
         firePropertyChange(PROP_VARIABLES_LOCAL,
-                           new Boolean(oldValue),
-                           new Boolean(variablesLocal));
+                           oldValue ? Boolean.TRUE : Boolean.FALSE,
+                           variablesLocal ? Boolean.TRUE : Boolean.FALSE);
         firePropertyChange(PROP_VARIABLES_MODIFIER,
                            new Integer(oldModif),
                            new Integer(variablesModifier));
@@ -382,11 +382,11 @@ public class FormLoaderSettings extends SystemOption {
 
     /** Setter for the displayWritableOnly option */
     public void setDisplayWritableOnly(boolean value) {
-        Boolean oldValue = new Boolean(displayWritableOnly);
+        Boolean oldValue = displayWritableOnly ? Boolean.TRUE : Boolean.FALSE;
         displayWritableOnly = value;
         firePropertyChange(PROP_DISPLAY_WRITABLE_ONLY,
                            oldValue,
-                           new Boolean(displayWritableOnly));
+                           displayWritableOnly ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /** Getter for the editorSearchPath option */
@@ -447,8 +447,8 @@ public class FormLoaderSettings extends SystemOption {
         if (value == showComponentsNames) return;
         showComponentsNames = value;
         firePropertyChange(PROP_SHOW_COMPONENTS_NAMES,
-                           new Boolean(!value),
-                           new Boolean(value));
+                           !value ? Boolean.TRUE : Boolean.FALSE,
+                           value ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /** Getter for the formDesignerBackgroundColor option */

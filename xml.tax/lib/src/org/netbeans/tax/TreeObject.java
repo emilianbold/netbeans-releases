@@ -204,7 +204,7 @@ public abstract class TreeObject implements TreeEventModel {
         
         boolean oldReadOnly = this.readOnly;
         this.readOnly = newReadOnly;
-        firePropertyChange (getEventChangeSupport ().createEvent (PROP_READ_ONLY, new Boolean (oldReadOnly), new Boolean (newReadOnly)));
+        firePropertyChange (getEventChangeSupport ().createEvent (PROP_READ_ONLY, oldReadOnly ? Boolean.TRUE : Boolean.FALSE, newReadOnly ? Boolean.TRUE : Boolean.FALSE));
     }
     
     /**

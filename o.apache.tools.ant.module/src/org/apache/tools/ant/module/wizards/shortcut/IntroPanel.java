@@ -224,11 +224,11 @@ public class IntroPanel extends javax.swing.JPanel implements WizardDescriptor.P
     }
     public void storeSettings (Object settings) {
         TemplateWizard wiz = (TemplateWizard) settings;
-        wiz.putProperty (ShortcutIterator.PROP_SHOW_CUST, new Boolean (customizeCheck.isSelected ()));
-        wiz.putProperty (ShortcutIterator.PROP_SHOW_MENU, new Boolean (menuCheck.isSelected ()));
-        wiz.putProperty (ShortcutIterator.PROP_SHOW_TOOL, new Boolean (toolbarCheck.isSelected ()));
-        wiz.putProperty (ShortcutIterator.PROP_SHOW_PROJ, new Boolean (projectCheck.isSelected ()));
-        wiz.putProperty (ShortcutIterator.PROP_SHOW_KEYB, new Boolean (keyboardCheck.isSelected ()));
+        wiz.putProperty (ShortcutIterator.PROP_SHOW_CUST, customizeCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
+        wiz.putProperty (ShortcutIterator.PROP_SHOW_MENU, menuCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
+        wiz.putProperty (ShortcutIterator.PROP_SHOW_TOOL, toolbarCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
+        wiz.putProperty (ShortcutIterator.PROP_SHOW_PROJ, projectCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
+        wiz.putProperty (ShortcutIterator.PROP_SHOW_KEYB, keyboardCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
     }
 
 }

@@ -466,7 +466,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         if(get(REMEMBER_PWD)!=null)
             con.setRememberPassword(((Boolean)get(REMEMBER_PWD)).booleanValue());
         else
-            con.setRememberPassword(new Boolean(false).booleanValue());
+            con.setRememberPassword(Boolean.FALSE.booleanValue());
         con.setSchema(getSchema());
         return con;
     }
@@ -484,7 +484,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         put(USER, cinfo.getUser());
         put(SCHEMA, cinfo.getSchema());
         if (pwd != null) put(PASSWORD, pwd);
-        put(REMEMBER_PWD, (cinfo.rememberPassword() ? new Boolean(true) : new Boolean(false)));
+        put(REMEMBER_PWD, (cinfo.rememberPassword() ? Boolean.TRUE : Boolean.FALSE));
     }
 
     public String getCode()
@@ -786,7 +786,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
     public void setReadOnly(boolean flag)
     {
-        put(READONLY, new Boolean(flag));
+        put(READONLY, flag ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /** Getter for property driverSpecification.

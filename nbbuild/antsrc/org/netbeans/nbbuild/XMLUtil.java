@@ -55,7 +55,7 @@ public final class XMLUtil extends Object {
 		// Create DOMParser using default constructor
 		Object parser = xercesParser.newInstance();
 		Class[] paramT1 = {String.class, Boolean.TYPE};
-		Object[] param1 = {"http://apache.org/xml/features/allow-java-encodings",new Boolean(true)};
+		Object[] param1 = {"http://apache.org/xml/features/allow-java-encodings",Boolean.TRUE};
 		// parser.setFeature("http://apache.org/xml/features/allow-java-encodings", true);
 		xercesParser.getMethod("setFeature",paramT1).invoke(parser,param1);
 

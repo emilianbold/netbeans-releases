@@ -121,7 +121,7 @@ public class TreeConditionalSection extends AbstractTreeDTD implements DTD.Child
         
         this.include = newInclude;
         
-        firePropertyChange (PROP_INCLUDE, new Boolean (oldInclude), new Boolean (newInclude));
+        firePropertyChange (PROP_INCLUDE, oldInclude ? Boolean.TRUE : Boolean.FALSE, newInclude ? Boolean.TRUE : Boolean.FALSE);
     }
     
     /**

@@ -604,7 +604,7 @@ public class AddTableColumnDialog {
         public void actionPerformed(ActionEvent event) {
             JCheckBox cbx = (JCheckBox)event.getSource();
             String code = cbx.getName();
-            data.setValue(new Boolean(cbx.isSelected()), code, 0);
+            data.setValue(cbx.isSelected() ? Boolean.TRUE : Boolean.FALSE, code, 0);
         }
     }
 

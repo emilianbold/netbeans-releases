@@ -344,7 +344,7 @@ final class HardStringWizardPanel extends JPanel {
                 return null;
             
             if(columnIndex == COLUMN_INDEX_CHECK) {
-                return new Boolean(!getRemovedStrings().contains(stringMap.keySet().toArray()[rowIndex]));
+                return !getRemovedStrings().contains(stringMap.keySet().toArray()[rowIndex]) ? Boolean.TRUE : Boolean.FALSE;
             } else if(columnIndex == COLUMN_INDEX_HARDSTRING) {
                 return stringMap.keySet().toArray()[rowIndex];
             } else {

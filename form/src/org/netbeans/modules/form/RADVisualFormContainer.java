@@ -124,7 +124,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         boolean old = generatePosition;
         generatePosition = value;
         getFormModel().fireSyntheticPropertyChanged(this, PROP_GENERATE_POSITION,
-                                        new Boolean(old), new Boolean(value));
+                                        old ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public boolean getGenerateSize() {
@@ -135,7 +135,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         boolean old = generateSize;
         generateSize = value;
         getFormModel().fireSyntheticPropertyChanged(this, PROP_GENERATE_SIZE,
-                                        new Boolean(old), new Boolean(value));
+                                        old ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public boolean getGenerateCenter() {
@@ -146,7 +146,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         boolean old = generateCenter;
         generateCenter = value;
         getFormModel().fireSyntheticPropertyChanged(this, PROP_GENERATE_CENTER,
-                                        new Boolean(old), new Boolean(value));
+                                        old ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public int getFormSizePolicy() {
@@ -257,7 +257,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                return new Boolean(getGeneratePosition());
+                return getGeneratePosition() ? Boolean.TRUE : Boolean.FALSE;
             }
 
             public void setValue(Object val) throws IllegalAccessException,
@@ -283,7 +283,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                return new Boolean(getGenerateSize());
+                return getGenerateSize() ? Boolean.TRUE : Boolean.FALSE;
             }
 
             public void setValue(Object val) throws IllegalAccessException,
@@ -307,7 +307,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         {
             public Object getValue() throws
                 IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                return new Boolean(getGenerateCenter());
+                return getGenerateCenter() ? Boolean.TRUE : Boolean.FALSE;
             }
 
             public void setValue(Object val) throws IllegalAccessException,

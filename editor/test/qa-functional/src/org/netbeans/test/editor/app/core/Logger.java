@@ -69,7 +69,7 @@ public class Logger implements Serializable {
         if( logging == true ) return;
         logging = true;
         editor.setLogger(this);
-        firePropertyChange(LOGGING, new Boolean( false ), new Boolean( true ) );
+        firePropertyChange(LOGGING, Boolean.FALSE, Boolean.TRUE );
     }
     
     
@@ -84,7 +84,7 @@ public class Logger implements Serializable {
         if( logging == false ) return;
         logging = false;
         editor.setLogger(null);
-        firePropertyChange(LOGGING, new Boolean( true ), new Boolean( false ) );
+        firePropertyChange(LOGGING, Boolean.TRUE, Boolean.FALSE );
     }
     
   /**
@@ -105,7 +105,7 @@ public class Logger implements Serializable {
     public synchronized void startPerforming() {
         if( performing == true ) return;
         performing = true;
-        firePropertyChange(PERFORMING, new Boolean( false ), new Boolean( true ) );
+        firePropertyChange(PERFORMING, Boolean.FALSE, Boolean.TRUE );
         System.err.println("creating SimulationPerformer");
         Thread sim = new SimulationPerformer( delay, (Vector)actions.clone(), (Vector)events.clone(), this );
         
@@ -122,7 +122,7 @@ public class Logger implements Serializable {
     public synchronized void stopPerforming() {
         if( performing == false ) return;
         performing = false;
-        firePropertyChange(PERFORMING, new Boolean( true ), new Boolean( false ) );
+        firePropertyChange(PERFORMING, Boolean.TRUE, Boolean.FALSE );
     }
     
   /**

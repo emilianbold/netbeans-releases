@@ -1039,7 +1039,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             // listening on properties which could affect the server plugin
             // saving the file
             if (PROP_MODIFIED.equals(evt.getPropertyName())) {
-                if ((new Boolean(false)).equals(evt.getNewValue())) {
+                if ((Boolean.FALSE).equals(evt.getNewValue())) {
                     refreshPlugin(false);
                 }
             }

@@ -125,7 +125,7 @@ public abstract class SearchType extends ServiceType implements Cloneable {
     public final void setValid(boolean state) {
         boolean old = valid;
         valid = state;
-        firePropertyChange(PROP_VALID, new Boolean(old), new Boolean(state));
+        firePropertyChange(PROP_VALID, old ? Boolean.TRUE : Boolean.FALSE, state ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /** @return true if the criterion is currently valid. */

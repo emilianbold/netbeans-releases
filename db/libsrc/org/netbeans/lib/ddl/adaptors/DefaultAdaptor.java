@@ -251,7 +251,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean newValue, oldValue = (Boolean)properties.get(key);
         if (value != NOT_SET) {
-            newValue = new Boolean(value == YES ? true : false);
+            newValue = value == YES ? Boolean.TRUE : Boolean.FALSE;
             properties.put(key, newValue);
         } else {
             newValue = null;
@@ -309,7 +309,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean proceduresAreCallable = (Boolean)properties.get(PROP_PROCEDURES_ARE_CALLABLE);
         if (proceduresAreCallable == null) {
-            if (dmd != null) proceduresAreCallable = new Boolean(dmd.allProceduresAreCallable());
+            if (dmd != null) proceduresAreCallable = dmd.allProceduresAreCallable() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_PROCEDURES_ARE_CALLABLE, proceduresAreCallable);
         }
@@ -333,7 +333,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean tablesAreSelectable = (Boolean)properties.get(PROP_TABLES_ARE_SELECTABLE);
         if (tablesAreSelectable == null) {
-            if (dmd != null) tablesAreSelectable = new Boolean(dmd.allTablesAreSelectable());
+            if (dmd != null) tablesAreSelectable = dmd.allTablesAreSelectable() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_TABLES_ARE_SELECTABLE, tablesAreSelectable);
         }
@@ -395,7 +395,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
         Boolean readonly = (Boolean)properties.get(PROP_READONLY);
         if (readonly == null) {
             if (dmd != null)
-                readonly = new Boolean(dmd.isReadOnly());
+                readonly = dmd.isReadOnly() ? Boolean.TRUE : Boolean.FALSE;
             else
                 throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_READONLY, readonly);
@@ -588,7 +588,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean localFiles = (Boolean)properties.get(PROP_LOCAL_FILES);
         if (localFiles == null) {
-            if (dmd != null) localFiles = new Boolean(dmd.usesLocalFiles());
+            if (dmd != null) localFiles = dmd.usesLocalFiles() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_LOCAL_FILES, localFiles);
         }
@@ -615,7 +615,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean filePerTable = (Boolean)properties.get(PROP_FILE_PER_TABLE);
         if (filePerTable == null) {
-            if (dmd != null) filePerTable = new Boolean(dmd.usesLocalFilePerTable());
+            if (dmd != null) filePerTable = dmd.usesLocalFilePerTable() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_FILE_PER_TABLE, filePerTable);
         }
@@ -642,7 +642,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean mixedCaseIdentifiers = (Boolean)properties.get(PROP_MIXEDCASE_IDENTIFIERS);
         if (mixedCaseIdentifiers == null) {
-            if (dmd != null) mixedCaseIdentifiers = new Boolean(dmd.supportsMixedCaseIdentifiers());
+            if (dmd != null) mixedCaseIdentifiers = dmd.supportsMixedCaseIdentifiers() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_MIXEDCASE_IDENTIFIERS, mixedCaseIdentifiers);
         }
@@ -725,7 +725,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean mixedCaseQuotedIdentifiers = (Boolean)properties.get(PROP_MIXEDCASE_QUOTED_IDENTIFIERS);
         if (mixedCaseQuotedIdentifiers == null) {
-            if (dmd != null) mixedCaseQuotedIdentifiers = new Boolean(dmd.supportsMixedCaseQuotedIdentifiers());
+            if (dmd != null) mixedCaseQuotedIdentifiers = dmd.supportsMixedCaseQuotedIdentifiers() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_MIXEDCASE_QUOTED_IDENTIFIERS, mixedCaseQuotedIdentifiers);
         }
@@ -994,7 +994,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean alterAdd = (Boolean)properties.get(PROP_ALTER_ADD);
         if (alterAdd == null) {
-            if (dmd != null) alterAdd = new Boolean(dmd.supportsAlterTableWithAddColumn());
+            if (dmd != null) alterAdd = dmd.supportsAlterTableWithAddColumn() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_ALTER_ADD, alterAdd);
         }
@@ -1021,7 +1021,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean alterDrop = (Boolean)properties.get(PROP_ALTER_DROP);
         if (alterDrop == null) {
-            if (dmd != null) alterDrop = new Boolean(dmd.supportsAlterTableWithDropColumn());
+            if (dmd != null) alterDrop = dmd.supportsAlterTableWithDropColumn() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_ALTER_DROP, alterDrop);
         }
@@ -1050,7 +1050,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean columnAliasing = (Boolean)properties.get(PROP_COLUMN_ALIASING);
         if (columnAliasing == null) {
-            if (dmd != null) columnAliasing = new Boolean(dmd.supportsColumnAliasing());
+            if (dmd != null) columnAliasing = dmd.supportsColumnAliasing() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_COLUMN_ALIASING, columnAliasing);
         }
@@ -1077,7 +1077,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean nullPlusNull = (Boolean)properties.get(PROP_NULL_PLUS_NULL_IS_NULL);
         if (nullPlusNull == null) {
-            if (dmd != null) nullPlusNull = new Boolean(dmd.nullPlusNonNullIsNull());
+            if (dmd != null) nullPlusNull = dmd.nullPlusNonNullIsNull() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_NULL_PLUS_NULL_IS_NULL, nullPlusNull);
         }
@@ -1104,7 +1104,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean supportsConvert = (Boolean)properties.get(PROP_CONVERT);
         if (supportsConvert == null) {
-            if (dmd != null) supportsConvert = new Boolean(dmd.supportsConvert());
+            if (dmd != null) supportsConvert = dmd.supportsConvert() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_CONVERT, supportsConvert);
         }
@@ -1144,7 +1144,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean nameCorrelation = (Boolean)properties.get(PROP_TABLE_CORRELATION_NAMES);
         if (nameCorrelation == null) {
-            if (dmd != null) nameCorrelation = new Boolean(dmd.supportsTableCorrelationNames());
+            if (dmd != null) nameCorrelation = dmd.supportsTableCorrelationNames() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_TABLE_CORRELATION_NAMES, nameCorrelation);
         }
@@ -1171,7 +1171,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean tableCorrelation = (Boolean)properties.get(PROP_DIFF_TABLE_CORRELATION_NAMES);
         if (tableCorrelation == null) {
-            if (dmd != null) tableCorrelation = new Boolean(dmd.supportsDifferentTableCorrelationNames());
+            if (dmd != null) tableCorrelation = dmd.supportsDifferentTableCorrelationNames() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_DIFF_TABLE_CORRELATION_NAMES, tableCorrelation);
         }
@@ -1198,7 +1198,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean ordering = (Boolean)properties.get(PROP_EXPRESSIONS_IN_ORDERBY);
         if (ordering == null) {
-            if (dmd != null) ordering = new Boolean(dmd.supportsExpressionsInOrderBy());
+            if (dmd != null) ordering = dmd.supportsExpressionsInOrderBy() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_EXPRESSIONS_IN_ORDERBY, ordering);
         }
@@ -1225,7 +1225,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean unrelatedOrdering = (Boolean)properties.get(PROP_ORDER_BY_UNRELATED);
         if (unrelatedOrdering == null) {
-            if (dmd != null) unrelatedOrdering = new Boolean(dmd.supportsOrderByUnrelated());
+            if (dmd != null) unrelatedOrdering = dmd.supportsOrderByUnrelated() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_ORDER_BY_UNRELATED, unrelatedOrdering);
         }
@@ -1251,7 +1251,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean groupBy = (Boolean)properties.get(PROP_GROUP_BY);
         if (groupBy == null) {
-            if (dmd != null) groupBy = new Boolean(dmd.supportsGroupBy());
+            if (dmd != null) groupBy = dmd.supportsGroupBy() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_GROUP_BY, groupBy);
         }
@@ -1278,7 +1278,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean unrelatedGroupBy = (Boolean)properties.get(PROP_UNRELATED_GROUP_BY);
         if (unrelatedGroupBy == null) {
-            if (dmd != null) unrelatedGroupBy = new Boolean(dmd.supportsGroupByUnrelated());
+            if (dmd != null) unrelatedGroupBy = dmd.supportsGroupByUnrelated() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_UNRELATED_GROUP_BY, unrelatedGroupBy);
         }
@@ -1305,7 +1305,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean beyondGroupBy = (Boolean)properties.get(PROP_BEYOND_GROUP_BY);
         if (beyondGroupBy == null) {
-            if (dmd != null) beyondGroupBy = new Boolean(dmd.supportsGroupByBeyondSelect());
+            if (dmd != null) beyondGroupBy = dmd.supportsGroupByBeyondSelect() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_BEYOND_GROUP_BY, beyondGroupBy);
         }
@@ -1333,7 +1333,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean escapeLike = (Boolean)properties.get(PROP_ESCAPE_LIKE);
         if (escapeLike == null) {
-            if (dmd != null) escapeLike = new Boolean(dmd.supportsLikeEscapeClause());
+            if (dmd != null) escapeLike = dmd.supportsLikeEscapeClause() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_ESCAPE_LIKE, escapeLike);
         }
@@ -1360,7 +1360,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean multipleResultSets = (Boolean)properties.get(PROP_MULTIPLE_RS);
         if (multipleResultSets == null) {
-            if (dmd != null) multipleResultSets = new Boolean(dmd.supportsMultipleResultSets());
+            if (dmd != null) multipleResultSets = dmd.supportsMultipleResultSets() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_MULTIPLE_RS, multipleResultSets);
         }
@@ -1388,7 +1388,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean multipleTransactions = (Boolean)properties.get(PROP_MULTIPLE_TRANSACTIONS);
         if (multipleTransactions == null) {
-            if (dmd != null) multipleTransactions = new Boolean(dmd.supportsMultipleTransactions());
+            if (dmd != null) multipleTransactions = dmd.supportsMultipleTransactions() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_MULTIPLE_TRANSACTIONS, multipleTransactions);
         }
@@ -1415,7 +1415,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean nunNullableColumns = (Boolean)properties.get(PROP_NON_NULL_COLUMNSS);
         if (nunNullableColumns == null) {
-            if (dmd != null) nunNullableColumns = new Boolean(dmd.supportsNonNullableColumns());
+            if (dmd != null) nunNullableColumns = dmd.supportsNonNullableColumns() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_NON_NULL_COLUMNSS, nunNullableColumns);
         }
@@ -1443,7 +1443,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean minimumSQLGrammar = (Boolean)properties.get(PROP_MINUMUM_SQL_GRAMMAR);
         if (minimumSQLGrammar == null) {
-            if (dmd != null) minimumSQLGrammar = new Boolean(dmd.supportsMinimumSQLGrammar());
+            if (dmd != null) minimumSQLGrammar = dmd.supportsMinimumSQLGrammar() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_MINUMUM_SQL_GRAMMAR, minimumSQLGrammar);
         }
@@ -1470,7 +1470,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean coreSQLGrammar = (Boolean)properties.get(PROP_CORE_SQL_GRAMMAR);
         if (coreSQLGrammar == null) {
-            if (dmd != null) coreSQLGrammar = new Boolean(dmd.supportsCoreSQLGrammar());
+            if (dmd != null) coreSQLGrammar = dmd.supportsCoreSQLGrammar() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_CORE_SQL_GRAMMAR, coreSQLGrammar);
         }
@@ -1496,7 +1496,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean extendedSQLGrammar = (Boolean)properties.get(PROP_EXTENDED_SQL_GRAMMAR);
         if (extendedSQLGrammar == null) {
-            if (dmd != null) extendedSQLGrammar = new Boolean(dmd.supportsExtendedSQLGrammar());
+            if (dmd != null) extendedSQLGrammar = dmd.supportsExtendedSQLGrammar() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_EXTENDED_SQL_GRAMMAR, extendedSQLGrammar);
         }
@@ -1524,7 +1524,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean ansiSQLGrammar = (Boolean)properties.get(PROP_ANSI_SQL_GRAMMAR);
         if (ansiSQLGrammar == null) {
-            if (dmd != null) ansiSQLGrammar = new Boolean(dmd.supportsANSI92EntryLevelSQL());
+            if (dmd != null) ansiSQLGrammar = dmd.supportsANSI92EntryLevelSQL() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_ANSI_SQL_GRAMMAR, ansiSQLGrammar);
         }
@@ -1550,7 +1550,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean ansiInterSQLGrammar = (Boolean)properties.get(PROP_INTERMEDIATE_SQL_GRAMMAR);
         if (ansiInterSQLGrammar == null) {
-            if (dmd != null) ansiInterSQLGrammar = new Boolean(dmd.supportsANSI92IntermediateSQL());
+            if (dmd != null) ansiInterSQLGrammar = dmd.supportsANSI92IntermediateSQL() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_INTERMEDIATE_SQL_GRAMMAR, ansiInterSQLGrammar);
         }
@@ -1576,7 +1576,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean ansiFullSQLGrammar = (Boolean)properties.get(PROP_FULL_SQL_GRAMMAR);
         if (ansiFullSQLGrammar == null) {
-            if (dmd != null) ansiFullSQLGrammar = new Boolean(dmd.supportsANSI92FullSQL());
+            if (dmd != null) ansiFullSQLGrammar = dmd.supportsANSI92FullSQL() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_FULL_SQL_GRAMMAR, ansiFullSQLGrammar);
         }
@@ -1603,7 +1603,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean integrityEnh = (Boolean)properties.get(PROP_INTEGRITY_ENHANCEMENT);
         if (integrityEnh == null) {
-            if (dmd != null) integrityEnh = new Boolean(dmd.supportsIntegrityEnhancementFacility());
+            if (dmd != null) integrityEnh = dmd.supportsIntegrityEnhancementFacility() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_INTEGRITY_ENHANCEMENT, integrityEnh);
         }
@@ -1630,7 +1630,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean outerJoins = (Boolean)properties.get(PROP_OUTER_JOINS);
         if (outerJoins == null) {
-            if (dmd != null) outerJoins = new Boolean(dmd.supportsOuterJoins());
+            if (dmd != null) outerJoins = dmd.supportsOuterJoins() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_OUTER_JOINS, outerJoins);
         }
@@ -1657,7 +1657,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean fullOuterJoins = (Boolean)properties.get(PROP_FULL_OUTER_JOINS);
         if (fullOuterJoins == null) {
-            if (dmd != null) fullOuterJoins = new Boolean(dmd.supportsFullOuterJoins());
+            if (dmd != null) fullOuterJoins = dmd.supportsFullOuterJoins() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_FULL_OUTER_JOINS, fullOuterJoins);
         }
@@ -1685,7 +1685,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean limiterOuterJoins = (Boolean)properties.get(PROP_LIMITED_OUTER_JOINS);
         if (limiterOuterJoins == null) {
-            if (dmd != null) limiterOuterJoins = new Boolean(dmd.supportsLimitedOuterJoins());
+            if (dmd != null) limiterOuterJoins = dmd.supportsLimitedOuterJoins() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_LIMITED_OUTER_JOINS, limiterOuterJoins);
         }
@@ -1783,7 +1783,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
         Boolean catalogAtStart = (Boolean)properties.get(PROP_CATALOG_AT_START);
         if (catalogAtStart == null) {
             if (dmd != null)
-                catalogAtStart = new Boolean(dmd.isCatalogAtStart());
+                catalogAtStart = dmd.isCatalogAtStart() ? Boolean.TRUE : Boolean.FALSE;
             else
                 throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_CATALOG_AT_START, catalogAtStart);
@@ -1833,7 +1833,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean schemasInDM = (Boolean)properties.get(PROP_SCHEMAS_IN_DML);
         if (schemasInDM == null) {
-            if (dmd != null) schemasInDM = new Boolean(dmd.supportsSchemasInDataManipulation());
+            if (dmd != null) schemasInDM = dmd.supportsSchemasInDataManipulation() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_SCHEMAS_IN_DML, schemasInDM);
         }
@@ -1860,7 +1860,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean schemasInProcedureCalls = (Boolean)properties.get(PROP_SCHEMAS_IN_PROCEDURE_CALL);
         if (schemasInProcedureCalls == null) {
-            if (dmd != null) schemasInProcedureCalls = new Boolean(dmd.supportsSchemasInProcedureCalls());
+            if (dmd != null) schemasInProcedureCalls = dmd.supportsSchemasInProcedureCalls() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_SCHEMAS_IN_PROCEDURE_CALL, schemasInProcedureCalls);
         }
@@ -1887,7 +1887,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean schemasInTable = (Boolean)properties.get(PROP_SCHEMAS_IN_TABLE_DEFINITION);
         if (schemasInTable == null) {
-            if (dmd != null) schemasInTable = new Boolean(dmd.supportsSchemasInTableDefinitions());
+            if (dmd != null) schemasInTable = dmd.supportsSchemasInTableDefinitions() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_SCHEMAS_IN_TABLE_DEFINITION, schemasInTable);
         }
@@ -1914,7 +1914,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean schemasInIndex = (Boolean)properties.get(PROP_SCHEMAS_IN_INDEX);
         if (schemasInIndex == null) {
-            if (dmd != null) schemasInIndex = new Boolean(dmd.supportsSchemasInIndexDefinitions());
+            if (dmd != null) schemasInIndex = dmd.supportsSchemasInIndexDefinitions() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_SCHEMAS_IN_INDEX, schemasInIndex);
         }
@@ -1941,7 +1941,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean schemasInPriv = (Boolean)properties.get(PROP_SCHEMAS_IN_PRIVILEGE_DEFINITION);
         if (schemasInPriv == null) {
-            if (dmd != null) schemasInPriv = new Boolean(dmd.supportsSchemasInPrivilegeDefinitions());
+            if (dmd != null) schemasInPriv = dmd.supportsSchemasInPrivilegeDefinitions() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_SCHEMAS_IN_PRIVILEGE_DEFINITION, schemasInPriv);
         }
@@ -1968,7 +1968,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean catalogInDM = (Boolean)properties.get(PROP_CATALOGS_IN_DML);
         if (catalogInDM == null) {
-            if (dmd != null) catalogInDM = new Boolean(dmd.supportsCatalogsInDataManipulation());
+            if (dmd != null) catalogInDM = dmd.supportsCatalogsInDataManipulation() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_CATALOGS_IN_DML, catalogInDM);
         }
@@ -1995,7 +1995,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean catalogInProc = (Boolean)properties.get(PROP_CATALOGS_IN_PROCEDURE_CALL);
         if (catalogInProc == null) {
-            if (dmd != null) catalogInProc = new Boolean(dmd.supportsCatalogsInProcedureCalls());
+            if (dmd != null) catalogInProc = dmd.supportsCatalogsInProcedureCalls() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_CATALOGS_IN_PROCEDURE_CALL, catalogInProc);
         }
@@ -2022,7 +2022,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean catalogInTable = (Boolean)properties.get(PROP_CATALOGS_IN_TABLE_DEFINITION);
         if (catalogInTable == null) {
-            if (dmd != null) catalogInTable = new Boolean(dmd.supportsCatalogsInTableDefinitions());
+            if (dmd != null) catalogInTable = dmd.supportsCatalogsInTableDefinitions() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_CATALOGS_IN_TABLE_DEFINITION, catalogInTable);
         }
@@ -2049,7 +2049,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean catalogInIndex = (Boolean)properties.get(PROP_CATALOGS_IN_INDEX);
         if (catalogInIndex == null) {
-            if (dmd != null) catalogInIndex = new Boolean(dmd.supportsCatalogsInIndexDefinitions());
+            if (dmd != null) catalogInIndex = dmd.supportsCatalogsInIndexDefinitions() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_CATALOGS_IN_INDEX, catalogInIndex);
         }
@@ -2076,7 +2076,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean catalogInPriv = (Boolean)properties.get(PROP_CATALOGS_IN_PRIVILEGE_DEFINITION);
         if (catalogInPriv == null) {
-            if (dmd != null) catalogInPriv = new Boolean(dmd.supportsCatalogsInPrivilegeDefinitions());
+            if (dmd != null) catalogInPriv = dmd.supportsCatalogsInPrivilegeDefinitions() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_CATALOGS_IN_PRIVILEGE_DEFINITION, catalogInPriv);
         }
@@ -2103,7 +2103,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean posDelete = (Boolean)properties.get(PROP_POSITIONED_DELETE);
         if (posDelete == null) {
-            if (dmd != null) posDelete = new Boolean(dmd.supportsPositionedDelete());
+            if (dmd != null) posDelete = dmd.supportsPositionedDelete() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_POSITIONED_DELETE, posDelete);
         }
@@ -2130,7 +2130,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean posUpdate = (Boolean)properties.get(PROP_POSITIONED_UPDATE);
         if (posUpdate == null) {
-            if (dmd != null) posUpdate = new Boolean(dmd.supportsPositionedUpdate());
+            if (dmd != null) posUpdate = dmd.supportsPositionedUpdate() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_POSITIONED_UPDATE, posUpdate);
         }
@@ -2157,7 +2157,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean selectForUpdate = (Boolean)properties.get(PROP_SELECT_FOR_UPDATE);
         if (selectForUpdate == null) {
-            if (dmd != null) selectForUpdate = new Boolean(dmd.supportsSelectForUpdate());
+            if (dmd != null) selectForUpdate = dmd.supportsSelectForUpdate() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_SELECT_FOR_UPDATE, selectForUpdate);
         }
@@ -2185,7 +2185,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean storedProcedures = (Boolean)properties.get(PROP_STORED_PROCEDURES);
         if (storedProcedures == null) {
-            if (dmd != null) storedProcedures = new Boolean(dmd.supportsStoredProcedures());
+            if (dmd != null) storedProcedures = dmd.supportsStoredProcedures() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_STORED_PROCEDURES, storedProcedures);
         }
@@ -2213,7 +2213,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean subqueryComp = (Boolean)properties.get(PROP_SUBQUERY_IN_COMPARSIONS);
         if (subqueryComp == null) {
-            if (dmd != null) subqueryComp = new Boolean(dmd.supportsSubqueriesInComparisons());
+            if (dmd != null) subqueryComp = dmd.supportsSubqueriesInComparisons() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_SUBQUERY_IN_COMPARSIONS, subqueryComp);
         }
@@ -2241,7 +2241,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean subqueryExist = (Boolean)properties.get(PROP_SUBQUERY_IN_EXISTS);
         if (subqueryExist == null) {
-            if (dmd != null) subqueryExist = new Boolean(dmd.supportsSubqueriesInExists());
+            if (dmd != null) subqueryExist = dmd.supportsSubqueriesInExists() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_SUBQUERY_IN_EXISTS, subqueryExist);
         }
@@ -2268,7 +2268,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean subqueryIns = (Boolean)properties.get(PROP_SUBQUERY_IN_INS);
         if (subqueryIns == null) {
-            if (dmd != null) subqueryIns = new Boolean(dmd.supportsSubqueriesInIns());
+            if (dmd != null) subqueryIns = dmd.supportsSubqueriesInIns() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_SUBQUERY_IN_INS, subqueryIns);
         }
@@ -2296,7 +2296,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean subqueryQuant = (Boolean)properties.get(PROP_SUBQUERY_IN_QUANTIFIEDS);
         if (subqueryQuant == null) {
-            if (dmd != null) subqueryQuant = new Boolean(dmd.supportsSubqueriesInQuantifieds());
+            if (dmd != null) subqueryQuant = dmd.supportsSubqueriesInQuantifieds() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_SUBQUERY_IN_QUANTIFIEDS, subqueryQuant);
         }
@@ -2324,7 +2324,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean subqueryCorr = (Boolean)properties.get(PROP_CORRELATED_SUBQUERIES);
         if (subqueryCorr == null) {
-            if (dmd != null) subqueryCorr = new Boolean(dmd.supportsCorrelatedSubqueries());
+            if (dmd != null) subqueryCorr = dmd.supportsCorrelatedSubqueries() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_CORRELATED_SUBQUERIES, subqueryCorr);
         }
@@ -2351,7 +2351,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean union = (Boolean)properties.get(PROP_UNION);
         if (union == null) {
-            if (dmd != null) union = new Boolean(dmd.supportsUnion());
+            if (dmd != null) union = dmd.supportsUnion() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_UNION, union);
         }
@@ -2378,7 +2378,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean unionAll = (Boolean)properties.get(PROP_UNION_ALL);
         if (unionAll == null) {
-            if (dmd != null) unionAll = new Boolean(dmd.supportsUnionAll());
+            if (dmd != null) unionAll = dmd.supportsUnionAll() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_UNION_ALL, unionAll);
         }
@@ -2405,7 +2405,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean cursorInCommit = (Boolean)properties.get(PROP_OPEN_CURSORS_ACROSS_COMMIT);
         if (cursorInCommit == null) {
-            if (dmd != null) cursorInCommit = new Boolean(dmd.supportsOpenCursorsAcrossCommit());
+            if (dmd != null) cursorInCommit = dmd.supportsOpenCursorsAcrossCommit() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_OPEN_CURSORS_ACROSS_COMMIT, cursorInCommit);
         }
@@ -2432,7 +2432,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean cursorInRollback = (Boolean)properties.get(PROP_OPEN_CURSORS_ACROSS_ROLLBACK);
         if (cursorInRollback == null) {
-            if (dmd != null) cursorInRollback = new Boolean(dmd.supportsOpenCursorsAcrossRollback());
+            if (dmd != null) cursorInRollback = dmd.supportsOpenCursorsAcrossRollback() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_OPEN_CURSORS_ACROSS_ROLLBACK, cursorInRollback);
         }
@@ -2459,7 +2459,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean statementInCommit = (Boolean)properties.get(PROP_OPEN_STATEMENTS_ACROSS_COMMIT);
         if (statementInCommit == null) {
-            if (dmd != null) statementInCommit = new Boolean(dmd.supportsOpenStatementsAcrossCommit());
+            if (dmd != null) statementInCommit = dmd.supportsOpenStatementsAcrossCommit() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_OPEN_STATEMENTS_ACROSS_COMMIT, statementInCommit);
         }
@@ -2486,7 +2486,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean statementInRollback = (Boolean)properties.get(PROP_OPEN_STATEMENTS_ACROSS_ROLLBACK);
         if (statementInRollback == null) {
-            if (dmd != null) statementInRollback = new Boolean(dmd.supportsOpenStatementsAcrossRollback());
+            if (dmd != null) statementInRollback = dmd.supportsOpenStatementsAcrossRollback() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_OPEN_STATEMENTS_ACROSS_ROLLBACK, statementInRollback);
         }
@@ -2844,7 +2844,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean rowSizeBlobs = (Boolean)properties.get(PROP_ROWSIZE_INCLUDING_BLOBS);
         if (rowSizeBlobs == null) {
-            if (dmd != null) rowSizeBlobs = new Boolean(dmd.doesMaxRowSizeIncludeBlobs());
+            if (dmd != null) rowSizeBlobs = dmd.doesMaxRowSizeIncludeBlobs() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_ROWSIZE_INCLUDING_BLOBS, rowSizeBlobs);
         }
@@ -3005,7 +3005,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean trans = (Boolean)properties.get(PROP_TRANSACTIONS);
         if (trans == null) {
-            if (dmd != null) trans = new Boolean(dmd.doesMaxRowSizeIncludeBlobs());
+            if (dmd != null) trans = dmd.doesMaxRowSizeIncludeBlobs() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_TRANSACTIONS, trans);
         }
@@ -3045,7 +3045,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean flag = (Boolean)properties.get(PROP_DDL_AND_DML_TRANSACTIONS);
         if (flag == null) {
-            if (dmd != null) flag = new Boolean(dmd.doesMaxRowSizeIncludeBlobs());
+            if (dmd != null) flag = dmd.doesMaxRowSizeIncludeBlobs() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_DDL_AND_DML_TRANSACTIONS, flag);
         }
@@ -3073,7 +3073,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean flag = (Boolean)properties.get(PROP_DML_TRANSACTIONS_ONLY);
         if (flag == null) {
-            if (dmd != null) flag = new Boolean(dmd.supportsDataManipulationTransactionsOnly());
+            if (dmd != null) flag = dmd.supportsDataManipulationTransactionsOnly() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_DML_TRANSACTIONS_ONLY, flag);
         }
@@ -3101,7 +3101,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean flag = (Boolean)properties.get(PROP_DDL_CAUSES_COMMIT);
         if (flag == null) {
-            if (dmd != null) flag = new Boolean(dmd.dataDefinitionCausesTransactionCommit());
+            if (dmd != null) flag = dmd.dataDefinitionCausesTransactionCommit() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_DDL_CAUSES_COMMIT, flag);
         }
@@ -3128,7 +3128,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean flag = (Boolean)properties.get(PROP_DDL_IGNORED_IN_TRANSACTIONS);
         if (flag == null) {
-            if (dmd != null) flag = new Boolean(dmd.dataDefinitionIgnoredInTransactions());
+            if (dmd != null) flag = dmd.dataDefinitionIgnoredInTransactions() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_DDL_IGNORED_IN_TRANSACTIONS, flag);
         }
@@ -3856,7 +3856,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean flag = (Boolean)properties.get(PROP_BATCH_UPDATES);
         if (flag == null) {
-            if (dmd != null) flag = new Boolean(dmd.supportsBatchUpdates());
+            if (dmd != null) flag = dmd.supportsBatchUpdates() ? Boolean.TRUE : Boolean.FALSE;
             else throw new SQLException(bundle.getString("EXC_NoDBMetadata")); // NOI18N
             properties.put(PROP_BATCH_UPDATES, flag);
         }
@@ -3921,7 +3921,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     {
         Boolean flag = (Boolean)properties.get(PROP_CAPITALIZE_USERNAME);
         if (flag == null) {
-            flag = new Boolean(true);
+            flag = Boolean.TRUE;
             properties.put(PROP_CAPITALIZE_USERNAME, flag);
         }
 
@@ -3931,7 +3931,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
     public void setCapitializeUsername(boolean value)
     {
         Boolean newValue, oldValue = (Boolean)properties.get(PROP_CAPITALIZE_USERNAME);
-        newValue = new Boolean(value);
+        newValue = value ? Boolean.TRUE : Boolean.FALSE;
         properties.put(PROP_CAPITALIZE_USERNAME, newValue);
         propertySupport.firePropertyChange(PROP_CAPITALIZE_USERNAME, oldValue, newValue);
     }

@@ -271,7 +271,7 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_INCLUDED )
                ) {
                    public Object getValue () {
-                       return new Boolean( biFeature.isIncluded () );
+                       return biFeature.isIncluded () ? Boolean.TRUE : Boolean.FALSE;
                    }
                    public void setValue (Object val) throws
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -366,7 +366,7 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                        ((BiFeature.IdxProperty)biFeature).hasNiGetter()
                    ) {
                        public Object getValue () {
-                           return new Boolean( ((BiFeature.IdxProperty)biFeature).isNiGetter () );
+                           return ((BiFeature.IdxProperty)biFeature).isNiGetter () ? Boolean.TRUE : Boolean.FALSE;
                        }
                        public void setValue (Object val) throws
                            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -388,7 +388,7 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                        ((BiFeature.IdxProperty)biFeature).hasNiSetter()
                    ) {
                        public Object getValue () {
-                           return new Boolean( ((BiFeature.IdxProperty)biFeature).isNiSetter () );
+                           return ((BiFeature.IdxProperty)biFeature).isNiSetter () ? Boolean.TRUE : Boolean.FALSE;
                        }
                        public void setValue (Object val) throws
                            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -483,7 +483,7 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
     /** Toggles the selection of bi feature */
     public void toggleSelection() {
         biFeature.setIncluded ( !biFeature.isIncluded() );
-        firePropertyChange( PROP_INCLUDED, new Boolean( !biFeature.isIncluded() ), new Boolean( biFeature.isIncluded() ) );
+        firePropertyChange( PROP_INCLUDED, !biFeature.isIncluded() ? Boolean.TRUE : Boolean.FALSE, biFeature.isIncluded() ? Boolean.TRUE : Boolean.FALSE );
         setIconBase( biFeature.getIconBase(false) );
     }
 
@@ -494,7 +494,7 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
             return;
 
         biFeature.setIncluded ( value );
-        firePropertyChange( PROP_INCLUDED, new Boolean( !biFeature.isIncluded() ), new Boolean( biFeature.isIncluded() ) );
+        firePropertyChange( PROP_INCLUDED, !biFeature.isIncluded() ? Boolean.TRUE : Boolean.FALSE, biFeature.isIncluded() ? Boolean.TRUE : Boolean.FALSE );
         setIconBase( biFeature.getIconBase(false) );
     }
 

@@ -318,7 +318,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     if (val != null)
                         return val;
 
-                    return new Boolean(formSettings.getVariablesLocal());
+                    return formSettings.getVariablesLocal() ? Boolean.TRUE : Boolean.FALSE;
                 }
 
                 public boolean supportsDefaultValue() {
@@ -326,7 +326,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
 
                 public void restoreDefaultValue() {
-                    setValue(new Boolean(formSettings.getVariablesLocal()));
+                    setValue(formSettings.getVariablesLocal() ? Boolean.TRUE : Boolean.FALSE);
                 }
                     
                 public boolean canWrite() {

@@ -119,7 +119,7 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
                 // Make sure nbdocs: protocol is ready:
                 Object ignore = NbDocsStreamHandler.class;
                 hs = new HelpSet(TopManager.getDefault().systemClassLoader(), new URL(url));
-                hs.setKeyData(HELPSET_MERGE_CONTEXT, HELPSET_MERGE_ATTR, new Boolean(merge));
+                hs.setKeyData(HELPSET_MERGE_CONTEXT, HELPSET_MERGE_ATTR, merge ? Boolean.TRUE : Boolean.FALSE);
                 BPMChanger.invoke(BPMChanger.INC_VALUE);
             } catch (SAXException saxe) {
                 IOException ioe = new IOException(saxe.toString());

@@ -397,10 +397,10 @@ public class NonGui extends NbTopManager implements Runnable {
                     public void run() {
                         // Original code
                         //boolean canceled = org.netbeans.core.upgrade.UpgradeWizard.showWizard(getSplash());
-                        //System.setProperty("import.canceled", new Boolean(canceled).toString()); // NOI18N
+                        //System.setProperty("import.canceled", canceled ? "true" : "false"); // NOI18N
                         
                         // Let's use reflection
-                        System.setProperty("import.canceled", new Boolean( false ).toString()); // NOI18N
+                        System.setProperty("import.canceled", "false"); // NOI18N
                         try {
                             Class wizardClass = Class.forName( "org.netbeans.core.upgrade.UpgradeWizard" ); // NOI18N
                             Method showMethod = wizardClass.getMethod( "showWizard", new Class[] { Splash.SplashOutput.class } ); // NOI18N

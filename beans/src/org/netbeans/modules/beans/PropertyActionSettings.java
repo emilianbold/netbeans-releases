@@ -109,7 +109,7 @@ public class PropertyActionSettings extends SystemOption {
      * @param bound setting for bound event
      */    
     public void setGenBound (boolean bound) {
-        putProperty (PROP_BOUND, new Boolean (bound), true);
+        putProperty (PROP_BOUND, bound ? Boolean.TRUE : Boolean.FALSE, true);
     }
     
     /** Return setting for generating constrained event
@@ -123,7 +123,7 @@ public class PropertyActionSettings extends SystemOption {
      * @param constrained setting for constrained event
      */    
     public void setGenConstrained (boolean constrained ) {
-        putProperty (PROP_CONSTR, new Boolean (constrained), true);
+        putProperty (PROP_CONSTR, constrained ? Boolean.TRUE : Boolean.FALSE, true);
     }    
     
     /** Return setting for generating indexed property
@@ -137,7 +137,7 @@ public class PropertyActionSettings extends SystemOption {
      * @param indexed setting for indexed property
      */    
     public void setGenIndexed (boolean indexed ) {
-        putProperty (PROP_INDEXED, new Boolean (indexed), true);
+        putProperty (PROP_INDEXED, indexed ? Boolean.TRUE : Boolean.FALSE, true);
     }    
 
     /** Return setting for generating indexed property
@@ -151,7 +151,7 @@ public class PropertyActionSettings extends SystemOption {
      * @param indexed setting for indexed property
      */    
     public void setUseInherit (boolean inherit ) {
-        putProperty (PROP_INHER, new Boolean (inherit), true);
+        putProperty (PROP_INHER, inherit ? Boolean.TRUE : Boolean.FALSE, true);
     }    
     
     /** Return setting for generating indexed property
@@ -165,7 +165,7 @@ public class PropertyActionSettings extends SystemOption {
      * @param indexed setting for indexed property
      */    
     public void setAskBeforeGen (boolean ask ) {
-        putProperty (ASK_BEFORE, new Boolean (ask), true);
+        putProperty (ASK_BEFORE, ask ? Boolean.TRUE : Boolean.FALSE, true);
     }        
 
     /** Return setting for generating indexed property

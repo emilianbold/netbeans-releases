@@ -66,7 +66,7 @@ public class Jdk12SearchType_japan extends JavadocSearchType {
     public void setCaseSensitive(boolean caseSensitive) {
         boolean oldVal = this.caseSensitive;
         this.caseSensitive = caseSensitive;
-        firePropertyChange("caseSensitive", new Boolean(oldVal), new Boolean(caseSensitive));   //NOI18N
+        firePropertyChange("caseSensitive", oldVal ? Boolean.TRUE : Boolean.FALSE, caseSensitive ? Boolean.TRUE : Boolean.FALSE);   //NOI18N
     }
 
     /** Getter for property encoding.

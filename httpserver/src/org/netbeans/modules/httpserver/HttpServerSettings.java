@@ -258,7 +258,7 @@ public class HttpServerSettings extends SystemOption
                 HttpServerModule.stopHTTPServer();
             }
         }
-        firePropertyChange(PROP_RUNNING, new Boolean(!running), new Boolean(running));
+        firePropertyChange(PROP_RUNNING, !running ? Boolean.TRUE : Boolean.FALSE, running ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /** getter for repository base */
@@ -692,7 +692,7 @@ public class HttpServerSettings extends SystemOption
     }
     
     public void setShowGrantAccessDialog (boolean show) {
-        putProperty (PROP_SHOW_GRANT_ACCESS, new Boolean (show), true);
+        putProperty (PROP_SHOW_GRANT_ACCESS, show ? Boolean.TRUE : Boolean.FALSE, true);
     }
     
     public void propertyChange (PropertyChangeEvent evt) {

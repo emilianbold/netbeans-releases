@@ -244,7 +244,7 @@ public class TreeEntityDecl extends TreeNodeDecl implements DTD.Child, Parameter
         
         this.parameter = newParameter;
         
-        firePropertyChange (PROP_PARAMETER, new Boolean (oldParameter), new Boolean (newParameter));
+        firePropertyChange (PROP_PARAMETER, oldParameter ? Boolean.TRUE : Boolean.FALSE, newParameter ? Boolean.TRUE : Boolean.FALSE);
     }
     
     /**

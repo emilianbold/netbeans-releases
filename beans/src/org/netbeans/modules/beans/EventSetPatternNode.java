@@ -213,7 +213,7 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
                    /** Gets the value */
 
                    public Object getValue () {
-                       return new Boolean (((EventSetPattern)pattern).isUnicast());
+                       return ((EventSetPattern)pattern).isUnicast() ? Boolean.TRUE : Boolean.FALSE;
                    }
 
                    /** Sets the value */

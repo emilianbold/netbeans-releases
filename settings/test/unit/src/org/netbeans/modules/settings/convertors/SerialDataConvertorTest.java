@@ -267,7 +267,7 @@ public class SerialDataConvertorTest extends NbTestCase {
     }
     /*
     private void assertEquals(boolean b1, boolean b2) {
-        assertEquals(new Boolean(b1), new Boolean(b2));
+        assertEquals(b1  ? Boolean.TRUE : Boolean.FALSE, b2  ? Boolean.TRUE : Boolean.FALSE);
     }
     */
     /** Checks whether the instance is not saved multiple times.

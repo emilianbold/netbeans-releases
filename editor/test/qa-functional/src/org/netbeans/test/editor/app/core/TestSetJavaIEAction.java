@@ -110,7 +110,7 @@ public class TestSetJavaIEAction extends TestSetIEAction {
         boolean old = getLeadingStarInComment();
 
         leadingStarInComment = value;
-        firePropertyChange(LEADING_STAR_IN_COMMENTS, new Boolean(old), new Boolean(value));
+        firePropertyChange(LEADING_STAR_IN_COMMENTS, old ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public boolean getAddNewLineBeforePar() {
@@ -121,7 +121,7 @@ public class TestSetJavaIEAction extends TestSetIEAction {
         boolean old = getAddNewLineBeforePar();
         
         addNewLineBeforePar = value;
-        firePropertyChange(ADD_NEW_LINE_BEFORE_PAR, new Boolean(old), new Boolean(value));
+        firePropertyChange(ADD_NEW_LINE_BEFORE_PAR, old ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public boolean getAddSpaceBeforeBrackets() {
@@ -132,7 +132,7 @@ public class TestSetJavaIEAction extends TestSetIEAction {
         boolean old = getAddSpaceBeforeBrackets();
         
         addSpaceBeforeBrackets = value;
-        firePropertyChange(ADD_SPACE_BEFORE_BRACKETS, new Boolean(old), new Boolean(value));
+        firePropertyChange(ADD_SPACE_BEFORE_BRACKETS, old ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public boolean getExpandTabs() {
@@ -143,7 +143,7 @@ public class TestSetJavaIEAction extends TestSetIEAction {
         boolean old = getExpandTabs();
         
         expandTabs = value;
-        firePropertyChange(EXPAND_TABS, new Boolean(old), new Boolean(value));
+        firePropertyChange(EXPAND_TABS, old ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public int     getTabSize() {

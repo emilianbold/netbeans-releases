@@ -141,7 +141,7 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
      * @see Waitable
      */
     public Object actionProduced(Object obj) {
-	return(new Boolean(true));
+	return(Boolean.TRUE);
     }
 
     /** 

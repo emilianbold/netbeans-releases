@@ -229,8 +229,8 @@ public class DialogOperator extends WindowOperator {
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	result.put("Title", ((Dialog)getSource()).getTitle());
-	result.put("Modal", new Boolean(((Dialog)getSource()).isModal()).toString());
-	result.put("Resizable", new Boolean(((Dialog)getSource()).isResizable()).toString());
+	result.put("Modal", ((Dialog)getSource()).isModal() ? "true" : "false");
+	result.put("Resizable", ((Dialog)getSource()).isResizable() ? "true" : "false");
 	return(result);
     }
 

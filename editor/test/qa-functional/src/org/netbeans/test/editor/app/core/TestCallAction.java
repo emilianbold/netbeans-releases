@@ -170,7 +170,7 @@ public class TestCallAction extends TestAction
     public void setEnabled(boolean value) {
         boolean oldValue = enable;
         enable = value;
-        firePropertyChange (ENABLE, new Boolean(oldValue), new Boolean(enable));
+        firePropertyChange (ENABLE, oldValue ? Boolean.TRUE : Boolean.FALSE, enable ? Boolean.TRUE : Boolean.FALSE);
     }
     
     public boolean isEnable() {

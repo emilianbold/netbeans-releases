@@ -529,11 +529,11 @@ public class JTreeOperator extends JComponentOperator
 		for(int j = 0; j < model.getChildCount(path.getLastPathComponent()); j++) {
 		    result[0] = path.pathByAddingChild(model.getChild(path.getLastPathComponent(), j));
 		    if(chsr.checkPath((TreePath)result[0], j)) {
-			result[1] = new Boolean(true);
+			result[1] = Boolean.TRUE;
 			return(result);
 		    }
 		    if(chsr.hasAsParent((TreePath)result[0], j)) {
-			result[1] = new Boolean(false);
+			result[1] = Boolean.FALSE;
 			return(result);
 		    }
 		}

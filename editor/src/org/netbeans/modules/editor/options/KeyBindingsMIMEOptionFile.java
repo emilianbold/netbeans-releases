@@ -112,7 +112,7 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
             if (actionName==null) actionName="";
             
 
-            if ((actionName.length() != 0) && (!new Boolean(delete).booleanValue())){
+            if ((actionName.length() != 0) && (!Boolean.valueOf(delete).booleanValue())){
                 if(key.indexOf('$') > 0){
                     MultiKeyBinding mkb = new MultiKeyBinding( OptionUtilities.stringToKeys(key) , actionName );
                     properties.put(key,  mkb);

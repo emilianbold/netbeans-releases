@@ -95,7 +95,7 @@ public class DatabaseOption extends SystemOption {
     {
         if (debugMode == flag) return;
         debugMode = flag;
-        firePropertyChange(PROP_DEBUG_MODE, new Boolean(!debugMode), new Boolean(debugMode));
+        firePropertyChange(PROP_DEBUG_MODE, !debugMode ? Boolean.TRUE : Boolean.FALSE, debugMode ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /** Sets vector of available drivers.
@@ -157,7 +157,7 @@ public class DatabaseOption extends SystemOption {
         boolean old = autoConn;
         if (old == newAutoConn) return;
         autoConn = newAutoConn;
-        firePropertyChange(PROP_AUTO_CONNECTION, new Boolean(!autoConn), new Boolean(autoConn));
+        firePropertyChange(PROP_AUTO_CONNECTION, !autoConn ? Boolean.TRUE : Boolean.FALSE, autoConn ? Boolean.TRUE : Boolean.FALSE);
     }
 
     public void save() {

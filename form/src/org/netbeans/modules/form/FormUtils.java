@@ -630,7 +630,7 @@ public class FormUtils
         if (containerBeans == null)
             containerBeans = new HashMap();
 
-        containerBeans.put(beanClass.getName(), new Boolean(isContainer));
+        containerBeans.put(beanClass.getName(), isContainer ? Boolean.TRUE : Boolean.FALSE);
         formSettings.setContainerBeans(containerBeans);
     }
 

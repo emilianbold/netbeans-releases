@@ -419,7 +419,7 @@ public class JSplitPaneOperator extends JComponentOperator
 		   "HORIZONTAL" : 
 		   "VERTICAL");
 	result.put("Value", Integer.toString(((JSplitPane)getSource()).getDividerLocation()));
-	result.put("One touch expandable", new Boolean(((JSplitPane)getSource()).isOneTouchExpandable()).toString());
+	result.put("One touch expandable", ((JSplitPane)getSource()).isOneTouchExpandable() ? "true" : "false");
 	return(result);
     }
 

@@ -90,7 +90,7 @@ public class ColumnItem extends Hashtable {
             Object pdv = pmap.get("default"); //NOI18N
             if (pdv != null) {
                 String pclass = (String)pmap.get("columnclass"); //NOI18N
-                if (pclass.equals("java.lang.Boolean")) pdv = new Boolean((String)pdv); //NOI18N
+                if (pclass.equals("java.lang.Boolean")) pdv = Boolean.valueOf((String)pdv); //NOI18N
                 put(pmap.get("name"), pdv); //NOI18N
             }
         }

@@ -892,8 +892,8 @@ public class ComponentOperator extends Operator
      */
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	result.put("Visible", new Boolean(getSource().isVisible()).toString());
-	result.put("Showing", new Boolean(getSource().isShowing()).toString());
+	result.put("Visible", getSource().isVisible() ? "true" : "false");
+	result.put("Showing", getSource().isShowing() ? "true" : "false");
 	result.put("X", Integer.toString(getSource().getX()));
 	result.put("Y", Integer.toString(getSource().getY()));
 	result.put("Width", Integer.toString(getSource().getWidth()));

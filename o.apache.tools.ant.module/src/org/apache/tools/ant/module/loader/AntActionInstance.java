@@ -185,7 +185,7 @@ public class AntActionInstance implements
             it = new HashSet (listeners).iterator ();
         }
         PropertyChangeEvent ev1 = new PropertyChangeEvent (this, Action.NAME, null, getValue (Action.NAME));
-        PropertyChangeEvent ev2 = new PropertyChangeEvent (this, "enabled", null, new Boolean (isEnabled ())); // NOI18N
+        PropertyChangeEvent ev2 = new PropertyChangeEvent (this, "enabled", null, isEnabled () ? Boolean.TRUE : Boolean.FALSE); // NOI18N
         PropertyChangeEvent ev3 = new PropertyChangeEvent (this, Action.MNEMONIC_KEY, null, getValue (Action.MNEMONIC_KEY));
         while (it.hasNext ()) {
             PropertyChangeListener listener = (PropertyChangeListener) it.next ();

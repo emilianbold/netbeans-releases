@@ -255,8 +255,8 @@ public class Editor extends javax.swing.JFrame {
         }
         
         
-        doc.putProperty( MODIFIED, new Boolean( false ) );
-        doc.putProperty( CREATED, new Boolean( false ) );
+        doc.putProperty( MODIFIED, Boolean.FALSE );
+        doc.putProperty( CREATED, Boolean.FALSE );
         doc.putProperty( FILE, file );
         doc.addDocumentListener( new MarkingDocumentListener( comp ) );
         
@@ -369,7 +369,7 @@ public class Editor extends javax.swing.JFrame {
         
         doc.addDocumentListener( new MarkingDocumentListener( c ) );
         doc.putProperty( FILE, file );
-        doc.putProperty( CREATED, new Boolean( created ) );
+        doc.putProperty( CREATED, created  ? Boolean.TRUE : Boolean.FALSE );
         
         UndoManager um = new UndoManager();
         doc.addUndoableEditListener( um );
@@ -614,7 +614,7 @@ public class Editor extends javax.swing.JFrame {
         
         private void markChanged( DocumentEvent evt ) {
             Document doc = evt.getDocument();
-            doc.putProperty( MODIFIED, new Boolean( true ) );
+            doc.putProperty( MODIFIED, Boolean.TRUE );
             
             File file = (File)doc.getProperty( FILE );
             int index = tabPane.indexOfComponent( comp );

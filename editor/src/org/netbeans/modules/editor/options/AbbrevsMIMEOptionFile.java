@@ -84,7 +84,7 @@ public class AbbrevsMIMEOptionFile extends MIMEOptionFile{
             String delete    = FCElement.getAttribute(ATTR_REMOVE);
             String expanded  = "";
             
-            if (!new Boolean(delete).booleanValue()){
+            if (! Boolean.valueOf(delete).booleanValue()){
                 NodeList textList = FCElement.getChildNodes();
                 if (textList.getLength() > 0) {
                     Node subNode = textList.item(0);

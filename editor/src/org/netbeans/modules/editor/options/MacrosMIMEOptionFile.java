@@ -84,7 +84,7 @@ public class MacrosMIMEOptionFile extends MIMEOptionFile{
             String key    = FCElement.getAttribute(ATTR_NAME);
             String delete = FCElement.getAttribute(ATTR_REMOVE);
             String action = "";
-            if (!new Boolean(delete).booleanValue()){
+            if (! Boolean.valueOf(delete).booleanValue()){
                 NodeList textList = FCElement.getChildNodes();
                 if (textList.getLength() > 0) {
                     Node subNode = textList.item(0);

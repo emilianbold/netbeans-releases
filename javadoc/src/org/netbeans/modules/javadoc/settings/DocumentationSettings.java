@@ -113,7 +113,7 @@ public class DocumentationSettings extends SystemOption {
     /** Setter for autocommentPackage
     */  
     public void setAutocommentPackage(boolean pckg) {
-        putProperty( PROP_AUTOCOMENT_PACKAGE, new Boolean(pckg), true );
+        putProperty( PROP_AUTOCOMENT_PACKAGE, pckg ? Boolean.TRUE : Boolean.FALSE, true );
         //autocommentPackage = pckg;
     }
 
@@ -160,7 +160,7 @@ public class DocumentationSettings extends SystemOption {
      *@param idxSearchNoHtml New value of property idxSearchNoHtml.
      */
     public void setIdxSearchNoHtml(boolean idxSearchNoHtml) {
-        putProperty( PROP_SEARCH_NO_HTML, new Boolean(idxSearchNoHtml), true );
+        putProperty( PROP_SEARCH_NO_HTML, idxSearchNoHtml ? Boolean.TRUE : Boolean.FALSE, true );
         //this.idxSearchNoHtml = idxSearchNoHtml;
     }
 
@@ -285,7 +285,7 @@ public class DocumentationSettings extends SystemOption {
     }
 
     public void setAskBeforeGenerating( boolean ask ){
-        putProperty( PROP_ASK_BEFORE_GEN, new Boolean(ask), true );
+        putProperty( PROP_ASK_BEFORE_GEN, ask ? Boolean.TRUE : Boolean.FALSE, true );
     }
 
     public boolean getAskAfterGenerating(){
@@ -293,6 +293,6 @@ public class DocumentationSettings extends SystemOption {
     }
 
     public void setAskAfterGenerating( boolean ask ){
-        putProperty( PROP_ASK_AFTER_GEN, new Boolean(ask), true );
+        putProperty( PROP_ASK_AFTER_GEN, ask ? Boolean.TRUE : Boolean.FALSE, true );
     }    
 }

@@ -130,7 +130,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
     }
     
     public void setSaveAll (boolean sa) {
-        putProperty (PROP_SAVE_ALL, new Boolean (sa), true);
+        putProperty (PROP_SAVE_ALL, sa ? Boolean.TRUE : Boolean.FALSE, true);
     }
     
     public IntrospectedInfo getCustomDefs () {
@@ -183,7 +183,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
     }
     /** Sets the reuseOutput property. */
     public void setReuseOutput (boolean b) {
-        putProperty (PROP_REUSE_OUTPUT, new Boolean (b), true);
+        putProperty (PROP_REUSE_OUTPUT, b ? Boolean.TRUE : Boolean.FALSE, true);
     }
     
     // #14993: read-only property for the version of Ant

@@ -46,7 +46,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
         if (key.equals("isnullable")) { //NOI18N
             String nullable = (String) get(key);
             boolean eq = (nullable == null) ? false : (nullable).toUpperCase().equals("YES"); //NOI18N
-            return new Boolean(eq);
+            return eq ? Boolean.TRUE : Boolean.FALSE;
         }
         return super.getProperty(key);
     }

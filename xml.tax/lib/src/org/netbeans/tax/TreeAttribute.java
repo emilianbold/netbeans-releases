@@ -253,11 +253,11 @@ public class TreeAttribute extends TreeNode implements Element.Attribute, TreeNa
         if (this.specified == newValue)
             return;
         
-        Boolean oldValue = new Boolean (this.specified);
+        Boolean oldValue = this.specified ? Boolean.TRUE : Boolean.FALSE;
         
         this.specified = newValue;
         
-        firePropertyChange (PROP_SPECIFIED, oldValue, new Boolean (newValue));
+        firePropertyChange (PROP_SPECIFIED, oldValue, newValue ? Boolean.TRUE : Boolean.FALSE);
     }
     
     /**

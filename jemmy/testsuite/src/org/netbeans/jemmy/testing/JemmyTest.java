@@ -74,6 +74,6 @@ public class JemmyTest extends org.netbeans.jemmy.Test {
 	getOutput().printLine(Double.toString(s));
     }
     protected void printLine(boolean s) {
-	getOutput().printLine(new Boolean(s).toString());
+	getOutput().printLine(s ? "true" : "false"); // NOI18N
     }
 }

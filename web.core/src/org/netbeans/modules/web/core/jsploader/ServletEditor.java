@@ -389,7 +389,7 @@ public class ServletEditor extends CloneableEditorSupport
             if (JspDataObject.PROP_SERVLET_DATAOBJECT.equals (ev.getPropertyName())) {
                 DataObject servlet = jspdo.getServletDataObject();
                 if (servlet == null) {
-                    firePropertyChange(PROP_VALID, new Boolean(true), new Boolean(false));
+                    firePropertyChange(PROP_VALID, Boolean.TRUE, Boolean.FALSE);
                 }
                 else {
                     firePropertyChange(PROP_TIME, null, null);

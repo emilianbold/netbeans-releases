@@ -1063,7 +1063,7 @@ public class MetaComponentCreator {
         }
         else if (comp instanceof JInternalFrame) {
             propName = "visible"; // NOI18N
-            propValue = new Boolean(true);
+            propValue = Boolean.TRUE;
         }
         else if (comp instanceof Button) {
             if ("".equals(((Button)comp).getLabel())) { // NOI18N

@@ -978,7 +978,7 @@ public final class BorderEditor extends PropertyEditorSupport
             node = attributes.getNamedItem(ATTR_CORNERS);
             if (node != null && (prop = (FormProperty)borderSupport
                                        .getPropertyOfName("roundedCorners")) != null) // NOI18N
-                prop.setValue(new Boolean(node.getNodeValue()));
+                prop.setValue(Boolean.valueOf(node.getNodeValue()));
         } 
         catch (IOException ex) {
             throw ex;

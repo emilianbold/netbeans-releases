@@ -53,7 +53,7 @@ public class TextStyleChooser extends AbstractTextStyleChooser {
      * Adds boldness checking to the criteria.
      */
     public void setBold(boolean bold) {
-	this.bold = new Boolean(bold);
+	this.bold = bold ? Boolean.TRUE : Boolean.FALSE;
     }
     /**
      * Removes boldness checking from the criteria.
@@ -65,7 +65,7 @@ public class TextStyleChooser extends AbstractTextStyleChooser {
      * Adds italic style checking to the criteria.
      */
     public void setItalic(boolean italic) {
-	this.italic = new Boolean(italic);
+	this.italic = italic ? Boolean.TRUE : Boolean.FALSE;
     }
     /**
      * Removes italic style checking from the criteria.
@@ -77,7 +77,7 @@ public class TextStyleChooser extends AbstractTextStyleChooser {
      * Adds strikeness checking to the criteria.
      */
     public void setStrike(boolean strike) {
-	this.strike = new Boolean(strike);
+	this.strike = strike ? Boolean.TRUE : Boolean.FALSE;
     }
     /**
      * Removes strikeness checking from the criteria.
@@ -89,7 +89,7 @@ public class TextStyleChooser extends AbstractTextStyleChooser {
      * Adds understrikeness checking to the criteria.
      */
     public void setUnderstrike(boolean understrike) {
-	this.understrike = new Boolean(understrike);
+	this.understrike = understrike ? Boolean.TRUE : Boolean.FALSE;
     }
     /**
      * Removes understrikeness checking from the criteria.

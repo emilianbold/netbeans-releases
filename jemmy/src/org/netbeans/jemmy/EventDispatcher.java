@@ -326,7 +326,7 @@ public class EventDispatcher implements Outputable, Timeoutable {
 	if((model & JemmyProperties.ROBOT_MODEL_MASK) != 0) {
 	    createRobot();
 	    try {
-		Object[] params = {new Boolean((model & JemmyProperties.QUEUE_MODEL_MASK) != 0)};
+		Object[] params = { (model & JemmyProperties.QUEUE_MODEL_MASK) != 0 ? Boolean.TRUE : Boolean.FALSE };
 		Class[] paramClasses = {Boolean.TYPE};
 		robotReference.invokeMethod("setAutoWaitForIdle", params, paramClasses);
 	    } catch(InvocationTargetException e) {

@@ -79,7 +79,7 @@ public final class BiNode extends AbstractNode {
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NULL_DESCRIPTOR )
                 ) {
                     public Object getValue () {
-                        return new Boolean(  biAnalyser.isNullDescriptor () );
+                        return biAnalyser.isNullDescriptor () ? Boolean.TRUE : Boolean.FALSE;
                     }
                     public void setValue (Object val) throws
                         IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -102,7 +102,7 @@ public final class BiNode extends AbstractNode {
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NULL_PROPERTIES )
                 ) {
                     public Object getValue () {
-                        return new Boolean( biAnalyser.isNullProperties () );
+                        return biAnalyser.isNullProperties () ? Boolean.TRUE : Boolean.FALSE;
                     }
                     public void setValue (Object val) throws
                         IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -124,7 +124,7 @@ public final class BiNode extends AbstractNode {
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NULL_EVENTS )
                 ) {
                     public Object getValue () {
-                        return new Boolean( biAnalyser.isNullEventSets () );
+                        return biAnalyser.isNullEventSets () ? Boolean.TRUE : Boolean.FALSE;
                     }
                     public void setValue (Object val) throws
                         IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -146,7 +146,7 @@ public final class BiNode extends AbstractNode {
                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_NULL_METHODS )
                 ) {
                     public Object getValue () {
-                        return new Boolean( biAnalyser.isNullMethods () );
+                        return biAnalyser.isNullMethods () ? Boolean.TRUE : Boolean.FALSE;
                     }
                     public void setValue (Object val) throws
                         IllegalAccessException, IllegalArgumentException, InvocationTargetException {

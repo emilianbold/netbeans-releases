@@ -133,7 +133,7 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
         if (oldTempl == newTempl)
             return false;
         
-        fo.setAttribute(DataObject.PROP_TEMPLATE, (newTempl ? new Boolean(true) : null));
+        fo.setAttribute(DataObject.PROP_TEMPLATE, (newTempl ? Boolean.TRUE : null));
         
         return true;
     }
@@ -148,7 +148,7 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
             return;
         }
         
-        firePropertyChange(DataObject.PROP_TEMPLATE, new Boolean(!newTempl), new Boolean(newTempl));
+        firePropertyChange(DataObject.PROP_TEMPLATE, !newTempl ? Boolean.TRUE : Boolean.FALSE, newTempl ? Boolean.TRUE : Boolean.FALSE);
     }
     
     /** Get the template status of this data object.
@@ -238,7 +238,7 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
     public void setModified(boolean modif) {
         if (this.modif != modif) {
             this.modif = modif;
-            firePropertyChange(DataObject.PROP_MODIFIED, new Boolean(!modif), new Boolean(modif));
+            firePropertyChange(DataObject.PROP_MODIFIED, !modif ? Boolean.TRUE : Boolean.FALSE, modif ? Boolean.TRUE : Boolean.FALSE);
         }
     }
     

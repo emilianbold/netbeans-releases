@@ -228,7 +228,7 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
             // its invalidity -> mark itself as unmodified
             if (SearchType.PROP_VALID.equals(evt.getPropertyName()) ) {
                 
-                if (evt.getNewValue().equals(new Boolean(false))) {
+                if (evt.getNewValue().equals(Boolean.FALSE)) {
                     setCustomized (false);
                     return;
                 } else {

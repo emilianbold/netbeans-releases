@@ -88,7 +88,7 @@ public class I18nOptions extends SystemOption {
     /** Setter for init advanced wizard property. */
     public void setAdvancedWizard(boolean generateField) {
         // Stores in class-wide state and fires property changes if needed:
-        putProperty(PROP_ADVANCED_WIZARD, new Boolean(generateField), true);
+        putProperty(PROP_ADVANCED_WIZARD, generateField ? Boolean.TRUE : Boolean.FALSE, true);
     }
     
     /** Getter for init java code property. */
@@ -183,7 +183,7 @@ public class I18nOptions extends SystemOption {
     /** Setter for replacve resource value property. */
     public void setReplaceResourceValue(boolean replaceResourceValue) {
         // Stores in class-wide state and fires property changes if needed:
-        putProperty(PROP_REPLACE_RESOURCE_VALUE, new Boolean(replaceResourceValue), true);
+        putProperty(PROP_REPLACE_RESOURCE_VALUE, replaceResourceValue ? Boolean.TRUE : Boolean.FALSE, true);
     }
     
     /** Getter for last resource property. */

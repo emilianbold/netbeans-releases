@@ -727,7 +727,7 @@ public class JTextComponentOperator extends JComponentOperator
 	   !((JTextComponent)getSource()).getSelectedText().equals("")) {
 	    result.put("Selected text", ((JTextComponent)getSource()).getSelectedText());
 	}
-	result.put("Editable", new Boolean(((JTextComponent)getSource()).isEditable()).toString());
+	result.put("Editable", ((JTextComponent)getSource()).isEditable() ? "true" : "false");
 	return(result);
     }
 

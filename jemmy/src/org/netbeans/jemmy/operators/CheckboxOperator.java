@@ -276,9 +276,9 @@ public class CheckboxOperator extends ComponentOperator implements Outputable {
 	    } catch(InterruptedException e) {
 		throw(new JemmyException("Interrupted!", e));
 	    }
-	    output.printLine("Change checkbox selection to " + new Boolean(newValue).toString() +
+	    output.printLine("Change checkbox selection to " + (newValue ? "true" : "false") + 
 			     "\n    :" + getSource().toString());
-	    output.printGolden("Change checkbox selection to " + new Boolean(newValue).toString());
+	    output.printGolden("Change checkbox selection to " + (newValue ? "true" : "false"));
 	    driver.push(this);
             if(getVerification()) {
                 waitSelected(newValue);
@@ -292,7 +292,7 @@ public class CheckboxOperator extends ComponentOperator implements Outputable {
 		    changeSelection(((Boolean)param).booleanValue());
 		    return(null);
 		}
-	    }, new Boolean(selected));
+	    }, selected ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /**

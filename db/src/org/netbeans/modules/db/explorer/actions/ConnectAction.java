@@ -99,7 +99,7 @@ public class ConnectAction extends DatabaseAction {
                         nfo.setUser(basePanel.getUser());
                         nfo.setPassword(basePanel.getPassword());
                         if (basePanel.rememberPassword())
-                            nfo.put(DatabaseNodeInfo.REMEMBER_PWD, new Boolean(true));
+                            nfo.put(DatabaseNodeInfo.REMEMBER_PWD, Boolean.TRUE);
                         try {
                             if(schemaPanel.getSchema()==null)
                                 dlg.setSelectedComponent(schemaPanel);

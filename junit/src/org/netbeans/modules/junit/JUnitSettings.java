@@ -75,21 +75,21 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_FILE_SYSTEM, "", true);
         putProperty(PROP_SUITE_TEMPLATE, "Templates/JUnit/SimpleNbJUnitTest.java", true);
         putProperty(PROP_CLASS_TEMPLATE, "Templates/JUnit/SimpleNbJUnitTest.java", true);
-        putProperty(PROP_MEMBERS_PUBLIC, new Boolean(true), true);
-        putProperty(PROP_MEMBERS_PROTECTED, new Boolean(true), true);
-        putProperty(PROP_MEMBERS_PACKAGE, new Boolean(true), true);
-        putProperty(PROP_BODY_COMMENTS, new Boolean(true), true);
-        putProperty(PROP_BODY_CONTENT, new Boolean(true), true);
-        putProperty(PROP_JAVADOC, new Boolean(true), true);
-        putProperty(PROP_CFGCREATE_ENABLED, new Boolean(true), true);
-        putProperty(PROP_CFGEXEC_ENABLED, new Boolean(true), true);
+        putProperty(PROP_MEMBERS_PUBLIC, Boolean.TRUE, true);
+        putProperty(PROP_MEMBERS_PROTECTED, Boolean.TRUE, true);
+        putProperty(PROP_MEMBERS_PACKAGE, Boolean.TRUE, true);
+        putProperty(PROP_BODY_COMMENTS, Boolean.TRUE, true);
+        putProperty(PROP_BODY_CONTENT, Boolean.TRUE, true);
+        putProperty(PROP_JAVADOC, Boolean.TRUE, true);
+        putProperty(PROP_CFGCREATE_ENABLED, Boolean.TRUE, true);
+        putProperty(PROP_CFGEXEC_ENABLED, Boolean.TRUE, true);
         putProperty(PROP_EXECUTOR_TYPE, new Integer(EXECUTOR_EXTERNAL), true);
-        putProperty(PROP_GENERATE_ABSTRACT_IMPL, new Boolean(true), true);
-        putProperty(PROP_GENERATE_EXCEPTION_CLASSES, new Boolean(false), true);
+        putProperty(PROP_GENERATE_ABSTRACT_IMPL, Boolean.TRUE, true);
+        putProperty(PROP_GENERATE_EXCEPTION_CLASSES, Boolean.FALSE, true);
         putProperty(PROP_TEST_RUNNER, "org.netbeans.junit.NbTestRunner", true);
         putProperty(PROP_PROPERTIES, NbBundle.getMessage(JUnitSettings.class, "PROP_properties_default_value"), true);
-        putProperty(PROP_GENERATE_NBJUNIT, new Boolean(true), true);
-        putProperty(PROP_REGENERATE_SUITE_METHOD, new Boolean(true), true);
+        putProperty(PROP_GENERATE_NBJUNIT, Boolean.TRUE, true);
+        putProperty(PROP_REGENERATE_SUITE_METHOD, Boolean.TRUE, true);
         
     }
 
@@ -179,7 +179,7 @@ public class JUnitSettings extends SystemOption {
     }
 
     public void setMembersPublic(boolean newVal) {
-        putProperty(PROP_MEMBERS_PUBLIC, new Boolean(newVal), true);
+        putProperty(PROP_MEMBERS_PUBLIC, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
 
     public boolean isMembersProtected() {
@@ -187,7 +187,7 @@ public class JUnitSettings extends SystemOption {
     }
 
     public void setMembersProtected(boolean newVal) {
-        putProperty(PROP_MEMBERS_PROTECTED, new Boolean(newVal), true);
+        putProperty(PROP_MEMBERS_PROTECTED, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
 
     public boolean isMembersPackage() {
@@ -195,7 +195,7 @@ public class JUnitSettings extends SystemOption {
     }
 
     public void setMembersPackage(boolean newVal) {
-        putProperty(PROP_MEMBERS_PACKAGE, new Boolean(newVal), true);
+        putProperty(PROP_MEMBERS_PACKAGE, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
 
     public boolean isBodyComments() {
@@ -203,7 +203,7 @@ public class JUnitSettings extends SystemOption {
     }
 
     public void setBodyComments(boolean newVal) {
-        putProperty(PROP_BODY_COMMENTS, new Boolean(newVal), true);
+        putProperty(PROP_BODY_COMMENTS, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
 
     public boolean isBodyContent() {
@@ -211,7 +211,7 @@ public class JUnitSettings extends SystemOption {
     }
 
     public void setBodyContent(boolean newVal) {
-        putProperty(PROP_BODY_CONTENT, new Boolean(newVal), true);
+        putProperty(PROP_BODY_CONTENT, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
 
     public boolean isJavaDoc() {
@@ -219,7 +219,7 @@ public class JUnitSettings extends SystemOption {
     }
 
     public void setJavaDoc(boolean newVal) {
-        putProperty(PROP_JAVADOC, new Boolean(newVal), true);
+        putProperty(PROP_JAVADOC, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
    
     public boolean isCfgCreateEnabled() {
@@ -227,7 +227,7 @@ public class JUnitSettings extends SystemOption {
     }
     
     public void setCfgCreateEnabled(boolean newVal) {
-        putProperty(PROP_CFGCREATE_ENABLED, new Boolean(newVal), true);
+        putProperty(PROP_CFGCREATE_ENABLED, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
 
     public boolean isCfgExecEnabled() {
@@ -235,7 +235,7 @@ public class JUnitSettings extends SystemOption {
     }
     
     public void setCfgExecEnabled(boolean newVal) {
-        putProperty(PROP_CFGEXEC_ENABLED, new Boolean(newVal), true);
+        putProperty(PROP_CFGEXEC_ENABLED, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
 
     public int getExecutorType() {
@@ -251,7 +251,7 @@ public class JUnitSettings extends SystemOption {
     }
 
     public void setGenerateExceptionClasses(boolean newVal) {
-        putProperty(PROP_GENERATE_EXCEPTION_CLASSES, new Boolean(newVal), true);
+        putProperty(PROP_GENERATE_EXCEPTION_CLASSES, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
     
    
@@ -260,7 +260,7 @@ public class JUnitSettings extends SystemOption {
     }
 
     public void setGenerateAbstractImpl(boolean newVal) {
-     putProperty(PROP_GENERATE_ABSTRACT_IMPL, new Boolean(newVal), true);
+     putProperty(PROP_GENERATE_ABSTRACT_IMPL, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
 
     public String getTestRunner() {
@@ -288,7 +288,7 @@ public class JUnitSettings extends SystemOption {
     }
 
     public void setGenerateNbJUnit(boolean newVal) {
-        putProperty(PROP_GENERATE_NBJUNIT, new Boolean(newVal), true);
+        putProperty(PROP_GENERATE_NBJUNIT, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }
     
     public boolean isRegenerateSuiteMethod() {
@@ -296,6 +296,6 @@ public class JUnitSettings extends SystemOption {
     }
 
     public void setRegenerateSuiteMethod(boolean newVal) {
-        putProperty(PROP_REGENERATE_SUITE_METHOD, new Boolean(newVal), true);
+        putProperty(PROP_REGENERATE_SUITE_METHOD, newVal ? Boolean.TRUE : Boolean.FALSE, true);
     }    
 }

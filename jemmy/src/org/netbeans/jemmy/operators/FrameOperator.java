@@ -218,7 +218,7 @@ public class FrameOperator extends WindowOperator implements Outputable {
 	result.put("State", 
 		   (((Frame)getSource()).getState() == Frame.ICONIFIED) ?
 		   "ICONIFIED" : "NORMAL");
-	result.put("Resizable", new Boolean(((Frame)getSource()).isResizable()).toString());
+	result.put("Resizable", ((Frame)getSource()).isResizable() ? "true" : "false");
 	return(result);
     }
 

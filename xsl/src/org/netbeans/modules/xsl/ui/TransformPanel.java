@@ -141,10 +141,10 @@ public final class TransformPanel extends javax.swing.JPanel {
         }
 
         if ( xmlHistory != null ) {
-            data.overwrite = new Boolean (xmlHistory.isOverwriteOutput());
+            data.overwrite = xmlHistory.isOverwriteOutput() ? Boolean.TRUE : Boolean.FALSE;
             data.process   = new Integer (xmlHistory.getProcessOutput());
         } else if ( xslHistory != null ) {
-            data.overwrite = new Boolean (xslHistory.isOverwriteOutput());
+            data.overwrite = xslHistory.isOverwriteOutput() ? Boolean.TRUE : Boolean.FALSE;
             data.process   = new Integer (xslHistory.getProcessOutput());
         }
 
@@ -734,7 +734,7 @@ public final class TransformPanel extends javax.swing.JPanel {
     private void overwriteCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_overwriteCheckBoxActionPerformed
         // Add your handling code here:
         if ( isInitialized() ) {
-            data.overwrite = new Boolean (overwriteCheckBox.isSelected());
+            data.overwrite = overwriteCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE;
             updateComponents();
         }
     }//GEN-LAST:event_overwriteCheckBoxActionPerformed
@@ -852,7 +852,7 @@ public final class TransformPanel extends javax.swing.JPanel {
             this.xml       = xml;
             this.xsl       = xsl;
             this.output    = output;
-            this.overwrite = new Boolean (overwrite);
+            this.overwrite = overwrite ? Boolean.TRUE : Boolean.FALSE;
             this.process   = new Integer (process);
         }
 

@@ -65,11 +65,11 @@ public class TestSubTest extends Test {
     public void setOwnLogger(boolean b) {
         if (b && logger == owner.getLogger()) {
             logger=new Logger(Main.editor);
-            firePropertyChange (OWNLOGGER,null,new Boolean(b));
+            firePropertyChange (OWNLOGGER,null,b ? Boolean.TRUE : Boolean.FALSE);
         } else {
             if (!b && logger != owner.getLogger()) {
                 logger=owner.getLogger();
-                firePropertyChange (OWNLOGGER,null,new Boolean(b));
+                firePropertyChange (OWNLOGGER,null,b ? Boolean.TRUE : Boolean.FALSE);
             }
         }
     }

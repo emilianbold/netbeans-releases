@@ -130,7 +130,7 @@ public class Page2 extends JelloWizard {
     }
     
     public void setEnabled(int rowIndex, boolean enabled) {
-        this.setCell(new Boolean(enabled), rowIndex, 0);
+        this.setCell(enabled ? Boolean.TRUE : Boolean.FALSE, rowIndex, 0);
     }    
     
     public void setComment(int rowIndex, String comment) {

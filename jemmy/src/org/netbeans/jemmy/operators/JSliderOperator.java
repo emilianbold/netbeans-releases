@@ -320,7 +320,7 @@ public class JSliderOperator extends JComponentOperator
 	result.put("Orientation", (((JSlider)getSource()).getOrientation() == JSlider.HORIZONTAL) ? 
 		   "HORIZONTAL" : 
 		   "VERTICAL");
-	result.put("Inverted", new Boolean(((JSlider)getSource()).getInverted()).toString());
+	result.put("Inverted", ((JSlider)getSource()).getInverted() ? "true" : "false");
 	result.put("Value", Integer.toString(((JSlider)getSource()).getValue()));
 	return(result);
     }
@@ -647,7 +647,7 @@ public class JSliderOperator extends JComponentOperator
 	    moveMouse(xClick, yClick);
 	    pressMouse(xClick, yClick);
 	    try {
-		Object[] param = {new Integer(value), new Boolean(increase)};
+		Object[] param = {new Integer(value), increase ? Boolean.TRUE : Boolean.FALSE};
 		valueWaiter.waitAction(param);
 	    } catch(InterruptedException e) {
 		output.printStackTrace(e);

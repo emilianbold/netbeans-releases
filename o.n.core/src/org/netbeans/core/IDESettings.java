@@ -183,7 +183,9 @@ public class IDESettings extends SystemOption {
         showToolTips = value;
         javax.swing.ToolTipManager.sharedInstance().setEnabled(value);
         // fire the PropertyChange
-        firePropertyChange (PROP_SHOW_TOOLTIPS_IN_IDE, new Boolean (!showToolTips), new Boolean (showToolTips));
+        firePropertyChange (PROP_SHOW_TOOLTIPS_IN_IDE,
+                            !showToolTips ? Boolean.TRUE : Boolean.FALSE,
+                            showToolTips ? Boolean.TRUE : Boolean.FALSE);
     }
     
     /** Getter for ShowTipsOnStartup
@@ -199,7 +201,9 @@ public class IDESettings extends SystemOption {
         if (showTips == value) return;
         showTips = value;
         // fire the PropertyChange
-        firePropertyChange (PROP_SHOW_TIPS_ON_STARTUP, new Boolean (!showTips), new Boolean (showTips));
+        firePropertyChange (PROP_SHOW_TIPS_ON_STARTUP,
+                            !showTips ? Boolean.TRUE : Boolean.FALSE,
+                            showTips ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /** Getter for LastTip
@@ -228,13 +232,13 @@ public class IDESettings extends SystemOption {
      * @param value if true the user is asked for confirmation of object delete, not if false */
     public void setConfirmDelete(boolean value) {
         if (value == confirmDelete) return;
-        Boolean oldValue = new Boolean (confirmDelete);
+        Boolean oldValue = confirmDelete ? Boolean.TRUE : Boolean.FALSE;
         confirmDelete = value;
 
         org.openide.explorer.ExplorerPanel.setConfirmDelete (value);
 
         // fire the PropertyChange
-        firePropertyChange (PROP_CONFIRM_DELETE, oldValue, new Boolean (confirmDelete));
+        firePropertyChange (PROP_CONFIRM_DELETE, oldValue, confirmDelete ? Boolean.TRUE : Boolean.FALSE);
     }
 
     /** This method must be overriden. It returns display name of this options.
@@ -289,8 +293,8 @@ public class IDESettings extends SystemOption {
             isMiniStatusBarEnabled = state;
             // notify listeners
             firePropertyChange (PROP_MINI_STATUS_BAR_STATE,
-                    new Boolean (oldValue),
-                    new Boolean (isMiniStatusBarEnabled));
+                                oldValue ? Boolean.TRUE : Boolean.FALSE,
+                                isMiniStatusBarEnabled ? Boolean.TRUE : Boolean.FALSE);
         }
     }
 
@@ -318,7 +322,9 @@ public class IDESettings extends SystemOption {
                 System.setProperty(KEY_NON_PROXY_HOSTS, ""); // NOI18N
             }
             // notify listeners
-            firePropertyChange(PROP_USE_PROXY, new Boolean(oldValue), new Boolean(value));
+            firePropertyChange(PROP_USE_PROXY,
+                               oldValue ? Boolean.TRUE : Boolean.FALSE,
+                               value ? Boolean.TRUE : Boolean.FALSE);
         }
     }
 
@@ -373,7 +379,9 @@ public class IDESettings extends SystemOption {
     public void setShowFileExtensions (boolean s) {
         boolean old = getShowFileExtensions ();
         DataNode.setShowFileExtensions (s);
-        firePropertyChange (PROP_SHOW_FILE_EXTENSIONS, new Boolean (old), new Boolean (s));
+        firePropertyChange (PROP_SHOW_FILE_EXTENSIONS,
+                            old ? Boolean.TRUE : Boolean.FALSE,
+                            s ? Boolean.TRUE : Boolean.FALSE);
         
         /* akemr: following notification removed because of new implemented
         * runtime refresh of nodes

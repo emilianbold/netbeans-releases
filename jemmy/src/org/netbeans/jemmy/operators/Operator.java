@@ -132,7 +132,7 @@ public abstract class Operator extends Object
     public static boolean setDefaultVerification(boolean verification) {
 	Boolean oldValue = (Boolean)(JemmyProperties.
 				     setCurrentProperty("Operator.Verification", 
-							new Boolean(verification)));
+							verification ? Boolean.TRUE : Boolean.FALSE));
 	return((oldValue != null) ? oldValue.booleanValue() : false);
     }
 
@@ -1058,7 +1058,7 @@ public abstract class Operator extends Object
 	    super(description);
 	}
 	public final Object launch() throws Exception {
-	    return(new Boolean(map()));
+	    return(map() ? Boolean.TRUE : Boolean.FALSE);
 	}
 	public abstract boolean map() throws Exception;
     }

@@ -231,7 +231,7 @@ public class JButtonOperator extends AbstractButtonOperator{
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
 	result.remove("Selected");
-	result.put("Default button", new Boolean(((JButton)getSource()).isDefaultButton()).toString());
+	result.put("Default button", ((JButton)getSource()).isDefaultButton() ? "true" : "false");
 	return(result);
     }
 

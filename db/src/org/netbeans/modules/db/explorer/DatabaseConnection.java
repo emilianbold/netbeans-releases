@@ -343,7 +343,7 @@ public class DatabaseConnection implements DBConnection {
         db = (String)in.readObject();
         usr = (String)in.readObject();
         schema = (String)in.readObject();
-        rpwd = new Boolean(false);
+        rpwd = Boolean.FALSE;
         name = (String)in.readObject();
 
         // boston setting/pilsen setting?

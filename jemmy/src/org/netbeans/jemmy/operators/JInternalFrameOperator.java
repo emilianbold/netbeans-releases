@@ -569,8 +569,8 @@ public class JInternalFrameOperator extends JComponentOperator
 	    state = "MAXIMIZED";
 	}
 	result.put("State", state);
-	result.put("Resizable", new Boolean(((JInternalFrame)getSource()).isResizable()).toString());
-	result.put("Selected", new Boolean(((JInternalFrame)getSource()).isSelected()).toString());
+	result.put("Resizable", ((JInternalFrame)getSource()).isResizable() ? "true" : "false");
+	result.put("Selected", ((JInternalFrame)getSource()).isSelected() ? "true" : "false");
 	return(result);
     }
 
