@@ -482,10 +482,24 @@ public class VisualReplicator {
                 if (clone instanceof Container)
                     FakePeerSupport.attachFakePeerRecursively((Container)clone);
             }
+
             if ((restrictions & DISABLE_FOCUSING) != 0
-                    && clone instanceof JComponent) {
-                ((JComponent)clone).setRequestFocusEnabled(false);
-                ((JComponent)clone).setNextFocusableComponent((JComponent)clone);
+                    && clone instanceof JComponent)
+            {
+                java.lang.reflect.Method m = null;
+                try {
+                    m = clone.getClass().getMethod("setFocusable", // NOI18N
+                                                   new Class[] { Boolean.TYPE });
+                }
+                catch (NoSuchMethodException ex) {} // ignore
+
+                if (m != null) { // JDK 1.4 or newer
+                    m.invoke(clone, new Object[] { Boolean.FALSE });
+                }
+                else { // JDK 1.3
+                    ((JComponent)clone).setRequestFocusEnabled(false);
+                    ((JComponent)clone).setNextFocusableComponent((JComponent)clone);
+                }
 
                 // patch for JDK 1.4 - hide glass pane of JInternalFrame
                 if (clone instanceof JInternalFrame)

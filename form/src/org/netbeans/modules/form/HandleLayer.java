@@ -68,8 +68,63 @@ class HandleLayer extends JPanel
         formDesigner = fd;
         addMouseListener(new HandleLayerMouseListener());
         addMouseMotionListener(new HandleLayerMouseMotionListener());
-        setNextFocusableComponent(this);
+//        setNextFocusableComponent(this);
         setLayout(null);
+
+        // on JDK 1.4, we set Ctrl+TAB and Ctrl+Shift+TAB as focus traversal
+        // keys - to have TAB and Shift+TAB free for component selection
+        java.lang.reflect.Method setFocusTraversalKeysMethod = null;
+        try {
+            setFocusTraversalKeysMethod =
+                getClass().getMethod("setFocusTraversalKeys", // NOI18N
+                                     new Class[] { Integer.TYPE, Set.class });
+        }
+        catch (NoSuchMethodException ex) {} // ignore
+
+        if (setFocusTraversalKeysMethod != null) { // JDK 1.4 or newer
+            Set keys = new HashSet();
+            try {
+                Class awtKeyStrokeClass = Class.forName("java.awt.AWTKeyStroke"); // NOI18N
+                java.lang.reflect.Method getAWTKeyStrokeMethod =
+                    awtKeyStrokeClass.getMethod("getAWTKeyStroke", // NOI18N
+                                                new Class[] { Integer.TYPE,
+                                                              Integer.TYPE,
+                                                              Boolean.TYPE });
+//                keys.add(AWTKeyStroke.getAWTKeyStroke(
+//                           9, InputEvent.CTRL_DOWN_MASK, true));
+                keys.add(getAWTKeyStrokeMethod.invoke(
+                           null,
+                           new Object[] { new Integer(9),
+                                          new Integer(128),
+                                          Boolean.TRUE }));
+
+//                setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+//                                      keys);
+                setFocusTraversalKeysMethod.invoke(this,
+                                                   new Object[] {
+                                                       new Integer(0), keys });
+
+                keys.clear();
+//                keys.add(AWTKeyStroke.getAWTKeyStroke(
+//                          9,
+//                          InputEvent.CTRL_DOWN_MASK|InputEvent.SHIFT_DOWN_MASK,
+//                          true));
+                keys.add(getAWTKeyStrokeMethod.invoke(
+                           null,
+                           new Object[] { new Integer(9),
+                                          new Integer(192),
+                                          Boolean.TRUE }));
+                
+//                setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+//                                      keys);
+                setFocusTraversalKeysMethod.invoke(this,
+                                                   new Object[] {
+                                                       new Integer(1), keys });
+            }
+            catch (Exception ex) { // should not happen (running on JDK 1.4)
+                ex.printStackTrace();
+            }
+        }
     }
 
     void setViewOnly(boolean viewOnly) {
@@ -140,16 +195,25 @@ class HandleLayer extends JPanel
     protected void processKeyEvent(KeyEvent e) {
         int keyCode = e.getKeyCode();
 
-        // we are interested in TAB key - and we want to know about it
-        // before focus manager does - not focus but selection is changed
+        // JDK 1.3 focus traversal hacks - we don't allow TAB keys to get to
+        // the focus manager, we handle it by ourselves - not changing the
+        // focus but the component selection
         if (keyCode == KeyEvent.VK_TAB || e.getKeyChar() == '\t') {
             if (e.getID() == KeyEvent.KEY_PRESSED) {
+                if ((e.getModifiers()&InputEvent.CTRL_MASK)==InputEvent.CTRL_MASK) {
+                    // Ctrl+TAB
+                    if ((e.getModifiers()&InputEvent.SHIFT_MASK)!=InputEvent.SHIFT_MASK)
+                        FocusManager.getCurrentManager().focusNextComponent(this);
+                    else
+                        FocusManager.getCurrentManager().focusPreviousComponent(this);
+                }
+                else {
+                    RADComponent nextComp = formDesigner.getNextVisualComponent(
+                        (e.getModifiers()&InputEvent.SHIFT_MASK)!=InputEvent.SHIFT_MASK);
 
-                RADComponent nextComp = formDesigner.getNextVisualComponent(
-                    (e.getModifiers()&InputEvent.SHIFT_MASK)!=InputEvent.SHIFT_MASK);
-
-                 if (nextComp != null)
-                     formDesigner.setSelectedComponent(nextComp);
+                     if (nextComp != null)
+                         formDesigner.setSelectedComponent(nextComp);
+                }
             }
             e.consume();
         }
@@ -164,9 +228,29 @@ class HandleLayer extends JPanel
             }
             e.consume();
         }
-        else if ((keyCode == KeyEvent.VK_ESCAPE)) {
-            cancelDragging();
-            e.consume();
+        else if (keyCode == KeyEvent.VK_ESCAPE) {
+            if (cancelDragging())
+                e.consume();
+        }
+        else if (keyCode == KeyEvent.VK_F10) {
+            if ((e.getModifiers() & InputEvent.SHIFT_MASK) != 0) {
+                Point p = null;
+                Iterator it = formDesigner.getSelectedComponents().iterator();
+                if (it.hasNext()) {
+                    RADComponent metacomp = (RADComponent)it.next();
+                    Object sel = (Component) formDesigner.getComponent(metacomp);
+                    if (sel instanceof Component) {
+                        Component comp = (Component) sel;
+                        p = SwingUtilities.convertPoint(comp.getParent(),
+                                                        comp.getLocation(),
+                                                        this);
+                    }
+                    else p = new Point(0,0);
+
+                    showContextMenu(p);
+                    e.consume();
+                }
+            }
         }
         else {
             super.processKeyEvent(e);
