@@ -115,7 +115,7 @@ public class NodeGeneratorRunnable implements Runnable, AWTEventListener {
                     help.setText(NbBundle.getMessage(NodeGeneratorRunnable.class, "ERR_NoPopup")); // NOI18N
                 } catch (Exception e) {
                     help.setText(NbBundle.getMessage(NodeGeneratorRunnable.class, "MSG_Exception")+e.getMessage());  // NOI18N
-//                    e.printStackTrace();
+                    e.printStackTrace();
                 }
             }
         } catch (InterruptedException ie) {

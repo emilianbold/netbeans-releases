@@ -43,6 +43,7 @@ import org.openide.cookies.SourceCookie;
 import org.openide.execution.NbClassLoader;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystemCapability;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -361,8 +362,10 @@ public class NodeGenerator {
                 else if (token.equals("SHIFT")) modifiers+="|KeyEvent.SHIFT_MASK"; // NOI18N
                 else key="KeyEvent.VK_"+token; // NOI18N
             }
-            if (modifiers.length()>0) modifiers=modifiers.substring(1);
-            return modifiers+", "+key; // NOI18N
+            if (modifiers.length()>1) {
+                return modifiers.substring(1)+", "+key; // NOI18N;
+            }
+            return key;
         }
             
         /** getter of popup path
@@ -562,7 +565,7 @@ public class NodeGenerator {
         Iterator it = allRecords.iterator();
         ActionRecord record=null;
         while (it.hasNext() && !(record=(ActionRecord)it.next()).isForPopup(popupPath));
-        if (!record.isForPopup(popupPath)) {
+        if (record==null || !record.isForPopup(popupPath)) {
             record = new NewActionRecord(popupPath, shortcut);
             allRecords.add(record);
         }
@@ -607,7 +610,7 @@ public class NodeGenerator {
     private void searchForActions() {
         allRecords = new ArrayList();
         Enumeration fsystems = Repository.getDefault().fileSystems();
-        ClassLoader loader=NbClassLoader.getSystemClassLoader();
+        ClassLoader loader=new NbClassLoader(Repository.getDefault().toArray(), Action.class.getClassLoader());
         while (fsystems.hasMoreElements()) {
             Enumeration fobjects = ((FileSystem)fsystems.nextElement()).getRoot().getData(true);
             while (fobjects.hasMoreElements()) {
