@@ -1096,19 +1096,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         }
         
         if (id == JspTagTokenContext.SYMBOL2 || id == JspDirectiveTokenContext.SYMBOL2) {
-            
-            //test whether we are afetr < symbol
-            if (("<".equals(item.getImage().substring(0,offset - item.getOffset()))) && isScriptStartToken(item)) {
-                return getContentChain(item, offset);
-            }
-            
-            //test whether we are after <% symbol
-            if (("<%".equals(item.getImage().substring(0,offset - item.getOffset()))) && isScriptStartToken(item)) {
-                return getScriptingChain(item.getNext(), offset);
-            }
-            
-            //test whether we are after the symbol token 
-            if ((getTokenEnd(item) == offset) && isScriptStartToken(item)) {
+//System.out.println("just at symbol");
+            if (isScriptStartToken(item)) {
                 return getScriptingChain(item.getNext(), offset);
             }
             
