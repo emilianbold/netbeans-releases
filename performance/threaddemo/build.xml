@@ -68,7 +68,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="threaddemo.jar"/>
             </classpath>
             <arg file="${testdir}"/>
-            <jvmarg value="-Xmx32m"/>
+            <jvmarg value="-Xmx64m"/>
             <jvmarg value="-ea"/>
         </java>
     </target>
@@ -80,7 +80,8 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="threaddemo.jar"/>
             </classpath>
             <arg file="${testdir}"/>
-            <jvmarg value="-Xmx32m"/>
+            <jvmarg value="-Xmx64m"/>
+            <jvmarg value="-ea"/>
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xnoagent"/>
             <jvmarg value="-Djava.compiler=none"/>
@@ -98,7 +99,8 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="-startCPUprofiler:type=sampler,samplingPeriod=1,onlyCPU=true"/>
             <arg value="threaddemo.Main"/>
             <arg file="${testdir}"/>
-            <jvmarg value="-Xmx32m"/>
+            <jvmarg value="-Xmx64m"/>
+            <jvmarg value="-ea"/>
             <sysproperty key="OPTITDIR" file="${optit}"/>
             <env key="LD_LIBRARY_PATH" path="${optit}/lib"/>
             <jvmarg value="-Xbootclasspath/a:${optit}/lib/oibcp.jar"/>
