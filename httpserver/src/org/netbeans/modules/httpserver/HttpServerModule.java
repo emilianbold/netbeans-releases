@@ -26,6 +26,7 @@ import org.openide.execution.NbClassPath;
 import org.openide.util.NbBundle;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
+import org.openide.ErrorManager;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -114,6 +115,16 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                                            catch (ThreadDeath td) {
                                                throw td;
                                            }
+                                           catch (java.net.BindException ex) {
+                                               // If the socket bind fails, log it. NetBeans will continue to loop 
+                                               // to find the first open socket
+                                               //
+                                               TopManager.getDefault().getErrorManager().notify( ErrorManager.INFORMATIONAL, ex);
+                                               // couldn't start
+                                               serverThread = null;
+                                               inSetRunning = false;
+                                               HttpServerSettings.OPTIONS.runFailure();
+                                           }
                                            catch (Throwable ex) {
                                                ex.printStackTrace();
                                                // couldn't start
@@ -153,6 +164,12 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                 if ((serverThread != null) && (server != null)) {
                     try {
                         server.stop();
+                        /* an attempt to stop all threads
+                        Enumeration enum = server.getContexts ();
+                        while (enum.hasMoreElements ()) 
+                            server.shutdownContext ((Context)enum.nextElement ());
+                        server.shutdown ();
+                         */
                         serverThread.join();
                     }
                     catch (InterruptedException e) {
