@@ -51,7 +51,8 @@ public abstract class XTest extends JellyTestCase {
     protected String packageName() {
         return  getPackageName();
     }
-    
+
+    /** Returns test's package name. */
     protected String getPackageName() {
         if (packageName == null) {
             packageName = this.getClass().getPackage().getName();
@@ -59,18 +60,21 @@ public abstract class XTest extends JellyTestCase {
         return packageName;
     }
 
+    /** Returns test's package name delimited by 'separator'. */
     protected String getPackageName(String separator) {
         String name = getPackageName();
         name = org.openide.util.Utilities.replaceString(name, ".", separator);
         return name;
     }
 
+    /** Returns data package name  delimited by 'separator'. */
     protected String getDataPackageName(String separator) {
         String name = getPackageName(separator);
         name += separator + "data";
         return name;
     }
 
+    /** Returns absolute test folder path. **/
     protected String getAbsolutePath() {
         if (absolutePath == null) {
             String url = this.getClass().getResource("").toExternalForm();
@@ -78,7 +82,8 @@ public abstract class XTest extends JellyTestCase {
         }
         return absolutePath;
     }
-    
+
+    /** Returns test's filesystem display name */
     protected String getFilesystemName() throws FileStateInvalidException {
         if (fsName == null) {
             fsName = TestUtil.findFileObject(packageName(), Utilities.getShortClassName(this.getClass()), "class").getFileSystem().getDisplayName();
