@@ -94,7 +94,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
                                                     public void propertyChange( PropertyChangeEvent evt ) {
                                                         if( PropWithDefaultPanel.PROP_VALUE.equals( evt.getPropertyName() ) ) {
                                                             Color newValue = (Color)fgColorPanel.getValue();
-                                                            setValueImpl( Coloring.changeForeColor( value.coloring, newValue, Coloring.COLOR_MODE_DEFAULT ) );
+                                                            setValueImpl( Coloring.changeForeColor( value.coloring, newValue) );
                                                         }
                                                     }
                                                 } );
@@ -112,7 +112,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
                                                     public void propertyChange( PropertyChangeEvent evt ) {
                                                         if( PropWithDefaultPanel.PROP_VALUE.equals( evt.getPropertyName() ) ) {
                                                             Color newValue = (Color)bgColorPanel.getValue();
-                                                            setValueImpl( Coloring.changeBackColor( value.coloring, newValue, Coloring.COLOR_MODE_DEFAULT ) );
+                                                            setValueImpl( Coloring.changeBackColor( value.coloring, newValue) );
                                                         }
                                                     }
                                                 } );
