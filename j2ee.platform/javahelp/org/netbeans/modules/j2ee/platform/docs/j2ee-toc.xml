@@ -229,8 +229,7 @@
 		<tocitem text="Working with Web Services" target="ws_process" />
 		<tocitem text="Web Service Tasks: Quick Reference" target="tbd" />
   	 </tocitem>
-	 <tocitem text="Creating and Editing Web Services" >
-                <tocitem text="Deciding How to Implement a Web Service" target="decide_ws" />
+	 <tocitem text="Creating and Editing Web Services" > 
 	        <tocitem text="Creating a Web Service" target="create_ws" />
     	        <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
 	        <tocitem text="Adding a SOAP Message Handler" target="add_soap_message" />
@@ -239,7 +238,7 @@
 		<tocitem text="Sending a JMS Message" target="send_JMS_message" />
   	 </tocitem>
          <tocitem text="Configuring Web Services" >
-		<tocitem text="Configuring How Web Services Are Created" target="create_ws_customize" />
+	        <tocitem text="Configuring Web Service Clients" target="create_ws_customize" />
 	        <tocitem text="Configuring Web Service Operations" target="webservicesxml" />
          </tocitem>
          <tocitem text="Building and Exposing Web Services" >
