@@ -29,6 +29,12 @@ public interface WsCompileEditorSupport {
     /** Editor fires this property event when the user edits a feature list
      */
     public static final String PROP_FEATURES_CHANGED = "featuresChanged";
+    public static final String PROP_DEBUG_CHANGED = "debugChanged";
+    public static final String PROP_OPTIMIZE_CHANGED = "optimizeChanged";
+    public static final String PROP_VERBOSE_CHANGED = "verboseChanged";
+    
+    public static final int TYPE_SERVICE = 1;
+    public static final int TYPE_CLIENT = 2;
     
     public WsCompileEditorSupport.Panel getWsCompileSupport();
     
@@ -40,7 +46,7 @@ public interface WsCompileEditorSupport {
         
         /** Call to initialize the properties in the editor panel
          */
-        public void initValues(List/*ServiceSettings*/ settings);
+        public void initValues(List/*ServiceSettings*/ settings, int type);
         
         /** Validation entry point.
          */
