@@ -23,6 +23,7 @@ import com.installshield.util.Log;
 import com.installshield.wizard.RunnableWizardBeanState;
 import com.installshield.wizard.service.WizardLog;
 import com.installshield.wizard.service.file.FileService;
+import java.io.File;
 
 import java.util.Properties;
 
@@ -70,18 +71,44 @@ public class NbSummaryPanel extends TextDisplayPanel
                 if (getWizard().getExitCode() != -1) {
                     //Installation failed or cancelled.
                     String summaryMessage;
-                    if (getWizard().getExitCode() == InstallJ2sdkAction.J2SDK_UNHANDLED_ERROR) {
+                    if (getWizard().getExitCode() == InstallJ2sdkAction.JDK_UNHANDLED_ERROR) {
                         summaryMessage = "$L(org.netbeans.installer.Bundle,SummaryPanel.description1)";
                         summaryMessage += " " + "$L(org.netbeans.installer.Bundle,Product.displayName)";
                         summaryMessage += " " + "$L(org.netbeans.installer.Bundle,SummaryPanel.description3)";
+                        //NB install location
                         summaryMessage += "<br><br>"
                         + "$L(org.netbeans.installer.Bundle,Product.displayName)" + " "
                         + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
                         + nbInstallDir;
+                        //Error message
+                        if (Util.isWindowsOS()) {
+                            summaryMessage += "<br><br>"
+                            + "$L(org.netbeans.installer.Bundle, SummaryPanel.errorJDK,"
+                            + "$L(org.netbeans.installer.Bundle, JDK.shortName),"
+                            + j2seInstallDir + ","
+                            + nbInstallDir + File.separator + "_uninst" + ")";
+                        } else {
+                            summaryMessage += "<br><br>"
+                            + "$L(org.netbeans.installer.Bundle, SummaryPanel.errorJDK,"
+                            + "$L(org.netbeans.installer.Bundle, JDK.shortName),"
+                            + j2seInstallDir + ","
+                            + j2seInstallDir + File.separator + "_uninst" + ")";
+                        }
+                    } else if (getWizard().getExitCode() == InstallJ2sdkAction.JRE_UNHANDLED_ERROR) {
+                        summaryMessage = "$L(org.netbeans.installer.Bundle,SummaryPanel.description1)";
+                        summaryMessage += " " + "$L(org.netbeans.installer.Bundle,Product.displayName)";
+                        summaryMessage += " " + "$L(org.netbeans.installer.Bundle,SummaryPanel.description3)";
+                        //NB install location
                         summaryMessage += "<br><br>"
-                        + "$L(org.netbeans.installer.Bundle, SummaryPanel.errorJDK,"
-                        + "$L(org.netbeans.installer.Bundle, JDK.shortName),"
-                        + j2seInstallDir + ")";
+                        + "$L(org.netbeans.installer.Bundle,Product.displayName)" + " "
+                        + "$L(org.netbeans.installer.Bundle,SummaryPanel.description4)" + "<br>"
+                        + nbInstallDir;
+                        //Error message
+                        summaryMessage += "<br><br>"
+                        + "$L(org.netbeans.installer.Bundle, SummaryPanel.errorJRE,"
+                        + "$L(org.netbeans.installer.Bundle, JRE.shortName),"
+                        + jreInstallDir + ","
+                        + nbInstallDir + File.separator + "_uninst" + ")";
                     } else {
                         InstallAction ia = (InstallAction) getWizardTree().getBean("install");
                         RunnableWizardBeanState state = ia.getState();

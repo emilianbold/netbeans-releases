@@ -35,7 +35,11 @@ import java.util.Arrays;
 public class InstallJ2sdkAction extends ProductAction implements FileFilter {
     
     //return code incase an error returns
-    public static final int J2SDK_UNHANDLED_ERROR = -250;
+    public static final int JDK_UNHANDLED_ERROR = -250;
+    public static final int JRE_UNHANDLED_ERROR = -251;
+    
+    private static final int JDK_INSTALL_TYPE = 1;
+    private static final int JRE_INSTALL_TYPE = 2;
     
     private int installMode = 0;
     private static final int INSTALL = 0;
@@ -168,43 +172,46 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
 	    // Invoke the correct command
             logEvent(this, Log.DBG,"# # # # # # # #");
             logEvent(this, Log.DBG,"Start Invoking JDK installer: cmdArray -> " + Arrays.asList(cmdArray).toString());
-            runCommand(cmdArray, envP, support);
+            int jdkReturnStatus = runExternalCommand(cmdArray, envP, support, JDK_INSTALL_TYPE);
             
-            //Update status description
-            if (Util.isWindowsOS() && !Util.isJREAlreadyInstalled()) {
-                statusDesc = resolveString("$L(org.netbeans.installer.Bundle,ProgressPanel.installMessage,"
-                + "$L(org.netbeans.installer.Bundle,JRE.shortName))")
-                + " "
-                + resolveString("$L(org.netbeans.installer.Bundle,ProgressPanel.waitMessage)") ;
-        
-                support.getOperationState().setStatusDescription(statusDesc);
-            }
-            if (Util.isWindowsNT() || Util.isWindows98()) {
-                //Install public JRE only when it is not already installed.
-                if (!Util.isJREAlreadyInstalled()) {
-                    String jreInstaller = findJREWindowsInstaller() + File.separator + "jre.msi";
-                    if (jreInstaller != null) {
-                        cmdArray[0] = "msiexec.exe /qn /i \"" + jreInstaller + "\""
-                        + " IEXPLORER=1 MOZILLA=1";
+            //Public JRE can be only installed when JDK installation is successfull
+            if (jdkReturnStatus == 0) {
+                //Update status description
+                if (Util.isWindowsOS() && !Util.isJREAlreadyInstalled()) {
+                    statusDesc = resolveString("$L(org.netbeans.installer.Bundle,ProgressPanel.installMessage,"
+                    + "$L(org.netbeans.installer.Bundle,JRE.shortName))")
+                    + " "
+                    + resolveString("$L(org.netbeans.installer.Bundle,ProgressPanel.waitMessage)") ;
+
+                    support.getOperationState().setStatusDescription(statusDesc);
+                }
+                if (Util.isWindowsNT() || Util.isWindows98()) {
+                    //Install public JRE only when it is not already installed.
+                    if (!Util.isJREAlreadyInstalled()) {
+                        String jreInstaller = findJREWindowsInstaller() + File.separator + "jre.msi";
+                        if (jreInstaller != null) {
+                            cmdArray[0] = "msiexec.exe /qn /i \"" + jreInstaller + "\""
+                            + " IEXPLORER=1 MOZILLA=1";
+                            logEvent(this, Log.DBG,"# # # # # # # #");
+                            logEvent(this, Log.DBG,"Start Invoking JRE installer: cmdArray -> " + Arrays.asList(cmdArray).toString());
+                            runExternalCommand(cmdArray, envP, support, JRE_INSTALL_TYPE);
+                        }
+                    }
+                } else if (Util.isWindowsOS()) {
+                    //Install public JRE only when it is not already installed.
+                    if (!Util.isJREAlreadyInstalled()) {
+                        String jreInstallScript = nbInstallDir + File.separator + "_uninst"
+                        + File.separator + "custom-install-jre.template";
+                        createInstallScriptJREWindows(jreInstallScript, "custom-install-jre.bat");
+                        execName = "custom-install-jre.bat";
+                        paramCount = 1;
+                        cmdArray = new String[paramCount];
+                        execPath   = nbInstallDir + File.separator + "_uninst" + File.separator + execName;
+                        cmdArray[0] = execPath;
                         logEvent(this, Log.DBG,"# # # # # # # #");
                         logEvent(this, Log.DBG,"Start Invoking JRE installer: cmdArray -> " + Arrays.asList(cmdArray).toString());
-                        runCommand(cmdArray, envP, support);
+                        runExternalCommand(cmdArray, envP, support, JRE_INSTALL_TYPE);
                     }
-                }
-            } else if (Util.isWindowsOS()) {
-                //Install public JRE only when it is not already installed.
-                if (!Util.isJREAlreadyInstalled()) {
-                    String jreInstallScript = nbInstallDir + File.separator + "_uninst"
-                    + File.separator + "custom-install-jre.template";
-                    createInstallScriptJREWindows(jreInstallScript, "custom-install-jre.bat");
-                    execName = "custom-install-jre.bat";
-                    paramCount = 1;
-                    cmdArray = new String[paramCount];
-                    execPath   = nbInstallDir + File.separator + "_uninst" + File.separator + execName;
-                    cmdArray[0] = execPath;
-                    logEvent(this, Log.DBG,"# # # # # # # #");
-                    logEvent(this, Log.DBG,"Start Invoking JRE installer: cmdArray -> " + Arrays.asList(cmdArray).toString());
-                    runCommand(cmdArray, envP, support);
                 }
             }
 
@@ -274,13 +281,14 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
     }
     
     //threads should only run in install mode until ISMP supports them
-    private void runCommand(String[] cmdArray, String [] envP, ProductActionSupport support)
+    private int runExternalCommand (String[] cmdArray, String [] envP, ProductActionSupport support, int type)
     throws Exception{
         boolean doProgress = !(Boolean.getBoolean("no.progress"));
         logEvent(this, Log.DBG,"doProgress -> " + doProgress);
         
         //mutableOperationState = support.getOperationState();
         logEvent(this, Log.DBG,"cmdArray -> " + Arrays.asList(cmdArray).toString());
+        int status = 0;
         try {
             if (Util.isWindowsNT() || Util.isWindows98()) {
                 //HACK: don't exec script for NT or 98
@@ -297,29 +305,61 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             runCommand.waitFor();
             logEvent(this, Log.DBG,runCommand.print());
             
-            int status = runCommand.getReturnStatus();
+            status = runCommand.getReturnStatus();
             logEvent(this, Log.DBG,"Return status: " + status);
             
             if((installMode == INSTALL) && doProgress) {
                 stopProgress();
             }
             
-            if (!isCompletedSuccessfully()) {
-                String mode = (installMode == INSTALL) ? "install" : "uninstall";
-                String commandStr = Util.arrayToString(cmdArray, " ");
-                logEvent(this, Log.DBG, "Error occured while " + mode + "ing [" + status + "] -> " + commandStr);
-                logEvent(this, Log.ERROR, "Error occured while " + mode + "ing [" + status +  "] -> " + commandStr);
-                try {
-                    ExitCodeService ecservice = (ExitCodeService)getService(ExitCodeService.NAME);
-                    ecservice.setExitCode(J2SDK_UNHANDLED_ERROR);
-                } catch (Exception ex) {
-                    logEvent(this, Log.ERROR, "Couldn't set exit code. ");
+            if (type == JDK_INSTALL_TYPE) {
+                if (status == 0) {
+                    if (!isCompletedSuccessfully()) {
+                        String mode = (installMode == INSTALL) ? "install" : "uninstall";
+                        String commandStr = Util.arrayToString(cmdArray, " ");
+                        logEvent(this, Log.DBG, "Error occured while " + mode + "ing [" + status + "] -> " + commandStr);
+                        logEvent(this, Log.ERROR, "Error occured while " + mode + "ing [" + status +  "] -> " + commandStr);
+                        try {
+                            ExitCodeService ecservice = (ExitCodeService)getService(ExitCodeService.NAME);
+                            ecservice.setExitCode(JDK_UNHANDLED_ERROR);
+                        } catch (Exception ex) {
+                            logEvent(this, Log.ERROR, "Couldn't set exit code. ");
+                        }
+                        return JDK_UNHANDLED_ERROR;
+                    }
+                } else {
+                    String mode = (installMode == INSTALL) ? "install" : "uninstall";
+                    String commandStr = Util.arrayToString(cmdArray, " ");
+                    logEvent(this, Log.DBG, "Error occured while " + mode + "ing [" + status + "] -> " + commandStr);
+                    logEvent(this, Log.ERROR, "Error occured while " + mode + "ing [" + status +  "] -> " + commandStr);
+                    try {
+                        ExitCodeService ecservice = (ExitCodeService)getService(ExitCodeService.NAME);
+                        ecservice.setExitCode(JDK_UNHANDLED_ERROR);
+                    } catch (Exception ex) {
+                        logEvent(this, Log.ERROR, "Couldn't set exit code. ");
+                    }
+                    return JDK_UNHANDLED_ERROR;
+                }
+            } else {
+                if (status != 0) {
+                    String mode = (installMode == INSTALL) ? "install" : "uninstall";
+                    String commandStr = Util.arrayToString(cmdArray, " ");
+                    logEvent(this, Log.DBG, "Error occured while " + mode + "ing [" + status + "] -> " + commandStr);
+                    logEvent(this, Log.ERROR, "Error occured while " + mode + "ing [" + status +  "] -> " + commandStr);
+                    try {
+                        ExitCodeService ecservice = (ExitCodeService)getService(ExitCodeService.NAME);
+                        ecservice.setExitCode(JRE_UNHANDLED_ERROR);
+                    } catch (Exception ex) {
+                        logEvent(this, Log.ERROR, "Couldn't set exit code. ");
+                    }
+                    return JRE_UNHANDLED_ERROR;
                 }
             }
         } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
         }
+        return status;
     }
     
     /** check whether or not the un/installation was successful */
@@ -666,7 +706,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         
         String installerPath = findJREWindowsInstaller();
         String driveName = installerPath.substring(0, installerPath.indexOf(File.separator));
-        String logFileName = nbInstallDir + File.separator + "_uninst" + File.separator + "install-jdk.log";
+        String logFileName = nbInstallDir + File.separator + "_uninst" + File.separator + "install-jre.log";
         
         String line;
         while ((line = reader.readLine()) != null) {
