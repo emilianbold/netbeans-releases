@@ -103,7 +103,6 @@ public class Plain extends NbTopManager implements Runnable {
     /** Initializaton of modules if user directory provided.
      */
     public void run() {
-        XML.init();
         String userDir = System.getProperty("modules.dir"); // NOI18N
         FileSystem fs = getRepository().getDefaultFileSystem();
         try {

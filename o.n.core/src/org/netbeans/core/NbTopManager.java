@@ -64,6 +64,8 @@ import org.netbeans.core.compiler.CompilationEngineImpl;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleManager;
 import org.netbeans.core.modules.ModuleSystem;
+import org.openide.xml.EntityCatalog;
+import org.openide.loaders.Environment;
 
 /** This class is a TopManager for Corona environment.
 *
@@ -424,6 +426,18 @@ public abstract class NbTopManager extends TopManager {
         }
     }
 
+    /** Getter of the default Environment.Provider
+     */
+    public Environment.Provider getEnvironmentProvider () {
+        return org.netbeans.core.xml.XML.getEnvironmentProvider ();
+    }
+
+    /** Getter of the EntityCatalog of the system.
+     */
+    public EntityCatalog getEntityCatalog () {
+        return org.netbeans.core.xml.XML.getEntityCatalog ();
+    }
+    
     /** Get the default exception manager for the IDE. It can be used to rafine
     * handling of exception and the way they are presented to the user.
     * @deprecated Do not call directly! Use ErrorManager.getDefault. This method

@@ -59,13 +59,13 @@ import org.openide.ErrorManager;
  *
  * @author  Jaroslav Tulach
  */
-public class FileEntityResolver extends EntityCatalog implements Environment.Provider {
+final class FileEntityResolver extends EntityCatalog implements Environment.Provider {
     private static final String ENTITY_PREFIX = "/xml/entities"; // NOI18N
     private static final String LOOKUP_PREFIX = "/xml/lookups"; // NOI18N
     
     /** Constructor
      */
-    public FileEntityResolver() {
+    FileEntityResolver() {
     }
     
     /** Tries to find the entity on system file system.

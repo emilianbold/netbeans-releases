@@ -470,10 +470,6 @@ public class NonGui extends NbTopManager implements Runnable {
         }
         StartLog.logProgress ("Upgrade wizzard consulted"); // NOI18N
         
-        // 8 1/2 XML stuff
-        XML.init();
-        StartLog.logProgress ("XML stuff initialized"); // NOI18N
-
         // -----------------------------------------------------------------------------------------------------
         // 9. Modules
 

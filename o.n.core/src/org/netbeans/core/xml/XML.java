@@ -14,18 +14,34 @@
 package org.netbeans.core.xml;
 
 import java.util.*;
+import org.openide.loaders.Environment;
+import org.openide.xml.EntityCatalog;
 
 /** Global utils for XML related stuff.
  *
  * @author  Jaroslav Tulach
  */
 public final class XML extends Object {
-    /** Initializes the XML in the IDE. Currently registers all XMLDataObject.Processors.
+    private static FileEntityResolver DEFAULT;
+    
+    /** Getter of the default Environment.Provider
      */
-    public static void init () {
-        org.netbeans.core.NbTopManager.get ().register (new FileEntityResolver ());
-        //org.netbeans.core.xml.EntityCatalogImpl.init ();
-        //org.netbeans.core.windows.toolbars.ToolbarConfiguration.init ();
+    public static Environment.Provider getEnvironmentProvider () {
+        if (DEFAULT == null) {
+            DEFAULT = new FileEntityResolver ();
+        }
+        
+        return DEFAULT;
     }
 
+    /** Getter of the EntityCatalog of the system.
+     */
+    public static EntityCatalog getEntityCatalog () {
+        if (DEFAULT == null) {
+            DEFAULT = new FileEntityResolver ();
+        }
+        
+        return DEFAULT;
+    }
+    
 }
