@@ -107,6 +107,8 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
         
         /* Create and display a confirmation dialog - Save/Discard/Cancel: */
+        String title = NbBundle.getMessage(PropertiesOpen.class,
+                                           "CTL_Question");         //NOI18N
         String question = NbBundle.getMessage(PropertiesOpen.class,
                                               "MSG_SaveFile",       //NOI18N
                                               propDataObject.getName());
@@ -116,7 +118,7 @@ public class PropertiesOpen extends CloneableOpenSupport
                                                    "CTL_Discard");  //NOI18N
         NotifyDescriptor descr = new DialogDescriptor(
                 question,
-                null,                               //title
+                title,                              //title
                 true,                               //modal
                 new Object[] {optionSave,
                               optionDiscard,
