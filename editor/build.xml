@@ -80,7 +80,7 @@ Microsystems, Inc. All Rights Reserved.
              topdir="."
              module="netbeans/modules/editor.jar"
 	     homepage="http://editor.${homepage.base}/"
-	     distribution="http://{dist.base}/editor.nbm">
+	     distribution="http://${dist.base}/editor.nbm">
       <license file="${license.file}"/>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>

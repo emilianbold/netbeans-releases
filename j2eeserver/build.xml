@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
              topdir="."
              module="netbeans/modules/autoload/j2eeserver.jar"
              homepage="http://${homepage.base}/j2eeserver.html"
-             distribution="${dist.base}/j2eeserver.nbm">
+             distribution="http://${dist.base}/j2eeserver.nbm">
       <license file="${license.file}" />
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
       <exclude name="**/nondist/**" />

@@ -697,6 +697,208 @@ the ${netbeans.dest}/bin/ directory.
     </makeupdatedesc>
   </target>
 
+  <target name="update-info33me" depends="init,all-openide,all-core,update-info"
+          description="Build Auto Update NBM files and XML descriptions.">
+    <!-- Note: partially sorted in dependency order -->
+    <!-- (this could also be done with separate targets). -->
+    <echo message="Making NBM for module ant..."/>
+    <ant dir="../ant" target="nbm"/>
+    <echo message="Making NBM for module openidex..."/>
+    <ant dir="../openidex" target="nbm"/>
+    <echo message="Making NBM for module debuggercore..."/>
+    <ant dir="../debuggercore" target="nbm"/>
+    <echo message="Making NBM for module debuggerjpda..."/>
+    <ant dir="../debuggerjpda" target="nbm"/>
+    <echo message="Making NBM for module debuggertools..."/>
+    <ant dir="../debuggertools" target="nbm"/>
+    <echo message="Making NBM for module applet..."/>
+    <ant dir="../applet" target="nbm"/>
+    <echo message="Making NBM for module autoupdate..."/>
+    <ant dir="../autoupdate" target="nbm"/>
+    <echo message="Making NBM for module java..."/>
+    <ant dir="../java" target="nbm"/>
+    <echo message="Making NBM for module beans..."/>
+    <ant dir="../beans" target="nbm"/>
+    <echo message="Making NBM for module classfile..."/>
+    <ant dir="../classfile" target="nbm"/>
+    <echo message="Making NBM for module clazz..."/>
+    <ant dir="../clazz" target="nbm"/>
+    <echo message="Making NBM for module debuggerjpda..."/>
+    <ant dir="../debuggerjpda" target="nbm"/>
+    <echo message="Making NBM for module debuggertools..."/>
+    <ant dir="../debuggertools" target="nbm"/>
+    <echo message="Making NBM for module editor..."/>
+    <ant dir="../editor" target="nbm"/>
+    <echo message="Making NBM for module form..."/>
+    <ant dir="../form" target="nbm"/>
+    <echo message="Making NBM for module html..."/>
+    <ant dir="../html" target="nbm"/>
+    <echo message="Making NBM for module httpserver/servletapi..."/>
+    <ant dir="../httpserver/servletapi" target="nbm"/>
+    <echo message="Making NBM for module httpserver..."/>
+    <ant dir="../httpserver" target="nbm"/>
+    <echo message="Making NBM for module extbrowser..."/>
+    <ant dir="../extbrowser" target="nbm"/>
+    <echo message="Making NBM for module properties..."/>
+    <ant dir="../properties" target="nbm"/>
+    <echo message="Making NBM for module jarpackager..."/>
+    <ant dir="../jarpackager" target="nbm"/>
+    <echo message="Making NBM for module j2eeserver..."/>
+    <ant dir="../j2eeserver" target="nbm"/>
+    <echo message="Making NBM for module web/core..."/>
+    <ant dir="../web/core" target="nbm"/>
+    <echo message="Making NBM for module web/jspsyntax..."/>
+    <ant dir="../web/jspsyntax" target="nbm"/>
+    <echo message="Making NBM for module tomcatint..."/>
+    <ant dir="../tomcatint" target="nbm"/>
+    <echo message="Making NBM for module i18n..."/>
+    <ant dir="../i18n" target="nbm"/>
+<!--
+    <echo message="Making NBM for module icebrowser..."/>
+    <ant dir="../icebrowser" target="nbm"/>
+-->
+    <echo message="Making NBM for module image..."/>
+    <ant dir="../image" target="nbm"/>
+<!--
+    <echo message="Making NBM for module innertesters..."/>
+    <ant dir="../innertesters" target="nbm"/>
+-->
+    <echo message="Making NBM for module jndi..."/>
+    <ant dir="../jndi" target="nbm"/>
+    <echo message="Making NBM for module apisupport..."/>
+    <ant dir="../apisupport" target="nbm"/>
+    <echo message="Making NBM for module apisupport/lite..."/>
+    <ant dir="../apisupport/lite" target="nbm"/>
+    <echo message="Making NBM for module javadoc..."/>
+    <ant dir="../javadoc" target="nbm"/>
+<!--
+    <echo message="Making NBM for module javaembeddedserver..."/>
+    <ant dir="../javaembeddedserver" target="nbm"/>
+    <echo message="Making NBM for module jini..."/>
+    <ant dir="../jini" target="nbm"/>
+    <echo message="Making NBM for module makefile..."/>
+    <ant dir="../makefile" target="nbm"/>
+    <echo message="Making NBM for module multicompile..."/>
+    <ant dir="../multicompile" target="nbm"/>
+    <echo message="Making NBM for module objectbrowser..."/>
+    <ant dir="../objectbrowser" target="nbm"/>
+-->
+    <echo message="Making NBM for module projects..."/>
+    <ant dir="../projects" target="nbm"/>
+<!--
+    <echo message="Making NBM for module remotefs..."/>
+    <ant dir="../remotefs" target="nbm"/>
+-->
+    <echo message="Making NBM for module rmi..."/>
+    <ant dir="../rmi" target="nbm"/>
+<!-- Not for now (binaries issues): -->
+    <echo message="Making NBM for module scripting..."/>
+    <ant dir="../scripting" target="nbm"/>
+<!-- -->
+<!--
+    <echo message="Making NBM for module serialversion..."/>
+    <ant dir="../serialversion" target="nbm"/>
+    <echo message="Making NBM for module sysprops..."/>
+    <ant dir="../sysprops" target="nbm"/>
+-->
+    <echo message="Making NBM for module text..."/>
+    <ant dir="../text" target="nbm"/>
+    <echo message="Making NBM for module usersguide..."/>
+    <ant dir="../usersguide" target="nbm"/>
+    <echo message="Making NBM for module utilities..."/>
+    <ant dir="../utilities" target="nbm"/>
+    <echo message="Making NBM for module vcscore..."/>
+    <ant dir="../vcscore" target="nbm"/>
+<!-- 
+    <echo message="Making NBM for module vcscvs..."/>
+    <ant dir="../vcscvs" target="nbm"/>
+-->
+    <echo message="Making NBM for module vcsgeneric..."/>
+    <ant dir="../vcsgeneric" target="nbm"/>
+    <echo message="Making NBM for module vcscvs/compat..."/>
+    <ant dir="../vcscvs/compat" target="nbm"/>
+    <echo message="Making NBM for module javacvs..."/>
+    <ant dir="../javacvs" target="nbm"/>
+    <makeupdatedesc desc="../www/www/updates/33me_1.5_.xml">
+      <include file="33_1.5_.ent"/>
+      <!-- Not for now: -->
+      <group name="Standard">
+        <nbm file="../ant/ant.nbm"/>
+        <nbm file="../apisupport/apisupport-lite.nbm"/>
+        <nbm file="../apisupport/apisupport.nbm"/>
+        <nbm file="../applet/applet.nbm"/>
+        <nbm file="../autoupdate/autoupdate.nbm"/>
+        <nbm file="../beans/beans.nbm"/>
+        <nbm file="../classfile/classfile.nbm"/>
+        <nbm file="../clazz/clazz.nbm"/>
+        <nbm file="../debuggercore/debuggercore.nbm"/>
+        <nbm file="../debuggerjpda/debuggerjpda.nbm"/>
+        <nbm file="../debuggertools/debuggertools.nbm"/>
+        <nbm file="../editor/editor.nbm"/>
+        <nbm file="../form/form.nbm"/>
+        <nbm file="../html/html.nbm"/>
+        <nbm file="../httpserver/httpserver.nbm"/>
+        <nbm file="../httpserver/servletapi/servletapi.nbm"/>
+        <nbm file="../i18n/i18n.nbm"/>
+        <nbm file="../extbrowser/extbrowser.nbm"/>
+        <nbm file="../image/image.nbm"/>
+        <nbm file="../j2eeserver/j2eeserver.nbm"/>
+        <nbm file="../jarpackager/jarpackager.nbm"/>
+        <nbm file="../java/java.nbm"/>
+        <nbm file="../javacvs/javacvs.nbm"/>
+        <nbm file="../javadoc/javadoc.nbm"/>
+        <nbm file="../jndi/jndi.nbm"/>
+<!--
+        <nbm file="../objectbrowser/objectbrowser.nbm"/>
+-->
+        <nbm file="../openidex/openidex.nbm"/>
+        <nbm file="../projects/projects.nbm"/>
+        <nbm file="../properties/properties.nbm"/>
+        <nbm file="../rmi/rmi.nbm"/>
+        <nbm file="../text/text.nbm"/>
+        <nbm file="../tomcatint/tomcat32/web-jsp-tomcat.nbm"/>
+        <nbm file="../usersguide/usersguide.nbm"/>
+        <nbm file="../utilities/utilities.nbm"/>
+        <nbm file="../vcscore/vcscore.nbm"/>
+        <nbm file="../vcscvs/compat/vcscvscompat.nbm"/>
+        <nbm file="../vcsgeneric/vcsgen.nbm"/>
+	<!-- Careful! -->
+        <nbm file="../web/core/web-jsp.nbm"/>
+        <nbm file="../web/jspsyntax/web-jspsyntax.nbm"/>
+        <nbm file="../scripting/scripting.nbm"/>
+      </group>
+<!-- 
+      <group name="Extensions">
+<!-
+        <nbm file="../innertesters/innertesters.nbm"/>
+        <nbm file="../makefile/makefile.nbm"/>
+->
+      </group>
+-->
+<!--
+      <group name="Experimental">
+<!-
+        <nbm file="../javaembeddedserver/javaembeddedserver.nbm"/>
+->
+
+<!-
+        <nbm file="../jini/jini.nbm"/>
+        <nbm file="../multicompile/multicompile.nbm"/>
+        <nbm file="../remotefs/remotefs.nbm"/>
+->
+
+<!- Not for now (binary redistribution issues): ->
+<!- ->
+
+<!-
+        <nbm file="../serialversion/serialversion.nbm"/>
+        <nbm file="../sysprops/sysprops.nbm"/>
+->
+      </group>
+-->
+    </makeupdatedesc>
+  </target>
+
   <target name="bootstrap-javadoc"
           depends="check-for-binaries"
           description="Generate Javadoc for Ant extensions.">
