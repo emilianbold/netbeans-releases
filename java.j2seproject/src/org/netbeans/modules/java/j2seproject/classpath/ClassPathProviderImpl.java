@@ -46,7 +46,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
-    private final Reference[] cache = new SoftReference[8];
+    private final ClassPath[] cache = new ClassPath[8];
 
     private final Map/*<String,FileObject>*/ dirCache = new HashMap();
 
@@ -135,8 +135,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             // Not a source file.
             return null;
         }
-        ClassPath cp = null;
-        if (cache[2+type] == null || (cp = (ClassPath)cache[2+type].get()) == null) {
+        ClassPath cp = cache[2+type];
+        if ( cp == null) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
                 new ProjectClassPathImplementation(helper, "javac.classpath", evaluator)); // NOI18N
@@ -145,7 +145,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 cp = ClassPathFactory.createClassPath(
                 new ProjectClassPathImplementation(helper, "javac.test.classpath", evaluator)); // NOI18N
             }
-            cache[2+type] = new SoftReference(cp);
+            cache[2+type] = cp;
         }
         return cp;
     }
@@ -161,8 +161,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         } else if (type > 1) {
             type-=2;            //Compiled source transform into source
         }
-        ClassPath cp = null;
-        if (cache[4+type] == null || (cp = (ClassPath)cache[4+type].get())== null) {
+        ClassPath cp = cache[4+type];
+        if ( cp == null) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
                 new ProjectClassPathImplementation(helper, "run.classpath", evaluator)); // NOI18N
@@ -177,7 +177,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 cp = ClassPathFactory.createClassPath(
                 new ProjectClassPathImplementation(helper, DIST_JAR, evaluator)); // NOI18N
             }
-            cache[4+type] = new SoftReference(cp);
+            cache[4+type] = cp;
         }
         return cp;
     }
@@ -192,8 +192,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             // Unknown.
             return null;
         }
-        ClassPath cp = null;
-        if (cache[type] == null || (cp = (ClassPath)cache[type].get()) == null) {
+        ClassPath cp = cache[type];
+        if ( cp == null ) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
                 new ProjectClassPathImplementation(helper, SRC_DIR, evaluator)); // NOI18N
@@ -202,16 +202,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                 cp = ClassPathFactory.createClassPath(
                 new ProjectClassPathImplementation(helper, TEST_SRC_DIR, evaluator)); // NOI18N
             }
-            cache[type] = new SoftReference(cp);
+            cache[type] = cp;
         }
         return cp;
     }
     
     private ClassPath getBootClassPath() {
-        ClassPath cp = null;
-        if (cache[7] == null || (cp = (ClassPath)cache[7].get()) == null) {
+        ClassPath cp = cache[7];
+        if ( cp== null ) {
             cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(helper, evaluator));
-            cache[7] = new SoftReference(cp);
+            cache[7] = cp;
         }
         return cp;
     }
