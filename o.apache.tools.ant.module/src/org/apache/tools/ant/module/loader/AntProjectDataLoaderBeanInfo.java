@@ -54,12 +54,9 @@ public class AntProjectDataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
 
-    private static Image icon;
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            if (icon == null)
-                icon = loadImage ("/org/apache/tools/ant/module/resources/AntIcon.gif");
-            return icon;
+            return loadImage ("/org/apache/tools/ant/module/resources/AntIcon.gif");
         } else {
             return null;
         }
