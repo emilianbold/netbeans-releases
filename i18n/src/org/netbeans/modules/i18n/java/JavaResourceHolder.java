@@ -101,7 +101,7 @@ public class JavaResourceHolder extends ResourceHolder {
         if(resource == null || key == null) return;
 
         String keyValue     = key.toString();
-        String valueValue   = value == null ? null : value.toString();
+        String valueValue   = value == null ? "" : value.toString();
         String commentValue = comment;
         
         // write to bundle primary file
