@@ -30,7 +30,6 @@ import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
-import org.netbeans.modules.db.explorer.dlg.SchemaDialog;
 import org.netbeans.modules.db.explorer.dlg.UnsupportedDatabaseDialog;
 
 public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOperations {
