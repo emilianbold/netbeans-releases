@@ -129,12 +129,13 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     }
     
     protected void setSaxError(org.xml.sax.SAXException saxError) {
-        if (this.saxError==null) {
+        org.xml.sax.SAXException oldError = this.saxError;
+        this.saxError=saxError;
+        if (oldError==null) {
             if (saxError!=null) firePropertyChange(PROP_DOCUMENT_VALID, Boolean.TRUE, Boolean.FALSE);
         } else {
             if (saxError==null) firePropertyChange(PROP_DOCUMENT_VALID, Boolean.FALSE, Boolean.TRUE);
         }
-        this.saxError=saxError;
     }
     
     public org.xml.sax.SAXException getSaxError() {
