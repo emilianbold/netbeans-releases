@@ -477,7 +477,15 @@ public final class NbMainExplorer extends CloneableTopComponent
             }
             componentShowing();
         }
-
+        
+        /** Transfer focus to view. */
+        public void requestFocus () {
+            super.requestFocus();
+            if (view != null) {
+                view.requestFocus();
+            }
+        }
+        
         /** Initializes gui of this component. Subclasses can override
         * this method to install their own gui.
         * @return Tree view that will serve as main view for this explorer.
