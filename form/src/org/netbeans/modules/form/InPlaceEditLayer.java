@@ -340,7 +340,7 @@ class InPlaceEditLayer extends JPanel
 
             icon = button.getIcon();
             if (icon != null) {
-                Integer gap = (Integer)UIManager.get("Button.textIconGap");
+                Integer gap = (Integer)UIManager.get("Button.textIconGap"); // NOI18N
                 itGap = gap != null ? gap.intValue() : 4;
             }
             else itGap = 0;

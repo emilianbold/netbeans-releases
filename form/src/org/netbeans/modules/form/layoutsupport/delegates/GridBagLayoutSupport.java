@@ -266,7 +266,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             gbc.insets = new java.awt.Insets(layouts[i].top , layouts[i].left,
             layouts[i].bottom, layouts[i].right);
             
-            if (components[i].getClass().getName().equals("javax.swing.JScrollPane")) {
+            if (components[i].getClass().getName().equals("javax.swing.JScrollPane")) { // NOI18N
                 gbc.weightx = 1.0;
                 gbc.weighty = 1.0;
                 gbc.fill = java.awt.GridBagConstraints.BOTH;

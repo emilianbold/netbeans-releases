@@ -153,7 +153,7 @@ public class MnemonicEditor extends PropertyEditorSupport implements EnhancedPro
      *   	current value.
      */
     public String getJavaInitializationString() {
-	return "'" + getAsText() + "'";
+	return "'" + getAsText() + "'"; // NOI18N
     }
 
     /**

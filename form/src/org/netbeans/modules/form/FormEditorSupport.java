@@ -1101,7 +1101,7 @@ public class FormEditorSupport extends JavaEditor
             version = readonly ? 0 : 3;
         }
 
-        return FormUtils.getFormattedBundleString("FMT_FormMVTCTitle",
+        return FormUtils.getFormattedBundleString("FMT_FormMVTCTitle", // NOI18N
             new Object[] {new Integer(version), formDataObject.getName()});
     }
 

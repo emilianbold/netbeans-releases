@@ -119,7 +119,7 @@ public final class BorderEditor extends PropertyEditorSupport
         else if (borderSupport != null)
             valueText = "[" + borderSupport.getDisplayName() + "]"; // NOI18N
         else
-            valueText = "[" + org.openide.util.Utilities.getShortClassName(
+            valueText = "[" + org.openide.util.Utilities.getShortClassName( // NOI18N
                             value.getClass()) + "]"; // NOI18N
         return valueText;
     }

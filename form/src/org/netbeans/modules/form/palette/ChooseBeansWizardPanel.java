@@ -315,10 +315,10 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel {
         }
 
         public void actionPerformed(ActionEvent ev) {
-            if ("SHOW MARKED".equals(ev.getActionCommand())) {
+            if ("SHOW MARKED".equals(ev.getActionCommand())) { // NOI18N
                 beanSelector.setDisplayedBeans(markedBeans);
             }
-            else if ("SHOW ALL".equals(ev.getActionCommand())) {
+            else if ("SHOW ALL".equals(ev.getActionCommand())) { // NOI18N
                 if (allBeans == null) { // not read yet
                     // PENDING wait cursor
                     allBeans = BeanInstaller.findJavaBeans(currentFiles);

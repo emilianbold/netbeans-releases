@@ -984,7 +984,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (!"JSplitPaneConstraints".equals(constrNode.getNodeName())) // NOI18N
                 return false;
 
-            node = constrAttr.getNamedItem("position");
+            node = constrAttr.getNamedItem("position"); // NOI18N
             if (node != null) {
                 String position = node.getNodeValue();
                 Method addMethod;
@@ -1986,7 +1986,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
 
             // compatibility hack for loading form's menu bar, part 2
-            if ("menuBar".equals(propName)
+            if ("menuBar".equals(propName) // NOI18N
                 && value instanceof String
                 && metacomp instanceof RADVisualFormContainer)
             {
@@ -2817,7 +2817,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             addLeafElementOpenAttr(
                 buf,
                 "JLayeredPaneConstraints", // NOI18N
-                new String[] { "x", "y", "width", "height",
+                new String[] { "x", "y", "width", "height", // NOI18N
                                "layer", "position" }, // NOI18N
                 new String[] { Integer.toString(r.x),
                                Integer.toString(r.y),
@@ -3934,7 +3934,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         if (name == null)
                             return null; // missing component name error
 
-                        RADComponent comp = name.equals(".") ?
+                        RADComponent comp = name.equals(".") ? // NOI18N
                                 formModel.getTopRADComponent() :
                                 (RADComponent) getComponentsMap().get(name);
                         if (comp == null)

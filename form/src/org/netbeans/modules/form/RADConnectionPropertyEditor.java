@@ -196,7 +196,7 @@ public class RADConnectionPropertyEditor
                         "[" + FormUtils.getBundleString("CTL_ArrayOf") + " "  // NOI18N
                             + realValue.getClass().getComponentType().getName() + "]" // NOI18N
                         :
-                        "["+org.openide.util.Utilities.getShortClassName(realValue.getClass())+"]";
+                        "["+org.openide.util.Utilities.getShortClassName(realValue.getClass())+"]"; // NOI18N
         }
         else str = "null"; // NOI18N
 

@@ -75,7 +75,7 @@ public final class BeanInstaller {
         }
 
         if (beanMap.size() == 0) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message("No JavaBean found under selected nodes.");
+            NotifyDescriptor nd = new NotifyDescriptor.Message(PaletteUtils.getBundleString("MSG_noBeansUnderNodes")); // NOI18N
             DialogDisplayer.getDefault().notify(nd);
             return;
         }

@@ -1297,7 +1297,7 @@ class JavaCodeGenerator extends CodeGenerator {
         String preCode = prop.getPreCode();
         if (preCode != null) {
             initCodeWriter.write(preCode);
-            if (!preCode.endsWith("\n"))
+            if (!preCode.endsWith("\n")) // NOI18N
                 initCodeWriter.write("\n"); // NOI18N
         }
 
@@ -1753,7 +1753,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
                     else { // the listener method returns something
                         if (k > 0)
-                            codeWriter.write("else {\n"); // NOI8N
+                            codeWriter.write("else {\n"); // NOI18N
                         generateEventHandlerCalls(event, paramNames, codeWriter, false);
                         if (k > 0)
                             codeWriter.write("}\n"); // NOI18N

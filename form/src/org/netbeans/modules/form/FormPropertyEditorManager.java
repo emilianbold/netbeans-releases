@@ -114,7 +114,7 @@ final public class FormPropertyEditorManager extends Object
         else {
             // 2nd - try the form editor's specific search path
             String editorName = type.getName();
-            if (!editorName.startsWith("[")) { // not an array type
+            if (!editorName.startsWith("[")) { // not an array type // NOI18N
                 int dot = editorName.lastIndexOf('.');
                 if (dot > 0)
                     editorName = editorName.substring(dot+1);

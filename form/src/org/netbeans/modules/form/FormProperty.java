@@ -165,7 +165,7 @@ public abstract class FormProperty extends Node.Property {
 
     public String getHtmlDisplayName() {
         if (isChanged()) {
-            return "<b>" + getDisplayName();
+            return "<b>" + getDisplayName(); // NOI18N
         } else {
             return null;
         }

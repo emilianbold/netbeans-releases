@@ -883,7 +883,7 @@ public class FormModel
             }
 
             eventList.add(ev);
-            t("event "+ev.getChangeType()+" added to queue in event broker");
+            t("event "+ev.getChangeType()+" added to queue in event broker"); // NOI18N
         }
 
         private boolean shouldSendLater(FormModelEvent ev) {

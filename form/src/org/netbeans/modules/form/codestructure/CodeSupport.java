@@ -152,7 +152,7 @@ class CodeSupport {
             buf.append(" = "); // NOI18N
             buf.append(parentExpression.getOrigin().getJavaCodeString(
                                                      parentStr, paramsStr));
-            buf.append(";");
+            buf.append(";"); // NOI18N
 
             return buf.toString();
         }
@@ -270,7 +270,7 @@ class CodeSupport {
 
             buf.append("new "); // NOI18N
             buf.append(constructor.getName());
-            buf.append("(");
+            buf.append("("); // NOI18N
 
             for (int i=0; i < paramsStr.length; i++) {
                 buf.append(paramsStr[i]);

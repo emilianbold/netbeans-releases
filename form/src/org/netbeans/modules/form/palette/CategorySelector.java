@@ -44,7 +44,7 @@ class CategorySelector extends JPanel implements ExplorerManager.Provider {
         categoryLabel.setLabelFor(listView);
 
         getAccessibleContext().setAccessibleDescription(
-            PaletteUtils.getBundleString("ACSD_PaletteCategoriesSelector"));
+            PaletteUtils.getBundleString("ACSD_PaletteCategoriesSelector")); // NOI18N
 
         setBorder(new javax.swing.border.EmptyBorder(12, 12, 0, 11));
         setLayout(new java.awt.BorderLayout(0, 5));

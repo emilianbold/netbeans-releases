@@ -44,8 +44,8 @@ public class CreationFactory {
         CreationDescriptor cd = (CreationDescriptor)
                                 getRegistry().get(cls.getName());
         if (cd == null && !defaultDescriptorsCreated
-                && (cls.getName().startsWith("javax.swing.")
-                    || cls.getName().startsWith("java.awt."))) {
+                && (cls.getName().startsWith("javax.swing.") // NOI18N
+                    || cls.getName().startsWith("java.awt."))) { // NOI18N
             createDefaultDescriptors();
             cd = (CreationDescriptor)getRegistry().get(cls.getName());
         }
@@ -366,7 +366,7 @@ public class CreationFactory {
     private static void initAfterCreation(Object instance) {
         if (instance instanceof javax.swing.border.TitledBorder)
             ((javax.swing.border.TitledBorder)instance)
-                .setTitleFont(UIManager.getFont("TitledBorder.font"));
+                .setTitleFont(UIManager.getFont("TitledBorder.font")); // NOI18N
         else if (instance instanceof java.awt.Component
                  && !(instance instanceof javax.swing.JComponent)
                  && !(instance instanceof javax.swing.RootPaneContainer))

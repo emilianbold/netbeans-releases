@@ -64,7 +64,7 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel {
                            || f.getName().toLowerCase().endsWith(".jar"); // NOI18N
                 }
                 public String getDescription() {
-                    return "JAR Files";
+                    return PaletteUtils.getBundleString("CTL_JarArchivesMask"); // NOI18N
                 }
             });
 

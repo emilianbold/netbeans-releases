@@ -272,7 +272,7 @@ public class ClassPathUtils {
                 if (className.startsWith("javax.") // NOI18N
                         || className.startsWith("java.")) // NOI18N
                     return getBundleString("MSG_StandardJDKSource"); // NOI18N
-                if (className.startsWith("org.netbeans."))
+                if (className.startsWith("org.netbeans.")) // NOI18N
                     return getBundleString("MSG_NetBeansSource"); // NOI18N
             }
         }
