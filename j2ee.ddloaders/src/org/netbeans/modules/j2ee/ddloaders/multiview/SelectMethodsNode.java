@@ -24,15 +24,18 @@ import org.openide.filesystems.FileObject;
  */
 class SelectMethodsNode extends SectionNode {
 
-    SelectMethodsNode(SectionNodeView sectionNodeView, Entity entity) {
+    private EntityHelper entityHelper;
+
+    SelectMethodsNode(SectionNodeView sectionNodeView, Entity entity, EntityHelper entityHelper) {
         super(sectionNodeView, true, entity, Utils.getBundleMessage("LBL_CmpSelects"), Utils.ICON_BASE_MISC_NODE);
+        this.entityHelper = entityHelper;
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
         Entity entity = (Entity) key;
         final FileObject ejbJarFile = getSectionNodeView().getDataObject().getPrimaryFile();
         InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(),
-                new SelectMethodsTableModel(ejbJarFile, entity));
+                new SelectMethodsTableModel(ejbJarFile, entity, entityHelper));
         innerTablePanel.getEditButton().setVisible(false);
         innerTablePanel.getRemoveButton().setVisible(false);
         return innerTablePanel;

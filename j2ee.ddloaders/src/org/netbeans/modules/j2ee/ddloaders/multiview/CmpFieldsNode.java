@@ -24,15 +24,18 @@ import org.openide.filesystems.FileObject;
  */
 class CmpFieldsNode extends SectionNode {
 
-    CmpFieldsNode(SectionNodeView sectionNodeView, Entity entity) {
+    private EntityHelper entityHelper;
+
+    CmpFieldsNode(SectionNodeView sectionNodeView, Entity entity, EntityHelper entityHelper) {
         super(sectionNodeView, true, entity, Utils.getBundleMessage("LBL_CmpFields"), Utils.ICON_BASE_MISC_NODE);
+        this.entityHelper = entityHelper;
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
         final Entity entity = (Entity) key;
         final FileObject ejbJarFile = getSectionNodeView().getDataObject().getPrimaryFile();
         final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(),
-                new CmpFieldsTableModel(ejbJarFile, entity));
+                new CmpFieldsTableModel(ejbJarFile, entity, entityHelper));
         return innerTablePanel;
 
     }

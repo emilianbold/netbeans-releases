@@ -23,19 +23,32 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 class EntityNode extends SectionNode {
 
+    private Entity entity;
+    private EntityHelper entityHelper;
+
     EntityNode(SectionNodeView sectionNodeView, Entity entity) {
         super(sectionNodeView, false, entity, entity.getDefaultDisplayName(), Utils.ICON_BASE_ENTITY_NODE);
-        addChild(new EntityOverviewNode(sectionNodeView, entity));
-        addChild(new EjbImplementationAndInterfacesNode(sectionNodeView, entity));
+        this.entity = entity;
+        entityHelper = new EntityHelper(sectionNodeView.getDataObject().getPrimaryFile(), entity);
+        addChild(new EntityOverviewNode(sectionNodeView, entity, entityHelper));
+        addChild(new EjbImplementationAndInterfacesNode(sectionNodeView, entity, entityHelper));
         if (Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType())) {
-            addChild(new CmpFieldsNode(sectionNodeView, entity));
-            addChild(new FinderMethodsNode(sectionNodeView, entity));
-            addChild(new SelectMethodsNode(sectionNodeView, entity));
+            addChild(new CmpFieldsNode(sectionNodeView, entity, entityHelper));
+            addChild(new FinderMethodsNode(sectionNodeView, entity, entityHelper));
+            addChild(new SelectMethodsNode(sectionNodeView, entity, entityHelper));
         }
         addChild(new BeanDetailNode(sectionNodeView, entity));
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
         return null;
+    }
+
+    public Entity getEntity() {
+        return entity;
+    }
+
+    public EntityHelper getEntityHelper() {
+        return entityHelper;
     }
 }

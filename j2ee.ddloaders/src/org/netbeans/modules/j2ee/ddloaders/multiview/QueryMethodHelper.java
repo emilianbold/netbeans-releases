@@ -13,10 +13,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.dd.api.ejb.QueryMethod;
-import org.openide.filesystems.FileObject;
 import org.openide.src.ClassElement;
 import org.openide.src.Identifier;
 import org.openide.src.MethodElement;
@@ -27,17 +25,13 @@ import org.openide.src.Type;
  */
 public class QueryMethodHelper {
 
-    private ClassElement beanClass;
-    private Entity entity;
-    private FileObject ejbJarFile;
     private final Query query;
+    private final EntityHelper helper;
     private boolean isSelectMethod;
 
-    public QueryMethodHelper(FileObject ejbJarFile, Entity entity, Query query) {
-        this.entity = entity;
-        this.ejbJarFile = ejbJarFile;
+    public QueryMethodHelper(EntityHelper helper, Query query) {
         this.query = query;
-        beanClass = Utils.getBeanClass(this.ejbJarFile, this.entity);
+        this.helper = helper;
         isSelectMethod = query.getQueryMethod().getMethodName().startsWith("ejbSelectBy"); //NOI18N
     }
 
@@ -49,11 +43,10 @@ public class QueryMethodHelper {
         ClassElement classElement;
         if (isSelectMethod) {
             //select method
-            classElement = beanClass;
+            classElement = helper.beanClass;
         } else {
             //finder method
-            String localHomeName = entity.getLocalHome();
-            classElement = Utils.getClassElement(ejbJarFile, localHomeName);
+            classElement = helper.getLocalHomeClass();
         }
         QueryMethod queryMethod = query.getQueryMethod();
         String[] methodParam = queryMethod.getMethodParams().getMethodParam();

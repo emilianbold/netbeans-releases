@@ -30,14 +30,16 @@ public abstract class QueryMethodsTableModel extends InnerTableModel {
 
     protected final FileObject ejbJarFile;
     protected final Entity entity;
+    protected EntityHelper entityHelper;
     private List queries;
     private final HashMap queryMethodHelperMap = new HashMap();
 
     public QueryMethodsTableModel(String[] columnNames, int[] columnWidths, FileObject ejbJarFile,
-            Entity entity) {
+            Entity entity, EntityHelper entityHelper) {
         super(columnNames, columnWidths);
         this.ejbJarFile = ejbJarFile;
         this.entity = entity;
+        this.entityHelper = entityHelper;
         initMethods();
         ejbJarFile.addFileChangeListener(new FileChangeAdapter() {
             public void fileChanged(FileEvent fe) {
@@ -68,7 +70,7 @@ public abstract class QueryMethodsTableModel extends InnerTableModel {
     protected QueryMethodHelper getQueryMethodHelper(Query query) {
         QueryMethodHelper queryMethodHelper = (QueryMethodHelper) queryMethodHelperMap.get(query);
         if (queryMethodHelper == null) {
-            queryMethodHelper = new QueryMethodHelper(ejbJarFile, entity, query);
+            queryMethodHelper = new QueryMethodHelper(entityHelper, query);
             queryMethodHelperMap.put(query, queryMethodHelper);
         }
         return queryMethodHelper;

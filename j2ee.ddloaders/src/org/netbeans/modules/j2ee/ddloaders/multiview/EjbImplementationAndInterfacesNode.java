@@ -23,15 +23,19 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 class EjbImplementationAndInterfacesNode extends SectionNode {
 
-    EjbImplementationAndInterfacesNode(SectionNodeView sectionNodeView, EntityAndSession ejb) {
+    private EntityAndSessionHelper helper;
+
+    EjbImplementationAndInterfacesNode(SectionNodeView sectionNodeView, EntityAndSession ejb,
+            EntityAndSessionHelper helper) {
         super(sectionNodeView, true, ejb, Utils.getBundleMessage("LBL_EjbImplementationAndInterfaces"),
                 Utils.ICON_BASE_MISC_NODE);
+        this.helper = helper;
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
         SectionNodeView sectionNodeView = getSectionNodeView();
         final EjbImplementationAndInterfacesPanel panel = new EjbImplementationAndInterfacesPanel(sectionNodeView,
-                (EntityAndSession) getKey());
+                (EntityAndSession) getKey(), helper);
         return panel;
     }
 }

@@ -23,12 +23,15 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  */
 public class EntityOverviewNode extends SectionNode {
 
-    public EntityOverviewNode(SectionNodeView sectionNodeView, Entity entity) {
+    private EntityHelper entityHelper;
+
+    public EntityOverviewNode(SectionNodeView sectionNodeView, Entity entity, EntityHelper entityHelper) {
         super(sectionNodeView, entity, Utils.getBundleMessage("LBL_Overview"), Utils.ICON_BASE_MISC_NODE);
+        this.entityHelper = entityHelper;
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
         SectionNodeView sectionNodeView = getSectionNodeView();
-        return new EntityOverviewPanel(sectionNodeView, (Entity) key);
+        return new EntityOverviewPanel(sectionNodeView, (Entity) key, entityHelper);
     }
 }

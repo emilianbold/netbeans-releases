@@ -29,12 +29,12 @@ class FinderMethodsTableModel extends QueryMethodsTableModel {
                                                     Utils.getBundleMessage("LBL_Description")};
     protected static final int[] COLUMN_WIDTHS = new int[]{200, 100, 120, 200, 100};
 
-    public FinderMethodsTableModel(FileObject ejbJarFile, Entity entity) {
-        super(COLUMN_NAMES, COLUMN_WIDTHS, ejbJarFile, entity);
+    public FinderMethodsTableModel(FileObject ejbJarFile, Entity entity, EntityHelper entityHelper) {
+        super(COLUMN_NAMES, COLUMN_WIDTHS, ejbJarFile, entity, entityHelper);
     }
 
     public int addRow() {
-        new EntityHelper(ejbJarFile, entity).addFinderMethod();
+        entityHelper.addFinderMethod();
         initMethods();
         fireTableRowsInserted(-1, -1);
         return getRowCount() - 1;

@@ -17,58 +17,50 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddCmpFieldAction;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddFinderMethodAction;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddSelectMethodAction;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityNode;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.src.ClassElement;
+import org.openide.src.MethodElement;
 
 /**
  * @author pfiala
  */
-public class EntityHelper {
-
-    protected ClassElement beanClass;
-    protected Entity entity;
-    protected FileObject ejbJarFile;
-    protected ClassElement localBusinessInterface;
-    protected ClassElement remoteBusinessInterface;
+public class EntityHelper extends EntityAndSessionHelper {
 
     public EntityHelper(FileObject ejbJarFile, Entity entity) {
-        this.entity = entity;
-        this.ejbJarFile = ejbJarFile;
-        beanClass = Utils.getBeanClass(this.ejbJarFile, this.entity);
-        localBusinessInterface = Utils.getBusinessInterfaceClass(entity.getLocal(), ejbJarFile, beanClass);
-        remoteBusinessInterface = Utils.getBusinessInterfaceClass(entity.getRemote(), ejbJarFile, beanClass);
+        super(ejbJarFile, entity);
     }
 
     public void addCmpField() {
-        EntityNode entityNode = Utils.createEntityNode(ejbJarFile,
-                entity);
         new AddCmpFieldAction() {
             protected void performAction(Node[] activatedNodes) {
                 super.performAction(activatedNodes);
             }
-        }.performAction(new Node[]{entityNode});
+        }.performAction(new Node[]{createEntityNode()});
     }
 
     public void addFinderMethod() {
-        EntityNode entityNode = Utils.createEntityNode(ejbJarFile,
-                entity);
         new AddFinderMethodAction() {
             protected void performAction(Node[] activatedNodes) {
                 super.performAction(activatedNodes);
             }
-        }.performAction(new Node[]{entityNode});
+        }.performAction(new Node[]{createEntityNode()});
     }
 
     public void addSelectMethod() {
-        EntityNode entityNode = Utils.createEntityNode(ejbJarFile,
-                entity);
         new AddSelectMethodAction() {
             protected void performAction(Node[] activatedNodes) {
                 super.performAction(activatedNodes);
             }
-        }.performAction(new Node[]{entityNode});
+        }.performAction(new Node[]{createEntityNode()});
     }
 
+    public MethodElement getSetterMethod(String fieldName, MethodElement getterMethod) {
+        return getterMethod == null ?
+                null : EntityMethodController.getSetterMethod(beanClass, fieldName, getterMethod);
+    }
+
+    public MethodElement getGetterMethod(String fieldName) {
+        return EntityMethodController.getGetterMethod(beanClass, fieldName);
+    }
 }

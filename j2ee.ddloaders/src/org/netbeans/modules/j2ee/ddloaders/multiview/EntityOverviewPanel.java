@@ -36,7 +36,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
     /**
      * Creates new form EntityOverviewForm
      */
-    public EntityOverviewPanel(SectionNodeView sectionNodeView, final Entity entity) {
+    public EntityOverviewPanel(SectionNodeView sectionNodeView, final Entity entity, final EntityHelper entityHelper) {
         super(sectionNodeView);
         dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
 
@@ -114,7 +114,8 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                     } else {
                         primaryKeyClassComboBox.setEnabled(false);
                         CmpField cmpField = entity.getCmpField(selectedIndex - 1);
-                        CmpFieldHelper helper = new CmpFieldHelper(dataObject.getPrimaryFile(), entity, cmpField);
+                        CmpFieldHelper helper = new CmpFieldHelper(entityHelper,
+                                cmpField);
                         entity.setPrimKeyClass(helper.getType());
                     }
                     primaryKeyClassComboBox.setSelectedItem(entity.getPrimKeyClass());

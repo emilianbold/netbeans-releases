@@ -34,12 +34,12 @@ class SelectMethodsTableModel extends QueryMethodsTableModel {
     private JComboBox returnMethodComboBox = new JComboBox(FieldCustomizer.COMMON_TYPES);
     private TableCellEditor returnMethodEditor = new DefaultCellEditor(returnMethodComboBox);
 
-    public SelectMethodsTableModel(FileObject ejbJarFile, Entity entity) {
-        super(COLUMN_NAMES, COLUMN_WIDTHS, ejbJarFile, entity);
+    public SelectMethodsTableModel(FileObject ejbJarFile, Entity entity, EntityHelper entityHelper) {
+        super(COLUMN_NAMES, COLUMN_WIDTHS, ejbJarFile, entity, entityHelper);
     }
 
     public int addRow() {
-        new EntityHelper(ejbJarFile, entity).addSelectMethod();
+        entityHelper.addSelectMethod();
         initMethods();
         fireTableRowsInserted(-1, -1);
         return getRowCount() - 1;

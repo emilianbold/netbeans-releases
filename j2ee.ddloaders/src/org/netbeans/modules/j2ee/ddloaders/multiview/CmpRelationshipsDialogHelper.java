@@ -124,10 +124,10 @@ class CmpRelationshipsDialogHelper {
                 }
                 if (getter || setter) {
                     Entity entity = getEntity(ejbName);
-                    ClassElement beanClass = Utils.getBeanClass(ejbJarFile, entity);
-                    MethodElement getterMethod = Utils.getGetterMethod(beanClass, fieldName);
-                    MethodElement setterMethod = Utils.getSetterMethod(beanClass, fieldName, getterMethod);
-                    ClassElement localInterface = Utils.getBusinessInterfaceClass(entity.getLocal(), ejbJarFile, beanClass);
+                    EntityHelper entityHelper = new EntityHelper(ejbJarFile, entity);
+                    MethodElement getterMethod = entityHelper.getGetterMethod(fieldName);
+                    MethodElement setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
+                    ClassElement localInterface = entityHelper.getLocalBusinessInterfaceClass();
                     if (getter) {
                         try {
                             localInterface.addMethod(getterMethod);
@@ -223,10 +223,10 @@ class CmpRelationshipsDialogHelper {
             } else {
                 origFieldName = field.getCmrFieldName();
                 Entity entity = getEntity(origEjbName);
-                ClassElement beanClass = Utils.getBeanClass(ejbJarFile, entity);
-                MethodElement getterMethod = Utils.getGetterMethod(beanClass, origFieldName);
-                MethodElement setterMethod = Utils.getSetterMethod(beanClass, origFieldName, getterMethod);
-                origLocalInterface = Utils.getBusinessInterfaceClass(entity.getLocal(), ejbJarFile, beanClass);
+                EntityHelper entityHelper = new EntityHelper(ejbJarFile, entity);
+                MethodElement getterMethod = entityHelper.getGetterMethod(origFieldName);
+                MethodElement setterMethod = entityHelper.getSetterMethod(origFieldName, getterMethod);
+                origLocalInterface = entityHelper.getLocalBusinessInterfaceClass();
                 origLocalGetterMethod = Utils.getBusinessMethod(origLocalInterface, getterMethod);
                 origLocalSetterMethod = Utils.getBusinessMethod(origLocalInterface, setterMethod);
                 lastGetter = origLocalGetterMethod != null;

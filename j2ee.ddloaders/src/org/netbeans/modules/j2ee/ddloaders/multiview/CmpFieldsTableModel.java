@@ -26,6 +26,7 @@ class CmpFieldsTableModel extends InnerTableModel {
 
     private final FileObject ejbJarFile;
     private Entity entity;
+    private EntityHelper entityHelper;
     private HashMap cmpFieldHelperMap = new HashMap();
     private static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_FieldName"),
                                                   Utils.getBundleMessage("LBL_Type"),
@@ -36,10 +37,11 @@ class CmpFieldsTableModel extends InnerTableModel {
                                                   Utils.getBundleMessage("LBL_Description")};
     private static final int[] COLUMN_WIDTHS = new int[]{120, 160, 70, 70, 70, 70, 220};
 
-    public CmpFieldsTableModel(FileObject ejbJarFile, Entity entity) {
+    public CmpFieldsTableModel(FileObject ejbJarFile, Entity entity, EntityHelper entityHelper) {
         super(COLUMN_NAMES, COLUMN_WIDTHS);
         this.ejbJarFile = ejbJarFile;
         this.entity = entity;
+        this.entityHelper = entityHelper;
     }
 
     public int addRow() {
@@ -120,7 +122,7 @@ class CmpFieldsTableModel extends InnerTableModel {
     private CmpFieldHelper getCmpFieldHelper(CmpField field) {
         CmpFieldHelper cmpFieldHelper = (CmpFieldHelper) cmpFieldHelperMap.get(field);
         if (cmpFieldHelper == null) {
-            cmpFieldHelper = new CmpFieldHelper(ejbJarFile, entity, field);
+            cmpFieldHelper = new CmpFieldHelper(entityHelper, field);
             cmpFieldHelperMap.put(field, cmpFieldHelper);
         }
         return cmpFieldHelper;

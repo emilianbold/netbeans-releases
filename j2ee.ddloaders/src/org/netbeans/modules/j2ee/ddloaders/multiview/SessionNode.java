@@ -26,7 +26,9 @@ class SessionNode extends SectionNode {
     SessionNode(SectionNodeView sectionNodeView, Session session) {
         super(sectionNodeView, false, session, session.getDefaultDisplayName(), Utils.ICON_BASE_SESSION_NODE);
         addChild(new SessionOverviewNode(sectionNodeView, session));
-        addChild(new EjbImplementationAndInterfacesNode(sectionNodeView, session));
+        EntityAndSessionHelper helper = new EntityAndSessionHelper(sectionNodeView.getDataObject().getPrimaryFile(),
+                session);
+        addChild(new EjbImplementationAndInterfacesNode(sectionNodeView, session, helper));
         addChild(new BeanEnvironmentNode(sectionNodeView, session));
         addChild(new BeanDetailNode(sectionNodeView, session));
     }
