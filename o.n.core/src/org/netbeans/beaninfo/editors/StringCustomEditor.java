@@ -63,7 +63,7 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
         //original constructor code
         textArea.setEditable(editable);
         textArea.setText (s);
-        if (textArea instanceof JTextArea) {
+        if (textArea instanceof JTextArea && s.length() < 1024) {
             ((JTextArea) textArea).setWrapStyleWord( true );
             ((JTextArea)textArea).setLineWrap( true );
             setPreferredSize (new java.awt.Dimension(500, 300));
@@ -77,6 +77,12 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
             }
         } else {
             textArea.setMinimumSize (new java.awt.Dimension (100, 20));
+            if (textArea instanceof JTextArea) {
+                //Some gargantuan string value - do something that will
+                //show it.  Line wrap is off, otherwise it will spend 
+                //minutes trying to calculate preferred size, etc.
+                textArea.setPreferredSize (new java.awt.Dimension (s.length() * 12, 60));
+            }
         }
         setBorder (BorderFactory.createEmptyBorder(12,12,0,11));
         
@@ -89,7 +95,15 @@ public class StringCustomEditor extends javax.swing.JPanel implements EnhancedCu
         getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(StringCustomEditor.class).getString("ACSD_CustomStringEditor")); //NOI18N
         //Layout is not quite smart enough about text field along with variable
         //size text area
-        int prefHeight = textArea.getPreferredSize().height + 8;
+        int prefHeight;
+        
+        //IZ 44152, Debugger can produce 512K+ length strings, avoid excessive
+        //iterations (which textArea.getPreferredSize() will definitely do)
+        if (s.length() < 1024) {
+            prefHeight = textArea.getPreferredSize().height + 8;
+        } else {
+            prefHeight = 400;
+        }
         
         if (instructions != null) {
             final JTextArea jta = new JTextArea(instructions);

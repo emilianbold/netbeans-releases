@@ -57,7 +57,7 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
         Object val = getValue();
         String s = ""; // NOI18N
         if (val != null) {
-            s = val.toString();
+            s = val instanceof String ? (String) val : val.toString();
         }
         return new StringCustomEditor (s, isEditable(), oneline, instructions); // NOI18N
     }
