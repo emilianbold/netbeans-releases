@@ -33,7 +33,7 @@ implements PropertyChangeListener {
     /** the folder */
     private DataFolder folder;
     /** filter of objects */
-    private DataFilter filter;
+    private final DataFilter filter;
     /** listener on changes in nodes */
     private PropertyChangeListener listener;
     /** logging, if needed */
