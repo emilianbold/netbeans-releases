@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/* $Id$ */
-
 package org.netbeans.modules.form;
 
 import java.beans.PropertyDescriptor;
@@ -84,8 +82,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private static final String ONE_INDENT =  "  "; // NOI18N
     private static final Object NO_VALUE = new Object();
 
-    private org.w3c.dom.Document topDocument = XMLDataObject.createDocument();
-
+    private org.w3c.dom.Document topDocument =
+        org.openide.xml.XMLUtil.createDocument("topDocument",null,null,null); // NOI18N
 
     /** A method which allows the persistence manager to provide infotrmation on whether
      * is is capable to store info about advanced features provided from Developer 3.0 
