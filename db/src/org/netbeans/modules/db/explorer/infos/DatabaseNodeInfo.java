@@ -35,7 +35,6 @@ import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
-import org.netbeans.modules.db.explorer.DatabaseOption;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
@@ -399,20 +398,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         put(SUPPORTED_DBS, fac.supportedDatabases());
     }
 
-    protected String getDatabaseAdaptorClassName()
-    {
-        String adac = null;
-        String drv = getDriver();
-        DatabaseOption option = RootNode.getOption();
-        Vector drvs = option.getAvailableDrivers();
-        Enumeration enu = drvs.elements();
-        while (enu.hasMoreElements()) {
-            DatabaseDriver driver = (DatabaseDriver)enu.nextElement();
-            if (driver.getURL().equals(drv)) adac = driver.getDatabaseAdaptor();
-        }
-
-        if (adac == null) adac = "org.netbeans.lib.ddl.adaptors.DefaultAdaptor"; //NOI18N
-        return adac;
+    protected String getDatabaseAdaptorClassName() {
+        return "org.netbeans.lib.ddl.adaptors.DefaultAdaptor"; //NOI18N
     }
 
     public DatabaseSpecification getSpecification()
