@@ -303,6 +303,7 @@ public class MetaComponentCreator {
                 }
                 else return NO_TARGET; // unknown container
             }
+            return TARGET_MENU;
         }
 
         else if (JSeparator.class.isAssignableFrom(beanClass)
@@ -342,10 +343,10 @@ public class MetaComponentCreator {
             return TARGET_VISUAL;
         }
 
-        if (targetComp == null)
+        if (targetComp instanceof RADMenuComponent)
+            return NO_TARGET;
+        else
             return TARGET_OTHER;
-
-        return NO_TARGET;
     }
 
     // ---------
