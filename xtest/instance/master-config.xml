@@ -113,7 +113,7 @@ Microsystems, Inc. All Rights Reserved.
   <config name="qa-functional-nb-full-jdk13">
       <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
       <testtype name="qa-functional" attributes="validation,full"
-                modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,rmi,vcscore,vcsgeneric"/>
+                modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation,full"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
       <module name="jndi"    	testtypes="qa-functional"  attributes="validation,full">
