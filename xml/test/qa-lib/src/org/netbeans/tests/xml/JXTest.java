@@ -10,13 +10,22 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.tests.xml;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.ExplorerOperator;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.util.Dumper;
 import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.test.oo.gui.jelly.JellyProperties;
+
 
 /**
  * Provides the basic support for XML Jemmy tests.
@@ -38,12 +47,11 @@ public class JXTest extends XTest {
                 JellyProperties.setJemmyDebugTimeouts();
             }
         } catch (IOException ioe) {
-            fail("Load Debug Timeouts fail.");
-            ioe.printStackTrace();
+            log("Load Debug Timeouts fail.", ioe);
         }
     }
 
-    void fail(String msg, Exception e) {
+    protected void fail(String msg, Exception e) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
@@ -60,6 +68,39 @@ public class JXTest extends XTest {
         fail(msg + "\n" + sw);
     }
     
+    /**
+     * Finds Node in the 'data' forlder.
+     * @param path relative to the 'data' folder delimited by 'DELIM'
+     */
+    protected Node findDataNode(String path) {
+        Node node = null;
+        try {
+            String treePath = getFilesystemName() + DELIM + getDataPackageName(DELIM) + DELIM + path;
+            JTreeOperator tree = ExplorerOperator.invoke().repositoryTab().tree();
+            node = new Node(tree, treePath);
+        } catch (Exception ex) {
+            log("Cannot find data node: " + path, ex);
+        }
+        return node;
+    }
+    
+    /**
+     * Finds Catalog's node.
+     * @param path relative to the 'XML Entity Catalogs' root delimited by 'DELIM'
+     */
+    protected Node findCatalogNode(String path) {
+        Node node = null;
+        try {
+            String treePath = Bundle.getStringTrimmed("org.netbeans.modules.xml.catalog.Bundle", "TEXT_catalog_root");
+            if (path != null && path.length() > 0) treePath += DELIM + path;
+            JTreeOperator tree = ExplorerOperator.invoke().runtimeTab().tree();
+            node = new Node(tree, treePath);
+        } catch (Exception ex) {
+            log("Cannot find catalog node: " + path, ex);
+        }
+        return node;
+    }
+        
 //    /**
 //     * Returns work directory subnode or null
 //     */

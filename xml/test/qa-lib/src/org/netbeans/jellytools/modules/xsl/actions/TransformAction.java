@@ -10,23 +10,22 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.jellytools.modules.xml.actions;
+package org.netbeans.jellytools.modules.xsl.actions;
 
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 
-/** ValidateXMLAction class 
+/** TransformAction class 
  * @author <a href="mailto:mschovanek@netbeans.org">Martin Schovanek</a> */
-public class ValidateXMLAction extends ActionNoBlock {
+public class TransformAction extends ActionNoBlock {
 
     private static final String popup = 
-    Bundle.getStringTrimmed("org.netbeans.modules.xml.tools.actions.Bundle", "NAME_Validate_XML");
-    private static final Shortcut shortcut =
-    new Shortcut(KeyEvent.VK_F9, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK);
+    Bundle.getStringTrimmed("org.netbeans.modules.xsl.actions.Bundle", "NAME_transform_action");
+    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_F6, KeyEvent.ALT_MASK);
 
-    /** creates new ValidateXMLAction instance */    
-    public ValidateXMLAction() {
-        super(null, popup, "org.netbeans.modules.xml.tools.actions.ValidateAction", shortcut);
+    /** creates new TransformAction instance */    
+    public TransformAction() {
+        super(null, popup, "org.netbeans.modules.xsl.actions.TransformAction", shortcut);
     }
 }

@@ -22,7 +22,7 @@ public class CheckXMLAction extends ActionNoBlock {
 
     private static final String popup = 
     Bundle.getStringTrimmed("org.netbeans.modules.xml.tools.actions.Bundle", "NAME_Check_XML");
-    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_F9, KeyEvent.ALT_DOWN_MASK);
+    private static final Shortcut shortcut = new Shortcut(KeyEvent.VK_F9, KeyEvent.ALT_MASK);
 
     /** creates new CheckXMLAction instance */    
     public CheckXMLAction() {

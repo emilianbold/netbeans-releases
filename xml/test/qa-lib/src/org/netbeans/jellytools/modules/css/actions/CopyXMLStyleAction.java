@@ -10,23 +10,20 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.jellytools.modules.xml.actions;
+package org.netbeans.jellytools.modules.css.actions;
 
-import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 
-/** ValidateXMLAction class 
+/** CopyXMLStyleAction class 
  * @author <a href="mailto:mschovanek@netbeans.org">Martin Schovanek</a> */
-public class ValidateXMLAction extends ActionNoBlock {
+public class CopyXMLStyleAction extends ActionNoBlock {
 
     private static final String popup = 
-    Bundle.getStringTrimmed("org.netbeans.modules.xml.tools.actions.Bundle", "NAME_Validate_XML");
-    private static final Shortcut shortcut =
-    new Shortcut(KeyEvent.VK_F9, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK);
+    Bundle.getStringTrimmed("org.netbeans.modules.css.actions.Bundle", "Copy-XML-Style");
 
-    /** creates new ValidateXMLAction instance */    
-    public ValidateXMLAction() {
-        super(null, popup, "org.netbeans.modules.xml.tools.actions.ValidateAction", shortcut);
+    /** creates new CheckCSSAction instance */    
+    public CopyXMLStyleAction() {
+        super(null, popup, "org.netbeans.modules.css.actions.CopyStyleAction$XML");
     }
 }

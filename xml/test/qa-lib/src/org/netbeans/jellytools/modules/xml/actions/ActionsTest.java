@@ -12,22 +12,15 @@
  */
 package org.netbeans.jellytools.modules.xml.actions;
 
-import java.io.InputStreamReader;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.ExplorerOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.modules.xml.XSLTransformationDialog;
+import org.netbeans.jellytools.modules.css.actions.CheckCSSAction;
+import org.netbeans.jellytools.modules.css.actions.CopyHTMLStyleAction;
+import org.netbeans.jellytools.modules.css.actions.CopyXMLStyleAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventDispatcher;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.tests.xml.JXTest;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 
 /** Checks XSL Transformation action. */
 
@@ -44,30 +37,52 @@ public class ActionsTest extends JXTest {
     // TESTS ///////////////////////////////////////////////////////////////////
     
     public void test() {
-        actionTest(new CheckDTDAction(), "PA",  "states");
-        actionTest(new CheckXMLAction(),    "PAS",  "XMLDocument");
-        //actionTest(new EditScenariosAction(), "PASc",  "stylesheet"); //!!! #26559
-        actionTest(new GenerateCSSAction(), "PAc",  "states");
-        actionTest(new GenerateDOMTreeScannerAction(), "PAc",  "states");
-        actionTest(new GenerateDTDAction(), "PAc",  "XMLDocument");
-        actionTest(new GenerateDocumentationAction(), "PAc",  "states");
-        actionTest(new NewAttributeAction(), "Pc",  "XMLDocument" + DELIM + "root");
-        actionTest(new NewCDATAction(), "Pc",  "XMLDocument" + DELIM + "root");
-        actionTest(new NewCharRefAction(), "Pc",  "XMLDocument" + DELIM + "root");
-        actionTest(new NewCommentAction(),  "Pc",   "XMLDocument");
-        actionTest(new NewDoctypeAction(),  "Pc",   "XMLDocument");
-        actionTest(new NewElementAction(),  "Pc",   "XMLDocument");
-        actionTest(new NewEntityReferenceAction(),  "Pc",   "XMLwithDTD" + DELIM + "root");
-        actionTest(new NewPIAction(),       "Pc",   "XMLDocument");
-        actionTest(new NewTextAction(),  "Pc",   "XMLDocument" + DELIM + "root");
-        actionTest(new NormalizeElementAction(),  "P",   "XMLDocument" + DELIM + "root");
-        actionTest(new ReloadDocumentAction(), "PA",  "XMLDocument");
-        actionTest(new SAXDocumentHandlerWizardAction(), "PAc",  "states");
-        actionTest(new TransformAction(),   "PASc", "XMLDocument");
-        actionTest(new ValidateXMLAction(), "PA",  "XMLDocument");
+        //documentActionTest(new CheckDTDAction(), "PA",  "states");
+        //documentActionTest(new CheckXMLAction(),    "PAS",  "XMLDocument");
+        ////documentActionTest(new EditScenariosAction(), "PASc",  "stylesheet"); //!!! #26559
+        //documentActionTest(new GenerateCSSAction(), "PAc",  "states");
+        //documentActionTest(new GenerateDOMTreeScannerAction(), "PAc",  "states");
+        //documentActionTest(new GenerateDTDAction(), "PAc",  "XMLDocument");
+        //documentActionTest(new GenerateDocumentationAction(), "PAc",  "states");
+        //documentActionTest(new NewAttributeAction(), "Pc",  "XMLDocument" + DELIM + "root");
+        //documentActionTest(new NewCDATAction(), "Pc",  "XMLDocument" + DELIM + "root");
+        //documentActionTest(new NewCharRefAction(), "Pc",  "XMLDocument" + DELIM + "root");
+        //documentActionTest(new NewCommentAction(),  "Pc",   "XMLDocument");
+        //documentActionTest(new NewDoctypeAction(),  "Pc",   "XMLDocument");
+        //documentActionTest(new NewElementAction(),  "Pc",   "XMLDocument");
+        //documentActionTest(new NewEntityReferenceAction(),  "Pc",   "XMLwithDTD" + DELIM + "root");
+        //documentActionTest(new NewPIAction(),       "Pc",   "XMLDocument");
+        //documentActionTest(new NewTextAction(),  "Pc",   "XMLDocument" + DELIM + "root");
+        //documentActionTest(new NormalizeElementAction(),  "P",   "XMLDocument" + DELIM + "root");
+        //documentActionTest(new ReloadDocumentAction(), "PA",  "XMLDocument");
+        //documentActionTest(new SAXDocumentHandlerWizardAction(), "PAc",  "states");
+        //documentActionTest(new TransformAction(),   "PASc", "XMLDocument");
+        //documentActionTest(new ValidateXMLAction(), "PA",  "XMLDocument");
+        
+        //documentActionTest(new CheckCSSAction(), "PA",  "CascadeStyleSheet");
+        //documentActionTest(new CopyXMLStyleAction(), "PA",  "CascadeStyleSheet");
+        //documentActionTest(new CopyHTMLStyleAction(), "PA",  "CascadeStyleSheet");
+        
+        //catalogActionTest(new MountCatalogAction(), "PAc",  "");
+
+        //!!! should be a stand-alone tests:
+        //!!! a) needs mounted NB Catalog; b) unmount test have to mount unmounted catalog
+        
+        //catalogActionTest(new RefreshCatalogAction(), "PA",  "NetBeans Catalog");
+        //catalogActionTest(new UnmountCatalogAction(), "PA",  "NetBeans Catalog"); 
     }
     
     // LIB /////////////////////////////////////////////////////////////////////
+    
+    /** @see actionTest(Action, String, Node) */
+    private boolean catalogActionTest(Action action, String attrs, String treePath) {
+        return actionTest(action, attrs, findCatalogNode(treePath));
+    }
+    
+    /** @see actionTest(Action, String, Node) */
+    private boolean documentActionTest(Action action, String attrs, String treePath) {
+        return actionTest(action, attrs, findDataNode(treePath));
+    }
     
     /** Tests org.netbeans.jellytools.actions.Action's subclases.
      * @param action tested action
@@ -79,11 +94,10 @@ public class ActionsTest extends JXTest {
      * @param treePath relative path to 'data' folder delimited by DELIM
      * @return true if test passes esle false
      */
-    private boolean actionTest(Action action, String attrs, String treePath) {
+    private boolean actionTest(Action action, String attrs, Node node) {
         boolean pass = true;
         log("<test class=\"" + action.getClass().getName() + "\">");
         try {
-            Node node = findDataNode(treePath);
             boolean close = (attrs.indexOf('c') != -1);
             
             //            if (attrs.indexOf('S') != -1) {
@@ -96,15 +110,16 @@ public class ActionsTest extends JXTest {
                 log("  <popup-test-start\\>");
                 action.performPopup(node);
                 if (close) cancelDialog();
+                else sleepTest(1000);
                 log("  <popup-test-finished\\>");
             }
             if (attrs.indexOf('A') != -1) {
                 log("  <API-test-start\\>");
                 action.performAPI(node);
                 if (close) cancelDialog();
+                else sleepTest(1000);
                 log("  <API-test-finished\\>");
             }
-            if (!close) sleepTest(2000);
         } catch (Exception ex) {
             pass = false;
             log("Failed:", ex);
@@ -112,16 +127,6 @@ public class ActionsTest extends JXTest {
             log("<\\test>");
         }
         return pass;
-    }
-    
-    /**
-     * Finds Node in the 'data' forlder.
-     * @param path relative to the 'data' folder delimited by 'DELIM'
-     */
-    private Node findDataNode(String path) throws Exception {
-        String treePath = getFilesystemName() + DELIM + getDataPackageName(DELIM) + DELIM + path;
-        JTreeOperator tree = ExplorerOperator.invoke().repositoryTab().tree();
-        return new Node(tree, treePath);
     }
     
     /** Waits for 3 secs and close the first dialog. */
