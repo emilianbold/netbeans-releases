@@ -68,7 +68,8 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             //String message = MessageFormat.format(bundle.getString("ERR_UnableToDeleteColumn"), new String[] {exc.getMessage()}); // NOI18N
             //TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception exc) {
-            throw new IOException(exc.getMessage());
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(exc.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+//            throw new IOException(exc.getMessage());
         }
     }
 
