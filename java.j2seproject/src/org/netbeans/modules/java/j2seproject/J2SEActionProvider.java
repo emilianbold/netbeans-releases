@@ -224,7 +224,12 @@ class J2SEActionProvider implements ActionProvider {
 
                 if (!J2SEProjectUtil.hasMainMethod (file)) {
                     if (AppletSupport.isApplet(file)) {
-                        URL url = generateAppletHTML(file);
+                        URL url = null;
+                        if (file.existsExt("html") || file.existsExt("HTML")) { //NOI18N
+                            url = copyAppletHTML(file, "html"); //NOI18N
+                        } else {                    
+                            url = generateAppletHTML(file);
+                        }
                         if (url == null) {
                             return null;
                         }
@@ -425,6 +430,43 @@ class J2SEActionProvider implements ActionProvider {
                 classesDir = FileUtil.createFolder(project.getProjectDirectory(), classesDirProp);
             }
             url = AppletSupport.generateHtmlFileURL(file, buildDir, classesDir);
+        } catch (FileStateInvalidException fe) {
+            //ingore
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+            return null;
+        }
+        return url;
+    }
+
+    private URL copyAppletHTML(FileObject file, String ext) {
+        URL url = null;
+        try {
+            String buildDirProp = project.evaluator().getProperty("build.dir"); //NOI18N
+            FileObject buildDir = antProjectHelper.resolveFileObject(buildDirProp);
+
+            if (buildDir == null) {
+                buildDir = FileUtil.createFolder(project.getProjectDirectory(), buildDirProp);
+            }
+            
+            FileObject htmlFile = null;
+            htmlFile = file.getParent().getFileObject(file.getName(), "html"); //NOI18N
+            if (htmlFile == null) {
+                htmlFile = file.getParent().getFileObject(file.getName(), "HTML"); //NOI18N
+            }
+            if (htmlFile == null) {
+                return null;
+            }
+            
+            FileObject existingFile = buildDir.getFileObject(htmlFile.getName(), htmlFile.getExt());
+            if (existingFile != null) {
+                existingFile.delete();
+            }
+            
+            htmlFile.copy(buildDir, file.getName(), ext).getURL();
+            if (htmlFile != null) {
+                url = htmlFile.getURL();
+            }
         } catch (FileStateInvalidException fe) {
             //ingore
         } catch (IOException ioe) {
