@@ -57,6 +57,7 @@ final class EnvironmentNode extends AbstractNode {
     /** Finds the node for given name.
      */
     public static Node find (final String name) {
+        // XXX this is probably obsolete? consider deleting
         Object retValue = 
             Children.MUTEX.readAccess(new Mutex.Action() {
                 public Object run() {
