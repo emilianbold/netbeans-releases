@@ -32,12 +32,13 @@ public class HtmlPrintContainer implements PrintContainer {
     private static final String T_PRE_E = "</PRE>";  //NOI18N
     private static final String T_BLOCK_S = "<FONT CLASS=\"{0}\">";  //NOI18N
     private static final String T_BLOCK_E = "</FONT>";   //NOI18N
-    private static final String T_NAME_TABLE = "<TABLE BGCOLOR=\"#999999\" WIDTH=\"100%\"><TR><TD ALIGN=\"center\">{0}</TD></TR></TABLE>";    //NOI18N
+    private static final String T_NAME_TABLE = "<TABLE WIDTH=\"100%\"><TR><TD ALIGN=\"center\">{0}</TD></TR></TABLE>";    //NOI18N
     private static final String T_STYLE_S = "<STYLE TYPE=\"text/css\">";    //NOI18N
     private static final String T_STYLE_E = "</STYLE>"; //NOI18N
     private static final String T_COMMENT_S = "<!--";   //NOI18N
     private static final String T_COMMENT_E = "-->";    //NOI18N
     private static final String ST_BODY = "BODY";       //NOI18N
+    private static final String ST_TABLE = "TABLE";     //NOI18N
     private static final String ST_BEGIN = "{";        //NOI18N
     private static final String ST_COLOR = "color: "; //NOI18N
     private static final String ST_BGCOLOR = "background-color: ";    //NOI18N
@@ -58,6 +59,8 @@ public class HtmlPrintContainer implements PrintContainer {
 
     private Color defaultBackgroundColor;
     private Color defaultForegroundColor;
+    private Color headerBackgroundColor;
+    private Color headerForegroundColor;
     private Font defaultFont;
     private StringBuffer buffer;
     private String fileName;
@@ -67,7 +70,7 @@ public class HtmlPrintContainer implements PrintContainer {
     public HtmlPrintContainer () {
     }
 
-    public final void begin (FileObject fo, Font font, Color fgColor, Color bgColor) {
+    public final void begin (FileObject fo, Font font, Color fgColor, Color bgColor, Color hfgColor, Color hbgColor) {
         styles = new Styles ();
         buffer = new StringBuffer();
         fileName = fo.getPath();
@@ -75,6 +78,8 @@ public class HtmlPrintContainer implements PrintContainer {
         this.defaultForegroundColor = fgColor;
         this.defaultBackgroundColor = bgColor;
         this.defaultFont = font;
+        this.headerForegroundColor = hfgColor;
+        this.headerBackgroundColor = hbgColor;
     }
 
     public final void add(char[] chars, Font font, Color foreColor, Color backColor) {
@@ -107,6 +112,8 @@ public class HtmlPrintContainer implements PrintContainer {
         result.append (T_COMMENT_S);
         result.append (EOL);
         result.append (createStyle(ST_BODY,null,getDefaultFont(),getDefaultColor(),getDefaultBackgroundColor(),false));
+        result.append (EOL);
+        result.append (createStyle(ST_TABLE,null,getDefaultFont(),headerForegroundColor,headerBackgroundColor,false));
         result.append (EOL);
         result.append (styles.toExternalForm());
         result.append (T_COMMENT_E);

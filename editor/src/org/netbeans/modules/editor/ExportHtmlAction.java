@@ -149,9 +149,12 @@ public class ExportHtmlAction extends CookieAction {
         Color bgColor = coloring.getBackColor();
         Color fgColor = coloring.getForeColor();
         Font font = coloring.getFont();
+        coloring = SettingsUtil.getColoring (bdoc.getKitClass(), SettingsNames.LINE_NUMBER_COLORING, false);
+        Color lnbgColor = coloring.getBackColor();
+        Color lnfgColor = coloring.getForeColor();
         FileObject fo = ((DataObject)bdoc.getProperty (Document.StreamDescriptionProperty)).getPrimaryFile();
         HtmlPrintContainer htmlPrintContainer = new HtmlPrintContainer();
-        htmlPrintContainer.begin (fo, font, fgColor, bgColor);
+        htmlPrintContainer.begin (fo, font, fgColor, bgColor,lnfgColor,lnbgColor);
         bdoc.print (htmlPrintContainer,false, lineNumbers, selectionStart, selectionEnd);
         String result = htmlPrintContainer.end();
         PrintWriter out = null;
