@@ -39,11 +39,26 @@ public class HTMLViewAction extends CallableSystemAction {
 
     public void performAction() {
         TopManager tm = TopManager.getDefault();
-        tm.setStatusText (NbBundle.getBundle(HTMLViewAction.class).getString("CTL_OpeningBrowser"));
+        tm.setStatusText (NbBundle.getBundle(HTMLViewAction.class).
+            getString("CTL_OpeningBrowser")
+        );
         try {
-            tm.showUrl (new java.net.URL (org.openide.awt.HtmlBrowser.getHomePage ()));
+            tm.showUrl (new java.net.URL (
+                org.openide.awt.HtmlBrowser.getHomePage ()
+            ));
         } catch (java.net.MalformedURLException e) {
-            tm.showUrl (IDESettings.getRealHomeURL ());
+            if (!org.openide.awt.HtmlBrowser.getHomePage ().
+              startsWith ("http://")
+            ) {
+                try {
+                    tm.showUrl (new java.net.URL (
+                        "http://" + org.openide.awt.HtmlBrowser.getHomePage ()
+                    ));
+                } catch (java.net.MalformedURLException e1) {
+                    tm.showUrl (IDESettings.getRealHomeURL ());
+                }
+            } else
+                tm.showUrl (IDESettings.getRealHomeURL ());
         }
         tm.setStatusText (""); // NOI18N
     }
