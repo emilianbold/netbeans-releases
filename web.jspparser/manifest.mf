@@ -10,5 +10,5 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.servletapi24/1 > @SERVL
  org.openide.io > 1.0
 OpenIDE-Module-Requires: org.openide.windows.IOProvider
 OpenIDE-Module-Package-Dependencies: [javax.servlet.ServletException], [org.apache.jasper.Constants], [org.apache.jasper.Options], [org.apache.commons.logging.LogFactory], [org.apache.tools.ant.BuildException]
-Class-Path: ext/jasper-runtime-5.0.16.jar ext/jasper-compiler-5.0.16.jar ext/commons-logging-api.jar ext/commons-el.jar ../../ant/lib/ant.jar
+Class-Path: ext/jasper-runtime-5.0.18.jar ext/jasper-compiler-5.0.18.jar ext/commons-logging-api.jar ext/commons-el.jar ../../ant/lib/ant.jar
 

@@ -46,8 +46,8 @@ Microsystems, Inc. All Rights Reserved.
         </fileset>
         <pathelement location="../external/jsp-api-2.0.jar"/>
         <pathelement location="../external/servlet-api-2.4.jar"/>
-        <pathelement location="../external/jasper-compiler-5.0.16.jar"/>
-        <pathelement location="../external/jasper-runtime-5.0.16.jar"/>
+        <pathelement location="../external/jasper-compiler-5.0.18.jar"/>
+        <pathelement location="../external/jasper-runtime-5.0.18.jar"/>
         <pathelement location="../external/commons-logging-api.jar"/>
         <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
 	<pathelement location="${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
@@ -76,8 +76,8 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="netbeans/modules/eager/ext"/>
     <copy todir="netbeans/modules/eager/ext">
       <fileset dir="../external">
-        <include name="jasper-compiler-5.0.16.jar"/>
-        <include name="jasper-runtime-5.0.16.jar"/>
+        <include name="jasper-compiler-5.0.18.jar"/>
+        <include name="jasper-runtime-5.0.18.jar"/>
         <include name="commons-logging-api.jar"/>
         <include name="commons-el.jar"/>
       </fileset>
