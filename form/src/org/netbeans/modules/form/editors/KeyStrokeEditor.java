@@ -61,6 +61,9 @@ public class KeyStrokeEditor extends PropertyEditorSupport
     }
 
     public void setAsText(String text) throws IllegalArgumentException {
+        if (text == null || "".equals(text))
+            setValue(null);
+
         KeyStroke key = keyStrokeFromString(text);
         if (key == null)
             throw new IllegalArgumentException("Unrecognized  key: " + text);
@@ -274,6 +277,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             String keyName =(String) _virtualKey.getSelectedItem();
             if ("".equals(keyName)) {
                 _keyGrabber.setText("");
+                setValue(null);
                 return;
             }
 
