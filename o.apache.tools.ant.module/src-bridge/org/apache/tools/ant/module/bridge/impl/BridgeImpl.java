@@ -75,7 +75,11 @@ public class BridgeImpl implements BridgeInterface {
         // run. Otherwise some code, e.g. JAXP, will accidentally pick up NB classes,
         // which can cause various undesirable effects.
         ClassLoader oldCCL = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(Project.class.getClassLoader());
+        ClassLoader newCCL = Project.class.getClassLoader();
+        if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            AntModule.err.log("Fixing CCL: " + oldCCL + " -> " + newCCL);
+        }
+        Thread.currentThread().setContextClassLoader(newCCL);
         try {
         
         Project project = null;
@@ -112,6 +116,9 @@ public class BridgeImpl implements BridgeInterface {
             logger.setErrorPrintStream(err);
             //writer.println("#2"); // NOI18N
             project.addBuildListener(logger);
+            if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                AntModule.err.log("CCL when configureProject is called: " + Thread.currentThread().getContextClassLoader());
+            }
             ProjectHelper.configureProject(project, buildFile);
             //writer.println("#3"); // NOI18N
             
@@ -214,6 +221,9 @@ public class BridgeImpl implements BridgeInterface {
         }
         
         } finally {
+            if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                AntModule.err.log("Restoring CCL: " + oldCCL);
+            }
             Thread.currentThread().setContextClassLoader(oldCCL);
         }
         
