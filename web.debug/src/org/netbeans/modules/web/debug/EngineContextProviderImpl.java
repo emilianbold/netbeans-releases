@@ -24,7 +24,7 @@ import org.netbeans.spi.debugger.jpda.EngineContextProvider;
  *
  * @author Jan Jancura
  */
-public class EngineContextProviderImpl implements EngineContextProvider {
+public class EngineContextProviderImpl extends EngineContextProvider {
     
     private static boolean verbose = 
         System.getProperty ("netbeans.debugger.enginecontextproviderimpl") != null;

@@ -155,7 +155,8 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         }
         task = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                Context.removeAnnotation (currentPC);
+                if (currentPC != null)
+                    Context.removeAnnotation (currentPC);
                 Iterator i = stackAnnotations.values ().iterator ();
                 while (i.hasNext ())
                     Context.removeAnnotation (i.next ());
