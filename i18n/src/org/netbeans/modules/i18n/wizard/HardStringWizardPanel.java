@@ -517,10 +517,10 @@ final class HardStringWizardPanel extends JPanel {
         /** Empty label component. */
         private final JLabel emptyLabel;
         
-        /** HardString panel component. */
-        private final HardStringWizardPanel hardStringPanel = new HardStringWizardPanel();
-        
-        {
+        /** HardString panel component cache. */
+        private transient HardStringWizardPanel hardStringPanel;
+                
+        public Panel() {
             emptyLabel = new JLabel(NbBundle.getBundle(HardStringWizardPanel.class).getString("TXT_NoHardstrings"));
             emptyLabel.setHorizontalAlignment(JLabel.CENTER);
             emptyLabel.setVerticalAlignment(JLabel.CENTER);
@@ -549,7 +549,7 @@ final class HardStringWizardPanel extends JPanel {
             constraints.weightx = 1.0;
             constraints.weighty = 1.0;
             constraints.fill = GridBagConstraints.BOTH;
-            panel.add(hardStringPanel, constraints);
+            panel.add(getUI(), constraints);
             
             return panel;
         }
@@ -561,7 +561,7 @@ final class HardStringWizardPanel extends JPanel {
         
         /** Reads settings at the start when the panel comes to play. Overrides superclass method. */
         public void readSettings(Object settings) {
-            hardStringPanel.setSourceMap((Map)settings);
+            getUI().setSourceMap((Map)settings);
 
             JPanel panel = (JPanel)getComponent();
             if(foundStrings((Map)settings)) {
@@ -571,11 +571,11 @@ final class HardStringWizardPanel extends JPanel {
                     constraints.weightx = 1.0;
                     constraints.weighty = 1.0;
                     constraints.fill = GridBagConstraints.BOTH;
-                    panel.add(hardStringPanel, constraints);
+                    panel.add(getUI(), constraints);
                 }
             } else {
-                if(panel.isAncestorOf(hardStringPanel)) {
-                    panel.remove(hardStringPanel);
+                if(panel.isAncestorOf(getUI())) {
+                    panel.remove(getUI());
                     GridBagConstraints constraints = new GridBagConstraints();
                     constraints.weightx = 1.0;
                     constraints.weighty = 1.0;
@@ -589,7 +589,7 @@ final class HardStringWizardPanel extends JPanel {
         public void storeSettings(Object settings) {
             // Update sources.
             ((Map)settings).clear();
-            ((Map)settings).putAll(hardStringPanel.getSourceMap());
+            ((Map)settings).putAll(getUI().getSourceMap());
         }
         
         /** Searches hard coded strings in sources and puts found hard coded string - i18n string pairs
@@ -600,7 +600,7 @@ final class HardStringWizardPanel extends JPanel {
             progressPanel.setMainText(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Internationalizing"));
             progressPanel.setMainProgress(0);
             
-            ((Container)getComponent()).remove(hardStringPanel);
+            ((Container)getComponent()).remove(getUI());
             GridBagConstraints constraints = new GridBagConstraints();
             constraints.weightx = 1.0;
             constraints.weighty = 1.0;
@@ -610,7 +610,7 @@ final class HardStringWizardPanel extends JPanel {
             getComponent().repaint();
 
             // Do replacement job here.
-            Map sourceMap = hardStringPanel.getSourceMap();
+            Map sourceMap = getUI().getSourceMap();
 
             Iterator sourceIterator = sourceMap.keySet().iterator();
 
@@ -681,6 +681,13 @@ final class HardStringWizardPanel extends JPanel {
         /** Gets help. Implements superclass abstract method. */
         public HelpCtx getHelp() {
             return new HelpCtx(I18nUtil.HELP_ID_WIZARD);
+        }
+
+        private synchronized HardStringWizardPanel getUI() {
+            if (hardStringPanel == null) {
+                hardStringPanel = new HardStringWizardPanel();
+            }
+            return hardStringPanel;
         }
         
     } // End of nested Panel class.

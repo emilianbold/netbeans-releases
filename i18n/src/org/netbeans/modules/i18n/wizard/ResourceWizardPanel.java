@@ -378,8 +378,8 @@ final class ResourceWizardPanel extends JPanel {
      * @see org.openide.WizardDescriptor.Panel */
     public static class Panel extends I18nWizardDescriptor.Panel implements I18nWizardDescriptor.ProgressMonitor {
 
-        /** Component. */
-        private final ResourceWizardPanel resourcePanel;
+        /** Cached component. */
+        private transient ResourceWizardPanel resourcePanel;
         
         /** Indicates whether this panel is used in i18n test wizard or not. */
         private boolean testWizard;
@@ -393,7 +393,6 @@ final class ResourceWizardPanel extends JPanel {
         /** Constructs panel for i18n wizard or i18n test wizard. */
         public Panel(boolean testWizard) {
             this.testWizard = testWizard;
-            resourcePanel = new ResourceWizardPanel(this, testWizard);
         }
         
         
@@ -418,26 +417,26 @@ final class ResourceWizardPanel extends JPanel {
             constraints.weightx = 1.0;
             constraints.weighty = 1.0;
             constraints.fill = GridBagConstraints.BOTH;
-            panel.add(resourcePanel, constraints);            
+            panel.add(getUI(), constraints);            
             
             return panel;
         }
 
         /** Indicates if panel is valid. Overrides superclass method. */
         public boolean isValid() {
-            return !resourcePanel.getSourceMap().containsValue(null);
+            return !getUI().getSourceMap().containsValue(null);
         }
         
         /** Reads settings at the start when the panel comes to play. Overrides superclass method. */
         public void readSettings(Object settings) {
-            resourcePanel.setSourceMap((Map)settings);
+            getUI().setSourceMap((Map)settings);
         }
 
         /** Stores settings at the end of panel show. Overrides superclass abstract method. */
         public void storeSettings(Object settings) {
             // Update sources.
             ((Map)settings).clear();
-            ((Map)settings).putAll(resourcePanel.getSourceMap());
+            ((Map)settings).putAll(getUI().getSourceMap());
         }
         
         /** Searches hard coded strings in sources and puts found hard coded string - i18n string pairs
@@ -452,7 +451,7 @@ final class ResourceWizardPanel extends JPanel {
             progressPanel.setMainProgress(0);
             
             // Do search.
-            Map sourceMap = resourcePanel.getSourceMap();
+            Map sourceMap = getUI().getSourceMap();
 
             Iterator sourceIterator = sourceMap.keySet().iterator();
 
@@ -528,7 +527,7 @@ final class ResourceWizardPanel extends JPanel {
         
         /** Helper method. Places progress panel for monitoring search. */
         private void showProgressPanel(ProgressWizardPanel progressPanel) {
-            ((Container)getComponent()).remove(resourcePanel);
+            ((Container)getComponent()).remove(getUI());
             GridBagConstraints constraints = new GridBagConstraints();
             constraints.weightx = 1.0;
             constraints.weighty = 1.0;
@@ -542,13 +541,13 @@ final class ResourceWizardPanel extends JPanel {
         public void reset() {
             Container container = (Container)getComponent();
             
-            if(!container.isAncestorOf(resourcePanel)) {
+            if(!container.isAncestorOf(getUI())) {
                 container.removeAll();
                 GridBagConstraints constraints = new GridBagConstraints();
                 constraints.weightx = 1.0;
                 constraints.weighty = 1.0;
                 constraints.fill = GridBagConstraints.BOTH;
-                container.add(resourcePanel, constraints);
+                container.add(getUI(), constraints);
             }
         }
         
@@ -558,6 +557,13 @@ final class ResourceWizardPanel extends JPanel {
                 return new HelpCtx(I18nUtil.HELP_ID_TESTING);
             else
                 return new HelpCtx(I18nUtil.HELP_ID_WIZARD);
+        }
+        
+        private synchronized ResourceWizardPanel getUI() {
+            if (resourcePanel == null) {
+                resourcePanel = new ResourceWizardPanel(this, testWizard);
+            }
+            return resourcePanel;
         }
 
     } // End of nested Panel class.

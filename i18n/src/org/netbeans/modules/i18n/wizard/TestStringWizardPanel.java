@@ -486,10 +486,9 @@ final class TestStringWizardPanel extends JPanel {
         private final JLabel emptyLabel;        
 
         /** Test wizard panel component. */
-        private final TestStringWizardPanel testStringPanel;
+        private transient TestStringWizardPanel testStringPanel;
         
-        public Panel() {
-            testStringPanel = new TestStringWizardPanel();
+        public Panel() {            
             emptyLabel = new JLabel(NbBundle.getBundle(TestStringWizardPanel.class).getString("TXT_AllI18nStrings"));
             emptyLabel.setHorizontalAlignment(JLabel.CENTER);
             emptyLabel.setVerticalAlignment(JLabel.CENTER);            
@@ -511,7 +510,7 @@ final class TestStringWizardPanel extends JPanel {
             constraints.weightx = 1.0;
             constraints.weighty = 1.0;
             constraints.fill = GridBagConstraints.BOTH;
-            panel.add(testStringPanel, constraints);
+            panel.add(getUI(), constraints);
             return panel;
         }
 
@@ -522,7 +521,7 @@ final class TestStringWizardPanel extends JPanel {
         
         /** Reads settings at the start when the panel comes to play. Overrides superclass method. */
         public void readSettings(Object settings) {
-            testStringPanel.setSourceMap((Map)settings);
+            getUI().setSourceMap((Map)settings);
             
             JPanel panel = (JPanel)getComponent();
             if(foundStrings((Map)settings)) {
@@ -532,11 +531,11 @@ final class TestStringWizardPanel extends JPanel {
                     constraints.weightx = 1.0;
                     constraints.weighty = 1.0;
                     constraints.fill = GridBagConstraints.BOTH;
-                    panel.add(testStringPanel, constraints);
+                    panel.add(getUI(), constraints);
                 }
             } else {
-                if(panel.isAncestorOf(testStringPanel)) {
-                    panel.remove(testStringPanel);
+                if(panel.isAncestorOf(getUI())) {
+                    panel.remove(getUI());
                     GridBagConstraints constraints = new GridBagConstraints();
                     constraints.weightx = 1.0;
                     constraints.weighty = 1.0;
@@ -550,7 +549,7 @@ final class TestStringWizardPanel extends JPanel {
         public void storeSettings(Object settings) {
             // Update sources.
             ((Map)settings).clear();
-            ((Map)settings).putAll(testStringPanel.getSourceMap());
+            ((Map)settings).putAll(getUI().getSourceMap());
         }
         
         /** Searches hard coded strings in sources and puts found hard coded string - i18n string pairs
@@ -561,7 +560,7 @@ final class TestStringWizardPanel extends JPanel {
             progressPanel.setMainText(NbBundle.getBundle(getClass()).getString("LBL_Internationalizing"));
             progressPanel.setMainProgress(0);
             
-            ((Container)getComponent()).remove(testStringPanel);
+            ((Container)getComponent()).remove(getUI());
             GridBagConstraints constraints = new GridBagConstraints();
             constraints.weightx = 1.0;
             constraints.weighty = 1.0;
@@ -571,7 +570,7 @@ final class TestStringWizardPanel extends JPanel {
             getComponent().repaint();
 
             // Add missing key-value pairs into resource.
-            Map sourceMap = testStringPanel.getSourceMap();
+            Map sourceMap = getUI().getSourceMap();
 
             Iterator sourceIterator = sourceMap.keySet().iterator();
 
@@ -653,5 +652,11 @@ final class TestStringWizardPanel extends JPanel {
             return new HelpCtx(I18nUtil.HELP_ID_TESTING);
         }
         
+        private synchronized TestStringWizardPanel getUI() {
+            if (testStringPanel == null) {
+                testStringPanel = new TestStringWizardPanel();
+            }
+            return testStringPanel;
+        }
     } // End of nested PanelDescriptor class.
 }

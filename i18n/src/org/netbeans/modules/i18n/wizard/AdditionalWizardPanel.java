@@ -203,10 +203,9 @@ final class AdditionalWizardPanel extends JPanel {
         private final JLabel emptyLabel;
         
         /** Component. */
-        private final AdditionalWizardPanel additionalPanel;
+        private transient AdditionalWizardPanel additionalPanel;
 
         Panel () {
-            additionalPanel = new AdditionalWizardPanel();
             emptyLabel = new JLabel(Util.getString("TXT_HasNoAdditonal"));
             emptyLabel.setHorizontalAlignment(JLabel.CENTER);
             emptyLabel.setVerticalAlignment(JLabel.CENTER);
@@ -230,14 +229,14 @@ final class AdditionalWizardPanel extends JPanel {
             constraints.weightx = 1.0;
             constraints.weighty = 1.0;
             constraints.fill = GridBagConstraints.BOTH;
-            panel.add(additionalPanel, constraints);
+            panel.add(getUI(), constraints);
             
             return panel;
         }
 
         /** Reads settings at the start when the panel comes to play. Overrides superclass method. */
         public void readSettings(Object settings) {
-            additionalPanel.setSourceMap((Map)settings);
+            getUI().setSourceMap((Map)settings);
             
             JPanel panel = (JPanel)getComponent();
             if(hasAdditional((Map)settings)) {
@@ -247,11 +246,11 @@ final class AdditionalWizardPanel extends JPanel {
                     constraints.weightx = 1.0;
                     constraints.weighty = 1.0;
                     constraints.fill = GridBagConstraints.BOTH;
-                    panel.add(additionalPanel, constraints);
+                    panel.add(getUI(), constraints);
                 }
             } else {
-                if(panel.isAncestorOf(additionalPanel)) {
-                    panel.remove(additionalPanel);
+                if(panel.isAncestorOf(getUI())) {
+                    panel.remove(getUI());
                     GridBagConstraints constraints = new GridBagConstraints();
                     constraints.weightx = 1.0;
                     constraints.weighty = 1.0;
@@ -265,8 +264,8 @@ final class AdditionalWizardPanel extends JPanel {
         public void storeSettings(Object settings) {
             
             // Alter i18n string values if changing additional values could affect them.
-            Map sourceMap = additionalPanel.getSourceMap();
-            Iterator it = additionalPanel.getViewedSources().iterator();
+            Map sourceMap = getUI().getSourceMap();
+            Iterator it = getUI().getViewedSources().iterator();
             
             while(it.hasNext()) {
                 SourceData sourceData = (SourceData)sourceMap.get(it.next());
@@ -319,7 +318,7 @@ final class AdditionalWizardPanel extends JPanel {
 
         /** Helper method. Places progress panel for monitoring search. */
         private void showProgressPanel(ProgressWizardPanel progressPanel) {
-            ((Container)getComponent()).remove(additionalPanel);
+            ((Container)getComponent()).remove(getUI());
             GridBagConstraints constraints = new GridBagConstraints();
             constraints.weightx = 1.0;
             constraints.weighty = 1.0;
@@ -333,13 +332,13 @@ final class AdditionalWizardPanel extends JPanel {
         public void reset() {
             Container container = (Container)getComponent();
             
-            if(!container.isAncestorOf(additionalPanel)) {
+            if(!container.isAncestorOf(getUI())) {
                 container.removeAll();
                 GridBagConstraints constraints = new GridBagConstraints();
                 constraints.weightx = 1.0;
                 constraints.weighty = 1.0;
                 constraints.fill = GridBagConstraints.BOTH;
-                container.add(additionalPanel, constraints);
+                container.add(getUI(), constraints);
             }
         }
         
@@ -362,6 +361,12 @@ final class AdditionalWizardPanel extends JPanel {
             return false;
         }
         
+        private synchronized AdditionalWizardPanel getUI() {
+            if (additionalPanel == null) {
+                additionalPanel = new AdditionalWizardPanel();
+            }
+            return additionalPanel;
+        }
     } // End of nested Panel class.
     
 }
