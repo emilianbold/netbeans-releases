@@ -1,3 +1,2 @@
-html/src/org/netbeans/modules/html/Bundle.properties
-html/src/org/netbeans/modules/html/TemplateHelp.html
-html/src/org/netbeans/modules/html/templates/html.html
+html/**/src/**/Bundle*.properites
+html/**/src/**/resources/**/*.html
