@@ -105,7 +105,7 @@ public class TargetExecutor implements Runnable {
             }
             String fileName;
             if (pcookie.getFileObject () != null) {
-                fileName = DataObject.find (pcookie.getFileObject ()).getNodeDelegate ().getDisplayName ();
+                fileName = pcookie.getFileObject().getNameExt();
             } else {
                 fileName = pcookie.getFile ().getName ();
             }

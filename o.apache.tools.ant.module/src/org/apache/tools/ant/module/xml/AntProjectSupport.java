@@ -344,11 +344,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     public String toString () {
         FileObject fo = getFileObject ();
         if (fo != null) {
-            try {
-                return DataObject.find (fo).getNodeDelegate ().getDisplayName ();
-            } catch (DataObjectNotFoundException donfe) {
-                return fo.toString ();
-            }
+            return fo.getNameExt();
         } else if (file != null) {
             return file.getAbsolutePath ();
         } else {
