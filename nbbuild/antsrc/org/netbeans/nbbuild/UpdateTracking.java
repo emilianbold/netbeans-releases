@@ -16,7 +16,8 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.io.IOException;
 import java.util.*;
@@ -274,7 +275,8 @@ public class UpdateTracking {
         //document.getDocumentElement().normalize();
 
         try {
-            Writer os = new FileWriter( trackingFile );
+	    OutputStreamWriter os = new OutputStreamWriter( new FileOutputStream( trackingFile ), "UTF-8" );
+	    //Writer os = new FileWriter( trackingFile );
             XMLUtil.write(document, os);
             //document.write (os);
             os.close();
