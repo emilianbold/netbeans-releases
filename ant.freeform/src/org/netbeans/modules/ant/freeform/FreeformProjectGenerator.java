@@ -1387,7 +1387,7 @@ public class FreeformProjectGenerator {
      * Update subprojects of the project. 
      * Project is left modified and you must save it explicitely.
      * @param helper AntProjectHelper instance
-     * @param exports list of Export instances
+     * @param subprojects list of paths to subprojects
      */
     public static void putSubprojects(AntProjectHelper helper, List/*<String>*/ subprojects) {
         //assert ProjectManager.mutex().isWriteAccess();
@@ -1407,6 +1407,108 @@ public class FreeformProjectGenerator {
             Element projEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "project"); // NOI18N
             projEl.appendChild(doc.createTextNode(proj));
             subproject.appendChild(projEl);
+        }
+        helper.putPrimaryConfigurationData(data, true);
+    }
+    
+    /**
+     * Try to guess project's build folders. See issue #50934 for more details.
+     */
+    public static List/*<String>*/ guessBuildFolders(PropertyEvaluator evaluator,
+            List/*<JavaCompilationUnit>*/ javaCompilationUnits, File projectBase, File freeformBase) {
+        //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
+        List/*<String>*/ buildFolders = new ArrayList();
+        Iterator it = javaCompilationUnits.iterator();
+        while (it.hasNext()) {
+            JavaCompilationUnit cu = (JavaCompilationUnit)it.next();
+            if (cu.output != null) {
+                Iterator it2 = cu.output.iterator();
+                while (it2.hasNext()) {
+                    String output = (String)it2.next();
+                    output = resolveFile(evaluator, freeformBase, output);
+                    File f = new File(output);
+                    if (f.exists()) {
+                        if (f.isFile()) {
+                            f = f.getParentFile();
+                        }
+                    } else {
+                        // guess: if name contains dot then it is probably file
+                        if (f.getName().indexOf('.') != -1) {
+                            f = f.getParentFile();
+                        }
+                    }
+                    output = f.getAbsolutePath();
+                    if (!output.endsWith(File.separator)) {
+                        output += File.separatorChar;
+                    }
+
+                    if (output.startsWith(projectBase.getAbsolutePath()+File.separatorChar) ||
+                        output.startsWith(freeformBase.getAbsolutePath()+File.separatorChar)) {
+                        // ignore output which lies below project base or freeform base
+                        continue;
+                    }
+                    boolean add = true;
+                    Iterator it3 = buildFolders.iterator();
+                    while (it3.hasNext()) {
+                        String path = (String)it3.next();
+                        if (!path.endsWith(File.separator)) {
+                            path += File.separatorChar;
+                        }
+                        if (path.equals(output)) {
+                            // such a path is already there
+                            add = false;
+                            break;
+                        } else if (output.startsWith(path)) {
+                            // such a patch is already there
+                            add = false;
+                            break;
+                        } else if (path.startsWith(output)) {
+                            it3.remove();
+                        }
+                    }
+                    if (add) {
+                        buildFolders.add(f.getAbsolutePath());
+                    }
+                }
+            }
+        }
+        return buildFolders;
+    }
+    
+    /**
+     * Update build folders of the project. 
+     * Project is left modified and you must save it explicitely.
+     * @param helper AntProjectHelper instance
+     * @param buildFolders list of build folder locations
+     */
+    public static void putBuildFolders(AntProjectHelper helper, List/*<String>*/ buildFolders) {
+        //assert ProjectManager.mutex().isWriteAccess();
+        ArrayList list = new ArrayList();
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+        Element foldersEl = Util.findElement(data, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (foldersEl == null) {
+            foldersEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "folders"); // NOI18N
+            appendChildElement(data, foldersEl, rootElementsOrder);
+        } else {
+            List/*<Element>*/ folders = Util.findSubElements(foldersEl);
+            Iterator it = folders.iterator();
+            while (it.hasNext()) {
+                Element buildFolderEl = (Element)it.next();
+                if (!buildFolderEl.getLocalName().equals("build-folder")) { // NOI18N
+                    continue;
+                }
+                foldersEl.removeChild(buildFolderEl);
+            }
+        }
+        Iterator it = buildFolders.iterator();
+        while (it.hasNext()) {
+            String location = (String)it.next();
+            Element buildFolderEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "build-folder"); // NOI18N
+            Element locationEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "location"); // NOI18N
+            locationEl.appendChild(doc.createTextNode(location));
+            buildFolderEl.appendChild(locationEl);
+            appendChildElement(foldersEl, buildFolderEl, folderElementsOrder);
         }
         helper.putPrimaryConfigurationData(data, true);
     }

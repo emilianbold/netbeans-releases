@@ -1471,6 +1471,120 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         
     }    
 
+    public void testGuessBuildFolders() throws Exception {
+        File base = new File(getWorkDir(), "folder");
+        File proj1 = new File(base, "proj1");
+        proj1.mkdir();
+        File base2 = new File(getWorkDir(), "folder2");
+        
+        FreeformProjectGenerator.JavaCompilationUnit cu = new FreeformProjectGenerator.JavaCompilationUnit();
+        cu.output = new ArrayList();
+        cu.output.add("${outputfile}");
+        ArrayList units = new ArrayList();
+        units.add(cu);
+        
+        Map m = new HashMap();
+        m.put("outputfile", "out.jar");
+        PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
+            PropertyUtils.fixedPropertyProvider(m)});
+        List buildFolders = FreeformProjectGenerator.guessBuildFolders(evaluator, units, proj1, proj1);
+        assertEquals("no build folder", 0, buildFolders.size());
+        
+        m.put("outputfile", "../proj1_diff/out.jar");
+        evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
+            PropertyUtils.fixedPropertyProvider(m)});
+        buildFolders = FreeformProjectGenerator.guessBuildFolders(evaluator, units, proj1, proj1);
+        assertEquals("one build-folder created", 1, buildFolders.size());
+        assertEquals("export is properly configured", base.getAbsolutePath()+File.separator+"proj1_diff", buildFolders.get(0));
+        
+        m.put("outputfile", "../out.jar");
+        evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
+            PropertyUtils.fixedPropertyProvider(m)});
+        buildFolders = FreeformProjectGenerator.guessBuildFolders(evaluator, units, proj1, proj1);
+        assertEquals("one build-folder created", 1, buildFolders.size());
+        assertEquals("export is properly configured", base.getAbsolutePath(), buildFolders.get(0));
+        
+        cu.output.add(base2.getAbsolutePath());
+        cu.output.add("other.jar");
+        buildFolders = FreeformProjectGenerator.guessBuildFolders(evaluator, units, proj1, proj1);
+        assertEquals("two build-folder created", 2, buildFolders.size());
+        assertEquals("export is properly configured", base.getAbsolutePath(), buildFolders.get(0));
+        assertEquals("export is properly configured", base2.getAbsolutePath(), buildFolders.get(1));
+        
+        cu.output.add(getWorkDir().getAbsolutePath());
+        buildFolders = FreeformProjectGenerator.guessBuildFolders(evaluator, units, proj1, proj1);
+        assertEquals("one build-folder created", 1, buildFolders.size());
+        assertEquals("export is properly configured", getWorkDir().getAbsolutePath(), buildFolders.get(0));
+        
+        // check that root of this is handled correctly
+        File diskRoot = getWorkDir();
+        while (diskRoot.getParentFile() != null) {
+            diskRoot = diskRoot.getParentFile();
+        }
+        cu.output.add(diskRoot.getAbsolutePath());
+        buildFolders = FreeformProjectGenerator.guessBuildFolders(evaluator, units, proj1, proj1);
+        assertEquals("one build-folder created", 1, buildFolders.size());
+        assertEquals("export is properly configured", diskRoot.getAbsolutePath(), buildFolders.get(0));
+    }
+    
+    public void testPutBuildFolders() throws Exception {
+        AntProjectHelper helper = createEmptyProject("proj", "proj", false);
+        FileObject base = helper.getProjectDirectory();
+        Project p = ProjectManager.getDefault().findProject(base);
+        assertNotNull("Project was not created", p);
+        assertEquals("Project folder is incorrect", base, p.getProjectDirectory());
+        
+        // check that all data are correctly persisted
+        
+        List buildFolders = new ArrayList();
+        buildFolders.add("/some/path/projA");
+        buildFolders.add("C:\\dev\\projB");
+        
+        FreeformProjectGenerator.putBuildFolders(helper, buildFolders);
+        Element el = helper.getPrimaryConfigurationData(true);
+        Element foldersEl = Util.findElement(el, "folders", FreeformProjectType.NS_GENERAL);
+        assertNotNull("<folders> element exists", foldersEl);
+        List subElements = Util.findSubElements(foldersEl);
+        assertEquals("project has two build-folders", 2, subElements.size());
+        Element el2 = (Element)subElements.get(0);
+        assertElement(el2, "build-folder", null);
+        assertEquals("build-folder has one subelement", 1, Util.findSubElements(el2).size());
+        assertElement((Element)Util.findSubElements(el2).get(0), "location", "/some/path/projA");
+        el2 = (Element)subElements.get(1);
+        assertElement(el2, "build-folder", null);
+        assertEquals("build-folder has one subelement", 1, Util.findSubElements(el2).size());
+        assertElement((Element)Util.findSubElements(el2).get(0), "location", "C:\\dev\\projB");
+        
+        // validate against schema:
+        ProjectManager.getDefault().saveAllProjects();
+        validate(p);
+        
+        // now test updating
+        
+        buildFolders = new ArrayList();
+        buildFolders.add("/projC");
+        FreeformProjectGenerator.putBuildFolders(helper, buildFolders);
+        el = helper.getPrimaryConfigurationData(true);
+        foldersEl = Util.findElement(el, "folders", FreeformProjectType.NS_GENERAL);
+        subElements = Util.findSubElements(foldersEl);
+        assertEquals("project has one build-folder", 1, subElements.size());
+        el2 = (Element)subElements.get(0);
+        assertElement(el2, "build-folder", null);
+        assertEquals("build-folder has one subelement", 1, Util.findSubElements(el2).size());
+        assertElement((Element)Util.findSubElements(el2).get(0), "location", "/projC");
+        buildFolders = new ArrayList();
+        FreeformProjectGenerator.putBuildFolders(helper, buildFolders);
+        el = helper.getPrimaryConfigurationData(true);
+        foldersEl = Util.findElement(el, "folders", FreeformProjectType.NS_GENERAL);
+        subElements = Util.findSubElements(foldersEl);
+        assertEquals("project has no build-folder", 0, subElements.size());
+        
+        // validate against schema:
+        ProjectManager.getDefault().saveAllProjects();
+        validate(p);
+        
+    }    
+
     private static class Listener implements ChangeListener {
         int count = 0;
         public void stateChanged(ChangeEvent ev) {
