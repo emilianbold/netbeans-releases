@@ -15,6 +15,7 @@ package org.openide.awt;
 
 import java.awt.Component;
 import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.event.*;
 import java.util.*;
@@ -118,7 +119,34 @@ public final class ToolbarPool extends JComponent implements Accessible {
             setBorder(BorderFactory.createEtchedBorder (EtchedBorder.LOWERED));
         }
     }
+    
 
+    public Border getBorder() {
+        //Issue 36867, hide border if there are no toolbars.  Not the most
+        //performant way to do it; if it has a measurable impact, can be 
+        //improved
+        if (center != null && center instanceof Container && 
+           ((Container)center).getComponentCount() > 0) {
+               
+            boolean show = false;
+            for (int i=0; i < ((Container)center).getComponentCount(); i++) {
+                Component c = ((Container)center).getComponent(i);
+                if (c.isVisible()) {
+                    show = true;
+                    break;
+                }
+            }
+            if (show) {
+                return super.getBorder();
+            }
+        }
+        return BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(1, 0, 0, 0, 
+            UIManager.getColor("controlShadow")),
+            BorderFactory.createMatteBorder(1, 0, 0, 0, 
+            UIManager.getColor("controlLtHighlight"))); //NOI18N
+    }
+    
     /** Allows to wait till the content of the pool is initialized. */
     public final void waitFinished () {
         instance.instanceFinished ();
