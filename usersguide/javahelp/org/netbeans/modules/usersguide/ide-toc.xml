@@ -545,27 +545,25 @@
 </tocitem>
 
 
-<tocitem text="Building With Ant" target="ant.building">
-  <tocitem text="Ant Project Files" target="ant.ident" />
-  <tocitem text="Creating an Ant Project" target="ant.project" />
+<tocitem text="Building With Ant">
+  <tocitem text="About" target="ant.building" />
+  <tocitem text="Creating an Ant Script" target="ant.project" />
   <tocitem text="Editing an Ant Script" target="ant.editing" />
-  <tocitem text="Adding a Task to an Ant Script" target="ant.add-task" />
-  <tocitem text="Setting Properties in an Ant Script" target="ant.props" />
+  <tocitem text="Setting Properties in an Ant Properties File" target="ant.props" />
   <tocitem text="Handling User Input in an Ant Task" target="ant.input-handler" />
+  <tocitem text="Creating a Custom Ant Task" target="ant.createtask" />
+<!--    <tocitem text="Adding a Task to an Ant Script" target="ant.add-task" /> -->
   <tocitem text="Running an Ant Script" target="ant.running" />
   <tocitem text="Executing a Target" target="ant.target" />
   <tocitem text="Creating a Shortcut to a Target" target="ant.shortcut" />
-  <tocitem text="Compiling Files With Ant" target="ant.compwith" />
-  <tocitem text="Compiling Projects With Ant" target="ant.compproject" />
+  <tocitem text="Setting Ant as the Default Compiler Type for a Project" target="ant.compproject" />
+  <tocitem text="Optional Ant Tasks" target="ant.optional-tasks" />
   <tocitem text="Setting the JDK for an Ant Script" target="ant.target-jdk" />
-  <tocitem text="Using Custom Ant Tasks" target="ant.custom-tasks" >
-    <tocitem text="Creating a Custom Ant Task" target="ant.createtask" />
-    <tocitem text="Ant Classpath and Custom Tasks" target="ant.tasks-classpath" />
-  </tocitem>
+  <tocitem text="Configuring Ant Settings" target="ant.settings" />
+  <tocitem text="Switching Ant Versions" target="ant.version" />
+  <tocitem text="Ant Classpath and Custom Tasks" target="ant.tasks-classpath" />     
   <tocitem text="Viewing Ant Documentation" target="ant.ant-docs" />
   <tocitem text="Installing Ant Documentation" target="ant.install-docs" />
-  <tocitem text="Optional Ant Tasks" target="ant.optional-tasks" />
-  <tocitem text="Configuring Ant Settings" target="ant.settings" />
 </tocitem>
 
 

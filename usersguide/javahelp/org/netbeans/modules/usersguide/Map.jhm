@@ -677,6 +677,8 @@
 <mapID target="ant.add-task" url="ant/add-task.html" />
 <mapID target="ant.input-handler" url="ant/input_handler.html" />
 <mapID target="ant.target-jdk" url="ant/target-jdk.html" />
+<mapID target="ant.version" url="ant/version.html" />
+<mapID target="ant.find" url="ant/comp-project.html#find" />
 
 <mapID target="configure" url="configure/configure.html" />
 <mapID target="configure.options" url="configure/configure_options.html" />
@@ -714,6 +716,38 @@
 
 <!--CSH-->
 
+<!-- Ant CSH -->
+
+<mapID target="ant.wizard.shortcut" url="ant/shortcut.html" />
+<mapID target="ant.wizard.properties" url="ant/ant-props.html" />
+<mapID target="org.apache.tools.ant.module.run.NBInputHandler" url="ant/input_handler.html" />
+<!-- Ant prop sheet CSH -->
+<mapID target="org.apache.tools.ant.module.nodes.AntProjectNode.Properties" url="ant/ant_script_props.html" />
+<mapID target="org.apache.tools.ant.module.nodes.AntProjectNode.Execution" url="ant/ant_script_props.html" />
+<mapID target="org.apache.tools.ant.module.nodes.AntTargetNode.Properties" url="ant/ant_targ_props.html" />
+<!-- depenency dialog box CSH -->
+<mapID target="org.apache.tools.ant.module.nodes.AntTargetNode$DependsProperty$DependsEditor" url="ant/editing.html#depend" />
+<mapID target="org.apache.tools.ant.module.nodes.DataTypeNode$PathProperty" url="compile/paths.html" />
+
+<!-- From ANT module with ids from earlier version -->
+<mapID target="org.apache.tools.ant.module.HOMEID" url="ant/building.html" />
+<!-- Ant script node CSH -->
+<mapID target="org.apache.tools.ant.module.identifying-project" url="ant/ident.html" />
+<mapID target="org.apache.tools.ant.module.executing-project" url="ant/exec-proj.html" />
+<mapID target="org.apache.tools.ant.module.executing-target" url="ant/exec-targ.html" />
+<!-- Add task dialog box -->
+<mapID target="org.apache.tools.ant.module.custom-tasks" url="ant/ant-docs.html" />
+<mapID target="org.apache.tools.ant.module.adv-comp-exec" url="ant/comp-project.html" />
+<mapID target="org.apache.tools.ant.module.settings" url="ant/settings.html" />
+<!-- add task dialog box -->
+<mapID target="org.apache.tools.ant.module.node-manip" url="ant/add-task.html" />
+<mapID target="org.netbeans.beaninfo.editors.PropertiesCustomEditor" url="ant/settings.html" />
+
+<mapID target="org.apache.tools.ant.module.run.AntCompilerType" url="ant/ant_script_comp.html" />
+<mapID target="org.apache.tools.ant.module.run.AntExecutor" url="ant/ant_exec.html" />
+<mapID target="org.apache.tools.ant.module.run.IndirectAntCompilerType" url="ant/ind_ant_comp.html" />
+<mapID target="org.apache.tools.ant.module.loader.AntProjectCookieEditor" url="ant/ind_ant_comp.html" />
+
 
 <mapID target="setupwizard.idesettings" url="configure/setup_1.html" />
 <mapID target="setupwizard.moduleselection" url="configure/setup_2.html" />
@@ -725,13 +759,6 @@
 
 <mapID target="i18n.pe.i18nString" url="internationalize/i18nwizard.html" />
 <mapID target="org.netbeans.modules.i18n.I18nOptions" url="internationalize/custominter.html" />
-<mapID target="ant.wizard.shortcut" url="ant/shortcut.html" />
-<mapID target="ant.wizard.properties" url="ant/ant-props.html" />
-<mapID target="org.apache.tools.ant.module.run.NBInputHandler" url="ant/input_handler.html" />
-<mapID target="org.apache.tools.ant.module.nodes.AntProjectNode.Properties" url="ant/ident.html#projprops" />
-<mapID target="org.apache.tools.ant.module.nodes.AntProjectNode.Execution" url="ant/ident.html#projprops" />
-<mapID target="org.apache.tools.ant.module.nodes.AntTargetNode.Properties" url="ant/ident.html#targetprops" />
-<mapID target="org.apache.tools.ant.module.nodes.AntTargetNode$DependsProperty$DependsEditor" url="ant/editing.html#depend" />
 
 <mapID target="org.netbeans.core.services.CompilerTypes" url="compile/options_jump.html" />
 <mapID target="org.netbeans.core.services.ExecutorTypes" url="run/executor_options.html" />
@@ -1035,7 +1062,6 @@
    <mapID target="org.openide.src.InterfaceProperties" url="java/nodes/interface.html#props" />
    <mapID target="org.openide.src.InitializerProperties" url="java/nodes/constructors.html#props" />
    <mapID target="org.openide.src.FieldProperties" url="java/nodes/fields.html#props" />
-   <mapID target="org.apache.tools.ant.module.nodes.DataTypeNode$PathProperty" url="compile/paths.html" />
 
    <mapID target="org.netbeans.modules.text.TXTDataObject" url="objects/objects.html" />
    <mapID target="org.netbeans.modules.text.ConvertToTextAction" url="objects/objects_treat-as-text.html" />
@@ -1480,24 +1506,6 @@
 
    <mapID target="org.netbeans.core.ExitDialog.dialog" url="objects/objects_saving.html" />
    <!--Save dialog-->
-
-
-   <!-- From ANT module with ids from earlier version -->
-   <mapID target="org.apache.tools.ant.module.HOMEID" url="ant/building.html" />
-   <mapID target="org.apache.tools.ant.module.identifying-project" url="ant/ident.html" />
-   <mapID target="org.apache.tools.ant.module.executing-project" url="ant/exec-proj.html" />
-   <mapID target="org.apache.tools.ant.module.executing-target" url="ant/exec-targ.html" />
-   <mapID target="org.apache.tools.ant.module.custom-tasks" url="ant/ant-docs.html" />
-   <mapID target="org.apache.tools.ant.module.adv-comp-exec" url="ant/comp-project.html" />
-   <mapID target="org.apache.tools.ant.module.settings" url="ant/settings.html" />
-   <mapID target="org.apache.tools.ant.module.node-manip" url="ant/add-task.html" />
-   <mapID target="org.netbeans.beaninfo.editors.PropertiesCustomEditor" url="ant/settings.html" />
-
-   <mapID target="org.apache.tools.ant.module.run.AntCompilerType" url="ant/ant_script_comp.html" />
-   <mapID target="org.apache.tools.ant.module.run.AntExecutor" url="ant/ant_exec.html" />
-   <mapID target="org.apache.tools.ant.module.run.IndirectAntCompilerType" url="ant/ind_ant_comp.html" />
-   <mapID target="org.apache.tools.ant.module.loader.AntProjectCookieEditor" url="ant/ind_ant_comp.html" />
-
 
 <!--from j2eeserver module-->
   <mapID target="credits_html" url="credits.html" />
