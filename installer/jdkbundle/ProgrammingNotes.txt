@@ -24,6 +24,12 @@ To build from command line run ant as usual with
  -Djdk.installer=/mnt/local/jdk.dir.linux/jdk-1_5_0-beta3-bin-b61-linux-i586-02_aug_2004.bin
  -Dbundled.jvm=/mnt/local/jvms/Linux-Sun-1.4.2.bin
  -Dstorage.builder=../../java/storagebuilder/dist/storagebuilder.jar
+ -Dpreparse.files=../../java/storagebuilder/preparse-files.txt
+
+Property storage.builder contains location of storage builder jar file.
+ 
+Property preparse.files contains location of text file with list of classes to
+be parsed by storage builder. Colon ':' is used as list separator.
 
 As there is different command line option for every platform it must be run
 separately for every platform.

@@ -16,10 +16,11 @@ Microsystems, Inc. All Rights Reserved.
   <property file="nbproject/private/private.properties"/>  
   <property file="build.properties" />
 
-  <property name="nb.dir" location="build/netbeans"/>
-<!--  <property name="ismp.project" value="linux.xml"/>-->
-  
-  <target name="init" depends="set-buildnumber, set-installer.basename, set-nb.dir, copy-localized-data" unless="inited">
+  <property name="storage.builder" location="../../java/storagebuilder/dist/storagebuilder.jar"/>
+  <property name="preparse.files" location="../../java/storagebuilder/preparse-files.txt"/>
+  <property name="nb.dir" location="../../nbbuild/netbeans"/>
+ 
+  <target name="init" depends="set-buildnumber, set-installer.basename, copy-localized-data" unless="inited">
     <property name="inited" value="true" />
   </target>
   
@@ -28,11 +29,6 @@ Microsystems, Inc. All Rights Reserved.
           <fileset dir="../../translatedfiles/src/installer/jdkbundle"/>
       </copy>
   </target>
-  
-  <target name="set-nb.dir" unless="nb.dir">
-    <property name="nb.dir" location="../../nbbuild/netbeans" />
-  </target>
-
   
   <target name="set-ismp.cp" unless="ismp.cp-set">
     <path id="ismp.cp">        
@@ -65,6 +61,8 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
     <copy file="../lib/scripts/run-storage-builder-unix.template"
           tofile="build/storagebuilder/run-storage-builder-unix.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="linux.xml" />
       <arg value="-build" />
@@ -97,6 +95,8 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
     <copy file="../lib/scripts/run-storage-builder-unix.template"
           tofile="build/storagebuilder/run-storage-builder-unix.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="solaris-sparc.xml" />
       <arg value="-build" />
@@ -129,6 +129,8 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
     <copy file="../lib/scripts/run-storage-builder-unix.template"
           tofile="build/storagebuilder/run-storage-builder-unix.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="solaris-x86.xml" />
       <arg value="-build" />
@@ -161,6 +163,8 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/custom-install-jre.template" tofile="build/scripts/_uninst/custom-install-jre.template"/>
     <copy file="../lib/scripts/run-storage-builder-windows.template"
           tofile="build/storagebuilder/run-storage-builder-windows.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="windows.xml" />
       <arg value="-build" />
