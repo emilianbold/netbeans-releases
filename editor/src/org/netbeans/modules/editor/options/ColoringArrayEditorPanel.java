@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.lang.reflect.InvocationTargetException;
+import javax.swing.SwingUtilities;
 
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.explorer.propertysheet.PropertyModel;
@@ -30,7 +31,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- * ColoringArrayEditorPanel is custom property editor operating over HashMap 
+ * ColoringArrayEditorPanel is custom property editor operating over HashMap
  * containing (String)name:(Coloring)value pairs. Special name=null is used
  * to identify default coloring.
  *
@@ -79,7 +80,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_CAEP_Panel")); // NOI18N
         syntaxLabel.setDisplayedMnemonic (getBundleString("CAEP_SyntaxLabel_Mnemonic").charAt (0)); // NOI18N
         syntaxList.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_CAEP_Syntax")); // NOI18N
-        
+
         coloringModel = new PropertyModelSupport( ColoringBean.class, ColoringEditor.class);
         coloringModel.addPropertyChangeListener( new PropertyChangeListener() {
                     public void propertyChange( PropertyChangeEvent evt ) {
@@ -90,6 +91,8 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
                                 //Need to recreate value here (because of equals(), then set!
                                 value = (HashMap)value.clone();
                                 value.put( names[actValueIndex], newColoring );
+                                // Bug #18539 Hack to prevent changing selected  index by firePropertyChange fired below
+                                actValueIndex = newValueIndex;
                                 support.firePropertyChange( "value", null, null ); // NOI18N
                             }
                         } catch( InvocationTargetException e ) {
@@ -104,10 +107,10 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         PropertyPanel editorPanel = new PropertyPanel( coloringModel,  PropertyPanel.PREF_CUSTOM_EDITOR );
         detailPanel.add( editorPanel, BorderLayout.CENTER );
     }
-    
+
     private String getBundleString(String s) {
         return NbBundle.getMessage(ColoringArrayEditorPanel.class, s);
-    }        
+    }
 
     public HashMap getValue() {
         return value;
@@ -250,12 +253,18 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         // Bug #18539 invoking List value change after property sheet changes the property value
         if( syntaxList.getSelectedIndex() < 0 )
             return;
-        if( newValueIndex != syntaxList.getSelectedIndex()) {
+        if( actValueIndex != syntaxList.getSelectedIndex()) {
             newValueIndex = syntaxList.getSelectedIndex();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    actValueIndex = newValueIndex;
+                    setEditorValue( actValueIndex );
+                }
+            });
         }else{
             actValueIndex = syntaxList.getSelectedIndex();
+            setEditorValue( actValueIndex );
         }
-        setEditorValue(actValueIndex);
     }//GEN-LAST:event_syntaxListValueChanged
 
 
@@ -303,13 +312,13 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
 
 
         /** Adds listener to change of the value.
-         */                                                                           
+         */
         public void addPropertyChangeListener(PropertyChangeListener l) {
             support.addPropertyChangeListener(l);
         }
 
         /** Removes listener to change of the value.
-         */                                                                           
+         */
         public void removePropertyChangeListener(PropertyChangeListener l) {
             support.removePropertyChangeListener(l);
         }
