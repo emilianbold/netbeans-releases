@@ -1,3 +1,5 @@
 org.netbeans.modules.java.j2seplatform.platformdefinition.JavadocForBinaryQueryPlatformImpl
+#position=150
 org.netbeans.modules.java.j2seplatform.libraries.JavadocForBinaryQueryLibraryImpl
+#position=150
 
