@@ -51,9 +51,9 @@ public class JellyTestCase extends NbTestCase {
      */
     public boolean dumpScreen = Boolean.getBoolean("jemmy.screen.xmldump");
     
-    /** closing all modal sialogs after each test case is disabled by default
+    /** closing all modal dialogs after each test case is disabled by default
      */
-    public boolean closeAllModal = Boolean.getBoolean("jelly.close.modal");
+    public boolean closeAllModal = Boolean.valueOf(System.getProperty("jelly.close.modal", "true")).booleanValue();
     
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
@@ -90,11 +90,12 @@ public class JellyTestCase extends NbTestCase {
                     Dumper.dumpAll(getWorkDir().getAbsolutePath()+File.separator+"screen.xml");
                 } catch (Exception e2) {}
             }
-            if (th instanceof JemmyException)
+            if (th instanceof JemmyException) {
                 // all instancies of JemmyException are re-throwed as AssertionError (test failed)
-                throw new AssertionFailedErrorException(th);
-            else 
+                throw new AssertionFailedErrorException(th.getMessage(), th);
+            } else {
                 throw th;
+            }
         }
     }
     
