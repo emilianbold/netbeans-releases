@@ -555,12 +555,12 @@
 <!--<mapID target="args_status" url="vcs-nb/cvs-nb/args/args_status.html"/>-->
 <mapID target="args_tag" url="vcs-nb/cvs-nb/args/args_tag.html"/>
 <mapID target="args_update" url="vcs-nb/cvs-nb/args/args_update.html"/>
-<mapID target="cvs_args_intro" url="vcs-nb/cvs-nb/args/cvs_args_intro.html"/>
+<!--<mapID target="cvs_args_intro" url="vcs-nb/cvs-nb/args/cvs_args_intro.html"/>-->
 <mapID target="vcs.vcsgeneric" url="vcs-nb/vcsgeneric/vcs_vcsgeneric.html" />
 <mapID target="vcsgeneric.mounting" url="vcs-nb/vcsgeneric/vcsgeneric_mounting.html" />
 <mapID target="vcsgeneric.wizard" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
 <mapID target="vcsgeneric.calling" url="vcs-nb/vcsgeneric/vcsgeneric_calling.html" />
-<mapID target="vcsgeneric.command-opts" url="vcs-nb/vcsgeneric/vcsgeneric_command-opts.html" />
+<!--<mapID target="vcsgeneric.command-opts" url="vcs-nb/vcsgeneric/vcsgeneric_command-opts.html" />-->
 <mapID target="vcsgeneric.custom-pvcs" url="vcs-nb/vcsgeneric/vcsgeneric_custom-pvcs.html" />
 <mapID target="vcsgeneric.custom-vss" url="vcs-nb/vcsgeneric/vcsgeneric_custom-vss.html" />
 <mapID target="vcsgeneric.custom-cvs" url="vcs-nb/vcsgeneric/vcsgeneric_custom-cvs.html" />
@@ -630,11 +630,11 @@
 <mapID target="ant.shortcut" url="ant/shortcut.html" />
 <mapID target="ant.editing" url="ant/editing.html" />
 <mapID target="ant.props" url="ant/ant-props.html" />
-<mapID target="ant.compwith" url="ant/compwith.html" />
+<!--<mapID target="ant.compwith" url="ant/compwith.html" />-->
 <mapID target="ant.compproject" url="ant/comp-project.html" />
 <mapID target="ant.running" url="ant/running.html" />
 <mapID target="ant.settings" url="ant/settings.html" />
-<mapID target="ant.custom-tasks" url="ant/custom-tasks.html" />
+<!--<mapID target="ant.custom-tasks" url="ant/custom-tasks.html" />-->
 <mapID target="ant.tasks-classpath" url="ant/tasks-classpath.html" />
 <mapID target="ant.createtask" url="ant/createtask.html" />
 <mapID target="ant.sampleclasscode" url="ant/exp-classpath.html" />
@@ -700,7 +700,8 @@
 <mapID target="org.apache.tools.ant.module.nodes.AntProjectNode.Execution" url="ant/ant_script_props.html" />
 <mapID target="org.apache.tools.ant.module.nodes.AntTargetNode.Properties" url="ant/ant_targ_props.html" />
 <!-- depenency dialog box CSH -->
-<mapID target="org.apache.tools.ant.module.nodes.AntTargetNode$DependsProperty$DependsEditor" url="ant/editing.html#depend" />
+<!--TODO check that Help button for Dependency Property Editor has a help topic, or else remove-->
+<!--<mapID target="org.apache.tools.ant.module.nodes.AntTargetNode$DependsProperty$DependsEditor" url="ant/editing.html#depend" />-->
 <mapID target="org.apache.tools.ant.module.nodes.DataTypeNode$PathProperty" url="compile/paths.html" />
 
 <!-- From ANT module with ids from earlier version -->
@@ -1028,12 +1029,12 @@
 <!-- Java node property sheet CSH -->
    <mapID target="org.netbeans.modules.java.JavaNode.textProperties" url="java/encoding.html" />
    <mapID target="org.netbeans.modules.java.JavaNode.properties" url="java/execution_props.html" />
-   <mapID target="org.openide.src.ConstructorProperties" url="java/nodes/constructors.html#props" />
-   <mapID target="org.openide.src.MethodProperties" url="java/nodes/methods.html#props" />
-   <mapID target="org.openide.src.ClassProperties" url="java/nodes/class.html#props" />
-   <mapID target="org.openide.src.InterfaceProperties" url="java/nodes/interface.html#props" />
-   <mapID target="org.openide.src.InitializerProperties" url="java/nodes/constructors.html#props" />
-   <mapID target="org.openide.src.FieldProperties" url="java/nodes/fields.html#props" />
+   <mapID target="org.openide.src.ConstructorProperties" url="java/nodes/constructors_props.html" />
+   <mapID target="org.openide.src.MethodProperties" url="java/nodes/methods_props.html" />
+   <mapID target="org.openide.src.ClassProperties" url="java/nodes/class_props.html" />
+   <mapID target="org.openide.src.InterfaceProperties" url="java/nodes/interface_props.html" />
+   <mapID target="org.openide.src.InitializerProperties" url="java/nodes/constructors_props.html" />
+   <mapID target="org.openide.src.FieldProperties" url="java/nodes/fields_props.html" />
 
    <mapID target="org.netbeans.modules.text.TXTDataObject" url="objects/objects.html" />
    <mapID target="org.netbeans.modules.text.ConvertToTextAction" url="objects/objects_treat-as-text.html" />
@@ -1345,14 +1346,14 @@
 
    <!--Begin helpIDs for VCS Commands nodes in Runtime tab-->
    <!--helpID for the properties sheet of FS nodes in Runtime tab-->
-   <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode_properties" url="vcs_commands_node.html" />
+   <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode_properties" url="vcs-nb/vcs_commands_node.html" />
    <!--helpID for the properties sheet of Generic VCS commands on Runtime tab-->
-   <mapID target="org.netbeans.modules.vcscore.runtime.VcsRuntimeCommand_properties" url="vcs_commands_node.html" />
-   
-   <!--Mount CVS Wizard; Versioning | Mount CVS; on all wizard panes-->
+   <mapID target="org.netbeans.modules.vcscore.runtime.VcsRuntimeCommand_properties" url="vcs-nb/vcs_commands_node.html" />
+   <!-- TODO See that the CVS Mount CSH is really gone
+   Mount CVS Wizard; Versioning | Mount CVS; on all wizard panes
    <mapID target="org.netbeans.modules.vcscore.wizard.mountcvs.WDPanel" url="vcs-nb/cvs-nb/cvs_wizard.html" />
    <mapID target="org.netbeans.modules.vcscore.wizard.mountcvs.LoginPanel" url="vcs-nb/cvs-nb/cvs_wizard.html" />
-   <mapID target="org.netbeans.modules.vcscore.wizard.mountcvs.CheckoutPanel" url="vcs-nb/cvs-nb/cvs_wizard.html" />
+   <mapID target="org.netbeans.modules.vcscore.wizard.mountcvs.CheckoutPanel" url="vcs-nb/cvs-nb/cvs_wizard.html" /> -->
    <!--csh for VCS Generic mount wizard-->
    <mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.ProfilePanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
    <mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.AdvancedPanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
@@ -1360,6 +1361,7 @@
    <!--csh for Verify VCS Group-->
    <mapID target="org.netbeans.modules.vcscore.ui.VerifyGroupPanel" url="vcs-nb/vcsgroups/vcs_groupsresolve.html" />
    <mapID target="org.netbeans.modules.diff.PatchAction" url="vcs-nb/vcs_diffs.html" />
+<!-- TODO see if these CSH are still active 
    <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JStatusCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
    <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JLogCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
    <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JAnnotateCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
@@ -1367,11 +1369,12 @@
    <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JImportCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
    <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JExportCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
    <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JTagCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
-   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JListModulesCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+   <mapID target="org.netbeans.modules.vcscore.actions.ClusteringAction.org.netbeans.modules.cvsclient.actions.JListModulesCommandAction" url="vcs-nb/cvs-nb/cvs_calling.html" /> -->
    <!--csh for filesystems-->
    <mapID target="org.netbeans.modules.vcs.advanced.CommandLineVcsFileSystem" url="vcs-nb/vcsgeneric/vcsgeneric_fsproperties.html" />
    <!--csh for versioning menu items-->
-   <mapID target="org.netbeans.modules.cvsclient.CvsMenuAction" url="vcs-nb/cvs-nb/cvs_calling.html" />
+<!--   TODO see if org.netbeans.modules.cvsclient.CvsMenuAction is gone-->
+<!--   <mapID target="org.netbeans.modules.cvsclient.CvsMenuAction" url="vcs-nb/cvs-nb/cvs_calling.html" />-->
    <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupMenuAction" url="vcs-nb/vcsgroups/vcs_groups.html" />
 
    <!--csh for java actions-->
