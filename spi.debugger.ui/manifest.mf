@@ -4,5 +4,15 @@ Netbeans-Module-Name: Debugger Module
 Name: com/netbeans/developer/modules/debugger/DebuggerSettings.class
 Netbeans-Module-Class: Option
 
-Name: com/netbeans/developer/modules/debugger/JavaDebuggerNode.class
-Netbeans-Module-Class: Environment
+Name: com/netbeans/developer/modules/debugger/JavaDebugger.class
+Netbeans-Module-Class: Debugger
+
+Name: com/netbeans/developer/modules/debugger/nodes/DebuggerNode.class
+Netbeans-Module-Class: Node
+Type: Environment
+
+Name: com/netbeans/developer/modules/debugger/actions/AddBreakpointAction.class
+Netbeans-Module-Class: Action
+Toolbar: Debug
+Menu: Debug
+
