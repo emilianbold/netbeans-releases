@@ -696,7 +696,7 @@
 <mapID target="set.arguments.window" url="run/arguments.html" />
 
   <mapID target="org.openide.util.HelpCtx.DEFAULT_HELP" url="pending.html" />
-  <!--the above two should remain mapped to pending -->
+  <!--the one above should remain mapped to pending -->
   <mapID target="org.openide.actions.ExecuteAction" url="pending.html" />
   <mapID target="org.openide.actions.CompileAction" url="pending.html" />
   <mapID target="org.openide.actions.CompileAllAction" url="pending.html" />
@@ -811,7 +811,7 @@
    <mapID target="org.netbeans.core.actions.ExecutionViewAction$ExecutionView" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.ExplorerViewAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.GlobalPropertiesAction" url="pending.html" /> 
-   <mapID target="org.netbeans.core.actions.OpenExplorerAction" url="pending.html" /> 
+   <mapID target="org.netbeans.core.actions.OpenExplorerAction" url="objects/explorer.html" /> 
    <mapID target="org.netbeans.core.actions.OutputWindowAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.OpenedWindowsAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.OpenedWindowsAction$WindowAction" url="pending.html" />
@@ -908,6 +908,15 @@
   <mapID target="org.netbeans.modules.debugger.support.actions.AddBreakpointAction" url="debug/environment/toolbar.html" />
   <mapID target="org.netbeans.modules.debugger.support.actions.PauseAction" url="debug/environment/toolbar.html" />
   <mapID target="org.netbeans.modules.debugger.support.actions.StartAction" url="debug/environment/toolbar.html" />
+
+  <mapID target="org.netbeans.modules.debugger.support.actions.DebuggerWindowAction" url="pending.html" />
+  <mapID target="NetbeansDebuggerFixAction" url="pending.html" />
+  <mapID target="NetbeansDebuggerGoToCalledMethodAction" url="pending.html" />
+  <mapID target="NetbeansDebuggerGoToCallingMethodAction" url="pending.html" />
+  <mapID target="NetbeansDebuggerPopTopmostFrameAction" url="pending.html" />
+
+  
+  
    <mapID target="org.netbeans.modules.java.FastJavacCompilerType" url="compile/fastjavac.html" />
    <mapID target="org.netbeans.modules.java.gj.JavaCompilerType" url="compile/internal.html" />
    <mapID target="org.netbeans.modules.java.compilation.Jikes" url="compile/jikes.html" />
@@ -979,6 +988,9 @@
    <mapID target="org.netbeans.modules.form.actions.SelectLayoutAction" url="pending.html" />
    <mapID target="org.netbeans.modules.form.actions.ShowGridAction" url="pending.html" />
    <mapID target="org.netbeans.modules.form.actions.TestModeAction" url="pending.html" />
+   
+   <mapID target="org.netbeans.modules.form.actions.CustomizeLayoutAction" url="pending.html" />
+   
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.installBean" url="beans/adding.html" />
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.selectPaletteCategory" url="beans/adding.html" />
    <mapID target="org.netbeans.modules.form.palette.ComponentPalette" url="pending.html" /> 
@@ -997,6 +1009,7 @@
    <mapID target="org.netbeans.modules.url.URLDataObject" url="webbrowser/bookmark.html" /> 
    <mapID target="org.netbeans.modules.openfile.OpenFile.dialog" url="pending.html" /> 
    <mapID target="org.netbeans.modules.openfile.OpenFileAction" url="pending.html" /> 
+<!--Pending: map the ID below to a topic on open file server settings-->
    <mapID target="org.netbeans.modules.openfile.Settings" url="pending.html" /> 
    <mapID target="org.netbeans.modules.editor.NbDialogCreator.findDialog" url="pending.html" /> 
    <mapID target="org.netbeans.modules.editor.NbDialogCreator.gotoDialog" url="pending.html" /> 
@@ -1116,6 +1129,8 @@
    <mapID target="org.netbeans.modules.jarpackager.JarContentChildren$ContentMemberNode" url="jarpackager/jarpackager_nodes.html" />
    <mapID target="org.netbeans.modules.jarpackager.JarChildren$GeneratedJarNode" url="jarpackager/jarpackager_nodes.html" />
    <mapID target="org.netbeans.modules.jarpackager.JarChildren$RecipeContentsNode" url="jarpackager/jarpackager_nodes.html" />
+<!--PENDING - map the following, which appears as a category node for JAR options-->
+   <mapID target="org.netbeans.modules.jarpackager.options.JarOptionNode" url="jarpackager/jarpackager_options.html" />
 
    <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeMainNode" url="vcs-nb/vcs_output.html" />
    <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode" url="vcs-nb/vcs_output.html" />
@@ -1303,6 +1318,25 @@
   <mapID target="org.netbeans.modules.j2ee.impl.InstalledServersPanel" url="j2eeserver/nodes/server_registry_node.html" />
   <mapID target="org.netbeans.modules.j2ee.impl.ServerExecutor" url="run/j2ee_executor.html" />
   <mapID target="org.netbeans.modules.j2ee.impl.ServerDebuggerType" url="debug/debugger/j2ee_debugger.html" />
+
+
+<!--PENDING - map these IDs if possible-->
+  <!--Options .... Script Types-->
+  <mapID target="org.netbeans.core.services.ScriptTypes" url="pending.html" />
+  <!--Options .... Script Types|various types-->
+  <mapID target="org.netbeans.modules.scripting.AbstractScriptType" url="pending.html" />
+
+  <mapID target="org.netbeans.modules.pdf.PDFSettings" url="pending.html" />
+
+  <!--Options .... Telnet Server-->  
+  <mapID target="org.netbeans.modules.scripting.remote.ServerSettings" url="pending.html" />
+  <!--Options | Source Creation and Management | Templates-->  
+  <mapID target="org.netbeans.core.ui.UINodes$TemplatesNode" url="pending.html" />
+
+  <mapID target="org.netbeans.core.actions.MemoryMeterAction" url="pending.html" />
+  <mapID target="org.netbeans.core.actions.MountAction" url="pending.html" />
+  <mapID target="org.openide.actions.PageSetupAction" url="pending.html" />
+  <mapID target="org.openide.actions.PopupAction" url="pending.html" />
 
 <!--very abstract IDs that are hard to map to anything useful-->
 
