@@ -402,6 +402,8 @@ public class TemplateWizard extends WizardDescriptor {
 
                 try {
                     updateState();
+                    // bugfix #40876, set null as initial value before show wizard
+                    setValue (null);
                     final java.awt.Dialog d = DialogDisplayer.getDefault().createDialog(this);
                     // Bugfix #16161: if there was a message to the user, notify it
                     // after the dialog has been shown on screen:
