@@ -28,8 +28,10 @@ Microsystems, Inc. All Rights Reserved.
 
   <property name="build.classes.dir" location="build/classes"/>
     
-  <target name="prepare-nbjunit" depends="init">
+  <target name="prepare-nbjunit"> 
     <ant dir="nbjunit" target="jar-nbjunit" inheritAll="false"/>
+    <!-- Need to initialize ${xtest/nbjunit.dir} property -->
+    <property file="${moduleCluster.file}"/>
     <copy file="${xtest/nbjunit.dir}/${nb.modules.dir}/ext/nbjunit.jar" todir="lib"/>
     <copy file="${xtest/nbjunit.dir}/${nb.modules.dir}/ext/nbjunit-ide.jar" todir="lib"/>
   </target>
