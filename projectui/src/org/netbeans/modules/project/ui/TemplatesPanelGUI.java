@@ -364,6 +364,10 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             }
         }
         
+        public void requestFocus () {
+            this.createComponent().requestFocus();
+        }
+        
         protected abstract JComponent createComponent ();
         
         private void initGUI () {
