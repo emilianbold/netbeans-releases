@@ -40,9 +40,10 @@ public final class SlidingButton extends JToggleButton {
     
     /** orientation of this button */
     private int orientation;
-    /** Asociated component which actually slides from this button */
-    private Component component;
+    /** Ascoiated tab data */
+    private TabData buttonData;
         
+     
     /** Create a new button representing TabData from the model.
      *
      * @param data Tab data as text, icon, tooltip etc.
@@ -51,8 +52,7 @@ public final class SlidingButton extends JToggleButton {
         super(buttonData.getText(), buttonData.getIcon(), false);
         
         this.orientation = orientation;
-        this.component = buttonData.getComponent();
-        setToolTipText(buttonData.getTooltip());
+        this.buttonData = buttonData;
         // XXX
         //setFont (displayer.getFont());
         setFocusable(false);
@@ -78,6 +78,10 @@ public final class SlidingButton extends JToggleButton {
     public void removeNotify() {
         super.removeNotify();
         //XXX register with tooltip manager
+    }
+    
+    public String getToolTipText() {
+        return buttonData.getTooltip();
     }
     
     /************** Swing standard technique for attaching UI class *********/

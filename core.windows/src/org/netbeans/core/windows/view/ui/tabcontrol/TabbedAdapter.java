@@ -13,6 +13,10 @@
 
 package org.netbeans.core.windows.view.ui.tabcontrol;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Iterator;
+import java.util.List;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -22,6 +26,7 @@ import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.plaf.EqualPolygon;
 import org.openide.ErrorManager;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.ErrorManager;
 import java.awt.Image;
@@ -54,6 +59,8 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     /** Debugging flag. */
     private static final boolean DEBUG = Debug.isLoggable(TabbedAdapter.class);
     private ChangeEvent changeEvent = new ChangeEvent(this);
+    
+    private PropertyChangeListener tooltipListener, weakTooltipListener;
 
     /** Creates a new instance of TabbedAdapter */
     public TabbedAdapter (int type) {
@@ -92,8 +99,9 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         }
         
         getModel().addTab(position, td);
+        comp.addPropertyChangeListener(JComponent.TOOL_TIP_TEXT_KEY, getTooltipListener(comp));
     }
-
+ 
     public void setSelectedComponent(Component comp) {
         int i = indexOf (comp);
         if (i == -1) {
@@ -117,6 +125,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     public void removeComponent(Component comp) {
         int i=indexOf(comp);
         getModel().removeTab(i);
+        comp.removePropertyChangeListener(JComponent.TOOL_TIP_TEXT_KEY, getTooltipListener(comp));
         if (getModel().size() == 0) {
             revalidate();
             repaint();
@@ -129,6 +138,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         for (int i=0; i < comps.length; i++) {
             TabData td = new TabData (comps[i], icons[i], names[i], tips[i]);
             data[i] = td;
+            comps[i].addPropertyChangeListener(JComponent.TOOL_TIP_TEXT_KEY, getTooltipListener(comps[i]));
         }
         getModel().addTabs (0, data);
     }
@@ -136,6 +146,8 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     public void setTopComponents(TopComponent[] tcs, TopComponent selected) {
         assert selected != null : "Null passed as component to select";
         int sizeBefore = getModel().size();
+
+        detachTooltipListeners(getModel().getTabs());
         
         TabData[] data = new TabData[tcs.length];
         int toSelect=-1;
@@ -151,6 +163,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
             if (selected == tcs[i]) {
                 toSelect = i;
             }
+            tc.addPropertyChangeListener(JComponent.TOOL_TIP_TEXT_KEY, getTooltipListener(tc));
         }
 
         //DO NOT DELETE THIS ASSERTION AGAIN!
@@ -164,6 +177,8 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
             " open components: " + Arrays.asList(tcs);
         
         getModel().setTabs(data);
+        
+        
         
         if (toSelect != -1) {
             getSelectionModel().setSelectedIndex(toSelect);
@@ -179,6 +194,16 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
             //issue 40076, ensure repaint if the control has been emptied.
             revalidate();
             repaint();
+        }
+    }
+
+    /** Removes tooltip listeners from given tabs */
+    private void detachTooltipListeners(List tabs) {
+        JComponent curComp;
+        for (Iterator iter = tabs.iterator(); iter.hasNext(); ) {
+            curComp = (JComponent)((TabData)iter.next()).getComponent();
+            curComp.removePropertyChangeListener(JComponent.TOOL_TIP_TEXT_KEY,
+                                                 getTooltipListener(curComp));
         }
     }
     
@@ -433,6 +458,38 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
             return result;   
         }    
     } // end of LocInfo
+
+    /** Returns instance of weak property change listener used to listen to 
+     * tooltip changes. Weak listener is needed, in some situations (close of 
+     * whole mode), our class is not notified from winsys.
+     */
+    private PropertyChangeListener getTooltipListener(Component comp) {
+        if (tooltipListener == null) {
+            tooltipListener = new ToolTipListener();
+            weakTooltipListener = WeakListeners.propertyChange(tooltipListener, comp);
+        }
+        return weakTooltipListener;
+    }
+
+    /** Listening to changes of tooltips of currently asociated top components */
+    private class ToolTipListener implements PropertyChangeListener {
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (JComponent.TOOL_TIP_TEXT_KEY.equals(evt.getPropertyName())) {
+                List tabs = getModel().getTabs();
+                JComponent curComp;
+                int index = 0;
+                for (Iterator iter = tabs.iterator(); iter.hasNext(); index++) {
+                    curComp = (JComponent)((TabData)iter.next()).getComponent();
+                    if (curComp == evt.getSource()) {
+                        setToolTipTextAt(index, (String)evt.getNewValue());
+                        break;
+                    }
+                }
+            }
+        }
+        
+    }
 
     
 }
