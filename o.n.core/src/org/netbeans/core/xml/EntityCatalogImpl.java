@@ -34,7 +34,7 @@ import org.openide.xml.*;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class EntityCatalogImpl extends EntityCatalog {
+public final class EntityCatalogImpl extends EntityCatalog {
 
     /** map between publicId and privateId (String, String) */
     private Map id2uri;  
@@ -153,12 +153,10 @@ public class EntityCatalogImpl extends EntityCatalog {
         /** We return singleton instance */
         public Object instanceCreate() throws IOException, ClassNotFoundException {
             
-            if (instance == null) {
-                synchronized (this) {
-                    if (instance == null) {
-                        parsingTask.waitFinished();                        
-                        instance = new EntityCatalogImpl (map);
-                    }
+            synchronized (this) {
+                if (instance == null) {
+                    parsingTask.waitFinished();                        
+                    instance = new EntityCatalogImpl (map);
                 }
             }
             return instance;
@@ -174,10 +172,8 @@ public class EntityCatalogImpl extends EntityCatalog {
           */
         public void propertyChange(PropertyChangeEvent e) {
             
-            if (instance == null) {
-                synchronized(this) {
-                    if (instance == null) return;
-                }
+            synchronized(this) {
+                if (instance == null) return;
             }
             
             if (XMLDataObject.PROP_DOCUMENT.equals(e.getPropertyName())) {
