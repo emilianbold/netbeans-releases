@@ -16,27 +16,19 @@ package org.netbeans.modules.httpserver;
 import java.util.Enumeration;
 import java.beans.*;
 import java.io.*;
-import java.net.URL;
 import java.net.MalformedURLException;
-import java.net.InetAddress;
-import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
+import java.util.Vector;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.util.NbBundle;
-import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.tomcat.startup.EmbededTomcat;
 import org.apache.tomcat.core.ContextManager;
-import org.apache.tomcat.core.ServerConnector;
-import org.apache.tomcat.core.ServletWrapper;
-import org.apache.tomcat.core.FacadeManager;
 import org.apache.tomcat.core.Context;
 import org.apache.tomcat.logging.TomcatLogger;
 import org.apache.tomcat.context.*;
@@ -192,6 +184,32 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
     }
     
 
+    /** Removes WebXmlReader interceptor to avoid attempt 
+     *  to load JspServlet that processes jsp file and produces confusing message
+     */
+    private static void removeWebXmlReader (EmbededTomcat tc) {
+        try {
+            java.lang.reflect.Field fm = EmbededTomcat.class.getDeclaredField("contextInt");   // NOI18N
+            fm.setAccessible(true);
+            Vector contextInt = (Vector)fm.get(tc);
+            Iterator it = contextInt.iterator ();
+            while (it.hasNext ()) {
+                Object o = it.next ();
+                if (o instanceof WebXmlReader) {
+                    contextInt.remove (o);
+                    break;
+                }
+            }
+        }
+        catch (NoSuchFieldException e) {
+            return;
+        }
+        catch (IllegalAccessException e) {
+            return;
+        }
+    }
+    
+
     private static ContextManager buildServer() throws Exception {
         HttpServerSettings op = httpserverSettings ();
 
@@ -215,6 +233,8 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         // install interceptors which need to be initialized AFTER the default server interceptors
 	NbServletsInterceptor nbI =new NbServletsInterceptor();
 	tc.addContextInterceptor( nbI );
+
+        removeWebXmlReader (tc);
         
         ServletContext sctx;
         sctx=tc.addContext("", wd.toURL());  // NOI18N
@@ -269,8 +289,6 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
      * running on HTTP server.
      * The purpose is to force usage of up-to-date classes even in the case 
      * of module reloading.
-     *
-     * PENDING: Better use listening on lookup changes
      */
     private static class ContextReloader implements LookupListener, Runnable {
         
@@ -319,6 +337,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                 Object o = e.nextElement ();
                 if (o instanceof Context) {
                     Context ctx = (Context)o;
+                    // PENDING why this is in loop?
                     tc.removeContext (ide_ctx);
                     try {
                         ide_ctx=tc.addContext ("", wd.toURL ());  // NOI18N

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,7 +15,6 @@ package org.netbeans.modules.httpserver;
 
 import org.apache.tomcat.core.*;
 
-import org.openide.util.SharedClassObject;
 import org.openide.util.Lookup;
 
 /** Interceptor which tells the server about the classloader to be used by the 
@@ -29,8 +28,6 @@ public class NbLoaderInterceptor extends BaseInterceptor {
     }
 
     private void setNbLoader( ContextManager cm ) throws TomcatException {
-        HttpServerSettings op = (HttpServerSettings)SharedClassObject.findObject (HttpServerSettings.class, true);
-        
 	ClassLoader cl = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
         cm.setParentClassLoader(cl);
     }
@@ -43,6 +40,9 @@ public class NbLoaderInterceptor extends BaseInterceptor {
 	    // Default init
 	    setNbLoader( cm );
 
+            // here we set values normally supplied by WebXmlReader that we want to remove
+            // exluding welcome files and JspServlet so only session timeout is here
+            ctx.setSessionTimeOut (30);
 	} catch (Exception e) {
             String msg = "NbLoaderInterceptor failed";  // NOI18N
 	    System.out.println(msg);
