@@ -947,7 +947,7 @@ public class FormUtils
 
     static boolean isContainerContentDependentProperty(Class beanClass,
                                                        String propName) {
-        return "selectedIndex".equals(propName) // NOI18N
+        return ("selectedIndex".equals(propName) || "selectedComponent".equals(propName)) // NOI18N
                && javax.swing.JTabbedPane.class.isAssignableFrom(beanClass);
     }
 
