@@ -139,6 +139,10 @@ public class JavadocModule extends ModuleInstall {
         //objectOutput.writeInt(i != null ? i.intValue() : 0);
     }
 */
+    protected Object writeReplace(){
+        return null;
+    }
+    
     private static void notify (Exception e) {        
         TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
     }
@@ -148,7 +152,9 @@ public class JavadocModule extends ModuleInstall {
             TopManager.getDefault ().getErrorManager ().log (ErrorManager.INFORMATIONAL, s);
     }
   
-    /** Exists only for the sake of its bean info. */
+    /** Exists only for the sake of its bean info.
+     * @deprecated Exists only for compability reasons
+     */    
     public static final class GlobalLocalFileSystem extends LocalFileSystem {        
         private static final long serialVersionUID = 3563912690225075761L;
         
@@ -159,7 +165,9 @@ public class JavadocModule extends ModuleInstall {
             super(cap);
         }
     }
-    /** Marks it as global (not project-specific). */
+    /** Marks it as global (not project-specific). 
+     * @deprecated Exists only for compability reasons
+     */
     public static final class GlobalLocalFileSystemBeanInfo extends SimpleBeanInfo {
         public BeanDescriptor getBeanDescriptor () {
             BeanDescriptor bd = new BeanDescriptor (GlobalLocalFileSystem.class);
