@@ -31,12 +31,12 @@ import org.openide.nodes.*;
 
 public class ColumnNode extends LeafNode
 {		
-	protected PropertySupport createPropertySupport(String name, Class type, String displayName, String shortDescription, DatabaseNodeInfo rep, boolean writable)
+	protected PropertySupport createPropertySupport(String name, Class type, String displayName, String shortDescription, DatabaseNodeInfo rep, boolean writable, boolean expert)
 	{
 		PropertySupport ps;
-		if (name.equals("datatype") && writable) {
-			ps = new DatabaseTypePropertySupport(name, type, displayName, shortDescription, rep, writable);
-		} else ps = super.createPropertySupport(name, type, displayName, shortDescription, rep, writable);
+		if (name.equals("datatype")) {
+			ps = new DatabaseTypePropertySupport(name, type, displayName, shortDescription, rep, writable, expert);
+		} else ps = super.createPropertySupport(name, type, displayName, shortDescription, rep, writable, expert);
 		return ps;
 	}
 

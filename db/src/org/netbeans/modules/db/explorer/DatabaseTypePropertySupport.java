@@ -24,7 +24,7 @@ public class DatabaseTypePropertySupport extends DatabasePropertySupport
 	private int[] types;
 	private String[] names;
 	
-	public DatabaseTypePropertySupport(String name, Class type, String displayName, String shortDescription, DatabaseNodeInfo rep, boolean writable)	
+	public DatabaseTypePropertySupport(String name, Class type, String displayName, String shortDescription, DatabaseNodeInfo rep, boolean writable, boolean expert)	
 	{
 		super(name, type, displayName, shortDescription, rep, writable);
 		repository = rep;
@@ -48,6 +48,8 @@ public class DatabaseTypePropertySupport extends DatabasePropertySupport
 			types = new int[] {0};
 			names = new String[] {name};
 		}
+		
+		if (expert) setExpert(true);
 	}
 	
     public PropertyEditor getPropertyEditor () 
