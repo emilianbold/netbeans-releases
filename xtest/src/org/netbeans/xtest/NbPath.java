@@ -187,6 +187,12 @@ public class NbPath extends Task {
             getProject().setProperty(XTEST_PATH, list.toString());
         }
 
+        // prepare jdkhome property
+        if (null == getProject().getProperty(JDK_HOME)) {
+            String jdkhome = lookupJdk();
+            if (jdkhome != null)
+                getProject().setProperty(JDK_HOME, jdkhome);
+        }        
 /*        
         // prepare xtest.path property
         if (null == getProject().getProperty(XTEST_PATH)) {
@@ -283,6 +289,23 @@ public class NbPath extends Task {
             f = getProject().resolveFile(path);
         return f.getAbsolutePath();
     }
+
+    private String lookupJdk() {
+        File jdk = new File(getProject().getProperty("java.home"));
+        if (jdk != null && jdk.exists ()) {
+            File tmp = new File(jdk, "lib/tools.jar");
+            if (!tmp.exists ()) {
+                jdk = jdk.getParentFile ();
+                
+                tmp = new File(jdk, "lib/tools.jar");
+                if (!tmp.exists ())
+                    return null;
+            }
+            
+            return jdk.getAbsolutePath ().replace ('\\', '/');
+        }
+        return null;
+    }
     
     private class FileExtFilter implements FileFilter {
         protected String extension = null;
@@ -318,4 +341,5 @@ public class NbPath extends Task {
     private static String XALAN_PATH          = "xalan.path";
     private static String XERCES_JAR          = "xerces.jar";
     private static String XERCES_PATH         = "xerces.path";
+    private static String JDK_HOME            = "jdkhome";
 }
