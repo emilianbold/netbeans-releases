@@ -77,7 +77,6 @@ public class PropertiesFileEntry extends PresentableFileEntry {
                                               
   /** Initializes the object after creation and deserialization */
   private void init() {
-    editorSupport = new PropertiesEditorSupport(this);
   }                      
                                   
   /** Constructs children for this file entry */
@@ -100,6 +99,8 @@ public class PropertiesFileEntry extends PresentableFileEntry {
   
   /** Returns editor support for properties */                       
   protected PropertiesEditorSupport getPropertiesEditor() {
+    if (editorSupport == null)
+      editorSupport = new PropertiesEditorSupport(this);
     return editorSupport;
   }
 
@@ -187,6 +188,8 @@ public class PropertiesFileEntry extends PresentableFileEntry {
 
     /** Listens to changes on the properties file entry */
     private PropertyChangeListener pcl = null;  
+    /** Listens to changes on the properties file entry - weak */
+    private PropertyChangeListener wpcl = null;  
                           
     PropKeysChildren() {
       super();
@@ -202,7 +205,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
               return 0;
             if (o1 instanceof Element.ItemElem && o2 instanceof Element.ItemElem)
               return String.CASE_INSENSITIVE_ORDER.compare(((Element.ItemElem)o1).getKey(), 
-                                                             ((Element.ItemElem)o2).getKey());
+                                                           ((Element.ItemElem)o2).getKey());
             else 
               return 0;
           }
@@ -225,15 +228,15 @@ public class PropertiesFileEntry extends PresentableFileEntry {
       mySetKeys();
       // listener
       pcl = new PropertyChangeListener () {
-      
         public void propertyChange(PropertyChangeEvent evt) {
           mySetKeys();
         }
         
       }; // end of inner class
+      wpcl = new WeakListener.PropertyChange(pcl);
       
-      PropertiesFileEntry.this.addPropertyChangeListener (new WeakListener.PropertyChange(pcl));
-      PropertiesFileEntry.this.getHandler().addPropertyChangeListener (new WeakListener.PropertyChange(pcl));
+      PropertiesFileEntry.this.addPropertyChangeListener (wpcl);
+      PropertiesFileEntry.this.getHandler().addPropertyChangeListener (wpcl);
     }
 
     /** Called to notify that the children has lost all of its references to
@@ -241,9 +244,10 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     * affecting any nodes (because nobody listens to that nodes).
     */
     protected void removeNotify () {
-      if (pcl != null)
-        PropertiesFileEntry.this.removePropertyChangeListener (pcl);
-        PropertiesFileEntry.this.getHandler().removePropertyChangeListener (pcl);
+      if (wpcl != null) {
+        PropertiesFileEntry.this.removePropertyChangeListener (wpcl);
+        PropertiesFileEntry.this.getHandler().removePropertyChangeListener (wpcl);
+      }  
     }
 
     protected Node[] createNodes (Object key) {        

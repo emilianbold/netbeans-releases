@@ -72,7 +72,8 @@ class PropertiesParser {
   */
   private static PropertiesRead createReader(PropertiesFileEntry pfe) throws IOException {
     PropertiesEditorSupport editor = pfe.getPropertiesEditor();
-    
+
+System.out.println("Document loaded " + editor.isDocumentLoaded() + ", " + pfe.getFile().getName());
     if (editor.isDocumentLoaded()) {
       // loading from the memory (Document)
       final javax.swing.text.Document doc = editor.getDocument();
@@ -101,7 +102,7 @@ class PropertiesParser {
   * After super.parseFile finish, the result is set to
   * the appropriate SourceElementImpl.
   */
-  public void parseFile() {                 
+  public void parseFile() {
     try {
 System.out.println("parsing-begin  //" + Thread.currentThread().toString());  
       PropertiesStructure ps = parseFileMain(input);

@@ -18,6 +18,8 @@ import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 import javax.swing.Timer;
 
 
@@ -80,12 +82,22 @@ public class PropertiesEditorSupport extends EditorSupport implements ViewCookie
       
       private void change(DocumentEvent e) {
         int delay = settings.getAutoParsingDelay();
+        myEntry.getHandler().setDirty(true);
         if (delay > 0) {
           timer.setInitialDelay(delay);
           timer.restart();
         }
       }
     };
+
+    // add change listener
+    addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent evt) {
+        if (isDocumentLoaded()) {
+          getDocument().addDocumentListener(docListener);
+        }
+      }
+    });
   }              
   
   /* A method to create a new component. Overridden in subclasses.

@@ -52,6 +52,8 @@ public class PropertiesTableModel extends AbstractTableModel {
                      
   /** Listens to changes on the underlying dataobject */
   private PropertyChangeListener pcl;
+  /** Listens to changes on the bundle structure */
+  private PropertyBundleListener pbl;
   
   /** Create a data node for a given data object.
   * The provided children object will be used to hold all child nodes.
@@ -66,7 +68,7 @@ public class PropertiesTableModel extends AbstractTableModel {
     pcl = new PropertyChangeListener () {                
     
       public void propertyChange(PropertyChangeEvent evt) { 
-        // PENDING                                                   
+        // PENDING - should be finer
         if (evt.getPropertyName().equals(PropertiesDataObject.PROP_FILES)) {
           System.out.println("PropertyChange in PropertiesTableModel");
           fireTableStructureChanged();                                        
@@ -76,9 +78,22 @@ public class PropertiesTableModel extends AbstractTableModel {
     };
     obj.getBundleStructure().addPropertyChangeListener(new WeakListener.PropertyChange(pcl));
     
+    // listener for the BundleStructure
+    pbl = new PropertyBundleListener () {                
+    
+      public void bundleChanged(PropertyBundleEvent evt) {
+        // PENDING - should be finer
+        System.out.println("BundleChange in PropertiesTableModel");
+        fireTableStructureChanged();                                        
+      }
+      
+    };
+    obj.getBundleStructure().addPropertyBundleListener(new WeakListenerPropertyBundle(pbl));
+
     //PENDING move the column corresponding to curNode to the beginning
   }
-   
+                                                             
+                                                             
   /** Returns the number of rows in the model */ 
   public int getRowCount() {
     return obj.getBundleStructure().getKeyCount();

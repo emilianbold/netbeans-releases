@@ -140,13 +140,12 @@ implements Serializable {
     */
     public String getValue() {
       return value;
-    }
-             
+    }          
+    
+    /** Sets the value. Does not check if the value has changed. */
     public void setValue(String value) {
-      if (!this.value.equals(value)) {
-        this.value = value;
-        this.print();
-      }
+      this.value = value;
+      this.print();
     }         
              
   }
@@ -243,7 +242,10 @@ implements Serializable {
     CommentElem comment;
     boolean     justComment; // comment after the last property in a prop. file 
                              // is represented by a ItemElem with justComment set to true
-    
+
+    /** Parent of this element - active element has a non-null parent. */ 
+    private PropertiesStructure parent;
+     
     /** Name of the Key property */
     public static final String PROP_ITEM_KEY     = "key";
     /** Name of the Value property */
@@ -261,7 +263,19 @@ implements Serializable {
       this.comment = comment;
       justComment  = (key == null);
     }
-    
+                          
+    /** Sets the parent of this element. */
+    void setParent(PropertiesStructure ps) {
+      parent = ps;
+    }
+
+    /** Returns parent if not null */
+    private PropertiesStructure getParent() {
+      if (parent == null)
+        throw new InternalError();
+      return parent;  
+    }
+                          
     /** Get a value string of the element.
     * @return the string
     */
@@ -307,9 +321,12 @@ implements Serializable {
     /** Set the key for this item 
     *  @param key the new key
     */                        
-    public void setKey(String key) {
-      // PENDING
-      // set + fire
+    public void setKey(String newKey) {
+      String oldKey = key.getValue();
+      if (!oldKey.equals(newKey)) {
+        key.setValue(newKey);
+        getParent().itemKeyChanged(oldKey, this);
+      }  
     }
     
     /** Get the value of this item */                        
@@ -320,9 +337,11 @@ implements Serializable {
     /** Set the value of this item 
     *  @param key the new key
     */                        
-    public void setValue(String value) {
-      // PENDING
-      // set + fire
+    public void setValue(String newValue) {
+      if (!value.getValue().equals(newValue)) {
+        value.setValue(newValue);
+        getParent().itemChanged(this);
+      }  
     }
 
     /** Get the comment for this item */                        
@@ -333,19 +352,31 @@ implements Serializable {
     /** Set the comment for this item 
     *  @param key the new key
     */                        
-    public void setComment(String comment) {
-      // PENDING
-      // set + fire
+    public void setComment(String newComment) {
+      if (!comment.getValue().equals(newComment)) {
+        comment.setValue(newComment);
+        getParent().itemChanged(this);
+      }  
+    }
+    
+    /** Checks for equality of two ItemElem-s */
+    public boolean equals(Object item) {
+      if (item == null)
+        return false;
+      ItemElem ie = (ItemElem)item;
+      if (getKey()    .equals(ie.getKey()    ) &&  
+          getValue()  .equals(ie.getValue()  ) &&
+          getComment().equals(ie.getComment()))
+        return true;  
+      return false;
     }
 
   } // end of inner class ItemElem
 }
 
-// PENDING 
-// fire property change after updating elements or setting a value ?
-
 /*
  * <<Log>>
+ *  2    Gandalf   1.1         5/13/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
  * $
  */

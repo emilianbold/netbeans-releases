@@ -54,8 +54,7 @@ public class PropertiesLocaleNode extends FileEntryNode {
 
     // edit as a viewcookie
     getCookieSet().add(((PropertiesDataObject)fe.getDataObject()).getOpenSupport());
-    PropertiesEditorSupport pes = new PropertiesEditorSupport ((PropertiesFileEntry)getFileEntry());
-    getCookieSet ().add (pes);
+    getCookieSet().add (((PropertiesFileEntry)getFileEntry()).getPropertiesEditor());
   }
   
   /** Lazily initialize set of node's actions (overridable).

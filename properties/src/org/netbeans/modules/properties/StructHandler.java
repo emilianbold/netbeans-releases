@@ -33,6 +33,8 @@ import com.netbeans.ide.text.PositionBounds;
 */
 class StructHandler extends Element /*implements TaskListener*/ {
 
+  public static final String PROP_PARSE = "parse";
+
   /** Appropriate properties file entry. */
   private PropertiesFileEntry pfe;
 
@@ -43,6 +45,8 @@ class StructHandler extends Element /*implements TaskListener*/ {
 
   /** Soft reference to the data */
   SoftReference dataRef;
+  /** SoftReference is GC-ed too often, I wonder if I should keep a hard reference */
+  DataRef hardReference;
 
   /** This flag is set when somebody is editing the document and it is
   * cleared after reparsing.
@@ -80,7 +84,11 @@ class StructHandler extends Element /*implements TaskListener*/ {
       setDirty(false);
     }
   }
-  
+               
+  /** Entry for use in this package */             
+  PropertiesFileEntry getEntry() {
+    return pfe;
+  }
   
   /** Method that instructs the implementation of the source element
   * to prepare the element. It is non blocking method that returns
@@ -128,7 +136,14 @@ debug("...SET (SOMETHING)");
 
   /** Sets the dirty flag - if the document was modified after last parsing. */
   void setDirty(boolean b) {
-    dirty = b;
+    if (dirty == b)
+      return;
+    synchronized (this) {  
+      // another check inside the synchronized block
+      if (dirty == b)
+        return;
+      dirty = b;
+    }  
   }
 
   /** Tests the dirty flag. */
@@ -180,23 +195,20 @@ debug("AUTO parsingTask = someTask");
     // effectively getReferenceData, but we're under writeAccess, so no readAccess
     DataRef data = (dataRef != null) ? (DataRef) dataRef.get() : null;
  
-    if (data == null) {
+    if (data == null) {                   
+      // set the parent
+      res.setParent(this);
       data = new DataRef(pfe, res);
       dataRef = new SoftReference(data);
+      hardReference = data;
+      data.ps.structureChanged();
     }
     else {
+      // update calls notification methods according to changes
       data.ps.update(res);
     }
     
     setDirty(false);
-
-        // PENDING
-    
-        // fires the change of the status - it is required to fire it everytime
-        // because of the icon changes in the delegate node.
-        // PENDING
-        //firePropertyChange (PROP_STATUS, null, null);
-    return;
   }
 
   

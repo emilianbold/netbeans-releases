@@ -47,18 +47,23 @@ import com.netbeans.ide.*;
 * @author Petr Jiricka
 */
 public class BundleStructure extends PropertyChangeSupport {
+// PENDING
+// do lazy initialization of entries, don't parse all at the beginning
 
   /** generated Serialized Version UID */
 //  static final long serialVersionUID = -7882925922830244768L;
                     
   /** Main dataobject */                  
   PropertiesDataObject obj;
-                             
+                                     
   /** Array of PropertiesFileEntry */
   private Object entries[];
   
+  /** List of keys sorted by the alphabet */
   private SortedArrayList keyList;
                      
+  protected PropertyBundleSupport support = new PropertyBundleSupport(this);
+
   /** Listens to changes on the underlying dataobject */
   private PropertyChangeListener pcl;
   
@@ -94,6 +99,20 @@ public class BundleStructure extends PropertyChangeSupport {
   public PropertiesFileEntry getNthEntry(int i) {
     if (entries != null)
       return (PropertiesFileEntry)entries[i];
+    else throw new InternalError(getClass().getName() +" - Entries not initialized");
+  }
+   
+  /** Retrieves a file entry (primary or secondary) by the name of its file 
+  *  @return entry with the given filename or null if not found
+  */
+  public PropertiesFileEntry getEntryByFileName(String fileName) {                                
+    if (entries != null) {
+      for (int i = 0; i < getEntryCount(); i++) {
+        if (((PropertiesFileEntry)entries[i]).getFile().getName().equals(fileName))
+          return (PropertiesFileEntry)entries[i];
+      }
+      return null;    
+    }  
     else throw new InternalError(getClass().getName() +" - Entries not initialized");
   }
                                            
@@ -169,6 +188,40 @@ public class BundleStructure extends PropertyChangeSupport {
           keyList.setAdd(((Element.ItemElem)it.next()).getKey());
       }
     }
+  }
+
+  // event methods
+  
+  /** Add a listener to the list that's notified each time a change
+   * to the property bundle occurs.
+   * @param	l		the PropertyBundleListener
+   */
+  public void addPropertyBundleListener(PropertyBundleListener l) {
+    support.addPropertyBundleListener(l);
+  }
+
+  /** Remove a listener from the list that's notified each time a
+   * change to the property bundle occurs.
+   * @param	l		the PropertyBundleListener
+   */
+  public void removePropertyBundleListener(PropertyBundleListener l) {
+    support.removePropertyBundleListener(l);
+  }
+                                     
+
+
+  // notification methods from lower layers of the structure
+  void itemChanged(Element.ItemElem elem) {
+System.out.println("firing element change");
+    // PENDING - events should be finer
+    support.fireBundleChanged();
+  }
+
+  void oneFileChanged(StructHandler handler) {
+System.out.println("firing file change");
+    // PENDING - events should be finer
+    // find out whether global key table has changed
+    support.fireBundleChanged();
   }
   
 }
