@@ -200,7 +200,7 @@ public class OptionsAction extends CallableSystemAction {
                     }
                     node = node.getParentNode ();
                 }
-                if (TEMPLATES_DISPLAY_NAME.equals (node.getDisplayName ())) {
+                if (node != null && TEMPLATES_DISPLAY_NAME.equals (node.getDisplayName ())) {
                     return new HelpCtx ("org.netbeans.core.actions.OptionsAction$TemplatesSubnode"); // NOI18N
                 }
             }
