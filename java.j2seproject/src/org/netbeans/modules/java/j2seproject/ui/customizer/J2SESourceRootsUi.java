@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.text.MessageFormat;
 import javax.swing.*;
+import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.CellEditorListener;
@@ -284,6 +285,8 @@ final class J2SESourceRootsUi {
                 }
             }
             if (rootsFromOtherProjects.size() > 0 || rootsFromRelatedSourceRoots.size() > 0) {
+                JButton closeOption = new JButton (NbBundle.getMessage(J2SESourceRootsUi.class,"CTL_J2SESourceRootsUi_Close"));
+                closeOption.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(J2SESourceRootsUi.class,"AD_J2SESourceRootsUi_Close"));
                 rootsFromOtherProjects.addAll(rootsFromRelatedSourceRoots);
                 JPanel warning = new WarningDlg (rootsFromOtherProjects);                
                 String message = NbBundle.getMessage(J2SESourceRootsUi.class,"MSG_InvalidRoot");
@@ -298,9 +301,9 @@ final class J2SESourceRootsUi {
                     NbBundle.getMessage(J2SESourceRootsUi.class,"TITLE_InvalidRoot"),
                     true,
                     new Object[] {
-                        DialogDescriptor.OK_OPTION,
+                        closeOption,
                     },
-                    DialogDescriptor.OK_OPTION,
+                    closeOption,
                     DialogDescriptor.DEFAULT_ALIGN,
                     null,
                     null);                
