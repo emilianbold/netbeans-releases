@@ -65,7 +65,7 @@ public class ViewDataAction extends DatabaseAction {
                     expression = "select "+cols.toString()+" from "+onome; //NOI18N
 
                 } else if (info instanceof ColumnNodeInfo || info instanceof ViewColumnNodeInfo) {
-                    onome = info.getTable();
+                    onome = (info instanceof ViewColumnNodeInfo)?info.getView():info.getTable();
                     for (int i = 0; i<activatedNodes.length; i++) {
                         node = activatedNodes[i];
                         info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
