@@ -121,7 +121,9 @@ final public class FormEditor extends Object {
     return componentInspector;
   }
   
-  public static PropertyEditor createPropertyEditor (Class editorClass, Class propertyType, RADComponent radComponent) throws InstantiationException, IllegalAccessException {
+  public static PropertyEditor createPropertyEditor (Class editorClass, Class propertyType, RADComponent radComponent, RADComponent.RADProperty radProperty) 
+  throws InstantiationException, IllegalAccessException 
+  {
     PropertyEditor ed;
     if (editorClass.equals (RADConnectionPropertyEditor.class)) {
       ed = new RADConnectionPropertyEditor (propertyType);
@@ -129,7 +131,7 @@ final public class FormEditor extends Object {
       ed = (PropertyEditor)editorClass.newInstance ();
     }
     if (ed instanceof FormAwareEditor) {
-      ((FormAwareEditor)ed).setRADComponent (radComponent);
+      ((FormAwareEditor)ed).setRADComponent (radComponent, radProperty);
     }
     if (ed instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
       ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)ed).attach (new org.openide.nodes.Node[] { radComponent.getNodeReference () });
@@ -608,6 +610,8 @@ static final long serialVersionUID =7424646018839457544L;
 
 /*
  * Log
+ *  34   Gandalf   1.33        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
+ *        changes
  *  33   Gandalf   1.32        9/9/99   Ian Formanek    AbsoluteLayout changes
  *  32   Gandalf   1.31        9/2/99   Ian Formanek    Reflecting changes in 
  *       RADComponent.getPropertyByName

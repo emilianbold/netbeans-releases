@@ -407,7 +407,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
           try {
             Class editorClass = TopManager.getDefault ().currentClassLoader ().loadClass (propertyEditor);
             Class propertyClass = findPropertyType (propType);
-            PropertyEditor ed = FormEditor.createPropertyEditor (editorClass, propertyClass, comp);
+            PropertyEditor ed = FormEditor.createPropertyEditor (editorClass, propertyClass, comp, prop);
             ((RADComponent.RADProperty)prop).setCurrentEditor (ed);
           } catch (Exception e) {
             // ignore
@@ -936,7 +936,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
     PropertyEditor ed = null;
     if (editorNode != null) {
       Class editorClass = TopManager.getDefault ().currentClassLoader ().loadClass (editorNode.getNodeValue ());
-      ed = FormEditor.createPropertyEditor (editorClass, propertyType, radComponent);
+      RADComponent.RADProperty prop = radComponent.getPropertyByName (nameNode.getNodeValue ());
+      if (prop != null) {
+        ed = FormEditor.createPropertyEditor (editorClass, propertyType, radComponent, prop);
+      } else {
+        if (Boolean.getBoolean ("netbeans.debug.form")) {
+          System.out.println ("Property: "+nameNode.getNodeValue ()+", of component: "+radComponent.getName ()+"["+radComponent.getBeanClass ().getName ()+"] not found.");
+        } // [PENDING better notification, localize]
+      }
     }
     Object value = null;
 
@@ -1282,6 +1289,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  31   Gandalf   1.30        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
+ *        changes
  *  30   Gandalf   1.29        9/7/99   Ian Formanek    Errors notification 
  *       during form load changed
  *  29   Gandalf   1.28        9/2/99   Ian Formanek    Fixed bug 3696 - When 

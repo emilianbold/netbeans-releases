@@ -45,7 +45,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
     this.propertyType = propertyType;
     modifiedEditor = radProperty.getCurrentEditor ();
     if (modifiedEditor instanceof FormAwareEditor) {
-      ((FormAwareEditor)modifiedEditor).setRADComponent (radComponent);
+      ((FormAwareEditor)modifiedEditor).setRADComponent (radComponent, radProperty);
     }
     if (modifiedEditor instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
       ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)modifiedEditor).attach (new org.openide.nodes.Node[] { radComponent.getNodeReference () });
@@ -311,6 +311,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
 
 /*
  * Log
+ *  15   Gandalf   1.14        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
+ *        changes
  *  14   Gandalf   1.13        8/17/99  Ian Formanek    no semantic change
  *  13   Gandalf   1.12        8/17/99  Ian Formanek    Fixed work with multiple
  *       property editors

@@ -302,7 +302,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
         !(customizer instanceof java.beans.Customizer)) return null;
 
     if (customizer instanceof FormAwareEditor) {
-      ((FormAwareEditor)customizer).setRADComponent (component);
+      ((FormAwareEditor)customizer).setRADComponent (component, null);
     }
     if (customizer instanceof org.openide.explorer.propertysheet.editors.NodeCustomizer) {
       ((org.openide.explorer.propertysheet.editors.NodeCustomizer)customizer).attach (component.getNodeReference ());
@@ -677,6 +677,8 @@ static final long serialVersionUID =3851021533468196849L;
 
 /*
  * Log
+ *  36   Gandalf   1.35        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
+ *        changes
  *  35   Gandalf   1.34        9/6/99   Ian Formanek    Fixed bug 2629 - If you 
  *       copy and paste some component in Component Inspector the text property 
  *       of new component is empty. 

@@ -821,7 +821,7 @@ public class RADComponent {
       if (!getFormManager ().getFormEditorSupport ().supportsAdvancedFeatures ()) {
         PropertyEditor prEd = findDefaultEditor (desc);
         if (prEd instanceof FormAwareEditor) {
-          ((FormAwareEditor)prEd).setRADComponent (RADComponent.this);
+          ((FormAwareEditor)prEd).setRADComponent (RADComponent.this, RADPropertyImpl.this);
         }
         if (prEd instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
           ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)prEd).attach (new org.openide.nodes.Node[] { getNodeReference () });
@@ -1047,7 +1047,7 @@ public class RADComponent {
       if (!getFormManager ().getFormEditorSupport ().supportsAdvancedFeatures ()) {
         PropertyEditor prEd = findDefaultIndexedEditor (desc);
         if (prEd instanceof FormAwareEditor) {
-          ((FormAwareEditor)prEd).setRADComponent (RADComponent.this);
+          ((FormAwareEditor)prEd).setRADComponent (RADComponent.this, RADIndexedPropertyImpl.this);
         }
         if (prEd instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
           ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)prEd).attach (new org.openide.nodes.Node[] { getNodeReference () });
@@ -1245,6 +1245,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  51   Gandalf   1.50        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
+ *        changes
  *  50   Gandalf   1.49        9/10/99  Ian Formanek    Pre/Post code added to 
  *       RADProperty
  *  49   Gandalf   1.48        9/7/99   Ian Formanek    Properties access and 

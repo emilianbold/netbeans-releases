@@ -25,12 +25,16 @@ public interface FormAwareEditor {
   * instance is created or the Customizer is obtained from getCustomizer ().
   * @param component The RADComponent representing the JavaBean being edited by this 
   *                  property editor or customizer
+  * @param property  The RADProperty being edited by this property editor or null 
+  *                  if this interface is implemented by a customizer
   */
-  public void setRADComponent (RADComponent component);
+  public void setRADComponent (RADComponent component, RADComponent.RADProperty property);
 }
 
 /*
  * Log
+ *  2    Gandalf   1.1         9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
+ *        changes
  *  1    Gandalf   1.0         5/23/99  Ian Formanek    
  * $
  */
