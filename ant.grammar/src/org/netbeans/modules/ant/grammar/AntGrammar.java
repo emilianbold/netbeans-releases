@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.ant.grammar;
 
+import java.text.Collator;
 import java.util.*;
 import javax.swing.Icon;
 
@@ -278,11 +279,11 @@ class AntGrammar implements GrammarQuery {
             elements.add("typedef");
             // Ant 1.6 permits any task here...
             elements.add("description");
-            elements.addAll(new TreeSet(getAntGrammar().getDefs("type").keySet()));
+            elements.addAll(getSortedDefs("type"));
         } else if (kind == KIND_SPECIAL && clazz == SPECIAL_TARGET) {
-            elements = new ArrayList(new TreeSet(getAntGrammar().getDefs("task").keySet()));
+            elements = new ArrayList(getSortedDefs("task"));
             // targets can have embedded types too, though less common:
-            elements.addAll(new TreeSet(getAntGrammar().getDefs("type").keySet())); // NOI18N
+            elements.addAll(getSortedDefs("type")); // NOI18N
         } else if (kind == KIND_SPECIAL && clazz == SPECIAL_DESCRIPTION) {
             return EmptyEnumeration.EMPTY;
         } else {
@@ -306,6 +307,12 @@ class AntGrammar implements GrammarQuery {
         }
         
         return list;                        
+    }
+    
+    private static SortedSet/*<String>*/ getSortedDefs(String kind) {
+        SortedSet/*<String>*/ defs = new TreeSet(Collator.getInstance());
+        defs.addAll(getAntGrammar().getDefs(kind).keySet());
+        return defs;
     }
     
     /**
