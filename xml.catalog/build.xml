@@ -47,7 +47,8 @@ Microsystems, Inc. All Rights Reserved.
     <target name="compile" depends="init">
         <echo message="Compiling XML catalog module classes..."/>
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-            <classpath>        
+            <classpath>
+                <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
                 <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
                 <pathelement location="${nbroot}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
                 <fileset dir="${nbroot}/core/external">
