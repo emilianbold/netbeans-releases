@@ -43,15 +43,10 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-
-    
     
     <executor name="code" antfile="build.xml" target="runcodetest"/>
+    <executor name="ide" antfile="build.xml" target="runidetest"/>
     
     <resultsprocessor name="unit" antfile="build.xml" target="test_report"/>
     
-    <!-- this executor is currently not necessary, but ready to use
-    <executor name="ide" antfile="build.xml" target="runidetest"/>
-    -->
-
 </mconfig>

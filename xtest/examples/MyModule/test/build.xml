@@ -12,26 +12,29 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="MyModule tests" basedir="." default="all">
+<project name="openidex tests" basedir="." default="all">
 
     <property name="build.sysclasspath" value="ignore"/>
 
-    <property name="netbeans.home" location="../../../nbbuild/netbeans"/>
+    <property name="netbeans.home" location="../../../../nbbuild/netbeans"/>
     <property name="netbeans.test.home" value="${netbeans.home}"/>
     
-    <!-- says how to create classpath for code tests --> 
+    <!-- says how to create classpath for code tests -->
     <!-- can have values src, jar, ide               -->
     <property name="xtest.code.classpath" value="src"/>
     
     <property name="xtest.home" location="../../../../xtest"/>
+    <property name="xtest.extra.home" location="../../../../../nbextra/xtest"/>
+
     <property name="xtest.results" location="results"/>
     <property name="xtest.build" location="."/>
     <property name="xtest.file.name" value="test.jar"/>
     <property name="xtest.file.location" value="lib"/>
+    <property name="xtest.ide.winsys" value="mdi"/>
     
     <!-- Default testtypes, attributes and executors -->
     <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attributes" value="all"/>
+    <property name="xtest.attribs" value="all"/>
     <property name="xtest.executors" value="code"/>
     
     <!-- Properties just for compiler -->
@@ -48,13 +51,12 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ============== -->
     <!-- Set classpaths -->
     <!-- ============== -->
-    
+        
     <!-- this classpath will be used for executing tests against sources -->
     <path id="src.codetest.classpath">
-        <pathelement location="../src"/>
+        <pathelement location="../src"/>    
     </path>
     
-
     <!-- =========== -->
     <!-- Init target -->
     <!-- =========== -->
@@ -72,7 +74,7 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="pathdef" classname="org.netbeans.xtest.PathDef"/>                        
         </nbtaskdef>
         
-        <nbpath nbhome="${netbeans.test.home}" xthome="${xtest.home}"/>
+        <nbpath nbhome="${netbeans.test.home}" xthome="${xtest.home}" xtexhome="${xtest.extra.home}"/>
 
         <!-- XML, XSLT reporters -->
         <nbtaskdef classpath="${xtest.path};${xalan.path}">
@@ -109,16 +111,10 @@ Microsystems, Inc. All Rights Reserved.
         <property name="tbag.classpath.root" location="${xtest.results}"/>
         <property name="tbag.classpath.work" value="work"/>
         
-        <!-- this "switch" will decide how to create classpath for code tests -->
-        <condition property="jarcode.classpath">
-            <equals arg1="${xtest.code.classpath}" arg2="jar"/>
-        </condition>
+        <!-- this "switch" will decide how to create classpath for code tests -->        
         <condition property="srccode.classpath">
             <equals arg1="${xtest.code.classpath}" arg2="src"/>
-        </condition>
-        <condition property="idecode.classpath">
-            <equals arg1="${xtest.code.classpath}" arg2="ide"/>
-        </condition>
+        </condition>        
         
     </target>
     
@@ -132,14 +128,14 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="config" depends="init">
         <!-- This task reads config file cfg-${xtest.testtype}.xml and selects all -->
-        <!-- testbags, which conforms to ${xtest.attributes} = is subset or equals -->
+        <!-- testbags, which conforms to ${xtest.attribs} = is subset or equals -->
         <test-configurator testtype="${xtest.testtype}" 
-                           testattributes="${xtest.attributes}"
+                           testattributes="${xtest.attribs}"
                            testexecutors="${xtest.executors}"/>
     </target>
     
     <target name="runtests" depends="config,cleanresults,buildtests">
-        <echo message="MyModule tests, test type: ${xtest.testtype}, test attributes: ${xtest.attributes}"/>
+        <echo message="MyModule tests, test type: ${xtest.testtype}, test attributes: ${xtest.attribs}"/>
         <test-executor paramClasspathProp="tbag.classpath"
                        paramPatternsetInProp="tbag.patternset.include"
                        paramPatternsetExProp="tbag.patternset.exclude"
@@ -171,8 +167,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="prepare-tests" depends="test-unjared" unless="unjared">
-        <echo message="tbag.testtype = ${tbag.testtype}, xtest results = ${xtest.results}"/>
-	<echo message="file location = ${xtest.file.location} filename = ${xtest.file.name}"/>
         <unjar dest="${xtest.results}/${tbag.testtype}/work" 
                src="${xtest.file.location}/${xtest.file.name}"/>
     </target>
@@ -230,13 +224,14 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ============= -->
     <target name="ide_test_bootstrap" depends="init">
     
-        <pathdef useid="test.classpath">
-            <path refid="test.basepath"/>
-            <path>
+        <pathdef useid="test.classpath">            
+            <!-- <path refid="test.basepath"/> -->
+            <!-- additional path elements -->
+	    <path>
                 <!-- this classpath is made of directories in testbags -->
                 <pathelement path="${tbag.classpath}"/>
+		<pathelement path="../src"/>
             </path>
-            <!-- additional path elements -->
         </pathdef>
 
         <!-- there should be some better userdir than this -->
@@ -246,17 +241,22 @@ Microsystems, Inc. All Rights Reserved.
         <property name="test.target" value="ide_test_helper"/>
         <property name="xtest.ide.path" refid="xtest.ide.path">
             <classpath id="xtest.ide.path">
-                <pathelement location="${netbeans.test.home}/modules/ext/ant.jar" />
-                <pathelement location="${netbeans.test.home}/modules/ext/ant-optional.jar" />
+                <!-- XXX this is bad, it assumes the Ant module is installed! -->
+                <fileset dir="${netbeans.test.home}/modules/ext">
+                    <include name="ant*.jar"/>
+                </fileset>
             </classpath>
         </property>
 
-        <property name="args" value="-jdkhome ${jdkhome} -userdir ${xtest.userdir} -cp:p ${xtest.ide.path} -J-Dtest.class=${test.class} -J-Dtest.classpath=${test.classpath} -J-Dtest.ant.file=${ant.file} -J-Dtest.target=${test.target} -J-Dxtest.home=${xtest.home} -J-Dxtest.includes=${xtest.includes} -J-Dxtest.excludes=${xtest.excludes} -J-Dtbag.classpath=${tbag.classpath} -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dtest.exit=true -J-Dnetbeans.full.hack=true"/>
+        <property name="args" value="-jdkhome ${jdkhome} -userdir ${xtest.userdir} -cp:p ${xtest.ide.path} -J-Dtest.class=${test.class} -J-Dtest.classpath=${test.classpath} -J-Dtest.ant.file=${ant.file} -J-Dtest.target=${test.target} -J-Dxtest.home=${xtest.home} -J-Dxtest.includes=${xtest.includes} -J-Dxtest.excludes=${xtest.excludes} -J-Dtbag.classpath=${tbag.classpath} -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dxtest.distexec=true -J-Dtest.exit=true -J-Dnetbeans.full.hack=true -J-Dnetbeans.windows=${xtest.ide.winsys}"/>
         <echo message="ARGUMENTS = ${args}"/>
 
         <copy file="${xtest.home}/lib/patches/testmain.jar" todir="${netbeans.test.home}/lib/patches"/>
-        <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.test.home}/lib"/>
-
+        <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.test.home}/lib/ext"/>
+        <copy file="${xtest.extra.home}/lib/xtest-ext.jar" todir="${netbeans.test.home}/lib/ext"/>
+        <copy file="${xtest.extra.home}/lib/junit.jar" todir="${netbeans.test.home}/lib/ext"/>
+        <copy file="${xtest.home}/lib/junit-ext.jar" todir="${netbeans.test.home}/lib/ext"/>
+        
         <exec dir="${netbeans.test.home}/bin" executable="${netbeans.test.home}/bin/runide.exe" 
               os="Windows 95 Windows 98 Windows NT Windows 2000"
               failonerror="yes">
@@ -269,7 +269,10 @@ Microsystems, Inc. All Rights Reserved.
         </exec>
         
         <delete file="${netbeans.test.home}/lib/patches/testmain.jar"/>
-        <delete file="${netbeans.test.home}/lib/xtest.jar"/>
+        <delete file="${netbeans.test.home}/lib/ext/xtest.jar"/>
+        <delete file="${netbeans.test.home}/lib/ext/xtest-ext.jar"/>
+        <delete file="${netbeans.test.home}/lib/ext/junit.jar"/>
+        <delete file="${netbeans.test.home}/lib/ext/junit-ext.jar"/>
         
     </target>
 
@@ -343,11 +346,12 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Creates lib/test.jar with all tests for this module,       -->
     <!-- maybe there should be more includes here, not just classes -->
-    <target name="jars" depends="compile">
+    <target name="jars" depends="compile" unless="xtest.distexec">
         <mkdir dir="${xtest.build}/${xtest.file.location}"/>
-        <jar basedir="." jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}">
-            <include name="**/src/**/*.class"/>
-            <include name="**/src/**/data/**"/>
+        <jar basedir="." 
+             jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}"
+             includesfile="${xtest.home}/standard-test-includes.txt"
+             excludesfile="${xtest.home}/standard-test-excludes.txt">            
         </jar>
     </target>
     
@@ -373,7 +377,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="printconfig">
-        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attributes}."/>
+        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
     </target>
     
 </project>
