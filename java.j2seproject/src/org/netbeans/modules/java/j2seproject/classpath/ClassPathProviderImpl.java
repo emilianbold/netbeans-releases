@@ -175,6 +175,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         int type = getType(file);
         if (type < 0) {
             // Unknown.
+            return null;
         } else if (type > 1) {
             // Class file. Return a "source path" of the binary dir.
             // Seems to make clazz.CompiledDataNode happy at least in the case
