@@ -49,6 +49,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
     private Panel firer;
     private WizardDescriptor wizardDescriptor;
+    private File oldProjectLocation;
     
     private DocumentListener configFilesDocumentListener = new DocumentListener() {
         public void changedUpdate(DocumentEvent e) {
@@ -113,16 +114,21 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
     void read (WizardDescriptor settings) {
         this.wizardDescriptor = settings;
-        File[] srcRoot = (File[]) settings.getProperty (WizardProperties.JAVA_ROOT);      //NOI18N
-        if (srcRoot!=null) {
-            ((FolderList)this.sourcePanel).setFiles(srcRoot);
-        }
-        File[] testRoot = (File[]) settings.getProperty (WizardProperties.TEST_ROOT);       //NOI18N
-        if (testRoot != null) {
-            ((FolderList)this.testsPanel).setFiles (testRoot);
-        }
+        
+        // #56706: only reinitialize the locations on the panel if the user changed the project location
         File projectLocation = (File) settings.getProperty(WizardProperties.SOURCE_ROOT);
-        initValues(FileUtil.toFileObject(projectLocation));
+        if (!projectLocation.equals(oldProjectLocation)) {
+            File[] srcRoot = (File[]) settings.getProperty (WizardProperties.JAVA_ROOT);      //NOI18N
+            if (srcRoot!=null) {
+                ((FolderList)this.sourcePanel).setFiles(srcRoot);
+            }
+            File[] testRoot = (File[]) settings.getProperty (WizardProperties.TEST_ROOT);       //NOI18N
+            if (testRoot != null) {
+                ((FolderList)this.testsPanel).setFiles (testRoot);
+            }
+            initValues(FileUtil.toFileObject(projectLocation));
+            oldProjectLocation = projectLocation;
+        }
     }
 
     void store (WizardDescriptor settings) {
