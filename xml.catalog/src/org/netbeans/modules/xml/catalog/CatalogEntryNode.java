@@ -64,11 +64,11 @@ public class CatalogEntryNode extends BeanNode {
                 
             } catch (MalformedURLException ex) {
                 ErrorManager emgr = TopManager.getDefault().getErrorManager();
-                emgr.notify(ex);
+                emgr.notify(ErrorManager.INFORMATIONAL, ex);
                 return null;
             } catch (IOException ex) {
                 ErrorManager emgr = TopManager.getDefault().getErrorManager();
-                emgr.notify(ex);                
+                emgr.notify(ErrorManager.INFORMATIONAL, ex);                
                 return null;
             }
             
