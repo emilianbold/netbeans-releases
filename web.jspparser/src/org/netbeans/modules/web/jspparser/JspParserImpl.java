@@ -113,7 +113,10 @@ public class JspParserImpl implements JspParserAPI {
             return new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"); // NOI18N
         }
         WebAppParseProxy pp = getParseProxy(wm);
-        return pp.getJspOpenInfo(jspFile, useEditor);
+        if (pp != null)
+            return pp.getJspOpenInfo(jspFile, useEditor);
+        else
+            return new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"); // NOI18N
     }
 
     public JspParserAPI.ParseResult analyzePage(FileObject jspFile, WebModule wm, int errorReportingMode) {
