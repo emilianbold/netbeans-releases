@@ -13,13 +13,25 @@
 
 package org.netbeans.modules.form.beaninfo.swing;
 
+import java.beans.*;
+
 /** BeanInfo for JLayeredPane - defines only the icons for now.
 *
 * @author  Ian Formanek
 */
-public class JLayeredPaneBeanInfo extends BISupport {
 
-    public JLayeredPaneBeanInfo() {
-        super("JLayeredPane", javax.swing.JLayeredPane.class); // NOI18N
+public class JLayeredPaneBeanInfo extends SimpleBeanInfo {
+
+    public BeanDescriptor getBeanDescriptor() {
+        return new BeanDescriptor(javax.swing.JLayeredPane.class);
+    }
+
+    public java.awt.Image getIcon(int type) {
+        if (type == ICON_COLOR_32x32 || type == ICON_MONO_32x32)
+            return org.openide.util.Utilities.loadImage(
+                "javax/swing/beaninfo/images/JLayeredPaneColor32.gif"); // NOI18N
+        else
+            return org.openide.util.Utilities.loadImage(
+                "javax/swing/beaninfo/images/JLayeredPaneColor16.gif"); // NOI18N
     }
 }
