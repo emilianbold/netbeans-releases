@@ -19,41 +19,56 @@ Microsystems, Inc. All Rights Reserved.
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
   <property name="build.compiler.debug" value="on"/>
+  <property name="javadoc.private" value="false"/>
+  <property name="docs.location.jdk"
+            value="http://java.sun.com/j2se/1.4.2/docs/api"/>
+  <property name="docs.location.openide"
+            value="http://www.netbeans.org/download/dev/javadoc/OpenAPIs"/>
+  <property name="docs.location.openide-deprecated"
+            value="http://www.netbeans.org/download/dev/javadoc/DeprecatedAPIs"/>
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
 
-  <target name="compile">
+  <target name="init">
+    <path id="i18n-noform-cp">
+      <pathelement location="../openide/openide-13javac-workaround.jar"/>
+      <pathelement location="../openide/netbeans/lib/openide.jar"/>
+      <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
+      <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
+      <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
+      <pathelement location="../core/netbeans/lib/core.jar"/>
+      <pathelement location="../core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
+      <pathelement location="../properties/netbeans/modules/properties.jar"/>
+      <fileset dir="../libs/external">
+        <include name="regexp*.jar" />
+      </fileset>
+    </path>
+    <path id="i18n-form-cp">
+      <pathelement location="../openide/openide-13javac-workaround.jar"/>
+      <pathelement location="../openide/netbeans/lib/openide.jar"/>
+      <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
+      <pathelement location="../properties/netbeans/modules/properties.jar"/>
+      <pathelement location="../form/netbeans/modules/form.jar"/>
+      <pathelement location="../java/netbeans/modules/java.jar"/>
+      <pathelement location="src" /> <!-- makes AspectJ compiler (ajc) happy -->
+    </path>
+    <path id="i18n-cp">
+      <path refid="i18n-noform-cp"/>
+      <path refid="i18n-form-cp"/>
+    </path>
+  </target>
+
+  <target name="compile" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <exclude name="org/netbeans/modules/i18n/form/"/>
-      <classpath>
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-        <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
-        <pathelement location="../core/netbeans/lib/core.jar"/>
-        <pathelement location="../core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
-        <pathelement location="../properties/netbeans/modules/properties.jar"/>
-        <fileset dir="../libs/external">
-          <include name="regexp*.jar" />
-        </fileset>
-     </classpath>
+      <classpath refid="i18n-cp"/>
     </javac>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/netbeans/modules/i18n/form/"/>
-      <classpath>
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-        <pathelement location="../properties/netbeans/modules/properties.jar"/>
-        <pathelement location="../form/netbeans/modules/form.jar"/>
-        <pathelement location="../java/netbeans/modules/java.jar"/>
-        <pathelement location="src" /> <!-- makes AspectJ compiler (ajc) happy -->
-      </classpath>
+      <classpath refid="i18n-form-cp"/>
     </javac>
-
   </target>
 
   <target name="jars" depends="compile">
@@ -112,7 +127,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
   </target>
 
-  <target name="javadoc" description="Build i18n module API documentation.">
+  <target name="javadoc" depends="init" description="Build i18n module API documentation.">
     <tstamp/>
     <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
     <echo message="Build i18n module API documentation..."/>
@@ -121,36 +136,25 @@ Microsystems, Inc. All Rights Reserved.
          add it to packagenames attribut if you need it
      -->
     <javadoc destdir="javadoc"
-             packagenames="org.netbeans.modules.i18n,org.netbeans.modules.i18n.java,org.netbeans.modules.i18n.jsp,org.netbeans.modules.i18n.wizard"
+             packagenames="org.netbeans.modules.i18n,org.netbeans.modules.i18n.form,org.netbeans.modules.i18n.java,org.netbeans.modules.i18n.jsp,org.netbeans.modules.i18n.wizard"
              doctitle="NetBeans i18n module APIs"
-             windowtitle="NetBeans i18n applet module APIs"
+             windowtitle="NetBeans i18n module APIs"
              bottom="${apis-footer}"
              use="true"
              splitindex="true"
              author="false"
              version="false"
              maxmemory="384m"
+             additionalparam="-breakiterator"
+             private="${javadoc.private}"
     >
       <sourcepath>
 	<pathelement location="src"/>
       </sourcepath>
-      <classpath>
-	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-        <pathelement location="../core/netbeans/lib/core.jar"/>
-        <pathelement location="../properties/netbeans/modules/properties.jar"/>
-<!-- uncomment this if you want to build javadoc for i18n support in form module -->
-<!--
-        <pathelement location="../form/netbeans/modules/form.jar"/>
-        <pathelement location="../form/netbeans/modules/ext/AbsoluteLayout.jar"/>
-        <pathelement location="../java/netbeans/modules/java.jar"/>
--->
-        <fileset dir="../libs/external">
-          <include name="regexp*.jar" />
-        </fileset>
-      </classpath>
+      <classpath refid="i18n-cp"/>
+      <link href="${docs.location.jdk}"/>
+      <link href="${docs.location.openide}"/>
+      <link href="${docs.location.openide-deprecated}"/>
     </javadoc>    
   </target>
 
