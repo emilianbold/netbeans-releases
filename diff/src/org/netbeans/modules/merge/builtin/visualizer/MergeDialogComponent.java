@@ -198,14 +198,14 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
             if(warning){
                 ret = DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Confirmation(NbBundle.getMessage(MergeDialogComponent.class,"WarningQuestion",new Integer(unsavedPanelNames.size())),
-                                                  NotifyDescriptor.YES_NO_CANCEL_OPTION));
+                                                  NotifyDescriptor.OK_CANCEL_OPTION));
                 if(ret.equals(NotifyDescriptor.NO_OPTION))
                     return;
             }else
                 ret = NotifyDescriptor.YES_OPTION;
         }
         if (!NotifyDescriptor.YES_OPTION.equals(ret) && !NotifyDescriptor.NO_OPTION.equals(ret)) return ;
-        if (NotifyDescriptor.YES_OPTION.equals(ret)) {
+        if (NotifyDescriptor.YES_OPTION.equals(ret) || NotifyDescriptor.OK_OPTION.equals(ret)) {
             for (Iterator it = saveCookies.iterator(); it.hasNext(); ) {
                 SaveCookie sc = (SaveCookie) it.next();
                 IOException ioException = null;
