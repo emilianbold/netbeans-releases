@@ -25,6 +25,7 @@ import java.util.TreeSet;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
@@ -43,7 +44,7 @@ import org.netbeans.modules.projectimport.eclipse.WorkspaceFactory;
  *
  * @author  mkrauskopf
  */
-final class ProjectSelectionPanel extends ImporterWizardPanel {
+final class ProjectSelectionPanel extends JPanel {
     
     /** Rendererer for projects */
     private class ProjectCellRenderer extends JCheckBox
@@ -201,7 +202,6 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
     
     /** Creates new form ProjectSelectionPanel */
     public ProjectSelectionPanel() {
-        super(1);
         initComponents();
         init();
         destination.getDocument().addDocumentListener(new DocumentListener() {
@@ -262,6 +262,12 @@ final class ProjectSelectionPanel extends ImporterWizardPanel {
      */
     String getDestination() {
         return destination.getText();
+    }
+    
+    void setErrorMessage(String newMessage) {
+        String oldMessage = this.errorMessage;
+        this.errorMessage = newMessage;
+        firePropertyChange("errorMessage", oldMessage, newMessage);
     }
     
     /** This method is called from within the constructor to

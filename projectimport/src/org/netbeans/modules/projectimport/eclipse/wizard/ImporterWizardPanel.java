@@ -13,23 +13,21 @@
 
 package org.netbeans.modules.projectimport.eclipse.wizard;
 
-import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 /**
- * Basic panel for Eclipse Wizard importer.
+ * Basic wizard panel for Eclipse Wizard importer.
  *
  * @author mkrauskopf
  */
-abstract class ImporterWizardPanel extends JPanel
-        implements WizardDescriptor.Panel {
+abstract class ImporterWizardPanel implements WizardDescriptor.Panel {
     
     /** Registered ChangeListeners */
     private List changeListeners;
@@ -45,18 +43,17 @@ abstract class ImporterWizardPanel extends JPanel
     static final String PROJECT_SELECTION_STEP =
             ProjectImporterWizard.getMessage("CTL_ProjectSelectionStep"); // NOI18N
     
-    /** Creates a new instance of ImporterPanel */
-    ImporterWizardPanel(int wizardNumber) {
-        super();
-        putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
-        putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
-        putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
-        putClientProperty("WizardPanel_contentSelectedIndex",  // NOI18N
+    /* Init defaults for the given component. */
+    void initPanel(JComponent comp, int wizardNumber) {
+        comp.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
+        comp.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
+        comp.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
+        comp.putClientProperty("WizardPanel_contentSelectedIndex",  // NOI18N
                 new Integer(wizardNumber));
-        putClientProperty("WizardPanel_contentData", new String[] {
+        comp.putClientProperty("WizardPanel_contentData", new String[] {
             WORKSPACE_LOCATION_STEP, PROJECT_SELECTION_STEP
         });
-        setPreferredSize(new java.awt.Dimension(500, 380));
+        comp.setPreferredSize(new java.awt.Dimension(500, 380));
     }
     
     /**
@@ -88,7 +85,7 @@ abstract class ImporterWizardPanel extends JPanel
         }
     }
     
-    /** 
+    /**
      * Sets error message used by importer wizard. Consequently sets validity of
      * this panel. If the given <code>newError</code> is null panel is
      * considered valid. Invalid otherwise.
@@ -123,10 +120,6 @@ abstract class ImporterWizardPanel extends JPanel
     
     public HelpCtx getHelp() {
         return null;
-    }
-    
-    public Component getComponent() {
-        return this;
     }
     
     public void storeSettings(Object settings) {;}

@@ -35,8 +35,8 @@ final class EclipseWizardIterator implements
         WizardDescriptor.Iterator, ChangeListener {
     
     private String errorMessage;
-    private WorkspaceSelectionPanel workspacePanel;
-    private ProjectSelectionPanel projectPanel;
+    private SelectionWizardPanel workspacePanel;
+    private ProjectWizardPanel projectPanel;
     private ImporterWizardPanel current;
     
     private boolean hasNext;
@@ -49,9 +49,9 @@ final class EclipseWizardIterator implements
     
     /** Initialize and create an instance. */
     EclipseWizardIterator() {
-        workspacePanel = new WorkspaceSelectionPanel();
-        projectPanel = new ProjectSelectionPanel();
+        workspacePanel = new SelectionWizardPanel();
         workspacePanel.addChangeListener(this);
+        projectPanel = new ProjectWizardPanel();
         projectPanel.addChangeListener(this);
         current = workspacePanel;
     }
