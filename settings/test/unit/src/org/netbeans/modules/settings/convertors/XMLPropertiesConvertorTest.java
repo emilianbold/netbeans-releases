@@ -284,6 +284,25 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
         assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
     }
     
+    public void testModuleDisabling() throws Exception {
+        FileObject dtd = sfs.findResource("xml/lookups/NetBeans_org_netbeans_modules_settings_testModuleDisabling/DTD_XML_FooSetting_1_0.instance");
+        assertNotNull(dtd);
+        FileObject xml = sfs.findResource("Settings/org-netbeans-modules-settings-convertors-testModuleDisabling.settings");
+        assertNotNull(xml);
+        DataObject dobj = DataObject.find(xml);
+        InstanceCookie cookie = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
+        assertNotNull(cookie);
+        cookie = null;
+        
+        FileObject folder = sfs.findResource("xml/lookups/NetBeans_org_netbeans_modules_settings_testModuleDisabling");
+        assertNotNull(folder);
+        // this simulate the disabling of a module; the layer containing the dtd
+        // registration is removed
+        folder.delete();
+        cookie = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
+        assertNull("" + cookie, cookie);
+    }
+    
     final class SaverImpl implements Saver {
         static final int NOT_CHANGED = 0;
         static final int DIRTY = 1;
