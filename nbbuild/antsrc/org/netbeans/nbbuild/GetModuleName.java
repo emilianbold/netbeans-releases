@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,6 +25,8 @@ public class GetModuleName extends Task {
     String name = null;
     File root = null;
     
+    // XXX this is a lousy attr name; conventional for such attrs to
+    // end in 'property' so you realize they refer to a property name
     public void setName (String name) {
         this.name = name;
     }
@@ -42,10 +44,10 @@ public class GetModuleName extends Task {
         try {
             String basedir = this.getProject().getBaseDir().getCanonicalPath();
             String rootdir = root.getCanonicalPath();
-            log("Basedir: " + basedir + " rootdir: " + rootdir);
+            log("Basedir: " + basedir + " rootdir: " + rootdir, Project.MSG_VERBOSE);
             if (!basedir.startsWith(rootdir)) throw new BuildException( "This module in on different path than the root dir",this.getLocation());
             String modulename = basedir.substring(rootdir.length() + 1).replace(File.separatorChar,'/');
-            this.getProject().setProperty( name, modulename);
+            this.getProject().setNewProperty( name, modulename);
         }
         catch (IOException ex) {
             throw new BuildException("Root dir or module's base dir wasn't recognized", ex, this.getLocation());

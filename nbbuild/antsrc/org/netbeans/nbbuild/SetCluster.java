@@ -90,7 +90,7 @@ public class SetCluster extends org.apache.tools.ant.Task {
                     // We found the list reffering to this module
                     String clusterDir = this.getProject().getProperty(property + ".dir");
                     if (clusterDir == null) throw new BuildException( "Property: " + property + ".dir have to be defined", this.getLocation());
-                    System.out.println( "Property: "+name+" will be set to " + clusterDir);
+                    log( "Property: " + name + " will be set to " + clusterDir, Project.MSG_VERBOSE);
                     this.getProject().setProperty( name, clusterDir );
                     return;
                 }
