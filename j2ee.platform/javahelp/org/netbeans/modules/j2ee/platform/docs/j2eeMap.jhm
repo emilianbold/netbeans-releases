@@ -128,7 +128,7 @@
     !-- New Project Wizard csh -->
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIterator" url="enterprise/csh/NewEarProjectWizardIterator.html" />
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.CompleteEarProjectWizardIterator" url="enterprise/csh/CompleteEarProjectWizardIterator.html" />
-    <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.ImportBlueprintEarWizardIterator" url="enterprise/csh/ImportBlueprintEarWizardIterator.html" />
+    <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.ImportBlueprintEarWizardIterator" url="tbd.html" />
 
     !-- Project Properties dialog box csh -->
 
