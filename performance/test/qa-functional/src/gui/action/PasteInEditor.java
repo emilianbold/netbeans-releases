@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -54,19 +54,20 @@ public class PasteInEditor extends testUtilities.PerformanceTestCase {
         setJavaEditorCaretFilteringOn();
         
         // open two java files in the editor
-        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|TestClassForCopyPaste.java"));
-        editorOperator1 = new EditorWindowOperator().getEditor("TestClassForCopyPaste.java");
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|Main20kB.java"));
-        editorOperator2 = new EditorWindowOperator().getEditor("Main20kB.java");
+        editorOperator1 = new EditorWindowOperator().getEditor("Main20kB.java");
+        new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|TestClassForCopyPaste.java"));
+        editorOperator2 = new EditorWindowOperator().getEditor("TestClassForCopyPaste.java");
     }
     
     public void prepare() {
         // copy a part of the first file to the clipboard
         editorOperator1.makeComponentVisible();
-        editorOperator1.select(9,220);
+        editorOperator1.select(53,443);
         new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_C, KeyEvent.CTRL_MASK)).perform(editorOperator1);
         // go to the end of the second file
         editorOperator2.makeComponentVisible();
+        editorOperator2.setCaretPositionToLine(23);
         new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator2);
    }
     

@@ -112,12 +112,17 @@ public class TypingInEditor extends testUtilities.PerformanceTestCase {
         // open a java file in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|Main.java"));
         editorOperator = new EditorWindowOperator().getEditor("Main.java");
+        
+        //wait painting pf folds in the editor
+        waitNoEvent(2000);
+        
         // go to the right place
         editorOperator.setCaretPositionToEndOfLine(32);
         // make the file modified
         //new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_ENTER)).perform(editorOperator);
         
         turnOff();
+        
     }
     
     public void prepare() {

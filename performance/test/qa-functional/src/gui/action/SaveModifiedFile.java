@@ -38,6 +38,7 @@ public class SaveModifiedFile extends testUtilities.PerformanceTestCase {
     public SaveModifiedFile(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_PREPARE=2000;
     }
     
     /**
@@ -48,6 +49,7 @@ public class SaveModifiedFile extends testUtilities.PerformanceTestCase {
     public SaveModifiedFile(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_PREPARE=2000;
     }
     
     
@@ -59,6 +61,7 @@ public class SaveModifiedFile extends testUtilities.PerformanceTestCase {
         EditorOperator.closeDiscardAll();
         new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"),"Source Packages|org.netbeans.test.performance|Main.java"));
         editorOperator = new EditorOperator("Main.java");
+        waitNoEvent(2000);
     }
 
     public void shutdown(){
@@ -66,6 +69,7 @@ public class SaveModifiedFile extends testUtilities.PerformanceTestCase {
     }
     
     public void prepare(){
+        editorOperator.setCaretPosition(1, 3);
         editorOperator.txtEditorPane().typeText("XXX");
     }
     
