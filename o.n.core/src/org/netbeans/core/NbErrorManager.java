@@ -456,7 +456,12 @@ final class NbErrorManager extends ErrorManager {
             pw.print (": "); // NOI18N
             pw.print (getClassName ());
             pw.print (": "); // NOI18N
-            pw.print (getMessage ());
+            String theMessage = getMessage();
+            if (theMessage != null) {
+                pw.print(theMessage);
+            } else {
+                pw.print("<no message>"); // NOI18N
+            }
             pw.println ();
             
             /*Annotations */
