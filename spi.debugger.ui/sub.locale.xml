@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- arguments below are taken form the upper ANT task -->
+
+<!-- basedir == directory, where the localizable files are -->
+<!-- destdir == directory, where will be saved final JAR file -->
+<!-- locale  == a locale ... files with these locale will be added to the archive (JAR file) -->
+
+<!-- idedir  == part in the IDE, where will be stored final file -->
+
+
+<project name="Sub_debuggercore" default="sub_debuggercore" basedir="${dir}">
+
+	<!-- setup the destination directory -->
+	<property name="idedir" value="modules/locale" />
+        
+	<target name="sub_debuggercore">
+                <!-- create full destination directory -->
+                <mkdir dir="${destdir}/${idedir}" />
+                <!-- create final jar file -->
+                <jar jarfile="${destdir}/${idedir}/debuggercore_${locale}.jar" basedir="${basedir}/src" includes="**/*_ja.*" />
+        </target>
+
+</project>
