@@ -31,6 +31,12 @@ Microsystems, Inc. All Rights Reserved.
 		outputType="javabeans"
 		attrProp="true"
 		standalone="true"/>
+	 <schema2beans schema="src/org/netbeans/modules/j2ee/ejbjarproject/ejb/wizard/xsl/InterfaceCreation.dtd"
+		package="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.gen"
+		rootDir="src"
+		outputType="javabeans"
+		attrProp="true"
+		standalone="true"/>
     </target>
     
     <target name="files-init" depends="basic-init"> 
