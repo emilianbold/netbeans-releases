@@ -29,6 +29,7 @@ import org.openide.explorer.propertysheet.PropertyModel;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.SettingsNames;
+import org.openide.util.NbBundle;
 
 /**
  * ColoringArrayEditorPanel is custom property editor operating over HashMap 
@@ -39,10 +40,6 @@ import org.netbeans.editor.SettingsNames;
  * @version 1.0
  */
 public class ColoringArrayEditorPanel extends javax.swing.JPanel {
-
-    /** Access to our localized texts */
-    static java.util.ResourceBundle bundle =
-        org.openide.util.NbBundle.getBundle( ColoringArrayEditorPanel.class );
 
     /** support for distributing change events. */
     private PropertyChangeSupport support;
@@ -81,9 +78,9 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
 
         initComponents ();
 
-        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CAEP_Panel")); // NOI18N
-        syntaxLabel.setDisplayedMnemonic (bundle.getString("CAEP_SyntaxLabel_Mnemonic").charAt (0)); // NOI18N
-        syntaxList.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CAEP_Syntax")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_CAEP_Panel")); // NOI18N
+        syntaxLabel.setDisplayedMnemonic (getBundleString("CAEP_SyntaxLabel_Mnemonic").charAt (0)); // NOI18N
+        syntaxList.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_CAEP_Syntax")); // NOI18N
         
         coloringModel = new PropertyModelSupport( ColoringBean.class, ColoringEditor.class);
         coloringModel.addPropertyChangeListener( new PropertyChangeListener() {
@@ -111,6 +108,10 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         PropertyPanel editorPanel = new PropertyPanel( coloringModel,  PropertyPanel.PREF_CUSTOM_EDITOR );
         detailPanel.add( editorPanel, BorderLayout.CENTER );
     }
+    
+    private String getBundleString(String s) {
+        return NbBundle.getMessage(ColoringArrayEditorPanel.class, s);
+    }        
 
     public HashMap getValue() {
         return value;
@@ -208,18 +209,18 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 11);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 11);
         add(detailPanel, gridBagConstraints);
 
         masterPanel.setLayout(new java.awt.GridBagLayout());
 
-        syntaxLabel.setText(bundle.getString("CAEP_SyntaxLabel"));
         syntaxLabel.setLabelFor(syntaxList);
+        syntaxLabel.setText(getBundleString("CAEP_SyntaxLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         masterPanel.add(syntaxLabel, gridBagConstraints);
 
         syntaxList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
@@ -242,9 +243,9 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 12);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 12);
         add(masterPanel, gridBagConstraints);
 
     }//GEN-END:initComponents

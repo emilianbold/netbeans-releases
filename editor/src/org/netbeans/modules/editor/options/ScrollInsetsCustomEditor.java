@@ -14,7 +14,6 @@
 package org.netbeans.modules.editor.options;
 
 import java.awt.Insets;
-import java.util.ResourceBundle;
 
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
@@ -30,9 +29,6 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
  */
 public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements EnhancedCustomPropertyEditor {
 
-    // the bundle to use
-    static ResourceBundle bundle = NbBundle.getBundle (
-                                       ScrollInsetsCustomEditor.class);
 
     static final long serialVersionUID =-1472891501739636852L;
 
@@ -48,25 +44,25 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
 
         if (insets == null) insets = new Insets( 0, 0, 0, 0 );
 
-        getAccessibleContext ().setAccessibleDescription (bundle.getString("ACSD_SICE")); // NOI18N
-        topLabel.setDisplayedMnemonic (bundle.getString("SICE_Top_Mnemonic").charAt(0)); // NOI18N
-        bottomLabel.setDisplayedMnemonic (bundle.getString("SICE_Bottom_Mnemonic").charAt(0)); // NOI18N
-        leftLabel.setDisplayedMnemonic (bundle.getString("SICE_Left_Mnemonic").charAt(0)); // NOI18N
-        rightLabel.setDisplayedMnemonic (bundle.getString("SICE_Right_Mnemonic").charAt(0)); // NOI18N
+        getAccessibleContext ().setAccessibleDescription (getBundleString("ACSD_SICE")); // NOI18N
+        topLabel.setDisplayedMnemonic (getBundleString("SICE_Top_Mnemonic").charAt(0)); // NOI18N
+        bottomLabel.setDisplayedMnemonic (getBundleString("SICE_Bottom_Mnemonic").charAt(0)); // NOI18N
+        leftLabel.setDisplayedMnemonic (getBundleString("SICE_Left_Mnemonic").charAt(0)); // NOI18N
+        rightLabel.setDisplayedMnemonic (getBundleString("SICE_Right_Mnemonic").charAt(0)); // NOI18N
         topField.setText (int2percent (insets.top ));
         leftField.setText (int2percent (insets.left ));
         bottomField.setText (int2percent (insets.bottom));
         rightField.setText (int2percent (insets.right));
-        topField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_SICE_Top")); // NOI18N
-        leftField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_SICE_Left")); // NOI18N
-        bottomField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_SICE_Bottom")); // NOI18N
-        rightField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_SICE_Right")); // NOI18N
+        topField.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_SICE_Top")); // NOI18N
+        leftField.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_SICE_Left")); // NOI18N
+        bottomField.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_SICE_Bottom")); // NOI18N
+        rightField.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_SICE_Right")); // NOI18N
         
         /*
         jPanel2.setBorder (new javax.swing.border.CompoundBorder (
                                new javax.swing.border.TitledBorder (
                                    new javax.swing.border.EtchedBorder (),
-                                   bundle.getString ("SICE_Insets")), // NOI18N
+                                   getBundleString().getString ("SICE_Insets")), // NOI18N
                                new javax.swing.border.EmptyBorder (new java.awt.Insets(12, 12, 11, 11))));
                                */
         HelpCtx.setHelpIDString (this, HELP_ID);
@@ -74,12 +70,17 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
         setPreferredSize(new java.awt.Dimension(320, getPreferredSize().height));
     }
 
+    private String getBundleString(String s) {
+        return NbBundle.getMessage(ScrollInsetsCustomEditor.class, s);
+    }        
+    
+    
     public Object getPropertyValue () throws IllegalStateException {
         try {
             return getValue();
         } catch (NumberFormatException e) {
             TopManager.getDefault().notify( new NotifyDescriptor.Message(
-                                                bundle.getString("SIC_InvalidValue"), // NOI18N
+                                                getBundleString("SIC_InvalidValue"), // NOI18N
                                                 NotifyDescriptor.ERROR_MESSAGE
                                             ) );
             throw new IllegalStateException();
@@ -133,11 +134,11 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
         setBorder(new javax.swing.border.EmptyBorder( new java.awt.Insets( 12, 12, 11, 11) ) );
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        topLabel.setText(bundle.getString("SICE_Top"));
         topLabel.setLabelFor(topField);
+        topLabel.setText(getBundleString("SICE_Top"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 12);
         jPanel2.add(topLabel, gridBagConstraints);
 
         topField.addActionListener(new java.awt.event.ActionListener() {
@@ -153,11 +154,11 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
         gridBagConstraints.weightx = 1.0;
         jPanel2.add(topField, gridBagConstraints);
 
-        leftLabel.setText(bundle.getString("SICE_Left"));
         leftLabel.setLabelFor(leftField);
+        leftLabel.setText(getBundleString("SICE_Left"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 12);
         jPanel2.add(leftLabel, gridBagConstraints);
 
         leftField.addActionListener(new java.awt.event.ActionListener() {
@@ -174,11 +175,11 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         jPanel2.add(leftField, gridBagConstraints);
 
-        bottomLabel.setText(bundle.getString("SICE_Bottom"));
         bottomLabel.setLabelFor(bottomField);
+        bottomLabel.setText(getBundleString("SICE_Bottom"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 12);
         jPanel2.add(bottomLabel, gridBagConstraints);
 
         bottomField.addActionListener(new java.awt.event.ActionListener() {
@@ -195,11 +196,11 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         jPanel2.add(bottomField, gridBagConstraints);
 
-        rightLabel.setText(bundle.getString("SICE_Right"));
         rightLabel.setLabelFor(rightField);
+        rightLabel.setText(getBundleString("SICE_Right"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(7, 0, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(7, 0, 0, 12);
         jPanel2.add(rightLabel, gridBagConstraints);
 
         rightField.addActionListener(new java.awt.event.ActionListener() {

@@ -25,7 +25,6 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileSystemCapability;
 import org.netbeans.editor.AnnotationType;
 import java.util.ResourceBundle;
-import org.openide.util.NbBundle;
 import java.awt.Color;
 import java.net.URL;
 import java.util.MissingResourceException;

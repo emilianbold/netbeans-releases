@@ -15,7 +15,6 @@ package org.netbeans.modules.editor.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.ResourceBundle;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,9 +41,6 @@ public class OptionSupport extends SystemOption {
     static final long serialVersionUID = 2002899758839584077L;
 
     static final String OPTIONS_PREFIX = "OPTIONS_"; // NOI18N
-
-    private static ResourceBundle bundle;
-
 
     private Class kitClass;
 
@@ -184,10 +180,7 @@ public class OptionSupport extends SystemOption {
 
     /** @return localized string */
     protected String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(OptionSupport.class);
-        }
-        return bundle.getString(s);
+        return NbBundle.getMessage(OptionSupport.class, s);
     }
     
     /** Helper method for merging string arrays without searching

@@ -18,7 +18,6 @@ import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Method;
-import java.util.ResourceBundle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +41,6 @@ import org.netbeans.editor.MultiKeyBinding;
 * @author Miloslav Metelka, Ales Novak
 */
 public class BaseOptionsBeanInfo extends SimpleBeanInfo {
-
-    private ResourceBundle bundle;
 
     /** Prefix of the icon location. */
     private String iconPrefix;
@@ -268,17 +265,12 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
     /** @return localized string */
     protected String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(BaseOptionsBeanInfo.class);
-        }
-        return bundle.getString(s);
+        return NbBundle.getMessage(BaseOptionsBeanInfo.class, s);
     }
 
     // ------------------------ carets --------------------------------
 
     public static class CaretTypeEditor extends PropertyEditorSupport {
-
-        private static ResourceBundle bundle;
 
         private static String[] tags = new String[] {
                                            BaseCaret.LINE_CARET,
@@ -316,10 +308,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         }
 
         static String getString(String s) {
-            if (bundle == null) {
-                bundle = NbBundle.getBundle(BaseOptionsBeanInfo.class);
-            }
-            return bundle.getString(s);
+            return NbBundle.getMessage(BaseOptionsBeanInfo.class, s);
         }
 
     }

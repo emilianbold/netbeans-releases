@@ -14,7 +14,6 @@
 package org.netbeans.modules.editor.options;
 
 import java.awt.Dimension;
-import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 
 /**
@@ -25,23 +24,25 @@ import org.openide.util.NbBundle;
 
 public class AbbrevInputPanel extends javax.swing.JPanel {
 
-    private static ResourceBundle bundle = NbBundle.getBundle( AbbrevInputPanel.class );
-
     /** Creates new form AbbrevsInputPanel */
     public AbbrevInputPanel() {
         initComponents ();
         
-        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AIP")); // NOI18N
-        abbrevLabel.setDisplayedMnemonic(bundle.getString("AIP_Abbrev_Mnemonic").charAt (0)); // NOI18N
-        expandLabel.setDisplayedMnemonic(bundle.getString("AIP_Expand_Mnemonic").charAt (0)); // NOI18N
-        abbrevField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AIP_Abbrev")); // NOI18N
-        expandTextArea.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AIP_Expand")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AIP")); // NOI18N
+        abbrevLabel.setDisplayedMnemonic(getBundleString("AIP_Abbrev_Mnemonic").charAt (0)); // NOI18N
+        expandLabel.setDisplayedMnemonic(getBundleString("AIP_Expand_Mnemonic").charAt (0)); // NOI18N
+        abbrevField.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AIP_Abbrev")); // NOI18N
+        expandTextArea.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AIP_Expand")); // NOI18N
         
         Dimension dim = getPreferredSize();
         dim.width = 4*dim.width;
         dim.height = 4*dim.height;
         setPreferredSize( dim );
     }
+    
+    private String getBundleString(String s) {
+        return NbBundle.getMessage(AbbrevInputPanel.class, s);
+    }        
 
     public void setAbbrev( String[] abbrev ) {
         abbrevField.setText( abbrev[0] );
@@ -66,13 +67,13 @@ public class AbbrevInputPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 11, 11)));
-        abbrevLabel.setText(bundle.getString( "AIP_Abbrev" ));
         abbrevLabel.setLabelFor(abbrevField);
+        abbrevLabel.setText(getBundleString( "AIP_Abbrev" ));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(abbrevLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -82,13 +83,13 @@ public class AbbrevInputPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(abbrevField, gridBagConstraints);
 
-        expandLabel.setText(bundle.getString( "AIP_Expand" ));
         expandLabel.setLabelFor(expandTextArea);
+        expandLabel.setText(getBundleString( "AIP_Expand" ));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(14, 0, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(14, 0, 0, 12);
         add(expandLabel, gridBagConstraints);
 
         expandScrollPane.setViewportView(expandTextArea);
@@ -98,10 +99,10 @@ public class AbbrevInputPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(expandScrollPane, gridBagConstraints);
 
     }//GEN-END:initComponents

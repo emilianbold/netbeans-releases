@@ -15,8 +15,6 @@ package org.netbeans.modules.editor.options;
 
 import java.beans.*;
 import java.awt.Image;
-import java.util.ResourceBundle;
-
 import org.openide.util.NbBundle;
 
 /** BeanInfo for plain options
@@ -24,8 +22,6 @@ import org.openide.util.NbBundle;
 * @author Miloslav Metelka, Ales Novak
 */
 public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
-
-    private ResourceBundle bundle;
 
     /** Prefix of the icon location. */
     private String iconPrefix;
@@ -71,10 +67,7 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
     }
 
     protected String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(BasePrintOptionsBeanInfo.class);
-        }
-        return bundle.getString(s);
+        return NbBundle.getMessage(BasePrintOptionsBeanInfo.class, s);
     }
 
     protected Class getBeanClass() {

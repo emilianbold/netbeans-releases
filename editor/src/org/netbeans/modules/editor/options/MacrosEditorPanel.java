@@ -35,8 +35,6 @@ import org.openide.util.HelpCtx;
 
 public class MacrosEditorPanel extends javax.swing.JPanel {
 
-    private static ResourceBundle bundle = NbBundle.getBundle( MacrosEditorPanel.class );
-
     PairStringModel model;
 
     // The master we talk to about changes in map
@@ -47,17 +45,21 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
         this.editor = editor;
         model = new PairStringModel();
         initComponents ();
-        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MEP")); // NOI18N
-        macrosTable.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_MEP_Table")); // NOI18N
-        macrosTable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MEP_Table")); // NOI18N
-        addButton.setMnemonic(bundle.getString("MEP_Add_Mnemonic").charAt(0)); // NOI18N
-        editButton.setMnemonic(bundle.getString("MEP_Edit_Mnemonic").charAt(0)); // NOI18N
-        removeButton.setMnemonic(bundle.getString("MEP_Remove_Mnemonic").charAt(0)); // NOI18N
-        addButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MEP_Add")); // NOI18N
-        editButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MEP_Edit")); // NOI18N
-        removeButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MEP_Remove")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP")); // NOI18N
+        macrosTable.getAccessibleContext().setAccessibleName(getBundleString("ACSN_MEP_Table")); // NOI18N
+        macrosTable.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP_Table")); // NOI18N
+        addButton.setMnemonic(getBundleString("MEP_Add_Mnemonic").charAt(0)); // NOI18N
+        editButton.setMnemonic(getBundleString("MEP_Edit_Mnemonic").charAt(0)); // NOI18N
+        removeButton.setMnemonic(getBundleString("MEP_Remove_Mnemonic").charAt(0)); // NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP_Add")); // NOI18N
+        editButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP_Edit")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP_Remove")); // NOI18N
     }
 
+    private String getBundleString(String s) {
+        return NbBundle.getMessage(MacrosEditorPanel.class, s);
+    }        
+    
     /**
      * Fill in editor with initial values
      */
@@ -125,7 +127,7 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(macrosPane, gridBagConstraints);
 
-        addButton.setText(bundle.getString( "MEP_Add" ));
+        addButton.setText(getBundleString( "MEP_Add" ));
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
@@ -137,7 +139,7 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(addButton, gridBagConstraints);
 
-        editButton.setText(bundle.getString( "MEP_Edit" ));
+        editButton.setText(getBundleString( "MEP_Edit" ));
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editButtonActionPerformed(evt);
@@ -151,7 +153,7 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(editButton, gridBagConstraints);
 
-        removeButton.setText(bundle.getString( "MEP_Remove" ));
+        removeButton.setText(getBundleString( "MEP_Remove" ));
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
@@ -211,7 +213,7 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
         HelpCtx.setHelpIDString( input, (HelpCtx.findHelp(this) != null ? HelpCtx.findHelp(this).getHelpID() : null) );
         if( macro != null ) input.setMacro( macro ); // preset value
 
-        DialogDescriptor dd = new DialogDescriptor ( input, bundle.getString( "MEP_EnterMacro" ) ); // NOI18N
+        DialogDescriptor dd = new DialogDescriptor ( input, getBundleString( "MEP_EnterMacro" ) ); // NOI18N
         Dialog dial = TopManager.getDefault().createDialog(dd);
         input.requestFocus();  // Place caret in it, hopefully
         dial.show(); // let the user tell us their wish
@@ -239,8 +241,8 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
      */
     private class PairStringModel extends javax.swing.table.AbstractTableModel {
 
-        String[] columns = { bundle.getString( "MEP_MacroTitle" ),     // NOI18N
-                             bundle.getString( "MEP_ExpandTitle" ) };   // NOI18N
+        String[] columns = { getBundleString( "MEP_MacroTitle" ),     // NOI18N
+                             getBundleString( "MEP_ExpandTitle" ) };   // NOI18N
 
         TreeMap data;
         String[] keys;

@@ -17,8 +17,6 @@ import java.beans.*;
 import java.awt.Image;
 import java.util.ResourceBundle;
 
-import org.openide.util.NbBundle;
-
 /** BeanInfo for common options
 *
 * @author Miloslav Metelka

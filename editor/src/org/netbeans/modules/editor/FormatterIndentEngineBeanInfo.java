@@ -18,8 +18,6 @@ import java.awt.Image;
 import java.lang.reflect.Method;
 import org.netbeans.editor.LocaleSupport;
 import java.util.ResourceBundle;
-
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /** BeanInfo for the FormatterIndentEngine class

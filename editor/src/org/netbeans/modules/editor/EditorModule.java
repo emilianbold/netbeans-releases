@@ -78,7 +78,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.RepositoryEvent;
 import org.openide.filesystems.RepositoryReorderedEvent;
 import org.openide.loaders.DataFolder;
-import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 
 

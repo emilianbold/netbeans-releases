@@ -14,7 +14,6 @@
 package org.netbeans.modules.editor.options;
 
 import java.awt.Dimension;
-import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 
 /**
@@ -25,21 +24,23 @@ import org.openide.util.NbBundle;
 
 public class MacroInputPanel extends javax.swing.JPanel {
 
-    private static ResourceBundle bundle = NbBundle.getBundle( MacroInputPanel.class );
-
     /** Creates new form MacrosInputPanel */
     public MacroInputPanel() {
         initComponents ();
-        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MIP")); // NOI18N
-        macroLabel.setDisplayedMnemonic(bundle.getString("MIP_Macro_Mnemonic").charAt(0)); // NOI18N
-        expandLabel.setDisplayedMnemonic(bundle.getString("MIP_Expand_Mnemonic").charAt(0)); // NOI18N
-        macroField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MIP_Macro")); // NOI18N
-        expandTextArea.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_MIP_Expand")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MIP")); // NOI18N
+        macroLabel.setDisplayedMnemonic(getBundleString("MIP_Macro_Mnemonic").charAt(0)); // NOI18N
+        expandLabel.setDisplayedMnemonic(getBundleString("MIP_Expand_Mnemonic").charAt(0)); // NOI18N
+        macroField.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MIP_Macro")); // NOI18N
+        expandTextArea.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MIP_Expand")); // NOI18N
         Dimension dim = getPreferredSize();
         dim.width = 4*dim.width;
         dim.height = 4*dim.height;
         setPreferredSize( dim );
     }
+    
+    private String getBundleString(String s) {
+        return NbBundle.getMessage(MacroInputPanel.class, s);
+    }    
 
     public void setMacro( String[] macro ) {
         macroField.setText( macro[0] );
@@ -64,30 +65,30 @@ public class MacroInputPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 11, 11)));
-        macroLabel.setText(bundle.getString( "MIP_Macro" ));
         macroLabel.setLabelFor(macroField);
+        macroLabel.setText(getBundleString( "MIP_Macro" ));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
         add(macroLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(macroField, gridBagConstraints);
 
-        expandLabel.setText(bundle.getString( "MIP_Expand" ));
         expandLabel.setLabelFor(expandTextArea);
+        expandLabel.setText(getBundleString( "MIP_Expand" ));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 12);
         add(expandLabel, gridBagConstraints);
 
         expandScrollPane.setViewportView(expandTextArea);

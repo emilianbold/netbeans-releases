@@ -8,9 +8,9 @@
       </Border>
     </Property>
   </Properties>
-  <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,44,0,0,1,-112"/>
-  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,44,0,0,1,-112"/>
+  </AuxValues>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout">
     <Property name="verticalGap" type="int" value="12"/>
@@ -24,7 +24,7 @@
               <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                 <EmptyBorder bottom="0" left="0" right="0" top="0"/>
               </Border>
-              <Connection PropertyName="titleX" code="bundle.getString(&quot;KBEP_Actions&quot;)" type="code"/>
+              <Connection PropertyName="titleX" code="getBundleString(&quot;KBEP_Actions&quot;)" type="code"/>
             </TitledBorder>
           </Border>
         </Property>
@@ -49,13 +49,12 @@
             <Component class="javax.swing.JRadioButton" name="nameSortRadioButton">
               <Properties>
                 <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="bundle.getString (&quot;KBEP_name_sort_button_mnemonic&quot;).charAt (0)" type="code"/>
+                  <Connection code="getBundleString (&quot;KBEP_name_sort_button_mnemonic&quot;).charAt (0)" type="code"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="bundle.getString (&quot;KBEP_name_sort_button&quot;)" type="code"/>
+                  <Connection code="getBundleString (&quot;KBEP_name_sort_button&quot;)" type="code"/>
                 </Property>
               </Properties>
-
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="nameSortRadioButtonActionPerformed"/>
               </Events>
@@ -68,13 +67,12 @@
             <Component class="javax.swing.JRadioButton" name="actionSortRadioButton">
               <Properties>
                 <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="bundle.getString (&quot;KBEP_action_sort_button_mnemonic&quot;).charAt (0)" type="code"/>
+                  <Connection code="getBundleString (&quot;KBEP_action_sort_button_mnemonic&quot;).charAt (0)" type="code"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="bundle.getString (&quot;KBEP_action_sort_button&quot;)" type="code"/>
+                  <Connection code="getBundleString (&quot;KBEP_action_sort_button&quot;)" type="code"/>
                 </Property>
               </Properties>
-
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="actionSortRadioButtonActionPerformed"/>
               </Events>
@@ -96,7 +94,6 @@
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
             <Component class="javax.swing.JList" name="actionsList">
-
               <Events>
                 <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="actionsListValueChanged"/>
               </Events>
@@ -116,11 +113,11 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="sequencesLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="bundle.getString(&quot;KBEP_Sequences&quot;)" type="code"/>
-            </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection component="sequencesList" type="bean"/>
+            </Property>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="getBundleString(&quot;KBEP_Sequences&quot;)" type="code"/>
             </Property>
           </Properties>
           <Constraints>
@@ -149,7 +146,6 @@
                   <Connection code="new KeySequenceCellRenderer()" type="code"/>
                 </Property>
               </Properties>
-
               <Events>
                 <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="sequencesListValueChanged"/>
               </Events>
@@ -159,14 +155,13 @@
         <Component class="javax.swing.JButton" name="addSequenceButton">
           <Properties>
             <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="bundle.getString (&quot;KBEP_Add_Mnemonic&quot;).charAt (0)" type="code"/>
+              <Connection code="getBundleString (&quot;KBEP_Add_Mnemonic&quot;).charAt (0)" type="code"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="bundle.getString( &quot;KBEP_Add&quot; )" type="code"/>
+              <Connection code="getBundleString( &quot;KBEP_Add&quot; )" type="code"/>
             </Property>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
-
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addSequenceButtonActionPerformed"/>
           </Events>
@@ -179,14 +174,13 @@
         <Component class="javax.swing.JButton" name="removeSequenceButton">
           <Properties>
             <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="bundle.getString (&quot;KBEP_Remove_Mnemonic&quot;).charAt (0)" type="code"/>
+              <Connection code="getBundleString (&quot;KBEP_Remove_Mnemonic&quot;).charAt (0)" type="code"/>
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="bundle.getString( &quot;KBEP_Remove&quot; )" type="code"/>
+              <Connection code="getBundleString( &quot;KBEP_Remove&quot; )" type="code"/>
             </Property>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
-
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeSequenceButtonActionPerformed"/>
           </Events>

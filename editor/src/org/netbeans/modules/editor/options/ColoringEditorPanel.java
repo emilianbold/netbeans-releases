@@ -41,9 +41,6 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
 
     public static final String PROP_COLORING = "Coloring";  // NOI18N
 
-    /** Access to our localized texts */
-    static java.util.ResourceBundle bundle =
-        org.openide.util.NbBundle.getBundle( ColoringEditorPanel.class );
 
     /** the value we're operating over. */
     private ColoringBean value;
@@ -73,11 +70,11 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 0.3;
         fontPanel = new PropWithDefaultPanel( Font.class, FontEditor.class,
-                                              bundle.getString("CEP_FontTitle"),        // NOI18N
-                                              bundle.getString("ACSD_CEP_Font"),        // NOI18N
-                                              bundle.getString("CEP_FontTrans"),        // NOI18N
-                                              bundle.getString("CEP_FontTrans_Mnemonic").charAt(0),  // NOI18N
-                                              bundle.getString("ACSD_CEP_FontTrans")); // NOI18N
+                                              getBundleString("CEP_FontTitle"),        // NOI18N
+                                              getBundleString("ACSD_CEP_Font"),        // NOI18N
+                                              getBundleString("CEP_FontTrans"),        // NOI18N
+                                              getBundleString("CEP_FontTrans_Mnemonic").charAt(0),  // NOI18N
+                                              getBundleString("ACSD_CEP_FontTrans")); // NOI18N
         fontPanel.addPropertyChangeListener( new PropertyChangeListener() {
                                                  public void propertyChange( PropertyChangeEvent evt ) {
                                                      if( PropWithDefaultPanel.PROP_VALUE.equals( evt.getPropertyName() ) ) {
@@ -95,11 +92,11 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         gridBagConstraints1.insets = new java.awt.Insets (12, 0, 0, 0);
         gridBagConstraints1.weightx = 1.0;
         fgColorPanel = new PropWithDefaultPanel( Color.class, ColorEditor.class,
-                       bundle.getString("CEP_FgTitle"),       // NOI18N
-                       bundle.getString("ACSD_CEP_Fg"),       // NOI18N
-                       bundle.getString("CEP_FgTrans"),       // NOI18N
-                       bundle.getString("CEP_FgTrans_Mnemonic").charAt(0),  // NOI18N
-                       bundle.getString("ACSD_CEP_FgTrans")); // NOI18N
+                       getBundleString("CEP_FgTitle"),       // NOI18N
+                       getBundleString("ACSD_CEP_Fg"),       // NOI18N
+                       getBundleString("CEP_FgTrans"),       // NOI18N
+                       getBundleString("CEP_FgTrans_Mnemonic").charAt(0),  // NOI18N
+                       getBundleString("ACSD_CEP_FgTrans")); // NOI18N
         fgColorPanel.addPropertyChangeListener( new PropertyChangeListener() {
                                                     public void propertyChange( PropertyChangeEvent evt ) {
                                                         if( PropWithDefaultPanel.PROP_VALUE.equals( evt.getPropertyName() ) ) {
@@ -117,11 +114,11 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         gridBagConstraints1.insets = new java.awt.Insets (12, 0, 0, 0);
         gridBagConstraints1.weightx = 1.0;
         bgColorPanel = new PropWithDefaultPanel( Color.class, ColorEditor.class,
-                       bundle.getString("CEP_BgTitle"),       // NOI18N
-                       bundle.getString("ACSD_CEP_Bg"),       // NOI18N
-                       bundle.getString("CEP_BgTrans"),       // NOI18N
-                       bundle.getString("CEP_BgTrans_Mnemonic").charAt(0),  // NOI18N
-                       bundle.getString("ACSD_CEP_BgTrans")); // NOI18N
+                       getBundleString("CEP_BgTitle"),       // NOI18N
+                       getBundleString("ACSD_CEP_Bg"),       // NOI18N
+                       getBundleString("CEP_BgTrans"),       // NOI18N
+                       getBundleString("CEP_BgTrans_Mnemonic").charAt(0),  // NOI18N
+                       getBundleString("ACSD_CEP_BgTrans")); // NOI18N
 
         bgColorPanel.addPropertyChangeListener( new PropertyChangeListener() {
                                                     public void propertyChange( PropertyChangeEvent evt ) {
@@ -142,13 +139,13 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         gridBagConstraints1.weighty = 1.0;
         JPanel previewPanel = new JPanel( new BorderLayout () );
         previewPanel.setBorder( new CompoundBorder(
-                                    new TitledBorder( bundle.getString( "CEP_PreviewTitle" ) ), // NOI18N
+                                    new TitledBorder( getBundleString("CEP_PreviewTitle" ) ), // NOI18N
                                     new EmptyBorder( new Insets( 9, 12, 11, 11) )
                                 ) );
 
         preview = new ColoringPreview();
-        preview.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_CEP_Preview"));
-        preview.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CEP_Preview"));
+        preview.getAccessibleContext().setAccessibleName(getBundleString("ACSN_CEP_Preview"));
+        preview.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_CEP_Preview"));
         previewPanel.add( preview );
         add( previewPanel, gridBagConstraints1 );
 
@@ -158,6 +155,10 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
         small.width *= 2;
         small.height *= 1.4;
         setPreferredSize( small );
+    }
+    
+    private String getBundleString(String s) {
+        return org.openide.util.NbBundle.getMessage(ColoringEditorPanel.class, s);
     }
 
     /**

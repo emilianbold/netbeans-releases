@@ -16,7 +16,6 @@ package org.netbeans.modules.editor.options;
 import java.awt.Insets;
 import java.text.MessageFormat;
 import java.util.StringTokenizer;
-import java.util.ResourceBundle;
 
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
@@ -30,9 +29,6 @@ import org.openide.util.NbBundle;
  * @author   Petr Hamernik
  */
 public class ScrollInsetsEditor extends java.beans.PropertyEditorSupport {
-
-    // the bundle to use
-    static ResourceBundle bundle = NbBundle.getBundle ( ScrollInsetsEditor.class);
 
     public boolean supportsCustomEditor () {
         return true;
@@ -103,9 +99,13 @@ public class ScrollInsetsEditor extends java.beans.PropertyEditorSupport {
         setValue( new Insets( newVal[0], newVal[1], newVal[2], newVal[3] ) );
     }
 
+    private String getBundleString(String s) {
+        return NbBundle.getMessage(ScrollInsetsEditor.class, s);
+    }        
+    
     /** Always throws the new exception */
     private void badFormat() throws IllegalArgumentException {
-        throw new IllegalArgumentException( bundle.getString("SIE_EXC_BadFormatValue" ) );
+        throw new IllegalArgumentException( getBundleString("SIE_EXC_BadFormatValue" ) );
     }
 
     private String int2percent( int i ) {

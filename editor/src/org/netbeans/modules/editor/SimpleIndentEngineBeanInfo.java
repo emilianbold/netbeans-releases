@@ -18,7 +18,6 @@ import java.util.MissingResourceException;
 import org.netbeans.modules.editor.FormatterIndentEngineBeanInfo;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.editor.LocaleSupport;
-import org.openide.util.NbBundle;
 
 /**
 * Beaninfo for JavaIndentEngine.

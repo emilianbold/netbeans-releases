@@ -16,7 +16,6 @@ package org.netbeans.modules.editor.options;
 import java.beans.IntrospectionException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 import org.netbeans.editor.Settings;
 import org.netbeans.modules.editor.NbEditorSettingsInitializer;
 import org.openide.nodes.BeanNode;

@@ -38,8 +38,6 @@ import org.openide.TopManager;
 
 public class AbbrevsEditorPanel extends javax.swing.JPanel {
 
-    private static ResourceBundle bundle = NbBundle.getBundle( AbbrevsEditorPanel.class );
-
     PairStringModel model;
 
     // The master we talk to about changes in map
@@ -50,13 +48,18 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
         this.editor = editor;
         model = new PairStringModel();
         initComponents ();
-        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AEP")); // NOI18N
-        abbrevsTable.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_AEP_Table")); // NOI18N
-        abbrevsTable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AEP_Table")); // NOI18N
-        addButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AEP_Add")); // NOI18N
-        editButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AEP_Edit")); // NOI18N
-        removeButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AEP_Remove")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AEP")); // NOI18N
+        abbrevsTable.getAccessibleContext().setAccessibleName(getBundleString("ACSN_AEP_Table")); // NOI18N
+        abbrevsTable.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AEP_Table")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AEP_Add")); // NOI18N
+        editButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AEP_Edit")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AEP_Remove")); // NOI18N
     }
+    
+    private String getBundleString(String s) {
+        return NbBundle.getMessage(AbbrevsEditorPanel.class, s);
+    }        
+    
 
     /**
      * Fill in editor with initial values
@@ -116,13 +119,13 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(abbrevsPane, gridBagConstraints);
 
-        addButton.setMnemonic(bundle.getString("AEP_Add_Mnemonic").charAt (0));
-        addButton.setText(bundle.getString( "AEP_Add" ));
+        addButton.setMnemonic(getBundleString("AEP_Add_Mnemonic").charAt (0));
+        addButton.setText(getBundleString( "AEP_Add" ));
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
@@ -134,8 +137,8 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(addButton, gridBagConstraints);
 
-        editButton.setMnemonic(bundle.getString("AEP_Edit_Mnemonic").charAt (0));
-        editButton.setText(bundle.getString( "AEP_Edit" ));
+        editButton.setMnemonic(getBundleString("AEP_Edit_Mnemonic").charAt (0));
+        editButton.setText(getBundleString( "AEP_Edit" ));
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editButtonActionPerformed(evt);
@@ -149,8 +152,8 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(editButton, gridBagConstraints);
 
-        removeButton.setMnemonic(bundle.getString("AEP_Remove_Mnemonic").charAt (0));
-        removeButton.setText(bundle.getString( "AEP_Remove" ));
+        removeButton.setMnemonic(getBundleString("AEP_Remove_Mnemonic").charAt (0));
+        removeButton.setText(getBundleString( "AEP_Remove" ));
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
@@ -210,7 +213,7 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
         HelpCtx.setHelpIDString( input, (HelpCtx.findHelp(this) != null ? HelpCtx.findHelp(this).getHelpID() : null) );
         if( abbrev != null ) input.setAbbrev( abbrev ); // preset value
 
-        DialogDescriptor dd = new DialogDescriptor ( input, bundle.getString( "AEP_EnterAbbrev" ) ); // NOI18N
+        DialogDescriptor dd = new DialogDescriptor ( input, getBundleString("AEP_EnterAbbrev" ) ); // NOI18N
         Dialog dial = TopManager.getDefault().createDialog(dd);
         input.requestFocus();  // Place caret in it, hopefully
         dial.show(); // let the user tell us their wish
@@ -227,7 +230,7 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
                     String[] existingPair = model.getPair(existingKeyPosition);
                     NotifyDescriptor NDConfirm = new NotifyDescriptor.Confirmation(
                     MessageFormat.format(
-                    bundle.getString("AEP_Overwrite"), //NOI18N
+                    getBundleString("AEP_Overwrite"), //NOI18N
                     new Object[] {retVal[0], existingPair[1], retVal[1]}),
                     NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE
@@ -260,8 +263,8 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
      */
     private class PairStringModel extends javax.swing.table.AbstractTableModel {
 
-        String[] columns = { bundle.getString( "AEP_AbbrevTitle" ),     // NOI18N
-                             bundle.getString( "AEP_ExpandTitle" ) };   // NOI18N
+        String[] columns = { getBundleString( "AEP_AbbrevTitle" ),     // NOI18N
+                             getBundleString( "AEP_ExpandTitle" ) };   // NOI18N
 
         TreeMap data;
         String[] keys;

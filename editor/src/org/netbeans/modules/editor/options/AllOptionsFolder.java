@@ -205,7 +205,7 @@ public class AllOptionsFolder{
                         NotifyDescriptor msg = new NotifyDescriptor.Message(
                         
                         MessageFormat.format(
-                        NbBundle.getBundle( AllOptions.class ).getString("ERR_NoContentTypeDefined"), //NOI18N
+                        NbBundle.getMessage( AllOptionsFolder.class, "ERR_NoContentTypeDefined"), //NOI18N
                         new Object[] {kitClazz}),
                         NotifyDescriptor.WARNING_MESSAGE
                         );

@@ -25,7 +25,6 @@ import org.openide.nodes.Node;
 import java.util.Iterator;
 import java.beans.IntrospectionException;
 import org.openide.util.NbBundle;
-import java.util.ResourceBundle;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.netbeans.editor.AnnotationTypes;
@@ -47,17 +46,19 @@ public class AnnotationTypesNode extends AbstractNode {
     private static final String HELP_ID = "editing.configuring.annotations"; // !!! NOI18N
     private static final String ICON_BASE = "org/netbeans/modules/editor/resources/annotationtypes"; // NOI18N
     
-    private ResourceBundle bundle;
     
     /** Creates new AnnotationTypesNode */
     public AnnotationTypesNode() {
         super(new AnnotationTypesSubnodes ());
         setName("annotationtypes"); // NOI18N
-        bundle = NbBundle.getBundle(AnnotationTypesNode.class);
-        setDisplayName(bundle.getString("ATN_AnnotationTypesNode_Name"));
-        setShortDescription (bundle.getString ("ATN_AnnotationTypesNode_Description"));
+        setDisplayName(getBundleString("ATN_AnnotationTypesNode_Name"));
+        setShortDescription (getBundleString("ATN_AnnotationTypesNode_Description"));
         setIconBase (ICON_BASE);
     }
+    
+    private String getBundleString(String s) {
+        return NbBundle.getMessage(AnnotationTypesNode.class, s);
+    }        
 
     public HelpCtx getHelpCtx () {
         return new HelpCtx (HELP_ID);
@@ -91,8 +92,8 @@ public class AnnotationTypesNode extends AbstractNode {
     /** Create PropertySupport for given property name and class */
     private PropertySupport createProperty(final String name, final Class clazz) {
         return new PropertySupport.ReadWrite(name, clazz,
-            bundle.getString("PROP_" + name),    //NOI18N
-            bundle.getString("HINT_" + name)) {  //NOI18N
+            getBundleString("PROP_" + name),    //NOI18N
+            getBundleString("HINT_" + name)) {  //NOI18N
             public Object getValue() {
                 return getProperty(name);
             }

@@ -34,7 +34,6 @@ import org.openide.windows.TopComponent;
 import org.openide.util.Lookup;
 import java.lang.IllegalArgumentException;
 import org.openide.ErrorManager;
-import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 import java.util.MissingResourceException;
 import java.awt.Toolkit;

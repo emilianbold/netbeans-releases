@@ -15,9 +15,6 @@ package org.netbeans.modules.editor.options;
 
 import java.awt.Image;
 import java.beans.*;
-import java.util.ResourceBundle;
-
-import org.openide.util.NbBundle;
 
 /** BeanInfo for common options
  *
