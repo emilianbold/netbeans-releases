@@ -14,7 +14,9 @@ All Rights Reserved.
 
 <project basedir="." default="netbeans" name="jnlpinstaller">
 
-    <property name="nb_all" value="../.."/>
+    <property name="nb_all" location="../.."/>
+    <import file="${nb_all}/nbbuild/default.xml" />
+    
     <property name="jnlp-api.file.location" value="../external/jnlp.jar"/>
     <property name="jnlp-servlet.file.location" value="../external/jnlp-servlet.jar"/>
 
@@ -142,7 +144,7 @@ All Rights Reserved.
     </target>
 
     <path id="cp">
-        <pathelement location="${nb_all}/core/netbeans/lib/core.jar"/>
+        <pathelement location="${core.dir}/core/core.jar"/>
         <pathelement location="${jnlp-api.file.location}"/>
         <pathelement location="${nb_all}/web/external/servlet-2.3.jar"/>
     </path>
