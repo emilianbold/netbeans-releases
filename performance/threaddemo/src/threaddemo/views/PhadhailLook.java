@@ -120,15 +120,18 @@ final class PhadhailLook extends DefaultLook {
         }
         
         private PhadhailWrapper(Phadhail ph, Look l, InstanceContent c) {
-            // XXX currently there is nothing lighter-weight than AbstractLookup
+            // XXX currently there is nothing lighter-weight than AbstractLookup: #32203
             super(ph, l, new AbstractLookup(c));
             this.c = c;
             c.add(ED_KEY, this);
             ph.addPhadhailListener(this);
+            //System.err.println("Created " + this);
+            //Thread.dumpStack();
         }
         
         protected void unregister() {
             ((Phadhail)getRepresentedObject()).removePhadhailListener(this);
+            //System.err.println("Disposed of " + this);
         }
         
         public Object convert(Object obj) {
@@ -166,6 +169,10 @@ final class PhadhailLook extends DefaultLook {
         public void nameChanged(PhadhailNameEvent ev) {
             fireNameChange(ev.getOldName(), ev.getNewName());
             fireDisplayNameChange(ev.getOldName(), ev.getNewName());
+        }
+        
+        public String toString() {
+            return "PhadhailWrapper<" + getRepresentedObject() + ">";
         }
         
     }
