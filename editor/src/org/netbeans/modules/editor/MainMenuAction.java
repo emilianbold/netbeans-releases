@@ -40,6 +40,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
+import org.openide.awt.Mnemonics;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
@@ -164,6 +165,7 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
         public ShowToolBarAction(){
             super();
             SHOW_TOOLBAR_MENU = new JCheckBoxMenuItem(getMenuItemText(), BLANK_ICON);
+            Mnemonics.setLocalizedText(SHOW_TOOLBAR_MENU, getMenuItemText());
             setMenu();
         }
         
@@ -171,7 +173,7 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
             setDelegate(getActionByName(ExtKit.toggleToolbarAction));
             SHOW_TOOLBAR_MENU.setAction(this);
             SHOW_TOOLBAR_MENU.setState(isToolbarVisible());
-            SHOW_TOOLBAR_MENU.setText(getMenuItemText());
+            Mnemonics.setLocalizedText(SHOW_TOOLBAR_MENU, getMenuItemText());
             SHOW_TOOLBAR_MENU.setIcon(BLANK_ICON);
             SHOW_TOOLBAR_MENU.setEnabled(ShowToolBarAction.isMainMenuActionEnabled());
             addAccelerators(getDelegate(), SHOW_TOOLBAR_MENU, Utilities.getFocusedComponent());
@@ -201,7 +203,8 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
         
         public ShowLineNumbersAction(){
             super();
-            SHOW_LINE_MENU  = new JCheckBoxMenuItem(getMenuItemText(), BLANK_ICON);        
+            SHOW_LINE_MENU  = new JCheckBoxMenuItem(getMenuItemText(), BLANK_ICON);
+            Mnemonics.setLocalizedText(SHOW_LINE_MENU, getMenuItemText() );
             setMenu();
         }
         
@@ -210,7 +213,7 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
             SHOW_LINE_MENU.setAction(this);
             
             SHOW_LINE_MENU.setState(isLineNumbersVisible());
-            SHOW_LINE_MENU.setText(getMenuItemText());
+            Mnemonics.setLocalizedText(SHOW_LINE_MENU, getMenuItemText());
             SHOW_LINE_MENU.setIcon(BLANK_ICON);
             SHOW_LINE_MENU.setEnabled(ShowLineNumbersAction.isMainMenuActionEnabled());
             
@@ -246,6 +249,7 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
         public GoToSourceAction(){
             super();
             GOTO_SOURCE_MENU = new JMenuItem(getMenuItemText(), BLANK_ICON);        
+            Mnemonics.setLocalizedText(GOTO_SOURCE_MENU, getMenuItemText());
             setMenu();
         }
         
@@ -265,7 +269,7 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
             GOTO_SOURCE_MENU.setAction(this);            
             if (MainMenuAction.isMainMenuActionEnabled() || kit == null){
                 GOTO_SOURCE_MENU.setEnabled(false);                    
-                GOTO_SOURCE_MENU.setText(txt);
+                Mnemonics.setLocalizedText(GOTO_SOURCE_MENU, txt);
                 GOTO_SOURCE_MENU.setIcon(BLANK_ICON);
             }
 
@@ -273,12 +277,12 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
             if (action instanceof BaseAction && kit instanceof JavaKit){
                 GOTO_SOURCE_MENU.setEnabled(true);
                 GOTO_SOURCE_MENU.setAction(this);
-                GOTO_SOURCE_MENU.setText(txt);
+                Mnemonics.setLocalizedText(GOTO_SOURCE_MENU, txt);
                 GOTO_SOURCE_MENU.setIcon(BLANK_ICON);
                 addAccelerators(getDelegate(), GOTO_SOURCE_MENU, Utilities.getFocusedComponent());
             }else{
                 GOTO_SOURCE_MENU.setEnabled(false);
-                GOTO_SOURCE_MENU.setText(txt);
+                Mnemonics.setLocalizedText(GOTO_SOURCE_MENU, txt);
                 GOTO_SOURCE_MENU.setIcon(BLANK_ICON);
             }            
         }
@@ -292,7 +296,8 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
 
         public GoToSuperAction(){
             super();
-            GOTO_SUPER_MENU = new JMenuItem(getMenuItemText(), BLANK_ICON);        
+            GOTO_SUPER_MENU = new JMenuItem(getMenuItemText(), BLANK_ICON);  
+            Mnemonics.setLocalizedText(GOTO_SUPER_MENU, getMenuItemText());
             setMenu();
         }
         
@@ -312,19 +317,19 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
             GOTO_SUPER_MENU.setAction(this);            
             if (MainMenuAction.isMainMenuActionEnabled() || kit == null){
                 GOTO_SUPER_MENU.setEnabled(false);                    
-                GOTO_SUPER_MENU.setText(txt);
+                Mnemonics.setLocalizedText(GOTO_SUPER_MENU, txt);
                 GOTO_SUPER_MENU.setIcon(BLANK_ICON);
             }
 
             Action action = getDelegate();
             if (action instanceof BaseAction && kit instanceof JavaKit){
                 GOTO_SUPER_MENU.setEnabled(true);
-                GOTO_SUPER_MENU.setText(txt);
+                Mnemonics.setLocalizedText(GOTO_SUPER_MENU, txt);
                 GOTO_SUPER_MENU.setIcon(BLANK_ICON);
                 addAccelerators(getDelegate(), GOTO_SUPER_MENU, Utilities.getFocusedComponent());                    
             }else{
                 GOTO_SUPER_MENU.setEnabled(false);
-                GOTO_SUPER_MENU.setText(txt);
+                Mnemonics.setLocalizedText(GOTO_SUPER_MENU, txt);
                 GOTO_SUPER_MENU.setIcon(BLANK_ICON);
             }            
         }
@@ -337,6 +342,7 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
         public GoToDeclarationAction(){
             super();
             GOTO_DECL_MENU = new JMenuItem(getMenuItemText(), BLANK_ICON);        
+            Mnemonics.setLocalizedText(GOTO_DECL_MENU, getMenuItemText());
             setMenu();
         }
         
@@ -356,20 +362,19 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
             GOTO_DECL_MENU.setAction(this);
             if (MainMenuAction.isMainMenuActionEnabled() || kit == null){
                 GOTO_DECL_MENU.setEnabled(false);                    
-                GOTO_DECL_MENU.setText(txt);
+                Mnemonics.setLocalizedText(GOTO_DECL_MENU, txt);
                 GOTO_DECL_MENU.setIcon(BLANK_ICON);
             }
 
             Action action = getDelegate();
             if (action instanceof BaseAction && kit instanceof JavaKit){
                 GOTO_DECL_MENU.setEnabled(true);
-                //GOTO_DECL_MENU.setAction(this);
-                GOTO_DECL_MENU.setText(txt);
+                Mnemonics.setLocalizedText(GOTO_DECL_MENU, txt);
                 GOTO_DECL_MENU.setIcon(BLANK_ICON);
                 addAccelerators(getDelegate(), GOTO_DECL_MENU, Utilities.getFocusedComponent());                    
             }else{
                 GOTO_DECL_MENU.setEnabled(false);
-                GOTO_DECL_MENU.setText(txt);
+                Mnemonics.setLocalizedText(GOTO_DECL_MENU, txt);
                 GOTO_DECL_MENU.setIcon(BLANK_ICON);
             }            
         }
