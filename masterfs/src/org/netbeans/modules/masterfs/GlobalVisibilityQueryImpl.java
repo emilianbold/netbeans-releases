@@ -7,9 +7,10 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.masterfs;
 
 import org.netbeans.spi.queries.VisibilityQueryImplementation;
@@ -18,20 +19,17 @@ import org.openide.filesystems.FileObject;
 import org.openide.options.SystemOption;
 import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
-
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
 // XXX - one would expect this class in core but there is problem that 
 //core can't depened on project/queries at the moment 
-
 
 /**
  * 
@@ -119,6 +117,9 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation 
             }
             retVal = (ideSettings != null && mIgnoredFiles != null) ? 
                     (String) mIgnoredFiles.invoke(ideSettings, new Object[0]) : "";//NOI18N
+        } catch (ClassNotFoundException e) {
+            // OK, e.g. in a unit test.
+            ideSettings = null;
         } catch (Exception e) {
             ideSettings = null;
             ErrorManager.getDefault().notify(e);
