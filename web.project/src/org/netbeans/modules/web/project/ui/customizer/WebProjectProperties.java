@@ -16,14 +16,7 @@ package org.netbeans.modules.web.project.ui.customizer;
 import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.Map;
+import java.util.*;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -56,6 +49,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.w3c.dom.Document;
 
 /** Helper class. Defines constants for properties. Knows the proper
  *  place where to store the properties.
@@ -124,6 +118,8 @@ public class WebProjectProperties {
     private static final String PROJECT = AntProjectHelper.PROJECT_PROPERTIES_PATH;
     private static final String PRIVATE = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
     
+    private static final String PLATFORM_ANT_NAME = "platform.ant.name"; // NOI18N
+
     private static final String TAG_WEB_MODULE_LIBRARIES = "web-module-libraries"; // NOI18N
     private static final String TAG_WEB_MODULE__ADDITIONAL_LIBRARIES = "web-module-additional-libraries"; //NOI18N
 
@@ -349,7 +345,7 @@ public class WebProjectProperties {
                                     Boolean.valueOf(pi.getNewValueEncoded().equals(JavaPlatformManager.getDefault()
                                     .getDefaultPlatform()
                                     .getProperties()
-                                    .get("platform.ant.name"))); // NOI18N
+                                    .get(PLATFORM_ANT_NAME)));
                             setPlatform(defaultPlatform.booleanValue(), pi.getNewValueEncoded());
                         }
                     }
@@ -384,12 +380,6 @@ public class WebProjectProperties {
                                     if (JAVA_PLATFORM.equals(pd.name)) { // update javac.source and javac.target
                                         assert defaultPlatform != null;
                                         updateSourceLevel(defaultPlatform.booleanValue(), newValueEncoded, ep);
-                                    } else if (JAVAC_CLASSPATH.equals(pd.name)) {
-                                        writeWebLibraries(antProjectHelper, refHelper, (List) pi.getValue(),
-                                                TAG_WEB_MODULE_LIBRARIES);
-                                    } else if (WAR_CONTENT_ADDITIONAL.equals(pd.name)) {
-                                        writeWebLibraries(antProjectHelper, refHelper, (List) pi.getValue(),
-                                                TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
                                     }
                                     ep.setProperty(pd.name, newValueEncoded);
                                 }
@@ -420,7 +410,7 @@ public class WebProjectProperties {
                 if (!("j2se".equalsIgnoreCase(spec.getName()))) { // NOI18N
                     continue;
                 }
-                if (platform.equals(platforms[i].getProperties().get("platform.ant.name"))) { //NOI18N
+                if (platform.equals(platforms[i].getProperties().get(PLATFORM_ANT_NAME))) {
                     String ver = platforms[i].getSpecification().getVersion().toString();
                     ep.setProperty(JAVAC_SOURCE, ver);
                     ep.setProperty(JAVAC_TARGET, ver);
@@ -588,16 +578,12 @@ public class WebProjectProperties {
   class PropertyInfo {
         
         private PropertyDescriptor propertyDesciptor;
-        private String rawValue;
-        private String evaluatedValue;
         private Object value;
         private Object newValue;
         private String newValueEncoded;
         
         public PropertyInfo( PropertyDescriptor propertyDesciptor, String rawValue, String evaluatedValue ) {
             this.propertyDesciptor = propertyDesciptor;
-            this.rawValue = rawValue;
-            this.evaluatedValue = evaluatedValue;
             this.value = propertyDesciptor.parser.decode( rawValue, antProjectHelper, refHelper );
             this.newValue = null;
         }
@@ -727,6 +713,9 @@ public class WebProjectProperties {
     
     private static class PathParser extends PropertyParser {
         private String webLibraryElementName;
+        private static final String TAG_PATH_IN_WAR = "path-in-war"; //NOI18N
+        private static final String TAG_FILE = "file"; //NOI18N
+        private static final String TAG_LIBRARY = "library"; //NOI18N
 
         public PathParser() {
             this(null);
@@ -737,155 +726,179 @@ public class WebProjectProperties {
         }
 
         public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
-            if (raw == null) {
-                return new ArrayList ();
-            }
             Map warIncludesMap = createWarIncludesMap(antProjectHelper);
-            String pe[] = PropertyUtils.tokenizePath( raw );
-            List cpItems = new ArrayList( pe.length );
-            for( int i = 0; i < pe.length; i++ ) {
-                final String pathElement = pe[i];
-                String pathInWar = (String) warIncludesMap.get(pathElement);
-                if(pathInWar == null) {
-                    pathInWar = VisualClassPathItem.PATH_IN_WAR_NONE;
+            if (raw != null) {
+                String pe[] = PropertyUtils.tokenizePath( raw );
+                for( int i = 0; i < pe.length; i++ ) {
+                    final String pathItem = pe[i];
+                    if (!warIncludesMap.containsKey(pathItem)) {
+                        warIncludesMap.put(pathItem, VisualClassPathItem.PATH_IN_WAR_NONE);
+                    }
                 }
-                VisualClassPathItem cpItem =
-                        createVisualClassPathItem(antProjectHelper, refHelper, pathElement, pathInWar);
-                if (cpItem!=null) {
-                    cpItems.add( cpItem );
-                }
-            }            
+            }
+            List cpItems = new ArrayList(warIncludesMap.size() );
+            for (Iterator it = warIncludesMap.keySet().iterator(); it.hasNext();) {
+                String pathItem = (String) it.next();
+                String pathInWar = (String) warIncludesMap.get(pathItem);
+                cpItems.add(createVisualClassPathItem(antProjectHelper, refHelper, pathItem, pathInWar));
+            }
             return cpItems;
         }
 
-        private Map createWarIncludesMap(AntProjectHelper antProjectHelper) {
-            Map warIncludesMap = new HashMap();
+        public String encode( Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+            Element data = null;
+            Element webModuleLibs = null;
+            Document doc = null;
             if(webLibraryElementName != null) {
-                Element data = antProjectHelper.getPrimaryConfigurationData (true);
+                data = antProjectHelper.getPrimaryConfigurationData(true);
+                doc = data.getOwnerDocument();
+                webModuleLibs = (Element) data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+                                    webLibraryElementName).item(0);
+                //prevent NPE thrown from older projects
+                if (webModuleLibs == null) {
+                    webModuleLibs = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, webLibraryElementName); //NOI18N
+                    data.appendChild(webModuleLibs);
+                }
+                while (webModuleLibs.hasChildNodes()) {
+                    webModuleLibs.removeChild(webModuleLibs.getChildNodes().item(0));
+                }
+            }
+            StringBuffer sb = new StringBuffer();
+            for ( Iterator it = ((List)value).iterator(); it.hasNext(); ) {
+                VisualClassPathItem visualClassPathItem = (VisualClassPathItem)it.next();
+                String pathItem = getPathItem(visualClassPathItem, refHelper);
+                if(webLibraryElementName != null) {
+                    webModuleLibs.appendChild(createLibraryElement(doc, pathItem, visualClassPathItem));
+                }
+                //do not add applet libraries to classpath
+                if (!VisualClassPathItem.PATH_IN_WAR_APPLET.equals (visualClassPathItem.getPathInWAR ())) {
+                    sb.append(pathItem);
+                    if ( it.hasNext() ) {
+                        sb.append( File.pathSeparatorChar );
+                    }
+                }
+            }
+            if(webLibraryElementName != null) {
+                antProjectHelper.putPrimaryConfigurationData(data, true);
+            }
+            return sb.toString();
+        }
+
+        private static Element createLibraryElement(Document doc, String pathItem,
+                VisualClassPathItem visualClassPathItem) {
+            Element libraryElement = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+                    TAG_LIBRARY);
+            Element webFile = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_FILE);
+            libraryElement.appendChild(webFile);
+            webFile.appendChild(doc.createTextNode(pathItem));
+            if (visualClassPathItem.getPathInWAR() != VisualClassPathItem.PATH_IN_WAR_NONE) {
+                Element pathInWar = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+                        TAG_PATH_IN_WAR);
+                pathInWar.appendChild(doc.createTextNode(visualClassPathItem.getPathInWAR()));
+                libraryElement.appendChild(pathInWar);
+            }
+            return libraryElement;
+        }
+
+        private Map createWarIncludesMap(AntProjectHelper antProjectHelper) {
+            Map warIncludesMap = new LinkedHashMap();
+            if (webLibraryElementName != null) {
+                Element data = antProjectHelper.getPrimaryConfigurationData(true);
                 final String ns = WebProjectType.PROJECT_CONFIGURATION_NAMESPACE;
-                Element webModuleLibs = (Element) data.getElementsByTagNameNS (ns, webLibraryElementName).item (0);
-                NodeList ch = webModuleLibs.getChildNodes ();
-                for (int i = 0; i < ch.getLength (); i++) {
-                    if (ch.item (i).getNodeType () == Node.ELEMENT_NODE) {
-                        Element library = (Element) ch.item (i);
-                        NodeList pathInWarList = library.getElementsByTagNameNS (ns, "path-in-war"); //NOI18N
-                        if (pathInWarList.getLength() > 0) {
-                            Element webFile = (Element) library.getElementsByTagNameNS (ns, "file").item (0); //NOI18N
-                            warIncludesMap.put(findText (webFile), findText((Element) pathInWarList.item(0)));
-                        }
+                Element webModuleLibs = (Element) data.getElementsByTagNameNS(ns, webLibraryElementName).item(0);
+                NodeList ch = webModuleLibs.getChildNodes();
+                for (int i = 0; i < ch.getLength(); i++) {
+                    if (ch.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                        Element library = (Element) ch.item(i);
+                        Node webFile = library.getElementsByTagNameNS(ns, TAG_FILE).item(0);
+                        NodeList pathInWarElements = library.getElementsByTagNameNS(ns, TAG_PATH_IN_WAR); 
+                        warIncludesMap.put(findText(webFile), pathInWarElements.getLength() > 0 ?
+                                findText(pathInWarElements.item(0)) : VisualClassPathItem.PATH_IN_WAR_NONE);
                     }
                 }
             }
             return warIncludesMap;
         }
 
-        private VisualClassPathItem createVisualClassPathItem(AntProjectHelper antProjectHelper,
-                ReferenceHelper refHelper, String pathElement, String pathInWar) {
+        private static VisualClassPathItem createVisualClassPathItem(AntProjectHelper antProjectHelper,
+                ReferenceHelper refHelper, String pathItem, String pathInWar) {
             // First try to find out whether the item is well known classpath
             // in the J2SE project type
             for (int j = 0; j < WELL_KNOWN_PATHS.length; j++) {
                 final String[] wellKnownPath = WELL_KNOWN_PATHS[j];
-                if (wellKnownPath[0].equals(getAntPropertyName(pathElement))) {
-                    return new VisualClassPathItem(pathElement, VisualClassPathItem.TYPE_CLASSPATH, pathElement,
+                if (wellKnownPath[0].equals(getAntPropertyName(pathItem))) {
+                    return new VisualClassPathItem(pathItem, VisualClassPathItem.TYPE_CLASSPATH, pathItem,
                             wellKnownPath[1], pathInWar);
                 }
             }
-            if (pathElement.startsWith(LIBRARY_PREFIX)) {
+            if (pathItem.startsWith(LIBRARY_PREFIX)) {
                 // Library from library manager
-                // String eval = antProjectHelper.evaluate(getAntPropertyName(pathElement));
-                String eval = pathElement.substring(LIBRARY_PREFIX.length(), pathElement.lastIndexOf('.')); //NOI18N
+                // String eval = antProjectHelper.evaluate(getAntPropertyName(pathItem));
+                String eval = pathItem.substring(LIBRARY_PREFIX.length(), pathItem.lastIndexOf('.')); //NOI18N
                 Library lib = LibraryManager.getDefault().getLibrary(eval);
                 if (lib != null) {
-                    return new VisualClassPathItem(lib, VisualClassPathItem.TYPE_LIBRARY, pathElement, eval, pathInWar);
+                    return new VisualClassPathItem(lib, VisualClassPathItem.TYPE_LIBRARY, pathItem, eval, pathInWar);
                 } else {
-                    return new VisualClassPathItem(null, VisualClassPathItem.TYPE_LIBRARY, pathElement, null,
+                    return new VisualClassPathItem(null, VisualClassPathItem.TYPE_LIBRARY, pathItem, null,
                             pathInWar);
                 }
-            } else if (pathElement.startsWith(ANT_ARTIFACT_PREFIX)) {
-                AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact(pathElement);
+            } else if (pathItem.startsWith(ANT_ARTIFACT_PREFIX)) {
+                AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact(pathItem);
                 if (artifact != null) {
                     // Sub project artifact
                     String eval = artifact.getArtifactLocation().toString();
-                    return new VisualClassPathItem(artifact, VisualClassPathItem.TYPE_ARTIFACT, pathElement, eval,
+                    return new VisualClassPathItem(artifact, VisualClassPathItem.TYPE_ARTIFACT, pathItem, eval,
                             pathInWar);
                 } else {
-                    return new VisualClassPathItem(null, VisualClassPathItem.TYPE_ARTIFACT, pathElement, null,
+                    return new VisualClassPathItem(null, VisualClassPathItem.TYPE_ARTIFACT, pathItem, null,
                             pathInWar);
                 }
             } else {
                 // Standalone jar or property
                 String eval;
-                if (isAntProperty(pathElement)) {
-                    eval = antProjectHelper.getStandardPropertyEvaluator().getProperty(getAntPropertyName(pathElement));
+                if (isAntProperty(pathItem)) {
+                    eval = antProjectHelper.getStandardPropertyEvaluator().getProperty(getAntPropertyName(pathItem));
                 } else {
-                    eval = pathElement;
+                    eval = pathItem;
                 }
                 File f = (eval == null) ? null : antProjectHelper.resolveFile(eval);
-                return new VisualClassPathItem(f, VisualClassPathItem.TYPE_JAR, pathElement, eval, pathInWar);
+                return new VisualClassPathItem(f, VisualClassPathItem.TYPE_JAR, pathItem, eval, pathInWar);
             }
         }
 
-        public String encode( Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
-            
-            StringBuffer sb = new StringBuffer();
-                        
-            for ( Iterator it = ((List)value).iterator(); it.hasNext(); ) {
-                
-                VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
-                
-                //do not add applet libraries to classpath
-                if (VisualClassPathItem.PATH_IN_WAR_APPLET.equals (vcpi.getPathInWAR ()))
-                    continue;
-                
-                switch( vcpi.getType() ) {
-                                        
-                    case VisualClassPathItem.TYPE_JAR:
-                        String raw = vcpi.getRaw();
-                        if ( raw == null ) {
-                            // New file
-                            File file = (File)vcpi.getObject();
-                            // pass null as expected artifact type to always get file reference
-                            String reference = refHelper.createForeignFileReference(file, null);
-                            sb.append(reference);
-                        } else {
-                            // Existing property
-                            sb.append( raw );
-                        }
-                                                
-                        break;
-                    case VisualClassPathItem.TYPE_LIBRARY:
-                        sb.append(vcpi.getRaw());
-                        break;    
-                    case VisualClassPathItem.TYPE_ARTIFACT:
-                        if (vcpi.getObject() != null) {
-                            AntArtifact aa = (AntArtifact)vcpi.getObject();
-                            String reference = refHelper.createForeignFileReference( aa );
-                            sb.append( reference );
-                        } else {
-                            sb.append(vcpi.getRaw());
-                        }
-                        break;
-                    case VisualClassPathItem.TYPE_CLASSPATH:
-                        sb.append( vcpi.getRaw() );
-                        break;
-                }
-                
-                if ( it.hasNext() ) {
-                    sb.append( File.pathSeparatorChar );
-                }
+        private static String getPathItem(VisualClassPathItem vcpi, ReferenceHelper refHelper) {
+            switch (vcpi.getType()) {
+                case VisualClassPathItem.TYPE_JAR:
+                    String pathItem = vcpi.getRaw();
+                    if (pathItem == null) {
+                        // New file
+                        return refHelper.createForeignFileReference((File) vcpi.getObject(),
+                                JavaProjectConstants.ARTIFACT_TYPE_JAR);
+                    } else {
+                        return pathItem;
+                    }
+                case VisualClassPathItem.TYPE_ARTIFACT:
+                    if (vcpi.getObject() != null) {
+                        return refHelper.createForeignFileReference((AntArtifact) vcpi.getObject());
+                    } else {
+                        return vcpi.getRaw();
+                    }
+                case VisualClassPathItem.TYPE_LIBRARY:
+                case VisualClassPathItem.TYPE_CLASSPATH:
+                    return vcpi.getRaw();
             }
-            
-            return sb.toString();
+            assert false: "unexpected type of classpath element";
+            return null;
         }
     }
     
     /**
-     * Extract nested text from an element.
+     * Extract nested text from a node.
      * Currently does not handle coalescing text nodes, CDATA sections, etc.
-     * @param parent a parent element
+     * @param parent a parent node
      * @return the nested text, or null if none was found
      */
-    public static String findText(Element parent) {
+    private static String findText(Node parent) {
         NodeList l = parent.getChildNodes();
         for (int i = 0; i < l.getLength(); i++) {
             if (l.item(i).getNodeType() == Node.TEXT_NODE) {
@@ -899,7 +912,7 @@ public class WebProjectProperties {
     private static JavaPlatform findPlatform(String platformAntID) {
         JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();            
         for(int i = 0; i < platforms.length; i++) {
-            String normalizedName = (String)platforms[i].getProperties().get("platform.ant.name"); // NOI18N
+            String normalizedName = (String)platforms[i].getProperties().get(PLATFORM_ANT_NAME);
             if (normalizedName != null && normalizedName.equals(platformAntID)) {
                 return platforms[i];
             }
@@ -926,80 +939,9 @@ public class WebProjectProperties {
                 // correspond to platform ID. so just return it:
                 return (String)value;
             } else {
-                return (String) platforms[0].getProperties().get("platform.ant.name");  //NOI18N
+                return (String) platforms[0].getProperties().get(PLATFORM_ANT_NAME);
             }
         }
         
     }
-
-    private static void writeWebLibraries(AntProjectHelper antProjectHelper, ReferenceHelper refHelper, List value,
-            final String elementName) {
-        Element data = antProjectHelper.getPrimaryConfigurationData(true);
-        org.w3c.dom.Document doc = data.getOwnerDocument();
-        Element webModuleLibs = (Element) data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-                elementName).item(0); //NOI18N
-
-        //prevent NPE thrown from older projects
-        if (webModuleLibs == null) {
-            webModuleLibs = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, elementName); //NOI18N
-            data.appendChild(webModuleLibs);
-        }
-
-        while (webModuleLibs.hasChildNodes()) {
-            webModuleLibs.removeChild(webModuleLibs.getChildNodes().item(0));
-        }
-
-        for (Iterator it = value.iterator(); it.hasNext();) {
-            VisualClassPathItem vcpi = (VisualClassPathItem) it.next();
-            String library_tag_value = "";
-
-            //TODO: prevent NPE from CustomizerCompile - need to investigate
-            if (vcpi == null) {
-                return;
-            }
-
-            switch (vcpi.getType()) {
-                case VisualClassPathItem.TYPE_JAR:
-                    String raw = vcpi.getRaw();
-
-                    if (raw == null) {
-                        // New file
-                        File file = (File) vcpi.getObject();
-                        String reference = refHelper.createForeignFileReference(file,
-                                JavaProjectConstants.ARTIFACT_TYPE_JAR);
-                        library_tag_value = reference;
-                    } else {
-                        // Existing property
-                        library_tag_value = raw;
-                    }
-
-                    break;
-                case VisualClassPathItem.TYPE_LIBRARY:
-                    library_tag_value = vcpi.getRaw();
-                    break;
-                case VisualClassPathItem.TYPE_ARTIFACT:
-                    AntArtifact aa = (AntArtifact) vcpi.getObject();
-                    String reference = refHelper.createForeignFileReference(aa);
-                    library_tag_value = reference;
-                    break;
-                case VisualClassPathItem.TYPE_CLASSPATH:
-                    library_tag_value = vcpi.getRaw();
-                    break;
-            }
-
-            Element library = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "library"); //NOI18N
-            webModuleLibs.appendChild(library);
-            Element webFile = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "file"); //NOI18N
-            library.appendChild(webFile);
-            webFile.appendChild(doc.createTextNode(library_tag_value));
-
-            if (vcpi.getPathInWAR() != VisualClassPathItem.PATH_IN_WAR_NONE) {
-                Element pathInWar = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "path-in-war"); //NOI18N
-                pathInWar.appendChild(doc.createTextNode(vcpi.getPathInWAR()));
-                library.appendChild(pathInWar);
-            }
-        }
-        antProjectHelper.putPrimaryConfigurationData(data, true);
-    }
-
 }
