@@ -45,17 +45,17 @@ public class TreeDialog extends javax.swing.JDialog implements PropertyChangeLis
     
     /** Creates new form TreeDialog */
     public TreeDialog(TestEditorFrame parent) {
-	super(parent,false);
-	main=parent;
-	initComponents();
-	newMenu=new JMenu("New");
-	sep1=new JSeparator();
-	sep2=new JSeparator();
-	sep3=new JSeparator();
-	popups=new HashMap();
-	
-	setSize(parent.getWidth()/3,parent.getHeight());
-	setLocation(parent.getX()-getWidth(), parent.getY());
+        super(parent,false);
+        main=parent;
+        initComponents();
+        newMenu=new JMenu("New");
+        sep1=new JSeparator();
+        sep2=new JSeparator();
+        sep3=new JSeparator();
+        popups=new HashMap();
+        
+        setSize(parent.getWidth()/3,parent.getHeight());
+        setLocation(parent.getX()-getWidth(), parent.getY());
     }
     
     /** This method is called from within the constructor to
@@ -94,190 +94,190 @@ public class TreeDialog extends javax.swing.JDialog implements PropertyChangeLis
     }//GEN-END:initComponents
     
     private void mouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mouseClicked
-	// Add your handling code here:
-	if (evt.getButton() == MouseEvent.BUTTON3) {
-	    mx=evt.getX();
-	    my=evt.getY();
-	    new Thread() {
-		public void run() {
-		    TreePath[] sels=tree.getSelectionPaths();
-		    TestNodeDelegate[] selected=new TestNodeDelegate[sels.length];
-		    TestNode t,parent=null;
-		    for (int i=0;i < sels.length;i++) {
-			Object o=sels[i].getLastPathComponent();
-			selected[i]=(TestNodeDelegate)o;
-			//you couldn't have selected nodes from another parent
-			t=selected[i].getTestNode().getOwner();
-			if (parent == null) {
-			    parent=t;
-			} else {
-			    if (parent != t) {
-				selected=null;
-				break;
-			    }
-			}
-		    }
-		    generatePopup(selected);
-		    popupM.pack();
-		    popupM.show(tree,mx,my);
-		    popupM.repaint();
-		}
-	    }.start();
-	}
+        // Add your handling code here:
+        if (evt.getModifiers() == MouseEvent.BUTTON3_MASK) {
+            mx=evt.getX();
+            my=evt.getY();
+            new Thread() {
+                public void run() {
+                    TreePath[] sels=tree.getSelectionPaths();
+                    TestNodeDelegate[] selected=new TestNodeDelegate[sels.length];
+                    TestNode t,parent=null;
+                    for (int i=0;i < sels.length;i++) {
+                        Object o=sels[i].getLastPathComponent();
+                        selected[i]=(TestNodeDelegate)o;
+                        //you couldn't have selected nodes from another parent
+                        t=selected[i].getTestNode().getOwner();
+                        if (parent == null) {
+                            parent=t;
+                        } else {
+                            if (parent != t) {
+                                selected=null;
+                                break;
+                            }
+                        }
+                    }
+                    generatePopup(selected);
+                    popupM.pack();
+                    popupM.show(tree,mx,my);
+                    popupM.repaint();
+                }
+            }.start();
+        }
     }//GEN-LAST:event_mouseClicked
     
     /** Closes the dialog */
     private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_closeDialog
-	setVisible(false);
-	dispose();
+        setVisible(false);
+        dispose();
     }//GEN-LAST:event_closeDialog
     
     public void setRootContext(TestNodeDelegate root) {
-	Object rt=((DefaultTreeModel)(tree.getModel())).getRoot();
-	if (rt != null && rt instanceof TestGroupNodeDelegate) {
-	    TestNode test=((TestNodeDelegate)rt).getTestNode();
-	    if (test != null) {
-		test.removePropertyChangeListener(this);
-	    }
-	}
-	((DefaultTreeModel)(tree.getModel())).setRoot(root);
-	((DefaultTreeModel)(tree.getModel())).nodeStructureChanged(root);
-	TestNode test=root.getTestNode();
-	test.addPropertyChangeListener(this);
-	oldString=test.toString();
-	setTitle("Test ["+oldString+"]");
+        Object rt=((DefaultTreeModel)(tree.getModel())).getRoot();
+        if (rt != null && rt instanceof TestGroupNodeDelegate) {
+            TestNode test=((TestNodeDelegate)rt).getTestNode();
+            if (test != null) {
+                test.removePropertyChangeListener(this);
+            }
+        }
+        ((DefaultTreeModel)(tree.getModel())).setRoot(root);
+        ((DefaultTreeModel)(tree.getModel())).nodeStructureChanged(root);
+        TestNode test=root.getTestNode();
+        test.addPropertyChangeListener(this);
+        oldString=test.toString();
+        setTitle("Test ["+oldString+"]");
     }
     
     public void close() {
-	closeDialog(null);
+        closeDialog(null);
     }
     
     protected void generatePopup(TestNodeDelegate[] selected) {
-	popupM.removeAll();
-	if (selected == null) return;
-	//New could be only on one node
-	if (selected.length == 1) {
-	    Vector types=ActionRegistry.getDefault().getNewTypes(selected[0].getTestNode().getClass());
-	    if (types != null && types.size() > 0) {
-		popupM.add(newMenu);
-		popupM.add(sep1);
-		newMenu.removeAll();
-		TreeNodeAction act;
-		for (Iterator it=types.iterator();it.hasNext();) {
-		    act=(TreeNodeAction)(it.next());
-		    newMenu.add(getMenu(act,selected));
-		}
-	    }
-	}
-	//merged node actions (enabled)
-	Vector acts=mergeActions(selected);
-	//merged cookie actions
-	
-	Vector cooks=cookieActions(selected);
-	if (cooks != null && cooks.size() > 0) {
-	    TreeNodeAction act;
-	    for (Iterator it=cooks.iterator();it.hasNext();) {
-		act=(TreeNodeAction)(it.next());
-		popupM.add(getMenu(act,selected));
-	    }
-	    popupM.add(sep2);
-	}
-	if (acts.size() > 0) {
-	    TreeNodeAction act;
-	    for (Iterator it=acts.iterator();it.hasNext();) {
-		act=(TreeNodeAction)(it.next());
-		popupM.add(getMenu(act,selected));
-	    }
-	}
-	//Properties could be only on one node
-	if (selected.length == 1) {
-	    TreeNodeAction act=ActionsCache.getDefault().getAction(selected[0].getTestNode().getClass(),TestPropertiesAction.class);
-	    popupM.add(sep3);
-	    popupM.add(getMenu(act,selected));
-	}
+        popupM.removeAll();
+        if (selected == null) return;
+        //New could be only on one node
+        if (selected.length == 1) {
+            Vector types=ActionRegistry.getDefault().getNewTypes(selected[0].getTestNode().getClass());
+            if (types != null && types.size() > 0) {
+                popupM.add(newMenu);
+                popupM.add(sep1);
+                newMenu.removeAll();
+                TreeNodeAction act;
+                for (Iterator it=types.iterator();it.hasNext();) {
+                    act=(TreeNodeAction)(it.next());
+                    newMenu.add(getMenu(act,selected));
+                }
+            }
+        }
+        //merged node actions (enabled)
+        Vector acts=mergeActions(selected);
+        //merged cookie actions
+        
+        Vector cooks=cookieActions(selected);
+        if (cooks != null && cooks.size() > 0) {
+            TreeNodeAction act;
+            for (Iterator it=cooks.iterator();it.hasNext();) {
+                act=(TreeNodeAction)(it.next());
+                popupM.add(getMenu(act,selected));
+            }
+            popupM.add(sep2);
+        }
+        if (acts.size() > 0) {
+            TreeNodeAction act;
+            for (Iterator it=acts.iterator();it.hasNext();) {
+                act=(TreeNodeAction)(it.next());
+                popupM.add(getMenu(act,selected));
+            }
+        }
+        //Properties could be only on one node
+        if (selected.length == 1) {
+            TreeNodeAction act=ActionsCache.getDefault().getAction(selected[0].getTestNode().getClass(),TestPropertiesAction.class);
+            popupM.add(sep3);
+            popupM.add(getMenu(act,selected));
+        }
     }
     
     private Vector cookieActions(TestNodeDelegate[] selected) {
-	Set v1,v2,v3;
-	Object o,o2;
-	v2=selected[0].getTestNode().getCookieSet().keySet();
-	for(int i=1;i < selected.length;i++) {
-	    v1=selected[i].getTestNode().getCookieSet().keySet();
-	    v3=new HashSet();
-	    for (Iterator iti=v2.iterator();iti.hasNext();) {
-		o=iti.next();
-		for (Iterator it=v1.iterator();it.hasNext();) {
-		    o2=it.next();
-		    if (o.getClass().equals(o2.getClass())) {
-			v3.add(o);
-			break;
-		    }
-		}
-	    }
-	    v2=v3;
-	}
-	Vector v=new Vector();
-	for (Iterator it=v2.iterator();it.hasNext();) {
-	    v.addAll(ActionRegistry.getDefault().getActions((Class)(it.next())));
-	}
-	return v;
+        Set v1,v2,v3;
+        Object o,o2;
+        v2=selected[0].getTestNode().getCookieSet().keySet();
+        for(int i=1;i < selected.length;i++) {
+            v1=selected[i].getTestNode().getCookieSet().keySet();
+            v3=new HashSet();
+            for (Iterator iti=v2.iterator();iti.hasNext();) {
+                o=iti.next();
+                for (Iterator it=v1.iterator();it.hasNext();) {
+                    o2=it.next();
+                    if (o.getClass().equals(o2.getClass())) {
+                        v3.add(o);
+                        break;
+                    }
+                }
+            }
+            v2=v3;
+        }
+        Vector v=new Vector();
+        for (Iterator it=v2.iterator();it.hasNext();) {
+            v.addAll(ActionRegistry.getDefault().getActions((Class)(it.next())));
+        }
+        return v;
     }
     
     private Vector mergeActions(TestNodeDelegate[] selected) {
-	Vector v1,v2,v3;
-	TreeNodeAction a1,a2;
-	
-	v2=new Vector(ActionsCache.getDefault().getActions(selected[0].getTestNode().getClass()));
-	
-	for(int i=1;i < selected.length;i++) {
-	    v1=ActionsCache.getDefault().getActions(selected[i].getTestNode().getClass());
-	    v3=new Vector();
-	    for (int j=0;j < v2.size();j++) {
-		a2=(TreeNodeAction)(v2.get(j));
-		for (Iterator it=v1.iterator();it.hasNext();) {
-		    a1=(TreeNodeAction)(it.next());
-		    if (a1.getClass().equals(a2.getClass())) {
-			v3.add(a1);
-			break;
-		    }
-		}
-	    }
-	    v2=v3;
-	}
-	return v2;
+        Vector v1,v2,v3;
+        TreeNodeAction a1,a2;
+        
+        v2=new Vector(ActionsCache.getDefault().getActions(selected[0].getTestNode().getClass()));
+        
+        for(int i=1;i < selected.length;i++) {
+            v1=ActionsCache.getDefault().getActions(selected[i].getTestNode().getClass());
+            v3=new Vector();
+            for (int j=0;j < v2.size();j++) {
+                a2=(TreeNodeAction)(v2.get(j));
+                for (Iterator it=v1.iterator();it.hasNext();) {
+                    a1=(TreeNodeAction)(it.next());
+                    if (a1.getClass().equals(a2.getClass())) {
+                        v3.add(a1);
+                        break;
+                    }
+                }
+            }
+            v2=v3;
+        }
+        return v2;
     }
     
     private JMenuItem getMenu(TreeNodeAction action,TestNodeDelegate[] selected) {
-	MenuItem it=getMenu(action.getClass());
-	if (it != null) {
-	    it.performer.setSelected(selected);
-	    it.menuItem.setText(action.getName());
-	    it.menuItem.setEnabled(action.enable(selected));
-	    return it.menuItem;
-	} else {
-	    JMenuItem menu=new JMenuItem(action.getName());
-	    TreeDialog.ActionPerformer perfor=new TreeDialog.ActionPerformer(action);
-	    menu.addActionListener(perfor);
-	    menu.setToolTipText(action.getHelpCtx());
-	    menu.setText(action.getName());
-	    menu.setEnabled(action.enable(selected));
-	    it=new MenuItem(perfor,menu);
-	    registerMenu(action.getClass(),it);
-	    perfor.setSelected(selected);
-	    return menu;
-	}
+        MenuItem it=getMenu(action.getClass());
+        if (it != null) {
+            it.performer.setSelected(selected);
+            it.menuItem.setText(action.getName());
+            it.menuItem.setEnabled(action.enable(selected));
+            return it.menuItem;
+        } else {
+            JMenuItem menu=new JMenuItem(action.getName());
+            TreeDialog.ActionPerformer perfor=new TreeDialog.ActionPerformer(action);
+            menu.addActionListener(perfor);
+            menu.setToolTipText(action.getHelpCtx());
+            menu.setText(action.getName());
+            menu.setEnabled(action.enable(selected));
+            it=new MenuItem(perfor,menu);
+            registerMenu(action.getClass(),it);
+            perfor.setSelected(selected);
+            return menu;
+        }
     }
     
     private void registerMenu(Class action, MenuItem menu) {
-	popups.put(action, menu);
+        popups.put(action, menu);
     }
     
     private MenuItem getMenu(Class action) {
-	return (MenuItem)(popups.get(action));
+        return (MenuItem)(popups.get(action));
     }
     
     public TreeModel getTreeModel() {
-	return tree.getModel();
+        return tree.getModel();
     }
     
     /** This method gets called when a bound property is changed.
@@ -286,61 +286,61 @@ public class TreeDialog extends javax.swing.JDialog implements PropertyChangeLis
      *
      */
     public void propertyChange(PropertyChangeEvent evt) {
-	Object rt=((DefaultTreeModel)(tree.getModel())).getRoot();
-	if (rt != null) {
-	    TestNode test=((TestNodeDelegate)rt).getTestNode();
-	    if (test != null) {
-		if (test.toString().compareTo(oldString) != 0) {
-		    oldString=test.toString();
-		    setTitle("Test ["+oldString+"]");
-		}
-	    }
-	}
+        Object rt=((DefaultTreeModel)(tree.getModel())).getRoot();
+        if (rt != null) {
+            TestNode test=((TestNodeDelegate)rt).getTestNode();
+            if (test != null) {
+                if (test.toString().compareTo(oldString) != 0) {
+                    oldString=test.toString();
+                    setTitle("Test ["+oldString+"]");
+                }
+            }
+        }
     }
     
     static class MenuItem {
-	public ActionPerformer performer;
-	public JMenuItem menuItem;
-	
-	public MenuItem(ActionPerformer perf,JMenuItem menu) {
-	    performer=perf;
-	    menuItem=menu;
-	}
+        public ActionPerformer performer;
+        public JMenuItem menuItem;
+        
+        public MenuItem(ActionPerformer perf,JMenuItem menu) {
+            performer=perf;
+            menuItem=menu;
+        }
     }
     
     static class ActionPerformer implements ActionListener {
-	
-	TreeNodeAction action;
-	TestNodeDelegate[] selected=null;
-	
-	public ActionPerformer(TreeNodeAction act) {
-	    action=act;
-	}
-	
-	public void actionPerformed(ActionEvent ev) {
-	    new Thread() {
-		public void run() {
-		    action.performAction(selected);
-		}
-	    }.start();
-	}
-	
-	/** Getter for property selected.
-	 * @return Value of property selected.
-	 *
-	 */
-	public TestNodeDelegate[] getSelected() {
-	    return this.selected;
-	}
-	
-	/** Setter for property selected.
-	 * @param selected New value of property selected.
-	 *
-	 */
-	public void setSelected(TestNodeDelegate[] selected) {
-	    this.selected = selected;
-	}
-	
+        
+        TreeNodeAction action;
+        TestNodeDelegate[] selected=null;
+        
+        public ActionPerformer(TreeNodeAction act) {
+            action=act;
+        }
+        
+        public void actionPerformed(ActionEvent ev) {
+            new Thread() {
+                public void run() {
+                    action.performAction(selected);
+                }
+            }.start();
+        }
+        
+        /** Getter for property selected.
+         * @return Value of property selected.
+         *
+         */
+        public TestNodeDelegate[] getSelected() {
+            return this.selected;
+        }
+        
+        /** Setter for property selected.
+         * @param selected New value of property selected.
+         *
+         */
+        public void setSelected(TestNodeDelegate[] selected) {
+            this.selected = selected;
+        }
+        
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

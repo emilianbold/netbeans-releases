@@ -62,7 +62,6 @@ public class RenameDialog extends javax.swing.JDialog {
         jPanel2.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 10));
 
         renameB.setText("Rename");
-        renameB.setFocusCycleRoot(true);
         renameB.setSelected(true);
         renameB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

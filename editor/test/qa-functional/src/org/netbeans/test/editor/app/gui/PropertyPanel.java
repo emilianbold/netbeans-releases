@@ -94,8 +94,9 @@ public class PropertyPanel extends javax.swing.JPanel {
             } else if (property instanceof MultiLineStringProperty) {
                 ((JTextArea)editField).setText(property.getProperty());
             }
-            evt.setSource(this);
             if (evt != null) {
+                //            evt.setSource(this);
+                evt=new ActionEvent(this,evt.getID(),evt.getActionCommand(),evt.getModifiers());
                 dialog.buttonPressed(evt);
             }
             ((CardLayout)(getLayout())).show(this,"edit");

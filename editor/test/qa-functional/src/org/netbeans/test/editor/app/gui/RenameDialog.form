@@ -57,11 +57,7 @@
         <Component class="javax.swing.JButton" name="renameB">
           <Properties>
             <Property name="text" type="java.lang.String" value="Rename"/>
-            <Property name="focusCycleRoot" type="boolean" value="true"/>
             <Property name="selected" type="boolean" value="true"/>
-            <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-              <ComponentRef name="default"/>
-            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="renameBActionPerformed"/>
@@ -70,9 +66,6 @@
         <Component class="javax.swing.JButton" name="stornoB">
           <Properties>
             <Property name="text" type="java.lang.String" value="Storno"/>
-            <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-              <ComponentRef name="default"/>
-            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="stornoBActionPerformed"/>

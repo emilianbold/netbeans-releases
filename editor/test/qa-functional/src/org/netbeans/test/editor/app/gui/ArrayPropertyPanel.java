@@ -7,6 +7,7 @@
 package org.netbeans.test.editor.app.gui;
 
 import java.awt.CardLayout;
+import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
 import org.netbeans.test.editor.app.core.properties.ArrayProperty;
 
@@ -36,8 +37,9 @@ public class ArrayPropertyPanel extends PropertyPanel {
             oldText=button.getText();
             ((JComboBox)editField).setSelectedItem(property.getProperty());
             ((CardLayout)(getLayout())).show(this,"edit");
-            evt.setSource(this);
             if (evt != null) {
+                //            evt.setSource(this);
+                evt=new ActionEvent(this,evt.getID(),evt.getActionCommand(),evt.getModifiers());
                 dialog.buttonPressed(evt);
             }
         }
