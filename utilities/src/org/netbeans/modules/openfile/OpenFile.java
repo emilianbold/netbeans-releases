@@ -16,6 +16,7 @@ package com.netbeans.developer.modules.openfile;
 import java.beans.*;
 import java.io.*;
 import java.net.InetAddress;
+import java.text.MessageFormat;
 import java.util.*;
 
 import java.awt.*;
@@ -33,6 +34,7 @@ import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /** Opens files when requested. Main functionality.
 *
@@ -73,7 +75,7 @@ class OpenFile extends Object {
           } else {
             view.view ();
           }
-          TopManager.getDefault ().setStatusText ("");
+          TopManager.getDefault ().setStatusText (""); // NOI18N
           if (wait) {
             // Could look for a SaveCookie just to see, but need not.
             Server.waitFor (obj, addr, port);
@@ -115,7 +117,7 @@ class OpenFile extends Object {
     String fileName = f.toString ();
     String fileNameUpper = fileName.toUpperCase ();
     // Handle ZIP/JAR files by mounting and displaying.
-    if (fileNameUpper.endsWith (".ZIP") || fileNameUpper.endsWith (".JAR")) {
+    if (fileNameUpper.endsWith (".ZIP") || fileNameUpper.endsWith (".JAR")) { // NOI18N
       JarFileSystem jfs = new JarFileSystem ();
       try {
         jfs.setJarFile (f);
@@ -153,7 +155,7 @@ class OpenFile extends Object {
         if (fileNameUpper.startsWith (rootName)) {
           // the filesystem can contain the file
           String resource = fileName.substring (rootName.length ()).replace (File.separatorChar, '/');
-          if (resource.startsWith ("/"))
+          if (resource.startsWith ("/")) // NOI18N
             resource = resource.substring (1);
           else if (resource.length () > 0)
             continue;           // e.g. root = /tmp/foo but file = /tmp/foobar
@@ -163,12 +165,13 @@ class OpenFile extends Object {
           } else {
             // Most likely, file was just created and is not yet in folder cache. Refresh each segment.
             FileObject currentPoint = fs.getRoot ();
-            StringTokenizer resourceTok = new StringTokenizer (resource, "/");
-            String currentResource = "";
+            StringTokenizer resourceTok = new StringTokenizer (resource, "/"); // NOI18N
+            String currentResource = ""; // NOI18N
             while (resourceTok.hasMoreTokens ()) {
               if (currentPoint == null || currentPoint.isData ()) {
-                // [PENDING] use bundles
-                TopManager.getDefault ().notify (new NotifyDescriptor.Message ("Did not find " + fileName + " in " + root + " (non-directory path component?)"));
+                TopManager.getDefault ().notify (new NotifyDescriptor.Message
+                  (MessageFormat.format (NbBundle.getBundle (OpenFile.class).getString("MSG_no_file_in_root_nondir_comp"),
+                                         new Object[] { fileName, root })));
                 return null;
               } else {
                 currentPoint.refresh ();
@@ -180,8 +183,9 @@ class OpenFile extends Object {
             if (currentPoint != null && currentPoint.isData ()) {
               return currentPoint;
             } else {
-              // [PENDING] use bundles
-              TopManager.getDefault ().notify (new NotifyDescriptor.Message ("Did not find " + fileName + " in " + root));
+              TopManager.getDefault ().notify (new NotifyDescriptor.Message
+                (MessageFormat.format (NbBundle.getBundle (OpenFile.class).getString ("MSG_no_file_in_root"),
+                                       new Object[] { fileName, root })));
               return null;
             }
           }
@@ -194,7 +198,7 @@ class OpenFile extends Object {
     // a .java is used and its package decl
     // indicates a real dir
     boolean packageKnown = false;
-    if (fileNameUpper.endsWith (".JAVA")) {
+    if (fileNameUpper.endsWith (".JAVA")) { // NOI18N
       // Try to find the package name and then infer a directory to mount.
       BufferedReader rd = null;
       try {
@@ -207,14 +211,14 @@ class OpenFile extends Object {
             break;
           }
           // Will not handle package statements broken across lines, oh well.
-          if (line.indexOf ("package") == -1) continue;
-          StringTokenizer tok = new StringTokenizer (line, " \t;");
+          if (line.indexOf ("package") == -1) continue; // NOI18N
+          StringTokenizer tok = new StringTokenizer (line, " \t;"); // NOI18N
           boolean gotPackage = false;
           while (tok.hasMoreTokens ()) {
             String theTok = tok.nextToken ();
             if (gotPackage) {
               // Hopefully the package name, but first a sanity check...
-              StringTokenizer ptok = new StringTokenizer (theTok, ".");
+              StringTokenizer ptok = new StringTokenizer (theTok, "."); // NOI18N
               boolean ok = ptok.hasMoreTokens ();
               while (ptok.hasMoreTokens ()) {
                 String component = ptok.nextToken ();
@@ -242,9 +246,9 @@ class OpenFile extends Object {
                 gotPackage = false;
                 continue;
               }
-            } else if (theTok.equals ("package")) {
+            } else if (theTok.equals ("package")) { // NOI18N
               gotPackage = true;
-            } else if (theTok.equals ("{")) {
+            } else if (theTok.equals ("{")) { // NOI18N
               // Most likely we can stop if hit opening brace of class def.
               // Usually people leave spaces around it.
               packageKnown = true; // valid end of search, default pkg
@@ -268,13 +272,13 @@ class OpenFile extends Object {
     }
     String prefix = pkg.replace ('.', File.separatorChar);
     File dir = f.getParentFile ();
-    String pkgtouse = "";
-    while (! pkg.equals ("") && dir != null) {
+    String pkgtouse = ""; // NOI18N
+    while (! pkg.equals ("") && dir != null) { // NOI18N
       int lastdot = pkg.lastIndexOf ('.');
       String trypkg;
       String trypart;
       if (lastdot == -1) {
-        trypkg = "";
+        trypkg = ""; // NOI18N
         trypart = pkg;
       } else {
         trypkg = pkg.substring (0, lastdot);
@@ -284,10 +288,10 @@ class OpenFile extends Object {
         // Worked so far.
         dir = dir.getParentFile ();
         pkg = trypkg;
-        if (pkgtouse.equals (""))
+        if (pkgtouse.equals ("")) // NOI18N
           pkgtouse = trypart;
         else
-          pkgtouse = trypart + "." + pkgtouse;
+          pkgtouse = trypart + "." + pkgtouse; // NOI18N
       } else {
         // No dice.
         packageKnown = false;
@@ -299,7 +303,7 @@ class OpenFile extends Object {
     File[] dirToMount = new File[] { null };
     String[] mountPackage = new String[] { null };
     int pkgLevel = 0;
-    if (! pkgtouse.equals ("")) {
+    if (! pkgtouse.equals ("")) { // NOI18N
       int pos = -1;
       do {
         pos = pkgtouse.indexOf ('.', pos + 1);
@@ -322,11 +326,13 @@ class OpenFile extends Object {
     }
     Repository repo = TopManager.getDefault ().getRepository ();
     if (repo.findFileSystem (fs.getSystemName ()) != null) {
-      TopManager.getDefault ().notify (new NotifyDescriptor.Message (fs.getSystemName () + " was already mounted??"));
+      TopManager.getDefault ().notify (new NotifyDescriptor.Message
+        (MessageFormat.format (NbBundle.getBundle (OpenFile.class).getString ("MSG_wasAlreadyMounted"),
+                               new Object[] { fs.getSystemName () })));
       return null;
     }
     repo.addFileSystem (fs);
-    return fs.findResource (mountPackage[0].replace ('.', '/') + (mountPackage[0].equals ("") ? "" : "/") + f.getName ());
+    return fs.findResource (mountPackage[0].replace ('.', '/') + (mountPackage[0].equals ("") ? "" : "/") + f.getName ()); // NOI18N
   }
   
   /** Ask what dir to mount to access a given file.
@@ -341,14 +347,14 @@ class OpenFile extends Object {
     final Vector dirs = new Vector (); // list of mountable dir names; Vector<File>
     final Vector pkgs = new Vector (); // list of resulting package names; Vector<String>
     Vector pkgdisplays = new Vector (); // list of displayable package entries; Vector<String>
-    String pkg = "";
+    String pkg = ""; // NOI18N
     for (File dir = f.getParentFile (); dir != null; dir = dir.getParentFile ()) {
       dirs.add (dir);
       pkgs.add (pkg);
-      pkgdisplays.add (pkg.equals ("") ?
+      pkgdisplays.add (pkg.equals ("") ? // NOI18N
                        SettingsBeanInfo.getString ("LBL_packageWillBeDefault") :
                        SettingsBeanInfo.getString ("LBL_packageWillBe", pkg));
-      if (! pkg.equals ("")) pkg = "." + pkg;
+      if (! pkg.equals ("")) pkg = "." + pkg; // NOI18N
       pkg = dir.getName () + pkg;
     }
 
@@ -358,7 +364,7 @@ class OpenFile extends Object {
       Object yesOption = new JButton (SettingsBeanInfo.getString ("LBL_quickMountYes"));
       Object noOption = new JButton (SettingsBeanInfo.getString ("LBL_quickMountNo"));
       Object result = TopManager.getDefault ().notify (new NotifyDescriptor
-         ("".equals (guessed) ?
+         ("".equals (guessed) ? // NOI18N
             SettingsBeanInfo.getString ("MSG_quickMountDefault", f.getName ()) :
             SettingsBeanInfo.getString ("MSG_quickMount", f.getName (), guessed), // message
           SettingsBeanInfo.getString ("LBL_quickMountTitle"), // title
@@ -380,7 +386,7 @@ class OpenFile extends Object {
     
     JTextArea textArea = new JTextArea ();
     textArea.setBackground (Color.lightGray);
-    textArea.setFont (new Font ("SansSerif", Font.PLAIN, 11));
+    textArea.setFont (new Font ("SansSerif", Font.PLAIN, 11)); // NOI18N
     textArea.setText (SettingsBeanInfo.getString (pkgLevel == -1 ? "TXT_whereMountNoSuggest" : "TXT_whereMountSuggest", f.getName ()));
     textArea.setEditable (false);
     textArea.setLineWrap (true);
@@ -395,7 +401,7 @@ class OpenFile extends Object {
     
     // Name of mount point:
     final JLabel label = new JLabel ();
-    label.setFont (new Font ("Monospaced", Font.PLAIN, 12));
+    label.setFont (new Font ("Monospaced", Font.PLAIN, 12)); // NOI18N
     panel.add (label, BorderLayout.SOUTH);
     panel.setPreferredSize (new Dimension (450, 300));
 
@@ -440,7 +446,7 @@ class OpenFile extends Object {
   private static void updateLabelEtcFromList (JLabel label, JList list, Vector dirs, JButton okButton) {
     int idx = list.getSelectedIndex ();
     if (idx == -1) {
-      label.setText (" ");
+      label.setText (" "); // NOI18N
       okButton.setEnabled (false);
     } else {
       File dir = (File) dirs.elementAt (idx);
@@ -453,6 +459,7 @@ class OpenFile extends Object {
 
 /*
  * Log
+ *  29   Gandalf   1.28        1/12/00  Jesse Glick     I18N.
  *  28   Gandalf   1.27        1/7/00   Jesse Glick     -line option for line 
  *       numbers.
  *  27   Gandalf   1.26        1/6/00   Jan Jancura     Icon removed from 

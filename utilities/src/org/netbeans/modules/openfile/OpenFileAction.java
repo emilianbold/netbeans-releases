@@ -34,7 +34,7 @@ static final long serialVersionUID =-3424129228987962529L;
   }
   
   protected String iconResource () {
-    return "/com/netbeans/developer/modules/openfile/openFile.gif";
+    return "/com/netbeans/developer/modules/openfile/openFile.gif"; // NOI18N
   }
   
   /** Last-used directory. */
@@ -54,6 +54,7 @@ static final long serialVersionUID =-3424129228987962529L;
 
 /*
  * Log
+ *  11   Gandalf   1.10        1/12/00  Jesse Glick     I18N.
  *  10   Gandalf   1.9         1/7/00   Jesse Glick     -line option for line 
  *       numbers.
  *  9    Gandalf   1.8         11/5/99  Jesse Glick     Context help jumbo 
