@@ -52,8 +52,6 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.util.*;
 import org.openide.util.io.*;
 import org.openide.nodes.*;
-import org.openide.execution.ExecutionEngine;
-import org.openide.compiler.CompilationEngine;
 import org.openide.util.lookup.*;
 
 import org.netbeans.core.actions.*;
@@ -64,8 +62,6 @@ import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleManager;
 import org.netbeans.core.modules.ModuleSystem;
 import org.netbeans.core.windows.util.WindowUtils;
-import org.openide.xml.EntityCatalog;
-import org.openide.loaders.Environment;
 
 /** This class is a TopManager for Corona environment.
 *
@@ -111,21 +107,11 @@ public abstract class NbTopManager extends TopManager {
     /** default repository */
     private Repository repository;
 
-    /** ExecutionMachine */
-    private ExecutionEngine execEngine;
-
     /** error manager */
     private static ErrorManager defaultErrorManager;
 
-    /** CompilationMachine */
-    private CompilationEngine compilationEngine;
-
     /** WWW browser window. */
     private HtmlBrowser.BrowserComponent htmlViewer;
-
-
-    /** nodeOperation */
-    private NodeOperation nodeOperation;
 
     /** ProjectOperation main variable */
     static NbProjectOperation projectOperation;
@@ -229,6 +215,7 @@ public abstract class NbTopManager extends TopManager {
     public NbTopManager() {
         instanceContent = new InstanceContent ();
         instanceLookup = new AbstractLookup (instanceContent);
+        register (ClassLoaderConvertor.CLASSLOADER, ClassLoaderConvertor.CLASSLOADER);
     }
 
     /** Getter for instance of this manager.
@@ -306,31 +293,6 @@ public abstract class NbTopManager extends TopManager {
     // Implementation of methods from TopManager
     //
 
-    /** Default repository
-    */
-    public Repository getRepository () {
-        if (defaultRepository != null) {
-            return defaultRepository;
-        }
-
-        synchronized (this) {
-            if (defaultRepository == null) {
-                defaultRepository = new Repository (createDefaultFileSystem ());
-            }
-            return defaultRepository;
-        }
-    }
-
-
-    /** Accessor to actions manager.
-    */
-    public ActionManager getActionManager () {
-        return ModuleActions.INSTANCE;
-    }
-
-    /** Default repository.
-    *
-
     /** Shows a specified HelpCtx in IDE's help window.
     * @param helpCtx thehelp to be shown
     */
@@ -391,12 +353,6 @@ public abstract class NbTopManager extends TopManager {
         });
     }
 
-    /** Interesting places.
-    */
-    public Places getPlaces () {
-        return NbPlaces.getDefault ();
-    }
-
     /** Opens specified project. Asks to save the previously opened project.
     * @exception IOException if error occurs accessing the project
     * @exception UserCancelException if the selection is interrupted by the user
@@ -410,18 +366,6 @@ public abstract class NbTopManager extends TopManager {
         }
     }
 
-    /** Getter of the default Environment.Provider
-     */
-    public Environment.Provider getEnvironmentProvider () {
-        return org.netbeans.core.xml.XML.getEnvironmentProvider ();
-    }
-
-    /** Getter of the EntityCatalog of the system.
-     */
-    public EntityCatalog getEntityCatalog () {
-        return org.netbeans.core.xml.XML.getEntityCatalog ();
-    }
-    
     /** Get the default exception manager for the IDE. It can be used to rafine
     * handling of exception and the way they are presented to the user.
     * @deprecated Do not call directly! Use ErrorManager.getDefault. This method
@@ -451,44 +395,6 @@ public abstract class NbTopManager extends TopManager {
             //System.err.println("Creating NbErrorManager");
         }
         return defaultErrorManager;
-    }
-
-    /** Accessor for window manager implementation. Used in core.lookup.TMLookup
-     * for window manager isntance creation. 
-     * Delegates to windows.WindowManagerImpl.getInstance()
-    */
-    public WindowManager getWindowManager () {
-        return WindowManagerImpl.getInstance();
-    }
-
-    /** @return default root of keyboard shortcuts */
-    public Keymap getGlobalKeymap () {
-        if (shortcutContext != null) {
-            return shortcutContext;
-        }
-
-        synchronized (this) {
-            if (shortcutContext == null) {
-                shortcutContext = new NbKeymap ();
-            }
-        }
-        return shortcutContext;
-    }
-
-    /** Returns global clipboard for the whole system. Must be redefined
-    * in subclasses.
-    *
-    * @return the clipboard for whole system
-    */
-    public ExClipboard getClipboard () {
-        return NbClipboard.getDefault();
-    }
-
-    /** Returns pool of options.
-    * @return option pool
-    */
-    public ControlPanel getControlPanel () {
-        return NbControlPanel.getDefault ();
     }
 
     /** Notifies user by a dialog.
@@ -598,12 +504,6 @@ public abstract class NbTopManager extends TopManager {
         res.allClasses();
     }
 
-    /** Services.
-    */
-    public org.openide.ServiceType.Registry getServices () {
-        return Services.getDefault ();
-    }
-
     /** Print output writer.
     * @return default system output printer
     */
@@ -617,23 +517,6 @@ public abstract class NbTopManager extends TopManager {
     */
     public InputOutput getIO(String name, boolean newIO) {
         return OutputTabTerm.getIO (name, newIO);
-    }
-
-
-
-    /** Getter for node operations.
-    */
-    public NodeOperation getNodeOperation () {
-        if (nodeOperation != null) {
-            return nodeOperation;
-        }
-
-        synchronized (this) {
-            if (nodeOperation == null) {
-                nodeOperation = new NbNodeOperation ();
-            }
-        }
-        return nodeOperation;
     }
 
     /** saves all opened objects */
@@ -716,22 +599,6 @@ public abstract class NbTopManager extends TopManager {
     */    
     public static boolean showExitDialog (Node[] activatedNodes) {
         return ExitDialog.showDialog(activatedNodes);
-    }
-
-    /** Provides access to data loader pool.
-    * @return the loader pool for the system
-    */
-    public DataLoaderPool getLoaderPool () {
-        if (loaderPool != null) {
-            return loaderPool;
-        }
-
-        synchronized (this) {
-            if (loaderPool == null) {
-                loaderPool = LoaderPoolNode.getNbLoaderPool ();
-            }
-        }
-        return loaderPool;
     }
     
     /** Get the module subsystem. */
@@ -948,24 +815,15 @@ public abstract class NbTopManager extends TopManager {
     /** The default lookup for the system.
      */
     public static final class Lkp extends ProxyLookup {
-
-        private static final boolean suppressMetaInfServicesLookup = !Boolean.getBoolean("netbeans.lookup.usemetainfservices"); // NOI18N
-
         /** Initialize the lookup to delegate to NbTopManager.
         */
         public Lkp () {
-            super (suppressMetaInfServicesLookup ? 
-                   new Lookup[] {
-                       new org.netbeans.core.lookup.TMLookup(),
-                       createInitialErrorManagerLookup(),
-                   } :
-                   new Lookup[] {
-                       new org.netbeans.core.lookup.TMLookup(),
+            super (new Lookup[] {
+                       Lookup.EMPTY,
                        // #14722: pay attention also to META-INF/services/class.Name resources:
                        createMetaInfServicesLookup(false),
                        createInitialErrorManagerLookup(),
                    });
-            //System.err.println("creating default lookup; suppressMetaInfServicesLookup=" + suppressMetaInfServicesLookup);
         }
         
         /** @param modules if true, use module classloader, else not */
@@ -1020,27 +878,18 @@ public abstract class NbTopManager extends TopManager {
                 if (lookup instanceof Lkp) {
                     Lkp lkp = (Lkp)lookup;
                     Lookup[] old = lkp.getLookups();
-                    if (old.length != (suppressMetaInfServicesLookup ? 5 : 6)) throw new IllegalStateException();
-                    Lookup[] nue = suppressMetaInfServicesLookup ?
-                        new Lookup[] {
-                            old[0], // TMLookup
-                            // do NOT include initialErrorManagerLookup; this is now replaced by the layer entry
-                            // Services/Hidden/org-netbeans-core-default-error-manager.instance
-                            old[2], // NbTM.instanceLookup
-                            old[3], // FolderLookup
-                            old[4], // moduleLookup
-                        } :
-                        new Lookup[] {
-                            old[0], // TMLookup
-                            // maybe replace it now with module-based lookup, if PROP_ENABLED_MODULES
-                            // has not taken care of it yet
-                            propModulesReceived > 0 ? old[1] : createMetaInfServicesLookup(true),
-                            // do NOT include initialErrorManagerLookup; this is now replaced by the layer entry
-                            // Services/Hidden/org-netbeans-core-default-error-manager.instance
-                            old[3], // NbTM.instanceLookup
-                            old[4], // FolderLookup
-                            old[5], // moduleLookup
-                        };
+                    if (old.length !=  6) throw new IllegalStateException();
+                    Lookup[] nue = new Lookup[] {
+                        old[0], // TMLookup
+                        // maybe replace it now with module-based lookup, if PROP_ENABLED_MODULES
+                        // has not taken care of it yet
+                        propModulesReceived > 0 ? old[1] : createMetaInfServicesLookup(true),
+                        // do NOT include initialErrorManagerLookup; this is now replaced by the layer entry
+                        // Services/Hidden/org-netbeans-core-default-error-manager.instance
+                        old[3], // NbTM.instanceLookup
+                        old[4], // FolderLookup
+                        old[5], // moduleLookup
+                    };
                     lkp.setLookups(nue);
                 }
             }
@@ -1081,13 +930,8 @@ public abstract class NbTopManager extends TopManager {
         /** Called when a system classloader changes.
          */
         public static final void systemClassLoaderChanged () {
-            Lookup lookup = Lookup.getDefault ();
-            if (lookup instanceof Lkp) {
-                lookup = ((Lkp)lookup).getLookups ()[0];
-                if (lookup instanceof org.netbeans.core.lookup.TMLookup) {
-                    ((org.netbeans.core.lookup.TMLookup)lookup).systemClassLoaderChanged ();
-                }
-            }
+            NbTopManager.get ().unregister (ClassLoaderConvertor.CLASSLOADER, ClassLoaderConvertor.CLASSLOADER);
+            NbTopManager.get ().register (ClassLoaderConvertor.CLASSLOADER, ClassLoaderConvertor.CLASSLOADER);
         }
 
         /** When all module classes are accessible thru systemClassLoader, this
@@ -1119,36 +963,23 @@ public abstract class NbTopManager extends TopManager {
                     }
                     
                     // extend the lookup
-                    Lookup[] arr = suppressMetaInfServicesLookup ?
-                        new Lookup[] {
-                            lkp.getLookups ()[0], // TMLookup
-                            // Include initialErrorManagerLookup provisionally, until the folder lookup
-                            // is actually ready and usable
-                            lkp.getLookups()[1], // initialErrorManagerLookup
-                            NbTopManager.get ().getInstanceLookup (),
-                            nue,
-                            NbTopManager.get().getModuleSystem().getManager().getModuleLookup(),
-                        } :
-                        new Lookup[] {
-                            lkp.getLookups ()[0], // TMLookup
-                            lkp.getLookups()[1], // metaInfServicesLookup; still keep classpath one till later...
-                            // Include initialErrorManagerLookup provisionally, until the folder lookup
-                            // is actually ready and usable
-                            lkp.getLookups()[2], // initialErrorManagerLookup
-                            NbTopManager.get ().getInstanceLookup (),
-                            nue,
-                            NbTopManager.get().getModuleSystem().getManager().getModuleLookup(),
-                        };
+                    Lookup[] arr = new Lookup[] {
+                        lkp.getLookups ()[0], // TMLookup
+                        lkp.getLookups()[1], // metaInfServicesLookup; still keep classpath one till later...
+                        // Include initialErrorManagerLookup provisionally, until the folder lookup
+                        // is actually ready and usable
+                        lkp.getLookups()[2], // initialErrorManagerLookup
+                        NbTopManager.get ().getInstanceLookup (),
+                        nue,
+                        NbTopManager.get().getModuleSystem().getManager().getModuleLookup(),
+                    };
 		    StartLog.logProgress ("prepared other Lookups"); // NOI18N
 
                     lkp.setLookups (arr);
 		    StartLog.logProgress ("Lookups set"); // NOI18N
                     
-                    if (!suppressMetaInfServicesLookup) {
-                        // Also listen for changes in modules, as META-INF/services/ would change:
-                        get().getModuleSystem().getManager().addPropertyChangeListener(new ConvertorListener());
-                    }
-
+                    // Also listen for changes in modules, as META-INF/services/ would change:
+                    get().getModuleSystem().getManager().addPropertyChangeListener(new ConvertorListener());
             }
 	    StartLog.logEnd ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
         }
@@ -1162,4 +993,29 @@ public abstract class NbTopManager extends TopManager {
         }
          */
     }
+    
+    
+    /** Special item for system class loader (which is dynamic).
+     */
+    private final static class ClassLoaderConvertor
+    implements InstanceContent.Convertor {
+        public static final ClassLoaderConvertor CLASSLOADER = new ClassLoaderConvertor ();
+        
+        public Object convert(Object obj) {
+            return NbTopManager.get ().systemClassLoader();
+        }
+        
+        public String displayName(Object obj) {
+            return id (obj);
+        }
+        
+        public String id(Object obj) {
+            return "TM[systemClassLoader"; // NOI18N
+        }
+        
+        public Class type(Object obj) {
+            return ClassLoader.class;
+        }
+        
+    } // end of ClassLoaderConvertor
 }

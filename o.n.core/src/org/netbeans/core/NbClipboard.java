@@ -28,7 +28,7 @@ import org.openide.util.Lookup.Result;
 import org.openide.util.Lookup.Template;
 import org.openide.util.Utilities;
 
-class NbClipboard extends ExClipboard implements LookupListener, AWTEventListener
+public final class NbClipboard extends ExClipboard implements LookupListener, AWTEventListener
 {
     private static NbClipboard nbClipboard;
 
@@ -37,7 +37,7 @@ class NbClipboard extends ExClipboard implements LookupListener, AWTEventListene
     private Lookup.Result result;
     private boolean slowSystemClipboard;
     
-    private NbClipboard() {
+    public NbClipboard() {
         super("NBClipboard");   // NOI18N
         systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
@@ -54,12 +54,6 @@ class NbClipboard extends ExClipboard implements LookupListener, AWTEventListene
             Toolkit.getDefaultToolkit().addAWTEventListener(
                 this, AWTEvent.WINDOW_EVENT_MASK);
         }
-    }
-
-    static synchronized NbClipboard getDefault() {
-        if (nbClipboard == null)
-            nbClipboard = new NbClipboard();
-        return nbClipboard;
     }
     
     protected synchronized Convertor[] getConvertors () {

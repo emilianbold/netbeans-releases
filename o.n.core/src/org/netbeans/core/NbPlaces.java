@@ -46,15 +46,13 @@ public final class NbPlaces extends Object implements Places, Places.Nodes, Plac
     
     /** No instance outside this class.
     */
-    private NbPlaces() {
+    public NbPlaces() {
     }
-
-    /** @return the default implementation of places */
-    public static NbPlaces getDefault () {
-        if (places == null) {
-            places = new NbPlaces ();
-        }
-        return places;
+    
+    /** Getter for default instance.
+     */
+    public static Places getDefault () {
+        return (Places)org.openide.util.Lookup.getDefault ().lookup (Places.class);
     }
 
     /** Interesting places for nodes.

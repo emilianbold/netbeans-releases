@@ -59,10 +59,6 @@ public final class LoaderPoolNode extends AbstractNode {
     private static final ErrorManager err =
         ErrorManager.getDefault ().getInstance ("org.netbeans.core.LoaderPoolNode"); // NOI18N
 
-    /** The only instance of the NbLoaderPool class in the system.
-    * This value is returned from the getNbLoaderPool() static method */
-    private static LoaderPoolNode.NbLoaderPool loaderPool;
-
     private static LoaderChildren myChildren;
 
     /** Array of DataLoader objects */
@@ -359,7 +355,7 @@ public final class LoaderPoolNode extends AbstractNode {
         oos.writeObject (null);
 
         // Write out system loaders now:
-        Enumeration e = loaderPool.allLoaders ();
+        Enumeration e = getNbLoaderPool ().allLoaders ();
         while (e.hasMoreElements ()) {
             DataLoader l = (DataLoader) e.nextElement ();
             if (loaders.contains (l)) continue;
@@ -542,8 +538,8 @@ public final class LoaderPoolNode extends AbstractNode {
         // clear the cache of loaders
         loadersArray = null;
 
-        if (loaderPool != null && installationFinished) {
-            loaderPool.superFireChangeEvent();
+        if (getNbLoaderPool () != null && installationFinished) {
+            getNbLoaderPool ().superFireChangeEvent();
             if (myChildren != null) {
                 myChildren.update ();
             }
@@ -595,9 +591,7 @@ public final class LoaderPoolNode extends AbstractNode {
     * @return loader pool instance
     */
     public static NbLoaderPool getNbLoaderPool () {
-        if (loaderPool == null)
-            loaderPool = new LoaderPoolNode.NbLoaderPool();
-        return loaderPool;
+        return (NbLoaderPool)Lookup.getDefault ().lookup (DataLoaderPool.class);
     }
 
 
@@ -693,7 +687,7 @@ public final class LoaderPoolNode extends AbstractNode {
         public void update () {
             List _loaders = new LinkedList ();
             // Should not need an explicit synch, NBLP.loaders() does this:
-            Enumeration e = loaderPool.allLoaders ();
+            Enumeration e = getNbLoaderPool ().allLoaders ();
             while (e.hasMoreElements ()) _loaders.add (e.nextElement ());
             setKeys (_loaders);
 
@@ -702,8 +696,8 @@ public final class LoaderPoolNode extends AbstractNode {
                 DataLoader l = (DataLoader)it.next ();
 
                 // so the pool is there only once
-                l.removePropertyChangeListener (loaderPool);
-                l.addPropertyChangeListener (loaderPool);
+                l.removePropertyChangeListener (getNbLoaderPool ());
+                l.addPropertyChangeListener (getNbLoaderPool ());
             }
         }
 

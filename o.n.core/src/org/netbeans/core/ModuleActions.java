@@ -62,7 +62,11 @@ public class ModuleActions extends ActionManager
     static final ModuleActions INSTANCE = new ModuleActions ();
 
     static {
-        module = INSTANCE;
+        module = PROP_RUNNING_ACTIONS;
+    }
+    
+    public static ModuleActions getDefault () {
+        return (ModuleActions)org.openide.util.Lookup.getDefault ().lookup (ActionManager.class);
     }
 
     /** Array with all activated actions.
@@ -175,7 +179,7 @@ public class ModuleActions extends ActionManager
         module = m;
         if (module == null) {
             // well known value
-            module = INSTANCE;
+            module = PROP_RUNNING_ACTIONS;
         }
     }
 

@@ -55,7 +55,6 @@ import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.projects.ModuleLayeredFileSystem;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleSystem;
-import org.netbeans.core.xml.XML;
 import org.netbeans.core.execution.ExecutionSettings;
 import org.netbeans.core.execution.TopSecurityManager;
 
@@ -589,7 +588,7 @@ public class NonGui extends NbTopManager implements Runnable {
         //-------------------------------------------------------------------------------------------------------
         // setup wizard
         /*try {
-            if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+                if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
                         org.netbeans.core.ui.SetupWizard.showSetupWizard(false, getSplash());

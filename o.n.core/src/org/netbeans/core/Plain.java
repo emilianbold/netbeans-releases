@@ -23,7 +23,6 @@ import org.openide.filesystems.FileSystem;
 import org.netbeans.core.modules.ModuleSystem;
 import org.netbeans.core.projects.ModuleLayeredFileSystem;
 import org.netbeans.core.xml.NbSAXParserFactoryImpl;
-import org.netbeans.core.xml.XML;
 
 /** Default implementation of TopManager that is used when 
 * the system is used without initialization.

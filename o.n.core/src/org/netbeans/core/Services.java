@@ -42,9 +42,6 @@ public final class Services extends ServiceType.Registry implements LookupListen
     /** serial */
     static final long serialVersionUID =-7558069607307508327L;
     
-    /** instance */
-    private static final Services INSTANCE = new Services ();
-    
     /** Result containing all current services. */
     private Lookup.Result allTypes;
     
@@ -53,10 +50,10 @@ public final class Services extends ServiceType.Registry implements LookupListen
     
     /** Default instance */
     public static Services getDefault () {
-        return INSTANCE;
+        return (Services)Lookup.getDefault ().lookup (org.openide.ServiceType.Registry.class);
     }
     
-    private Services() {
+    public Services() {
         name2Service = new HashMap();
         fillMap(name2Service);
     }
@@ -369,11 +366,11 @@ public final class Services extends ServiceType.Registry implements LookupListen
             }
         }
 
-        INSTANCE.setServiceTypes (ll);
+        getDefault ().setServiceTypes (ll);
     }
 
     /** Only one instance */
     private Object readResolve () {
-        return INSTANCE;
+        return getDefault ();
     }
 }

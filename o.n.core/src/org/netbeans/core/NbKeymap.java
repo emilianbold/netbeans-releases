@@ -23,7 +23,7 @@ import javax.swing.text.Keymap;
 *
 * @author Dafe Simonek
 */
-final class NbKeymap implements Keymap {
+public final class NbKeymap implements Keymap {
     /** Name of this keymap */
     String name;
     /** Parent keymap */
@@ -37,7 +37,7 @@ final class NbKeymap implements Keymap {
 
     /** Default constructor
     */
-    NbKeymap() {
+    public NbKeymap() {
         this("Default", null); // NOI18N
     }
 
