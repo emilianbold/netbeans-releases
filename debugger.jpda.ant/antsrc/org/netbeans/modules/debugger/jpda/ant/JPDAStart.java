@@ -54,26 +54,22 @@ public class JPDAStart extends Task implements Runnable {
      * Target VM should use this address and connect to it
      */
     private String addressProperty;
-
     /** Default transport is socket*/
     private String transport = "dt_socket";
-        
     /** Name which will represent this debugging session in debugger UI.
      * If known in advance it should be name of the app which will be debugged.
      */
     private String name;
-    
     /** Explicit sourcepath of the debugged process. */
     private Path sourcepath = null;
-    
     /** Explicit classpath of the debugged process. */
     private Path classpath = null;
-    
     /** Explicit bootclasspath of the debugged process. */
     private Path bootclasspath = null;
-    
     private Object [] lock = null; 
     
+
+    // properties ..............................................................
     
     public void setAddressProperty (String propertyName) {
         this.addressProperty = propertyName;
@@ -116,6 +112,9 @@ public class JPDAStart extends Task implements Runnable {
             throw new BuildException ("Only one sourcepath subelement is supported");
         sourcepath = path;
     }
+
+    
+    // main methods ............................................................
 
     public void execute () throws BuildException {
 
@@ -205,6 +204,9 @@ public class JPDAStart extends Task implements Runnable {
             }
         }
     } // run ()
+
+    
+    // support methods .........................................................
 
     private void debug (String msg) {
         if (!verbose) return;

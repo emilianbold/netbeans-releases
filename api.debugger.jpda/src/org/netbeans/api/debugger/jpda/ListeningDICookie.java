@@ -172,9 +172,8 @@ public final class ListeningDICookie extends AbstractDICookie {
         if (pn == null) return -1;
         try {
             return Integer.parseInt (pn);
-        }
-        catch (NumberFormatException e) {
-            return 0;
+        } catch (NumberFormatException e) {
+            return -1;
         }
     }
 
@@ -196,13 +195,10 @@ public final class ListeningDICookie extends AbstractDICookie {
      */
     public VirtualMachine getVirtualMachine () throws IOException,
     IllegalConnectorArgumentsException {
-        try
-        {
+        try {
             return listeningConnector.accept (args);
-        }
-        finally
-        {
-            listeningConnector.stopListening(args);
+        } finally {
+            listeningConnector.stopListening (args);
         }
     }
 }
