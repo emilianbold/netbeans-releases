@@ -167,7 +167,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
 
         //#34155 - is this already instantiated SystemOption?
         boolean recreate = false;
-        if (instance.getCachedInstance() != null) {
+        if (instance != null && instance.getCachedInstance() != null) {
             if (instance.getCachedInstance() instanceof org.openide.options.SystemOption) {
                 recreate = true;
             }
