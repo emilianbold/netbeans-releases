@@ -120,6 +120,11 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
             </folder>
         </folder>
     </folder>
+    <folder name="Shortcuts">
+        <file name="CA-N.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.testtools.generator.NodeGeneratorAction"/>
+	</file>
+    </folder>
     <folder name="Toolbars">
         <folder name="Jemmy Support">
                 <file name="org-netbeans-modules-testtools-generator-NodeGeneratorAction.instance"/>
