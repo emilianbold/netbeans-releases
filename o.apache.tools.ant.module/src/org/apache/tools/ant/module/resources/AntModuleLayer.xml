@@ -48,7 +48,24 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntShortcut.html"/>
       </file>
     </folder>
+    <!-- Service templates -->
+    <folder name="Services">
+      <folder name="CompilerType">
+        <file name="AntCompiler.settings" url="AntCompiler.settings">
+	  <attr name="template" boolvalue="true"/>
+	</file>
+        <file name="IndirectAntCompiler.settings" url="IndirectAntCompiler.settings">
+	  <attr name="template" boolvalue="true"/>
+        </file>
+      </folder>
+      <folder name="Executor">
+        <file name="AntExecutor.settings" url="AntExecutor.settings">
+	  <attr name="template" boolvalue="true"/>
+        </file>
+      </folder>
+    </folder>
   </folder>
+
   <!-- To make the module nicer to debug, list the cookies it provides. -->
   <folder name="Services">
     <file name="AntSettings.settings" url="AntSettings.settings"/>
