@@ -27,12 +27,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
-import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -40,6 +36,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -167,7 +164,7 @@ public class WebFreeFormActionProvider implements ActionProvider {
         //show the result
         jumpToBinding(ActionProvider.COMMAND_DEBUG);
         jumpToBuildScript(GENERAL_SCRIPT_PATH, DEBUG_TARGET);
-        
+        openFile(propertiesFile);
     }
     
     /**
@@ -594,6 +591,25 @@ public class WebFreeFormActionProvider implements ActionProvider {
                             ErrorManager.WARNING, e + " [file=" + file + " match=" + match + " line=" + line + "]"); // NOI18N
                 lines.getLineSet().getCurrent(0).show(Line.SHOW_GOTO);
             }
+        }
+    }
+    
+    private void openFile(String path) {
+        FileObject file = helper.getProjectDirectory().getFileObject(path);
+        if (file == null)
+            return;
+        
+        DataObject fileDO;
+        try {
+            fileDO = DataObject.find(file);
+        }
+        catch (DataObjectNotFoundException e) {
+            throw new AssertionError(e);
+        }
+        
+        EditCookie edit = (EditCookie)fileDO.getCookie(EditCookie.class);
+        if (edit != null) {
+            edit.edit();
         }
     }
 
