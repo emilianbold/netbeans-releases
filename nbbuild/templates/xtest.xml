@@ -74,4 +74,11 @@ Microsystems, Inc. All Rights Reserved.
     	<echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
     </target>
     
+    <!-- This target runs main method of given class in IDE's JVM. 
+         It is available only when apisupport module is installed and only for 
+         functional tests. -->
+    <target name="internal-execution" depends="buildtests">
+        <ant antfile="build-qa-functional.xml" target="internal-execution"/>
+    </target>
+
 </project>
