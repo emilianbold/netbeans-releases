@@ -84,6 +84,9 @@ public class Preprocess extends MatchingTask {
             " file(s) from directory " + this.src + " to " + this.dest
         );
         
+        // make sure the target directory exists
+        dest.mkdirs();
+        
 
         java.util.Map map = new java.util.HashMap ();
         map.putAll (getProject ().getUserProperties ());
