@@ -165,7 +165,6 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
     
     //used for notifying the parsing thread (to start the parsing)
     void setEditorOpened(boolean state) {
-        System.out.println("[parsing] set editor opened = " + state);
         opened = state;
         if(opened) {
             synchronized (openedLock) {
@@ -249,7 +248,6 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
             //wait with the parsing until an editor pane is opened
             try {
                 if(!opened) {
-                    System.out.println("[parsing] waiting on editor to open");
                     synchronized(TagLibParseSupport.this.openedLock) {
                         TagLibParseSupport.this.openedLock.wait();
                         
@@ -258,7 +256,6 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                         //time interval, so the thread doesn't slow down the document showing.
                         Thread.currentThread().sleep(100);
                     }
-                    System.out.println("[parsing] starting");
                 }
             }catch(InterruptedException e) { }
             
