@@ -72,7 +72,7 @@ public class ConnectAction extends DatabaseAction
 					}
 					
 					// Update option
-					
+/*					
 					DatabaseConnection con = new DatabaseConnection(drvurl, dburl, user, null);
 					Vector cons = RootNode.getOption().getConnections();
 					int idx = cons.indexOf(con);
@@ -87,6 +87,7 @@ public class ConnectAction extends DatabaseAction
 							con.setRememberPassword(false);
 						}
 					}
+*/
 				} else return;
 			}
 
