@@ -97,6 +97,21 @@ Microsystems, Inc. All Rights Reserved.
         </testset>      
     </testbag>
     
+    <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
+    <!-- (either on cmd line or in the script) to explicitly define which test       -->
+    <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
+    <testbag testattribs="code,empty" executor="code" name="testbag_empty" resultsprocessor="unit">
+        <testset dir="unit/src"/>
+    </testbag>
+
+    <testbag testattribs="code,dev" executor="code" name="testbag_dev" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <!-- Add your own code tests -->
+            </patternset>
+        </testset>
+    </testbag>
+    
     <executor name="ide" antfile="build.xml" target="runidetest"/>
     <executor name="code" antfile="build.xml" target="runcodetest"/>
     
