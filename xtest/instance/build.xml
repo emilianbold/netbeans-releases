@@ -74,6 +74,11 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="runtests" depends="configuration,localresults-clean"
             description="Main target for running tests according to config and creating report.">
+
+        <mkdir dir="${xtest.results}"/>
+        <getResultsDirs testRunDirProperty="xtest.results.testrun.dir"/>
+        <testruninfo outFile="${xtest.results.testrun.dir}/xmlresults/testrun.xml"
+            config="${xtest.config}" name="${xtest.instance.name}"/>
     
         <antcall target="executor">
             <param name="target.name" value="runtest-helper"/>
@@ -208,10 +213,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="executor">
-        <mkdir dir="${xtest.results}"/>
-        <getResultsDirs testRunDirProperty="xtest.results.testrun.dir"/>
-        <testruninfo outFile="${xtest.results.testrun.dir}/xmlresults/testrun.xml"
-            config="${xtest.config}" name="${xtest.instance.name}"/>
         <xtest-runner targetname="${target.name}"
                       targetParamModule="xtest.module"
                       targetParamTesttype="xtest.testtype"
