@@ -315,6 +315,8 @@ class HandleLayer extends JPanel
 
             if (MouseUtils.isRightMouseButton(e)) {
                 if (componentDragger != null) {
+                    componentDragger = null;
+                    repaint();
                     return;
                 }
 
@@ -647,7 +649,10 @@ class HandleLayer extends JPanel
             if (selectedComponents.size() == 0)
                 return;
 
-            if (componentDragger == null) {
+            if (componentDragger == null && lastLeftButtonPressedPoint != null) {
+                Point hotspot = lastLeftButtonPressedPoint;
+                lastLeftButtonPressedPoint = null;
+                
                 List selComps = new ArrayList(selectedComponents.size());
                 Iterator iter = selectedComponents.iterator();
                 while (iter.hasNext()) {
@@ -681,7 +686,7 @@ class HandleLayer extends JPanel
                     HandleLayer.this,
                     (RADVisualComponent[]) selComps.toArray(
                         new RADVisualComponent[selComps.size()]),
-                    lastLeftButtonPressedPoint);
+                    hotspot);
             }
             componentDragger.mouseDragged(e.getPoint());
         }

@@ -52,8 +52,10 @@ class FormLAF
                 return act.run();
             }
             finally {
-                if (restoreAfter)
+                if (restoreAfter) {
                     useIDELookAndFeel();
+                    lastLAFName = null;
+                }
             }
         }
     }
