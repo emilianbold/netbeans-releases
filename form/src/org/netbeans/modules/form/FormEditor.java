@@ -171,9 +171,8 @@ final public class FormEditor extends Object {
   }
 
   public static void defaultComponentInit (RADVisualComponent radComp) {
-    System.out.println("Default Component Init: "+radComp.getName ());
     Component comp = radComp.getComponent ();
-    String varName = comp.getName ();
+    String varName = radComp.getName ();
     String propName = null;
     Object propValue = null;
     if (comp instanceof Button) {
@@ -207,9 +206,7 @@ final public class FormEditor extends Object {
       }
     }
     else if (comp instanceof JLabel) {
-      System.out.println("FormEditor.java:213");;
       if ("".equals (((JLabel)comp).getText ())) {
-        System.out.println("FormEditor.java:215");;
         propName = "text";
         propValue = varName;
       }
@@ -237,9 +234,8 @@ final public class FormEditor extends Object {
     if (propName != null) {
       Node.Property prop = radComp.getPropertyByName (propName);
       if (prop != null) {
-        try {System.out.println("FormEditor.java:243");;
+        try {
           prop.setValue (propValue);
-          System.out.println("FormEditor.java:245");;
         } catch (IllegalAccessException e) {
           // never mind, ignore
         } catch (java.lang.reflect.InvocationTargetException e) {
@@ -453,7 +449,7 @@ final public class FormEditor extends Object {
     }
 
     public void focusForm (FormManager2 formManager) {
-      System.out.println("Focus Form: "+formManager);
+      //System.out.println("Focus Form: "+formManager);
       this.formManager = formManager;
       if (formManager == null) {
         getExplorerManager ().setRootContext (emptyInspectorNode);
@@ -590,6 +586,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  12   Gandalf   1.11        5/16/99  Ian Formanek    
  *  11   Gandalf   1.10        5/15/99  Ian Formanek    
  *  10   Gandalf   1.9         5/15/99  Ian Formanek    
  *  9    Gandalf   1.8         5/14/99  Ian Formanek    

@@ -489,7 +489,6 @@ public class JavaCodeGenerator extends CodeGenerator {
       return false;
 
     synchronized (GEN_LOCK) {
-      System.out.println("Change event handler: "+handlerName+" text: "+bodyText);
       sec.setHeader (getEventHandlerHeader (handlerName, paramTypes));
       sec.setBody (getEventHandlerBody (handlerName, paramTypes, bodyText));
       sec.setBottom (getEventHandlerFooter (handlerName, paramTypes));
@@ -574,7 +573,6 @@ public class JavaCodeGenerator extends CodeGenerator {
     }
 
     synchronized (GEN_LOCK) {
-      System.out.println("Rename event handler: "+newHandlerName);
       sec.setHeader (getEventHandlerHeader (newHandlerName, paramTypes));
       sec.setBottom (getEventHandlerFooter (newHandlerName, paramTypes));
       try {
@@ -688,6 +686,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  14   Gandalf   1.13        5/16/99  Ian Formanek    
  *  13   Gandalf   1.12        5/15/99  Ian Formanek    
  *  12   Gandalf   1.11        5/15/99  Ian Formanek    
  *  11   Gandalf   1.10        5/14/99  Ian Formanek    

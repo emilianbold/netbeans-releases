@@ -14,6 +14,7 @@
 package com.netbeans.developer.modules.loaders.form;
 
 import com.netbeans.ide.actions.*;
+import com.netbeans.ide.cookies.SaveCookie;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.ide.util.actions.SystemAction;
@@ -119,6 +120,20 @@ public class RADComponentNode extends AbstractNode implements FormNodeCookie {
     component.getFormManager ().deleteComponent (component);
     super.destroy ();
   }
+
+  /** Get a cookie from the node.
+  * Uses the cookie set as determined by {@link #getCookieSet}.
+  *
+  * @param type the representation class
+  * @return the cookie or <code>null</code>
+  */
+  public Node.Cookie getCookie (Class type) {
+    if (SaveCookie.class.equals (type)) {
+      return component.getFormManager ().getFormObject ().getCookie (SaveCookie.class);
+    }
+    return super.getCookie (type);
+  }
+
 // -----------------------------------------------------------------------------
 // FormNodeCookie implementation
   
@@ -130,6 +145,7 @@ public class RADComponentNode extends AbstractNode implements FormNodeCookie {
 
 /*
  * Log
+ *  7    Gandalf   1.6         5/16/99  Ian Formanek    
  *  6    Gandalf   1.5         5/15/99  Ian Formanek    
  *  5    Gandalf   1.4         5/14/99  Ian Formanek    
  *  4    Gandalf   1.3         5/12/99  Ian Formanek    

@@ -350,39 +350,11 @@ public class FormUtils extends Object {
     }
   }
   
-// -----------------------------------------------------------------------------
-// Safe Serialization
-
-  public static void writeSafely (ObjectOutput oo, Object obj)
-  throws IOException {
-    ByteArrayOutputStream bos = new ByteArrayOutputStream (200);
-    ObjectOutputStream oos = new ObjectOutputStream (bos);
-    oos.writeObject (obj);
-    oos.flush ();
-    bos.close ();
-
-    oo.writeInt (bos.size ());
-    oo.write (bos.toByteArray ());
-  }
-
-  public static Object readSafely (ObjectInput oi)
-  throws IOException, ClassNotFoundException {
-    int size = oi.readInt ();
-    byte[] byteArray = new byte [size];
-    oi.readFully (byteArray, 0, size);
-
-    ByteArrayInputStream bis = new ByteArrayInputStream (byteArray);
-    ObjectInputStream ois = new ObjectInputStream (bis);
-    Object obj = ois.readObject ();
-    bis.close ();
-
-    return obj;
-  }
-
 }
 
 /*
  * Log
+ *  12   Gandalf   1.11        5/16/99  Ian Formanek    
  *  11   Gandalf   1.10        5/15/99  Ian Formanek    
  *  10   Gandalf   1.9         5/15/99  Ian Formanek    
  *  9    Gandalf   1.8         5/13/99  Ian Formanek    

@@ -139,11 +139,10 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       if (perMan.canLoadForm (formObject)) {
         formManager  = perMan.loadForm (formObject);
         if (formManager == null) {
+          return false;
           // [PENDING] - solve the failure
         }
-        System.out.println("FormEditorSupport.java:132");;
         formManager.initialize ();
-        System.out.println("FormEditorSupport.java:134");;
         
         // create form hierarchy node and add it to SourceChildren
         SourceChildren sc = (SourceChildren)formObject.getNodeDelegate ().getChildren ();
@@ -196,7 +195,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       if (!formLoaded)
         if (!loadForm ()) return;
     }
-    System.out.println("FormEditorSupport.java:169");;
     getFormTopComponent ().open ();
     getFormTopComponent ().requestFocus ();
   }
@@ -205,6 +203,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  15   Gandalf   1.14        5/16/99  Ian Formanek    
  *  14   Gandalf   1.13        5/15/99  Ian Formanek    
  *  13   Gandalf   1.12        5/12/99  Ian Formanek    
  *  12   Gandalf   1.11        5/11/99  Ian Formanek    Build 318 version
