@@ -17,22 +17,22 @@ Microsystems, Inc. All Rights Reserved.
 <!--- 
   MIME resolver description root element.
   <p>
-  <tt>PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN"</tt>
+  <samp>PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN"</samp>
   </p>
 -->
 <!ELEMENT MIME-resolver (file)+ >
 
 
 <!--
-  Plugin rules entities:
+  Plugin rule entities:
 -->
 <!ENTITY % xml-rules-component PUBLIC "-//NetBeans//DTD MIME Resolver XML Rules 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-xml-component-1_0.dtd">
 %xml-rules-component;
 
 <!--
-  Update this entity after you plugin new component.
-  Update also public ID version.
-  You must manage back compatability.
+  Update this entity after you plug in a new component.
+  Update also the public ID version.
+  You must maintain backwards compatibility.
 -->
 <!ENTITY % components "(xml-rule)?">
 
@@ -42,18 +42,18 @@ Microsystems, Inc. All Rights Reserved.
 <!--- 
   A file (resource) represents the MIME resolver input.
   The resource is tested on attributes obtained from lower layers (OS) such
-  as extension, header bytes and wrapping <tt>FileObject</tt> attributes.
-  Arbitrary of them must match to proceed to <tt>resolver</tt> element.
+  as extension, header bytes and wrapping <code>FileObject</code> attributes.
+  Some of them must match to proceed to the <code>resolver</code> element.
   <p>
   Implementation Note: 
-  Lower level MIME type is obtained by FileUtil.getMIMEType(). It can not be 
-  retrieved by FileObject.getMIMEType call to avoid recursion. A better way
-  how to reach MIME type as assigned by OS may be instroduced in future.
+  Lower level MIME type is obtained by <code>FileUtil.getMIMEType()</code>. It may not be 
+  retrieved by a call to <code>FileObject.getMIMEType</code> to avoid recursion. A better way
+  to determine MIME type as assigned by the OS may be introduced in the future.
   </p>
   <p>
   Implementation Note: 
-  All other test are performed by calling approptiate methods at FileObject
-  so there is danger of recursion if these calls <tt>this.getMIMEType()</tt>.
+  All other tests are performed by calling appropriate methods on <code>FileObject</code>
+  so there is a danger of recursion if these call <code>this.getMIMEType()</code>.
   </p>
 -->
 <!ELEMENT file ((ext | mime | magic | fattr)+, (resolver | exit)) >
@@ -72,19 +72,18 @@ Microsystems, Inc. All Rights Reserved.
 <!ATTLIST mime name CDATA #REQUIRED>
 
 <!--- 
-  Look at first bytes of file and compare them for full match.
-  <p>
-  E.g. <tt>$lt;magic hex="0aFF00"/></tt>
-  </p>
+  Look at initial bytes of the file and test for a complete match.
+  E.g. <samp>&lt;magic hex="0aFF00"/&gt;</samp>
 -->
 <!ELEMENT magic EMPTY>
 <!ATTLIST magic hex CDATA #REQUIRED>
 
 <!---
-  Test on OpenIDE FileObject attributes. Matching attribute it tested on
-  its <tt>text</tt> value obtained by <code>toString()</code> call.
+  Test on <code>FileObject</code> attributes. Matching attributes are converted
+  to strings via <code>Object.toString()</code> and compared to the <code>text</code>
+  attribute.
   <p>
-  FileObject attributes can be used for out-of-band tagging of standard documents.
+  <code>FileObject</code> attributes can be used for out-of-band tagging of standard documents.
   </p>
 -->
 <!ELEMENT fattr EMPTY>
@@ -92,15 +91,15 @@ Microsystems, Inc. All Rights Reserved.
 <!ATTLIST fattr text CDATA #REQUIRED>
 
 <!---
-  It may apply additional rules based on resource content.
-  <tt>mime</tt> element value is returned. Use reserved value of <tt>null</tt>
-  fast indicating that not interested in such files (== <tt>&lt;exit/></tt>).
+  You may apply additional rules based on resource content.
+  The <code>mime</code> element value is returned. Use the reserved value of <code>null</code>
+  to indicate you are not interested in such files (same as <samp>&lt;exit/&gt;</samp>).
 -->
 <!ELEMENT resolver %components;>
 <!ATTLIST resolver mime CDATA #REQUIRED>
 
 <!--- 
   Declares that this file is not recognized by this resolver. 
-  A shortcut for <tt>&lt;resolver mime="null"/></tt>.
+  A shortcut for <samp>&lt;resolver mime="null"/&gt;</samp>.
 -->
 <!ELEMENT exit EMPTY>

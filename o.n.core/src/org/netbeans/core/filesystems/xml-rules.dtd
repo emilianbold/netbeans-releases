@@ -14,51 +14,51 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <!---
-  MIME component checking XML resource header allowing to test matching
-  XML constructs: PI, DOCTYPE and root element (start tag).
+  MIME component checking XML resource header, permitting matches against
+  XML constructs: processing instructions, document type declarations, and root element (start tag).
   <p>
-  <tt>PUBLIC "-//NetBeans//DTD MIME Resolver XML Rules 1.0//EN"</tt>
+  <samp>PUBLIC "-//NetBeans//DTD MIME Resolver XML Rules 1.0//EN"</samp>
   </p>
   It should work well for:
-  <ul>
-  <li>Well-formed document type detection</li>
-  <p>Using: PIs, root element name and root element attributes.</p>
-  <li>DTD Constrained document detection</li>
-  <p>Using: PIs and DOCTYPE public IDs.</p>
-  <li>NS Constarined documents</li>
-  <p>Using: PIs and root element namespaces.</p>
-  </ul>
+  <dl>
+  <dt>Well-formed document type detection</dt>
+  <dd>Using: PIs, root element name and root element attributes.</dd>
+  <dt>DTD-constrained document detection</dt>
+  <dd>Using: PIs and DOCTYPE public IDs.</dd>
+  <dt>NS-constrained documents</dt>
+  <dd>Using: PIs and root element namespaces.</dd>
+  </dl>
 -->
 <!ELEMENT xml-rule (pi*, doctype?, element?)>
 
 <!---
-  PI can be tested on target and pseudo attributes.
+  Processing instructions can be tested on target and pseudo-attributes.
   <p>
   It should be used for in-band tagging that is specified by some
-  accepted spec. For NetBeans specifics tagging of third party standards is 
-  recommended off-band tagging such as FileObject attributes.
+  accepted specification. For NetBeans-specific tagging of third party standards it is
+  recommended to use out-of-band tagging such as <code>FileObject</code> attributes.
   </p>
 -->
 <!ELEMENT pi (attr*) >
 <!ATTLIST pi target CDATA #REQUIRED>
 
 <!---
-  Match one of DOCTYPE's public ID.
-  Use <tt>public-id</tt> subelements mutually exclusive with the attribute.
+  Match one of the DOCTYPE's public IDs.
+  Use of <code>public-id</code> subelements is mutually exclusive with the attribute.
 -->
 <!ELEMENT doctype (public-id*) >
 <!ATTLIST doctype public-id CDATA #IMPLIED>
 
 <!---
-  Public ID is checked for full match.
+  A public ID is checked for an exact match.
 -->
 <!ELEMENT public-id EMPTY>
 <!ATTLIST public-id id CDATA #REQUIRED>
 
-<!--
-  This temlate match element name. Namespace <tt>ns</tt> attribute
-  or elements presence combines with <tt>name</tt> containing local element name 
-  otherwise <tt>name</tt> contains full element name (QName). One of namespaces
+<!---
+  Match root element name. Namespace <code>ns</code> attribute
+  or presence of element combines with <code>name</code> containing local element name,
+  otherwise <code>name</code> contains the full element name ("QName"). One of the namespaces
   must match.
 -->
 <!ELEMENT element (ns*, attr*)>
@@ -66,21 +66,28 @@ Microsystems, Inc. All Rights Reserved.
 <!ATTLIST element name CDATA #IMPLIED>
 
 <!---
-  Test namespace character by character.
+  Test namespace equality (exact match).
 -->
 <!ELEMENT ns EMPTY>
 <!ATTLIST ns ns CDATA #REQUIRED>
 
 
+<!--
+XXX unclear:
+    <element name="root"><attr name="ns" text="http://..."/><attr name="localname"/></element>
+or
+    <element ns="http://..." name="root"><attr name="localname"/></element>
+?
+-->
 <!---
-  Element attribute template or PI pseudo attribute template.
+  Element attribute template, also used for pseudo-attributes in processing instructions.
   <p>
-  <tt>name</tt> attribute contains full element name (QName) until
-  reserved attribute <tt>ns</tt> for namespace URI is used then
-  <tt>name</tt> attribute contains just local element name. 
+  <code>name</code> attribute contains the full element name (QName), unless
+  reserved attribute <code>ns</code> for namespace URI is used, in which case
+  the <code>name</code> attribute contains just the local element name. 
   </p>
-  If specified <tt>text</tt> then attribute normalized text must
-  equal to its actual value.
+  If <code>text</code> is specified then the attribute's normalized text must
+  exactly match the specified text, otherwise the attribute just needs to be present.
 -->
 <!ELEMENT attr EMPTY>
 <!ATTLIST attr name CDATA #REQUIRED>
