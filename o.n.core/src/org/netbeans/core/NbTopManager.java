@@ -96,6 +96,7 @@ public class NbTopManager extends TopManager {
   /** Constructs a new manager.
   */
   NbTopManager() {
+    System.out.println("iwefjiwejf");
     change = new PropertyChangeSupport (this);
   }
 
@@ -370,12 +371,19 @@ public class NbTopManager extends TopManager {
     // notify user that everything is done
     TopManager.getDefault().setStatusText(
       NbBundle.getBundle (NbTopManager.class).getString ("MSG_AllSaved"));
+    System.out.println("Test...");
+    try {
+      java.io.FileOutputStream fos = new java.io.FileOutputStream (new java.io.File ("D:\\Out.txt"));
+      new java.io.IOException ().printStackTrace(new java.io.PrintStream (fos));
+    } catch (Exception e) {
+      
+    }
   }    
 
   
 
   /** The ide is left after calling this method.
-  * The method return iff Runtim.getRuntime().exit() fails
+  * The method return iff Runtime.getRuntime().exit() fails
   */
   public void restart () {
     // save project
@@ -463,7 +471,6 @@ public class NbTopManager extends TopManager {
   */
   private static class NbBrowser extends HtmlBrowser.BrowserComponent {
   
-    static final long serialVersionUID =5000673049583700380L;
     /**
     * For externalization.
     */
