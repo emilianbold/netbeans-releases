@@ -15,16 +15,18 @@ Start the app. First select a threading model to use.
 
 1. Synchronous - view will call model directly.
 
-2. Locked - same, but will use a read mutex for every display operation and a
+2. Monitored - will synchronize on a simple monitor.
+
+3. Locked - same, but will use a read mutex for every display operation and a
    write mutex for every modification.
 
-3. Event-hybrid-locked - same as the locked model, but using a special mutex
+4. Event-hybrid-locked - same as the locked model, but using a special mutex
    that only permits writes in AWT (reads can be in any thread).
 
-4. Spun - uses Spin (spin.sf.net) to make the access asynch. FoxTrot would be
+5. Spun - uses Spin (spin.sf.net) to make the access asynch. FoxTrot would be
    similar, I think.
 
-5. Swung - uses a technique similar to SwingWorker
+6. Swung - uses a technique similar to SwingWorker
    (http://java.sun.com/docs/books/tutorial/uiswing/misc/threads.html)
    to make the access fully asynch.
 
@@ -85,7 +87,7 @@ Major known problems:
 - Spun and Swung models may give assertion errors when used with nodes, as
   Look and Children do not always ask for things from AWT.
 
-- Mutex-based models may deadlock when refactoring due to multi-thread behavior
+- Locking models may deadlock when refactoring due to multi-thread behavior
   of CloneableEditorSupport.openDocument().
 
 - Swung model may not behave correctly in general.

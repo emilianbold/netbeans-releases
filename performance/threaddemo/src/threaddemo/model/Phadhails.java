@@ -27,6 +27,10 @@ public class Phadhails {
         return SynchPhadhail.create(f);
     }
     
+    public static Phadhail monitored(File f) {
+        return MonitoredPhadhail.create(f);
+    }
+    
     public static Phadhail locked(File f) {
         return LockedPhadhail.create(f);
     }

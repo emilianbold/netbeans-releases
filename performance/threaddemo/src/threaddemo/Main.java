@@ -47,7 +47,7 @@ public final class Main extends JFrame {
     }
     
     private final File root;
-    private final JRadioButton synchButton, lockedButton, eventHybridLockedButton, spunButton, swungButton, nodeButton, lookNodeButton, lookButton, rawButton;
+    private final JRadioButton synchButton, monitoredButton, lockedButton, eventHybridLockedButton, spunButton, swungButton, nodeButton, lookNodeButton, lookButton, rawButton;
     
     private Main(File root) {
         super("Thread Demo [" + root.getAbsolutePath() + "]");
@@ -55,22 +55,26 @@ public final class Main extends JFrame {
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
         JPanel modelPanel = new JPanel();
         ButtonGroup modelGroup = new ButtonGroup();
-        synchButton = new JRadioButton("Synchronous", false);
+        synchButton = new JRadioButton("Synchronous", true);
         synchButton.setMnemonic('y');
+        monitoredButton = new JRadioButton("Monitored", false);
+        monitoredButton.setMnemonic('m');
         lockedButton = new JRadioButton("Locked", false);
         lockedButton.setMnemonic('k');
-        eventHybridLockedButton = new JRadioButton("Event-Hybrid-Locked", true);
+        eventHybridLockedButton = new JRadioButton("Event-Hybrid-Locked", false);
         eventHybridLockedButton.setMnemonic('e');
         spunButton = new JRadioButton("Spun", false);
         spunButton.setMnemonic('u');
         swungButton = new JRadioButton("Swung", false);
         swungButton.setMnemonic('w');
         modelGroup.add(synchButton);
+        modelGroup.add(monitoredButton);
         modelGroup.add(lockedButton);
         modelGroup.add(eventHybridLockedButton);
         modelGroup.add(spunButton);
         modelGroup.add(swungButton);
         modelPanel.add(synchButton);
+        modelPanel.add(monitoredButton);
         modelPanel.add(lockedButton);
         modelPanel.add(eventHybridLockedButton);
         modelPanel.add(spunButton);
@@ -126,6 +130,9 @@ public final class Main extends JFrame {
         if (synchButton.isSelected()) {
             model = Phadhails.synchronous(root);
             modelType = "Synchronous";
+        } else if (monitoredButton.isSelected()) {
+            model = Phadhails.monitored(root);
+            modelType = "Monitored";
         } else if (lockedButton.isSelected()) {
             model = Phadhails.locked(root);
             modelType = "Locked";
