@@ -176,7 +176,7 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="Separator3.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         </file>
-                        <attr name="Separator3.instance/jump-list-next" boolvalue="true"/>
+                        <attr name="Separator3.instance/word-match-next" boolvalue="true"/>
                         <file name="word-match-next"/>
                         <attr name="word-match-next/word-match-prev" boolvalue="true"/>
                         <file name="word-match-prev"/>
