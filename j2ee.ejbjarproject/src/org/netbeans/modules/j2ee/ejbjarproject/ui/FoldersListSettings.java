@@ -25,6 +25,8 @@ public class FoldersListSettings extends SystemOption {
 
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
     
+    private static final String LAST_USED_CP_FOLDER = "lastUsedClassPathFolder";    //NOI18N
+    
     private static final String SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; //NOI18N
 
     private static final String LAST_USED_SOURCE_ROOT_FOLDER = "lastUsedSourceRootFolder";   //NOI18N
@@ -76,5 +78,18 @@ public class FoldersListSettings extends SystemOption {
         String path = folder.getAbsolutePath();
         this.putProperty (LAST_USED_SOURCE_ROOT_FOLDER, path, true);
     }
+    
+    public File getLastUsedClassPathFolder () {
+        String lucpr = (String) this.getProperty (LAST_USED_CP_FOLDER);
+        if (lucpr == null) {
+            lucpr = System.getProperty("user.home");    //NOI18N
+        }
+        return new File (lucpr);
+    }
 
+    public void setLastUsedClassPathFolder (File folder) {
+        assert folder != null : "ClassPath root can not be null";
+        String path = folder.getAbsolutePath();
+        this.putProperty(LAST_USED_CP_FOLDER, path, true);
+    }
 }
