@@ -81,6 +81,9 @@ Microsystems, Inc. All Rights Reserved.
 		<exclude name="org/openide/explorer/propertysheet/PropertyPanelTest.class"/>
                 <exclude name="org/openide/explorer/propertysheet/FindHelpTest.class"/>
                 <include name="org/openide/explorer/view/*.class"/>
+		<!-- the ListViews excluded because of issue #29423 -->
+		<exclude name="org/openide/explorer/view/RootContextTest.class/testListView"/>
+		<exclude name="org/openide/explorer/view/RootContextTest.class/testListTableView"/>
                 <include name="org/openide/util/UtilProgressCursorTest.class"/>
             </patternset>
         </testset>        
