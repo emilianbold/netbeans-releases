@@ -1458,9 +1458,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             if (e instanceof IOException) throw (IOException) e;
         }
         if (e != null) {
-            throw (IOException) ErrorManager.getDefault().annotate(
-                new IOException("Problem with Convertor.write method."), // NOI18N
-                e);
+            IOException ioe = new IOException("Problem with Convertor.write method."); // NOI18N
+            ioe.initCause(e);
+            throw (IOException)ErrorManager.getDefault().annotate(ioe, e);
         }
     }
 
