@@ -51,5 +51,9 @@ public class TestMark implements Mark {
     public int[] getAssignedLines() {
         return lines;
     }
+
+    public int getType() {
+        return TYPE_ERROR_LIKE;
+    }
     
 }
