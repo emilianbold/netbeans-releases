@@ -21,6 +21,11 @@ package org.netbeans.modules.javadoc.search;
 
 import java.awt.Rectangle;
 import java.awt.BorderLayout;
+import javax.swing.JEditorPane;
+import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
+
+import org.openide.cookies.EditorCookie;
 
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
@@ -82,7 +87,7 @@ public class ShowDocAction extends CookieAction {
         IndexSearch indexSearch = IndexSearch.getDefault();
                 
         if( nodes.length == 1 && nodes[0] != null ) {
-            String toFind = nodes[0].getName();
+            String toFind = findTextFromNode(nodes[0]);
             if (toFind != null)
                 indexSearch.setTextToFind( toFind );
         }
@@ -92,5 +97,78 @@ public class ShowDocAction extends CookieAction {
 
     protected String iconResource(){
         return "/org/netbeans/modules/javadoc/resources/showjavadoc.gif"; //NOI18N
+    }
+    
+    /**
+     * Attempts to find a suitable text from the node. 
+     */
+    private String findTextFromNode(Node n) {
+        EditorCookie ec = (EditorCookie)n.getCookie(EditorCookie.class);
+        // no editor underneath the node --> node's name is the only searchable text.
+        if (ec != null) {
+            JEditorPane[] panes = ec.getOpenedPanes();
+            TopComponent activetc = TopComponent.getRegistry().getActivated();
+            for (int i = 0; i < panes.length; i++) {
+                if (activetc.isAncestorOf(panes[i])) {
+                    // we have found the correct JEditorPane
+                    String s = extractTextFromPane(panes[i]);
+                    if (s != null)
+                        return s;
+                    else
+                        break;
+                }
+            }
+        }
+        return n.getName();
+    }
+    
+    private String extractTextFromPane(JEditorPane p) {
+        int selStart = p.getSelectionStart();
+        int selEnd = p.getSelectionEnd();
+        try {
+            if (selEnd > selStart) {
+                // read the non-empty selection
+                return p.getDocument().getText(selStart, selEnd - selStart);
+            }
+            // try to guess which word is underneath the caret's dot.
+            Document doc = p.getDocument();
+            javax.swing.text.Element lineRoot;
+
+            if (doc instanceof StyledDocument) {
+                lineRoot = org.openide.text.NbDocument.findLineRootElement((StyledDocument)doc);
+            } else {
+                lineRoot = doc.getDefaultRootElement();
+            }
+            int dot = p.getCaret().getDot();
+            javax.swing.text.Element line = lineRoot.getElement(lineRoot.getElementIndex(dot));
+            String contents;
+            if (line == null)
+                return null;
+            dot -= line.getStartOffset();
+            contents = doc.getText(line.getStartOffset(), 
+                line.getEndOffset() - line.getStartOffset());
+            // search forwards and backwards for the identifier boundary:
+            int begin = dot; 
+            int end;
+            if (Character.isJavaIdentifierPart(contents.charAt(begin))) {
+                while (begin > 0 && Character.isJavaIdentifierPart(contents.charAt(begin - 1)))
+                    begin--;
+                end = dot + 1;
+            } else {
+                while (begin < contents.length() &&
+                    !Character.isJavaIdentifierStart(contents.charAt(begin)))
+                    begin++;
+                end = begin + 1;
+            }
+            if (begin > contents.length())
+                return null;
+            while (end < contents.length() &&
+                Character.isJavaIdentifierStart(contents.charAt(end)))
+                end++;
+            return contents.substring(begin, end);
+        } catch (javax.swing.text.BadLocationException ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 }
