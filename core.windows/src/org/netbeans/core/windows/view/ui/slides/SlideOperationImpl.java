@@ -113,9 +113,7 @@ class SlideOperationImpl implements SlideOperation, ChangeListener {
                 break;
             case SLIDE_RESIZE:
                 component.setBounds(finishBounds);
-                component.invalidate();
                 ((JComponent)component).revalidate();
-                component.repaint();
                 break;
         }
     }
