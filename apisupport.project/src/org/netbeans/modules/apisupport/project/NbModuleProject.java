@@ -18,6 +18,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -317,9 +318,15 @@ final class NbModuleProject implements Project {
         return helper.resolveFile(evaluateString("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")); // NOI18N
     }
     
-    FileObject getModuleJavadocDirectory() {
+    URL getModuleJavadocDirectoryURL() {
         String moduleJavadoc = "javadoc/" + evaluate("javadoc.name"); // NOI18N
-        return helper.resolveFileObject(moduleJavadoc);
+        File f = helper.resolveFile(moduleJavadoc);
+        try {
+            return f.toURI().toURL();
+        } catch (MalformedURLException ex) {
+            ErrorManager.getDefault().notify(ex);
+            return null;
+        }
     }
     
     private String getNbrootRel() {
