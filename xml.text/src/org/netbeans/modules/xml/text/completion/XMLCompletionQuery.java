@@ -101,20 +101,27 @@ class XMLCompletionQuery implements CompletionQuery {
             
             int itemOffset = token.getOffset();
             String preText = null;
+            int erase = 0;
             
             if ( boundary == false ) {
                 preText = token.getImage().substring( 0, offset - token.getOffset() );
                 if ("".equals(preText)) throw new IllegalStateException("Cannot get token prefix at " + offset);
             } else {
 //                System.err.println("Adjusting: " + token + " " + token.getImage());
-                if (token.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID) {
+                int id = token.getTokenID().getNumericID();
+                if (id == XMLDefaultTokenContext.TAG_ID)  {
                     preText = token.getImage();
+                    erase = preText.length() - 1;
+                } else if (id == XMLDefaultTokenContext.ARGUMENT_ID) {
+                    preText = token.getImage();
+                    erase = preText.length();
                 } else {
                     preText = "";
+                    erase = 0;
                 }
             }
 
-            int erase = preText.length();
+            
             
             SyntaxElement element = sup.getElementChain( offset);
             if (element == null) throw new IllegalStateException("There exists a token therefore a syntax element must exist at " + offset + ", too.");
@@ -123,7 +130,8 @@ class XMLCompletionQuery implements CompletionQuery {
             if (element instanceof SyntaxNode) {
                 List list = query((SyntaxNode) element, token, preText);
                 if (list != null && list.isEmpty() == false) {
-                    String title = org.openide.util.NbBundle.getMessage(XMLCompletionQuery.class, "MSG_result", new Object[] {preText});
+                    String debugMsg = Boolean.getBoolean("netbeans.debug.xml") ? " " + offset + "-" + erase : "";
+                    String title = org.openide.util.NbBundle.getMessage(XMLCompletionQuery.class, "MSG_result", new Object[] {preText}) + debugMsg;
                     return new CompletionQuery.DefaultResult( component, title, list, offset - erase, erase );
                 } else {
                     return null;  //??? end tag handling
@@ -679,10 +687,10 @@ class XMLCompletionQuery implements CompletionQuery {
             super( item );
         }
         
-        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-            super.substituteText( c, offset, len, shift );
-            return false; //??? always refresh
-        }
+//        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
+//            super.substituteText( c, offset, len, shift );
+//            return false; //??? always refresh
+//        }
     }
     
     private static class AttributeValueItem extends XMLResultItem {
