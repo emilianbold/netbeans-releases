@@ -271,7 +271,7 @@
     <tocitem text="Working with Debugging" target="debug.process"/>
     <tocitem text="Debugging Tasks: Quick Reference" target="debug.quickref"/>
     <tocitem text="Current Context in the Debugger" target="debug.context"></tocitem>
-    <tocitem text="Attaching Source Code to Java Class Libraries" target="debug.source"></tocitem>
+    <tocitem text="Attaching Source Code to a JAR File" target="debug.source"></tocitem>
     <tocitem text="Writing A Debug Target for a Free-Form Java Project" target="proj_free_debug" />
     <tocitem text="Writing A Debug Target for a Free-Form Web Project" target="proj_webfree_debug" />
     <tocitem text="Setting Breakpoints">
@@ -334,7 +334,6 @@
     <tocitem text="Editing an Ant Script" target="ant_editing" />
     <tocitem text="Running an Ant Script" target="ant_running" />
     <tocitem text="Creating a Shortcut to a Target" target="ant_shortcut" />
-    <tocitem text="Setting the JDK for an Ant Script" target="ant_target-jdk" />
     <tocitem text="Configuring Ant Settings" target="ant_settings" />
     <tocitem text="Switching Ant Versions" target="ant_version" />
     <tocitem text="Ant Classpath and Custom Tasks" target="ant_tasks-classpath" />     
