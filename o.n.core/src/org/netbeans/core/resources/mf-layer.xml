@@ -282,7 +282,7 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="org-openide-actions-ToolsAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
           <file name="Separator1[javax-swing-JSeparator].instance"/>
           <attr name="Separator1[javax-swing-JSeparator].instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
-          <!-- [PENDING] should not have both separators here: #7391 -->
+          <!-- OK to have both separators here: cf. #7391 -->
           <file name="Separator2[javax-swing-JSeparator].instance"/>
           <attr name="Separator2[javax-swing-JSeparator].instance/org-netbeans-core-actions-ConfigureShortcutsAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-ConfigureShortcutsAction.instance"/>
