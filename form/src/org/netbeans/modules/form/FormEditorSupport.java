@@ -17,18 +17,18 @@ import java.beans.*;
 import java.io.IOException;
 import java.util.*;
 import java.awt.Cursor;
-import javax.swing.*;
 
 import org.openide.*;
-import org.openide.nodes.*;
-import org.openide.awt.*;
-import org.openide.cookies.*;
-import org.openide.loaders.*;
-import org.openide.util.*;
+import org.openide.nodes.Node;
+import org.openide.awt.UndoRedo;
+import org.openide.awt.StatusDisplayer;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.MultiDataObject;
+import org.openide.util.Mutex;
 import org.openide.windows.*;
 
 import org.netbeans.modules.java.JavaEditor;
-import org.netbeans.modules.form.palette.*;
+import org.netbeans.modules.form.palette.CPManager;
 
 /**
  *
@@ -37,8 +37,6 @@ import org.netbeans.modules.form.palette.*;
 
 public class FormEditorSupport extends JavaEditor
 {
-    static final String NO_WORKSPACE = "None"; // NOI18N
-
     private static final int LOADING = 1;
     private static final int SAVING = 2;
 
@@ -69,14 +67,9 @@ public class FormEditorSupport extends JavaEditor
     /** An indicator whether the form has been loaded (from the .form file) */
     private boolean formLoaded = false; 
 
-    /** An indicator whether the form should be opened additionally when
-     * switching back from a non-editing workspace to editing one */
-    private boolean openOnEditing = false;
-
     // listeners
     private FormModelListener formListener;
     private PropertyChangeListener dataObjectListener;
-    private static PropertyChangeListener workspacesListener;
     private static PropertyChangeListener settingsListener;
     private static PropertyChangeListener topcompsListener;
     private static PropertyChangeListener paletteListener;
@@ -110,22 +103,20 @@ public class FormEditorSupport extends JavaEditor
                 "FMT_OpeningForm", // NOI18N
                 new Object[] { formDataObject.getPrimaryFile().getNameExt() }));
 
-        // switch to GUI workspace
-        final boolean openGui = activateWorkspace();
-
         // open java editor
         open();
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                JFrame mainWin = (JFrame) WindowManager.getDefault().getMainWindow();
+                javax.swing.JFrame mainWin = (javax.swing.JFrame)
+                    WindowManager.getDefault().getMainWindow();
 
                 // set status text "Opening Form: ..."
                 StatusDisplayer.getDefault().setStatusText(
                     FormUtils.getFormattedBundleString(
                         "FMT_OpeningForm", // NOI18N
                         new Object[] { formDataObject.getFormFile().getNameExt() }));
-                RepaintManager.currentManager(mainWin).paintDirtyRegions();
+                javax.swing.RepaintManager.currentManager(mainWin).paintDirtyRegions();
 
                 // set wait cursor [is not very reliable, but...]
                 mainWin.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -139,12 +130,9 @@ public class FormEditorSupport extends JavaEditor
                     logPersistenceError(ex, 0);
                 }
 
-                // open form designer (if loading successful and workspace active)
+                // open form designer
                 if (formLoaded)
-                    if (openGui)
-                        openGUI();
-                    else
-                        ComponentInspector.getInstance().focusForm(FormEditorSupport.this);
+                    openGUI();
 
                 // clear status text
                 StatusDisplayer.getDefault().setStatusText(""); // NOI18N
@@ -387,8 +375,15 @@ public class FormEditorSupport extends JavaEditor
                 formModel.addFormModelListener(formListener);
             }
         }
-        else if (formDesigner.getModel() == null)
+        else if (formDesigner.getModel() == null) {
             formDesigner.setModel(formModel);
+            // not very nice hack - it's better FormEditorSupport has its
+            // listener registered after FormDesigner
+            if (formListener != null) {
+                formModel.removeFormModelListener(formListener);
+                formModel.addFormModelListener(formListener);
+            }
+        }
 
         return formDesigner;
     }
@@ -412,6 +407,8 @@ public class FormEditorSupport extends JavaEditor
             super.notifyModified();
     }
 
+    /** Updates (sub)nodes of a container (in Component Inspector) after
+     * a change has been made (like component added or removed). */
     void updateNodeChildren(ComponentContainer metacont) {
         FormNode node;
 
@@ -488,21 +485,8 @@ public class FormEditorSupport extends JavaEditor
     // ------------
     // loading
 
-    /** Works around a Jikes bug which results into bad bytecode if
-     * OuterClass.super.open() is called from inside an inner class.
-     * Instead of super.open() Jikes generates bytecode for open() which
-     * leads to an infinite recursion
-     */
-    private void superOpen() {
-        super.open();
-    }
-
-    private void openForm(boolean dontSwitchWS,
-                          final boolean openGui)
-    {
-        if (!dontSwitchWS)
-            activateWorkspace();
-
+    // loads and opens the form editor, used for reloading
+    private void openForm(final boolean openGui) {
         open(); // open java editor
 
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -514,18 +498,16 @@ public class FormEditorSupport extends JavaEditor
                     logPersistenceError(ex, 0);
                 }
 
-                if (formLoaded)
-                    if (openGui)
-                        openGUI();
-                    else
-                        ComponentInspector.getInstance().focusForm(FormEditorSupport.this);
+                if (formLoaded && openGui)
+                    openGUI();
 
                 reportErrors(LOADING);
             }
         });
     }
 
-    /** This method performs the form data loading.
+    /** This method performs the form data loading. All open/load methods go
+     * through this one.
      */
     private void loadFormData() throws PersistenceException {
         if (formLoaded)
@@ -691,64 +673,18 @@ public class FormEditorSupport extends JavaEditor
         return persistenceErrors != null && !persistenceErrors.isEmpty();
     }
 
-    /** Activates GUI Editing workspace (on certain conditions). Returns
-     * whether the workspace was activated.
+    /** Opens the FormDesigner.
      */
-    private boolean activateWorkspace() {
-        attachWorkspacesListener();
-
-        String currentWSName = WindowManager.getDefault()
-                                              .getCurrentWorkspace().getName();
-        String formWSName = FormEditor.getFormSettings().getWorkspace();
-
-        if ("Editing".equals(currentWSName) // NOI18N
-            || "Visual".equals(currentWSName) // NOI18N
-            // XXX In new winsys no workspaces are supported, the default one is called this way.
-            || "FakeWorkspace".equals(currentWSName) // NOI18N
-            || formWSName.equals(NO_WORKSPACE) // no extra workspace needed
-            || formWSName.equals(currentWSName))
-        {
-            openOnEditing = false;
-            if (!formWSName.equals(currentWSName)
-                && !formWSName.equals(NO_WORKSPACE))
-            {   // switch to the form main workspace
-                Workspace formWorkspace =
-                    WindowManager.getDefault().findWorkspace(formWSName);
-                if (formWorkspace != null)
-                    formWorkspace.activate();
-            }
-            return true;
-        }
-        else {
-            // if this is not an editing workspace, do not open the designer
-            openOnEditing = true;
-            return false;
-        }
-    }
-
-    /** Opens FormDesigner and ComponentInspector.
-     */
-    synchronized private void openGUI() {
+    private void openGUI() {
         // open FormDesigner
         FormDesigner designer = getFormDesigner();
         if (designer == null)
             return;
         designer.initialize();
         designer.open();
+//        designer.requestActive();
 
-        // Now the FormGroupActivator does the job.
-//        // open ComponentInspector
-//        ComponentInspector.getInstance().open();
-        // XXX Very ugly desing.
-        // Why ComponentInspector stores the focused form???
-//        ComponentInspector.getInstance().focusForm(this, true); // TEMP
         ComponentInspector.getInstance().focusForm(this);
-//
-//        // open ComponentPalette
-//        PaletteTopComponent.getInstance().open(); // TEMP
-
-        // bring the FormDesigner to front and give it the focus
-//        designer.requestFocus(); // TEMP
     }
 
     // -----------
@@ -785,7 +721,7 @@ public class FormEditorSupport extends JavaEditor
     protected org.openide.util.Task reloadDocumentTask() {
         boolean reloadForm = formLoaded;
         boolean guiWasOpened = formDesigner != null
-            && formDesigner.isOpened(WindowManager.getDefault().getCurrentWorkspace());
+                               && formDesigner.isOpened();
 
         if (formLoaded)
             closeForm();
@@ -793,7 +729,7 @@ public class FormEditorSupport extends JavaEditor
         org.openide.util.Task docLoadTask = super.reloadDocumentTask();
 
         if (reloadForm)
-            openForm(true, guiWasOpened);
+            openForm(guiWasOpened);
 
         return docLoadTask;
     }
@@ -817,18 +753,12 @@ public class FormEditorSupport extends JavaEditor
         if (openForms.isEmpty()) {
             if (formDesigner != null)
                 formDesigner.setModel(null);
-            // XXX No explicit closing, FormGroupActivator does the needed job.
-//            ComponentInspector.getInstance().focusForm(null, false);
+
             ComponentInspector.getInstance().focusForm(null);
-            
-            detachWorkspacesListener();
+
             detachSettingsListener();
             detachTopComponentsListener();
             detachPaletteListener();
-
-            TopComponent palette = PaletteTopComponent.getInstance();
-            palette.setCloseOperation(TopComponent.CLOSE_EACH);
-//            palette.close(); // TEMP see XXX above
 
             userClassLoader = null;
         }
@@ -853,7 +783,6 @@ public class FormEditorSupport extends JavaEditor
 
         // close the designer
         if (formDesigner != null) {
-            formDesigner.setCloseOperation(TopComponent.CLOSE_EACH);
             formDesigner.close();
             formDesigner = null;
         }
@@ -864,45 +793,6 @@ public class FormEditorSupport extends JavaEditor
         persistenceManager = null;
         persistenceErrors = null;
         formModel = null;
-    }
-
-    // called by FormDesigner when it is about to close
-    void designerToBeClosed(Workspace ws) {
-        if (formDesigner == null)
-            return;
-
-        if (ws == null)
-            ws = WindowManager.getDefault().getCurrentWorkspace();
-        Mode mode = ws.findMode(formDesigner);
-        if (mode != null && FormDesigner.FORM_MODE_NAME.equals(mode.getName())) {
-            TopComponent inspector = null;
-            TopComponent palette = null;
-            TopComponent[] modeComponents = mode.getTopComponents();
-            for (int i=0; i < modeComponents.length; i++) {
-                TopComponent tc = modeComponents[i];
-                if (tc.isOpened(ws))
-                    if (tc instanceof FormDesigner) {
-                        if (tc != formDesigner) { // other designers still opened
-                            palette = null;
-                            inspector = null;
-                            break;
-                        }
-                    }
-                    else if (tc instanceof ComponentInspector)
-                        inspector = tc;
-                    else if (tc instanceof PaletteTopComponent)
-                        palette = tc;
-            }
-
-            if (inspector != null) {
-                inspector.setCloseOperation(TopComponent.CLOSE_LAST);
-                inspector.close(ws);
-            }
-            if (palette != null) {
-                palette.setCloseOperation(TopComponent.CLOSE_LAST);
-                palette.close(ws);
-            }
-        }
     }
 
     // -----------
@@ -1025,82 +915,6 @@ public class FormEditorSupport extends JavaEditor
         }
     }
 
-    private static void attachWorkspacesListener() {
-        if (workspacesListener != null)
-            return;
-
-        workspacesListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (!WindowManager.PROP_CURRENT_WORKSPACE.equals(
-                                           evt.getPropertyName()))
-                    return;
-
-                Workspace ws = WindowManager.getDefault().getCurrentWorkspace();
-                if (ws == null)
-                    return; // [can it even be null?]
-
-                String currentWSName = ws.getName();
-                String formWSName = FormEditor.getFormSettings()
-                                                   .getWorkspace();
-
-                if ("Editing".equals(currentWSName) // NOI18N
-                    || "Visual".equals(currentWSName) // NOI18N
-                    || formWSName.equals(NO_WORKSPACE) // no extra workspace for forms
-                    || formWSName.equals(currentWSName))
-                {   // if switched to a workspace usable for form editor then
-                    // look for forms waiting for opening their designers
-                    boolean anyWaitingForm = false;
-                    Collection forms = openForms.values();
-                    for (Iterator it=forms.iterator(); it.hasNext(); ) {
-                        FormEditorSupport fes = (FormEditorSupport) it.next();
-                        if (fes.openOnEditing) {
-                            fes.openOnEditing = false;
-                            fes.openGUI();
-                            anyWaitingForm = true;
-                        }
-                    }
-                    if (anyWaitingForm)
-                        return;
-                }
-
-                // do nothing if switched to the main form workspace
-                if (formWSName.equals(currentWSName)
-                        && !formWSName.equals(NO_WORKSPACE))
-                    return;
-                
-                // refresh opened designers on this workspace
-                Mode formMode = ws.findMode("Form"); // NOI18N
-                if (formMode == null)
-                    return; // no form mode on this workspace
-
-                boolean modeOpened = false;
-                TopComponent[] comps = formMode.getTopComponents();
-                for (int i=0; i < comps.length; i++)
-                    if (comps[i].isOpened(ws)) {
-                        modeOpened = true;
-                        break;
-                    }
-
-                if (modeOpened) { // form editor is opened on this workspace
-                    Collection forms = openForms.values();
-                    for (Iterator it=forms.iterator(); it.hasNext(); ) {
-                        FormEditorSupport fes = (FormEditorSupport) it.next();
-                        fes.getFormDesigner().open(ws);
-                    }
-                }
-            }
-        };
-
-        WindowManager.getDefault().addPropertyChangeListener(workspacesListener);
-    }
-
-    private static void detachWorkspacesListener() {
-        if (workspacesListener != null) {
-            WindowManager.getDefault().removePropertyChangeListener(workspacesListener);
-            workspacesListener = null;
-        }
-    }
-
     private static void attachSettingsListener() {
         if (settingsListener != null)
             return;
@@ -1153,48 +967,39 @@ public class FormEditorSupport extends JavaEditor
         if (topcompsListener != null)
             return;
 
-//        topcompsListener = new PropertyChangeListener() {
-//            public void propertyChange(PropertyChangeEvent evt) {
-//                // we are interested in changing active TopComponent
-//                if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
-//                    TopComponent tc = TopComponent.getRegistry().getActivated();
-//                    if (!(tc instanceof JavaEditor.JavaEditorComponent))
-//                        return;
-//
-//                    Node[] nodes = tc.getActivatedNodes();
-//                    if (nodes == null || nodes.length != 1)
-//                        return;
-//
-//                    SourceCookie srcCookie =
-//                        (SourceCookie) nodes[0].getCookie(SourceCookie.class);
-//                    if (srcCookie == null)
-//                        return;
-//
-//                    DataObject dobj = (DataObject)
-//                        srcCookie.getSource().getCookie(DataObject.class);
-//                    if (dobj == null)
-//                        return;
-//
-//                    FormEditorSupport selectedForm =
-//                        ComponentInspector.getInstance().getFocusedForm();
-//
-//                    Iterator it = openForms.values().iterator();
-//                    while (it.hasNext()) {
-//                        FormEditorSupport fes = (FormEditorSupport) it.next();
-//                        if (fes.getFormDataObject() == dobj) {
-//                            if (fes != selectedForm) {
-//                                fes.gotoForm();
-//                                ComponentInspector.getInstance().focusForm(fes);
-//                            }
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//        };
-//
-//        TopComponent.getRegistry().addPropertyChangeListener(topcompsListener);
-        // PENDING Seems we don't need this kind of behaviour, please revise.
+        topcompsListener = new PropertyChangeListener() {
+            Boolean groupVisible = null;
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+                    // active TopComponent changed, check if we should open or
+                    // close the form editor group of windows
+                    WindowManager wm = WindowManager.getDefault();
+                    TopComponentGroup group = wm.findTopComponentGroup("form"); // NOI18N
+                    if (group == null)
+                        return; // group not found (should not happen)
+
+                    boolean designerSelected = false;
+                    Iterator it = wm.getModes().iterator();
+                    while (it.hasNext()) {
+                        Mode mode = (Mode) it.next();
+                        TopComponent selected = mode.getSelectedTopComponent();
+                        if (selected instanceof FormDesigner) {
+                            designerSelected = true;
+                            break;
+                        }
+                    }
+
+                    if (designerSelected && !Boolean.TRUE.equals(groupVisible))
+                        group.open();
+                    else if (!designerSelected && !Boolean.FALSE.equals(groupVisible))
+                        group.close();
+
+                    groupVisible = designerSelected ? Boolean.TRUE : Boolean.FALSE;
+                }
+            }
+        };
+
+        TopComponent.getRegistry().addPropertyChangeListener(topcompsListener);
     }
 
     private static void detachTopComponentsListener() {
@@ -1202,6 +1007,11 @@ public class FormEditorSupport extends JavaEditor
             TopComponent.getRegistry()
                     .removePropertyChangeListener(topcompsListener);
             topcompsListener = null;
+
+            TopComponentGroup group = WindowManager.getDefault()
+                                        .findTopComponentGroup("form"); // NOI18N
+            if (group != null)
+                group.close();
         }
     }
 
@@ -1224,16 +1034,6 @@ public class FormEditorSupport extends JavaEditor
                         // TODO: activate current designer
                     }
                 }
-//                if (CPManager.PROP_MODE.equals(evt.getPropertyName())
-//                    && new Integer(PaletteAction.MODE_ADD).equals(
-//                                                           evt.getNewValue()))
-//                {
-//                    FormDesigner designer =
-//                        ComponentInspector.getInstance()
-//                            .getFocusedForm().getFormDesigner();
-//                    designer.requestFocus();
-//                    designer.componentActivated();
-//                }
             }
         };
 

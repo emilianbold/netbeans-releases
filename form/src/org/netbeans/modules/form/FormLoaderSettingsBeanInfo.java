@@ -102,9 +102,6 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                               "setRegisteredEditors", // NOI18N
                                               "getRegisteredEditor", // NOI18N
                                               "setRegisteredEditor"), // NOI18N
-                new PropertyDescriptor(FormLoaderSettings.PROP_WORKSPACE,
-                                       FormLoaderSettings.class,
-                                       "getWorkspace", "setWorkspace"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_PALETTE_IN_TOOLBAR,
                                        FormLoaderSettings.class,
                                        "isPaletteInToolBar", // NOI18N
@@ -193,30 +190,25 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[14].setShortDescription(bundle.getString("HINT_REGISTERED_EDITORS")); // NOI18N
             desc[14].setExpert(true);
 
-            desc[15].setDisplayName(bundle.getString("PROP_WORKSPACE")); // NOI18N
-            desc[15].setShortDescription(bundle.getString("HINT_WORKSPACE")); // NOI18N
-            desc[15].setPropertyEditorClass(WorkspaceEditor.class);
-            desc[15].setExpert(true);
+            desc[15].setDisplayName(bundle.getString("PROP_PALETTE_IN_TOOLBAR")); // NOI18N
+            desc[15].setShortDescription(bundle.getString("HINT_PALETTE_IN_TOOLBAR")); // NOI18N
 
-            desc[16].setDisplayName(bundle.getString("PROP_PALETTE_IN_TOOLBAR")); // NOI18N
-            desc[16].setShortDescription(bundle.getString("HINT_PALETTE_IN_TOOLBAR")); // NOI18N
+            desc[16].setHidden(true);
 
-            desc[17].setHidden(true);
+            desc[17].setDisplayName(bundle.getString("PROP_FORMDESIGNER_BACKGROUND_COLOR")); // NOI18N
+            desc[17].setShortDescription(bundle.getString("HINT_FORMDESIGNER_BACKGROUND_COLOR")); // NOI18N
 
-            desc[18].setDisplayName(bundle.getString("PROP_FORMDESIGNER_BACKGROUND_COLOR")); // NOI18N
-            desc[18].setShortDescription(bundle.getString("HINT_FORMDESIGNER_BACKGROUND_COLOR")); // NOI18N
+            desc[18].setDisplayName(bundle.getString("PROP_FORMDESIGNER_BORDER_COLOR")); // NOI18N
+            desc[18].setShortDescription(bundle.getString("HINT_FORMDESIGNER_BORDER_COLOR")); // NOI18N
 
-            desc[19].setDisplayName(bundle.getString("PROP_FORMDESIGNER_BORDER_COLOR")); // NOI18N
-            desc[19].setShortDescription(bundle.getString("HINT_FORMDESIGNER_BORDER_COLOR")); // NOI18N
+            desc[19].setDisplayName(bundle.getString("PROP_SHOW_COMPONENT_NAMES")); // NOI18N
+            desc[19].setShortDescription(bundle.getString("HINT_SHOW_COMPONENT_NAMES")); // NOI18N
 
-            desc[20].setDisplayName(bundle.getString("PROP_SHOW_COMPONENT_NAMES")); // NOI18N
-            desc[20].setShortDescription(bundle.getString("HINT_SHOW_COMPONENT_NAMES")); // NOI18N
+            desc[20].setDisplayName(bundle.getString("PROP_VARIABLES_LOCAL")); // NOI18N
+            desc[20].setShortDescription(bundle.getString("HINT_VARIABLES_LOCAL")); // NOI18N
+            desc[20].setExpert(true);
 
-            desc[21].setDisplayName(bundle.getString("PROP_VARIABLES_LOCAL")); // NOI18N
-            desc[21].setShortDescription(bundle.getString("HINT_VARIABLES_LOCAL")); // NOI18N
-            desc[21].setExpert(true);
-
-            desc[22].setHidden(true);
+            desc[21].setHidden(true);
 
             return desc;
         }
@@ -246,107 +238,6 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             super(Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE
                   | Modifier.STATIC | Modifier.FINAL | Modifier.TRANSIENT
                   | Modifier.VOLATILE);
-        }
-    }
-
-
-    final public static class WorkspaceEditor extends PropertyEditorSupport {
-        /** Mapping between programmatic and display names of workspaces */
-        private Map namesMap;
-        /** Validity flag - true if namesMap has been initialized already */
-        private boolean namesInitialized = false;
-
-        /*
-         * @return The property value as a human editable string.
-         * <p> Returns null if the value can't be expressed as an editable string.
-         * <p> If a non-null value is returned, then the PropertyEditor should
-         *     be prepared to parse that string back in setAsText().
-         */
-        public String getAsText() {
-            if (!namesInitialized) {
-                namesInitialized = true;
-                initializeNamesMap(WindowManager.getDefault().getWorkspaces());
-            }
-            String value =(String)getValue();
-            String displayName =(String)namesMap.get(value);
-            return displayName == null ? value : displayName;
-        }
-
-        /* Set the property value by parsing a given String. May raise
-         * java.lang.IllegalArgumentException if either the String is
-         * badly formatted or if this kind of property can't be expressed
-         * as text.
-         * @param text The string to be parsed.
-         */
-        public void setAsText(String text) throws IllegalArgumentException {
-            String programmaticName = findProgrammaticName(text);
-            setValue(programmaticName == null ? text : programmaticName);
-        }
-
-        /*
-         * If the property value must be one of a set of known tagged values,
-         * then this method should return an array of the tag values. This can
-         * be used to represent(for example) enum values. If a PropertyEditor
-         * supports tags, then it should support the use of setAsText with
-         * a tag value as a way of setting the value.
-         *
-         * @return The tag values for this property. May be null if this
-         *   property cannot be represented as a tagged value.
-         *
-         */
-        public String[] getTags() {
-            Workspace[] wss = WindowManager.getDefault().getWorkspaces();
-            initializeNamesMap(wss);
-
-            // exclude browsing, running and debugging workspaces
-            List tagList = new ArrayList();
-            for (int i = wss.length; --i >= 0;) {
-                String name = wss[i].getName();
-                if (!"Debugging".equals(name)) // NOI18N
-                    tagList.add(name);
-            }
-            tagList.add(FormUtils.getBundleString("VALUE_WORKSPACE_NONE")); // NOI18N
-
-            String[] names = new String [tagList.size()]; // + 1];
-            for (int i=0, n = tagList.size(); i < n; i++)
-                names[i] = (String)namesMap.get(tagList.get(i));
-
-            return names;
-        }
-
-        /** Initializes name mapping with given workspace set.
-         * Result is stored in nameMap private variable. */
-        private void initializeNamesMap(Workspace[] wss) {
-            // fill name mapping with proper values
-            namesMap = new HashMap(wss.length * 2);
-            for (int i = 0; i < wss.length; i++) {
-                // create new string for each display name to be able to search
-                // using '==' operator in findProgrammaticName(String displayName) method
-                String displayName = wss[i].getDisplayName();
-                int index = displayName.indexOf('&');
-                String part1 = ""; // NOI18N
-                String part2 = ""; // NOI18N
-                if (index>0)
-                    part1 = displayName.substring(0, index);
-                if (index<(displayName.length()-1))
-                    part2 = displayName.substring(index+1, displayName.length());
-
-                namesMap.put(wss[i].getName(), new String(part1 + part2));;
-            }
-            namesMap.put(FormEditorSupport.NO_WORKSPACE,
-                         FormUtils.getBundleString("VALUE_WORKSPACE_NONE")); // NOI18N
-        }
-
-        /** @return Returns programmatic name of the workspace for given
-         * display name of the workspace. Uses special features of namesMap mapping
-         * to perform succesfull search. */
-        private String findProgrammaticName(String displayName) {
-            for (Iterator iter = namesMap.entrySet().iterator(); iter.hasNext();) {
-                Map.Entry curEntry =(Map.Entry)iter.next();
-                if (displayName == curEntry.getValue())
-                    return(String)curEntry.getKey();
-            }
-            return null;
         }
     }
 

@@ -209,6 +209,13 @@ class EventProperty extends PropertySupport.ReadWrite {
             node.firePropertyChangeHelper(getName(), null, null);
     }
 
+    public String getDisplayName() {
+        String displayName = super.getDisplayName();
+        if (selectedEventHandler != null)
+            displayName = "<html><b>" + displayName + "</b>"; // NOI18N
+        return displayName;
+    }
+
     public boolean canWrite() {
         return !isReadOnly();
     }

@@ -14,24 +14,19 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
-import javax.swing.border.*;
 
-import org.openide.*;
-import org.openide.windows.*;
-import org.openide.nodes.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.windows.TopComponent;
+import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.awt.UndoRedo;
-import org.openide.util.actions.SystemAction;
 
-import org.netbeans.modules.form.palette.*;
-import org.netbeans.modules.form.actions.TestAction;
+import org.netbeans.modules.form.palette.CPManager;
 import org.netbeans.modules.form.wizard.ConnectionWizard;
-import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 
 /**
  * This is a TopComponent subclass holding the form designer. It consist of two
@@ -50,7 +45,6 @@ import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 
 public class FormDesigner extends TopComponent
 {
-    static final String FORM_MODE_NAME = "Form"; // NOI18N
     static final String PROP_DESIGNER_SIZE = "designerSize"; // NOI18N
 
     private JLayeredPane layeredPane;
@@ -100,13 +94,10 @@ public class FormDesigner extends TopComponent
     }
 
     FormDesigner(FormModel formModel) {
-        // XXX PENDING core/windows link
         // instruct winsys to save state of this top component only if opened
         putClientProperty("PersistenceType", "OnlyOpened"); // NOI18N
 
         setIcon(Utilities.loadImage(iconURL));
-
-        formModelListener = new FormListener();
 
         formToolBar = new FormToolBar(this);
 
@@ -120,14 +111,12 @@ public class FormDesigner extends TopComponent
 
         setLayout(new BorderLayout());
         add(formToolBar, BorderLayout.NORTH);
-        // disable border, winsys will handle borders itself
+
         JScrollPane scrollPane = new JScrollPane(layeredPane);
-        scrollPane.setBorder(null);
+        scrollPane.setBorder(null); // disable border, winsys will handle borders itself
         add(scrollPane, BorderLayout.CENTER);
 
         setModel(formModel);
-        
-        FormGroupActivator.install();
     }
 
     public void initialize() {
@@ -136,13 +125,16 @@ public class FormDesigner extends TopComponent
 
     void setModel(FormModel m) {
         if (formModel != null) {
-            formModel.removeFormModelListener(formModelListener);
+            if (formModelListener != null)
+                formModel.removeFormModelListener(formModelListener);
             topDesignComponent = null;
         }
 
         formModel = m;
 
         if (formModel != null) {
+            if (formModelListener == null)
+                formModelListener = new FormListener();
             formModel.addFormModelListener(formModelListener);
             formEditorSupport = FormEditorSupport.getSupport(formModel);
             resetTopDesignComponent(false);
@@ -161,6 +153,18 @@ public class FormDesigner extends TopComponent
         return formEditorSupport;
     }
 
+    HandleLayer getHandleLayer() {
+        return handleLayer;
+    }
+
+    ComponentLayer getComponentLayer() {
+        return componentLayer;
+    }
+
+    FormToolBar getFormToolBar() {
+        return formToolBar;
+    }
+
     // ------------
     // designer content
 
@@ -170,10 +174,6 @@ public class FormDesigner extends TopComponent
 
     public RADComponent getMetaComponent(Object comp) {
         return replicator.getMetaComponent(comp);
-    }
-
-    ComponentLayer getComponentLayer() {
-        return componentLayer;
     }
 
     public RADVisualComponent getTopDesignComponent() {
@@ -267,10 +267,6 @@ public class FormDesigner extends TopComponent
         CPManager.getDefault().setSelectedItem(null);
     }
 
-    FormToolBar getFormToolBar() {
-        return formToolBar;
-    }
-
     // -------
     // designer size
 
@@ -333,7 +329,7 @@ public class FormDesigner extends TopComponent
             try {
                 ci.setSelectedNodes(selectedNodes, formEditorSupport);
             }
-            catch (PropertyVetoException ex) {
+            catch (java.beans.PropertyVetoException ex) {
                 ex.printStackTrace();
             }
 
@@ -501,7 +497,7 @@ public class FormDesigner extends TopComponent
         try {
             ci.setSelectedNodes(selectedNodes, formEditorSupport);
         }
-        catch (PropertyVetoException ex) {
+        catch (java.beans.PropertyVetoException ex) {
             ex.printStackTrace();
         }
 
@@ -550,7 +546,8 @@ public class FormDesigner extends TopComponent
 
         while (metacont != null) {
             Container cont = (Container) getComponent(metacont);
-            LayoutSupportManager laysup = metacont.getLayoutSupport();
+            org.netbeans.modules.form.layoutsupport.LayoutSupportManager
+                laysup = metacont.getLayoutSupport();
             Container contDelegate = metacont.getContainerDelegate(cont);
 
             laysup.selectComponent(child.getComponentIndex());
@@ -737,6 +734,10 @@ public class FormDesigner extends TopComponent
     // --------
     // methods of TopComponent
 
+    public Lookup getLookup() {
+        return ComponentInspector.getInstance().getLookup();
+    }
+
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.formeditor"); // NOI18N
     }
@@ -768,28 +769,6 @@ public class FormDesigner extends TopComponent
                     }
                 });
         }
-    }
-
-    public void open(Workspace workspace) {
-        if (workspace == null)
-            workspace = WindowManager.getDefault().getCurrentWorkspace();
-
-        if (isOpened(workspace))
-            return;
-
-        Mode mode = workspace.findMode(FORM_MODE_NAME); // NOI18N
-        if (mode != null) {
-            mode.dockInto(this);
-        }
-
-        super.open(workspace);
-    }
-
-    public boolean canClose(Workspace workspace, boolean last) {
-        boolean canClose = super.canClose(workspace, last);
-        if (canClose && isOpened() && formEditorSupport != null)
-            formEditorSupport.designerToBeClosed(workspace);
-        return canClose;
     }
 
     protected void componentActivated() {

@@ -27,9 +27,6 @@ public class FormLoaderSettings extends SystemOption {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 8949624818164732719L;
 
-    /** Property name of the workspace property */
-    public static final String PROP_WORKSPACE = "workspace"; // NOI18N
-
     public static final String PROP_USE_INDENT_ENGINE = "useIndentEngine"; // NOI18N
 
     public static final String PROP_GENERATE_ON_SAVE = "generateOnSave"; // NOI18N
@@ -86,8 +83,6 @@ public class FormLoaderSettings extends SystemOption {
 
     // ------------------------------------------
     // properties
-
-    private static String workspace = FormEditor.GUI_EDITING_WORKSPACE_NAME;
 
     private static boolean useIndentEngine = false;
 
@@ -160,14 +155,6 @@ public class FormLoaderSettings extends SystemOption {
 
     // ------------------------------------------
     // property access methods
-
-    public String getWorkspace() {
-        return workspace;
-    }
-
-    public void setWorkspace(String newWorkspace) {
-        workspace = newWorkspace;
-    }
 
     public boolean getUseIndentEngine() {
         return useIndentEngine;

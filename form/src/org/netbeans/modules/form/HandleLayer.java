@@ -18,19 +18,17 @@ import java.awt.event.*;
 import java.awt.geom.*;
 import javax.swing.*;
 import java.util.*;
-import javax.swing.border.Border;
 import java.text.MessageFormat;
 
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.windows.TopComponent;
-import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
-import org.openide.awt.MouseUtils;
-import org.openide.util.actions.SystemAction;
 
-import org.netbeans.modules.form.palette.*;
+import org.netbeans.modules.form.palette.CPManager;
+import org.netbeans.modules.form.palette.PaletteItem;
 
 import org.netbeans.modules.form.layoutsupport.*;
 
@@ -51,9 +49,7 @@ class HandleLayer extends JPanel
     static final int COMP_UNDER_SELECTED = 3; // get the component under the deepest selected component
 
     private static final int DESIGNER_RESIZING = 256; // flag for resizeType
-    private final static MessageFormat resizingHintFormat =
-        new MessageFormat(
-            FormUtils.getBundleString("FMT_HINT_DesignerResizing")); // NOI18N
+    private static MessageFormat resizingHintFormat;
 
     private FormDesigner formDesigner;
     private boolean viewOnly;
@@ -79,61 +75,22 @@ class HandleLayer extends JPanel
 //        setNextFocusableComponent(this);
         setLayout(null);
 
-        // on JDK 1.4, we set Ctrl+TAB and Ctrl+Shift+TAB as focus traversal
-        // keys - to have TAB and Shift+TAB free for component selection
-        java.lang.reflect.Method setFocusTraversalKeysMethod = null;
-        try {
-            setFocusTraversalKeysMethod =
-                getClass().getMethod("setFocusTraversalKeys", // NOI18N
-                                     new Class[] { Integer.TYPE, Set.class });
-        }
-        catch (NoSuchMethodException ex) {} // ignore
+        // set Ctrl+TAB and Ctrl+Shift+TAB as focus traversal keys - to have
+        // TAB and Shift+TAB free for component selection
+        Set keys = new HashSet();
+        keys.add(AWTKeyStroke.getAWTKeyStroke(9,
+                                              InputEvent.CTRL_DOWN_MASK,
+                                              true));
+        setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                              keys);
+        keys.clear();
+        keys.add(AWTKeyStroke.getAWTKeyStroke(9,
+                                              InputEvent.CTRL_DOWN_MASK
+                                                 |InputEvent.SHIFT_DOWN_MASK,
+                                              true));
+        setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+                              keys);
 
-        if (setFocusTraversalKeysMethod != null) { // JDK 1.4 or newer
-            Set keys = new HashSet();
-            try {
-                Class awtKeyStrokeClass = Class.forName("java.awt.AWTKeyStroke"); // NOI18N
-                java.lang.reflect.Method getAWTKeyStrokeMethod =
-                    awtKeyStrokeClass.getMethod("getAWTKeyStroke", // NOI18N
-                                                new Class[] { Integer.TYPE,
-                                                              Integer.TYPE,
-                                                              Boolean.TYPE });
-//                keys.add(AWTKeyStroke.getAWTKeyStroke(
-//                           9, InputEvent.CTRL_DOWN_MASK, true));
-                keys.add(getAWTKeyStrokeMethod.invoke(
-                           null,
-                           new Object[] { new Integer(9),
-                                          new Integer(128),
-                                          Boolean.TRUE }));
-
-//                setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-//                                      keys);
-                setFocusTraversalKeysMethod.invoke(this,
-                                                   new Object[] {
-                                                       new Integer(0), keys });
-
-                keys.clear();
-//                keys.add(AWTKeyStroke.getAWTKeyStroke(
-//                          9,
-//                          InputEvent.CTRL_DOWN_MASK|InputEvent.SHIFT_DOWN_MASK,
-//                          true));
-                keys.add(getAWTKeyStrokeMethod.invoke(
-                           null,
-                           new Object[] { new Integer(9),
-                                          new Integer(192),
-                                          Boolean.TRUE }));
-                
-//                setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
-//                                      keys);
-                setFocusTraversalKeysMethod.invoke(this,
-                                                   new Object[] {
-                                                       new Integer(1), keys });
-            }
-            catch (Exception ex) { // should not happen (running on JDK 1.4)
-                ex.printStackTrace();
-            }
-        }
-        
         getAccessibleContext().setAccessibleName(
             FormUtils.getBundleString("ACSN_HandleLayer")); // NOI18N
         getAccessibleContext().setAccessibleDescription(
@@ -210,29 +167,16 @@ class HandleLayer extends JPanel
     protected void processKeyEvent(KeyEvent e) {
         int keyCode = e.getKeyCode();
 
-        // JDK 1.3 focus traversal hacks - we don't allow TAB keys to get to
-        // the focus manager, we handle it by ourselves - not changing the
-        // focus but the component selection
         if (keyCode == KeyEvent.VK_TAB || e.getKeyChar() == '\t') {
-            if (e.getID() == KeyEvent.KEY_PRESSED) {
-                if (e.isControlDown()) {
-                    // Ctrl+TAB
-                    if (!e.isShiftDown())
-                        javax.swing.FocusManager.getCurrentManager()
-                                                    .focusNextComponent(this);
-                    else
-                        javax.swing.FocusManager.getCurrentManager()
-                                                    .focusPreviousComponent(this);
-                }
-                else {
+            if (!e.isControlDown()) {
+                if (e.getID() == KeyEvent.KEY_PRESSED) {
                     RADComponent nextComp = formDesigner.getNextVisualComponent(
                                                               !e.isShiftDown());
-
                      if (nextComp != null)
                          formDesigner.setSelectedComponent(nextComp);
                 }
+                e.consume();
             }
-            e.consume();
         }
         else if (keyCode == KeyEvent.VK_SPACE) {
             if (!viewOnly && e.getID() == KeyEvent.KEY_RELEASED) {
@@ -563,7 +507,7 @@ class HandleLayer extends JPanel
 
         Node node = metacomp.getNodeReference();
         if (node != null) {
-            SystemAction action = node.getDefaultAction();
+            Action action = node.getPreferredAction();
             if (action != null) {// && action.isEnabled()) {
                 action.actionPerformed(new ActionEvent(
                         node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
@@ -755,6 +699,9 @@ class HandleLayer extends JPanel
             else if (getToolTipText() == null) {
                 Dimension size = formDesigner.getComponentLayer()
                                                .getDesignerSize();
+                if (resizingHintFormat == null)
+                    resizingHintFormat = new MessageFormat(
+                        FormUtils.getBundleString("FMT_HINT_DesignerResizing")); // NOI18N
                 String hint = resizingHintFormat.format(
                                 new Object[] { new Integer(size.width),
                                                new Integer(size.height) });
@@ -1075,7 +1022,7 @@ class HandleLayer extends JPanel
     private class HandleLayerMouseListener implements MouseListener
     {
         public void mouseClicked(MouseEvent e) {
-            if (MouseUtils.isRightMouseButton(e) && !anyDragger())
+            if (SwingUtilities.isRightMouseButton(e) && !anyDragger())
                 if (!draggingCanceled)
                     showContextMenu(e.getPoint());
                 else
@@ -1088,7 +1035,7 @@ class HandleLayer extends JPanel
             if (!HandleLayer.this.isVisible())
                 return;
 
-            if (MouseUtils.isLeftMouseButton(e)) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
                 if (formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT
                     && !endDragging(e.getPoint()))
                 {
@@ -1141,7 +1088,7 @@ class HandleLayer extends JPanel
             if (!HandleLayer.this.isVisible())
                 return;
 
-            if (MouseUtils.isRightMouseButton(e)) {
+            if (SwingUtilities.isRightMouseButton(e)) {
                 if (!anyDragger()) {
                     if (!mouseOnVisual(e.getPoint()))
                         selectOtherComponentsNode();
@@ -1159,7 +1106,7 @@ class HandleLayer extends JPanel
 
                 e.consume();
             }
-            else if (MouseUtils.isLeftMouseButton(e)) {
+            else if (SwingUtilities.isLeftMouseButton(e)) {
                 lastLeftMousePoint = e.getPoint();
 
                 boolean modifier = e.isControlDown() || e.isAltDown() || e.isShiftDown();
