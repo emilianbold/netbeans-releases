@@ -110,6 +110,9 @@ public class MergePanel extends javax.swing.JPanel {
     public MergePanel() {
 //        this.diff = diff;
         initComponents ();
+        // TODO Get icons for these buttons
+        firstConflictButton.setVisible(false);
+        lastConflictButton.setVisible(false);
         prevConflictButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/prev.gif")));
         nextConflictButton.setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/next.gif")));
         //prevConflictButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/diff/builtin/visualizer/prev.gif")));
