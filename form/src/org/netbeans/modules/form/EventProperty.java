@@ -56,12 +56,13 @@ public class EventProperty extends PropertySupport.ReadWrite {
      * @return String name of the selected event handler attached to the event
      */
     public Object getValue() {
-        Vector handlers = event.getHandlers();
+        List handlers = event.getHandlers();
 
         if (handlers.size() == 0)
             lastSelectedHandler = null;
-        else if (lastSelectedHandler == null || !handlers.contains(lastSelectedHandler))
-            lastSelectedHandler = (EventHandler)handlers.get(0);
+        else if (lastSelectedHandler == null 
+                 || !handlers.contains(lastSelectedHandler))
+            lastSelectedHandler = (EventHandler) handlers.get(0);
 
         return lastSelectedHandler != null ? lastSelectedHandler.getName() : null;
     }
@@ -83,8 +84,8 @@ public class EventProperty extends PropertySupport.ReadWrite {
             if (val instanceof String) {
                 change = new HandlerSetChange();
 
-                Vector handlers = event.getHandlers();
-                if (handlers.size() > 0) {
+                List handlers = event.getHandlers();
+                if (handlers.size() > 0) { // there are already some handlers
                     String current = lastSelectedHandler == null ?
                         ((EventHandler)handlers.get(0)).getName() :
                         lastSelectedHandler.getName();
@@ -106,7 +107,7 @@ public class EventProperty extends PropertySupport.ReadWrite {
                         for (int i=0, n=handlers.size(); i < n; i++)
                             if (((EventHandler)handlers.get(i)).getName()
                                                              .equals(val))
-                            {   // do nothing, just switch selected handler
+                            {   // do nothing
                                 ignoreValue = true; 
                                 break;
                             }
@@ -117,7 +118,7 @@ public class EventProperty extends PropertySupport.ReadWrite {
                         }
                     }
                 }
-                else {
+                else { // no handlers yet, add a new one
                     change.getAdded().add((String)val);
                     newSelectedHandler = (String) val;
                 }
@@ -256,14 +257,19 @@ public class EventProperty extends PropertySupport.ReadWrite {
          * the property sheet.
          */
         public java.awt.Component getInPlaceCustomEditor() {
-            Vector handlers = event.getHandlers();
+            List handlers = event.getHandlers();
             eventCombo = new EventComboBox();
             eventCombo.setEditable(!EventProperty.this.isReadOnly());
 
             if (handlers.size() == 0) {
-                eventCombo.getEditor().setItem(
-                    FormUtils.getDefaultEventName(event.getComponent(),
-                                                  event.getListenerMethod()));
+                FormEventHandlers formHandlers =
+                    event.getComponent().getFormModel().getFormEventHandlers();
+                String suggestName =
+                    FormEventHandlers.getDefaultHandlerName(event);
+                EventHandler handler = formHandlers.getEventHandler(suggestName);
+                if (handler == null || !handler.checkCompatibility(event))
+                    suggestName = formHandlers.findFreeHandlerName(suggestName);
+                eventCombo.getEditor().setItem(suggestName);
             }
             else {
                 for (int i=0, n=handlers.size(); i < n; i++) {
@@ -288,7 +294,10 @@ public class EventProperty extends PropertySupport.ReadWrite {
 
                         String selected = (String) eventCombo.getItemAt(i);
                         EventEditor.this.setValue(selected);
-                        event.gotoEventHandler(selected);
+
+                        // redundant operation - just switches to the editor
+                        event.getComponent().getFormModel().getFormEventHandlers()
+                            .addEventHandler(event, selected);
                     }
                 };
             eventCombo.addActionListener(comboSelectListener);
@@ -311,7 +320,7 @@ public class EventProperty extends PropertySupport.ReadWrite {
                     }
                 };
             eventCombo.getEditor().getEditorComponent().addFocusListener(
-                                               comboEditFocusListener);
+                                                   comboEditFocusListener);
 
             // listening to Esc key pressed in combobox's editor
             eventCombo.getEditor().getEditorComponent()
@@ -331,18 +340,16 @@ public class EventProperty extends PropertySupport.ReadWrite {
                             .removeFocusListener(comboEditFocusListener);
 
                         String selected = (String) eventCombo.getEditor().getItem();
-//                        EventProperty.this.setValue(selected);
                         EventEditor.this.setValue(selected);
-                        if ((selected == null || "".equals(selected)) // NOI18N
-                                && lastSelectedHandler != null)
-                        {
-//                            selected = lastSelectedHandler.getName();
-//                            EventEditor.this.setValue(selected);
-                            EventEditor.this.setValue(lastSelectedHandler.getName());
-                        }
 
-                        if (selected != null && !"".equals(selected)) // NOI18N
-                            event.gotoEventHandler(selected);
+                        if (selected == null || "".equals(selected)) { // NOI18N
+                            if (lastSelectedHandler != null)
+                                EventEditor.this.setValue(
+                                    lastSelectedHandler.getName());
+                        }
+                        else // redundant operation - just switches to the editor
+                            event.getComponent().getFormModel().getFormEventHandlers()
+                                .addEventHandler(event, selected);
                     }
                 }
             });
@@ -361,7 +368,7 @@ public class EventProperty extends PropertySupport.ReadWrite {
          */
         public boolean hasInPlaceCustomEditor() {
             return !EventProperty.this.isReadOnly()
-                     || EventProperty.this.event.getHandlers().size() > 0;
+                   || EventProperty.this.event.getHandlers().size() > 0;
         }
 
         public boolean supportsCustomEditor() {

@@ -11,14 +11,14 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
+import org.openide.*;
 import org.openide.explorer.propertysheet.editors.ModifierEditor;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.text.IndentEngine;
-import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.loaders.MultiDataObject.Entry;
 
@@ -128,7 +128,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 formEditorSupport.findSimpleSection(SECTION_VARIABLES);
 
             if (initComponentsSection == null || variablesSection == null) {
-                System.out.println("ERROR: Cannot initialize guarded sections... code generation is disabled."); // NOI18N
+                System.err.println("ERROR: Cannot initialize guarded sections... code generation is disabled."); // NOI18N
                 canGenerate = false;
             }
 
@@ -732,10 +732,13 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private void regenerateEventHandlers() {
         // only missing handler methods are generated, existing are left intact
-        Object[] handlers = formModel.getFormEventHandlers().getAllHandlers();
+        EventHandler[] handlers = formModel.getFormEventHandlers().getAllHandlers();
         for (int i=0; i < handlers.length; i++) {
-            EventHandler eh = (EventHandler)handlers[i];
-            eh.generateHandler(null);
+            EventHandler eh = handlers[i];
+            generateEventHandler(eh.getName(),
+                                 eh.getParameterTypes(),
+                                 eh.getExceptionTypes(),
+                                 null);
         }
     }
 
@@ -1486,17 +1489,19 @@ class JavaCodeGenerator extends CodeGenerator {
     // -----------------------------------------------------------------------------
     // Event handlers
 
-    /** Generates the specified event handler, if it does not exist yet.
-     * @param handlerName The name of the event handler
-     * @param paramTypes the array of event handler parameter types
-     * @param exceptTypes the array of exception types that event handler throws
-     * @param bodyText the body text of the event handler or null for default(empty) one
-     * @return true if the event handler have not existed yet and was creaated, false otherwise
+    /** Generates the specified event handler.
+     * @return whether the event handler has been generated
      */
-    public boolean generateEventHandler(String handlerName, String[] paramTypes,
-                                        String[] exceptTypes, String bodyText) {
-        if (!initialized || !canGenerate
-              || getEventHandlerSection(handlerName) != null)
+    private boolean generateEventHandler(String handlerName,
+                                         String[] paramTypes,
+                                         String[] exceptTypes,
+                                         String bodyText)
+    {
+        if (!initialized || !canGenerate)
+            return false;
+
+        JavaEditor.InteriorSection sec = getEventHandlerSection(handlerName);
+        if (sec != null && bodyText == null)
             return false;
 
         IndentEngine engine = IndentEngine.find(formEditorSupport.getDocument());
@@ -1508,15 +1513,17 @@ class JavaCodeGenerator extends CodeGenerator {
 
         synchronized(GEN_LOCK) {
             try {
-                JavaEditor.InteriorSection sec =
-                    formEditorSupport.createInteriorSectionAfter(
+                if (sec == null)
+                    sec = formEditorSupport.createInteriorSectionAfter(
                         initComponentsSection, getEventSectionName(handlerName));
                 int i1, i2;
 
                 codeWriter.write(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
                 codeWriter.flush();
                 i1 = buffer.getBuffer().length();
-                codeWriter.write(getValidEventHandlerBody(bodyText));
+                if (bodyText == null)
+                    bodyText = getDefaultEventBody();
+                codeWriter.write(bodyText);
                 codeWriter.flush();
                 i2 = buffer.getBuffer().length();
                 codeWriter.write(getEventHandlerFooter());
@@ -1539,55 +1546,10 @@ class JavaCodeGenerator extends CodeGenerator {
         return true;
     }
 
-    /** Changes the text of the specified event handler, if it already exists.
-     * @param handlerName The name of the event handler
-     * @param paramTypes the array of event handler parameter types
-     * @param exceptTypes the array of exception types that event handler throws
-     * @param bodyText the new body text of the event handler or null for default(empty) one
-     * @return true if the event handler existed and was modified, false otherwise
-     */
-    public boolean changeEventHandler(final String handlerName, final String[] paramTypes,
-                                      final String[] exceptTypes, final String bodyText) {
-        JavaEditor.InteriorSection sec = getEventHandlerSection(handlerName);
-        if (sec == null || !initialized || !canGenerate)
-            return false;
-
-        IndentEngine engine = IndentEngine.find(formEditorSupport.getDocument());
-        StringWriter buffer = new StringWriter();
-        Writer codeWriter = engine.createWriter(formEditorSupport.getDocument(),
-                                                sec.getPositionBefore().getOffset(),
-                                                buffer);
-        synchronized(GEN_LOCK) {
-            try {
-                int i1, i2;
-
-                codeWriter.write(getEventHandlerHeader(handlerName, paramTypes, exceptTypes));
-                codeWriter.flush();
-                i1 = buffer.getBuffer().length();
-                codeWriter.write(getValidEventHandlerBody(bodyText));
-                codeWriter.flush();
-                i2 = buffer.getBuffer().length();
-                codeWriter.write(getEventHandlerFooter());
-                codeWriter.flush();
-
-                sec.setHeader(buffer.getBuffer().substring(0,i1));
-                sec.setBody(buffer.getBuffer().substring(i1,i2));
-                sec.setBottom(buffer.getBuffer().substring(i2));
-
-                codeWriter.close();
-            }
-            catch (IOException e) {
-                return false;
-            }
-            clearUndo();
-        }
-        return true;
-    }
-
     /** Removes the specified event handler - removes the whole method together with the user code!
      * @param handlerName The name of the event handler
      */
-    public boolean deleteEventHandler(String handlerName) {
+    private boolean deleteEventHandler(String handlerName) {
         JavaEditor.InteriorSection section = getEventHandlerSection(handlerName);
         if (section == null || !initialized || !canGenerate)
             return false;
@@ -1638,10 +1600,6 @@ class JavaCodeGenerator extends CodeGenerator {
         return buf.toString();
     }
 
-    private String getValidEventHandlerBody(String bodyText) {
-        return bodyText == null ? getDefaultEventBody() : bodyText;
-    }
-
     private String getEventHandlerFooter() {
         return "}\n"; // NOI18N
     }
@@ -1654,8 +1612,11 @@ class JavaCodeGenerator extends CodeGenerator {
      * @param oldHandlerName The old name of the event handler
      * @param newHandlerName The new name of the event handler
      */
-    public boolean renameEventHandler(String oldHandlerName, String newHandlerName,
-                                      String[] paramTypes, String[] exceptTypes) {
+    private boolean renameEventHandler(String oldHandlerName,
+                                       String newHandlerName,
+                                       String[] paramTypes,
+                                       String[] exceptTypes)
+    {
         JavaEditor.InteriorSection sec = getEventHandlerSection(oldHandlerName);
         if (sec == null || !initialized || !canGenerate)
             return false;
@@ -1691,7 +1652,7 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     /** Focuses the specified event handler in the editor. */
-    public void gotoEventHandler(String handlerName) {
+    private void gotoEventHandler(String handlerName) {
         JavaEditor.InteriorSection sec = getEventHandlerSection(handlerName);
         if (sec != null && initialized) {
             sec.openAt();
@@ -1700,7 +1661,7 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     /** Gets the body (text) of event handler of given name. */
-    public String getEventHandlerText(String handlerName) {
+    private String getEventHandlerText(String handlerName) {
         JavaEditor.InteriorSection section = getEventHandlerSection(handlerName);
         if (section != null) {
             String tx = section.getText();
@@ -1708,21 +1669,6 @@ class JavaCodeGenerator extends CodeGenerator {
             return tx;
         }
         return null;
-    }
-
-    /** 
-     * Returns whether the specified event handler is empty (with no user
-     * code). Empty handlers can be deleted without user confirmation.
-     * @return true if the event handler exists and is empty
-     */
-    public boolean isEventHandlerEmpty(String handlerName) {
-        JavaEditor.InteriorSection section = getEventHandlerSection(handlerName);
-        if (section != null) {
-            String tx = section.getText();
-            tx = tx.substring(tx.indexOf("{")+1, tx.lastIndexOf("}")).trim(); // NOI18N
-            return tx.equals("") || tx.equals(getDefaultEventBody().trim()); // NOI18N
-        }
-        return false;
     }
 
     // ------------------------------------------------------------------------------------------
@@ -1994,9 +1940,7 @@ class JavaCodeGenerator extends CodeGenerator {
             for (int i=0; i < events.length; i++) {
                 FormModelEvent ev = events[i];
 
-                if (ev.isModifying())
-                    modifying = true;
-
+                // form loaded
                 if (ev.getChangeType() == FormModelEvent.FORM_LOADED) {
                     if (needsRegeneration()) {
                         regenerateVariables();
@@ -2006,6 +1950,45 @@ class JavaCodeGenerator extends CodeGenerator {
                         FormModel.t("code regenerated");
                     }
                     return;
+                }
+
+                if (ev.isModifying())
+                    modifying = true;
+
+                if (ev.getChangeType() == FormModelEvent.EVENT_HANDLER_ADDED) {
+                    EventHandler eh = ev.getEventHandler();
+                    if (eh != null) {
+                        String handlerName = ev.getEventHandlerName();
+                        String bodyText = ev.getNewEventHandlerContent();
+                        if (ev.getCreatedDeleted() || bodyText != null) {
+                            if (!ev.getCreatedDeleted())
+                                ev.setOldEventHandlerContent(
+                                    getEventHandlerText(handlerName));
+                            generateEventHandler(handlerName,
+                                                 eh.getParameterTypes(),
+                                                 eh.getExceptionTypes(),
+                                                 bodyText);
+                        }
+                        if (events.length == 1)
+                            gotoEventHandler(handlerName);
+                    }
+                }
+                else if (ev.getChangeType() == FormModelEvent.EVENT_HANDLER_REMOVED) {
+                    if (ev.getCreatedDeleted()) {
+                        String handlerName = ev.getEventHandlerName();
+                        ev.setOldEventHandlerContent(
+                            getEventHandlerText(handlerName));
+                        deleteEventHandler(handlerName);
+                    }
+                }
+                else if (ev.getChangeType() == FormModelEvent.EVENT_HANDLER_RENAMED) {
+                    EventHandler eh  = ev.getEventHandler();
+                    if (eh != null) {
+                        renameEventHandler(ev.getOldEventHandlerName(),
+                                           ev.getNewEventHandlerName(),
+                                           eh.getParameterTypes(),
+                                           eh.getExceptionTypes());
+                    }
                 }
                 else if (ev.getChangeType() == FormModelEvent.FORM_TO_BE_SAVED)
                     toBeSaved = true;
@@ -2084,6 +2067,7 @@ class JavaCodeGenerator extends CodeGenerator {
             }
         }
     }
+
     // }}}
 
     // hacked ObjectOutputStream - to replace special values used by property

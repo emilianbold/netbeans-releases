@@ -288,11 +288,8 @@ public class RADComponentNode extends FormNode
      * @exception IOException if something fails
      */
     public void destroy() throws java.io.IOException {
-        // turn on notifying the user about deleting event handlers
-        FormEventHandlers.setNotifyUser(true);
         component.getFormModel().removeComponent(component);
         component.setNodeReference(null);
-        FormEventHandlers.restorePreviousNotifySettings();
 
         super.destroy();
     }

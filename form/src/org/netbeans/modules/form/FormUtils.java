@@ -713,26 +713,6 @@ public class FormUtils
                && javax.swing.JTabbedPane.class.isAssignableFrom(beanClass);
     }
 
-    /** @return a default name for event handling method - it is a concatenation of
-     * the component name and the name of the listener method(with first letter capital)
-     *(e.g. button1MouseReleased).
-     */
-    public static String getDefaultEventName(RADComponent component, Method listenerMethod) {
-        String componentName = component.getName();
-        if (component == component.getFormModel().getTopRADComponent()) {
-            componentName = "form"; // NOI18N
-        }
-        return getDefaultEventName(componentName, listenerMethod);
-    }
-
-    static String getDefaultEventName(String name, Method listenerMethod) {
-        StringBuffer sb = new StringBuffer(name);
-        String lm = listenerMethod.getName();
-        sb.append(lm.substring(0, 1).toUpperCase());
-        sb.append(lm.substring(1));
-        return sb.toString();
-    }
-
     /** @return a formatted name of specified method
      */
     public static String getMethodName(MethodDescriptor desc) {

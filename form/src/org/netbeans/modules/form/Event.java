@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form;
 
 import java.beans.*;
@@ -22,14 +21,13 @@ import java.util.*;
  * A class that represents one event of a RADComponent.
  * The event is identified by the listener class and the handling method.
  * The Event class also holds all event handlers attached to the event.
+ *
+ * @author Tomas Pavek
  */
+
 public class Event
 {
-    /**
-     * The event handler methods or null if not specified. Members are
-     * EventHandler.
-     */
-    private Vector eventHandlers = new Vector();
+    private List eventHandlers = new ArrayList();
     private RADComponent metacomponent;
     private Method listenerMethod;
 
@@ -55,6 +53,7 @@ public class Event
     }
 
     public void addHandler(EventHandler handler) {
+        eventHandlers.remove(handler);
         eventHandlers.add(handler);
     }
 
@@ -62,44 +61,30 @@ public class Event
         eventHandlers.remove(handler);
     }
 
-    public Vector getHandlers() {
+    public List getHandlers() {
         return eventHandlers;
     }
 
     public void createDefaultEventHandler() {
-        if (!metacomponent.getFormModel().getFormEventHandlers()
-                .addEventHandler(this, FormUtils.getDefaultEventName(
-                                           metacomponent, listenerMethod)))
-            return;
+        FormEventHandlers formHandlers =
+            metacomponent.getFormModel().getFormEventHandlers();
 
-//        metacomponent.getFormModel().fireFormChanged();
+        String newHandlerName;
+        if (eventHandlers.size() > 0) {
+            newHandlerName = ((EventHandler)eventHandlers.get(0)).getName();
+        }
+        else {
+            newHandlerName = FormEventHandlers.getDefaultHandlerName(this);
+            EventHandler handler = formHandlers.getEventHandler(newHandlerName);
+            if (handler == null || !handler.checkCompatibility(this))
+                newHandlerName = formHandlers.findFreeHandlerName(newHandlerName);
+        }
 
-        String newHandlerName =
-            ((EventHandler)eventHandlers.get(eventHandlers.size() - 1))
-                .getName();
+        formHandlers.addEventHandler(this, newHandlerName);
 
         metacomponent.getNodeReference().firePropertyChangeHelper(
             FormEditor.EVENT_PREFIX + getName(), null, newHandlerName);
     }
-
-    public void gotoEventHandler() {
-        if (eventHandlers.size() == 1)
-            metacomponent.getFormModel().getCodeGenerator().gotoEventHandler(
-                ((EventHandler) eventHandlers.get(0)).getName());
-    }
-
-    public void gotoEventHandler(String handlerName) {
-        EventHandler handler = null;
-        for (int i = 0, n=eventHandlers.size(); i<n; i++)
-            if (((EventHandler) eventHandlers.get(i)).getName().equals(handlerName)) {
-                handler = (EventHandler) eventHandlers.get(i);
-                break;
-            }
-        if (handler != null) {
-            metacomponent.getFormModel().getCodeGenerator().gotoEventHandler(handler.getName());
-        }
-    }
-
 
     /** Helper class for holding textual information about one event and its handlers.
      * Used for writing to/reading from XML. */
@@ -187,8 +172,9 @@ public class Event
                 return !tok.hasMoreTokens();
 
             for (int i=0; i < params.length; i++) {
-                if (!tok.hasMoreTokens() ||
-                    !params[i].getName().equals(tok.nextToken())) return false;
+                if (!tok.hasMoreTokens()
+                        || !params[i].getName().equals(tok.nextToken()))
+                    return false;
             }
             return !tok.hasMoreTokens();
         }

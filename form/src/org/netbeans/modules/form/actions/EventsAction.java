@@ -210,14 +210,10 @@ public class EventsAction extends CookieAction {
 
                                 EventMenuItem mi = (EventMenuItem) source;
                                 Event event = mi.getEvent();
-                                if (event == null)
-                                    return;
-                                
                                 String handlerName = mi.getHandlerName();
-                                if (handlerName == null)
-                                    event.gotoEventHandler();
-                                else
-                                    event.gotoEventHandler(handlerName);
+                                event.getComponent().getFormModel()
+                                    .getFormEventHandlers().addEventHandler(
+                                        event, handlerName);
                             }
                         });
                     }
@@ -247,13 +243,7 @@ public class EventsAction extends CookieAction {
                                 return;
 
                             EventMenuItem mi = (EventMenuItem) source;
-                            Event event = mi.getEvent();
-                            if (event == null)
-                                return;
-
-                            if (event.getHandlers().size() == 0)
-                                event.createDefaultEventHandler();
-                            event.gotoEventHandler();
+                            mi.getEvent().createDefaultEventHandler();
                         }
                     });
                 }

@@ -392,8 +392,8 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         formModel.getCodeStructure().renameVariable(oldName, name);
 
         renameDefaultEventHandlers(oldName, name);
-        // [renaming of default event handlers should be probably a setting
-        //  be in global options]
+        // [possibility of renaming default event handlers should be probably
+        // configurable in global options]
 
         formModel.fireSyntheticPropertyChanged(this, PROP_NAME,
                                                oldName, name);
@@ -407,24 +407,32 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         storedName = name;
     }
 
-    void renameDefaultEventHandlers(String oldName, String newName) {
+    private void renameDefaultEventHandlers(String oldComponentName,
+                                            String newComponentName)
+    {
         boolean renamed = false; // whether any defualt handler was renamed
         EventSet[] esets = getEventHandlers().getEventSets();
+        FormEventHandlers formHandlers = formModel.getFormEventHandlers();
+
         for (int i=0; i < esets.length; i++) {
             Event [] evts = esets[i].getEvents();
-
             for (int j=0; j < evts.length; j++) {
-                String defaultName = FormUtils.getDefaultEventName(
-                    oldName, evts[j].getListenerMethod());
-
+                String defaultName = FormEventHandlers.getDefaultHandlerName(
+                                                    oldComponentName, evts[j]);
                 Iterator iter = evts[j].getHandlers().iterator();
                 while (iter.hasNext()) {
-                    EventHandler eh = (EventHandler) iter.next();
-                    if (eh.getName().equals(defaultName)) {
-                        String newValue = FormUtils.getDefaultEventName(newName, evts[j].getListenerMethod());
-                        formModel.getFormEventHandlers().renameEventHandler(eh, newValue);
+                    EventHandler handler = (EventHandler) iter.next();
+                    String handlerName = handler.getName();
+                    if (handlerName.startsWith(defaultName)) {
+                        String newName = handlerName.length() > defaultName.length() ?
+                            formHandlers.findFreeHandlerName(
+                                FormEventHandlers.getDefaultHandlerName(evts[j])
+                                  + handlerName.substring(defaultName.length())) :
+                            formHandlers.findFreeHandlerName(evts[j]);
+                        
+                        formModel.getFormEventHandlers()
+                            .renameEventHandler(handler, newName);
                         renamed = true;
-                        break;
                     }
                 }
             }
@@ -661,11 +669,9 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
     protected void attachDefaultEvent() {
         getEventHandlers();
-        Event defaultEvt = eventsList.getDefaultEvent();
-        Vector handlers = defaultEvt.getHandlers();
-        if ((handlers == null || handlers.size() == 0) && !readOnly)
-            defaultEvt.createDefaultEventHandler();
-        defaultEvt.gotoEventHandler();
+        eventsList.getDefaultEvent().createDefaultEventHandler();
+        // if the event handler already exists, nothing is done, just switched
+        // to the source editor
     }
 
     // -----------------------------------------------------------------------------

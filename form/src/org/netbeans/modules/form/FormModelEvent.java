@@ -54,8 +54,6 @@ public class FormModelEvent extends EventObject
     private String propertyName;
     private Object oldPropertyValue;
     private Object newPropertyValue;
-    private LayoutSupportDelegate oldLayoutSupport;
-    private LayoutSupportDelegate newLayoutSupport;
     private Event componentEvent;
 
     private int changeType;
@@ -64,9 +62,15 @@ public class FormModelEvent extends EventObject
 
     // -----------
 
+    private FormModelEvent additionalEvent; 
+    private static List interestList; // events interested in additional events
+
+    // -----------
+
     FormModelEvent(FormModel source, int changeType) {
         super(source);
         this.changeType = changeType;
+        informInterestedEvents(this);
     }
 
     void setProperty(String propName, Object oldValue, Object newValue) {
@@ -88,8 +92,8 @@ public class FormModelEvent extends EventObject
     {
         component = metacont;
         container = metacont;
-        oldLayoutSupport = oldLayoutSupp;
-        newLayoutSupport = newLayoutSupp;
+        oldPropertyValue = oldLayoutSupp;
+        newPropertyValue = newLayoutSupp;
     }
 
     void setReordering(int[] perm) {
@@ -139,12 +143,13 @@ public class FormModelEvent extends EventObject
         }
     }
 
-    void setEvent(Event event,
+    void setEvent(Event event, // may be null if the handler is just updated
                   EventHandler handler,
                   String bodyText,
                   boolean createdNew)
     {
-        component = event.getComponent();
+        if (event != null)
+            component = event.getComponent();
         componentEvent = event;
         propertyName = handler.getName();
         newPropertyValue = bodyText;
@@ -184,7 +189,12 @@ public class FormModelEvent extends EventObject
     public final boolean isModifying() {
         return changeType != FORM_LOADED
                && changeType != FORM_TO_BE_SAVED
-               && changeType != FORM_TO_BE_CLOSED;
+               && changeType != FORM_TO_BE_CLOSED
+               && (changeType != EVENT_HANDLER_ADDED || componentEvent != null);
+    }
+
+    public final boolean getCreatedDeleted() {
+        return createdDeleted;
     }
 
     public final ComponentContainer getContainer() {
@@ -199,8 +209,8 @@ public class FormModelEvent extends EventObject
         return constraints;
     }
 
-    public final boolean getCreatedDeleted() {
-        return createdDeleted;
+    public final int getComponentIndex() {
+        return componentIndex;
     }
 
     public final String getPropertyName() {
@@ -228,11 +238,11 @@ public class FormModelEvent extends EventObject
     }
 
     public final LayoutSupportDelegate getOldLayoutSupport() {
-        return oldLayoutSupport;
+        return (LayoutSupportDelegate) oldPropertyValue;
     }
 
     public final LayoutSupportDelegate getNewLayoutSupport() {
-        return newLayoutSupport;
+        return (LayoutSupportDelegate) newPropertyValue;
     }
 
     public final int[] getReordering() {
@@ -243,14 +253,55 @@ public class FormModelEvent extends EventObject
         return componentEvent;
     }
 
+    public final EventHandler getEventHandler() {
+        return getFormModel().getFormEventHandlers().getEventHandler(propertyName);
+    }
+
     public final String getEventHandlerName() {
         return propertyName;
     }
 
-    public final String getEventHandlerText() {
+    public final String getOldEventHandlerName() {
+        return (String) oldPropertyValue;
+    }
+
+    public final String getNewEventHandlerName() {
+        return (String) newPropertyValue;
+    }
+
+    public final String getNewEventHandlerContent() {
         return changeType == EVENT_HANDLER_ADDED
-                       || changeType == EVENT_HANDLER_REMOVED ?
+                   || changeType == EVENT_HANDLER_REMOVED ?
                (String) newPropertyValue : null;
+    }
+
+//    public final void setNewEventHandlerContent(String text) {
+//        if (changeType == EVENT_HANDLER_ADDED
+//                || changeType == EVENT_HANDLER_REMOVED)
+//            newPropertyValue = text;
+//    }
+
+    public final String getOldEventHandlerContent() {
+        if (changeType == EVENT_HANDLER_ADDED
+            || changeType == EVENT_HANDLER_REMOVED)
+        {
+            if (additionalEvent != null) {
+                if (additionalEvent.changeType == EVENT_HANDLER_REMOVED
+                    || additionalEvent.changeType == EVENT_HANDLER_ADDED)
+                {
+                    oldPropertyValue = additionalEvent.oldPropertyValue;
+                }
+                additionalEvent = null;
+            }
+            return (String) oldPropertyValue;
+        }
+        return null;
+    }
+
+    public final void setOldEventHandlerContent(String text) {
+        if (changeType == EVENT_HANDLER_ADDED
+                || changeType == EVENT_HANDLER_REMOVED)
+            oldPropertyValue = text;
     }
 
     // ----------
@@ -259,6 +310,34 @@ public class FormModelEvent extends EventObject
         if (undoableEdit == null)
             undoableEdit = new FormUndoableEdit();
         return undoableEdit;
+    }
+
+    // ----------
+    // methods for events interested in additional events occured
+    // (used for undo/redo processing of event handlers)
+
+    private static void addToInterestList(FormModelEvent ev) {
+        if (interestList == null)
+            interestList = new ArrayList();
+        else
+            interestList.remove(ev);
+
+        interestList.add(ev);
+    }
+
+    private static void removeFromInterestList(FormModelEvent ev) {
+        if (interestList != null)
+            interestList.remove(ev);
+    }
+
+    private static void informInterestedEvents(FormModelEvent newEvent) {
+        if (interestList != null)
+            for (Iterator it=interestList.iterator(); it.hasNext(); )
+                ((FormModelEvent)it.next()).newEventCreated(newEvent);
+    }
+
+    private void newEventCreated(FormModelEvent newEvent) {
+        additionalEvent = newEvent;
     }
 
     // ----------
@@ -406,9 +485,10 @@ public class FormModelEvent extends EventObject
 
         private void undoContainerLayoutExchange() {
             try {
-                getFormModel().setContainerLayout((RADVisualContainer)container,
-                                                  oldLayoutSupport,
-                                                  null);
+                getFormModel().setContainerLayout(
+                    (RADVisualContainer) getContainer(),
+                    getOldLayoutSupport(),
+                    null);
             }
             catch (Exception ex) {
                 ex.printStackTrace();
@@ -417,9 +497,10 @@ public class FormModelEvent extends EventObject
 
         private void redoContainerLayoutExchange() {
             try {
-                getFormModel().setContainerLayout((RADVisualContainer)container,
-                                                  newLayoutSupport,
-                                                  null);
+                getFormModel().setContainerLayout(
+                    (RADVisualContainer)getContainer(),
+                    getOldLayoutSupport(),
+                    null);
             }
             catch (Exception ex) {
                 ex.printStackTrace();
@@ -428,13 +509,13 @@ public class FormModelEvent extends EventObject
 
         private void undoContainerLayoutChange() {
             LayoutSupportManager laysup =
-                component instanceof RADVisualContainer ?
-                    ((RADVisualContainer)component).getLayoutSupport() : null;
+                getComponent() instanceof RADVisualContainer ?
+                    ((RADVisualContainer)getComponent()).getLayoutSupport() : null;
             if (laysup != null) {
-                Node.Property prop = laysup.getLayoutProperty(propertyName);
+                Node.Property prop = laysup.getLayoutProperty(getPropertyName());
                 if (prop != null)
                     try {
-                        prop.setValue(oldPropertyValue);
+                        prop.setValue(getOldPropertyValue());
                     }
                     catch (Exception ex) { // should not happen
                         ex.printStackTrace();
@@ -444,13 +525,13 @@ public class FormModelEvent extends EventObject
 
         private void redoContainerLayoutChange() {
             LayoutSupportManager laysup =
-                component instanceof RADVisualContainer ?
-                    ((RADVisualContainer)component).getLayoutSupport() : null;
+                getComponent() instanceof RADVisualContainer ?
+                    ((RADVisualContainer)getComponent()).getLayoutSupport() : null;
             if (laysup != null) {
-                Node.Property prop = laysup.getLayoutProperty(propertyName);
+                Node.Property prop = laysup.getLayoutProperty(getPropertyName());
                 if (prop != null)
                     try {
-                        prop.setValue(newPropertyValue);
+                        prop.setValue(getNewPropertyValue());
                     }
                     catch (Exception ex) { // should not happen
                         ex.printStackTrace();
@@ -459,12 +540,13 @@ public class FormModelEvent extends EventObject
         }
 
         private void undoComponentLayoutChange() {
-            if (component instanceof RADVisualComponent) {
-                ((RADVisualComponent)component).getConstraintsProperties();
-                FormProperty prop = component.getPropertyByName(propertyName);
+            if (getComponent() instanceof RADVisualComponent) {
+                ((RADVisualComponent)getComponent()).getConstraintsProperties();
+                FormProperty prop =
+                    getComponent().getPropertyByName(getPropertyName());
                 if (prop != null)
                     try {
-                        prop.setValue(oldPropertyValue);
+                        prop.setValue(getOldPropertyValue());
                     }
                     catch (Exception ex) { // should not happen
                         ex.printStackTrace();
@@ -473,12 +555,13 @@ public class FormModelEvent extends EventObject
         }
 
         private void redoComponentLayoutChange() {
-            if (component instanceof RADVisualComponent) {
-                ((RADVisualComponent)component).getConstraintsProperties();
-                FormProperty prop = component.getPropertyByName(propertyName);
+            if (getComponent() instanceof RADVisualComponent) {
+                ((RADVisualComponent)getComponent()).getConstraintsProperties();
+                FormProperty prop =
+                    getComponent().getPropertyByName(getPropertyName());
                 if (prop != null)
                     try {
-                        prop.setValue(newPropertyValue);
+                        prop.setValue(getNewPropertyValue());
                     }
                     catch (Exception ex) { // should not happen
                         ex.printStackTrace();
@@ -496,11 +579,11 @@ public class FormModelEvent extends EventObject
 
         private void undoComponentRemoval() {
             if (codeUndoRedoStart != null // is null when called from redoComponentAddition()
-                    && !getFormModel().getCodeStructure().undoToMark(
-                                                   codeUndoRedoStart))
+                && !getFormModel().getCodeStructure().undoToMark(
+                                               codeUndoRedoStart))
                 return;
 
-            RADComponent[] currentSubComps = container.getSubBeans();
+            RADComponent[] currentSubComps = getContainer().getSubBeans();
             RADComponent[] undoneSubComps =
                 new RADComponent[currentSubComps.length+1];
 
@@ -509,7 +592,7 @@ public class FormModelEvent extends EventObject
 
             for (int i=0,j=0; j < undoneSubComps.length; i++,j++) {
                 if (i == componentIndex) {
-                    undoneSubComps[j] = component;
+                    undoneSubComps[j] = getComponent();
                     if (i == currentSubComps.length)
                         break;
                     j++;
@@ -517,58 +600,60 @@ public class FormModelEvent extends EventObject
                 undoneSubComps[j] = currentSubComps[i];
             }
 
-            container.initSubComponents(undoneSubComps);
+            getContainer().initSubComponents(undoneSubComps);
 
-            if (container instanceof RADVisualContainer
-                && component instanceof RADVisualComponent)
+            if (getContainer() instanceof RADVisualContainer
+                && getComponent() instanceof RADVisualComponent)
             {
                 LayoutSupportManager layoutSupport =
-                    ((RADVisualContainer)container).getLayoutSupport();
+                    ((RADVisualContainer)getContainer()).getLayoutSupport();
                 layoutSupport.addComponents(
-                    new RADVisualComponent[] { (RADVisualComponent) component },
-                    new LayoutConstraints[] { constraints },
+                    new RADVisualComponent[] { (RADVisualComponent)getComponent() },
+                    new LayoutConstraints[] { getComponentLayoutConstraints() },
                     componentIndex);
             }
 
-            if (createdDeleted)
-                FormModel.setInModelRecursively(component, true);
+            if (getCreatedDeleted())
+                FormModel.setInModelRecursively(getComponent(), true);
 
-            getFormModel().fireComponentAdded(component, createdDeleted);
+            getFormModel().fireComponentAdded(getComponent(), getCreatedDeleted());
         }
 
         private void redoComponentRemoval() {
-            if (createdDeleted)
-                getFormModel().removeComponent(component);
+            if (getCreatedDeleted())
+                getFormModel().removeComponent(getComponent());
             else
-                getFormModel().removeComponentFromContainer(component);
+                getFormModel().removeComponentFromContainer(getComponent());
 
             if (codeUndoRedoEnd != null)
                 getFormModel().getCodeStructure().redoToMark(codeUndoRedoEnd);
         }
 
         private void undoComponentsReorder() {
-            if (container != null && reordering != null) {
+            if (getContainer() != null && reordering != null) {
                 int[] revPerm = new int[reordering.length];
                 for (int i=0; i < reordering.length; i++)
                     revPerm[reordering[i]] = i;
 
-                container.reorderSubComponents(revPerm);
-                getFormModel().fireComponentsReordered(container, revPerm);
+                getContainer().reorderSubComponents(revPerm);
+                getFormModel().fireComponentsReordered(getContainer(), revPerm);
             }
         }
 
         private void redoComponentsReorder() {
-            if (container != null && reordering != null) {
-                container.reorderSubComponents(reordering);
-                getFormModel().fireComponentsReordered(container, reordering);
+            if (getContainer() != null && reordering != null) {
+                getContainer().reorderSubComponents(reordering);
+                getFormModel().fireComponentsReordered(getContainer(),
+                                                       reordering);
             }
         }
 
         private void undoComponentPropertyChange() {
-            FormProperty prop = component.getPropertyByName(propertyName);
+            FormProperty prop =
+                getComponent().getPropertyByName(getPropertyName());
             if (prop != null)
                 try {
-                    prop.setValue(oldPropertyValue);
+                    prop.setValue(getOldPropertyValue());
                 }
                 catch (Exception ex) { // should not happen
                     ex.printStackTrace();
@@ -576,10 +661,11 @@ public class FormModelEvent extends EventObject
         }
 
         private void redoComponentPropertyChange() {
-            FormProperty prop = component.getPropertyByName(propertyName);
+            FormProperty prop =
+                getComponent().getPropertyByName(getPropertyName());
             if (prop != null)
                 try {
-                    prop.setValue(newPropertyValue);
+                    prop.setValue(getNewPropertyValue());
                 }
                 catch (Exception ex) { // should not happen
                     ex.printStackTrace();
@@ -587,11 +673,11 @@ public class FormModelEvent extends EventObject
         }
 
         private void undoSyntheticPropertyChange() {
-            Node.Property[] props = component.getSyntheticProperties();
+            Node.Property[] props = getComponent().getSyntheticProperties();
             for (int i=0; i < props.length; i++) {
-                if (props[i].getName().equals(propertyName)) {
+                if (props[i].getName().equals(getPropertyName())) {
                     try {
-                        props[i].setValue(oldPropertyValue);
+                        props[i].setValue(getOldPropertyValue());
                     }
                     catch (Exception ex) { // should not happen
                         ex.printStackTrace();
@@ -602,11 +688,11 @@ public class FormModelEvent extends EventObject
         }
 
         private void redoSyntheticPropertyChange() {
-            Node.Property[] props = component.getSyntheticProperties();
+            Node.Property[] props = getComponent().getSyntheticProperties();
             for (int i=0; i < props.length; i++) {
-                if (props[i].getName().equals(propertyName)) {
+                if (props[i].getName().equals(getPropertyName())) {
                     try {
-                        props[i].setValue(newPropertyValue);
+                        props[i].setValue(getNewPropertyValue());
                     }
                     catch (Exception ex) { // should not happen
                         ex.printStackTrace();
@@ -617,60 +703,82 @@ public class FormModelEvent extends EventObject
         }
 
         private void undoEventHandlerAddition() {
-            FormEventHandlers handlers = getFormModel().getFormEventHandlers();
-            newPropertyValue = handlers.getEventHandler(propertyName)
-                                                            .getHandlerText();
+            if (getComponentEvent() == null)
+                return;
 
-            handlers.removeEventHandler(componentEvent, propertyName);
+            addToInterestList(FormModelEvent.this);
+
+            getFormModel().getFormEventHandlers()
+                .removeEventHandler(getComponentEvent(),
+                                    getEventHandlerName());
+
+            removeFromInterestList(FormModelEvent.this);
 
             // fire property change on node explicitly to update event in
             // Component Inspector
-            component.getNodeReference().firePropertyChangeHelper(
-                FormEditor.EVENT_PREFIX + componentEvent.getName(), null, null);
+            getComponent().getNodeReference().firePropertyChangeHelper(
+                FormEditor.EVENT_PREFIX + getComponentEvent().getName(), null, null);
         }
 
         private void redoEventHandlerAddition() {
-            getFormModel().getFormEventHandlers().addEventHandler(
-                componentEvent, propertyName, (String) newPropertyValue);
+            if (getComponentEvent() == null)
+                return;
+
+            getFormModel().getFormEventHandlers()
+                .addEventHandler(getComponentEvent(),
+                                 getEventHandlerName(),
+                                 getOldEventHandlerContent()); //handlerText
 
             // fire property change on node explicitly to update event in
             // Component Inspector
-            component.getNodeReference().firePropertyChangeHelper(
-                FormEditor.EVENT_PREFIX + componentEvent.getName(), null, null);
+            getComponent().getNodeReference().firePropertyChangeHelper(
+                FormEditor.EVENT_PREFIX + getComponentEvent().getName(), null, null);
         }
 
         private void undoEventHandlerRemoval() {
-            getFormModel().getFormEventHandlers().addEventHandler(
-                componentEvent, propertyName, (String) newPropertyValue);
+            if (getComponentEvent() == null)
+                return;
+
+            getFormModel().getFormEventHandlers()
+                .addEventHandler(getComponentEvent(),
+                                 getEventHandlerName(),
+                                 getOldEventHandlerContent());
 
             // fire property change on node explicitly to update event in
             // Component Inspector
-            component.getNodeReference().firePropertyChangeHelper(
-                FormEditor.EVENT_PREFIX + componentEvent.getName(), null, null);
+            if (getComponent().getNodeReference() != null)
+                getComponent().getNodeReference().firePropertyChangeHelper(
+                    FormEditor.EVENT_PREFIX + getComponentEvent().getName(),
+                    null, null);
         }
 
         private void redoEventHandlerRemoval() {
-            FormEventHandlers handlers = getFormModel().getFormEventHandlers();
-            newPropertyValue = handlers.getEventHandler(propertyName)
-                                                            .getHandlerText();
+            if (getComponentEvent() == null)
+                return;
 
-            handlers.removeEventHandler(componentEvent, propertyName);
+            addToInterestList(FormModelEvent.this);
+
+            getFormModel().getFormEventHandlers()
+                .removeEventHandler(getComponentEvent(),
+                                    getEventHandlerName());
+
+            removeFromInterestList(FormModelEvent.this);
 
             // fire property change on node explicitly to update event in
             // Component Inspector
-            component.getNodeReference().firePropertyChangeHelper(
-                FormEditor.EVENT_PREFIX + componentEvent.getName(), null, null);
+            getComponent().getNodeReference().firePropertyChangeHelper(
+                FormEditor.EVENT_PREFIX + getComponentEvent().getName(), null, null);
         }
 
         private void undoEventHandlerRenaming() {
-            FormEventHandlers handlers = getFormModel().getFormEventHandlers();
-            handlers.renameEventHandler((String) newPropertyValue,
-                                        (String) oldPropertyValue);
+            FormEventHandlers formHandlers = getFormModel().getFormEventHandlers();
+            formHandlers.renameEventHandler(getNewEventHandlerName(),
+                                            getOldEventHandlerName());
 
             // fire property change on nodes explicitly to update events in
             // Component Inspector
             java.util.Iterator events =
-                handlers.getEventHandler((String)oldPropertyValue)
+                formHandlers.getEventHandler(getOldEventHandlerName())
                     .getAttachedEvents().iterator();
             while (events.hasNext()) {
                 Event event = (Event) events.next();
@@ -681,14 +789,14 @@ public class FormModelEvent extends EventObject
         }
 
         private void redoEventHandlerRenaming() {
-            FormEventHandlers handlers = getFormModel().getFormEventHandlers();
-            handlers.renameEventHandler((String) oldPropertyValue,
-                                        (String) newPropertyValue);
+            FormEventHandlers formHandlers = getFormModel().getFormEventHandlers();
+            formHandlers.renameEventHandler(getOldEventHandlerName(),
+                                            getNewEventHandlerName());
 
             // fire property change on nodes explicitly to update events in
             // Component Inspector
             java.util.Iterator events =
-                handlers.getEventHandler((String)newPropertyValue)
+                formHandlers.getEventHandler(getNewEventHandlerName())
                     .getAttachedEvents().iterator();
             while (events.hasNext()) {
                 Event event = (Event) events.next();

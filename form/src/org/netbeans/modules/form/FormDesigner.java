@@ -549,26 +549,13 @@ public class FormDesigner extends TopComponent
         ConnectionWizard cw = new ConnectionWizard(formModel, source,target);
 
         if (cw.show()) {
-            String bodyText = cw.getGeneratedCode();
             Event event = cw.getSelectedEvent();
             String eventName = cw.getEventName();
-            EventHandler handler = null;
+            String bodyText = cw.getGeneratedCode();
 
-            for (Iterator iter = event.getHandlers().iterator(); iter.hasNext(); ) {
-                EventHandler eh = (EventHandler) iter.next();
-                if (eh.getName().equals(eventName)) {
-                    handler = eh;
-                    break;
-                }
-            }
-            if (handler == null) { // new handler
-                formModel.getFormEventHandlers().addEventHandler(event,
-                                                                 eventName,
-                                                                 bodyText);
-            } else {
-                handler.setHandlerText(bodyText);
-            }
-            event.gotoEventHandler(eventName);
+            formModel.getFormEventHandlers().addEventHandler(event,
+                                                             eventName,
+                                                             bodyText);
         }
     }
 
@@ -931,8 +918,12 @@ public class FormDesigner extends TopComponent
             }
 
             if (updateDone) {
-                componentLayer.revalidate();
-                componentLayer.repaint();
+                Component comp = (Component) getComponent(topDesignComponent);
+                if (comp != null) {
+                    comp.invalidate();
+                    comp.validate();
+                    comp.repaint();
+                }
             }
         }
     }

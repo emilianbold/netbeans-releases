@@ -51,10 +51,10 @@ public abstract class CodeGenerator {
      * false otherwise
      */
 
-    public abstract boolean generateEventHandler(String handlerName,
-                                                 String[] paramTypes,
-                                                 String[] exceptTypes,
-                                                 String bodyText);
+//    public abstract boolean generateEventHandler(String handlerName,
+//                                                 String[] paramTypes,
+//                                                 String[] exceptTypes,
+//                                                 String bodyText);
 
     /**
      * Changes the text of the specified event handler, if it already exists.
@@ -66,10 +66,10 @@ public abstract class CodeGenerator {
      * otherwise
      */
 
-    public abstract boolean changeEventHandler(final String handlerName,
-                                               final String[] paramTypes,
-                                               final String[] exceptTypes,
-                                               final String bodyText);
+//    public abstract boolean changeEventHandler(final String handlerName,
+//                                               final String[] paramTypes,
+//                                               final String[] exceptTypes,
+//                                               final String bodyText);
 
     /**
      * Removes the specified event handler - removes the whole method together
@@ -77,7 +77,7 @@ public abstract class CodeGenerator {
      * @param handlerName The name of the event handler
      */
 
-    public abstract boolean deleteEventHandler(String handlerName);
+//    public abstract boolean deleteEventHandler(String handlerName);
 
     /**
      * Renames the specified event handler to the given new name.
@@ -86,10 +86,10 @@ public abstract class CodeGenerator {
      * @param paramTypes the list of event handler parameter types
      */
 
-    public abstract boolean renameEventHandler(String oldHandlerName,
-                                               String newHandlerName,
-                                               String[] exceptTypes,
-                                               String[] paramTypes);
+//    public abstract boolean renameEventHandler(String oldHandlerName,
+//                                               String newHandlerName,
+//                                               String[] exceptTypes,
+//                                               String[] paramTypes);
 
     /** 
      * Gets the body (text) of event handler of given name.
@@ -97,18 +97,18 @@ public abstract class CodeGenerator {
      * @return text of the event handler body
      */
 
-    public abstract String getEventHandlerText(String handlerName);
+//    public abstract String getEventHandlerText(String handlerName);
 
     /** Focuses the specified event handler in the editor. */
 
-    public abstract void gotoEventHandler(String handlerName);
+//    public abstract void gotoEventHandler(String handlerName);
 
     /** 
      * Returns whether the specified event handler is empty (with no user
      * code). Empty handlers can be deleted without user confirmation.
      * @return true if the event handler exists and is empty
      */
-    public boolean isEventHandlerEmpty(String handlerName) {
-        return false;
-    }
+//    public boolean isEventHandlerEmpty(String handlerName) {
+//        return false;
+//    }
 }

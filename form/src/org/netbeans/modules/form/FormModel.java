@@ -202,6 +202,12 @@ public class FormModel
                                 new RADComponent[otherComponents.size()]); 
     }
 
+    public FormEventHandlers getFormEventHandlers() {
+        if (eventHandlers == null)
+            eventHandlers = new FormEventHandlers();
+        return eventHandlers;
+    }
+
     private static void collectMetaComponents(ComponentContainer cont,
                                               java.util.List list) {
         RADComponent[] comps = cont.getSubBeans();
@@ -548,9 +554,10 @@ public class FormModel
 
     /** Fires an event informing about changing layout manager of a container.
      * An undoable edit is created and registered automatically. */
-    public void fireContainerLayoutExchanged(RADVisualContainer metacont,
-                                             LayoutSupportDelegate oldLayout,
-                                             LayoutSupportDelegate newLayout)
+    public FormModelEvent fireContainerLayoutExchanged(
+                              RADVisualContainer metacont,
+                              LayoutSupportDelegate oldLayout,
+                              LayoutSupportDelegate newLayout)
     {
         t("firing container layout exchange, container: " // NOI18N
           + (metacont != null ? metacont.getName() : "null")); // NOI18N
@@ -562,14 +569,17 @@ public class FormModel
 
         if (undoRedoRecording && metacont != null && oldLayout != newLayout)
             addUndoableEdit(ev.getUndoableEdit());
+
+        return ev;
     }
 
     /** Fires an event informing about changing a property of container layout.
      * An undoable edit is created and registered automatically. */
-    public void fireContainerLayoutChanged(RADVisualContainer metacont,
-                                           String propName,
-                                           Object oldValue,
-                                           Object newValue)
+    public FormModelEvent fireContainerLayoutChanged(
+                              RADVisualContainer metacont,
+                              String propName,
+                              Object oldValue,
+                              Object newValue)
     {
         t("firing container layout change, container: " // NOI18N
           + (metacont != null ? metacont.getName() : "null") // NOI18N
@@ -586,14 +596,17 @@ public class FormModel
         {
             addUndoableEdit(ev.getUndoableEdit());
         }
+
+        return ev;
     }
 
     /** Fires an event informing about changing a property of component layout
      * constraints. An undoable edit is created and registered automatically. */
-    public void fireComponentLayoutChanged(RADVisualComponent metacomp,
-                                           String propName,
-                                           Object oldValue,
-                                           Object newValue)
+    public FormModelEvent fireComponentLayoutChanged(
+                              RADVisualComponent metacomp,
+                              String propName,
+                              Object oldValue,
+                              Object newValue)
     {
         t("firing component layout change: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
@@ -609,12 +622,14 @@ public class FormModel
         {
             addUndoableEdit(ev.getUndoableEdit());
         }
+
+        return ev;
     }
 
     /** Fires an event informing about adding a component to the form.
      * An undoable edit is created and registered automatically. */
-    public void fireComponentAdded(RADComponent metacomp,
-                                   boolean addedNew)
+    public FormModelEvent fireComponentAdded(RADComponent metacomp,
+                                             boolean addedNew)
     {
         t("firing component added: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
@@ -626,16 +641,18 @@ public class FormModel
 
         if (undoRedoRecording && metacomp != null)
             addUndoableEdit(ev.getUndoableEdit());
+
+        return ev;
     }
 
     /** Fires an event informing about removing a component from the form.
      * An undoable edit is created and registered automatically. */
-    public void fireComponentRemoved(RADComponent metacomp,
-                                     ComponentContainer metacont,
-                                     int index,
-                                     boolean removedFromModel,
-                                     Object codeStructureMark1,
-                                     Object codeStructureMark2)
+    public FormModelEvent fireComponentRemoved(RADComponent metacomp,
+                                               ComponentContainer metacont,
+                                               int index,
+                                               boolean removedFromModel,
+                                               Object codeStructureMark1,
+                                               Object codeStructureMark2)
     {
         t("firing component removed: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "null")); // NOI18N
@@ -648,12 +665,14 @@ public class FormModel
 
         if (undoRedoRecording && metacomp != null && metacont != null)
             addUndoableEdit(ev.getUndoableEdit());
+
+        return ev;
     }
 
     /** Fires an event informing about reordering components in a container.
      * An undoable edit is created and registered automatically. */
-    public void fireComponentsReordered(ComponentContainer metacont,
-                                        int[] perm)
+    public FormModelEvent fireComponentsReordered(ComponentContainer metacont,
+                                                  int[] perm)
     {
         t("firing components reorder in container: " // NOI18N
           + (metacont instanceof RADComponent ?
@@ -667,14 +686,16 @@ public class FormModel
 
         if (undoRedoRecording && metacont != null)
             addUndoableEdit(ev.getUndoableEdit());
+
+        return ev;
     }
 
     /** Fires an event informing about changing a property of a component.
      * An undoable edit is created and registered automatically. */
-    public void fireComponentPropertyChanged(RADComponent metacomp,
-                                             String propName,
-                                             Object oldValue,
-                                             Object newValue)
+    public FormModelEvent fireComponentPropertyChanged(RADComponent metacomp,
+                                                       String propName,
+                                                       Object oldValue,
+                                                       Object newValue)
     {
         t("firing component property change, component: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "<null component>") // NOI18N
@@ -691,14 +712,16 @@ public class FormModel
         {
             addUndoableEdit(ev.getUndoableEdit());
         }
+
+        return ev;
     }
 
     /** Fires an event informing about changing a synthetic property of
      * a component. An undoable edit is created and registered automatically. */
-    public void fireSyntheticPropertyChanged(RADComponent metacomp,
-                                             String propName,
-                                             Object oldValue,
-                                             Object newValue)
+    public FormModelEvent fireSyntheticPropertyChanged(RADComponent metacomp,
+                                                       String propName,
+                                                       Object oldValue,
+                                                       Object newValue)
     {
         t("firing synthetic property change, component: " // NOI18N
           + (metacomp != null ? metacomp.getName() : "null") // NOI18N
@@ -715,15 +738,17 @@ public class FormModel
         {
             addUndoableEdit(ev.getUndoableEdit());
         }
+
+        return ev;
     }
 
-    /** Fires an event informing about attaching a new event to event handler
-     * (or also with creating new event handler). An undoable edit is created
-     * and registered automatically. */
-    public void fireEventHandlerAdded(Event event,
-                                      EventHandler handler,
-                                      String bodyText, // only if addedNew == true
-                                      boolean createdNew)
+    /** Fires an event informing about attaching a new event to an event handler
+     * (createdNew parameter indicates whether the event handler was created
+     * first). An undoable edit is created and registered automatically. */
+    public FormModelEvent fireEventHandlerAdded(Event event,
+                                                EventHandler handler,
+                                                String bodyText,
+                                                boolean createdNew)
     {
         t("event handler added: "+handler.getName()); // NOI18N
 
@@ -734,30 +759,36 @@ public class FormModel
 
         if (undoRedoRecording && event != null && handler != null)
             addUndoableEdit(ev.getUndoableEdit());
+
+        return ev;
     }
 
     /** Fires an event informing about detaching an event from event handler
-     * (or also with removing the event handler). An undoable edit is created
-     * and registered automatically. */
-    public void fireEventHandlerRemoved(Event event,
-                                        EventHandler handler,
-                                        String bodyText,
-                                        boolean handlerDeleted)
+     * (handlerDeleted parameter indicates whether the handler was deleted as
+     * the last event was detached). An undoable edit is created and registered
+     * automatically. */
+    public FormModelEvent fireEventHandlerRemoved(Event event,
+                                                  EventHandler handler,
+                                                  boolean handlerDeleted)
     {
         t("firing event handler removed: "+handler.getName()); // NOI18N
 
         FormModelEvent ev =
             new FormModelEvent(this, FormModelEvent.EVENT_HANDLER_REMOVED);
-        ev.setEvent(event, handler, bodyText, handlerDeleted);
+        ev.setEvent(event, handler, null, handlerDeleted);
         sendEvent(ev);
 
         if (undoRedoRecording && event != null && handler != null)
             addUndoableEdit(ev.getUndoableEdit());
+
+        return ev;
     }
 
     /** Fires an event informing about renaming an event handler. An undoable
      * edit is created and registered automatically. */
-    public void fireEventHandlerRenamed(EventHandler handler, String oldName) {
+    public FormModelEvent fireEventHandlerRenamed(EventHandler handler,
+                                                  String oldName)
+    {
         t("event handler renamed: "+handler.getName()); // NOI18N
 
         FormModelEvent ev =
@@ -767,13 +798,18 @@ public class FormModel
 
         if (undoRedoRecording && handler != null && oldName != null)
             addUndoableEdit(ev.getUndoableEdit());
+
+        return ev;
     }
 
     /** Fires an event informing about general form change. */
-    public void fireFormChanged() {
+    public FormModelEvent fireFormChanged() {
         t("firing form change"); // NOI18N
 
-        sendEvent(new FormModelEvent(this, FormModelEvent.OTHER_CHANGE));
+        FormModelEvent ev = new FormModelEvent(this, FormModelEvent.OTHER_CHANGE);
+        sendEvent(ev);
+
+        return ev;
     }
 
     public void fireEvents(FormModelEvent[] events) {
@@ -863,12 +899,6 @@ public class FormModel
     }
 
     // -------------
-
-    FormEventHandlers getFormEventHandlers() {
-        if (eventHandlers == null)
-            eventHandlers = new FormEventHandlers(getCodeGenerator());
-        return eventHandlers;
-    }
 
     CodeStructure getCodeStructure() {
         return codeStructure;

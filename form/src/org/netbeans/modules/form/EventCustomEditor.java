@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.form;
 
-import java.util.Vector;
+import java.util.*;
 import javax.swing.JList;
 import javax.swing.DefaultListModel;
 
@@ -69,13 +69,13 @@ public class EventCustomEditor extends javax.swing.JPanel {
 
         handlersListLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        Vector h = eventProperty.event.getHandlers();
-        for (int i=0, n=h.size (); i < n; i++) {
-            handlersModel.addElement(((EventHandler) (h.get(i))).getName());
+        List l = eventProperty.event.getHandlers();
+        for (int i=0, n=l.size (); i < n; i++) {
+            handlersModel.addElement(((EventHandler)l.get(i)).getName());
         }
         handlersList = new javax.swing.JList();
         handlersList.setModel(handlersModel);
-        if (h.size() > 0) {
+        if (l.size() > 0) {
             handlersList.setSelectedIndex(0);
         }
         addButton = new javax.swing.JButton();
