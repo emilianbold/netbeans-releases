@@ -334,7 +334,8 @@ final class Services extends ServiceType.Registry {
         l.changeAll (c);
       }
 
-      reorder (perm);
+      // reorder without firing
+      super.reorder (perm);
     }
     
     /** Computes a key for given section. This key is used 
@@ -639,6 +640,7 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  7    Gandalf   1.6         10/5/99  Jaroslav Tulach Small improvement.
 *  6    Gandalf   1.5         10/4/99  Jesse Glick     Make Default action on 
 *       service types.
 *  5    Gandalf   1.4         10/1/99  Jesse Glick     Cleanup of service type 
