@@ -174,7 +174,7 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
 //        });
         return Lookups.fixed(new Object[] {
             new Info(),
-//            aux,
+            aux,
 //            helper.createCacheDirectoryProvider(),
             spp,
             new ProjectEarProvider (),
