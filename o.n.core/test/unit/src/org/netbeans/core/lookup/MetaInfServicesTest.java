@@ -131,7 +131,7 @@ public class MetaInfServicesTest extends NbTestCase {
         LookupL l = new LookupL();
         r.addLookupListener(l);
         twiddle(m2, TWIDDLE_ENABLE);
-        assert(l.gotSomething());
+        assertTrue(l.gotSomething());
         instances = new ArrayList(r.allInstances());
         assertEquals(2, instances.size());
         assertEquals(instance1, instances.get(0));
@@ -139,20 +139,20 @@ public class MetaInfServicesTest extends NbTestCase {
         // Expect to lose Impl2.
         l.count = 0;
         twiddle(m2, TWIDDLE_DISABLE);
-        assert(l.gotSomething());
+        assertTrue(l.gotSomething());
         instances = new ArrayList(r.allInstances());
         assertEquals(1, instances.size());
         assertEquals(instance1, instances.get(0));
         // Expect to lose Impl1 too.
         l.count = 0;
         twiddle(m1, TWIDDLE_DISABLE);
-        assert(l.gotSomething());
+        assertTrue(l.gotSomething());
         instances = new ArrayList(r.allInstances());
         assertEquals(0, instances.size());
         // Expect to not get anything: wrong xface version
         l.count = 0;
         twiddle(m1, TWIDDLE_ENABLE);
-        // not really important: assert(!l.gotSomething());
+        // not really important: assertTrue(!l.gotSomething());
         instances = new ArrayList(r.allInstances());
         assertEquals(0, instances.size());
         Class xface2 = TopManager.getDefault().systemClassLoader().loadClass("org.foo.Interface");
