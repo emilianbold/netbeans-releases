@@ -55,6 +55,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="jar-with-module-deps" if="module.dependencies">
         <property file="../ddapi/spec-ver.properties"/>
         <property file="../../xml/spec-vers.properties"/>
+        <property file="../spec-vers.properties"/>
         <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
             <manifest>
                 <attribute name="OpenIDE-Module-Public-Packages" value="-"/>
@@ -81,7 +82,7 @@ Microsystems, Inc. All Rights Reserved.
   org.netbeans.core.multiview/1,
   org.netbeans.modules.xml.multiview/1 = 1.0-release41,
   org.netbeans.libs.xerces/1"/>
-                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
+                <attribute name="OpenIDE-Module-Implementation-Version" value="${web.core.impl.version}"/>
             </manifest>
             <fileset dir="${build.classes.dir}"/>
         </jar>
