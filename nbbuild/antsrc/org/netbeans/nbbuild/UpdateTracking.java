@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -90,16 +90,12 @@ class UpdateTracking {
     
     void write( ) {
         Document document = XMLUtil.createDocument(ELEMENT_MODULE);  
-        Element e_module = null;
-        Element e_version = null;
-        Element e_file = null;
-        e_module = document.createElement(ELEMENT_MODULE);
+        Element e_module = document.getDocumentElement();
         e_module.setAttribute(ATTR_CODENAME, module.getCodename());
-        document.appendChild( e_module );
         Iterator it2 = module.getVersions().iterator();
         while ( it2.hasNext() ) {
             Version ver = (Version)it2.next();
-            e_version = document.createElement(ELEMENT_VERSION);
+            Element e_version = document.createElement(ELEMENT_VERSION);
             e_version.setAttribute(ATTR_VERSION, ver.getVersion());
             e_version.setAttribute(ATTR_ORIGIN, ver.getOrigin());
             e_version.setAttribute(ATTR_LAST, "true");                          //NO I18N
@@ -108,7 +104,7 @@ class UpdateTracking {
             Iterator it3 = ver.getFiles().iterator();
             while ( it3.hasNext() ) {
                 ModuleFile file = (ModuleFile)it3.next();
-                e_file = document.createElement(ELEMENT_FILE);
+                Element e_file = document.createElement(ELEMENT_FILE);
                 e_file.setAttribute(ATTR_FILE_NAME, file.getName());
                 e_file.setAttribute(ATTR_CRC, file.getCrc());
                 e_version.appendChild( e_file );

@@ -73,7 +73,7 @@ final class XMLUtil extends Object {
     public static Document createDocument(String rootQName) throws DOMException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
-            return factory.newDocumentBuilder().newDocument();
+            return factory.newDocumentBuilder().getDOMImplementation().createDocument(null, rootQName, null);
         } catch (ParserConfigurationException ex) {
             throw (DOMException)new DOMException(DOMException.NOT_SUPPORTED_ERR, "Cannot create parser").initCause(ex); // NOI18N
         }
