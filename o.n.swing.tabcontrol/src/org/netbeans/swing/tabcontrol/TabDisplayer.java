@@ -13,6 +13,9 @@
 
 package org.netbeans.swing.tabcontrol;
 
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleRole;
+import javax.swing.event.ChangeEvent;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.netbeans.swing.tabcontrol.plaf.AquaEditorTabDisplayerUI;
 import org.netbeans.swing.tabcontrol.plaf.AquaViewTabDisplayerUI;
@@ -28,6 +31,9 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleSelection;
+import javax.swing.event.ChangeListener;
 import org.netbeans.swing.tabcontrol.plaf.ToolbarTabDisplayerUI;
 import org.netbeans.swing.tabcontrol.plaf.WinXPEditorTabDisplayerUI;
 import org.netbeans.swing.tabcontrol.plaf.WinXPViewTabDisplayerUI;
@@ -54,7 +60,7 @@ import org.netbeans.swing.tabcontrol.plaf.WinXPViewTabDisplayerUI;
  *
  * @author Tim Boudreau
  */
-public final class TabDisplayer extends JComponent {
+public final class TabDisplayer extends JComponent implements Accessible {
     
     private boolean initialized = false;
     private TabDataModel model;
@@ -473,6 +479,182 @@ public final class TabDisplayer extends JComponent {
     
     public LocationInformer getLocationInformer() {
         return locationInformer;
+    }
+    
+    public AccessibleContext getAccessibleContext() {
+        if (accessibleContext == null) {
+            accessibleContext = new AccessibleTabDisplayer();
+        }
+        return accessibleContext;
+    }
+    
+    
+    protected class AccessibleTabDisplayer extends AccessibleJComponent
+                                           implements AccessibleSelection, ChangeListener {
+                                               
+         /**
+         *  Constructs an AccessibleTabDisplayer
+         */
+        public AccessibleTabDisplayer() {
+            super();
+            getModel().addChangeListener(this);
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            Object o = e.getSource();
+            firePropertyChange(AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY,
+                               null, o);
+        }
+
+        
+        /**
+         * Get the role of this object.
+         *
+         * @return an instance of AccessibleRole describing the role of 
+         *          the object
+         */
+        public AccessibleRole getAccessibleRole() {
+            return AccessibleRole.PAGE_TAB_LIST;
+        }
+        
+        /**
+         * Returns the number of accessible children in the object.
+         *
+         * @return the number of accessible children in the object.
+         */
+        public int getAccessibleChildrenCount() {
+            return getModel().size();
+        }
+
+        /**
+         * Return the specified Accessible child of the object.
+         *
+         * @param i zero-based index of child
+         * @return the Accessible child of the object
+         * @exception IllegalArgumentException if index is out of bounds
+         */
+        public Accessible getAccessibleChild(int i) {
+            if (i < 0 || i >= getModel().size()) {
+                return null;
+            }
+            TabData data = getModel().getTab(i);
+            if (data.getComponent() instanceof Accessible) {
+                return (Accessible)data.getComponent();
+            }
+            return null;
+        }
+        
+        
+
+        /**
+         * Gets the <code>AccessibleSelection</code> associated with
+         * this object.  In the implementation of the Java 
+         * Accessibility API for this class, 
+	 * returns this object, which is responsible for implementing the
+         * <code>AccessibleSelection</code> interface on behalf of itself.
+	 * 
+	 * @return this object
+         */
+        public AccessibleSelection getAccessibleSelection() {
+           return this;
+        }        
+        
+        /**
+         * Returns the <code>Accessible</code> child contained at
+         * the local coordinate <code>Point</code>, if one exists.
+         * Otherwise returns the currently selected tab.
+         *
+         * @return the <code>Accessible</code> at the specified
+         *    location, if it exists
+         */
+        public Accessible getAccessibleAt(Point p) {
+            int tab = tabForCoordinate(p);
+            if (tab == -1) {
+                tab = getSelectionModel().getSelectedIndex();
+            }
+            return getAccessibleChild(tab);
+        }        
+        
+        /**
+         * Returns the number of Accessible children currently selected.
+         * If no children are selected, the return value will be 0.
+         *
+         * @return the number of items currently selected.
+         */
+        public int getAccessibleSelectionCount() {
+            return 1;
+        }
+        
+        /**
+         * Returns an Accessible representing the specified selected child
+         * of the object.  If there isn't a selection, or there are
+         * fewer children selected than the integer passed in, the return
+         * value will be null.
+         * <p>Note that the index represents the i-th selected child, which
+         * is different from the i-th child.
+         *
+         * @param i the zero-based index of selected children
+         * @return the i-th selected child
+         * @see #getAccessibleSelectionCount
+         */
+        public Accessible getAccessibleSelection(int i) {
+            // always just one selected.. -> ignore i
+            int index  = getSelectionModel().getSelectedIndex();
+            return getAccessibleChild(index);
+        }
+        
+        /**
+         * Determines if the current child of this object is selected.
+         *
+         * @return true if the current child of this object is selected; else false.
+         * @param i the zero-based index of the child in this Accessible object.
+         * @see AccessibleContext#getAccessibleChild
+         */
+        public boolean isAccessibleChildSelected(int i) {
+            return i == getSelectionModel().getSelectedIndex();
+        }
+        
+        /**
+         * Adds the specified Accessible child of the object to the object's
+         * selection.  If the object supports multiple selections,
+         * the specified child is added to any existing selection, otherwise
+         * it replaces any existing selection in the object.  If the
+         * specified child is already selected, this method has no effect.
+         *
+         * @param i the zero-based index of the child
+         * @see AccessibleContext#getAccessibleChild
+         */
+        public void addAccessibleSelection(int i) {
+            //TODO?
+        }
+        
+        /**
+         * Removes the specified child of the object from the object's
+         * selection.  If the specified item isn't currently selected, this
+         * method has no effect.
+         *
+         * @param i the zero-based index of the child
+         * @see AccessibleContext#getAccessibleChild
+         */
+        public void removeAccessibleSelection(int i) {
+            //TODO?
+        }
+        
+        /**
+         * Clears the selection in the object, so that no children in the
+         * object are selected.
+         */
+        public void clearAccessibleSelection() {
+            //TODO?
+        }
+        
+        /**
+         * Causes every child of the object to be selected
+         * if the object supports multiple selections.
+         */
+        public void selectAllAccessibleSelection() {
+            //TODO?
+        }
     }
     
 }
