@@ -14,10 +14,7 @@
 package org.netbeans.core;
 
 import java.io.*;
-import java.beans.*;
 import java.util.*;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 
 import org.openide.*;
 import org.openide.cookies.InstanceCookie;
@@ -25,28 +22,17 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
-import org.openide.nodes.*;
-import org.openide.util.enum.*;
-import org.openide.util.Mutex;
-import org.openide.util.WeakListener;
 import org.openide.util.io.NbMarshalledObject;
-import org.openide.util.datatransfer.NewType;
-import org.openide.util.datatransfer.PasteType;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Lookup.Template;
-import org.openide.util.lookup.ProxyLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.AbstractLookup;
 
 import org.netbeans.beaninfo.editors.ExecutorEditor;
 import org.netbeans.beaninfo.editors.CompilerTypeEditor;
 import org.netbeans.beaninfo.editors.DebuggerTypeEditor;
-
-import org.netbeans.core.modules.ManifestSection;
 
 /** Works with all service types.
 *
@@ -56,35 +42,11 @@ public final class Services extends ServiceType.Registry implements LookupListen
     /** serial */
     static final long serialVersionUID =-7558069607307508327L;
     
-    public static final String PROP_KINDS = "kinds"; // NOI18N
-    public static final String PROP_SERVICE_TYPES = "serviceTypes"; // NOI18N
-
     /** instance */
     private static final Services INSTANCE = new Services ();
     
-    /** Inner Lookup containing all current non-default services. */
-    private InstanceContent lookup = new InstanceContent ();
-    /** lookup */
-    private Lookup realLookup = new AbstractLookup (lookup);
-    /** Inner Lookup containing all current default services. */
-    private InstanceContent lookupDefTypes = new InstanceContent ();
-    /** lookup */
-    private Lookup realLookupDefTypes = new AbstractLookup (lookupDefTypes);
-    /** Lookup containing all current services. */
-    private PL proxyLookup;
     /** Result containing all current services. */
     private Lookup.Result allTypes;
-    /** Result containing all services declared in manifest files. */
-    private Lookup.Result allServiceSections;
-    
-    /** listeners to the services */
-    private static PropertyChangeSupport supp = new PropertyChangeSupport (INSTANCE);
-
-    /** current list of all services (ServiceType) */
-    private static List current = new LinkedList ();
-
-    /** precomputed kinds of Class in sections */
-    private static List kinds = new LinkedList ();
     
     /** Mapping between service name and given ServiceType instance. */
     private Map name2Service;
@@ -94,9 +56,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
         return INSTANCE;
     }
     
-    public Services() {
-        name2Service = new HashMap();
-        fillMap(name2Service);
+    private Services() {
     }
     
     private static void fillMap(Map map) {
@@ -137,84 +97,6 @@ public final class Services extends ServiceType.Registry implements LookupListen
         return ret;
     }
     
-    /** Register new instance.
-     * @param obj source
-     * @param isDefault Is this service type default? That means should it be placed
-     * in front of other services?
-     */
-    public synchronized void register (ServiceType obj, boolean isDefault) {
-        if (isDefault) {
-            lookupDefTypes.add(obj, null);
-        } else {
-            lookup.add(obj, null);
-        }
-    }
-    
-    /** Unregisters all instances wich class is same like obj.getClass.
-     */
-    public void unregister (ServiceType obj) {
-        tryUnregister(realLookup, lookup, obj);
-        tryUnregister(realLookupDefTypes, lookupDefTypes, obj);
-    }
-    
-    private void tryUnregister (Lookup lookup, InstanceContent lk, ServiceType obj) {
-        String clazzName = obj.getClass().getName();
-        Iterator it = lookup.lookup(new Lookup.Template(obj.getClass())).allInstances().iterator();
-        Object st;
-        while (it.hasNext()) {
-            st = it.next();
-            if (clazzName.equals(st.getClass().getName())) {
-                lk.remove (st, null);
-            }
-        }
-    }
-    
-    /** Lookup containing all current services. */
-    public Lookup getLookup() {
-        proxyLookup = new PL (new Lookup[] {realLookupDefTypes, realLookup});
-        return proxyLookup;
-    }
-    
-    /** Adds property change listener (holds it weakly)
-    */
-    final void addWeakListener (PropertyChangeListener l) {
-        supp.addPropertyChangeListener(WeakListener.propertyChange(l, supp));
-    }
-    
-    /** Getter for all kinds of services.
-    */
-    private void recomputeKinds (Collection services) {
-        List newKinds = new LinkedList();
-        
-        // construct new service types from the registered sections
-//        Iterator it = getDefault().getServiceTypes().iterator ();
-        Iterator it = services.iterator ();
-        while (it.hasNext ()) {
-            ServiceType st = (ServiceType)it.next ();
-            Class type = st.getClass ();
-            // finds direct subclass of service type
-            while (type.getSuperclass () != ServiceType.class) {
-                type = type.getSuperclass();
-            }
-
-            if (!newKinds.contains (type)) {
-                newKinds.add (type);
-            }
-        }
-        kinds.clear();
-        kinds.addAll(newKinds);
-    }
-
-    /** Result containing all services declared in manifest files. */
-    private synchronized Lookup.Result getServiceSectionsResult() {
-        if (allServiceSections == null) {
-            allServiceSections = Lookup.getDefault().lookup(
-                new Lookup.Template(ManifestSection.ServiceSection.class)
-            );
-        }
-        return allServiceSections;
-    }
-    
     /** Result containing all current services. */
     private Lookup.Result getTypesResult() {
         boolean init = false;
@@ -235,37 +117,16 @@ public final class Services extends ServiceType.Registry implements LookupListen
      * @param ev event describing the change
      */
     public void resultChanged(LookupEvent ev) {
-        Collection services = allTypes.allInstances();
-        synchronized (this) {
-            // [Pending] just for ServiceNode before rewriting ServiceNode to use lookup
-            current.clear();
-            current.addAll(services);
-            // end
-            name2Service.clear();
-            fillMap(name2Service);
-            recomputeKinds(services);
-        }
-        supp.firePropertyChange (PROP_KINDS, null, null);
-        supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
-    }
-    
-    /** [Pending] just for ServiceNode before rewriting ServiceNode to use lookup. */
-    List getCurrent() {
-        getTypesResult();
-        return current;
-    }
-    
-    /** [Pending] just for ServiceNode before rewriting ServiceNode to use lookup. */
-    List getKinds() {
-        getTypesResult();
-        return kinds;
+        Map lookupMap = new HashMap();
+        fillMap(lookupMap);
+        name2Service = lookupMap;
     }
     
     /** Getter for list of all services types.
     * @return list of ServiceType
     */
     public java.util.List getServiceTypes () {
-        return new LinkedList(getTypesResult().allInstances());
+        return new ArrayList(getTypesResult().allInstances());
     }
     
     /** Setter for list of all services types. This allows to change
@@ -414,23 +275,6 @@ public final class Services extends ServiceType.Registry implements LookupListen
         }
     }
     
-    /** Convert list of ManifestSection.ServiceSections ServiceTypes and register them. */
-    private void registerServiceSections (Collection col) {
-        Iterator it = col.iterator();
-        ManifestSection.ServiceSection ms;
-        while (it.hasNext()) {
-            ms = (ManifestSection.ServiceSection) it.next();
-            try {
-                register((ServiceType)ms.getInstance(), ms.isDefault());
-            } catch (Exception ex) {
-                TopManager.getDefault ().getErrorManager ().notify (
-                  ErrorManager.INFORMATIONAL,
-                  ex
-                );
-            }
-        }
-    }
-
     /** all services */
     public Enumeration services () {
         return Collections.enumeration (getServiceTypes ());
@@ -444,73 +288,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
     public Enumeration services (Class clazz) {
         if (clazz == null) new org.openide.util.enum.EmptyEnumeration();
         Collection res = Lookup.getDefault().lookup(new Lookup.Template(clazz)).allInstances();
-        if (res.size() == 0) {
-            ArrayList defs = new ArrayList(1);
-            if (org.openide.execution.Executor.class.isAssignableFrom(clazz)) {
-                defs.add(ExecutorEditor.NO_EXECUTOR);
-            } else if (org.openide.compiler.CompilerType.class.isAssignableFrom(clazz)) {
-                defs.add(CompilerTypeEditor.NO_COMPILER);
-            } else if (org.openide.debugger.DebuggerType.class.isAssignableFrom(clazz)) {
-                defs.add(DebuggerTypeEditor.NO_DEBUGGER);
-            }
-            return Collections.enumeration(defs);
-        } else {
-            return Collections.enumeration(res);
-        }
-    }
-    
-    /** Adds a service type.
-    */
-    public synchronized void addServiceType (ServiceType t) 
-    throws IOException, ClassNotFoundException {
-        if (find(t.getName()) != null) {
-            // if adding already existing service, create its clone
-            t = t.createClone ();
-        }
-        
-        uniquifyName (t);
-        lookup.add(t);
-    }
-
-    /** Removes a service type.
-    */
-    public synchronized void removeServiceType (ServiceType t) {
-        lookup.remove(t);
-    }
-    
-    /** Creates array of new types each for one section.
-    * @param clazz class that has all the sections object implement
-    * @return array of NewTypes
-    */
-    public static NewType[] createNewTypes (Class clazz) {
-        synchronized (INSTANCE) {
-            List l = new LinkedList ();
-            
-            // set of allready added classes
-            Set added = new HashSet ();            
-
-            // construct new service types from the registered sections
-            Iterator it = getDefault().getServiceSectionsResult().allInstances().iterator();
-            ManifestSection.ServiceSection section;
-            while (it.hasNext()) {
-                section = (ManifestSection.ServiceSection) it.next();
-                try {
-                    ServiceType st = (ServiceType)section.getInstance();
-                    Class instanceClass = st.getClass();
-                    if (clazz.isAssignableFrom(instanceClass) && !added.contains(instanceClass)) {
-                      l.add (new NSNT (st));
-                      added.add (instanceClass);
-                    }
-                } catch (Exception ex) {
-                    TopManager.getDefault ().getErrorManager ().notify (
-                        ErrorManager.INFORMATIONAL,
-                        ex
-                    );
-                }
-            }
-            
-            return (NewType[])l.toArray (new NewType[l.size ()]);
-        }
+        return Collections.enumeration(res);
     }
     
     /** Write the object down.
@@ -574,213 +352,4 @@ public final class Services extends ServiceType.Registry implements LookupListen
     private Object readResolve () {
         return INSTANCE;
     }
-
-    /** Class for New Type of service type.
-    */
-    private static class NSNT extends NewType {
-        private ServiceType st;
-        private String displayName;
-        
-        
-        /** Constructor.
-        */
-        public NSNT (ServiceType st) {
-            this.st = st;
-        }
-        
-        public String getName () {
-            if (displayName != null) {
-                return displayName;
-            }
-            
-            try {
-                BeanInfo bi = Introspector.getBeanInfo(st.getClass ());
-                displayName = Main.getString (
-                    "LAB_NewExecutor_Instantiate", 
-                    bi.getBeanDescriptor().getDisplayName()
-                );
-            } catch (Exception ex) {
-                TopManager.getDefault ().getErrorManager ().notify (
-                    ErrorManager.INFORMATIONAL,
-                    ex
-                );
-                
-                displayName = Main.getString (
-                    "LAB_NewExecutor_Instantiate",
-                    ex.getMessage()
-                );
-            }
-            
-            return displayName;
-        }
-        
-        public HelpCtx getHelpCtx () {
-            return new HelpCtx (NSNT.class); // NOI18N
-        }
-        
-        public void create () throws java.io.IOException {
-            try {
-                INSTANCE.addServiceType (st);
-            } catch (Exception ex) {
-                IOException newEx = new IOException (ex.getMessage ());
-                TopManager.getDefault ().getErrorManager ().copyAnnotation (newEx, ex);  
-                throw newEx;
-            }
-        }
-        
-    }
-    
-        /** Test whether the services repository contains the supplied name. */
-        private static boolean containsName (String name) {
-            Enumeration e = INSTANCE.services ();
-            while (e.hasMoreElements ()) {
-                ServiceType s = (ServiceType) e.nextElement ();
-                if (s.getName ().equals (name)) return true;
-            }
-            return false;
-        }
-
-        /** If this service type will have a unique name, return it; else create a copy with a new unique name. */
-        private static ServiceType uniquifyName (ServiceType type) {
-            if (containsName (type.getName ())) {
-//                type = (ServiceType) new NbMarshalledObject (type).get ();
-                String name = type.getName ();
-                int suffix = 2;
-                String newname;
-                while (
-                    containsName (newname = Main.getString (
-                        "LBL_ServiceType_Duplicate", 
-                        name, 
-                        String.valueOf (suffix)
-                    ))
-                ) {
-                    suffix++;
-                }
-                
-                type.setName (newname);
-            }
-            return type;
-        }
-  
-    private static final class PL extends ProxyLookup {
-        public PL (Lookup[] arr) {
-            super (arr);
-        }
-
-        public void change (Lookup[] arr) {
-            setLookups (arr);
-        }
-    }
 }
-
-/*
-* $Log$
-* Revision 1.55  2001/08/03 01:18:08  jpokorsky
-* #13837 fixed: reimplemented setServiceTypes in accordance with new settings implementation
-*
-* Revision 1.54  2001/08/01 11:41:40  akemr
-* Added // NOI18N
-*
-* Revision 1.53  2001/07/26 21:06:41  jpokorsky
-* Workaround ensuring Executor.getDefault won't return null. Class Services should be rewritten to reflect contemporary implementation of settings.
-*
-* Revision 1.52  2001/07/19 14:23:22  jtulach
-* AbstractLookup enhanced with constructor that takes AbstractLookup.Content and allows any creator of the lookup to control its content. InstanceContent created to provide simple way how to create lookup with plain object instances.
-*
-* Revision 1.51  2001/07/16 00:10:59  jglick
-* New module installer.
-*
-* Revision 1.48.2.2  2001/07/13 18:37:12  jglick
-* [merge BLD200106290100 - BLD200107130100]
-*
-* Revision 1.50  2001/07/12 16:27:38  jpokorsky
-* service types declared in manifests are handled as declared in module layers and all moved to the session.
-*
-* Revision 1.49  2001/07/09 14:00:01  jtulach
-* ProxyLookup.getDelegates and setDelegates are protected. ProxyLookup is not final.
-*
-* Revision 1.48.2.1  2001/07/09 08:01:48  jglick
-* New module system now more or less works: can start, load, run
-* modules. Does not yet read/write to disk; module nodes are read-only;
-* full reporting of events unimplemented. autoupdate etc. unconverted.
-*
-* Revision 1.48  2001/06/20 18:09:07  jpokorsky
-* #13034 fixed: deadlock in Services during second startup
-*
-* Revision 1.47  2001/06/01 14:04:45  jtulach
-* Lookup SPI moved to openapi
-*
-* Revision 1.46  2001/05/25 12:33:31  jpokorsky
-* #12233 fixed: Services are added in an unpredictable way
-*
-* Revision 1.45  2001/05/16 20:16:25  jpokorsky
-* Changed initialization of services. Now it uses Lookup.
-*
-* Revision 1.44  2001/04/20 13:10:53  jtulach
-* Fix of #11600. The changes are fired in synchronized block
-*
-* Revision 1.43  2001/04/11 12:53:09  dstrupl
-* #9945 - Newly formed ServiceType subclasses not shown in Project Settings
-* Method recomputeKinds fixed.
-*
-* Revision 1.42  2001/03/26 15:40:24  jtulach
-* Fix of 9629. When a service is uninstalled all instances with the same class are removed too.
-*
-* Revision 1.41  2001/02/20 18:31:08  dstrupl
-* #9696 better synchronization on Services.kinds
-*
-* Revision 1.40  2001/02/19 10:48:27  dstrupl
-* #9656 Deadlock while building. I hope that this will fix it.
-* The whole synchronization on INSTANCE might be reviewed.
-*
-* Revision 1.39  2000/11/30 17:08:33  jtulach
-* ServiceType.createClone ()
-*
-* Revision 1.38  2000/11/30 10:57:02  anovak
-* #8671 - deadlock
-*
-* Revision 1.37  2000/11/30 10:46:22  anovak
-* #8671 - deadlock
-*
-* Revision 1.36  2000/11/23 13:50:45  anovak
-* improved method services(Class) - made faster
-*
-* Revision 1.35  2000/10/03 12:05:20  anovak
-* faster implementation of find(...) method
-*
-* Revision 1.34  2000/07/21 08:26:42  pnejedly
-* Wrong copyright notice fixed
-*
-* Revision 1.33  2000/07/04 08:28:29  jtulach
-* Merged with revision 1.32.2.1 of boston
-*
-* Revision 1.32.2.1  2000/07/04 08:21:16  jtulach
-* When a module with new service is installed
-* the service instance is added into the list
-* of services.
-*
-* Revision 1.32  2000/06/21 16:05:26  jtulach
-* NullPointer fixed.
-*
-* Revision 1.31  2000/06/21 14:23:32  jtulach
-* Default services should be at the begining, when clear services are
-* installed (setServiceType (null)
-*
-* Revision 1.30  2000/06/21 14:03:08  jtulach
-* Services now create default instance of its class and do not deserialize their
-* values. This is a (hopefully) temporary hack to solve the problematic confclict
-* between modules that would like to define more instances of the same class, but
-* wants only the default instace (created by default constructor) be offered for
-* creation. Other solutions to this problem would be based on enhancing the manifest
-* for the services, which is probably the direction we should choose in the future.
-*
-* Revision 1.29  2000/06/19 08:22:53  anovak
-* doinit = false moved to setServiceTypes
-* previous code might be unsafe...
-*
-* Revision 1.27  2000/06/08 21:13:17  jtulach
-* Implements two level Compiler Type/instance
-* instead of Compiler Type/External Compiler/instance
-*
-* $
-*/
