@@ -409,6 +409,10 @@ ToDo:
     <echo message="Building module tomcatint/tomcat40..."/>
     <ant dir="../tomcatint/tomcat40" target="netbeans"/>
   </target>
+  <target name="all-tomcatint/bundledtomcat" depends="all-tomcatint/tomcat40">
+    <echo message="Building module tomcatint/bundledtomcat..."/>
+    <ant dir="../tomcatint/bundledtomcat" target="netbeans"/>
+  </target>
   <target name="all-usersguide" depends="all-openide">
     <echo message="Building module usersguide..."/>
     <ant dir="../usersguide" target="netbeans"/>
