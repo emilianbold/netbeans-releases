@@ -377,7 +377,7 @@ public final class Actions extends Object {
                     String title = NbBundle.getMessage(Actions.class,"ERR_FileDoesNotExistDlgTitle");
                     DialogDisplayer.getDefault().notify
                     (new NotifyDescriptor(message,title,NotifyDescriptor.DEFAULT_OPTION,
-                    NotifyDescriptor.INFORMATION_MESSAGE, new Object[] { NotifyDescriptor.OK_OPTION },
+                    NotifyDescriptor.INFORMATION_MESSAGE, new Object[] { NotifyDescriptor.CLOSED_OPTION },
                     NotifyDescriptor.OK_OPTION));
                 } else {
                     retVal = FileUtil.toFileObject(selectedFile);
