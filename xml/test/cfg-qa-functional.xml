@@ -18,9 +18,10 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/tax/EncodingTest.class"/>
+		<include name="org/netbeans/tax/XMLCloneTest.class"/>
+		<include name="org/netbeans/modules/xml/core/CoreTemplatesTest.class"/>
 		<include name="org/netbeans/modules/xml/core/settings/CoreSettingsTest.class"/>
 		<include name="org/netbeans/modules/xml/catalog/CatalogTest.class"/>
-		<include name="org/netbeans/modules/xml/core/CoreTemplatesTest.class"/>
             </patternset>
         </testset>
     </testbag>

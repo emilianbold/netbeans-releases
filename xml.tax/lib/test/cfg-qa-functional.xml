@@ -17,6 +17,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" compiler="qa-compiler" executor="ide" name="tax_stable" resultsprocessor="qa-reporter">
         <testset dir="qa-functional/src">
             <patternset>
+		<include name="org/netbeans/tax/XMLCloneTest.class"/>
 		<include name="org/netbeans/tax/EncodingTest.class"/>
             </patternset>
         </testset>
