@@ -1230,7 +1230,7 @@ public class BaseOptions extends OptionSupport {
                 Map map = new HashMap();
                 if (id == null) id = NO_INDENT_ENGINE; 
                 map.put(INDENT_ENGINE_PROP, id);
-                updateSettings(PropertiesMIMEProcessor.class, map);
+                updateSettings(PropertiesMIMEProcessor.class, map, false);
             }
 
             refreshIndentEngineSettings();
@@ -1346,8 +1346,19 @@ public class BaseOptions extends OptionSupport {
         }
     }
     
-    /** Save changes to XML files */
+    /** Save changes to XML files.
+     * @see updateSettings(Class, Map, boolean) for details
+     */
     private void updateSettings(Class processor, Map settings){
+        updateSettings(processor, settings, true);
+    }
+    
+    /** Save changes to XML files 
+     *  @param processor MIMEProcessor class
+     *  @param settings the settings map 
+     *  @param useRequestProcessorForSaving if true settings will be saved in RequestProcessor thread.
+     */
+    private void updateSettings(Class processor, Map settings, boolean useRequestProcessorForSaving){
         MIMEOptionFile fileX;
         MIMEOptionFolder mimeFolder;
         if (BASE.equals(getTypeName())){
@@ -1362,11 +1373,15 @@ public class BaseOptions extends OptionSupport {
         final Map finalSettings = settings;
         final MIMEOptionFile file = fileX;
         if (file!=null){
-            RequestProcessor.postRequest(new Runnable(){
-                public void run(){
-                    file.updateSettings(finalSettings);
-                }
-            });
+            if (useRequestProcessorForSaving){
+                RequestProcessor.postRequest(new Runnable(){
+                    public void run(){
+                        file.updateSettings(finalSettings);
+                    }
+                });
+            }else{
+                file.updateSettings(finalSettings);                
+            }
             
         } else {
             System.err.println("!!!!!!!!!!!!!!!!!!!!!!!!"+processor.toString()+" type file haven't been found in folder:"+mimeFolder.getDataFolder()); //TEMP
