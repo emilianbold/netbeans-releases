@@ -58,6 +58,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
                 messageDriven.setEjbName(value);
             }
         }));
+        getNameTextField().setEditable(false);
 
         addRefreshable(new ItemOptionHelper(dataObject, getTransactionTypeButtonGroup()) {
             public String getItemValue() {

@@ -44,6 +44,7 @@ public class SessionOverviewPanel extends SessionOverviewForm {
                 session.setEjbName(value);
             }
         }));
+        getEjbNameTextField().setEditable(false);
 
         addRefreshable(new ItemOptionHelper(dataObject, getSessionTypeButtonGroup()) {
             public String getItemValue() {

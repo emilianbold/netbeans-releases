@@ -59,14 +59,15 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                 entity.setEjbName(value);
             }
         }));
+        ejbNameTextField.setEditable(false);
 
-        persistenceTypeTextField.setEnabled(false);
+        persistenceTypeTextField.setEditable(false);
         this.entity = entity;
         String persistenceType = this.entity.getPersistenceType();
         boolean isCmp = Entity.PERSISTENCE_TYPE_CONTAINER.equals(persistenceType);
         persistenceTypeTextField.setText(persistenceType + ((isCmp ? " (CMP)" : " (BMP)")));    //NOI18N
 
-        addRefreshable(new ItemEditorHelper(abstractSchemaNameTextField, new TextItemEditorModel(dataObject, false) {
+        addRefreshable(new ItemEditorHelper(abstractSchemaNameTextField, new TextItemEditorModel(dataObject, true) {
             protected String getValue() {
                 return entity.getAbstractSchemaName();
             }
