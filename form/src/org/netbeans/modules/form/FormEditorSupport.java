@@ -15,6 +15,7 @@ package org.netbeans.modules.form;
 
 import java.beans.*;
 import java.util.*;
+import java.awt.EventQueue;
 import java.awt.Cursor;
 import java.io.*;
 import javax.swing.*;
@@ -136,9 +137,24 @@ public class FormEditorSupport extends JavaEditor
      * in the multiview.
      */
     public void open() {
+        if (EventQueue.isDispatchThread()) {
+            openInAWT();
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    openInAWT();
+                }
+            });
+        }
+    }
+    
+    private void openInAWT() {
         elementToOpen = JAVA_ELEMENT_INDEX;
         super.open();
 
+        // This method must be executed in AWT thread because
+        // otherwise multiview is opened in AWT using invokeLater
+        // and we don't have multiviewTC correctly set
         MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
         handler.requestActive(handler.getPerspectives()[JAVA_ELEMENT_INDEX]);
     }
