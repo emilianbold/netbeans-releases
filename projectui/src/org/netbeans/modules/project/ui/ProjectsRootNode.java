@@ -13,10 +13,8 @@
 
 package org.netbeans.modules.project.ui;
 
-import java.awt.Image;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -42,7 +40,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -174,6 +172,8 @@ public class ProjectsRootNode extends AbstractNode {
     }
     
     
+    private static RequestProcessor rp = new RequestProcessor();
+    
     // XXX Needs to listen to project rename
     // However project rename is currently disabled so it is not a big deal
     static class ProjectChildren extends Children.Keys implements ChangeListener, PropertyChangeListener {
@@ -270,15 +270,20 @@ public class ProjectsRootNode extends AbstractNode {
                 return;
             }
             
-            Project project = (Project)projectRef.get();
+            final Project project = (Project)projectRef.get();
             
             if ( project == null ) {
                 return;
             }
             
-            refreshKey( project );
+            // Fix for 50259, callers sometimes hold locks
+            rp.post( new Runnable() {
+                public void run() {
+                    refreshKey( project );
+                }
+            } );
         }
-                
+                                
         // Own methods ---------------------------------------------------------
         
         public Collection getKeys() {
