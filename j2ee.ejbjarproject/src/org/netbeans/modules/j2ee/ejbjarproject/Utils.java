@@ -20,7 +20,17 @@ import org.openide.WizardDescriptor;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.src.ClassElement;
 
@@ -108,4 +118,35 @@ public class Utils {
         assert dataObject != null: ("DataObject not found for " + ce.getName().getName());
         return dataObject.isModified();
     }
+
+    public static boolean areInSameJ2EEApp(Project p1, Project p2) {
+        Set globalPath = GlobalPathRegistry.getDefault().getSourceRoots();
+        Iterator iter = globalPath.iterator();
+        while (iter.hasNext()) {
+            FileObject sourceRoot = (FileObject)iter.next();
+            Project project = FileOwnerQuery.getOwner(sourceRoot);
+            if (project != null) {
+                Object j2eeAppProvider = project.getLookup().lookup(J2eeAppProvider.class);
+                if (j2eeAppProvider != null) { // == it is j2ee app
+                    J2eeAppProvider j2eeApp = (J2eeAppProvider)j2eeAppProvider;
+                    J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
+                    if ((j2eeModules != null) && (j2eeModules.length > 0)) { // == there are some modules in the j2ee app
+                        J2eeModuleProvider affectedPrjProvider1 = 
+                                (J2eeModuleProvider)p1.getLookup().lookup(J2eeModuleProvider.class);
+                        J2eeModuleProvider affectedPrjProvider2 = 
+                                (J2eeModuleProvider)p2.getLookup().lookup(J2eeModuleProvider.class);
+                        if (affectedPrjProvider1 != null && affectedPrjProvider2 != null) {
+                            List childModules = Arrays.asList(j2eeModules);
+                            if (childModules.contains(affectedPrjProvider1) &&
+                                childModules.contains(affectedPrjProvider2)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
 }
