@@ -47,11 +47,11 @@
      <folder name="Toolbars">
 
         <folder name="Debug">
-
+<!--
             <attr name="org-openide-actions-GoToCursorAction.instance/org-netbeans-modules-debugger-support-actions-ConnectAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance" />
             <attr name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true" />
-
+-->
             <attr name="org-openide-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" />
             <attr name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance/org-openide-actions-AddWatchAction.instance" boolvalue="true" />
