@@ -211,6 +211,12 @@ public class RADConnectionPropertyEditor
             type = TYPE_PROPERTY;
         }
 
+        RADConnectionDesignValue(String reqTypeName, String valueText) {
+            this.requiredTypeName = reqTypeName;
+            this.value = valueText;
+            type = TYPE_VALUE;
+        }
+
         private RADConnectionDesignValue(String compName, int valueType, String name, FormManager2 manager) {
             radComponentName = compName;
             formManager = manager;
@@ -415,12 +421,13 @@ public class RADConnectionPropertyEditor
             if (VALUE_VALUE.equals(typeString)) {
                 String value = attributes.getNamedItem(ATTR_VALUE).getNodeValue();
                 String valueType = attributes.getNamedItem(ATTR_REQUIRED_TYPE).getNodeValue();
-                try {
+                setValue(new RADConnectionDesignValue(valueType, value));
+/*                try {
                     Class reqType = TopManager.getDefault().currentClassLoader().loadClass(valueType);
                     setValue(new RADConnectionDesignValue(reqType, value));
                 } catch (Exception e) {
                     // ignore failures... and use no conn instead
-                }
+                } */
 
             } else if (VALUE_PROPERTY.equals(typeString)) {
                 String component = attributes.getNamedItem(ATTR_COMPONENT).getNodeValue();
