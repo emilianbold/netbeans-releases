@@ -13,8 +13,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="openide" default="nbm" basedir=".">
-  <available property="jdk13proxies" classname="java.lang.reflect.Proxy"/>
   <target name="compile">
+    <available property="jdk13proxies" classname="java.lang.reflect.Proxy"/>
     <javac srcdir="src" destdir="src">
       <exclude name="**/org/openide/util/WeakListener13.java" unless="jdk13proxies"/>
       <classpath>
