@@ -102,7 +102,12 @@ implements PropertyChangeListener {
         descriptionLabel.setLabelFor(descriptionArea);
         
         // Accessible context.
+        jButtonActivate.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_Activate"));
+        jButtonClose.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_CloseDocuments"));
+        jButtonSave.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_SaveDocuments"));
         closeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_Close"));
+        helpButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_Help"));
+        descriptionArea.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_DescriptionArea"));
     }
     
 
@@ -375,6 +380,7 @@ implements PropertyChangeListener {
             null
         );
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
+        dlg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_DocumentsDialog"));
         getDefault().updateNodes();
         dlg.setVisible(true);
         getDefault().clearNodes();
@@ -391,6 +397,7 @@ implements PropertyChangeListener {
         // proper border for the view
         listView.setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
         listView.setPopupAllowed(false);
+        listView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentsDlg.class, "ACSD_ListView"));
         //view.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         explorer = new ExplorerPanel();
         explorer.add(listView);
