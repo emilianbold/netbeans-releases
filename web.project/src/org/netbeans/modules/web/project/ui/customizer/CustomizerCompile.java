@@ -40,6 +40,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         vps.register(jCheckBoxDebugInfo, WebProjectProperties.JAVAC_DEBUG);
         vps.register(jCheckBoxDeprecation, WebProjectProperties.JAVAC_DEPRECATION);
         vps.register(vcs, WebProjectProperties.JAVAC_CLASSPATH);
+        vps.register(jCheckBoxCompileJSP, WebProjectProperties.COMPILE_JSPS);
     }
 
     /** This method is called from within the constructor to
@@ -63,6 +64,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         jButtonMoveUp = new javax.swing.JButton();
         jButtonMoveDown = new javax.swing.JButton();
         jButtonEdit = new javax.swing.JButton();
+        jCheckBoxCompileJSP = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -71,7 +73,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         jCheckBoxDebugInfo.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jCheckBoxDebugInfo, gridBagConstraints);
 
@@ -79,7 +81,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         jCheckBoxDeprecation.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jCheckBoxDeprecation, gridBagConstraints);
 
@@ -120,8 +122,8 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         jPanel2.add(jButtonAddJar, gridBagConstraints);
 
         jButtonAddLibrary.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_AddLibrary_JButton"));
@@ -178,11 +180,20 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jPanel2, gridBagConstraints);
+
+        jCheckBoxCompileJSP.setText(NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_CompileJSP_JCheckBox"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(jCheckBoxCompileJSP, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -194,6 +205,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
     private javax.swing.JButton jButtonMoveDown;
     private javax.swing.JButton jButtonMoveUp;
     private javax.swing.JButton jButtonRemove;
+    private javax.swing.JCheckBox jCheckBoxCompileJSP;
     private javax.swing.JCheckBox jCheckBoxDebugInfo;
     private javax.swing.JCheckBox jCheckBoxDeprecation;
     private javax.swing.JLabel jLabelClasspath;
