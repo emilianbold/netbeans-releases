@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+<type
+    name='debugger-multi_CBP'
+    visible='false' 
+    type='line'>
+    <combination order='100'>
+        <combine annotationtype='CondBreakpoint' absorb_all='true' min='2'/>
+    </combination>
+</type>

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+<type
+    name='debugger-mixed_BP'
+    description_key='HINT_MIXED_BREAKPOINTS'
+    localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
+    visible='true' 
+    glyph='nbresloc:/org/netbeans/modules/debugger/resources/multibreakpointglyph.gif'
+    highlight='0xFC9D9F' 
+    type='line'>
+
+    <combination tiptext_key='HINT_MIXED_BREAKPOINTS_TOOLTIP' order='300' min_optionals='1'>
+        <combine annotationtype='debugger-diff_BP' optional='true'/>
+        <combine annotationtype='debugger-multi_BP' optional='true'/>
+        <combine annotationtype='debugger-multi_CBP' optional='true'/>
+        <combine annotationtype='debugger-multi_DBP' optional='true'/>
+        <combine annotationtype='debugger-multi_DCBP' optional='true'/>
+    </combination>
+    
+</type>

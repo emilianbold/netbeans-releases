@@ -189,6 +189,21 @@ Microsystems, Inc. All Rights Reserved.
             <file name="CurrentPC.xml" url="CurrentPC.xml"/>
             <file name="CallSite.xml" url="CallSite.xml"/>
             <file name="BreakpointableLine.xml" url="BreakpointableLine.xml"/>
+            <file name="mixed_BP.xml" url="mixed_BP.xml"/>
+            <file name="PC_mixedBP.xml" url="PC_mixedBP.xml"/>
+            <file name="PC_anyBP.xml" url="PC_anyBP.xml"/>
+
+	<!-- following are invisible annotation types which are used for combining -->
+            <file name="_diff_BP.xml" url="_diff_BP.xml"/>
+            <file name="_multi_BP.xml" url="_multi_BP.xml"/>
+            <file name="_multi_CBP.xml" url="_multi_CBP.xml"/>
+            <file name="_multi_DBP.xml" url="_multi_DBP.xml"/>
+            <file name="_multi_DCBP.xml" url="_multi_DCBP.xml"/>
+            <file name="_PC_BP.xml" url="_PC_BP.xml"/>
+            <file name="_PC_CBP.xml" url="_PC_CBP.xml"/>
+            <file name="_PC_DBP.xml" url="_PC_DBP.xml"/>
+            <file name="_PC_DCBP.xml" url="_PC_DCBP.xml"/>
+
         </folder>
     </folder>
 
