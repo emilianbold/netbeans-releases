@@ -163,112 +163,20 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Services">
         <!-- Open File Server Settings -->
-        <file name="org-netbeans-modules-openfile-Settings.settings">
-            <![CDATA[<?xml version="1.0"?>
-                <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                <settings version="1.0">
-                    <module name="org.netbeans.modules.utilities" spec="1.7"/>
-                    <instanceof class="java.lang.Object"/>
-                    <instanceof class="java.io.Serializable"/>
-                    <instanceof class="java.io.Externalizable"/>
-                    <instanceof class="org.openide.util.SharedClassObject"/>
-                    <instanceof class="org.openide.options.SystemOption"/>
-                    <instanceof class="org.netbeans.modules.openfile.Settings"/>
-                    <instance class="org.netbeans.modules.openfile.Settings"/>
-                </settings>
-            ]]>
-        </file>
+        <file name="org-netbeans-modules-openfile-Settings.settings" url="../openfile/Openfile.settings"/>
         
         <!-- PDF Settings -->
-        <file name="org-netbeans-modules-pdf-PDFSettings.settings">
-            <![CDATA[<?xml version="1.0"?>
-                <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                <settings version="1.0">
-                    <module name="org.netbeans.modules.utilities" spec="1.7"/>
-                    <instanceof class="java.lang.Object"/>
-                    <instanceof class="java.io.Serializable"/>
-                    <instanceof class="java.io.Externalizable"/>
-                    <instanceof class="org.openide.util.SharedClassObject"/>
-                    <instanceof class="org.openide.options.SystemOption"/>
-                    <instanceof class="org.netbeans.modules.pdf.PDFSettings"/>
-                    <instance class="org.netbeans.modules.pdf.PDFSettings"/>
-                </settings>
-            ]]>
-        </file>
+        <file name="org-netbeans-modules-pdf-PDFSettings.settings" url="../pdf/PDF.settings"/>
         
         <!-- Search Services -->
         <folder name="SearchType">
             <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.search.Bundle"/>
             <attr name="SystemFileSystem.icon" urlValue="nbresloc:/org/openidex/search/res/find.gif"/>
-            <file name="org-netbeans-modules-search-FullTextType.settings">
-                <![CDATA[<?xml version="1.0"?>
-                    <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                    <settings version="1.0">
-                        <module name="org.netbeans.modules.utilities" spec="1.7"/>
-                        <instanceof class="java.lang.Object"/>
-                        <instanceof class="java.lang.Cloneable"/>
-                        <instanceof class="java.io.Serializable"/>
-                        <instanceof class="org.openide.ServiceType"/>
-                        <instanceof class="org.openidex.search.SearchType"/>
-                        <instanceof class="org.netbeans.modules.search.types.DataObjectType"/>
-                        <instanceof class="org.netbeans.modules.search.types.TextType"/>
-                        <instanceof class="org.netbeans.modules.search.types.FullTextType"/>
-                        <instance class="org.netbeans.modules.search.types.FullTextType"/>
-                    </settings>
-                ]]>
-            </file>
-            
-            <file name="org-netbeans-modules-search-ModificationDateType.settings">
-                <![CDATA[<?xml version="1.0"?>
-                    <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                    <settings version="1.0">
-                        <module name="org.netbeans.modules.utilities" spec="1.7"/>
-                        <instanceof class="java.lang.Object"/>
-                        <instanceof class="java.io.Serializable"/>
-                        <instanceof class="java.lang.Cloneable"/>
-                        <instanceof class="org.openide.ServiceType"/>
-                        <instanceof class="org.openidex.search.SearchType"/>
-                        <instanceof class="org.netbeans.modules.search.types.DataObjectType"/>
-                        <instanceof class="org.netbeans.modules.search.types.ModificationDateType"/>
-                        <instance class="org.netbeans.modules.search.types.ModificationDateType"/>
-                    </settings>
-                ]]>
-            </file>
-            
-            <file name="org-netbeans-modules-search-ObjectTypeType.settings">
-                <![CDATA[<?xml version="1.0"?>
-                    <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                    <settings version="1.0">
-                        <module name="org.netbeans.modules.utilities" spec="1.7"/>
-                        <instanceof class="java.lang.Object"/>
-                        <instanceof class="java.lang.Cloneable"/>
-                        <instanceof class="java.io.Serializable"/>
-                        <instanceof class="org.openide.ServiceType"/>
-                        <instanceof class="org.openidex.search.SearchType"/>
-                        <instanceof class="org.netbeans.modules.search.types.DataObjectType"/>
-                        <instanceof class="org.netbeans.modules.search.types.ObjectTypeType"/>
-                        <instance class="org.netbeans.modules.search.types.ObjectTypeType"/>
-                    </settings>
-                ]]>
-            </file>
-            
-            <file name="org-netbeans-modules-search-ObjectNameType.settings">
-                <![CDATA[<?xml version="1.0"?>
-                    <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                    <settings version="1.0">
-                        <module name="org.netbeans.modules.utilities" spec="1.7"/>
-                        <instanceof class="java.lang.Object"/>
-                        <instanceof class="java.lang.Cloneable"/>
-                        <instanceof class="java.io.Serializable"/>
-                        <instanceof class="org.openide.ServiceType"/>
-                        <instanceof class="org.openidex.search.SearchType"/>
-                        <instanceof class="org.netbeans.modules.search.types.DataObjectType"/>
-                        <instanceof class="org.netbeans.modules.search.types.TextType"/>
-                        <instanceof class="org.netbeans.modules.search.types.ObjectNameType"/>
-                        <instance class="org.netbeans.modules.search.types.ObjectNameType"/>
-                    </settings>
-                ]]>
-            </file>
+            <file name="org-netbeans-modules-search-FullTextType.settings" url="../search/FullTextType.settings"/>
+            <file name="org-netbeans-modules-search-ModificationDateType.settings" url="../search/ModificationDateType.settings"/>
+            <file name="org-netbeans-modules-search-ObjectTypeType.settings" url="../search/ObjectTypeType.settings"/>
+            <file name="org-netbeans-modules-search-ObjectNameType.settings" url="../search/ObjectNameType.settings"/>
+
             <attr name="org-netbeans-modules-search-FullTextType.settings/org-netbeans-modules-search-ObjectNameType.settings" boolValue="true"/>
             <attr name="org-netbeans-modules-search-ObjectNameType.settings/org-netbeans-modules-search-ObjectTypeType.settings" boolValue="true"/>
             <attr name="org-netbeans-modules-search-ObjectTypeType.settings/org-netbeans-modules-search-ModificationDateType.settings" boolValue="true"/>
@@ -278,77 +186,19 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="Services">
             <folder name="SearchType">
-                <file name="org-netbeans-modules-search-FullTextType.settings">
-                    <![CDATA[<?xml version="1.0"?>
-                        <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                        <settings version="1.0">
-                            <module name="org.netbeans.modules.utilities" spec="1.7"/>
-                            <instanceof class="java.lang.Object"/>
-                            <instanceof class="java.io.Serializable"/>
-                            <instanceof class="java.lang.Cloneable"/>
-                            <instanceof class="org.openide.ServiceType"/>
-                            <instanceof class="org.openidex.search.SearchType"/>
-                            <instanceof class="org.netbeans.modules.search.types.DataObjectType"/>
-                            <instanceof class="org.netbeans.modules.search.types.TextType"/>
-                            <instanceof class="org.netbeans.modules.search.types.FullTextType"/>
-                            <instance class="org.netbeans.modules.search.types.FullTextType"/>
-                        </settings>
-                    ]]>
-                    <attr name="template" boolValue="true"/>
-                </file>
-                
-                <file name="org-netbeans-modules-search-MofificationDateType.settings">
-                    <![CDATA[<?xml version="1.0"?>
-                        <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                        <settings version="1.0">
-                            <module name="org.netbeans.modules.utilities" spec="1.7"/>
-                            <instanceof class="java.lang.Object"/>
-                            <instanceof class="java.io.Serializable"/>
-                            <instanceof class="java.lang.Cloneable"/>
-                            <instanceof class="org.openide.ServiceType"/>
-                            <instanceof class="org.openidex.search.SearchType"/>
-                            <instanceof class="org.netbeans.modules.search.types.DataObjectType"/>
-                            <instanceof class="org.netbeans.modules.search.types.ModificationDateType"/>
-                            <instance class="org.netbeans.modules.search.types.ModificationDateType"/>
-                        </settings>
-                    ]]>
+                <file name="org-netbeans-modules-search-FullTextType.settings" url="../search/FullTextType.settings">
                     <attr name="template" boolValue="true"/>
                 </file>
 
-                <file name="org-netbeans-modules-search-ObjectTypeType.settings">
-                    <![CDATA[<?xml version="1.0"?>
-                        <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                        <settings version="1.0">
-                            <module name="org.netbeans.modules.utilities" spec="1.7"/>
-                            <instanceof class="java.lang.Object"/>
-                            <instanceof class="java.lang.Cloneable"/>
-                            <instanceof class="java.io.Serializable"/>
-                            <instanceof class="org.openide.ServiceType"/>
-                            <instanceof class="org.openidex.search.SearchType"/>
-                            <instanceof class="org.netbeans.modules.search.types.DataObjectType"/>
-                            <instanceof class="org.netbeans.modules.search.types.ObjectTypeType"/>
-                            <instance class="org.netbeans.modules.search.types.ObjectTypeType"/>
-                        </settings>
-                    ]]>
+                <file name="org-netbeans-modules-search-MofificationDateType.settings" url="../search/MofificationDateType.settings">
                     <attr name="template" boolValue="true"/>
                 </file>
 
-                <file name="org-netbeans-modules-search-ObjectNameType.settings">
-                    <![CDATA[<?xml version="1.0"?>
-                        <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-                        <settings version="1.0">
-                            <module name="org.netbeans.modules.utilities" spec="1.7"/>
-                            <instanceof class="java.lang.Object"/>
-                            <instanceof class="java.lang.Cloneable"/>
-                            <instanceof class="java.io.Serializable"/>
-                            <instanceof class="org.openide.ServiceType"/>
-                            <instanceof class="org.openidex.search.SearchType"/>
-                            <instanceof class="org.netbeans.modules.search.types.DataObjectType"/>
-                            <instanceof class="org.netbeans.modules.search.types.TextType"/>
-                            <instanceof class="org.netbeans.modules.search.types.ObjectNameType"/>
-                            <instance class="org.netbeans.modules.search.types.ObjectNameType"/>
-                        </settings>
-                    ]]>
+                <file name="org-netbeans-modules-search-ObjectTypeType.settings" url="../search/ObjectTypeType.settings">
+                    <attr name="template" boolValue="true"/>
+                </file>
+
+                <file name="org-netbeans-modules-search-ObjectNameType.settings" url="../search/ObjectNameType.settings">
                     <attr name="template" boolValue="true"/>
                 </file>
 
