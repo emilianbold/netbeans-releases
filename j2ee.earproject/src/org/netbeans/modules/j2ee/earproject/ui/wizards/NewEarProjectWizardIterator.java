@@ -102,12 +102,20 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
         return testableInstantiate(dirF,name,j2eeLevel, serverInstanceID, contextPath, warName,jarName);
     }
     
-    Set testableInstantiate(File dirF, String name, String j2eeLevel, 
-            String serverInstanceID, String contextPath, String warName, String jarName) throws IOException {        
+    Set testableInstantiate(File dirF, String name, String j2eeLevel,
+            String serverInstanceID, String contextPath, String warName, String jarName) throws IOException {
         Set resultSet = new HashSet();
         AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID, contextPath);
         FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
         Project p = ProjectManager.getDefault().findProject(dir);
+        // XXX -- this code may be necessary for 54381 (once 54534 is addressed)
+//        try {
+//            FileObject fileToOpen = dir.getFileObject("src/conf/application.xml");
+//            assert fileToOpen != null : "cannot find the file to open: src/conf/application.xml";
+//            resultSet.add(fileToOpen);
+//        } catch (Exception x) {
+//            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, x.getLocalizedMessage());
+//        }
         EarProject earProject = (EarProject) p.getLookup().lookup(EarProject.class);
         if (null != earProject) {
             Application app = null;
@@ -115,37 +123,36 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
                 app = DDProvider.getDefault().getDDRoot(earProject.getAppModule().getDeploymentDescriptor());
                 app.setDisplayName(name);
                 //kids.add(new Node[] { new LogicalViewNode(app) });
-                app.write(earProject.getAppModule().getDeploymentDescriptor ());
-            }
-            catch (java.io.IOException ioe) {
+                app.write(earProject.getAppModule().getDeploymentDescriptor());
+            } catch (java.io.IOException ioe) {
                 org.openide.ErrorManager.getDefault().log(ioe.getLocalizedMessage());
             }
         }
         resultSet.add(dir);
-            AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
-            ReferenceHelper refHelper = new ReferenceHelper(h, aux, h.getStandardPropertyEvaluator ());
-            EarProjectProperties epp = new EarProjectProperties((EarProject) p, h, refHelper, new EarProjectType());
+        AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
+        ReferenceHelper refHelper = new ReferenceHelper(h, aux, h.getStandardPropertyEvaluator());
+        EarProjectProperties epp = new EarProjectProperties((EarProject) p, h, refHelper, new EarProjectType());
         if (null != warName) {
-            File webAppDir = new File(dirF, warName);
+            File webAppDir = new File(dirF, name+"-war"); // NOI18N
             h = WebProjectGenerator.createProject(FileUtil.normalizeFile(webAppDir),
-                warName,
-                serverInstanceID,
-                WebProjectGenerator.SRC_STRUCT_BLUEPRINTS,
-                j2eeLevel, "/"+warName); //NOI18N
+                    warName,
+                    serverInstanceID,
+                    WebProjectGenerator.SRC_STRUCT_BLUEPRINTS,
+                    j2eeLevel, "/"+warName); //NOI18N
             FileObject dir2 = FileUtil.toFileObject(FileUtil.normalizeFile(webAppDir));
             p = ProjectManager.getDefault().findProject(dir2);
             epp.addJ2eeSubprojects(new Project[] { p });
         }
         if (null != jarName) {
-            File ejbJarDir = new File(dirF,jarName);
+            File ejbJarDir = new File(dirF,name+"-ejb"); // NOI18N
             h = EjbJarProjectGenerator.createProject(FileUtil.normalizeFile(ejbJarDir),jarName,
-                j2eeLevel, serverInstanceID);
+                    j2eeLevel, serverInstanceID);
             FileObject dir2 = FileUtil.toFileObject(FileUtil.normalizeFile(ejbJarDir));
             p = ProjectManager.getDefault().findProject(dir2);
             epp.addJ2eeSubprojects(new Project[] { p });
         }
         
-        // Returning set of FileObject of project diretory. 
+        // Returning set of FileObject of project diretory.
         // Project will be open and set as main
         return resultSet;
     }

@@ -219,9 +219,15 @@ public class EarProjectGenerator {
                 AntProjectHelper subProjHelper = null;
                 File subProjDir = new File(pDir,subprojectRoot.getName());
                 subProjDir = FileUtil.normalizeFile(subProjDir);
+                File srcFolders[] = null;
+                if (null != javaRoot) {
+                    srcFolders = new File[] { FileUtil.toFile(javaRoot)};
+                } else {
+                    srcFolders = new File[0];
+                }
                 if (null != webDotXml) {
                     subProjHelper = WebProjectGenerator.importProject(subProjDir,
-                        subprojectRoot.getName(), subprojectRoot, javaRoot, 
+                        subprojectRoot.getName(), subprojectRoot, srcFolders, new File[0],
                         subprojectRoot.getFileObject("web"), null, j2eeLevel, serverInstanceID, "build.xml");
                 }
 

@@ -26,11 +26,11 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 import org.openide.util.Utilities;
+import org.netbeans.api.project.Project;
 
 import org.netbeans.modules.j2ee.common.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
-
-import org.openide.util.actions.NodeAction;
+import org.netbeans.modules.j2ee.earproject.ui.actions.OpenModuleProjectAction;
 
 /**
  * A simple node with no children.
@@ -84,13 +84,14 @@ public class ModuleNode extends AbstractNode implements Node.Cookie {
 //                   SystemAction.get(CutAction.class),
 //                   SystemAction.get(CopyAction.class),
 //                   null,
+                SystemAction.get(OpenModuleProjectAction.class),
                    SystemAction.get(RemoveAction.class),
                    //SystemAction.get(RenameAction.class),
-                   null,
+                   //null,
             // */
-            SystemAction.get(ToolsAction.class),
-            null,
-            SystemAction.get(PropertiesAction.class),
+            //SystemAction.get(ToolsAction.class),
+            //null,
+            //SystemAction.get(PropertiesAction.class),
         };
         getCookieSet().add(this);
         }
@@ -142,6 +143,13 @@ public class ModuleNode extends AbstractNode implements Node.Cookie {
         epp.configurationXmlChanged(null);
     }
     
+   Project project() {
+        return epp.getProject();
+    }
+    
+    public VisualClassPathItem getVCPI() {
+        return model;
+    }
     // RECOMMENDED - handle cloning specially (so as not to invoke the overhead of FilterNode):
     /*
     public Node cloneNode() {

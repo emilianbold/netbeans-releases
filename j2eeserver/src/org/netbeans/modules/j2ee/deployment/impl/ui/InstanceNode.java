@@ -81,6 +81,7 @@ public class InstanceNode extends AbstractNode implements ServerInstance.Refresh
             unknownActions = new SystemAction[] {
                 SystemAction.get(ServerStatusAction.class),
                 SystemAction.get(RefreshAction.class),
+                        null,
                 SystemAction.get(RemoveInstanceAction.class)
             };
         }

@@ -131,7 +131,6 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EtchedBorder());
         jLabelContextPath.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/customizer/Bundle").getString("LBL_CustomizeRun_ClientModuleURI_LabelMnemonic").charAt(0));
         jLabelContextPath.setLabelFor(clientModuleUriCombo);
         jLabelContextPath.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ClientModuleURI_JLabel"));
@@ -229,7 +228,7 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jLabelEmbeddedCP, gridBagConstraints);
 
         jTableAddContent.setModel(new javax.swing.table.DefaultTableModel(
@@ -244,7 +243,7 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -256,7 +255,7 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         jButtonAddJar.setText(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("LBL_CustomizeWAR_AddJar_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         add(jButtonAddJar, gridBagConstraints);
@@ -264,7 +263,7 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         jButtonAddLib.setText(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("LBL_CustomizeCompile_Classpath_AddLibrary_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
         add(jButtonAddLib, gridBagConstraints);
@@ -272,7 +271,7 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         jButtonAddProject.setText(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("LBL_CustomizeCompile_Classpath_AddProject_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jButtonAddProject, gridBagConstraints);
@@ -280,7 +279,7 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         jButtonRemove.setText(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("LBL_CustomizeCompile_Classpath_Remove_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;

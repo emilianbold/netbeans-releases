@@ -51,6 +51,7 @@ Microsystems, Inc. All Rights Reserved.
  org.netbeans.modules.queries/1,
  org.openide.loaders"/>
                 <attribute name="OpenIDE-Module-Implementation-Version" value="1.0.1"/>
+                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
             </manifest>
             <fileset dir="${build.classes.dir}"/>
         </jar>

@@ -78,18 +78,18 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Instan
         String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         // remove the hard-coded level
         AntProjectHelper h = EarProjectGenerator.importProject(dirF, srcF, name, "1.4", serverInstanceID);
-        try {
-            FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
-            FileObject indexJSPFo = getIndexJSPFO(webRoot, "index"); //NOI18N
-            assert indexJSPFo != null : "webRoot: " + webRoot + ", defaultJSP: index";//NOI18N
-            // Returning FileObject of main class, will be called its preferred action
-            resultSet.add (indexJSPFo);
-        } catch (Exception x) {
-            //PENDING
-        }
         
         FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(dirF));
-        Project p = ProjectManager.getDefault().findProject(dir);
+        // XXX -- this code may be necessary for 54381 (once 54534 is addressed)
+//        try {
+//            FileObject src = FileUtil.toFileObject(FileUtil.normalizeFile(srcF));
+//            FileObject fileToOpen = src.getFileObject("src/conf/application.xml");
+//            assert fileToOpen != null : "cannot find the file to open: src/conf/application.xml";
+//            resultSet.add(fileToOpen);
+//        } catch (Throwable x) {
+//            //PENDING
+//        }
+//        Project p = ProjectManager.getDefault().findProject(dir);
         
         Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         //FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
