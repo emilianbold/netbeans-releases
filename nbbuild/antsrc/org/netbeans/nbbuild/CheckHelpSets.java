@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -186,7 +186,7 @@ public class CheckHelpSets extends Task {
             }
         }
         
-        // Using SAX 1 because Ant does not always ship with SAX 2:
+        // XXX use SAX 2 here
         private final class Handler extends HandlerBase {
             
             private final String map;
@@ -208,7 +208,8 @@ public class CheckHelpSets extends Task {
             }
             
             public InputSource resolveEntity(String pub, String sys) throws SAXException {
-                if (pub.equals("-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN")) {
+                if (pub.equals("-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN") ||
+                        pub.equals("-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN")) {
                     // Ignore.
                     return new InputSource(new ByteArrayInputStream(new byte[0]));
                 } else {

@@ -8,13 +8,13 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE helpset PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 1.0//EN" "http://java.sun.com/products/javahelp/helpset_1_0.dtd">
+<!DOCTYPE helpset PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 2.0//EN" "http://java.sun.com/products/javahelp/helpset_2_0.dtd">
 
-<helpset version="1.0">
+<helpset version="2.0">
   <title>Help - All</title>
   <maps>
     <homeID>org.netbeans.api.javahelp.MASTER_ID</homeID>
@@ -24,18 +24,22 @@ Microsystems, Inc. All Rights Reserved.
     <name>TOC</name>
     <label>Contents</label>
     <type>javax.help.TOCView</type>
-<!-- no data -->
   </view>
   <view>
     <name>Index</name>
     <label>Index</label>
     <type>javax.help.IndexView</type>
-<!-- no data -->
   </view>
+<!-- XXX disable for now; merging help sets is apparently broken in JH 2.0:
   <view>
     <name>Search</name>
     <label>Search</label>
     <type>javax.help.SearchView</type>
-<!-- no data -->
+  </view>
+-->
+  <view>
+    <name>Favorites</name>
+    <label>Favorites</label>
+    <type>javax.help.FavoritesView</type>
   </view>
 </helpset>

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
@@ -76,6 +76,31 @@ Microsystems, Inc. All Rights Reserved.
                       url="nbres:/org/netbeans/modules/javahelp/resources/index_1_0.dtd">
                     <attr name="hint.originalPublicID"
                           stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Index Version 1.0//EN"/>
+                </file>
+                <file name="DTD_JavaHelp_HelpSet_Version_2_0"
+                      url="nbres:/org/netbeans/modules/javahelp/resources/helpset_2_0.dtd">
+                    <attr name="hint.originalPublicID"
+                          stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 2.0//EN"/>
+                </file>
+                <file name="DTD_JavaHelp_Map_Version_2_0"
+                      url="nbres:/org/netbeans/modules/javahelp/resources/map_2_0.dtd">
+                    <attr name="hint.originalPublicID"
+                          stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"/>
+                </file>
+                <file name="DTD_JavaHelp_TOC_Version_2_0"
+                      url="nbres:/org/netbeans/modules/javahelp/resources/toc_2_0.dtd">
+                    <attr name="hint.originalPublicID"
+                          stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"/>
+                </file>
+                <file name="DTD_JavaHelp_Index_Version_2_0"
+                      url="nbres:/org/netbeans/modules/javahelp/resources/index_2_0.dtd">
+                    <attr name="hint.originalPublicID"
+                          stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Index Version 2.0//EN"/>
+                </file>
+                <file name="DTD_JavaHelp_Favorites_Version_2_0"
+                      url="nbres:/org/netbeans/modules/javahelp/resources/favorites_2_0.dtd">
+                    <attr name="hint.originalPublicID"
+                          stringvalue="-//Sun Microsystems Inc.//DTD JavaHelp Favorites Version 2.0//EN"/>
                 </file>
             </folder>
             <folder name="NetBeans">
