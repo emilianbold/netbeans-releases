@@ -33,7 +33,8 @@ final class TemplateWizardIterImpl extends Object
     private ChangeListener iteratorListener;
     
     /** is currently panel displayed? */
-    private boolean showingPanel = true;
+    private boolean showingPanel = false;
+    private boolean newIteratorInstalled = false;
 
     /** Utility field used by event firing mechanism. */
     private javax.swing.event.EventListenerList listenerList = null;
@@ -77,6 +78,10 @@ final class TemplateWizardIterImpl extends Object
         
         iterator = it;
         if (notify) {
+            // bugfix #46589, don't call nextPanel() on new iterator
+            if (showingPanel) {
+                newIteratorInstalled = true;
+            }
             showingPanel = false;
             fireStateChanged ();
         }
@@ -132,8 +137,9 @@ final class TemplateWizardIterImpl extends Object
      * @exception NoSuchElementException if the panel does not exist
      */
     public void nextPanel() {
-        if (showingPanel) {
+        if (showingPanel || newIteratorInstalled) {
             showingPanel = false;
+            newIteratorInstalled = false;
         } else {
             getIterator ().nextPanel ();
         }
@@ -148,6 +154,7 @@ final class TemplateWizardIterImpl extends Object
             getIterator ().previousPanel ();
         } else {
             showingPanel = true;
+            newIteratorInstalled = false;
         }
     }
 
@@ -181,6 +188,12 @@ final class TemplateWizardIterImpl extends Object
             throw new IllegalArgumentException ("WizardDescriptor must be instance of TemplateWizard, but is " + wiz); // NOI18N
         }
         this.wizardInstance = (TemplateWizard)wiz;
+        if (wizardInstance.getTemplate () == null) {
+            showingPanel = true;
+        } else {
+            newIteratorInstalled = false;
+            showingPanel = false;
+        }
         TemplateWizard.Iterator it = iterator;
 	if ((it != null)&&(!iteratorInitialized)) {
 	    it.initialize(wizardInstance);
