@@ -148,13 +148,13 @@ class J2SEActionProvider implements ActionProvider {
     /*private*/ String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
         String[] targetNames = new String[0];
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            FileObject[] files = findSources( context );
+            FileObject[] files = findSourcesAndPackages( context );
             if (files != null) {
                 p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getSourceDirectory())); // NOI18N
                 targetNames = new String[] {"compile-single"}; // NOI18N
             } 
             else {
-                files = findTestSources(context, false);
+                files = findTestSourcesAndPackages(context);
                 p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
                 targetNames = new String[] {"compile-test-single"}; // NOI18N
             }
@@ -286,7 +286,7 @@ class J2SEActionProvider implements ActionProvider {
             return false;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            return findSources( context ) != null || findTestSources( context, false ) != null;
+            return findSourcesAndPackages( context ) != null || findTestSourcesAndPackages( context ) != null;
         }
         else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             return findTestSourcesForSources(context) != null;
@@ -328,7 +328,25 @@ class J2SEActionProvider implements ActionProvider {
             return null;
         }
     }
-    
+
+    private FileObject[] findSourcesAndPackages (Lookup context) {
+        FileObject srcDir = project.getSourceDirectory();
+        if (srcDir != null) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, null, true); // NOI18N
+            //Check if files are either packages of java files
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    if (!files[i].isFolder() && !"java".equals(files[i].getExt())) {
+                        return null;
+                    }
+                }
+            }
+            return files;
+        } else {
+            return null;
+        }
+    }
+
     /** Find either selected tests or tests which belong to selected source files
      */
     private FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
@@ -352,8 +370,25 @@ class J2SEActionProvider implements ActionProvider {
             }
         }
         return null;
-    }    
-    
+    }
+
+
+    private FileObject[] findTestSourcesAndPackages (Lookup context) {
+        FileObject[] files = null;
+        FileObject testSrcDir = project.getTestSourceDirectory();
+        if (testSrcDir != null) {
+            files = ActionUtils.findSelectedFiles(context, testSrcDir, null, true); // NOI18N
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    if (!files[i].isFolder() && !"java".equals(files[i].getExt())) {
+                        return null;
+                    }
+                }
+            }
+        }
+        return files;
+    }
+
     /** Find tests corresponding to selected sources.
      */
     private FileObject[] findTestSourcesForSources(Lookup context) {

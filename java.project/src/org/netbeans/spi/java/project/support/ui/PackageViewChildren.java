@@ -32,6 +32,8 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.project.PackageDisplayUtils;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
@@ -492,6 +494,12 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                         }
                         else {
                             actionList.add( superActions[i] );  
+                        }
+                        if (superActions[i] instanceof org.openide.actions.FindAction) {
+                            actionList.add (null);
+                            actionList.add (FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, 
+                                NbBundle.getMessage( PackageViewChildren.class, "LBL_CompilePackage_Action" ), // NOI18N
+                                null ));
                         }
                     }
 

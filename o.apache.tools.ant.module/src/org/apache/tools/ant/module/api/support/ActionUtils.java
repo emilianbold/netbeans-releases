@@ -13,6 +13,7 @@
 
 package org.apache.tools.ant.module.api.support;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -210,6 +211,9 @@ public final class ActionUtils {
                 b.append(',');
             }
             b.append(path);
+            if (files[i].isFolder()) {
+                b.append(File.separatorChar);
+            }
         }
         return b.toString();
     }
