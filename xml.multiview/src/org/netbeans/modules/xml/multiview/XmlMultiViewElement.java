@@ -121,11 +121,12 @@ public class XmlMultiViewElement implements MultiViewElement, java.io.Serializab
                 tc.setDisplayName(dObj.getDisplayName());
                 tc.setToolTipText(dObj.getPrimaryFile().getPath());
             }
+            
             XmlMultiViewEditorSupport support = dObj.getEditorSupport();
             if (support!=null) {
                 if (undoRedo==null) undoRedo = support.getUndoRedo0();
-                support.setMVTC(callback.getTopComponent());
-                support.setXmlTopComponent(xmlTopComp);
+                if (support.getMVTC()==null)
+                    support.setMVTC(callback.getTopComponent());
             }
         }
     }

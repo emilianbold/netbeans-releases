@@ -363,6 +363,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
     }
     
     TopComponent getXmlTopComponent() {
+        if (xmlTC==null) xmlTC=super.createCloneableTopComponent();
         return xmlTC;
     }
     

@@ -51,17 +51,18 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
     protected static final long serialVersionUID =1L;
     
     public AbstractDesignEditor() {
-        this.manager = new ExplorerManager();
-        
-        ActionMap map = this.getActionMap ();
-        
-        SaveAction act = (SaveAction)SaveAction.findObject(SaveAction.class);
-        KeyStroke stroke = (KeyStroke)act.getValue(Action.ACCELERATOR_KEY);
-        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(stroke, "save"); //NOI18N
-        map.put("save", act); //NOI18N
-        
-        // following line tells the top component which lookup should be associated with it
-        associateLookup (ExplorerUtils.createLookup (manager, map));
+        manager = new ExplorerManager();
+        org.openide.util.RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                ActionMap map = AbstractDesignEditor.this.getActionMap ();
+                SaveAction act = (SaveAction)SaveAction.findObject(SaveAction.class);
+                KeyStroke stroke = (KeyStroke)act.getValue(Action.ACCELERATOR_KEY);
+                getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(stroke, "save"); //NOI18N
+                map.put("save", act); //NOI18N
+                // following line tells the top component which lookup should be associated with it
+                associateLookup (ExplorerUtils.createLookup (manager, map));
+            }
+        },300);
         initComponents();
     }
     
