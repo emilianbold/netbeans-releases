@@ -139,7 +139,7 @@ public class TransformXMLTask extends Task{
         debugInfo("getTransformer(): property javax.xml.parsers.DocumentBuilderFactory:"+System.getProperty("javax.xml.parsers.DocumentBuilderFactory")); 
         debugInfo("getTransformer(): property javax.xml.parsers.SAXParserFactory: "+System.getProperty("javax.xml.parsers.SAXParserFactory"));
         
-        //SAXParserFactoryUtil.setXTestParser();
+        SAXParserFactoryUtil.setXTestParser();
 
         /*
         System.setProperty("javax.xml.transform.TransformerFactory","org.apache.xalan.processor.TransformerFactoryImpl");
@@ -153,7 +153,7 @@ public class TransformXMLTask extends Task{
         javax.xml.transform.TransformerFactory tFactory = javax.xml.transform.TransformerFactory.newInstance();
         StreamSource xslSource = new StreamSource(xsl);
         Transformer transformer = tFactory.newTransformer(xslSource);
-        //SAXParserFactoryUtil.revertXTestParser();
+        SAXParserFactoryUtil.revertXTestParser();
         debugInfo("getTransformer(): got transformer from this xsl:"+xsl);
 
         debugInfo("getTransformer(): property javax.xml.transform.TransformerFactory:"+System.getProperty("javax.xml.transform.TransformerFactory"));
