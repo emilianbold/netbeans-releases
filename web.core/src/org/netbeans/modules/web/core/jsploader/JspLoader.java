@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -138,9 +138,6 @@ public class JspLoader extends UniFileLoader {
 
     protected MultiDataObject createMultiObject (final FileObject primaryFile)
     throws DataObjectExistsException, IOException {
-        java.io.File f = NbClassPath.toFile(primaryFile);
-        boolean isFileBased = ((f != null) && f.exists());
-
         JspDataObject obj = createJspObject(primaryFile, this);
         // [PENDING] add these from JspDataObject, not from the loader
         obj.getCookieSet0 ().add (new TagLibParseSupport(primaryFile));
