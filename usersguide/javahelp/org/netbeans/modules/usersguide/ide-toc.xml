@@ -386,7 +386,7 @@
       <tocitem text="Compiling a JSP File" target="jsp_validate" />
       <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
       <tocitem text="Passing Parameters to a JSP File or Servlet" target="jsp_queryparams"/>
-      <tocitem text="Running a JSP File Using a Tomcat Server" target="run_jsp_use_tomcat" />
+      <tocitem text="Running a JSP File" target="run_jsp_use_tomcat" />
   </tocitem> <!-- Working With JSP Pages -->
 
   <tocitem text="Servlets">
@@ -397,7 +397,7 @@
      <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
      <tocitem text="Adding a Servlet JAR file to a WAR File" target="webmod_addservlet" />
      <tocitem text="Passing Parameters to a JSP File or Servlet" target="jsp_queryparams"/>
-     <tocitem text="Running a Servlet Using a Tomcat Server" target="run_servlet_use_tomcat" />
+     <tocitem text="Running a Servlet" target="run_servlet_use_tomcat" />
   </tocitem> <!-- Working With Servlets -->
 
   <tocitem text="Filters"> 
@@ -455,7 +455,7 @@
    <tocitem text="Applets" >
 	  <tocitem text="Creating an Applet" target="webmod_addapplet"/>
           <tocitem text="Adding an Applet JAR File to a WAR File" target="webmod_addcompapplet"/>
-	  <tocitem text="Testing and Using an Applet" target="webmod_runapplet"/>
+	  <tocitem text="Running and Debugging an Applet" target="webmod_runapplet"/>
   </tocitem> <!-- Working With Applets -->
   
     </tocitem> <!-- Developing Web Applications -->
@@ -480,9 +480,9 @@
 	<tocitem text="Running Tasks: Quick Reference" target="deploying_tasks" />
 	<tocitem text="Passing Parameters to a JSP File or Servlet" target="jsp_queryparams"/>
         <tocitem text="Setting a Username and Password for the Tomcat Manager" target="password_tomcat_manager" />
-        <tocitem text="Running a Web Application Using a Tomcat Server" target="run_webapp_use_tomcat" />
-        <tocitem text="Running a JSP File Using a Tomcat Server" target="run_jsp_use_tomcat" />
-	<tocitem text="Running a Servlet Using a Tomcat Server" target="run_servlet_use_tomcat" />
+        <tocitem text="Running a Web Application" target="run_webapp_use_tomcat" />
+        <tocitem text="Running a JSP File" target="run_jsp_use_tomcat" />
+	<tocitem text="Running a Servlet" target="run_servlet_use_tomcat" />
         <tocitem text="Changing Web Servers" target="webmod_server_set" />
 	<tocitem text="Changing Web Browsers" target="webmod_browser" />
 	<tocitem text="Deployment Descriptors"> 

@@ -32,9 +32,9 @@
 	<tocitem text="Using the Tomcat Server">
 	<tocitem text="Targeting a Tomcat Server for Running Web Applications" target="tomcat_default" />
 	<tocitem text="Setting a Username and Password for the Tomcat Manager" target="tomcat_edit_tomcatuser" />
-	<tocitem text="Running a Web Application Using a Tomcat Server" target="webmod_singletest" />    
-        <tocitem text="Running a JSP File Using a Tomcat Server" target="jsp_run" />
-        <tocitem text="Running a Servlet Using a Tomcat Server" target="servlet_run" />
+	<tocitem text="Running a Web Application" target="webmod_singletest" />    
+        <tocitem text="Running a JSP File" target="jsp_run" />
+        <tocitem text="Running a Servlet" target="servlet_run" />
 	<tocitem text="Removing a Web Application from a Tomcat Server" target="tomcat_context_delete" />	
 </tocitem>
 </tocitem>
