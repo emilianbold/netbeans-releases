@@ -517,6 +517,7 @@ public abstract class NbTopManager /*extends TopManager*/ {
                     sc.save();
                 }
             } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 bad.add (dobj);
             }
         }
