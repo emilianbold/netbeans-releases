@@ -14,6 +14,7 @@
 package com.netbeans.developer.modules.loaders.form;
 
 import org.openide.explorer.propertysheet.editors.ConstrainedModifiersEditor;
+import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.src.nodes.ConstrainedModifiers;
 import org.openide.text.IndentEngine;
@@ -32,8 +33,6 @@ import java.util.Map;
 import java.util.Iterator;
 
 /* TODO
-  - connection to indentation engine
-  - Indent AWT Hierarchy
   - Exception handling in guarded blocks - from FormSettings???, or as a property of formManager
 
   - BeanContext support
@@ -48,10 +47,16 @@ public class JavaCodeGenerator extends CodeGenerator {
   private static Object GEN_LOCK = new Object ();
 
   protected static final String AUX_VARIABLE_MODIFIER = "JavaCodeGenerator_VariableModifier";
+  protected static final String AUX_SERIALIZE_TO = "JavaCodeGenerator_SerializeTo";
+  protected static final String AUX_CODE_GENERATION = "JavaCodeGenerator_CodeGeneration";
+
   protected static final String SECTION_INIT_COMPONENTS = "initComponents";
   protected static final String SECTION_VARIABLES = "variables";
   protected static final String SECTION_EVENT_PREFIX = "event_";
     
+  public static final Integer VALUE_GENERATE_CODE = new Integer (0);
+  public static final Integer VALUE_SERIALIZE = new Integer (1);
+
   private FormManager2 formManager;
 
   private JCGFormListener listener;
@@ -163,11 +168,82 @@ public class JavaCodeGenerator extends CodeGenerator {
         }
         
       },
+      new PropertySupport.ReadWrite ("codeGeneration", Integer.TYPE, "Code Generation",  // [PENDING - localize]
+                                     "Type of code generation for this component") {
+        public void setValue (Object value) {
+          if (!(value instanceof Integer)) {
+            throw new IllegalArgumentException ();
+          }
+          component.setAuxValue (AUX_CODE_GENERATION, value);
+          if (value.equals (VALUE_SERIALIZE)) {
+            if (component.getAuxValue (AUX_SERIALIZE_TO) == null) {
+              component.setAuxValue (AUX_SERIALIZE_TO, getDefaultSerializedName (component));
+            }
+          }
+          regenerateInitializer ();
+        }
+
+        public Object getValue () {
+          Object value = component.getAuxValue (AUX_CODE_GENERATION);
+          if (value == null) {
+            if (component.hasHiddenState ()) {
+              value = VALUE_SERIALIZE;
+            } else {
+              value = VALUE_GENERATE_CODE;
+            }
+          }
+          return value;
+        }
+        
+        public PropertyEditor getPropertyEditor () {
+          return new CodeGenerateEditor (component);
+        }
+        
+      },
+      new PropertySupport.ReadWrite ("serializeTo", String.class, "Serialize To",  // [PENDING - localize]
+                                     "The file into which this component is serialized") {
+        public void setValue (Object value) {
+          if (!(value instanceof String)) {
+            throw new IllegalArgumentException ();
+          }
+          component.setAuxValue (AUX_SERIALIZE_TO, value);
+          regenerateInitializer ();
+        }
+
+        public Object getValue () {
+          Object value = component.getAuxValue (AUX_SERIALIZE_TO);
+          if (value == null) {
+            value = getDefaultSerializedName (component);
+          }
+/*            // construct default file name for the serialized prototype
+            try {
+              FileObject formFile = formManager.getFormObject ().getFormFile ();
+              if (formFile.getFileSystem () instanceof LocalFileSystem) {
+                value = new File (
+                  ((LocalFileSystem)formFile.getFileSystem ()).getRootDirectory ().getName () + 
+                  File.separator + 
+                  formFile.getPackageName (File.separatorChar) + 
+                  "_" + 
+                  component.getName () + 
+                  ".ser"
+                );
+              }
+            } catch (FileStateInvalidException e) {
+              // ignore -> keep null
+            }
+          } */
+          return value;
+        }
+        
+      },
     };
   }
 
 // -----------------------------------------------------------------------------------------------
 // Private Methods
+  private String getDefaultSerializedName (RADComponent component) {
+    return component.getFormManager ().getFormObject ().getName () + "_" + component.getName () + ".ser";
+  }
 
   private void regenerateInitializer () {
     if (errorInitializing) return;
@@ -267,9 +343,6 @@ public class JavaCodeGenerator extends CodeGenerator {
     }
   }
 
-  private void addNonVisualsInitCode (RADComponent comp, Writer initCodeWriter, int level) throws IOException {
-  }
-  
   private void addInitCode (RADComponent comp, Writer initCodeWriter, AWTIndentStringWriter initCodeBuffer, int level) throws IOException {
     //System.out.println("Adding init code for: "+comp.getName ());
     if (!(comp instanceof FormContainer)) {
@@ -318,10 +391,27 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
   
   private void generateComponentCreate (RADComponent comp, Writer initCodeWriter) throws IOException {
-    initCodeWriter.write (comp.getName ());
-    initCodeWriter.write (" = new ");
-    initCodeWriter.write (comp.getComponentClass ().getName ());
-    initCodeWriter.write (" ();\n");
+    Integer generationType = (Integer)comp.getAuxValue (AUX_CODE_GENERATION);
+    if (comp.hasHiddenState () || ((generationType != null) && (generationType.equals (VALUE_SERIALIZE)))) {
+      String serializeTo = (String)comp.getAuxValue (AUX_SERIALIZE_TO);
+      initCodeWriter.write ("try {\n");
+      initCodeWriter.write (comp.getName ());
+      initCodeWriter.write (" = (");
+      initCodeWriter.write (comp.getComponentClass ().getName ());
+      initCodeWriter.write (")java.beans.Beans.instantiate (getClass ().getClassLoader (), \"");
+      initCodeWriter.write (serializeTo);
+      initCodeWriter.write ("\");\n");
+      initCodeWriter.write ("} catch (ClassNotFoundException e) {\n");
+      initCodeWriter.write ("e.printStackTrace ();\n");
+      initCodeWriter.write ("} catch (java.io.IOException e) {\n");
+      initCodeWriter.write ("e.printStackTrace ();\n");
+      initCodeWriter.write ("}\n");
+    } else {
+      initCodeWriter.write (comp.getName ());
+      initCodeWriter.write (" = new ");
+      initCodeWriter.write (comp.getComponentClass ().getName ());
+      initCodeWriter.write (" ();\n");
+    }
   }
   
   private void generateComponentInit (RADComponent comp, Writer initCodeWriter) throws IOException {
@@ -330,14 +420,18 @@ public class JavaCodeGenerator extends CodeGenerator {
       DesignLayout dl = ((RADVisualContainer)comp).getDesignLayout ();
       initCodeWriter.write (dl.generateInitCode ((RADVisualContainer)comp));
     }
-    Map changedProps = comp.getChangedProperties ();
-    for (Iterator it = changedProps.keySet ().iterator (); it.hasNext ();) {
-      RADComponent.RADProperty rprop = (RADComponent.RADProperty)it.next ();
-/*      if (desc instanceof IndexedPropertyDescriptor) {
-        generateIndexedPropertySetter (comp, rprop, initCodeWriter);
-      } else { */
-        generatePropertySetter (comp, rprop, initCodeWriter);
-//      }
+
+    if (comp.getAuxValue (AUX_SERIALIZE_TO) == null) {
+      // not serialized ==>> save
+      Map changedProps = comp.getChangedProperties ();
+      for (Iterator it = changedProps.keySet ().iterator (); it.hasNext ();) {
+        RADComponent.RADProperty rprop = (RADComponent.RADProperty)it.next ();
+  /*      if (desc instanceof IndexedPropertyDescriptor) { // [PENDING]
+          generateIndexedPropertySetter (comp, rprop, initCodeWriter);
+        } else { */
+          generatePropertySetter (comp, rprop, initCodeWriter);
+  //      }
+      }
     }
   }
 
@@ -805,6 +899,12 @@ public class JavaCodeGenerator extends CodeGenerator {
       regenerateInitializer ();
     }
     
+    /** Called when the form is about to be saved
+    */
+    public void formToBeSaved () {
+      // [PENDING - save all components to be serialized]
+    }
+
     /** Called when the order of components within their parent changes
     * @param cont the container on which the components were reordered
     */
@@ -953,13 +1053,56 @@ public class JavaCodeGenerator extends CodeGenerator {
       if (currentIndent != null) str = Utilities.replaceString (str, "\n", "\n"+currentIndent);
       super.write (str, off, len);
     }
-
   }
 
+  final public static class CodeGenerateEditor extends java.beans.PropertyEditorSupport {
+    private RADComponent component;
+
+    /** Display Names for alignment. */
+    private static final String generateName = FormEditor.getFormBundle ().getString ("VALUE_codeGen_generate");
+    private static final String serializeName = FormEditor.getFormBundle ().getString ("VALUE_codeGen_serialize");
+
+    public CodeGenerateEditor (RADComponent component) {
+      this.component = component;
+    }
+
+    /** @return names of the possible directions */
+    public String[] getTags () {
+      if (component.hasHiddenState ()) {
+        return new String[] { serializeName } ;
+      } else {
+        return new String[] { generateName, serializeName } ;
+      }
+    }
+
+    /** @return text for the current value */
+    public String getAsText () {
+      Integer value = (Integer)getValue ();
+      if (value.equals (VALUE_SERIALIZE)) return serializeName;
+      else return generateName;
+    }
+
+    /** Setter.
+    * @param str string equal to one value from directions array
+    */
+    public void setAsText (String str) {
+      if (component.hasHiddenState ()) {
+        setValue (VALUE_SERIALIZE); 
+      } else {
+        if (serializeName.equals (str)) {
+          setValue (VALUE_SERIALIZE); 
+        } else if (generateName.equals (str)) {
+          setValue (VALUE_GENERATE_CODE);
+        }
+      }
+    }
+  } 
 }
 
 /*
  * Log
+ *  32   Gandalf   1.31        6/30/99  Ian Formanek    Properties for code 
+ *       generation type, generation of serialize code
  *  31   Gandalf   1.30        6/30/99  Ian Formanek    modifiers property 
  *       writable according to value of useDefaultModifiers
  *  30   Gandalf   1.29        6/30/99  Ian Formanek    Code generation of 
