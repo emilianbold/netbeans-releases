@@ -15,46 +15,51 @@
 package org.netbeans.modules.properties;
 
 
-import java.io.IOException;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
-import java.text.MessageFormat;
 import java.beans.*;
-import javax.swing.JTable;
-import javax.swing.JPanel;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.text.MessageFormat;
+import java.util.*;
+import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.JButton;
-import javax.swing.JScrollPane;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.border.LineBorder;
 import javax.swing.table.TableColumn;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 
+import org.openide.awt.UndoRedo;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.DialogDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.FileEntry;
-import org.openide.loaders.OpenSupport;
 import org.openide.loaders.DataObject;
-import org.openide.filesystems.FileObject;
+import org.openide.loaders.OpenSupport;
+import org.openide.NotifyDescriptor;
+import org.openide.text.EditorSupport;
+import org.openide.TopManager;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListener;
+import org.openide.util.WeakSet;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.WeakListener;
-import org.openide.text.EditorSupport;
-import org.openide.NotifyDescriptor;
-import org.openide.DialogDescriptor;
-import org.openide.TopManager;
 import org.openide.windows.CloneableOpenSupport;
 
 
@@ -67,6 +72,12 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
     /** Listener for modificationc on dataobject, adding and removing save cookie */
     PropertyChangeListener modifL;
 
+    /** UndoRedo manager for this properties open support */
+    protected transient UndoRedo.Manager undoRedoManager;
+
+    /** This object is used for marking all undoable edits performed as one atomic undoable action. */
+    transient Object atomicUndoRedoFlag;
+    
 
     /** Constructor */
     public PropertiesOpen(PropertiesDataObject obj) {
@@ -100,6 +111,14 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
     public synchronized boolean hasOpenComponent() {
         java.util.Enumeration en = allEditors.getComponents ();
         return en.hasMoreElements ();
+    }
+
+    /** Gets UndoRedo manager for this OpenSupport */
+    public UndoRedo getUndoRedo () {
+        if(undoRedoManager != null)
+            return undoRedoManager;
+        else
+            return new CompoundUndoRedoManager(obj);
     }
 
     private synchronized void closeDocuments() {
@@ -517,6 +536,14 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
                 return;
             super.setName(saveAwareName);
         }
+        
+        /** 
+        * Overrides superclass method.
+        * Gets compound UndoRedo manager from all UndozRedo managers from all editor supports. 
+        */
+        public UndoRedo getUndoRedo () {
+            return dobj.getOpenSupport().getUndoRedo();
+        }
 
         /** When closing last view, also close the document.
          * @return <code>true</code> if close succeeded
@@ -612,6 +639,10 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
         * @param ev PropertyChangeEvent
         */
         public void propertyChange(PropertyChangeEvent ev) {
+            // data object changed, reset the UndoRedo manager
+            if(ev.getSource().equals(obj))
+                ((CompoundUndoRedoManager)PropertiesOpen.this.getUndoRedo()).reset(obj);
+
             if ((ev.getSource() == obj) &&
                     (DataObject.PROP_MODIFIED.equals(ev.getPropertyName()))) {
                 if (((Boolean) ev.getNewValue()).booleanValue()) {
@@ -664,4 +695,193 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
 
     } // end of SavingManager inner class
 
+    /** UndoRedo manager for PropertiesOpen support. It contains weak references to all UndoRedo  
+     * managers from all PropertiesEditor supports (for each entry of dataobject one manager). 
+     * It uses it's "timeStamp" methods to find out
+     * which one of these managers comes to play. */
+    private static class CompoundUndoRedoManager implements UndoRedo {
+        
+        /** Set of weak references to all "underlying" editor support undoredo managers. */
+        private WeakSet managers = new WeakSet(5);
+        
+        // Constructor
+        
+        /** Collects all UndoRedo managers from all editor support of all entries. */
+        public CompoundUndoRedoManager(PropertiesDataObject obj) {
+            init(obj);
+        }
+
+        /** Initialize set of managers. */
+        private void init(PropertiesDataObject obj) {
+            managers.add( ((PropertiesFileEntry)obj.getPrimaryEntry()).getPropertiesEditor().getUndoRedoManager());
+            for (Iterator it = obj.secondaryEntries().iterator(); it.hasNext(); ) {
+                managers.add( ((PropertiesFileEntry)it.next()).getPropertiesEditor().getUndoRedoManager() );
+            } 
+        }
+
+        /** Resets the managers. Used when data object has changed. */
+        public synchronized void reset(PropertiesDataObject obj) {
+            managers.clear();
+            init(obj);
+        }
+
+        /** Gets manager which undo edit comes to play.*/
+        private UndoRedo getNextUndo() {
+            UndoRedo chosenManager = null;
+            long time = 0L; // time to compare with
+            long timeManager; // time of next undo of actual manager
+            
+            for (Iterator it = managers.iterator(); it.hasNext(); ) {
+                PropertiesEditorSupport.UndoRedoStampFlagManager manager = (PropertiesEditorSupport.UndoRedoStampFlagManager)it.next();
+                timeManager = manager.getTimeStampOfEditToBeUndone();
+                if(timeManager > time) {
+                    time = timeManager;
+                    chosenManager = manager;
+                }
+            }
+            return chosenManager;
+        }
+        
+        /** Gets manager which redo edit comes to play.*/
+        private UndoRedo getNextRedo() {
+            UndoRedo chosenManager = null;
+            long time = 0L; // time to compare with
+            long timeManager; // time of next redo of actual manager
+            
+            for (Iterator it = managers.iterator(); it.hasNext(); ) {
+                PropertiesEditorSupport.UndoRedoStampFlagManager manager = (PropertiesEditorSupport.UndoRedoStampFlagManager)it.next();
+                timeManager = manager.getTimeStampOfEditToBeRedone();
+                if(timeManager > time) {
+                    time = timeManager;
+                    chosenManager = manager;
+                }
+            }
+            return chosenManager;
+        }
+        
+        //////////////////////////
+        // UndoRedo implementation
+        
+        /** Test whether at least one of managers can Undo.
+        * @return <code>true</code> if undo is allowed
+        */
+        public synchronized boolean canUndo () {
+            for (Iterator it = managers.iterator(); it.hasNext(); ) {
+                if( ((UndoRedo)it.next()).canUndo() )
+                    return true;
+            }
+            return false;
+        }
+
+        /** Test whether at least one of managers can Redo.
+        * @return <code>true</code> if redo is allowed
+        */
+        public synchronized boolean canRedo () {
+            for (Iterator it = managers.iterator(); it.hasNext(); ) {
+                if( ((UndoRedo)it.next()).canRedo() )
+                    return true;
+            }
+            return false;
+        }
+
+        /** Undo an edit. It finds a manager which next undo edit has the highest 
+        * time stamp and makes undo on it.
+        * @exception CannotUndoException if it fails
+        */
+        public synchronized void undo () throws CannotUndoException {
+            PropertiesEditorSupport.UndoRedoStampFlagManager chosenManager = (PropertiesEditorSupport.UndoRedoStampFlagManager)getNextUndo();
+
+            if(chosenManager == null)
+                throw new CannotUndoException();
+            else {
+                Object atomicFlag = chosenManager.getAtomicFlagOfEditToBeUndone();
+                if(atomicFlag == null) // not linked with other edits as one atomic action
+                    chosenManager.undo();
+                else { // atomic undo compound from more edits in underlying managers
+                    boolean undone;
+                    do { // the atomic action can consists from more undo edits from same manager
+                        undone = false;
+                        for (Iterator it = managers.iterator(); it.hasNext(); ) {
+                            PropertiesEditorSupport.UndoRedoStampFlagManager manager = (PropertiesEditorSupport.UndoRedoStampFlagManager)it.next();
+                            if(atomicFlag.equals(manager.getAtomicFlagOfEditToBeUndone())) {
+                                manager.undo();
+                                undone = true;
+                            }
+                        }
+                    } while(undone);
+                }
+            }
+        }
+
+        /** Redo a previously undone edit. It finds a manager which next undo edit has the highest 
+        * time stamp and makes undo on it.
+        * @exception CannotRedoException if it fails
+        */
+        public synchronized void redo () throws CannotRedoException {
+            PropertiesEditorSupport.UndoRedoStampFlagManager chosenManager = (PropertiesEditorSupport.UndoRedoStampFlagManager)getNextRedo();
+
+            if(chosenManager == null)
+                throw new CannotRedoException();
+            else {
+                Object atomicFlag = chosenManager.getAtomicFlagOfEditToBeRedone();
+                if(atomicFlag == null) // not linked with other edits as one atomic action
+                    chosenManager.redo();
+                else { // atomic redo compound from more edits in underlying managers
+                    boolean redone;
+                    do { // the atomic action can consists from more redo edits from same manager
+                        redone = false;
+                        for (Iterator it = managers.iterator(); it.hasNext(); ) {
+                            PropertiesEditorSupport.UndoRedoStampFlagManager manager = (PropertiesEditorSupport.UndoRedoStampFlagManager)it.next();
+                            if(atomicFlag.equals(manager.getAtomicFlagOfEditToBeRedone())) {
+                                manager.redo();
+                                redone = true;
+                            }
+                        }
+                    } while(redone);
+                }
+            }
+        }
+
+        /** Empty implementation. Does nothing.
+        * @param l the listener to add
+        */
+        public void addChangeListener (ChangeListener l) {
+            // PENDING up to now listen on separate managers
+        }
+
+        /** Empty implementation. Does nothing.
+        * @param l the listener to remove
+        * @see #addChangeListener
+        */
+        public void removeChangeListener (ChangeListener l) {
+            // PENDING
+        }
+
+        /** Get a human-presentable name describing the
+        * undo operation.
+        * @return the name
+        */
+        public synchronized String getUndoPresentationName () {
+            UndoRedo chosenManager = getNextUndo();
+
+            if(chosenManager == null)
+                return "Undo"; // NOI18N // AbstractUndoableEdit.UndoName is not accessible
+            else
+                return chosenManager.getUndoPresentationName();
+        }
+
+        /** Get a human-presentable name describing the
+        * redo operation.
+        * @return the name
+        */
+        public synchronized String getRedoPresentationName () {
+            UndoRedo chosenManager = getNextRedo();
+            if(chosenManager == null)
+                return "Redo"; // NOI18N // AbstractUndoableEdit.RedoName is not accessible
+            else
+                return chosenManager.getRedoPresentationName();
+        }
+        
+    } // end of CompoundUndoRedoManager
+    
 }
