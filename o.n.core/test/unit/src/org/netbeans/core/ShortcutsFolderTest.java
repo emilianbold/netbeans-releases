@@ -230,6 +230,43 @@ public class ShortcutsFolderTest extends NbTestCase {
         assertNotNull ("File should not have been deleted: " + fo, fo.getFileObject ("AS-F5.instance"));
     }
     
+    public void testApplyChangeToFactoryActionIssue49597 () throws Exception {
+        FileSystem fs = createTestingFilesystem();
+        FileObject shortcuts = getFolderForShortcuts (fs);
+        FileObject inst = org.openide.filesystems.FileUtil.createData (fs.getRoot (), "/Actions/Tools/TestAction.instance");
+        TestAction action = new TestAction ();
+        inst.setAttribute ("instanceCreate", action);
+        
+        WeakReference ref = new WeakReference (inst);
+        inst = null;
+        assertGC ("File can disappear", ref);
+        
+        ShortcutsFolder sf = createShortcutsFolder(fs);
+        sf.waitShortcutsFinished();
+
+        javax.swing.text.Keymap map = (javax.swing.text.Keymap)Lookup.getDefault ().lookup (javax.swing.text.Keymap.class);
+        
+        assertEquals ("Nothing registered", java.util.Collections.EMPTY_LIST, java.util.Arrays.asList (map.getBoundActions ()));
+        
+        KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_F9, KeyEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        ShortcutsFolder.applyChanges(Arrays.asList(new Object[] {new ShortcutsFolder.ChangeRequest (stroke, action, true)}));
+        sf.waitShortcutsFinished ();
+
+        FileObject[] arr = shortcuts.getChildren ();
+        assertEquals ("One element is there", 1, arr.length);
+        org.openide.loaders.DataObject obj = org.openide.loaders.DataObject.find (arr[0]);
+        assertEquals ("It is DataShadow", org.openide.loaders.DataShadow.class, obj.getClass ());
+        
+        Object a = map.getAction (stroke);
+        assertNotNull ("There is an action", a);
+        assertEquals ("It is test action", TestAction.class, a.getClass ());
+    }
+    
+    
+    public static TestAction factory () {
+        return new TestAction ();
+    }
+    
     public static class TestAction extends AbstractAction {
         public void actionPerformed (ActionEvent ae) {}
     }
