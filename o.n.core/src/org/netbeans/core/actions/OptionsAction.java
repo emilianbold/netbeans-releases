@@ -23,6 +23,7 @@ import org.openide.util.actions.CallableSystemAction;
 import org.openide.TopManager;
 import org.openide.nodes.Node;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerPanel;
 
 import org.netbeans.core.NbMainExplorer;
 
@@ -75,7 +76,10 @@ public class OptionsAction extends CallableSystemAction {
         }
         
         public HelpCtx getHelpCtx () {
-            return new HelpCtx (HELP_ID);
+            return ExplorerPanel.getHelpCtx (
+                getExplorerManager ().getSelectedNodes (),
+                new HelpCtx (HELP_ID)
+            );
         }
 
         /** Accessor to the singleron instance */
