@@ -178,6 +178,12 @@ public class IndexBuilder implements Runnable, RepositoryListener {
                         continue;
                     title[0] = st.getOverviewTitleBase(title[0]);
                 }
+                if ("".equals(title[0])) { // NOI18N
+                    title[0] = java.text.MessageFormat.format(ResourceUtils.getBundledString(
+                            "FMT_NoOverviewTitle"), new Object[] { index.getPath(),
+                                                                   fs.getDisplayName(),
+                                                                   fs.getSystemName() });
+                }
                 c.add(fs);
                 Info info = new Info();
                 info.title = title[0] == null ? fs.getDisplayName() : title[0];
