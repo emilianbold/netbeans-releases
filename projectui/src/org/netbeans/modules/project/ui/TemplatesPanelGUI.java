@@ -233,21 +233,21 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         this.projectsPanel.addPropertyChangeListener(this);
         this.description.setEditorKit(new HTMLEditorKit());
         
-        // please wait node, see issue 52900
-        Node pleaseWait = new AbstractNode (Children.LEAF) {
-            public Image getIcon (int ignore) {
-                return PLEASE_WAIT_ICON;
-            }
-        };
-        pleaseWait.setName (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("LBL_TemplatesPanel_PleaseWait"));
-        Children ch = new Children.Array ();
-        ch.add (new Node[] {pleaseWait});
-        final Node root = new AbstractNode (ch);
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                ((ExplorerProviderPanel)categoriesPanel).setRootNode (root);
-            }
-        });
+//        // please wait node, see issue 52900
+//        Node pleaseWait = new AbstractNode (Children.LEAF) {
+//            public Image getIcon (int ignore) {
+//                return PLEASE_WAIT_ICON;
+//            }
+//        };
+//        pleaseWait.setName (NbBundle.getBundle (TemplatesPanelGUI.class).getString ("LBL_TemplatesPanel_PleaseWait"));
+//        Children ch = new Children.Array ();
+//        ch.add (new Node[] {pleaseWait});
+//        final Node root = new AbstractNode (ch);
+//        SwingUtilities.invokeLater (new Runnable () {
+//            public void run () {
+//                ((ExplorerProviderPanel)categoriesPanel).setRootNode (root);
+//            }
+//        });
     }
 
     /** This method is called from within the constructor to
