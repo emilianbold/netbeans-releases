@@ -242,25 +242,7 @@ public class NbTopManager extends TopManager {
     return OutWindow.getIO (name);
   }
 
-  /** This provides class with project operations.
-  *
-  * @return  project's operations
-  */
-  protected ProjectOperation getProjectOperation () {
-    initProjects();
-    return projectOperation;
-  }
 
-  /** creates default project && creates projectOperation
-  * @return true on success, false otherwise
-  */
-  private boolean initProjects () {
-    if (projectOperation == null) {
-      projectOperation = new NbProjectOperation ();
-      return projectOperation.init();
-    }
-    return false;
-  }
 
   /** Getter for node operations.
   */
@@ -321,8 +303,7 @@ public class NbTopManager extends TopManager {
   * The method return iff Runtim.getRuntime().exit() fails
   */
   public void exit () {
-    if (projectOperation != null)
-      projectOperation.exit();
+    NbProjectOperation.exit ();
 
     Runtime.getRuntime().exit (0);
   }

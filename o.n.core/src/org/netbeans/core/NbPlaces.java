@@ -82,6 +82,13 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     return FSPoolNode.getFSPoolNode ();
   }
 
+  /** Desktop node for current project. This node can change when project changes.
+  */
+  public Node projectDesktop () {
+    return NbProjectOperation.getProject ().projectDesktop ();
+  }
+
+
   /** Default folder for templates.
   */
   public DataFolder templates () {
@@ -104,6 +111,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  4    Gandalf   1.3         1/20/99  Jaroslav Tulach 
 *  3    Gandalf   1.2         1/20/99  David Peroutka  
 *  2    Gandalf   1.1         1/6/99   Jan Jancura     
 *  1    Gandalf   1.0         1/5/99   Ian Formanek    
