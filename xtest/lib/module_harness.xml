@@ -294,8 +294,10 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.ide.timeout" value="${xtest.timeout}"/>
         
 
-
+        <!--
         <property name="xtest.workdir.idejars" value="${netbeans.home}/lib/xtest"/>
+        -->
+        <property name="xtest.workdir.idejars" value="${xtest.workdir}/sys/idejars"/>
         <mkdir dir="${xtest.workdir.idejars}"/>
         
         <!--        
@@ -323,8 +325,11 @@ Microsystems, Inc. All Rights Reserved.
         </property>
         
         <!-- temporary only !!!! remove ASAP -->
+        <!--
         <property name="xtest.ide.security" value="-J-Dnetbeans.security.nocheck=true"/>
-
+        -->
+        <property name="xtest.ide.security" value=""/>
+        
         <property name="args" value="-jdkhome ${jdkhome} -userdir &quot;${xtest.userdir}&quot; -nosplash -cp:p &quot;${xtest.ide.path}&quot; -J-Dnetbeans.mainclass=org.netbeans.xtest.ide.Main -J-Dtest.class=${test.class} -J-Dtest.classpath=&quot;${test.classpath}&quot; -J-Dtest.basedir=&quot;${basedir}&quot; -J-Dtest.ant.file=&quot;${ant.file}&quot; -J-Dtest.target=${test.target} -J-Dtest.reuse.ide=${xtest.reuse.ide} -J-Dxtest.home=&quot;${xtest.home}&quot; -J-Dxtest.includes=&quot;${xtest.includes}&quot; -J-Dxtest.excludes=&quot;${xtest.excludes}&quot; -J-Dtbag.classpath=&quot;${tbag.classpath}&quot; -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dtbag.name=&quot;${tbag.name}&quot; -J-Dtbag.executor=${tbag.executor} -J-Dxtest.module=&quot;${xtest.module}&quot; -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; -J-Dxtest.distexec=true -J-Dtest.exit=${xtest.ide.exit} -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot; -J-Dxtest.workdir=&quot;${xtest.workdir}&quot; -J-Dxtest.results=&quot;${xtest.results}&quot; -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Djunit.properties.file=${junit.properties.file} -J-Dnetbeans.windows=${xtest.ide.winsys} -J-Dxtest.error.manager=${xtest.error.manager} -J-Dxtest.timeout=${xtest.timeout} -J-Dnetbeans.systemclassloader.patches=${xtest.netbeans.systemclassloader.patches} ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
         <echo message="ARGUMENTS = ${args}"/>        
         
