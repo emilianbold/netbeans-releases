@@ -488,41 +488,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 subCompsNode = childNode;
             }
             else if (XML_AUX_VALUES.equals(nodeName)) {
-                HashMap auxValues = loadAuxValues(childNode);
-                if (auxValues != null) {
-                    for (Iterator it = auxValues.keySet().iterator(); it.hasNext();) {
-                        String auxName =(String)it.next();
-                        component.setAuxValue(auxName, auxValues.get(auxName));
-                    }
-
-                    // if the component is serialized, deserialize it
-                    if (JavaCodeGenerator.VALUE_SERIALIZE.equals(
-                            auxValues.get(JavaCodeGenerator.AUX_CODE_GENERATION)))
-                    {
-                        try {
-                            String serFile = (String) auxValues.get(
-                                             JavaCodeGenerator.AUX_SERIALIZE_TO);
-                            if (serFile == null)
-                                serFile = formFile.getName() + "_" + component.getName(); // NOI18N
-
-                            // !! [this won't work when filesystem root != classpath root]
-                            String serName = formFile.getParent().getPackageName('.');
-                            if (!"".equals(serName)) // NOI18N
-                                serName += "."; // NOI18N
-                            serName += serFile;
-
-                            Object instance = Beans.instantiate(
-                                TopManager.getDefault().currentClassLoader(),
-                                serName);
-
-                            component.setInstance(instance);
-                        }
-                        catch (Exception ex) { // ignore
-                            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                                ex.printStackTrace();
-                        }
-                    }
-                }
+                loadAuxValues(childNode, component);
             }
             else if (XML_SYNTHETIC_PROPERTIES.equals(nodeName)) {
                 loadSyntheticProperties(childNode, component);
@@ -1599,52 +1565,123 @@ public class GandalfPersistenceManager extends PersistenceManager {
         return null;
     }
 
-    private HashMap loadAuxValues(org.w3c.dom.Node node) {
-        HashMap auxTable = new HashMap(20);
-
+    private void loadAuxValues(org.w3c.dom.Node node, RADComponent comp) {
         org.w3c.dom.NodeList children = node.getChildNodes();
-        if (children != null) {
-            for (int i = 0; i < children.getLength(); i++) {
-                if (children.item(i).getNodeType() == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
+        if (children == null)
+            return;
 
-                if (XML_AUX_VALUE.equals(children.item(i).getNodeName())) {
+        for (int i=0; i < children.getLength(); i++) {
+            org.w3c.dom.Node child = children.item(i);
 
-                    String auxName = findAttribute(children.item(i), ATTR_AUX_NAME);
-                    String auxValue = findAttribute(children.item(i), ATTR_AUX_VALUE);
-                    String auxValueClass = findAttribute(children.item(i), ATTR_AUX_VALUE_TYPE);
-                    if ((auxName != null) &&(auxValue != null)) { // [PENDING - error check]
-                        try {
-                            Object auxValueDecoded = null;
-                            Class auxValueType = null;
-                            if (auxValueClass != null) {
-                                try {
-                                    auxValueType = getClassFromString(auxValueClass);
-                                } catch (Exception e2) {
-                                    // OK, try to use decodeValue in this case
-                                    if (Boolean.getBoolean("netbeans.debug.exceptions")) e2.printStackTrace(); // NOI18N
-                                }
-                            }
-                            if (auxValueType != null) {
-                                try {
-                                    auxValueDecoded = decodePrimitiveValue(auxValue, auxValueType);
-                                } catch (IllegalArgumentException e3) {
-                                    // not decoded as primitive value
-                                    auxValueDecoded = decodeValue(auxValue);
-                                }
-                            } else {
-                                // info about property class not stored
-                                auxValueDecoded = decodeValue(auxValue);
-                            }
-                            auxTable.put(auxName, auxValueDecoded);
-                        } catch (IOException e) {
-                            if (Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
-                            // [PENDING - handle error]
-                        }
+            if (!XML_AUX_VALUE.equals(child.getNodeName()))
+                continue;
+
+            org.w3c.dom.NamedNodeMap attr = child.getAttributes();
+
+            node = attr.getNamedItem(ATTR_AUX_NAME);
+            if (node == null)
+                continue; // no name
+            String auxName = node.getNodeValue();
+
+            node = attr.getNamedItem(ATTR_AUX_VALUE);
+            if (node == null)
+                continue; // no value
+            String auxValue = node.getNodeValue();
+            Object auxValueDecoded = null;
+
+            node = attr.getNamedItem(ATTR_AUX_VALUE_TYPE);
+            String auxValueClass = node != null ? node.getNodeValue() : null;
+
+            try {
+                Class auxValueType = null;
+                if (auxValueClass != null) {
+                    try {
+                        auxValueType = getClassFromString(auxValueClass);
+                    }
+                    catch (Exception e2) {
+                        // OK, try to use decodeValue in this case
+                        if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                            e2.printStackTrace();
                     }
                 }
+                if (auxValueType != null) {
+                    try {
+                        auxValueDecoded = decodePrimitiveValue(
+                                              auxValue, auxValueType);
+                    }
+                    catch (IllegalArgumentException e3) {
+                        // not decoded as primitive value
+                        auxValueDecoded = decodeValue(auxValue);
+                    }
+                }
+                else { // info about property class not stored
+                    auxValueDecoded = decodeValue(auxValue);
+                }
+            }
+            catch (IOException e) {
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    e.printStackTrace();
+                // [PENDING - handle error]
+                continue;
+            }
+
+            // we have a valid aux name / value pair
+            comp.setAuxValue(auxName, auxValueDecoded);
+        }
+
+        // we must care about some aux values specially ...
+
+        // VALUE_SERIALIZE indicates serialized component
+        if (JavaCodeGenerator.VALUE_SERIALIZE.equals(
+                comp.getAuxValue(JavaCodeGenerator.AUX_CODE_GENERATION)))
+        {   // the component has a serialized instance => deserialize it
+            try {
+                String serFile = (String) comp.getAuxValue(
+                                          JavaCodeGenerator.AUX_SERIALIZE_TO);
+                if (serFile == null)
+                    serFile = formFile.getName() + "_" + comp.getName(); // NOI18N
+
+                // !! [this won't work when filesystem root != classpath root]
+                String serName = formFile.getParent().getPackageName('.');
+                if (!"".equals(serName)) // NOI18N
+                    serName += "."; // NOI18N
+                serName += serFile;
+
+                Object instance = Beans.instantiate(
+                    TopManager.getDefault().currentClassLoader(),
+                    serName);
+
+                comp.setInstance(instance);
+            }
+            catch (Exception ex) { // ignore
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ex.printStackTrace();
             }
         }
-        return auxTable;
+
+        // AUX_VARIABLE_MODIFIER and AUX_VARIABLE_LOCAL require changing
+        // type of component's variable 
+        Object val = comp.getAuxValue(JavaCodeGenerator.AUX_VARIABLE_MODIFIER);
+        int varType = val instanceof Integer ?
+                        ((Integer)val).intValue() : -1;
+
+        val = comp.getAuxValue(JavaCodeGenerator.AUX_VARIABLE_LOCAL);
+        if (val instanceof Boolean) {
+            if (varType == -1)
+                varType = 0;
+            varType |= Boolean.TRUE.equals(val) ?
+                       CodeVariable.LOCAL | CodeVariable.EXPLICIT_DECLARATION :
+                       CodeVariable.FIELD;
+        }
+
+        if (varType > -1) { // set variable type
+            CodeStructure codeStructure = formModel.getCodeStructure();
+            CodeExpression exp = comp.getCodeExpression();
+            String name = comp.getName();
+
+            codeStructure.removeExpressionFromVariable(exp);
+            codeStructure.createVariableForExpression(exp, varType, name);
+        }
     }
 
     /** Called to actually save the form represented by specified FormModel into specified formObject.
