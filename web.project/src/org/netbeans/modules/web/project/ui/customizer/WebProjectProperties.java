@@ -186,6 +186,7 @@ public class WebProjectProperties {
     private HashMap properties;    
     private AntProjectHelper antProjectHelper;
     private ReferenceHelper refHelper;
+    private List javacClasspath;
     
     public WebProjectProperties(Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
         this.project = project;
@@ -216,7 +217,7 @@ public class WebProjectProperties {
         assert propertyName != null : "Unknown property " + propertyName; // NOI18N
         if (JAVAC_CLASSPATH.equals (propertyName)) {
             assert value instanceof List : "Wrong format of property " + propertyName; //NOI18N
-            writeJavacClasspath ((List) value, antProjectHelper, refHelper);
+            javacClasspath = (List) value;
         } else if (WAR_CONTENT_ADDITIONAL.equals (propertyName)) {
             assert value instanceof List : "Wrong format of property " + propertyName; //NOI18N
             writeWarIncludes ((List) value, antProjectHelper, refHelper);
@@ -231,7 +232,7 @@ public class WebProjectProperties {
     public Object get( String propertyName ) {
         assert propertyName != null : "Unknown property " + propertyName; // NOI18N
         if (JAVAC_CLASSPATH.equals (propertyName)) {
-            return readJavacClasspath (antProjectHelper, refHelper);
+            return javacClasspath;
         } else if (WAR_CONTENT_ADDITIONAL.equals (propertyName)) {
             return readWarIncludes(antProjectHelper, refHelper);
         }
@@ -314,6 +315,7 @@ public class WebProjectProperties {
                 properties.put( pd.name, new PropertyInfo( pd, raw, eval ) );            
             }
         }
+        javacClasspath = readJavacClasspath (antProjectHelper, refHelper);
     }
     
     /** Transforms all the Objects from GUI controls into String Ant 
@@ -396,6 +398,7 @@ public class WebProjectProperties {
                     // Store the property changes into the project
                     antProjectHelper.putProperties( PROJECT, (EditableProperties)eProps.get( PROJECT ) );
                     antProjectHelper.putProperties( PRIVATE, (EditableProperties)eProps.get( PRIVATE ) );
+                    writeJavacClasspath (javacClasspath, antProjectHelper, refHelper);
                     ProjectManager.getDefault ().saveProject (project);
                     return null;
                 }
@@ -510,6 +513,7 @@ public class WebProjectProperties {
                      if (!used) {
                         refHelper.destroyForeignFileReference(vcpi.getRaw());
                      }
+
             }
         }
         
