@@ -237,11 +237,37 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
   }
 
-  private boolean loadVisualComponent (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
+  private boolean loadVisualComponent (org.w3c.dom.Node node, FormManager2 formManager2, RADVisualComponent comp, ComponentContainer parentContainer) {
     loadComponent (node, formManager2, comp, parentContainer);
 
     if (!(comp instanceof FormContainer)) {
-      // [PENDING - constraints]
+      org.w3c.dom.Node constraintsNode = findSubNode (node, XML_CONSTRAINTS);
+      if (constraintsNode != null) {
+        org.w3c.dom.Node[] constrNodes = findSubNodes (constraintsNode, XML_CONSTRAINT);
+        for (int i = 0; i < constrNodes.length; i++) {
+          String layoutName = findAttribute (constrNodes[i], ATTR_CONSTRAINT_LAYOUT);
+          String cdName = findAttribute (constrNodes[i], ATTR_CONSTRAINT_VALUE);
+          if ((layoutName != null) && (cdName != null)) {
+            try {
+              Class layoutClass = TopManager.getDefault ().systemClassLoader ().loadClass (layoutName);
+              DesignLayout.ConstraintsDescription cd = (DesignLayout.ConstraintsDescription) TopManager.getDefault ().systemClassLoader ().loadClass (cdName).newInstance ();
+              org.w3c.dom.NodeList children = constrNodes[i].getChildNodes ();
+              if (children != null) {
+                for (int j = 0; j < children.getLength (); j++) {
+                  if (children.item (j).getNodeType () == org.w3c.dom.Node.ELEMENT_NODE) {
+                    cd.readFromXML (children.item (j));
+                    break;
+                  }
+                }
+              }
+              comp.setConstraints (layoutClass, cd);
+            } catch (Exception e) {
+              e.printStackTrace ();
+              // ignore and try another constraints // [PENDING - add to errors list]
+            }
+          }
+        }
+      }
     }
 
     return true;
@@ -249,7 +275,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
   private boolean loadContainer (org.w3c.dom.Node node, FormManager2 formManager2, RADComponent comp, ComponentContainer parentContainer) {
     if (comp instanceof RADVisualComponent) {
-      loadVisualComponent (node, formManager2, comp, parentContainer);
+      loadVisualComponent (node, formManager2, (RADVisualComponent)comp, parentContainer);
     } else {
       loadComponent (node, formManager2, comp, parentContainer);
     }
@@ -747,19 +773,44 @@ public class GandalfPersistenceManager extends PersistenceManager {
       String layoutName = (String)it.next ();
       DesignLayout.ConstraintsDescription cd = (DesignLayout.ConstraintsDescription)constraintsMap.get (layoutName);
       
-      buf.append (indent); 
-      addLeafElementOpenAttr (
-          buf, 
-          XML_CONSTRAINT, 
-          new String[] { 
-            ATTR_CONSTRAINT_LAYOUT, 
-            ATTR_CONSTRAINT_VALUE 
-          },
-          new String[] { 
-            layoutName, 
-            "", // [PENDING]
-          }
-      );
+      org.w3c.dom.Node constrNode = cd.storeToXML (topDocument);
+      if (constrNode != null) {
+        buf.append (indent); 
+        addElementOpenAttr (
+            buf, 
+            XML_CONSTRAINT, 
+            new String[] { 
+              ATTR_CONSTRAINT_LAYOUT, 
+              ATTR_CONSTRAINT_VALUE 
+            },
+            new String[] { 
+              layoutName, 
+              cd.getClass ().getName (),
+            }
+        );
+
+        saveNodeIntoText (buf, constrNode, indent + ONE_INDENT);
+
+        buf.append (indent); 
+        addElementClose (
+            buf, 
+            XML_CONSTRAINT
+        );
+      } else {
+        buf.append (indent); 
+        addLeafElementOpenAttr (
+            buf, 
+            XML_CONSTRAINT, 
+            new String[] { 
+              ATTR_CONSTRAINT_LAYOUT, 
+              ATTR_CONSTRAINT_VALUE 
+            },
+            new String[] { 
+              layoutName, 
+              cd.getClass ().getName (),
+            }
+        );
+      }
     }
   }
   
@@ -1141,6 +1192,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  15   Gandalf   1.14        7/13/99  Ian Formanek    Constraints persistence 
+ *       added
  *  14   Gandalf   1.13        7/13/99  Ian Formanek    Third draft
  *  13   Gandalf   1.12        7/12/99  Ian Formanek    Uses XMLPropertyEditor 
  *       or sub element for serialized property values
