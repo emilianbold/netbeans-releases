@@ -46,7 +46,7 @@ public class InnerTablePanel extends SectionInnerPanel {
             public void actionPerformed(ActionEvent e) {
                 stopCellEditing(table);
                 selectCell(model.addRow(), 0);
-                SwingUtilities.invokeLater(new Runnable() {
+                Utils.runInAwtDispatchThread(new Runnable() {
                     public void run() {
                         Utils.scrollToVisible(tablePanel);
                     }
@@ -73,7 +73,7 @@ public class InnerTablePanel extends SectionInnerPanel {
                 }
                 if (row >= 0) {
                     final int n = row;
-                    SwingUtilities.invokeLater(new Runnable() {
+                    Utils.runInAwtDispatchThread(new Runnable() {
                         public void run() {
                             selectCell(n, column);
                         }
@@ -198,7 +198,7 @@ public class InnerTablePanel extends SectionInnerPanel {
     protected void editCell(final int row, final int column) {
         if (table.isCellEditable(row, column)) {
             selectCell(row, column);
-            SwingUtilities.invokeLater(new Runnable() {
+            Utils.runInAwtDispatchThread(new Runnable() {
                 public void run() {
                     final JTable table = getTable();
                     table.editCellAt(row, column);
@@ -210,7 +210,7 @@ public class InnerTablePanel extends SectionInnerPanel {
     }
 
     private void selectCell(final int row, final int column) {
-        SwingUtilities.invokeLater(new Runnable() {
+        Utils.runInAwtDispatchThread(new Runnable() {
             public void run() {
                 final JTable table = getTable();
                 table.getSelectionModel().setLeadSelectionIndex(row);

@@ -138,11 +138,28 @@ public class Utils {
         }
     }
 
+    /**
+     * Scroll panel to make the component visible
+     * @param component
+     */
     public static void scrollToVisible(final JComponent component) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 component.scrollRectToVisible(new Rectangle(10, component.getHeight()));
             }
         });
+    }
+
+    /**
+     * Make sure that the code will run in AWT dispatch thread
+     * @param runnable
+     */
+    public static void runInAwtDispatchThread(Runnable runnable) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            SwingUtilities.invokeLater(runnable);
+        }
+
     }
 }

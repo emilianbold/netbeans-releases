@@ -211,7 +211,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             handleUnparseableTimeout = time;
             if (time > handleUnparseableTimeout) {
                 handleUnparseableTimeout = -1;
-                SwingUtilities.invokeLater(new Runnable() {
+                Utils.runInAwtDispatchThread(new Runnable() {
                     public void run() {
                         String message = NbBundle.getMessage(XmlMultiViewDataObject.class,
                                 "TXT_OverwriteUnparsableDocument", getPrimaryFile().getNameExt());

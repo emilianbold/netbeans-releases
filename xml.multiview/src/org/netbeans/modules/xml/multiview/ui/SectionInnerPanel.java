@@ -15,6 +15,7 @@ package org.netbeans.modules.xml.multiview.ui;
 
 import org.netbeans.modules.xml.multiview.Error;
 import org.netbeans.modules.xml.multiview.Refreshable;
+import org.netbeans.modules.xml.multiview.Utils;
 import org.netbeans.modules.xml.multiview.cookies.ErrorLocator;
 import org.netbeans.modules.xml.multiview.cookies.LinkCookie;
 import org.openide.util.RequestProcessor;
@@ -219,7 +220,7 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
         public void focusLost(FocusEvent evt) {
             if (!closing) {
                 if (!flushData()) {
-                    SwingUtilities.invokeLater(new Runnable() {
+                    Utils.runInAwtDispatchThread(new Runnable() {
                         public void run() {
                             //todo: make sure the panel is visible
                             tc.requestFocus();

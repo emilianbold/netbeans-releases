@@ -48,7 +48,7 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
         dObj.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName()) && editor != null) {
-                    SwingUtilities.invokeLater(new Runnable() {
+                    Utils.runInAwtDispatchThread(new Runnable() {
                         public void run() {
                             observer.getTopComponent().setDisplayName(dObj.getEditorSupport().messageName());
                         }

@@ -378,6 +378,11 @@ public class Utils {
         return name;
     }
 
+    /**
+     * Opens source of given class
+     * @param ejbJarFile
+     * @param classElement
+     */
     public static void openEditorFor(FileObject ejbJarFile, ClassElement classElement) {
         if (classElement == null) {
             return;
@@ -399,6 +404,13 @@ public class Utils {
         }
     }
 
+    /**
+     * Make sure that the code will run in AWT dispatch thread
+     * @param runnable
+     */
+    public static void runInAwtDispatchThread(Runnable runnable) {
+        org.netbeans.modules.xml.multiview.Utils.runInAwtDispatchThread(runnable);
+    }
 
 
     private static class ClassPathImpl implements ClassPathImplementation {

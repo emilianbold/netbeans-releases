@@ -14,6 +14,7 @@
 package org.netbeans.modules.xml.multiview.ui;
 
 import org.netbeans.modules.xml.multiview.SectionNode;
+import org.netbeans.modules.xml.multiview.Utils;
 import org.openide.nodes.Node;
 
 import javax.swing.*;
@@ -101,7 +102,7 @@ public class SectionNodePanel extends SectionPanel {
                 while (parent != null) {
                     if (parent instanceof SectionPanel) {
                         final SectionPanel sectionPanel = (SectionPanel) parent;
-                        SwingUtilities.invokeLater(new Runnable() {
+                        Utils.runInAwtDispatchThread(new Runnable() {
                             public void run() {
                                 sectionPanel.setActive(true);
                             }
