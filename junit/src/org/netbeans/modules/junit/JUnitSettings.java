@@ -38,33 +38,33 @@ public class JUnitSettings extends SystemOption {
     // static final long serialVersionUID = ...;
     static final long serialVersionUID = 372745543035969452L;
 
-    public static final String PROP_FILE_SYSTEM         = "file_system";
-    public static final String PROP_SUITE_TEMPLATE      = "suite_template";
-    public static final String PROP_CLASS_TEMPLATE      = "class_template";
-    public static final String PROP_MEMBERS_PUBLIC      = "members_public";
-    public static final String PROP_MEMBERS_PROTECTED   = "members_protected";
-    public static final String PROP_MEMBERS_PACKAGE     = "members_package";
-    public static final String PROP_BODY_COMMENTS       = "body_comments";
-    public static final String PROP_BODY_CONTENT        = "body_content";
-    public static final String PROP_JAVADOC             = "javadoc";
-    public static final String PROP_CFGCREATE_ENABLED   = "cfgcreate_enabled";
-    public static final String PROP_CFGEXEC_ENABLED     = "cfgexec_enabled";
-    public static final String PROP_EXECUTOR_TYPE       = "executor_type";
-    public static final String PROP_GENERATE_EXCEPTION_CLASSES = "generate_exceptions";
-    public static final String PROP_GENERATE_ABSTRACT_IMPL = "gemerate_abstract_impl";
-    public static final String PROP_TEST_RUNNER         = "test_runner";
+    public static final String PROP_FILE_SYSTEM         = "fileSystem";
+    public static final String PROP_SUITE_TEMPLATE      = "suiteTemplate";
+    public static final String PROP_CLASS_TEMPLATE      = "classTemplate";
+    public static final String PROP_MEMBERS_PUBLIC      = "membersPublic";
+    public static final String PROP_MEMBERS_PROTECTED   = "membersProtected";
+    public static final String PROP_MEMBERS_PACKAGE     = "membersPackage";
+    public static final String PROP_BODY_COMMENTS       = "bodyComments";
+    public static final String PROP_BODY_CONTENT        = "bodyContent";
+    public static final String PROP_JAVADOC             = "javaDoc";
+    public static final String PROP_CFGCREATE_ENABLED   = "cfgCreateEnabled";
+    public static final String PROP_CFGEXEC_ENABLED     = "cfgExecEnabled";
+    public static final String PROP_EXECUTOR_TYPE       = "executorType";
+    public static final String PROP_GENERATE_EXCEPTION_CLASSES = "generateExceptionClasses";
+    public static final String PROP_GENERATE_ABSTRACT_IMPL = "generateAbstractImpl";
+    public static final String PROP_TEST_RUNNER         = "testRunner";
     public static final String PROP_PROPERTIES          = "properties";    
-    public static final String PROP_GENERATE_SUITE_CLASSES   = "generate_suite_classes";
+    public static final String PROP_GENERATE_SUITE_CLASSES   = "generateSuiteClasses";
     
-    public static final String PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES = "include_package_private_classes";
-    public static final String PROP_GENERATE_TESTS_FROM_TEST_CLASSES = "generate_tests_from_tests_classes";    
-    public static final String PROP_GENERATE_MAIN_METHOD = "generate_main_method";
-    public static final String PROP_GENERATE_MAIN_METHOD_BODY = "generate_main_method_body";
-    public static final String PROP_TEST_CLASSNAME_PREFIX = "test_classname_prefix";
-    public static final String PROP_TEST_CLASSNAME_SUFFIX = "test_classname_suffix";
-    public static final String PROP_SUITE_CLASSNAME_PREFIX = "suite_classname_prefix";
-    public static final String PROP_SUITE_CLASSNAME_SUFFIX = "suite_classname_suffix";
-    public static final String PROP_ROOT_SUITE_CLASSNAME = "root_suite_classname";
+    public static final String PROP_INCLUDE_PACKAGE_PRIVATE_CLASSES = "includePackagePrivateClasses";
+    public static final String PROP_GENERATE_TESTS_FROM_TEST_CLASSES = "generateTestsFromTestClasses";    
+    public static final String PROP_GENERATE_MAIN_METHOD = "generateMainMethod";
+    public static final String PROP_GENERATE_MAIN_METHOD_BODY = "generateMainMethodBody";
+    public static final String PROP_TEST_CLASSNAME_PREFIX = "testClassNamePrefix";
+    public static final String PROP_TEST_CLASSNAME_SUFFIX = "testClassNameSuffix";
+    public static final String PROP_SUITE_CLASSNAME_PREFIX = "suiteClassNamePrefix";
+    public static final String PROP_SUITE_CLASSNAME_SUFFIX = "suiteClassNameSuffix";
+    public static final String PROP_ROOT_SUITE_CLASSNAME = "rootSuiteClassName";
     
     
     
