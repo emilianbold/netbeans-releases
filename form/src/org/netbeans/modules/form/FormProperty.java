@@ -602,7 +602,7 @@ public abstract class FormProperty extends Node.Property {
     }
 
     protected void currentEditorChanged(PropertyEditor old,
-                                           PropertyEditor current)
+                                        PropertyEditor current)
     {
         if (fireChanges)
             firePropertyChange(CURRENT_EDITOR, old, current);
@@ -624,24 +624,31 @@ public abstract class FormProperty extends Node.Property {
     // ----------------------------
     // private methods
 
-    private Object checkCurrentValue() throws IllegalAccessException,
-                                              InvocationTargetException {
+    private Object checkCurrentValue()
+        throws IllegalAccessException, InvocationTargetException
+    {
         if (valueSet) {
             Object value = null;
 
             if (isExternalChangeMonitoring()) {
                 value = getTargetValue();
                 if (value != lastRealValue
-                      && (value == null || !value.equals(lastRealValue))) {
-                    // the value is different from the one last set
+                    && (value == null || !value.equals(lastRealValue))
+                    && (propertyValue == null
+                        || getValueType().isAssignableFrom(propertyValue.getClass())))
+                {   // the value is different from the one last set
                     valueSet = false;
-                    if (value == null
-                        || ((value.getClass().isPrimitive() || value instanceof String)
-                            && !value.equals(lastRealValue)))
-                        setChanged(false);
-                        // the real value of the property was changed "externally"
-                        // e.g. like label of JButton is changed when text is set
+                    setChanged(false);
+//                    if (value == null
+//                        || ((value.getClass().isPrimitive() || value instanceof String)
+//                            && !value.equals(lastRealValue)))
+//                    {   // the real value of the property was changed "externally"
+//                        // e.g. like label of JButton is changed when text is set
+//                        setChanged(false);
+//                    }
+                    lastRealValue = null;
                     return value;
+                    // [fire property editor change - for refreshing property sheet??]
                 }
             }
             return propertyValue;
