@@ -115,7 +115,9 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
                 }
             });
         } catch (MutexException me) {
-            throw me.getException();
+            Exception e = me.getException();
+            // Debugging for #52689:
+            throw new Exception(e + " [Messages:" + ErrManager.messages + "]", e);
         }
         m1 = null;
         m2 = null;
