@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
@@ -57,16 +57,12 @@ public class FileObjectPropertyEditor extends PropertyEditorSupport {
                 while (tk.hasMoreTokens()) {
                     String path = tk.nextToken();
                     File f = new File (path);
-                    FileObject[] fos = FileUtil.fromFile(f);
-                    if (fos.length == 0)
-                        throw new IllegalArgumentException();
-                    else
-                        fileObjs.add (fos[0]);
+                    fileObjs.add(FileUtil.toFileObject(f));
                 }
             }
             setValue (fileObjs);
         } catch (Exception e) {
-            e.printStackTrace ();           
+            e.printStackTrace();
         }
     }
 
