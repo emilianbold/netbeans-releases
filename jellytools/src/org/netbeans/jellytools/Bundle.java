@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -51,9 +51,9 @@ public class Bundle {
         try {
             return NbBundle.getBundle(bundle);
         } catch (NullPointerException e) {
-            throw new JemmyException("\"" + bundle + "\" bundle has not been found", e);
+            throw new JemmyException("\"" + bundle + "\" bundle was not found", e);
         } catch (MissingResourceException e) {
-            throw new JemmyException("\"" + bundle + "\" bundle has not been found", e);
+            throw new JemmyException("\"" + bundle + "\" bundle was not found", e);
         }
     }
     
@@ -66,7 +66,7 @@ public class Bundle {
         try {
             return bundle.getString(key);
         } catch (MissingResourceException e) {
-            throw new JemmyException("\"" + key + "\" key has not been found", e);
+            throw new JemmyException("\"" + key + "\" key was not found", e);
         } catch (NullPointerException npe) {
             throw new JemmyException("Cannot accept null parameter.", npe);
         }
