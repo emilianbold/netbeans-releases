@@ -616,9 +616,9 @@ fixedmodules=$${config.fixedmodules.${moduleconfig}}
 
   <!-- build javadoc for selected modules -->
   <target name="build-javadoc" depends="merge">
-      <for-each startdir=".." target="javadoc" locations="${modules}"/>
+      <for-each startdir=".." target="javadoc" locations="${fixedmodules}"/>
       <taskdef name="simplemerge" classname="org.netbeans.nbbuild.SimpleMerge" classpath="nbantext.jar"/>
-      <simplemerge topdir=".." subdir="javadoc" dest="modules_javadoc" modules="${modules}"/>
+      <simplemerge topdir=".." subdir="javadoc" dest="modules_javadoc" modules="${fixedmodules}"/>
   </target>
 
   <target name="build-messaging" depends="init">
