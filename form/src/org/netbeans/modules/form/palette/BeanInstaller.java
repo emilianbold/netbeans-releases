@@ -21,7 +21,6 @@ import java.beans.PropertyVetoException;
 import java.text.MessageFormat;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
@@ -29,6 +28,7 @@ import javax.swing.border.*;
 import com.netbeans.ide.*;
 import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.util.NbBundle;
+import com.netbeans.developer.modules.loaders.form.FormLoaderSettings;
 
 /** Bean Installer
 *
@@ -96,15 +96,14 @@ public final class BeanInstaller extends Object {
           rep.addFileSystem(jar);
         }
 
-        finishInstall(jar, list);
-        TopManager.getDefault().notify(new NotifyDescriptor.Message(
+        String pal = null; //selectPaletteCategory();
+        if (pal != null)
+          finishInstall(jar, list/*sel.getSelectedBeans()*/, pal);
+/*        TopManager.getDefault().notify(new NotifyDescriptor.Message(
                                                                     "Changes in the component palette will only take effect after Netbeans Developer have been restarted",
                                                                     NotifyDescriptor.INFORMATION_MESSAGE)
-        );
+        ); */
                       
-/*        PaletteCategory pal = selectPaletteCategory();
-        if (pal != null)
-          finishInstall(jar, sel.getSelectedBeans(), pal, false);*/
       }
     }
   }
@@ -149,33 +148,29 @@ public final class BeanInstaller extends Object {
   
   /** Finishing the instalation of the java beans.
   * @param jar JarFileSystem - the source of JBs
-  * @param v Vector of FileObjects - selected JBs
+  * @param list Collection of FileObjects - selected JBs
   * @param pal palettecategory where to place beans.
-  * @param sync - if installing has to be synchronized or
-  * using RequestProcessor.postRequest
   */
-  private static void finishInstall(JarFileSystem jar, final LinkedList list) {
+  private static void finishInstall(JarFileSystem jar, final Collection list, String pal) {
     FileObject root = TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot();
     FileObject paletteFolder = root.getFileObject ("Palette");
     if (paletteFolder == null) {
       return;
     }
 
-    FileObject beansCategory = paletteFolder.getFileObject("Beans");
-    if (beansCategory == null) {
+    if (pal == null) {
+      pal = "Beans"; // defaul palette category
+    }
+    FileObject category = paletteFolder.getFileObject(pal);
+    if (category == null) {
       return;
     }
     
 
     
-    /*
-    progress.setLabel(MessageFormat.format(progressLabel, new Object[] { "" }));
+/*    progress.setLabel(MessageFormat.format(progressLabel, new Object[] { "" }));
     progress.center();
-    progress.show();
-    */
-    
-/*    Runnable task = new Runnable() {
-public void run() {*/
+    progress.show(); */
     
           ClassLoader loader = TopManager.getDefault().currentClassLoader();
           Iterator it = list.iterator();
@@ -184,7 +179,7 @@ public void run() {*/
           while (it.hasNext()) {
             FileObject fo = (FileObject) it.next();
             String name = fo.getPackageName('.');
-            createInstance(beansCategory, name, null);
+            createInstance(category, name, null);
           }
 //            progress.setLabel(MessageFormat.format(progressLabel, new Object[] { fo.getName() }));
 //            progress.inc();
@@ -338,10 +333,9 @@ public void run() {*/
   //==============================================================================
 
   /** Auto loading all jars - beans */
-  /*
   public static void autoLoadBeans() {
-    IDESettings settings = new IDESettings();
-    Hashtable loadedBeans = settings.getLoadedBeans();
+    FormLoaderSettings settings = new FormLoaderSettings();
+    java.util.HashMap loadedBeans = settings.getLoadedBeans();
 
     File globalFolder = new File(System.getProperty("netbeans.home") + File.separator + "beans");
     try {
@@ -360,14 +354,21 @@ public void run() {*/
       autoLoadFolder(localFolder, loadedBeans);
 
     settings.setLoadedBeans(loadedBeans);
+    
+    java.awt.EventQueue.invokeLater (
+      new Runnable () {
+        public void run () {
+          ComponentPalette.getDefault ().updatePalette ();
+        }
+      }
+    );
   }
 
   /** Loads the beans stored in the given folder.
   * @param folder - where to find jars
   * @param loadedBeans - names of jars already loaded (in previous NB sessions)
   */
-  /*
-  private static void autoLoadFolder(File folder, Hashtable loadedBeans) {
+  private static void autoLoadFolder(File folder, HashMap loadedBeans) {
     if (!folder.exists())
       return;
     
@@ -380,22 +381,12 @@ public void run() {*/
     catch (IOException e) {
     }
 
-    Node[] categories = PaletteContext.getPaletteContext().getPaletteCategories();
-    Hashtable palette = new Hashtable();
-    for (int j = 0; j < categories.length; j++)
-      palette.put(categories[j].getDisplayName(), categories[j]);
-
+    String[] categories = ComponentPalette.getDefault ().getPaletteCategories();
     for (int i = 0; i < list.length; i++) {
       if (list[i].endsWith(JAR_EXT) && (loadedBeans.get(list[i]) == null)) {
         String withoutExt = list[i].substring(0, list[i].length() - JAR_EXT.length());
         String categoryName = details.getProperty(withoutExt, withoutExt);
-        PaletteCategory cat = (PaletteCategory) palette.get(categoryName);
-        if (cat == null) {
-          cat = new PaletteCategory(PaletteContext.getPaletteContext(), categoryName);
-          PaletteContext.getPaletteContext().add(cat);
-        }
-        
-        if (autoLoadJar(base + list[i], cat, details.getProperty(withoutExt + ".beans"))) {
+        if (autoLoadJar(base + list[i], categoryName, details.getProperty(withoutExt + ".beans"))) {
           loadedBeans.put(list[i], list[i]);
         }
       }
@@ -408,22 +399,22 @@ public void run() {*/
   * @param selection - the selection of beans which should be installed.
   *       May be null - then all beans are loaded.
   */
-  /*
-  private static boolean autoLoadJar(String name, PaletteCategory palette, String selection) {
+  private static boolean autoLoadJar(String name, String paletteCategory, String selection) {
     JarFileSystem jar = createJarForName(name);
+    Vector v = null;
     if (jar == null) {
-      TopManager.getDefault().notify(
+/*      TopManager.getDefault().notify(
         new NotifyDescriptor.Message(topBundle.getString("MSG_ErrorInFile"),
                                      NotifyDescriptor.ERROR_MESSAGE)
-        );
+        ); */
       return false;
     }
     else {
-      JarFileSystem jar2 = (JarFileSystem) FileSystemPool.getDefault().findFileSystem(jar.getSystemName());
+      JarFileSystem jar2 = (JarFileSystem) TopManager.getDefault ().getRepository ().findFileSystem (jar.getSystemName());
       if (jar2 != null)
         jar = jar2;
 
-      Vector v = findJavaBeans(jar);
+      LinkedList list = findJavaBeans(jar);
       if (selection != null) {
         Vector dest = new Vector();
         StringTokenizer tok = new StringTokenizer(selection, ", ", false);
@@ -439,9 +430,9 @@ public void run() {*/
           }
           FileObject fo = jar.find(clPack, clName, "class");
           if (fo != null) {
-            Enumeration en = v.elements();
-            while (en.hasMoreElements()) {
-              FileObject fo2 = (FileObject) en.nextElement();
+            Iterator it = list.iterator ();
+            while (it.hasNext()) {
+              FileObject fo2 = (FileObject) it.next();
               if (fo.equals(fo2)) {
                 dest.addElement(fo);
               }
@@ -450,11 +441,11 @@ public void run() {*/
         }
         v = dest;
       }
-      finishInstall(jar, v, palette, true);
+      finishInstall(jar, v, paletteCategory);
       return true;
     }
   }
-  */
+  
   
   //==============================================================================
   // Inner classes
@@ -697,13 +688,10 @@ public void run() {*/
 
 /*
  * Log
+ *  3    Gandalf   1.2         6/4/99   Ian Formanek    First cut of 
+ *       autoLoadBeans
  *  2    Gandalf   1.1         5/17/99  Petr Hamernik   very simple version of 
  *       Beans installer
  *  1    Gandalf   1.0         5/17/99  Petr Hamernik   
  * $
- * Beta Change History:
- *  0    Tuborg    0.11        --/--/98 Jan Formanek    changed buttons on BeanSelector
- *  0    Tuborg    0.15        --/--/98 Jan Formanek    if the selected JAR is already mounted, it is correctly used
- *  0    Tuborg    0.16        --/--/98 Petr Hamernik   progress bar added, installing on background
- *  0    Tuborg    0.18        --/--/98 Ales Novak      cancelButton added
  */
