@@ -15,16 +15,3 @@ NetBeans-Module-Class: Option
 Name: com/netbeans/developer/modules/loaders/form/palette/PaletteNode.class
 NetBeans-Module-Class: Node
 Type: Session
-
-Name: com/netbeans/developer/modules/loaders/form/palette/PaletteAction.class
-NetBeans-Module-Class: Action
-Toolbar: Form
-
-Name: com/netbeans/developer/modules/loaders/form/actions/DesignModeAction.class
-NetBeans-Module-Class: Action
-Toolbar: Form
-
-Name: com/netbeans/developer/modules/loaders/form/actions/TestModeAction.class
-NetBeans-Module-Class: Action
-Toolbar: Form
-

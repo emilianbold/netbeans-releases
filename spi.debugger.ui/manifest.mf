@@ -13,8 +13,3 @@ Name: com/netbeans/developer/modules/debugger/nodes/DebuggerNode.class
 NetBeans-Module-Class: Node
 Type: Environment
 
-Name: com/netbeans/developer/modules/debugger/actions/AddBreakpointAction.class
-NetBeans-Module-Class: Action
-Toolbar: Debug
-Menu: Debug
-
