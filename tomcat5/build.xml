@@ -27,15 +27,17 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_root}/nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nb_root}/nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nb_root}/nbbuild/nbantext.jar"/>
-  <taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
-	<classpath>
-	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
-	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
-	  <pathelement path="${nb_root}/schema2beans/anttask/s2banttask.jar"/>
-	</classpath>
-  </taskdef>
-
-  <target name="dd2beans_gen">
+  <target name="s2binit">
+	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
+	  <classpath>
+		<pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
+		<pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
+		<pathelement path="${nb_root}/schema2beans/anttask/s2banttask.jar"/>
+	  </classpath>
+	</taskdef>
+  </target>
+  
+  <target name="dd2beans_gen" depends="s2binit">
       <echo message="generating bean graph for Tomcat 5 configuration file" />
 	<schema2beans schema="${tomcat5_dir}/resources/tomcat5_server.dtd"
 	  mddFile="tomcat5.mdd"
