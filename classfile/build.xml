@@ -14,16 +14,4 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="classfile" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-
-  <target name="nbm" depends="netbeans">
-    <makenbm file="build/${nbm}"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${module.jar}"
-	     homepage="http://${nbm.domain}.${homepage.base}/"
-	     distribution="http://${dist.base}/${nbm}">
-      <license file="${license.file}"/>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
 </project>
