@@ -19,6 +19,7 @@ import org.openide.nodes.Node;
 import org.openide.loaders.DataFolder;
 import org.openide.filesystems.*;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /**
  * Class providing various useful methods for palette classes.
@@ -26,7 +27,8 @@ import org.openide.ErrorManager;
 
 public final class PaletteUtils {
 
-    private static DataFolder paletteFolder;
+    private static FileObject paletteFolder;
+    private static DataFolder paletteDataFolder;
 
     private PaletteUtils() {
     }
@@ -86,23 +88,31 @@ public final class PaletteUtils {
                                        .getAttribute(PaletteNode.CAT_HIDDEN))); // NOI18N
     }
 
-    public static DataFolder getPaletteFolder() {
+    public static FileObject getPaletteFolder() {
         if (paletteFolder != null)
             return paletteFolder;
 
         try {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem()
+            paletteFolder = Repository.getDefault().getDefaultFileSystem()
                                                      .findResource("Palette"); // NOI18N
-            if (fo == null) // not found, create new folder
-                fo = Repository.getDefault().getDefaultFileSystem().getRoot()
-                                                     .createFolder("Palette"); // NOI18N
-
-            paletteFolder = DataFolder.findFolder(fo);
-            return paletteFolder;
+            if (paletteFolder == null) // not found, create new folder
+                paletteFolder = Repository.getDefault().getDefaultFileSystem()
+                                  .getRoot().createFolder("Palette"); // NOI18N
         }
         catch (java.io.IOException ex) {
             throw new IllegalStateException("Palette folder not found and cannot be created."); // NOI18N
         }
+        return paletteFolder;
+    }
+
+    static DataFolder getPaletteDataFolder() {
+        if (paletteDataFolder == null)
+            paletteDataFolder = DataFolder.findFolder(getPaletteFolder());
+        return paletteDataFolder;
+    }
+
+    static String getBundleString(String key) {
+        return NbBundle.getBundle(PaletteUtils.class).getString(key);
     }
 
 }

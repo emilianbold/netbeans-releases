@@ -13,17 +13,25 @@
 
 package org.netbeans.modules.form.palette;
 
+import java.util.*;
+import java.io.*;
+import java.beans.BeanInfo;
+
 import org.openide.loaders.*;
-import org.openide.filesystems.FileObject;
+import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.xml.XMLUtil;
 import org.openide.actions.*;
+import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.ErrorManager;
 
 /**
  * DataObject for palette item file. It reads the file and creates PaletteItem
  * and node from it.
+ *
+ * @author Tomas Pavek
  */
 
 class PaletteItemDataObject extends MultiDataObject {
@@ -34,7 +42,8 @@ class PaletteItemDataObject extends MultiDataObject {
     static final String ATTR_CLASSNAME = "classname"; // NOI18N
     static final String ATTR_TYPE = "type"; // NOI18N
 //    static final String ATTR_IS_CONTAINER = "is-container"; // NOI18N
-    static final String TAG_ORIGIN = "origin"; // NOI18N
+    static final String TAG_CLASSPATH = "classpath"; // NOI18N
+    static final String TAG_CLASSPATH_SOURCE= "classpath_source"; // NOI18N
     static final String ATTR_LOCATION = "location"; // NOI18N
     static final String TAG_DESCRIPTION = "description"; // NOI18N
     static final String ATTR_BUNDLE = "localizing-bundle"; // NOI18N
@@ -44,16 +53,28 @@ class PaletteItemDataObject extends MultiDataObject {
     static final String ATTR_URL = "urlvalue"; // NOI18N
     static final String TAG_ICON32 = "icon32"; // NOI18N
     // component types: "visual", "menu", "layout", "border"
-    // origin types: "jar", "library", "project"
+    // classpath source types: "jar", "library", "project"
 
     private static SystemAction[] staticActions;
 
     private static final Node.PropertySet[] NO_PROPERTIES = new Node.PropertySet[0];
-//    private static final String DEFAULT_ICON = "org/openide/resources/pending.gif"; // NOI18N
 
     private boolean fileLoaded; // at least tried to load
 
     private PaletteItem paletteItem;
+
+    // some raw data read from the file (other passed to PaletteItem)
+    private String displayName_key;
+    private String tooltip_key;
+    private String bundleName;
+    private String icon16URL;
+    private String icon32URL;
+
+    // data derived from raw data
+    String displayName;
+    String tooltip;
+    java.awt.Image icon16;
+    java.awt.Image icon32;
 
     // --------
 
@@ -130,9 +151,8 @@ class PaletteItemDataObject extends MultiDataObject {
         // root element ok, read the content
         org.w3c.dom.NodeList childNodes = mainElement.getChildNodes();
         for (int i=0, n=childNodes.getLength(); i < n; i++) {
-            org.w3c.dom.Node childNode = childNodes.item(i);
-            org.w3c.dom.NamedNodeMap attr = childNode.getAttributes();
-            String nodeName = childNode.getNodeName();
+            org.w3c.dom.NamedNodeMap attr = childNodes.item(i).getAttributes();
+            String nodeName = childNodes.item(i).getNodeName();
             org.w3c.dom.Node node;
 
             if (TAG_COMPONENT.equals(nodeName)) {
@@ -151,54 +171,110 @@ class PaletteItemDataObject extends MultiDataObject {
                 }
             }
 
-            else if (TAG_ORIGIN.equals(nodeName)) {
-                node = attr.getNamedItem(ATTR_TYPE);
-                if (node != null) {
-                    item.originType_explicit = node.getNodeValue();
+            else if (TAG_CLASSPATH.equals(nodeName)) {
+                List cpList = new ArrayList();
+                org.w3c.dom.NodeList cpNodes = childNodes.item(i).getChildNodes();
+                for (int j=0, m=cpNodes.getLength(); j < m; j++) {
+                    attr = cpNodes.item(j).getAttributes();
+                    nodeName = cpNodes.item(j).getNodeName();
 
-                    node = attr.getNamedItem(ATTR_LOCATION);
-                    if (node != null)
-                        item.originLocation = node.getNodeValue();
-                    else
-                        item.originType_explicit = null;
+                    if (TAG_CLASSPATH_SOURCE.equals(nodeName)) {
+                        node = attr.getNamedItem(ATTR_TYPE);
+                        if (node != null) {
+                            String type = node.getNodeValue();
+                            node = attr.getNamedItem(ATTR_LOCATION);
+                            if (node != null) {
+                                cpList.add(type);
+                                cpList.add(node.getNodeValue());
+                            }
+                        }
+                    }
                 }
+                if (cpList.size() > 0)
+                    item.classpath_raw =
+                        (String[]) cpList.toArray(new String[cpList.size()]);
             }
 
             else if (TAG_DESCRIPTION.equals(nodeName)) {
                 node = attr.getNamedItem(ATTR_BUNDLE);
                 if (node != null)
-                    item.bundleName = node.getNodeValue();
+                    bundleName = node.getNodeValue();
 
                 node = attr.getNamedItem(ATTR_DISPLAY_NAME_KEY);
                 if (node != null)
-                    item.displayName_key = node.getNodeValue();
+                    displayName_key = node.getNodeValue();
 
                 node = attr.getNamedItem(ATTR_TOOLTIP_KEY);
                 if (node != null)
-                    item.tooltip_key = node.getNodeValue();
+                    tooltip_key = node.getNodeValue();
             }
 
             else if (TAG_ICON16.equals(nodeName)) {
                 node = attr.getNamedItem(ATTR_URL);
                 if (node != null)
-                    item.icon16URL = node.getNodeValue();
+                    icon16URL = node.getNodeValue();
                 // TODO support also class resource name for icons
             }
 
             else if (TAG_ICON32.equals(nodeName)) {
                 node = attr.getNamedItem(ATTR_URL);
                 if (node != null)
-                    item.icon32URL = node.getNodeValue();
+                    icon32URL = node.getNodeValue();
                 // TODO support also class resource name for icons
             }
         }
 
-        if (item.componentClassName != null || item.displayName_key != null)
+        if (item.componentClassName != null || displayName_key != null)
             paletteItem = item;
     }
 
     private void saveFile() {
         // TBD
+    }
+
+    /**
+     * @param folder folder of category where to create new file
+     * @param classname name of the component class
+     * @param source classpath source type - "jar", "library", "project"
+     * @param classpath names of classpath roots - e.g. JAR file paths
+     */
+    static void createFile(FileObject folder,
+                           String classname,
+                           String source,
+                           String[] classpath)
+        throws IOException
+    {
+        int idx = classname.lastIndexOf('.');
+        String shortName = idx >= 0 ? classname.substring(idx+1) : classname;
+
+        FileObject itemFile = folder.createData(shortName,
+                                                PaletteItemDataLoader.ITEM_EXT);
+
+        StringBuffer buff = new StringBuffer(512);
+        buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"); // NOI18N
+        buff.append("<palette_item version=\"1.0\">\n"); // NOI18N
+        buff.append("  <component classname=\""); // NOI18N
+        buff.append(classname);
+        buff.append("\" />\n"); // NOI18N
+        buff.append("  <classpath>\n"); // NOI18N
+        for (int i=0; i < classpath.length; i++) {
+            buff.append("      <classpath_source type=\""); // NOI18N
+            buff.append(source);
+            buff.append("\" location=\""); // NOI18N
+            buff.append(classpath[i]);
+            buff.append("\" />\n"); // NOI18N
+            buff.append("  </classpath>\n"); // NOI18N
+            buff.append("</palette_item>\n"); // NOI18N
+        }
+
+        FileLock lock = itemFile.lock();
+        OutputStream os = itemFile.getOutputStream(lock);
+        try {
+            os.write(buff.toString().getBytes());
+        }
+        finally {
+            os.close();
+        }
     }
 
     // -------
@@ -217,7 +293,7 @@ class PaletteItemDataObject extends MultiDataObject {
         }
 
         protected MultiDataObject createMultiObject(FileObject primaryFile)
-            throws DataObjectExistsException, java.io.IOException
+            throws DataObjectExistsException, IOException
         {
             return new PaletteItemDataObject(primaryFile, this);
         }
@@ -236,16 +312,44 @@ class PaletteItemDataObject extends MultiDataObject {
             if (!fileLoaded)
                 loadFile();
 
-            String displayName = isItemValid() ? paletteItem.getDisplayName() : null;
-            return displayName != null ? displayName : super.getDisplayName();
+            if (displayName == null) {
+                displayName = getExplicitDisplayName();
+                if (displayName == null) { // no explicit name
+                    if (isItemValid()) {
+                        displayName = paletteItem.getDisplayName();
+                        if (displayName == null) { // no name from BeanDescriptor
+                            String classname = paletteItem.getComponentClassName();
+                            if (classname != null) {
+                                int i = classname.lastIndexOf('.'); // NOI18N
+                                displayName = i >= 0 ?
+                                    classname.substring(i+1) : classname;
+                            }
+                        }
+                    }
+                    if (displayName == null) // no name derived from the item
+                        displayName = super.getDisplayName();
+                }
+            }
+            return displayName;
         }
 
         public String getShortDescription() {
             if (!fileLoaded)
                 loadFile();
 
-            String tooltip = isItemValid() ? paletteItem.getTooltip() : null;
-            return tooltip != null ? tooltip : super.getShortDescription();
+            if (tooltip == null) {
+                tooltip = getExplicitTooltip();
+                if (tooltip == null) { // no explicit tooltip
+                    if (isItemValid()) {
+                        tooltip = paletteItem.getTooltip();
+                        if (tooltip == null) // no tooltip from BeanDescriptor
+                            tooltip = paletteItem.getComponentClassName();
+                    }
+                    if (tooltip == null) // no tooltip derived from the item
+                        tooltip = getDisplayName();
+                }
+            }
+            return tooltip;
         }
 
         public boolean canRename() {
@@ -256,8 +360,28 @@ class PaletteItemDataObject extends MultiDataObject {
             if (!fileLoaded)
                 loadFile();
 
-            java.awt.Image icon = isItemValid() ? paletteItem.getIcon(type) : null;
-            return icon != null ? icon : super.getIcon(type); // Utilities.loadImage(DEFAULT_ICON);
+            if (type == BeanInfo.ICON_COLOR_32x32
+                    || type == BeanInfo.ICON_MONO_32x32)
+            {
+                if (icon32 == null) {
+                    icon32 = getExplicitIcon(type);
+                    if (icon32 == null && isItemValid())
+                        icon32 = paletteItem.getIcon(type);
+                    if (icon32 == null)
+                        icon32 = Utilities.loadImage("org/netbeans/modules/form/resources/palette/unknown32.gif"); // NOI18N
+                }
+                return icon32;
+            }
+            else { // small icon by default
+                if (icon16 == null) {
+                    icon16 = getExplicitIcon(type);
+                    if (icon16 == null && isItemValid())
+                        icon16 = paletteItem.getIcon(type);
+                    if (icon16 == null)
+                        icon16 = Utilities.loadImage("org/netbeans/modules/form/resources/palette/unknown.gif"); // NOI18N
+                }
+                return icon16;
+            }
             // TODO badged icon for invalid item?
         }
 
@@ -281,6 +405,68 @@ class PaletteItemDataObject extends MultiDataObject {
         // TODO properties
         public Node.PropertySet[] getPropertySets() {
             return NO_PROPERTIES;
+        }
+
+        // ------
+
+        private String getExplicitDisplayName() {
+            String displaName = null;
+            if (displayName_key != null) {
+                if (bundleName != null) {
+                    try {
+                        displayName = NbBundle.getBundle(bundleName)
+                                                .getString(displayName_key);
+                    }
+                    catch (Exception ex) {} // ignore failure
+                }
+                if (displayName == null)
+                    displayName = displayName_key;
+            }
+            return displayName;
+        }
+
+        private String getExplicitTooltip() {
+            String tooltip = null;
+            if (tooltip_key != null) {
+                if (bundleName != null) {
+                    try {
+                        tooltip = NbBundle.getBundle(bundleName)
+                                            .getString(tooltip_key);
+                    }
+                    catch (Exception ex) {} // ignore failure
+                }
+                if (tooltip == null)
+                    tooltip = tooltip_key;
+            }
+            return tooltip;
+        }
+
+        private java.awt.Image getExplicitIcon(int type) {
+            if (type == BeanInfo.ICON_COLOR_32x32
+                    || type == BeanInfo.ICON_MONO_32x32)
+            {
+                if (icon32URL != null) { // explicit icon specified in file
+                    try {
+                        return java.awt.Toolkit.getDefaultToolkit().getImage(
+                                                 new java.net.URL(icon32URL));
+                    }
+                    catch (java.net.MalformedURLException ex) {} // ignore
+                }
+                else if (getPrimaryFile().getAttribute("SystemFileSystem.icon32") != null) // NOI18N
+                    return super.getIcon(type);
+            }
+            else { // get small icon in other cases
+                if (icon16URL != null) { // explicit icon specified in file
+                    try {
+                        return java.awt.Toolkit.getDefaultToolkit().getImage(
+                                                 new java.net.URL(icon16URL));
+                    }
+                    catch (java.net.MalformedURLException ex) {} // ignore
+                }
+                else if (getPrimaryFile().getAttribute("SystemFileSystem.icon") != null) // NOI18N
+                    return super.getIcon(type);
+            }
+            return null;
         }
     }
 }

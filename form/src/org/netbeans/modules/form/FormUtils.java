@@ -1133,7 +1133,7 @@ public class FormUtils
         ClassNotFoundException exception = null;
         LinkageError error = null;
 
-        // first try the system class loader (for Swing and IDE components)
+        // first try the system class loader (for Swing and form module special components)
         try {
             ClassLoader loader = (ClassLoader)
                                  Lookup.getDefault().lookup(ClassLoader.class);
@@ -1150,7 +1150,7 @@ public class FormUtils
         if (theClass == null && formFile != null) {
             try {
                 ClassLoader loader =
-                    ClassPath.getClassPath(formFile, ClassPath.EXECUTE)
+                    ClassPath.getClassPath(formFile, ClassPath.COMPILE)
                         .getClassLoader(true);
                 theClass = loader.loadClass(name);
             }
@@ -1161,25 +1161,6 @@ public class FormUtils
                 error = ex;
             }
         }
-
-        // third try all registered project classpath loaders
-        // [does it make sense? can it work?]
-/*        if (theClass == null) {
-            try {
-                Set paths = GlobalPathRegistry.getDefault().getPaths(ClassPath.EXECUTE);
-                ClassLoader loader =
-                    ClassPathSupport.createProxyClassPath((ClassPath[])paths.toArray())
-                        .getClassLoader(true);
-                theClass = loader.loadClass(name);
-                System.out.println("3rd loaded "+name);
-            }
-            catch (ClassNotFoundException ex) {
-                exception = ex;
-            }
-            catch (LinkageError ex) {
-                error = ex;
-            }
-        } */
 
         if (theClass != null)
             return theClass; // success

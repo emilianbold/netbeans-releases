@@ -15,7 +15,7 @@ package org.netbeans.modules.form.actions;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
-import org.netbeans.modules.form.palette.BeanInstaller;
+import org.netbeans.modules.form.palette.PaletteManager;
 
 /** This action installs new bean into the system.
  *
@@ -59,6 +59,7 @@ public class InstallBeanAction extends CallableSystemAction {
      * some user's action that should lead to actual "performing" of the action.
      */
     public void performAction() {
-        BeanInstaller.installBean();
+//        BeanInstaller.installBean();
+        PaletteManager.showPaletteManager();
     }
 }

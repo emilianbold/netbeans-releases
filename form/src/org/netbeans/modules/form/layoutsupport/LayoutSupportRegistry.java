@@ -213,7 +213,7 @@ public class LayoutSupportRegistry {
     }
 
     private static String scanPalette(String wantedClassName) {
-        DataFolder paletteFolder = PaletteUtils.getPaletteFolder();
+        FileObject paletteFolder = PaletteUtils.getPaletteFolder();
 
         // create palette content listener - only once
         boolean newPaletteListener = paletteListener == null;
@@ -231,29 +231,32 @@ public class LayoutSupportRegistry {
                 }
             };
 
-            paletteFolder.getPrimaryFile().addFileChangeListener(paletteListener);
+            paletteFolder.addFileChangeListener(paletteListener);
         }
 
         String foundSupportClassName = null;
 
-        DataObject[] paletteCategories = paletteFolder.getChildren();
+        FileObject[] paletteCategories = paletteFolder.getChildren();
         for (int i=0; i < paletteCategories.length; i++) {
-            DataFolder categoryFolder =
-                paletteCategories[i] instanceof DataFolder ?
-                    (DataFolder) paletteCategories[i] : null;
-
-            if (categoryFolder == null)
+            FileObject categoryFolder = paletteCategories[i];
+            if (!categoryFolder.isFolder())
                 continue;
            
             if (newPaletteListener)
-                categoryFolder.getPrimaryFile().addFileChangeListener(
-                                                       paletteListener);
+                categoryFolder.addFileChangeListener(paletteListener);
 
-            DataObject[] paletteItems = categoryFolder.getChildren();
+            FileObject[] paletteItems = categoryFolder.getChildren();
             for (int j=0; j < paletteItems.length; j++) {
-                PaletteItem item = (PaletteItem)
-                                   paletteItems[j].getCookie(PaletteItem.class);
+                DataObject itemDO = null;
+                try {
+                    itemDO = DataObject.find(paletteItems[j]);
+                }
+                catch (DataObjectNotFoundException ex) {
+                    continue;
+                }
 
+                PaletteItem item = (PaletteItem)
+                                   itemDO.getCookie(PaletteItem.class);
                 if (item == null || !item.isLayout())
                     continue;
 

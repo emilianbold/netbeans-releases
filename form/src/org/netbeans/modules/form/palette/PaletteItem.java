@@ -17,7 +17,7 @@ import java.beans.*;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
-import java.util.List;
+import java.util.*;
 import java.io.File;
 
 import org.openide.ErrorManager;
@@ -43,31 +43,14 @@ public final class PaletteItem implements Node.Cookie {
 
     // raw data (as read from the file - to be resolved lazily)
     String componentClassName;
-    String originType_explicit;
-    String originLocation;
+    String[] classpath_raw;
 //    Boolean isContainer_explicit;
-    String displayName_key;
-    String tooltip_key;
-    String bundleName;
-    String icon16URL;
-    String icon32URL;
     String componentType_explicit;
-
-    // resolution markers
-    private boolean displayNameResolved;
-    private boolean tooltipResolved;
-    private boolean icon16Resolved;
-    private boolean icon32Resolved;
 
     // resolved data
     private Class componentClass;
-    private int originType = -1;
     private Throwable lastError;
 //    private Boolean componentIsContainer;
-    private String displayName;
-    private String tooltip;
-    private Image icon16;
-    private Image icon32;
     private int componentType = -1;
 
     // type of component constants
@@ -77,10 +60,15 @@ public final class PaletteItem implements Node.Cookie {
     private static final int MENU = 8; // bit flag
     private static final int TYPE_MASK = 15;
 
-    // type of item origin constants
-    public static final int FROM_JAR = 1;
-    public static final int FROM_LIBRARY = 2;
-    public static final int FROM_PROJECT = 3;
+    // classpath source attributes
+    static final String JAR_SOURCE = "jar"; // NOI18N
+    static final String LIBRARY_SOURCE = "library"; // NOI18N
+    static final String PROJECT_SOURCE = "project"; // NOI18N
+
+//    // type of classpath source
+//    static final int FROM_JAR = 1;
+//    static final int FROM_LIBRARY = 2;
+//    static final int FROM_PROJECT = 3;
 
     // -------
 
@@ -110,20 +98,6 @@ public final class PaletteItem implements Node.Cookie {
      *  class of this pallette item */
     public Throwable getError() {
         return lastError;
-    }
-
-    /** @return the type of source where the component class of this palette
-     * item is located. Can be JAR, LIBRARY or PROJECT. */
-    public int getOriginType() {
-        if (originType == -1)
-            resolveOriginType();
-        return originType;
-    }
-
-    /** @return the location of the component class source (according to the
-     * origin type) */
-    public String getOriginValue() {
-        return originLocation;
     }
 
     /** @return type of the component as String, e.g. "visual", "menu",
@@ -183,122 +157,33 @@ public final class PaletteItem implements Node.Cookie {
 //        return componentIsContainer.booleanValue();
 //    }
 
+    String getComponentClassName() {
+        return componentClassName;
+    }
+
     String getDisplayName() {
-        if (!displayNameResolved) {
-            // first try the explicit display name from the item definition file
-            if (displayName_key != null) {
-                if (bundleName != null) {
-                    try {
-                        displayName = NbBundle.getBundle(bundleName)
-                                                .getString(displayName_key);
-                    }
-                    catch (Exception ex) {} // ignore failure
-                }
-                if (displayName == null)
-                    displayName = displayName_key;
-            }
-            else { // try BeanDescriptor
-                BeanDescriptor bd = getBeanDescriptor();
-                if (bd != null) {
-                    displayName = bd.getDisplayName();
-                    if (tooltip == null && tooltip_key == null)
-                        tooltip = bd.getShortDescription();
-                }
-//                if (displayName == null && componentClassName != null) {
-//                    // use short class name
-//                    int i = componentClassName.lastIndexOf('$'); // NOI18N
-//                    if (i < 0)
-//                        i = componentClassName.lastIndexOf('.'); // NOI18N
-//                    displayName = i > 0 && i+1 < componentClassName.length() ?
-//                        componentClassName.substring(i+1) : componentClassName;
-//                }
-            }
-            displayNameResolved = true;
-        }
-        return displayName;
+        BeanDescriptor bd = getBeanDescriptor();
+        return bd != null ? bd.getDisplayName() : null;
     }
 
     String getTooltip() {
-        if (!tooltipResolved) {
-            // first try the explicit tooltip from the item definition file
-            if (tooltip_key != null) {
-                if (bundleName != null) {
-                    try {
-                        tooltip = NbBundle.getBundle(bundleName)
-                                            .getString(tooltip_key);
-                    }
-                    catch (Exception ex) {} // ignore failure
-                }
-                if (tooltip == null)
-                    tooltip = tooltip_key;
-            }
-            else { // try BeanDescriptor
-                BeanDescriptor bd = getBeanDescriptor();
-                if (bd != null) {
-                    tooltip = bd.getShortDescription();
-                    if (displayName == null && displayName_key == null)
-                        displayName = bd.getDisplayName();
-                }
-//                if (tooltip == null && componentClassName != null) // use the class name
-//                    tooltip = componentClassName;
-            }
-            tooltipResolved = true;
-        }
-        return tooltip;
+        BeanDescriptor bd = getBeanDescriptor();
+        return bd != null ? bd.getShortDescription() : null;
     }
 
     Image getIcon(int type) {
-        if (type == BeanInfo.ICON_COLOR_32x32 || type == BeanInfo.ICON_MONO_32x32) {
-            if (!icon32Resolved) {
-                if (icon32URL != null) { // explicit item icon specified
-                    try {
-                        icon32 = Toolkit.getDefaultToolkit().getImage(
-                                                 new java.net.URL(icon32URL));
-                    }
-                    catch (java.net.MalformedURLException ex) {} // ignore
-                }
-                else {
-                    BeanInfo bi = getBeanInfo();
-                    if (bi != null)
-                        icon32 = bi.getIcon(type);
-                }
-//                if (icon32 == null)
-//                    icon32 = Toolkit.getDefaultToolkit().getImage(DEFAULT_ICON); //Utilities.loadImage
-                icon32Resolved = true;
-            }
-            return icon32;
-        }
-        else { // get small icon in other cases
-            if (!icon16Resolved) {
-                if (icon16URL != null) { // explicit item icon specified
-                    try {
-                        icon16 = Toolkit.getDefaultToolkit().getImage(
-                                                 new java.net.URL(icon16URL));
-                    }
-                    catch (java.net.MalformedURLException ex) {} // ignore
-                }
-                else {
-                    BeanInfo bi = getBeanInfo();
-                    if (bi != null)
-                        icon16 = bi.getIcon(type);
-                }
-//                if (icon16 == null)
-//                    icon16 = Toolkit.getDefaultToolkit().getImage(DEFAULT_ICON); //Utilities.loadImage
-                icon16Resolved = true;
-            }
-            return icon16;
-        }
+        BeanInfo bi = getBeanInfo();
+        return bi != null ? bi.getIcon(type) : null;
     }
 
     void reset() {
         componentClass = null;
-        originType = -1;
         lastError = null;
 //        componentIsContainer = null; 
-        displayNameResolved = false;
-        tooltipResolved = false;
-        icon16Resolved = false;
-        icon32Resolved = false;
+        itemDataObject.displayName = null;
+        itemDataObject.tooltip = null;
+        itemDataObject.icon16 = null;
+        itemDataObject.icon32 = null;
         componentType = -1;
     }
 
@@ -307,50 +192,59 @@ public final class PaletteItem implements Node.Cookie {
     private Class loadComponentClass() {
         d("Loading class: "+componentClassName); // NOI18N
 
-        int origin = getOriginType();
         ClassLoader loader = null;
 
-        if (origin == 0) { // no origin, use system class loader
+        if (classpath_raw == null) { // no classpath, use system class loader
             loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
         }
         else try { // the class comes from an external JAR, installed library,
                    // or some project output JAR
-            URL[] roots = null;
-
-            if (origin == FROM_JAR) { // NOI18N
-                // expecting full path to the JAR file in 'originLocation'
-                File jarFile = new File(originLocation);
-                roots = new URL[] { FileUtil.getArchiveRoot(jarFile.toURI().toURL()) };
-            }
-            else if (origin == FROM_LIBRARY) { // NOI18N
-                // expecting the library name in 'originLocation'
-                Library lib = LibraryManager.getDefault().getLibrary(originLocation);
-                if (lib != null) {
-                    List content = lib.getContent("classpath"); // NOI18N
-                    roots = new URL[content.size()];
-                    content.toArray(roots);
-                    for (int i=0; i < roots.length; i++)
-                        if (FileUtil.isArchiveFile(roots[i]))
-                            roots[i] = FileUtil.getArchiveRoot(roots[i]);
+            List urlList = new ArrayList();
+            for (int i=0; i < classpath_raw.length; i+=2) {
+                if (JAR_SOURCE.equals(classpath_raw[i])) {
+                    // full path to the JAR file in the next String
+                    File jarFile = new File(classpath_raw[i+1]);
+                    urlList.add(FileUtil.getArchiveRoot(jarFile.toURI().toURL()));
                 }
-            }
-            else if (origin == FROM_PROJECT) { // NOI18N
-                Project project = ProjectManager.getDefault().findProject(
-                    FileUtil.toFileObject(new File(originLocation)));
-                if (project != null) {
-                    AntArtifact[] artifacts =
-                        AntArtifactQuery.findArtifactsByType(project, "jar"); // NOI18N
-                    roots = new URL[artifacts.length];
-                    for (int i=0; i < artifacts.length; i++) {
-                        File jarFile = new File(
-                            originLocation + artifacts[i].getArtifactLocation().toString());
-                        roots[i] = FileUtil.getArchiveRoot(jarFile.toURI().toURL());
+                else if (LIBRARY_SOURCE.equals(classpath_raw[i])) {
+                    // library name in the next String
+                    Library lib = LibraryManager.getDefault().getLibrary(classpath_raw[i+1]);
+                    if (lib != null) {
+                        List content = lib.getContent("classpath"); // NOI18N
+                        for (Iterator it=content.iterator(); it.hasNext(); ) {
+                            URL rootURL = (URL) it.next();
+                            if (FileUtil.isArchiveFile(rootURL))
+                                rootURL = FileUtil.getArchiveRoot(rootURL);
+                            urlList.add(rootURL);
+                        }
                     }
                 }
+                else if (PROJECT_SOURCE.equals(classpath_raw[i])) {
+                    File outputFile = new File(classpath_raw[i+1]);
+                    URL rootURL = FileUtil.getArchiveRoot(outputFile.toURI().toURL());
+                    if (FileUtil.isArchiveFile(rootURL))
+                        rootURL = FileUtil.getArchiveRoot(rootURL);
+                    urlList.add(rootURL);
+    //                Project project = ProjectManager.getDefault().findProject(
+    //                    FileUtil.toFileObject(new File(originLocation)));
+    //                if (project != null) {
+    //                    AntArtifact[] artifacts =
+    //                        AntArtifactQuery.findArtifactsByType(project, "jar"); // NOI18N
+    //                    roots = new URL[artifacts.length];
+    //                    for (int i=0; i < artifacts.length; i++) {
+    //                        File jarFile = new File(
+    //                            originLocation + artifacts[i].getArtifactLocation().toString());
+    //                        roots[i] = FileUtil.getArchiveRoot(jarFile.toURI().toURL());
+    //                    }
+    //                }
+                }
             }
 
-            if (roots != null)
+            if (urlList.size() > 0) {
+                URL[] roots = new URL[urlList.size()];
+                urlList.toArray(roots);
                 loader = ClassPathSupport.createClassPath(roots).getClassLoader(true);
+            }
         }
         catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -396,17 +290,6 @@ public final class PaletteItem implements Node.Cookie {
             catch (IntrospectionException ex) {} // ignore failure
         }
         return null;
-    }
-
-    private void resolveOriginType() {
-        if ("jar".equals(originType_explicit)) // NOI18N
-            originType = FROM_JAR;
-        else if ("library".equals(originType_explicit)) // NOI18N
-            originType = FROM_LIBRARY;
-        else if ("project".equals(originType_explicit)) // NOI18N
-            originType = FROM_PROJECT;
-        else
-            originType = 0;
     }
 
     private void resolveComponentType() {
