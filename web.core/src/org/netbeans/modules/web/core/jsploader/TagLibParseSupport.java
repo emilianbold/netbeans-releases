@@ -82,8 +82,9 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
             this.wmRoot = jspFile.getFileSystem().getRoot();
         }
         catch (org.openide.filesystems.FileStateInvalidException e){
-        }
-        requestProcessor = new RequestProcessor("background jsp parsing"); // NOI18N
+        }        
+        //requestProcessor = new RequestProcessor("background jsp parsing"); // NOI18N
+        requestProcessor = RequestProcessor.getDefault();
     }
 
     /** Gets the tag library data relevant for the editor. */
