@@ -57,7 +57,7 @@ public class FreeformProjectGenerator {
     public static AntProjectHelper createJavaProject(File location, File dir, String name, File antScript, List mappings, List sources, List compUnits) throws IOException {
         FileObject dirFO = createProjectDir (dir);
         FileObject locationFO = FileUtil.toFileObject(location);
-        AntProjectHelper h = createProject(locationFO, dirFO, PropertyUtils.getUsablePropertyName(name), antScript, mappings, sources, compUnits, null);
+        AntProjectHelper h = createProject(locationFO, dirFO, name, antScript, mappings, sources, compUnits, null);
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         return h;
@@ -78,7 +78,7 @@ public class FreeformProjectGenerator {
     public static AntProjectHelper createWebProject(File location, File dir, String name, File antScript, List mappings, List sources, List compUnits, List webModules) throws IOException {
         FileObject dirFO = createProjectDir (dir);
         FileObject locationFO = FileUtil.toFileObject(location);
-        AntProjectHelper h = createProject(locationFO, dirFO, PropertyUtils.getUsablePropertyName(name), antScript, mappings, sources, compUnits, webModules);
+        AntProjectHelper h = createProject(locationFO, dirFO, name, antScript, mappings, sources, compUnits, webModules);
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         return h;
@@ -190,7 +190,7 @@ public class FreeformProjectGenerator {
                 public void run() {
                     Project p;
                     try {
-                        h[0] = ProjectGenerator.createProject(dirFO, FreeformProjectType.TYPE, name);
+                        h[0] = ProjectGenerator.createProject(dirFO, FreeformProjectType.TYPE);
                         p = ProjectManager.getDefault().findProject(dirFO);
                     } catch (IOException e) {
                         ioe[0] = e;

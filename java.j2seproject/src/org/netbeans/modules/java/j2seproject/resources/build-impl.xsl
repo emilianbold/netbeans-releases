@@ -42,8 +42,10 @@ is divided into following sections:
 
 ]]></xsl:comment>
 
-        <xsl:variable name="name" select="/p:project/p:name"/>
-        <project name="{$name}-impl">
+        <xsl:variable name="name" select="/p:project/p:configuration/j2seproject:data/j2seproject:name"/>
+        <!-- Synch with build-impl.xsl: -->
+        <xsl:variable name="codename" select="translate($name, ' ', '_')"/>
+        <project name="{$codename}-impl">
             <xsl:attribute name="default">build</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>
 

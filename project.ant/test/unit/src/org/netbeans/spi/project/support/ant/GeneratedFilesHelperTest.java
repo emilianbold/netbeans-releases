@@ -83,7 +83,14 @@ public class GeneratedFilesHelperTest extends NbTestCase {
         FileObject bi = projdir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
         assertNull("No build-impl.xml yet", bi);
         // Modify shared data in a project.
-        h.setDisplayName("New Name");
+        Element primdata = h.getPrimaryConfigurationData(true);
+        Element oldDisplayName = Util.findElement(primdata, "display-name", "urn:test:shared");
+        assertNotNull("had a <display-name> before", oldDisplayName);
+        Element displayName = primdata.getOwnerDocument().createElementNS("urn:test:shared", "display-name");
+        displayName.appendChild(primdata.getOwnerDocument().createTextNode("New Name"));
+        primdata.insertBefore(displayName, oldDisplayName);
+        primdata.removeChild(oldDisplayName);
+        h.putPrimaryConfigurationData(primdata, true);
         assertTrue("project is modified", pm.isModified(p));
         pm.saveProject(p);
         // Ensure that build-impl.xml was (correctly) regenerated.

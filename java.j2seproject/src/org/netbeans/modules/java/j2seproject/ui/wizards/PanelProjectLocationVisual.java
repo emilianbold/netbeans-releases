@@ -192,8 +192,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         String folder = createdFolderTextField.getText().trim();
         
         d.putProperty( /*XXX Define somewhere */ "projdir", new File( folder )); // NOI18N
-        d.putProperty( /*XXX Define somewhere */ "displayName", name ); // NOI18N      
-        d.putProperty( /*XXX Define somewhere */ "codename", PropertyUtils.getUsablePropertyName(name)); // NOI18N
+        d.putProperty( /*XXX Define somewhere */ "name", name ); // NOI18N
         File projectsDir = new File(this.projectLocationTextField.getText());
         if (projectsDir.isDirectory()) {
             ProjectChooser.setProjectsFolder (projectsDir);

@@ -321,6 +321,8 @@ public final class AntProjectHelper {
     /**
      * Get the configured code name of the project.
      * @return the code name, or null if it could not be determined (parse error)
+     * @deprecated Better to store whatever kind of name information you need directly
+     *             in your primary configuration data.
      */
     public String getName() {
         Document doc = getConfigurationXml(true);
@@ -338,6 +340,8 @@ public final class AntProjectHelper {
      * If the new name differs from the old, the project will be marked as modified
      * and a change will be fired in {@link #PROJECT_XML_PATH}.
      * @param name the new code name
+     * @deprecated Better to store whatever kind of name information you need directly
+     *             in your primary configuration data.
      */
     public void setName(String name) {
         if (name.equals(getName())) {
@@ -366,6 +370,8 @@ public final class AntProjectHelper {
     /**
      * Get the configured display name of the project.
      * @return the display name, or null if it could not be determined (parse error)
+     * @deprecated Better to store whatever kind of name information you need directly
+     *             in your primary configuration data.
      */
     public String getDisplayName() {
         Document doc = getConfigurationXml(true);
@@ -383,6 +389,8 @@ public final class AntProjectHelper {
      * If the new name differs from the old, the project will be marked as modified
      * and a change will be fired in {@link #PROJECT_XML_PATH}.
      * @param displayName the new display name
+     * @deprecated Better to store whatever kind of name information you need directly
+     *             in your primary configuration data.
      */
     public void setDisplayName(String displayName) {
         if (displayName.equals(getDisplayName())) {

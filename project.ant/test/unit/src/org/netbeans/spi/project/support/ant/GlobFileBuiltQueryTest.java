@@ -58,7 +58,7 @@ public class GlobFileBuiltQueryTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
-        h = ProjectGenerator.createProject(scratch, "test", "testproj");
+        h = ProjectGenerator.createProject(scratch, "test");
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.setProperty("src.dir", "src");
         ep.setProperty("test.src.dir", "test/src");

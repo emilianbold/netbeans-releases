@@ -263,7 +263,7 @@ public class J2SEProjectProperties {
             if ( pd.dest == null ) {
                 // Specialy handled properties
                 if ( J2SE_PROJECT_NAME.equals( pd.name ) ) {
-                    String projectName = antProjectHelper.getDisplayName();
+                    String projectName = ProjectUtils.getInformation(project).getDisplayName();
                     properties.put( pd.name, new PropertyInfo( pd, projectName, projectName ) );            
                 }
             }
@@ -299,8 +299,8 @@ public class J2SEProjectProperties {
                         if( pd.dest == null && newValueEncoded != null ) {
                             // Specialy handled properties
                             if ( J2SE_PROJECT_NAME.equals( pd.name ) ) {
-                                System.out.println("setting name" + newValueEncoded );
-                                antProjectHelper.setDisplayName( newValueEncoded );
+                                String newName = newValueEncoded;
+                                assert false : "No support yet for changing name of J2SEProject; cf. J2SEProject.setName";
                             }
                             
                         }   

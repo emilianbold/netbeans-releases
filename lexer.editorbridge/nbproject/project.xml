@@ -13,9 +13,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
-    <name>org.netbeans.modules.lexer.editorbridge</name>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
+            <code-name-base>org.netbeans.modules.lexer.editorbridge</code-name-base>
             <path>lexer/editorbridge</path>
             <module-dependencies>
                 <dependency>
@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages>
-	        <public-package>org.netbeans.modules.lexer.editorbridge</public-package>
+	        <package>org.netbeans.modules.lexer.editorbridge</package>
 	    </public-packages>
         </data>
     </configuration>

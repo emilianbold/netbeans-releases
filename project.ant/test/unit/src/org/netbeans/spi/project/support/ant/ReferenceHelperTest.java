@@ -101,6 +101,14 @@ public class ReferenceHelperTest extends NbTestCase {
     //private AntBasedTestUtil.TestListener l;
     private PropertyEvaluator pev;
     
+    private static void setCodeNameOfTestProject(AntProjectHelper helper, String name) {
+        Element data = helper.getPrimaryConfigurationData(true);
+        Element nameEl = data.getOwnerDocument().createElementNS("urn:test:shared", "name");
+        nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
+        data.appendChild(nameEl);
+        helper.putPrimaryConfigurationData(data, true);
+    }
+    
     protected void setUp() throws Exception {
         super.setUp();
         TestUtil.setLookup(new Object[] {
@@ -120,7 +128,8 @@ public class ReferenceHelperTest extends NbTestCase {
         sisterprojdir = FileUtil.createFolder(scratch, "proj2");
         assertTrue("projdir and sisterprojdir collocated",
             CollocationQuery.areCollocated(FileUtil.toFile(projdir), FileUtil.toFile(sisterprojdir)));
-        sisterh = ProjectGenerator.createProject(sisterprojdir, "test", "proj2");
+        sisterh = ProjectGenerator.createProject(sisterprojdir, "test");
+        setCodeNameOfTestProject(sisterh, "proj2");
         EditableProperties props = sisterh.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.setProperty("build.jar", "dist/proj2.jar");
         props.setProperty("build.javadoc", "build/javadoc");
@@ -131,7 +140,8 @@ public class ReferenceHelperTest extends NbTestCase {
         sisterprojdir2 = FileUtil.createFolder(scratch, "proj2-copy");
         assertTrue("projdir and sisterprojdir2 collocated",
             CollocationQuery.areCollocated(FileUtil.toFile(projdir), FileUtil.toFile(sisterprojdir2)));
-        sisterh2 = ProjectGenerator.createProject(sisterprojdir2, "test", "proj2");
+        sisterh2 = ProjectGenerator.createProject(sisterprojdir2, "test");
+        setCodeNameOfTestProject(sisterh2, "proj2");
         props = sisterh2.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.setProperty("build.jar", "dist/proj2.jar");
         props.setProperty("build.javadoc", "build/javadoc");
@@ -145,7 +155,8 @@ public class ReferenceHelperTest extends NbTestCase {
         // in META-INF/services.
         assertFalse("projdir and separate cannot be collocated",
             CollocationQuery.areCollocated(FileUtil.toFile(projdir), FileUtil.toFile(sepprojdir)));
-        seph = ProjectGenerator.createProject(sepprojdir, "test", "proj3");
+        seph = ProjectGenerator.createProject(sepprojdir, "test");
+        setCodeNameOfTestProject(seph, "proj3");
         props = seph.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.setProperty("build.jar", "d i s t/p r o j 3.jar");
         seph.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
@@ -501,7 +512,8 @@ public class ReferenceHelperTest extends NbTestCase {
         // check that artifact reference is correctly escaped. All dot characters
         // in project name or artifact ID must be escaped, etc.
         FileObject proj4Folder = FileUtil.createFolder(scratch, "proj4");
-        AntProjectHelper proj4Helper = ProjectGenerator.createProject(proj4Folder, "test", "pro-ject.4");
+        AntProjectHelper proj4Helper = ProjectGenerator.createProject(proj4Folder, "test");
+        setCodeNameOfTestProject(proj4Helper, "pro-ject.4");
         Project p = pm.findProject(projdir);
         ReferenceHelper referenceHelperProj4 = (ReferenceHelper)p.getLookup().lookup(ReferenceHelper.class);
         AntArtifact art = proj4Helper.createSimpleAntArtifact("jar", "build.jar", proj4Helper.getStandardPropertyEvaluator(), "do.jar", "clean");

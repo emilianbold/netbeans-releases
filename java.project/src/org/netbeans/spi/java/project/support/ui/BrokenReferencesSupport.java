@@ -14,7 +14,11 @@
 package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.Dialog;
+import java.io.IOException;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.project.BrokenReferencesAlertPanel;
 import org.netbeans.modules.java.project.BrokenReferencesCustomizer;
 import org.netbeans.modules.java.project.BrokenReferencesModel;
@@ -24,6 +28,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,9 +106,18 @@ public class BrokenReferencesSupport {
         BrokenReferencesModel model = new BrokenReferencesModel(projectHelper, referenceHelper, properties, platformProperties);
         BrokenReferencesCustomizer customizer = new BrokenReferencesCustomizer(model);
         Object close = NbBundle.getMessage(BrokenReferencesCustomizer.class,"LBL_BrokenLinksCustomizer_Close");
+        String projectDisplayName = "???"; // NOI18N
+        try {
+            Project project = ProjectManager.getDefault().findProject(projectHelper.getProjectDirectory());
+            if (project != null) {
+                projectDisplayName = ProjectUtils.getInformation(project).getDisplayName();
+            }
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
         DialogDescriptor dd = new DialogDescriptor(customizer, 
             NbBundle.getMessage(BrokenReferencesCustomizer.class, 
-            "LBL_BrokenLinksCustomizer_Title", projectHelper.getDisplayName()),
+            "LBL_BrokenLinksCustomizer_Title", projectDisplayName),
             true, new Object[] {close}, close, DialogDescriptor.DEFAULT_ALIGN, null, null);
         Dialog dlg = null;
         try {

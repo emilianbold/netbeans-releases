@@ -60,10 +60,10 @@ public class AntArtifactQueryTest extends NbTestCase {
         }, AntArtifactQuery.class.getClassLoader());
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
-        ProjectGenerator.createProject(projdir, "test", "proj");
+        ProjectGenerator.createProject(projdir, "test");
         pm = ProjectManager.getDefault();
         sisterprojdir = FileUtil.createFolder(scratch, "proj2");
-        AntProjectHelper sisterh = ProjectGenerator.createProject(sisterprojdir, "test", "proj2");
+        AntProjectHelper sisterh = ProjectGenerator.createProject(sisterprojdir, "test");
         EditableProperties props = sisterh.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.setProperty("build.jar", "dist/proj2.jar");
         props.setProperty("build.javadoc", "build/javadoc");

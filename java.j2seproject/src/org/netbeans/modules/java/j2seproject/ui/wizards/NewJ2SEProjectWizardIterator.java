@@ -39,7 +39,6 @@ import org.openide.util.NbBundle;
 
 /**
  * Wizard to create a new J2SE project.
- * @author Jesse Glick
  */
 public class NewJ2SEProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
@@ -68,11 +67,6 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
         return new NewJ2SEProjectWizardIterator( TYPE_LIB );
     }
     
-    public static NewJ2SEProjectWizardIterator trada() {
-        System.out.println("Trada");
-        return new NewJ2SEProjectWizardIterator();
-    }
-
     public static NewJ2SEProjectWizardIterator existing () {
         return new NewJ2SEProjectWizardIterator( TYPE_EXT );
     }
@@ -93,16 +87,15 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
     public Set/*<FileObject>*/ instantiate () throws IOException {
         Set resultSet = new HashSet ();
         File dirF = (File)wiz.getProperty("projdir");        //NOI18N
-        String codename = (String)wiz.getProperty("codename");        //NOI18N
-        String displayName = (String)wiz.getProperty("displayName");        //NOI18N
+        String name = (String)wiz.getProperty("name");        //NOI18N
         String mainClass = (String)wiz.getProperty("mainClass");        //NOI18N
         if (this.type == TYPE_EXT) {
             File sourceFolder = (File)wiz.getProperty("sourceRoot");        //NOI18N
             File testFolder = (File)wiz.getProperty("testRoot");            //NOI18N            
-            J2SEProjectGenerator.createProject(dirF, codename, displayName, sourceFolder, testFolder );
+            J2SEProjectGenerator.createProject(dirF, name, sourceFolder, testFolder );
         }
         else {
-            AntProjectHelper h = J2SEProjectGenerator.createProject (dirF, codename, displayName, mainClass, type == TYPE_APP ? MANIFEST_FILE : null);
+            AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, mainClass, type == TYPE_APP ? MANIFEST_FILE : null);
             if (mainClass != null && mainClass.length () > 0) {
                 try {
                     //String sourceRoot = "src"; //(String)j2seProperties.get (J2SEProjectProperties.SRC_DIR);
@@ -170,8 +163,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
     }
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty("projdir",null);           //NOI18N
-        this.wiz.putProperty("codename",null);          //NOI18N
-        this.wiz.putProperty("displayName",null);       //NOI18N
+        this.wiz.putProperty("name",null);          //NOI18N
         this.wiz.putProperty("mainClass",null);         //NOI18N
         if (this.type == TYPE_EXT) {
             this.wiz.putProperty("sourceRoot",null);    //NOI18N

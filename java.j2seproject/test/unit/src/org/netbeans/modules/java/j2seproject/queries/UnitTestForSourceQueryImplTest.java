@@ -69,7 +69,7 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
         scratch = TestUtil.makeScratchDir(this);
         Repository.getDefault().addFileSystem(scratch.getFileSystem()); // so FileUtil.fromFile works
         projdir = scratch.createFolder("proj");
-        AntProjectHelper helper = ProjectGenerator.createProject(projdir, "org.netbeans.modules.java.j2seproject", "proj");
+        AntProjectHelper helper = ProjectGenerator.createProject(projdir, "org.netbeans.modules.java.j2seproject");
         pm = ProjectManager.getDefault();
         pp = pm.findProject(projdir);
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);

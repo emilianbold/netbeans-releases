@@ -19,8 +19,6 @@ Microsystems, Inc. All Rights Reserved.
         <xsd:complexType>
             <xsd:sequence>
                 <xsd:element name="type" type="xsd:NCName"/>
-                <xsd:element name="name" type="xsd:NCName" minOccurs="0"/>
-                <xsd:element name="display-name" type="xsd:token" minOccurs="0"/>
                 <xsd:element name="configuration">
                     <xsd:complexType>
                         <xsd:sequence>

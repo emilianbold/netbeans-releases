@@ -193,13 +193,13 @@ public final class FreeformProject implements Project {
         public Info() {}
         
         public String getName() {
-            Element genldata = helper.getPrimaryConfigurationData(true);
-            Element nameEl = Util.findElement(genldata, "name", FreeformProjectType.NS_GENERAL); // NOI18N
-            return Util.findText(nameEl);
+            return PropertyUtils.getUsablePropertyName(getDisplayName());
         }
         
         public String getDisplayName() {
-            return getName();
+            Element genldata = helper.getPrimaryConfigurationData(true);
+            Element nameEl = Util.findElement(genldata, "name", FreeformProjectType.NS_GENERAL); // NOI18N
+            return Util.findText(nameEl);
         }
         
         public Icon getIcon() {

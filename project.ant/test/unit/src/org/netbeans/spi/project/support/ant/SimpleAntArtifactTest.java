@@ -49,7 +49,7 @@ public class SimpleAntArtifactTest extends NbTestCase {
         }));
         pm = ProjectManager.getDefault();
         sisterprojdir = FileUtil.createFolder(scratch, "proj2");
-        sisterh = ProjectGenerator.createProject(sisterprojdir, "test", "proj2");
+        sisterh = ProjectGenerator.createProject(sisterprojdir, "test");
         EditableProperties props = sisterh.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.setProperty("build.jar", "build/proj2.jar");
         sisterh.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);

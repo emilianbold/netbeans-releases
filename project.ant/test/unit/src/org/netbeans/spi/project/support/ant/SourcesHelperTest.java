@@ -75,7 +75,7 @@ public final class SourcesHelperTest extends NbTestCase {
         src4dir.createData("src4file");
         builddir = scratch.createFolder("build");
         builddir.createData("buildfile");
-        h = ProjectGenerator.createProject(projdir, "test", "proj");
+        h = ProjectGenerator.createProject(projdir, "test");
         project = ProjectManager.getDefault().findProject(projdir);
         assertNotNull("have a project", project);
         EditableProperties p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -109,7 +109,7 @@ public final class SourcesHelperTest extends NbTestCase {
         proj2src1dir.createData("proj2src1file");
         proj2src2dir = proj2dir.createFolder("src2");
         proj2src2dir.createData("proj2src2file");
-        h2 = ProjectGenerator.createProject(proj2dir, "test", "proj2");
+        h2 = ProjectGenerator.createProject(proj2dir, "test");
         project2 = ProjectManager.getDefault().findProject(proj2dir);
         assertNotNull("have a project2", project2);
         sh2 = new SourcesHelper(h2, h2.getStandardPropertyEvaluator());

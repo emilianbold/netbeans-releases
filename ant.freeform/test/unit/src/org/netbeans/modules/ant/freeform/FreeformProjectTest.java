@@ -51,7 +51,7 @@ public class FreeformProjectTest extends TestBase {
     
     public void testProjectInformation() throws Exception {
         ProjectInformation info = ProjectUtils.getInformation(simple);
-        assertEquals("correct name", "Simple Freeform Project", info.getName());
+        assertEquals("correct name", "Simple_Freeform_Project", info.getName());
         assertEquals("same display name", "Simple Freeform Project", info.getDisplayName());
     }
     

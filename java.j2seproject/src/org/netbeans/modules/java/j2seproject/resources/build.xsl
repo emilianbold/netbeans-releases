@@ -14,8 +14,9 @@ Microsystems, Inc. All Rights Reserved.
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:project="http://www.netbeans.org/ns/project/1"
+                xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"
                 xmlns:xalan="http://xml.apache.org/xslt"
-                exclude-result-prefixes="xalan project">
+                exclude-result-prefixes="xalan project j2seproject">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
     
@@ -30,11 +31,14 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:comment> some examples of how to customize the build. </xsl:comment>
         <xsl:comment> (If you delete it and reopen the project it will be recreated.) </xsl:comment>
         
-        <xsl:variable name="name" select="/project:project/project:name"/>
-        <project name="{$name}">
+        <xsl:variable name="name" select="/project:project/project:configuration/j2seproject:data/j2seproject:name"/>
+        <!-- Synch with build-impl.xsl: -->
+        <!-- XXX really should translate all chars that are *not* safe (cf. PropertyUtils.getUsablePropertyName): -->
+        <xsl:variable name="codename" select="translate($name, ' ', '_')"/>
+        <project name="{$codename}">
             <xsl:attribute name="default">default</xsl:attribute>
             <xsl:attribute name="basedir">.</xsl:attribute>
-            <description>Builds, tests, and runs the project <xsl:value-of select="/project:project/project:display-name"/>.</description>
+            <description>Builds, tests, and runs the project <xsl:value-of select="$name"/>.</description>
             <import file="nbproject/build-impl.xml"/>
 
             <xsl:comment><![CDATA[
@@ -86,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
 
     An example of overriding the target for project execution could look like this:
 
-        <target name="run" depends="]]><xsl:value-of select="$name"/><![CDATA[-impl.jar">
+        <target name="run" depends="]]><xsl:value-of select="$codename"/><![CDATA[-impl.jar">
             <exec dir="bin" executable="launcher.exe">
                 <arg file="${dist.jar}"/>
             </exec>

@@ -13,9 +13,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
-    <name>org.netbeans.core.output2</name>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
+            <code-name-base>org.netbeans.core.output2</code-name-base>
             <path>core/output2</path>
             <module-dependencies>
                 <dependency>
@@ -35,7 +35,6 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages/>
-            <unit-tests/>
         </data>
     </configuration>
 </project>

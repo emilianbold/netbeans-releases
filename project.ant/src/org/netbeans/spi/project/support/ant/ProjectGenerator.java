@@ -69,8 +69,42 @@ public class ProjectGenerator {
      *                                  Ant-based project type factory or if the directory
      *                                  is already recognized as some kind of project or if the
      *                                  new project on disk is recognized by some other factory
+     * @deprecated Better to store whatever kind of name information you need directly
+     *             in your primary configuration data. Use {@link #createProject(FileObject,String)} instead.
      */
     public static AntProjectHelper createProject(final FileObject directory, final String type, final String name) throws IOException, IllegalArgumentException {
+        return createProject0(directory, type, name);
+    }
+    
+    /**
+     * Create a new Ant-based project on disk.
+     * It will initially be only minimally configured - just a skeleton <code>project.xml</code>.
+     * It will be marked as modified.
+     * <p>In order to fill in various details of it, call normal methods on the returned
+     * helper object, then save the project when you are done.
+     * (You can use {@link ProjectManager} to find the project object to be saved.)
+     * <p>No <code>build-impl.xml</code> will be created immediately; once you save the project
+     * changes, it will be created. If you wish to create a top-level <code>build.xml</code>
+     * use {@link GeneratedFilesHelper#generateBuildScriptFromStylesheet} after
+     * (or while) saving the project.
+     * <p>Acquires write access. But you are advised to acquire a write lock for
+     * the entire operation of creating, configuring, and saving the new project,
+     * and creating its initial <code>build.xml</code>.
+     * @param directory the main project directory to create it in
+     *                  (see {@link AntProjectHelper#getProjectDirectory})
+     * @param type a unique project type identifier (see {@link AntBasedProjectType#getType})
+     * @return an associated helper object
+     * @throws IOException if there is a problem physically creating the project
+     * @throws IllegalArgumentException if the project type does not match a registered
+     *                                  Ant-based project type factory or if the directory
+     *                                  is already recognized as some kind of project or if the
+     *                                  new project on disk is recognized by some other factory
+     */
+    public static AntProjectHelper createProject(final FileObject directory, final String type) throws IOException, IllegalArgumentException {
+        return createProject0(directory, type, null);
+    }
+    
+    private static AntProjectHelper createProject0(final FileObject directory, final String type, final String name) throws IOException, IllegalArgumentException {
         try {
             return (AntProjectHelper)ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
@@ -86,9 +120,11 @@ public class ProjectGenerator {
                     Element el = doc.createElementNS(AntProjectHelper.PROJECT_NS, "type"); // NOI18N
                     el.appendChild(doc.createTextNode(type));
                     doc.getDocumentElement().appendChild(el);
-                    el = doc.createElementNS(AntProjectHelper.PROJECT_NS, "name"); // NOI18N
-                    el.appendChild(doc.createTextNode(name));
-                    doc.getDocumentElement().appendChild(el);
+                    if (name != null) {
+                        el = doc.createElementNS(AntProjectHelper.PROJECT_NS, "name"); // NOI18N
+                        el.appendChild(doc.createTextNode(name));
+                        doc.getDocumentElement().appendChild(el);
+                    }
                     el = doc.createElementNS(AntProjectHelper.PROJECT_NS, "configuration"); // NOI18N
                     doc.getDocumentElement().appendChild(el);
                     FileLock lock = projectXml.lock();

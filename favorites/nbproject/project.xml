@@ -13,9 +13,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
-    <name>org.netbeans.modules.favorites</name>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
+            <code-name-base>org.netbeans.modules.favorites</code-name-base>
             <path>core/favorites</path>
             <module-dependencies>
                 <dependency>

@@ -75,18 +75,15 @@ public class ProjectGeneratorTest extends NbTestCase {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws Exception {
                     // Create the new project.
-                    AntProjectHelper h = ProjectGenerator.createProject(projdir, "test", "testproj");
+                    AntProjectHelper h = ProjectGenerator.createProject(projdir, "test");
                     assertNotNull("Returned some project helper", h);
                     Project p = ProjectManager.getDefault().findProject(projdir);
                     assertNotNull("Project exists", p);
                     // Check that basic characteristics are correct.
                     ProjectInformation pi = ProjectUtils.getInformation(p);
-                    assertEquals("correct code name", "testproj", pi.getName());
-                    assertEquals("no display name yet", null, pi.getDisplayName());
                     assertEquals("correct directory", projdir, p.getProjectDirectory());
                     assertTrue("already modified", ProjectManager.getDefault().isModified(p));
                     // Configure it.
-                    h.setDisplayName("Test Project");
                     Element data = h.getPrimaryConfigurationData(true);
                     assertEquals("correct namespace for shared data", "urn:test:shared", data.getNamespaceURI());
                     assertEquals("empty initial shared data", 0, data.getChildNodes().getLength());
@@ -111,17 +108,9 @@ public class ProjectGeneratorTest extends NbTestCase {
                     ProjectManager.getDefault().saveProject(p);
                     // Check that everything is OK on disk.
                     Document doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
-                    NodeList l = doc.getElementsByTagNameNS(AntProjectHelper.PROJECT_NS, "name");
-                    assertEquals("one <name>", 1, l.getLength());
-                    Element el = (Element)l.item(0);
-                    assertEquals("correct saved code name", "testproj", Util.findText(el));
-                    l = doc.getElementsByTagNameNS(AntProjectHelper.PROJECT_NS, "display-name");
-                    assertEquals("one <display-name>", 1, l.getLength());
-                    el = (Element)l.item(0);
-                    assertEquals("correct saved display name", "Test Project", Util.findText(el));
-                    l = doc.getElementsByTagNameNS(AntProjectHelper.PROJECT_NS, "type");
+                    NodeList l = doc.getElementsByTagNameNS(AntProjectHelper.PROJECT_NS, "type");
                     assertEquals("one <type>", 1, l.getLength());
-                    el = (Element)l.item(0);
+                    Element el = (Element)l.item(0);
                     assertEquals("correct saved type", "test", Util.findText(el));
                     l = doc.getElementsByTagNameNS("urn:test:shared", "shared-stuff");
                     assertEquals("one <shared-stuff>", 1, l.getLength());
@@ -136,7 +125,6 @@ public class ProjectGeneratorTest extends NbTestCase {
                     el = doc.getDocumentElement();
                     assertEquals("build-impl.xml is a <project>", "project", el.getLocalName());
                     assertEquals("<project> has no namespace", null, el.getNamespaceURI());
-                    assertEquals("<project> has the correct name", "testproj.impl", el.getAttribute("name"));
                     l = doc.getElementsByTagName("target");
                     assertEquals("two targets in build-impl.xml", 2, l.getLength());
                     el = (Element)l.item(1);
@@ -147,7 +135,6 @@ public class ProjectGeneratorTest extends NbTestCase {
                     el = doc.getDocumentElement();
                     assertEquals("build.xml is a <project>", "project", el.getLocalName());
                     assertEquals("<project> has no namespace", null, el.getNamespaceURI());
-                    assertEquals("<project> has the correct name", "testproj", el.getAttribute("name"));
                     l = doc.getElementsByTagName("target");
                     assertEquals("one target in build.xml", 1, l.getLength());
                     el = (Element)l.item(0);

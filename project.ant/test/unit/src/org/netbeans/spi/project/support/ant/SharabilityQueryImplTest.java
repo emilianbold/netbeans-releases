@@ -46,7 +46,7 @@ public class SharabilityQueryImplTest extends NbTestCase {
         FileObject scratch = TestUtil.makeScratchDir(this);
         scratchF = FileUtil.toFile(scratch);
         FileObject projdir = scratch.createFolder("projdir");
-        AntProjectHelper h = ProjectGenerator.createProject(projdir, "test", "proj");
+        AntProjectHelper h = ProjectGenerator.createProject(projdir, "test");
         assertEquals("right project directory", projdir, h.getProjectDirectory());
         EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.setProperty("build.dir", "build");

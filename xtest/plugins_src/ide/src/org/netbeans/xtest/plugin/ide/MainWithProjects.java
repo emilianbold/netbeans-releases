@@ -63,14 +63,14 @@ public class MainWithProjects implements Main.MainWithProjectsInterface {
      */
     public void createProject(String projectDir) {
         File dir = new File(projectDir, "XTestProject");
-        String codename = "XTestProject";
-        String displayName = "XTestProject";
+        String name = "XTestProject";
         String mainClass = null;
         try {
-            J2SEProjectGenerator.createProject(dir, codename, displayName, mainClass, null);
+            J2SEProjectGenerator.createProject(dir, name, mainClass, null);
             openProject(dir);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
         }
     }
+
 }

@@ -8,8 +8,8 @@
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
     
-<xsl:variable name="name" select="/p:project/p:name"/>
-<xsl:variable name="displayname" select="/p:project/p:display-name"/>
+<xsl:variable name="name" select="/p:project/p:configuration/test:data/test:name"/>
+<xsl:variable name="displayname" select="/p:project/p:configuration/test:data/test:display-name"/>
 <project name="{$name}.impl" default="all" basedir="..">
 
     <description><xsl:value-of select="$displayname"/></description>

@@ -351,55 +351,6 @@ public class AntProjectHelperTest extends NbTestCase {
     }
     
     /**
-     * Test that reading and writing the project code and display names works.
-     * @throws Exception if anything unexpected happens
-     */
-    public void testNameAndDisplayName() throws Exception {
-        h.addAntProjectListener(l);
-        assertEquals("correct code name", "somename", h.getName());
-        assertEquals("correct display name", "Some Name", h.getDisplayName());
-        assertTrue("project not yet modified", !pm.isModified(p));
-        h.setDisplayName("New Name");
-        assertEquals("correct new display name", "New Name", h.getDisplayName());
-        assertTrue("project now modified", pm.isModified(p));
-        AntProjectEvent[] evs = l.events();
-        assertEquals("sDN fires one event", 1, evs.length);
-        assertEquals("correct helper", h, evs[0].getHelper());
-        assertEquals("correct path", AntProjectHelper.PROJECT_XML_PATH, evs[0].getPath());
-        assertTrue("expected change", evs[0].isExpected());
-        Document doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
-        Element dn = Util.findElement(doc.getDocumentElement(), "display-name", AntProjectHelper.PROJECT_NS);
-        assertNotNull("project.xml still has <display-name>", dn);
-        assertEquals("project.xml still has old display name", "Some Name", Util.findText(dn));
-        pm.saveProject(p);
-        assertEquals("still correct new display name", "New Name", h.getDisplayName());
-        assertTrue("project now saved", !pm.isModified(p));
-        assertEquals("saving changes fires no new events", 0, l.events().length);
-        doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
-        dn = Util.findElement(doc.getDocumentElement(), "display-name", AntProjectHelper.PROJECT_NS);
-        assertNotNull("project.xml still has <display-name>", dn);
-        assertEquals("project.xml now has new display name", "New Name", Util.findText(dn));
-        h.setDisplayName("New Name");
-        assertTrue("setting the same name does not modify project", !pm.isModified(p));
-        assertEquals("no-op sDN fires no events", 0, l.events().length);
-        h.setName("somename2");
-        assertEquals("correct new code name", "somename2", h.getName());
-        assertTrue("project now modified", pm.isModified(p));
-        evs = l.events();
-        assertEquals("sDN fires one event", 1, evs.length);
-        assertEquals("correct path", AntProjectHelper.PROJECT_XML_PATH, evs[0].getPath());
-        doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
-        Element nm = Util.findElement(doc.getDocumentElement(), "name", AntProjectHelper.PROJECT_NS);
-        assertEquals("project.xml still has old code name", "somename", Util.findText(nm));
-        pm.saveProject(p);
-        doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
-        nm = Util.findElement(doc.getDocumentElement(), "name", AntProjectHelper.PROJECT_NS);
-        assertEquals("project.xml now has new code name", "somename2", Util.findText(nm));
-        h.setName("somename2");
-        assertFalse("setting the same name does not modify project", pm.isModified(p));
-    }
-    
-    /**
      * Test that it is possible for external code to store custom data in project.xml and private.xml.
      * @throws Exception if anything unexpected happens
      */

@@ -54,6 +54,8 @@ import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
 import org.openide.filesystems.FileStateInvalidException;
 import java.net.URL;
 
+import org.netbeans.api.project.ProjectUtils;
+
 /** Action provider of the J2SE project. This is the place where to do
  * strange things to J2SE actions. E.g. compile-single.
  */
@@ -176,7 +178,7 @@ class J2SEActionProvider implements ActionProvider {
             
             while (!isSetMainClass (project.getSourceDirectory(), mainClass)) {
                 // show warning, if cancel then return
-                if (showMainClassWarning (mainClass, antProjectHelper.getDisplayName (), ep)) {
+                if (showMainClassWarning (mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep)) {
                     return ;
                 }
                 mainClass = (String)ep.get ("main.class"); // NOI18N
@@ -356,7 +358,7 @@ class J2SEActionProvider implements ActionProvider {
         final JButton okButton = new JButton (NbBundle.getMessage (MainClassWarning.class, "LBL_MainClassWarning_ChooseMainClass_OK")); // NOI18N
         
         // main class goes wrong => warning
-        final MainClassWarning panel = new MainClassWarning (antProjectHelper.getDisplayName (), project.getSourceDirectory ());
+        final MainClassWarning panel = new MainClassWarning (ProjectUtils.getInformation(project).getDisplayName(), project.getSourceDirectory ());
 
         Object[] options = new Object[] {
             okButton,
@@ -376,7 +378,7 @@ class J2SEActionProvider implements ActionProvider {
         
         okButton.setEnabled (false);
         DialogDescriptor desc = new DialogDescriptor (panel,
-            NbBundle.getMessage (MainClassWarning.class, "CTL_MainClassWarning_Title", antProjectHelper.getDisplayName ()), // NOI18N
+            NbBundle.getMessage (MainClassWarning.class, "CTL_MainClassWarning_Title", ProjectUtils.getInformation(project).getDisplayName()), // NOI18N
             true, options, options[0], DialogDescriptor.BOTTOM_ALIGN, null, null);
         desc.setMessageType (DialogDescriptor.INFORMATION_MESSAGE);
         Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);

@@ -187,12 +187,12 @@ final class NbModuleProject implements Project {
         }
         stock.putAll(ml.getDirectoriesProperties());
         stock.put("netbeans.dest.dir", "${nb_all}/nbbuild/netbeans"); // NOI18N
-        ModuleList.Entry thisEntry = ml.getEntry(helper.getName());
+        ModuleList.Entry thisEntry = ml.getEntry(getCodeNameBase());
         if (thisEntry != null) {
             stock.put("cluster.dir", thisEntry.getCluster()); // NOI18N
         }
         Map/*<String,String>*/ defaults = new HashMap();
-        defaults.put("code.name.base.dashes", helper.getName().replace('.', '-')); // NOI18N
+        defaults.put("code.name.base.dashes", getCodeNameBase().replace('.', '-')); // NOI18N
         defaults.put("module.jar.dir", "${nb.modules.dir}"); // NOI18N
         defaults.put("module.jar.basename", "${code.name.base.dashes}.jar"); // NOI18N
         defaults.put("module.jar", "${module.jar.dir}/${module.jar.basename}"); // NOI18N
@@ -321,6 +321,16 @@ final class NbModuleProject implements Project {
         }
     }
     
+    String getCodeNameBase() {
+        Element config = helper.getPrimaryConfigurationData(true);
+        Element cnb = Util.findElement(config, "code-name-base", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        if (cnb != null) {
+            return Util.findText(cnb);
+        } else {
+            return null;
+        }
+    }
+    
     String getPath() {
         Element config = helper.getPrimaryConfigurationData(true);
         Element path = Util.findElement(config, "path", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
@@ -385,7 +395,7 @@ final class NbModuleProject implements Project {
         Info() {}
         
         public String getName() {
-            return helper.getName();
+            return getCodeNameBase();
         }
         
         public String getDisplayName() {

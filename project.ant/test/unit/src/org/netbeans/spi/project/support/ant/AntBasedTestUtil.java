@@ -47,6 +47,8 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -153,19 +155,32 @@ public class AntBasedTestUtil {
         }
         
         public String toString() {
-            return "TestAntBasedProject[" + helper.getName() + ":" + getProjectDirectory() + "]";
+            return "TestAntBasedProject[" + getProjectDirectory() + "]";
         }
         
         private final class TestInfo implements ProjectInformation {
             
             TestInfo() {}
             
+            private String getText(String elementName) {
+                Element data = helper.getPrimaryConfigurationData(true);
+                Element el = Util.findElement(data, elementName, "urn:test:shared");
+                if (el != null) {
+                    String text = Util.findText(el);
+                    if (text != null) {
+                        return text;
+                    }
+                }
+                // Some kind of fallback here.
+                return getProjectDirectory().getNameExt();
+            }
+            
             public String getName() {
-                return helper.getName();
+                return getText("name");
             }
             
             public String getDisplayName() {
-                return helper.getDisplayName();
+                return getText("display-name");
             }
             
             public Icon getIcon() {

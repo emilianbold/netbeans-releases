@@ -23,6 +23,7 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -49,14 +50,14 @@ public class J2SEProjectGenerator {
     /**
      * Create a new empty J2SE project.
      * @param dir the top-level directory (need not yet exist but if it does it must be empty)
-     * @param codename the code name for the project
+     * @param name the name for the project
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(File dir, String codename, String displayName, String mainClass, String manifestFile ) throws IOException {
+    public static AntProjectHelper createProject(File dir, String name, String mainClass, String manifestFile) throws IOException {
         FileObject dirFO = createProjectDir (dir);
         // if manifestFile is null => it's TYPE_LIB
-        AntProjectHelper h = createProject(dirFO, codename, displayName, "src", "test", mainClass, manifestFile, manifestFile == null); //NOI18N
+        AntProjectHelper h = createProject(dirFO, name, "src", "test", mainClass, manifestFile, manifestFile == null); //NOI18N
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
@@ -67,12 +68,12 @@ public class J2SEProjectGenerator {
         return h;
     }
 
-    public static AntProjectHelper createProject (final File dir, final String codename, final String displayName,
+    public static AntProjectHelper createProject(final File dir, final String name,
                                                   final File sourceFolder, final File testFolder) throws IOException {
         assert sourceFolder != null : "Source folder must be given";   //NOI18N
         final FileObject dirFO = createProjectDir (dir);
         // this constructor creates only java application type
-        final AntProjectHelper h = createProject(dirFO, codename, displayName, null, null, null, null, false);
+        final AntProjectHelper h = createProject(dirFO, name, null, null, null, null, false);
         final J2SEProject p = (J2SEProject) ProjectManager.getDefault().findProject(dirFO);
         final ReferenceHelper refHelper = p.getReferenceHelper();
         try {
@@ -105,12 +106,14 @@ public class J2SEProjectGenerator {
         return h;
     }
 
-    private static AntProjectHelper createProject(FileObject dirFO, String codename, String displayName,
+    private static AntProjectHelper createProject(FileObject dirFO, String name,
                                                   String srcRoot, String testRoot, String mainClass, String manifestFile, boolean isLibrary) throws IOException {
-        AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProjectType.TYPE, codename);
-        h.setDisplayName( displayName == null ? codename : displayName ); // for now
+        AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
+        Element nameEl = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+        nameEl.appendChild(doc.createTextNode(name));
+        data.appendChild(nameEl);
         Element minant = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
         minant.appendChild(doc.createTextNode("1.6")); // NOI18N
         data.appendChild(minant);
@@ -119,7 +122,7 @@ public class J2SEProjectGenerator {
         // XXX the following just for testing, TBD:
         ep.setProperty("dist.dir", "dist");
         ep.setComment("dist.dir", new String[]{"# this directory is removed during the project clean"}, false);
-        ep.setProperty("dist.jar", "${dist.dir}/" + codename + ".jar");
+        ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar");
         ep.setProperty("javac.classpath", new String[0]);
         ep.setProperty("run.classpath", new String[]{"${javac.classpath}"+File.pathSeparatorChar,
             "${build.classes.dir}"});

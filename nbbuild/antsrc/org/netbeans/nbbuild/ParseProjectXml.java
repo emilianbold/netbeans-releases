@@ -319,14 +319,14 @@ public final class ParseProjectXml extends Task {
     }
 
     private String getCodeNameBase(Document d) throws BuildException {
-        Element root = d.getDocumentElement();
-        Element name = XMLUtil.findElement(root, "name", PROJECT_NS);
+        Element data = getConfig(d);
+        Element name = XMLUtil.findElement(data, "code-name-base", NBM_NS);
         if (name == null) {
-            throw new BuildException("No <name>", getLocation());
+            throw new BuildException("No <code-name-base>", getLocation());
         }
         String t = XMLUtil.findText(name);
         if (t == null) {
-            throw new BuildException("No text in <name>", getLocation());
+            throw new BuildException("No text in <code-name-base>", getLocation());
         }
         return t;
     }
