@@ -71,20 +71,17 @@
          <tocitem text="Running a Web Application Listener" target="listener_run"/>
        </tocitem> <!-- Working With Listeners -->
        <tocitem text="Web Services">
-         <tocitem text="About Web Services" target="about_web_service" />
-         <tocitem text="Creating Web Services" target="about_web_service" />
-         <tocitem text="Implementing Web Service Operations" target="about_web_service" />
-         <tocitem text="Adding SOAP Message Handlers" target="about_web_service" />
-         <tocitem text="Adding the Web Module to the J2EE Application" target="about_web_service"/>
-         <tocitem text="Running and Debugging Web Services" target="about_web_service" />
+         <tocitem text="About Web Services" target="tbd" />
+         <tocitem text="Creating a Web Service" target="tbd" />
+         <tocitem text="Implementing a Web Service Operation" target="tbd" />
+         <tocitem text="Adding a SOAP Message Handler" target="tbd" />
+         <tocitem text="Testing a Web Service" target="tbd" />
        </tocitem> <!-- Working With Web Services --> 
        <tocitem text="Web Service Clients">
-         <tocitem text="About Web Service Clients" target="about_web_service_client" />
-         <tocitem text="Creating Web Service Clients" target="about_web_service_client" />
-         <tocitem text="Implementing Web Service Operations" target="about_web_service_client" />
-         <tocitem text="Adding SOAP Message Handlers" target="about_web_service_client" />
-         <tocitem text="Adding the Web Module to the J2EE Application" target="about_web_service_client"/>
-         <tocitem text="Running and Debugging Web Service Clients" target="about_web_service_client" />
+         <tocitem text="About Web Service Clients" target="tbd" />
+         <tocitem text="Creating a Web Service Client" target="tbd" />
+	 <tocitem text="Invoking a Web Service Operation in a Client" target="tbd" />
+         <tocitem text="Running a Web Service Client" target="tbd" />
       </tocitem> <!-- Working With Web Service Clients --> 
       <tocitem text="Tags">
           <tocitem text="About Tag Libraries" target="webmod_addtglb"/>
@@ -129,12 +126,12 @@
             <tocitem text="Adding an External Resource to a WAR File" target="war_xtrafiles" />
             <tocitem text="Adding a Servlet JAR File to a WAR File" target="webmod_addservlet" />
             <tocitem text="Adding a Tag Library to a WAR File" target="tagsupport_fromfilesys" />
-            <tocitem text="Adding an Applet JAR File to a WAR File" target="webmod_addcompapplet"/>
+	    <tocitem text="Adding an Applet JAR File to a WAR File" target="webmod_addcompapplet"/>
     <!--	<tocitem text="Viewing the Contents of a WAR File" target="war_viewcont" />  -->
             <tocitem text="Removing a WAR File" target="war_delete"/>        
     </tocitem> <!-- Packaging Web Applications -->
 
-     <tocitem text="Running Web Applications"> 
+    <tocitem text="Running Web Applications"> 
             <tocitem text="About Running Web Applications" target="webmod_servconfig" />
             <tocitem text="Running Tasks: Quick Reference" target="deploying_tasks" />
             <tocitem text="Passing Parameters to a JSP File or Servlet" target="jsp_queryparams"/>
@@ -143,7 +140,7 @@
             <tocitem text="Running a JSP File" target="run_jsp" />
             <tocitem text="Running a Servlet" target="run_servlet" />
             <tocitem text="Running a Filter" target="filter_run"/>
-            <tocitem text="Running a Listener" target="listener_run"/>
+            <tocitem text="Running a Web Application Listener" target="listener_run"/>
             <tocitem text="Running an Applet" target="webmod_runapplet"/>
             <tocitem text="Changing Web Servers" target="webmod_server_set" />
             <tocitem text="Changing Web Browsers" target="webmod_browser" />

@@ -80,6 +80,8 @@
 	<mapID target="proj_webfree_debug" url="nbdocs:/org/netbeans/modules/usersguide/project/proj_webfree_debug.html" /> 
 	<mapID target="about_web_service" url="web/webservice/about_jwsd.html" />
 	<mapID target="about_web_service_client" url="web/webserviceclient/about_websvc_client.html" />
+	<mapID target="create_ws" url="web/webservice/create_ws.html" />
+	<mapID target="create_wsc" url="web/webserviceclient/create_wsc.html" />
 <!-- End of web apps help -->
 
 <!-- Start of EJB help -->
