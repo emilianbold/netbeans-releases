@@ -61,7 +61,7 @@ public class ParamsPanel extends JPanel {
             }
         );
         removeParamButton.setEnabled(paramsList.getSelectedIndex() != -1);
-        HelpCtx.setHelpIDString(this, I18nUtil.HELP_ID_AUTOINSERT);
+        HelpCtx.setHelpIDString(this, I18nUtil.HELP_ID_ADDPARAMS);
     }
 
     /** Sets arguments. */
