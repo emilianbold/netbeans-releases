@@ -25,10 +25,14 @@ import javax.swing.JToolBar;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
+import org.netbeans.jellytools.actions.SaveAction;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.Timeouts;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -75,6 +79,12 @@ import org.openide.text.Line.Set;
  * @see EditorWindowOperator
  */
 public class EditorOperator extends TopComponentOperator {
+
+    private static int WAIT_TIME = 60000;
+    
+    static {
+	Timeouts.initDefault("EditorOperator.WaitModifiedTimeout", WAIT_TIME);
+    }
     
     /** Components operators. */
     private JEditorPaneOperator _txtEditorPane;
@@ -117,12 +127,23 @@ public class EditorOperator extends TopComponentOperator {
         super(contOper, filename, index);
     }
 
+
     /** Tries to close Editor and if a file is modified and confirmation
      * dialog appears, it discards all changes.
      * It works also if no file is modified, so it is a safe way how to close
      * Editor and no block further execution.
      */
     public void closeDiscard() {
+        close(false);
+    }
+        
+    /** Tries to close Editor and if a file is modified and confirmation
+     * dialog appears, it save or discards all changes.
+     * It works also if no file is modified, so it is a safe way how to close
+     * Editor and no block further execution.
+     * @param save boolean true confirms save, false discards changes
+     */
+    public void close(final boolean save) {
         produceNoBlocking(new NoBlockingAction("Close Save/Discard dialog") {
             public Object doAction(Object param) {
                 String title = Bundle.getString("org.openide.text.Bundle", "LBL_SaveFile_Title");
@@ -140,9 +161,15 @@ public class EditorOperator extends TopComponentOperator {
                     time += 200;
                 }
                 if(dialog != null) {
-                    String discard = Bundle.getStringTrimmed("org.openide.text.Bundle", 
+                    String name;
+                    if (save) {
+                        name = Bundle.getStringTrimmed("org.openide.text.Bundle", 
+                                                             "CTL_Save");
+                    } else {
+                        name = Bundle.getStringTrimmed("org.openide.text.Bundle", 
                                                              "CTL_Discard");
-                    new JButtonOperator(new JDialogOperator(dialog), discard).push();
+                    }
+                    new JButtonOperator(new JDialogOperator(dialog), name).push();
                 }
                 return(null);
             }
@@ -629,6 +656,43 @@ public class EditorOperator extends TopComponentOperator {
         public String getDescription() {
             return "Toolbar button with tooltip \""+buttonTooltip+"\".";
         }
+    }
+    
+    /** Returns current modify state of edited source
+     * @return boolean true when edited source is modified
+     */    
+    public boolean isModified() {
+        return getName().endsWith("*");
+    }
+    
+    /** Waits for given modified state of edited source.
+     * @param modified boolean true waits for file state change to modified, false for change to
+     * unmodified (saved).
+     * Throws TimeoutExpiredException when EditorOperator.WaitModifiedTimeout expires.
+     */    
+    public void waitModified(final boolean modified) {
+	try {
+	    Waiter waiter = new Waiter(new Waitable() {
+		    public Object actionProduced(Object obj) {
+                        return isModified()==modified?new Object():null;
+		    }
+		    public String getDescription() {
+			return("Wait Modified State");
+		    }
+		});
+	    Timeouts times = getTimeouts().cloneThis();
+	    times.setTimeout("Waiter.WaitingTime", times.getTimeout("EditorOperator.WaitModifiedTimeout"));
+	    waiter.setTimeouts(times);
+	    waiter.setOutput(getOutput());
+	    waiter.waitAction(null);
+	} catch(InterruptedException e) {}
+    }
+        
+    /** Performs save action with optional verification. */    
+    public void save() {
+        new SaveAction().perform(this);
+        if (getVerification())
+            waitModified(false);
     }
 }
 
