@@ -749,6 +749,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/servletapi24..."/>
     <ant dir="../web/servletapi24" target="netbeans"/>
   </target>
+  <target name="all-web/jstl11">
+    <echo message="Building module web/jstl11..."/>
+    <ant dir="../web/jstl11" target="netbeans"/>
+  </target>
   <target name="all-web/ddapi" depends="all-openide,all-schema2beans/rt,build-schema2beans/anttask,all-libs/xerces">
     <echo message="Building module web/ddapi..."/>
     <ant dir="../web/ddapi" target="netbeans"/>
@@ -757,7 +761,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/webapi..."/>
     <ant dir="../web/webapi" target="netbeans" />
   </target>
-  <target name="all-web/project" depends="all-web/webapi,all-web/servletapi24,all-java/api,all-openide/execution,all-java/platform,all-java/project,all-ant/project,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-projects/queries,all-openide/loaders,all-openide,all-schema2beans/rt">
+  <target name="all-web/project" depends="all-web/webapi,all-web/servletapi24,all-web/jstl11,all-java/api,all-openide/execution,all-java/platform,all-java/project,all-ant/project,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-projects/queries,all-openide/loaders,all-openide,all-schema2beans/rt">
     <echo message="Building module web/project..."/>
     <ant dir="../web/project" target="netbeans" />
   </target>
