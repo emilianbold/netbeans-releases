@@ -217,11 +217,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module core/ui..."/>
     <ant dir="../core/ui" target="netbeans"/>
   </target>
-  <target name="all-core/naming" depends="all-openide">
-    <echo message="Building module core/naming..."/>
-    <ant dir="../core/naming" target="netbeans"/>
+  <target name="all-contrib/naming" depends="all-openide">
+    <echo message="Building module contrib/naming..."/>
+    <ant dir="../contrib/naming" target="netbeans"/>
   </target>
-  <target name="all-contrib/bookmarks" depends="all-core/naming">
+  <target name="all-contrib/bookmarks" depends="all-contrib/naming">
     <echo message="Building module bookmarks ..."/>
     <ant dir="../contrib/bookmarks" target="netbeans"/>
   </target>
@@ -513,7 +513,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module monitor..."/>
     <ant dir="../monitor" target="netbeans"/>
   </target>
-  <target name="all-mdr" depends="all-openide,all-openide/deprecated,all-openide/loaders,all-openidex,all-core/naming"><!-- XXX no more openidex/looks -->
+  <target name="all-mdr" depends="all-openide,all-openide/deprecated,all-openide/loaders,all-openidex,all-contrib/naming"><!-- XXX no more openidex/looks -->
     <echo message="Building module mdr..."/>
     <ant dir="../mdr" target="netbeans"/>
   </target>
