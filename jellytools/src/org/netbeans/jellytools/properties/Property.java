@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.properties;
@@ -30,6 +30,7 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.openide.ErrorManager;
+import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 import org.openide.nodes.Node;
 
 /**
@@ -261,17 +262,7 @@ public class Property {
      * @return value of property
      */
     public String getValue() {
-        PropertyEditor pe = property.getPropertyEditor();
-        try {
-            if(property.getValue() != pe.getValue()) {
-                // Need to synchronize property and its property editor.
-                // Otherwise it may cause problem when called pe.getAsText().
-                pe.setValue(property.getValue());
-            }
-        } catch (Exception e) {
-            throw new JemmyException("Exception while synchronizing value of property and property editor - property.getValue() != pe.getValue()", e);
-        }
-        return pe.getAsText();
+        return getPropertyEditor().getAsText();
     }
     
     /** Sets value of this property to specified text. If a new value is
@@ -286,16 +277,7 @@ public class Property {
         if(!isEnabled()) {
             throw new JemmyException("Property \""+getName()+"\" is read only.");
         }
-        PropertyEditor pe = property.getPropertyEditor();
-        try {
-            if(property.getValue() != pe.getValue()) {
-                // Need to synchronize property and its property editor.
-                // Otherwise it may cause IAE when called pe.setAsText(textValue).
-                pe.setValue(property.getValue());
-            }
-        } catch (Exception e) {
-            throw new JemmyException("Exception while synchronizing value of property and property editor - property.getValue() != pe.getValue()", e);
-        }
+        PropertyEditor pe = getPropertyEditor();
         try {
             pe.setAsText(textValue);
             property.setValue(pe.getValue());
@@ -317,8 +299,7 @@ public class Property {
      * @param index index of item to be selected from possible options
      */
     public void setValue(int index) {
-        PropertyEditor pe = property.getPropertyEditor();
-        String[] tags = pe.getTags();
+        String[] tags = getPropertyEditor().getTags();
         if(tags != null) {
             setValue(tags[index]);
         } else {
@@ -409,7 +390,7 @@ public class Property {
      * @return true is property supports custom editor, false otherwise
      */
     public boolean  supportsCustomEditor() {
-        return this.property.getPropertyEditor().supportsCustomEditor();
+        return getPropertyEditor().supportsCustomEditor();
     }
     
     /** Sets default value for this property. If default value is not available,
@@ -444,25 +425,19 @@ public class Property {
      * @return true if this property can be edited, false otherwise
      */
     public boolean canEditAsText() {
-        // if not enabled, it cannot be edited
-        if(!isEnabled()) {
+        if (property.canRead() && property.canWrite()) {
+            Boolean val = (Boolean)property.getValue("canEditAsText");  // NOI18N
+            if (val != null) {
+                return val.booleanValue();
+            }
+            PropertyEditor pe = getPropertyEditor();
+            if (pe instanceof EnhancedPropertyEditor && pe.getTags() !=  null) {
+                return ((EnhancedPropertyEditor)pe).supportsEditingTaggedValues();
+            } else {
+                return pe.getTags() == null;
+            }
+        } else {
             return false;
-        }
-        final JTableOperator table = propertySheetOper.tblSheet();
-        table.clickForEdit(getRow(), 1);
-        long oldTimeout = propertySheetOper.getTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout");
-        propertySheetOper.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 1000);
-        try {
-            new JTextFieldOperator(propertySheetOper);
-            return true;
-        } catch (JemmyException e) {
-            // property cannot be edited as text by inplace editor
-            return false;
-        } finally {
-            // push ESC to stop editing
-            table.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-            // reset timeout
-            propertySheetOper.getTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
         }
     }
     
@@ -539,5 +514,21 @@ public class Property {
             }
         }
         throw new JemmyException("Cannot determine row number of property \""+getName()+"\"");
+    }
+    
+    /** Returns property editor obtained by call PropUtils.getPropertyEditor().
+     * It should be safe in any circumstancies (e.g. when IDE starts supporting 
+     * XML-based editor registration).
+     * @return PropertyEditor instance of this property.
+     */
+    private PropertyEditor getPropertyEditor() {
+        try {
+            Class clazz = Class.forName("org.openide.explorer.propertysheet.PropUtils");
+            Method getPropertyEditorMethod = clazz.getDeclaredMethod("getPropertyEditor", new Class[] {Node.Property.class});
+            getPropertyEditorMethod.setAccessible(true);
+            return (PropertyEditor)getPropertyEditorMethod.invoke(null, new Object[] {property});
+        } catch (Exception e) {
+            throw new JemmyException("PropUtils.getPropertyEditor() by reflection failed.", e);
+        }
     }
 }
