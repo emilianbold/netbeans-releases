@@ -23,6 +23,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mapID target="adddriver" url="adddriver.html" />
 <mapID target="connectdb" url="connectdb.html" />
+<mapID target="pointbasedb" url="pointbasedb.html" />
 <mapID target="delobj" url="delobj.html" />
 
 <mapID target="addcopycols" url="addcopycols.html" />

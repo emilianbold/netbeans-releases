@@ -7,167 +7,119 @@
 -->
 <html>
 
-<head>
+    <head>
 
-<title>Connecting to a Database</title>
+        <title>Connecting to a Database</title>
 
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
-</head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
+    </head>
 
+    <body>
+        <h2>Connecting to a Database</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>Once the drivers for your database have been added and are visible
+            in the Databases node, you can open a connection to the database.
+        </p>
+        <p>Once the initial connection has been made you can do the following:</p>
+        <ul>
+            <li>Correct a broken connection</li>
+            <li>Disconnect and reconnect to a database</li>
+        </ul>
+        <p>When connecting to a database you can also choose to obtain a database schema
+        rather than the database. For more, see <a href="nbdocs:/org/netbeans/modules/dbschema/docs/dbschema.html">Obtaining a Database Schema</a>.</p>
+        
+        <p><b>To open a new connection:</b></p>
 
+        <ol>
+            <li>Check to make sure that your database is running.</li>
+            <li>In the Runtime window, expand the Databases node and the Drivers node.</li>
+            <li>Right-click your driver's instance node and choose Connect Using.</li>
+            <li>In the New Database Connection dialog box, ensure the correct driver is 
+            selected in the Driver field. </li>
+            <li>Provide the JDBC URL for the database connection in the Database URL field. 
+                <p> This URL typically begins with <tt>jdbc:</tt>and a short code name 
+                for the driver, followed by another colon. The rest of the URL depends on 
+                the type of driver you are using. For example, you might need to specify 
+                a host and port; alternatively, the name of a database file might suffice, 
+                or an ODBC DSN. For MySQL, the Database URL might look as follows:
+                <pre>jdbc:mysql://localhost:3306/mydatabase</pre>
+                To help you get started, existing drivers are provided with 
+                templates for the correct URL format. If in doubt, refer to the documentation 
+                for the driver you are using. </p>
+            </li>
+            <li>Provide the user name and password, if required by your database configuration.</li>
+            <li>Click the Remember Password checkbox to have the IDE remember your password. 
+                <p> The password is saved only for the current IDE session. After restarting 
+                the IDE, you must type the password again. This feature can be turned on 
+                or off by right-clicking the node for a disconnected database in the Runtime window and
+                selecting or deselecting Remember password in the Properties dialog box. </p>
+            </li>
+            <li>Click OK to connect the IDE to the database. 
+                <p>If the connection is successful, a new node appears on the same level as 
+                Drivers. The icon for a connected database shows complete. If the connection 
+                attempt fails, the IDE displays a dialog box indicating the connection 
+                is broken. </p>
+            </li>
+        </ol>
 
-<body>
+        <!--<p><b>To display schema information for a database:</b></p>
 
-<h2>Connecting to a Database</h2>
-<p><small><a href="#seealso">See Also</a></small></p>
-<p>You can use the Database Explorer to:</p>
+        <ol>
 
-<ul>
-
-  <li>Connect to a database</li>
-
-  <li>Display schema information for a database</li>
-
-  <li>Correct a broken connection</li>
-
-  <li>Disconnect from the database connection</li>
-
-</ul>
-
-<p><b>To open a new connection:</b></p>
-
-<ol>
-
-  <li>In the Runtime window, expand the Databases node and the Drivers node.</li>
-  <li>Right-click your driver's instance node and choose Connect Using.</li>
-  <li>In the New Database Connection dialog box, ensure the correct driver is 
-
-    selected in the Driver field. </li>
-
-  <li>Provide the JDBC URL for the database connection in the Database URL field. 
-
-    <p> This URL typically begins with <tt>jdbc:</tt>and a short code name 
-
-      for the driver, followed by another colon. The rest of the URL depends on 
-
-      the type of driver you are using. For example, you might need to specify 
-
-      a host and port; alternatively, the name of a database file might suffice, 
-
-      or an ODBC DSN. For MySQL, the Database URL might look as follows:
-      
-      <pre>jdbc:mysql://localhost:3306/mydatabase</pre>
-      
-      To help you get started, existing drivers are provided with 
-
-      templates for the correct URL format. If in doubt, refer to the documentation 
-
-      for the driver you are using. </p>
-
-  </li>
-
-  <li>Provide the user name and password, if required by your database configuration.</li>
-
-  <li>Click the Remember Password checkbox to have the IDE remember your password. 
-
-    <p> The password is saved only for the current the IDE session. After restarting 
-
-      the IDE, you must type the password again. This feature can be turned on 
-
-      or off by right-clicking a connected database in the Runtime window and
-      
-      selecting or deselecting Remember password in the Properties dialog box. </p>
-
-  </li>
-
-  <li>Click OK to connect the IDE to the database. 
-
-    <p>If the connection is successful, a new node appears on the same level as 
-
-      Drivers. The icon for a connected database shows complete. If the connection 
-
-      attempt fails, the IDE displays a dialog box indicating the connection 
-
-      is broken. </p>
-
-  </li>
-
-</ol>
-
-<p><b>To display schema information for a database:</b></p>
-
-<ol>
-
-  <li>In the Runtime window, expand the Databases node and the Drivers node.</li>
+        <li>In the Runtime window, expand the Databases node and the Drivers node.</li>
   
-  <li>Right-click your driver's instance node and choose Connect Using.</li>
-	
-  <li>In the New Database Connection panel, choose the Advanced tab.</li>
+        <li>Right-click your driver's instance node and choose Connect Using.</li>
+        <li>In the Basic setting tab, enter the details to connect to the database.</li>
+        <li>Choose the Advanced tab and click Get Schemas to connect to the database.</li>
 
-  <li>Select the schema to use with the database object by choosing it from the 
+        <li>Select the schema to use with the database object by choosing it from the 
 
-    combo box. This schema will be used with getter database objects such as tables 
+        combo box. This schema will be used with getter database objects such as tables 
 
-    and views.</li>
+        and views.</li>
 
-  <li>Click OK.
+        <li>Click OK.
 
-    <p>The database will connect to the database schema and the connection node in 
+        <p>The database connect to the database schema and the connection node in 
 
-    the Databases folder. The IDE displays child folders of this connection node. 
+        the Databases folder. The IDE displays child folders of this connection node. 
 
-    These folders represent lists of tables, views and procedures.</p></li>
+        These folders represent lists of tables, views and procedures.</p></li>
 
-</ol>
+        </ol>-->
 
-<p><b>To correct a broken connection:</b></p>
+        <p><b>To correct a broken connection:</b></p>
+        <ol>
+            <li>Right-click the broken connection node and choose Properties from the 
+            contextual menu.</li>
+            <li>Enter the correct Database URL in the properties dialog box and click Close.</li>
+            <li>Right-click on the broken connection node and choose
+            Connect from the contextual menu.</li>
+        </ol>
 
-<ol>
+        <p><b>To disconnect from the database connection:</b></p>
+        <ul>
+            <li>Right-click the Database Connection node and choose Disconnect from the contextual menu. 
+                <p> You cannot browse the database until you reconnect to the database. </p>
+            </li>
+        </ul>
 
-  <li>Correct the URL in the property sheet.</li>
+        <table>
+            <tr> 
+                <th colspan=2 align=left><a name="seealso">See Also</a></th>
+            </tr>
+            <tr> 
+                <td width="23"></td>
+                <td> <a href="adddriver.html">Adding a New Driver</a></td>
+            </tr>
+        </table>
 
-  <li>Connect to the database from the contextual menu.</li>
+        <hr>
 
-</ol>
+        <small><a href="credits.html">Legal Notices</a></small> 
 
-<p><b>To disconnect from the database connection</b>:</p>
-
-<ul>
-
-  <li>Choose Disconnect from the Connection contextual menu. 
-
-    <p> You cannot browse the database until you reconnect to the database using 
-
-      Connect. </p>
-
-  </li>
-
-</ul>
-
-<table>
-
-  <tr> 
-
-    <th colspan=2 align=left><a name="seealso">See Also</a></th>
-
-  </tr>
-
-  <tr> 
-
-    <td width="23"></td>
-
-    <td> <a href="adddriver.html">Adding a New Driver</a></td>
-
-  </tr>
-
-</table>
-
-<hr>
-
-<small><a href="credits.html">Legal Notices</a></small> 
-
-</body>
+    </body>
 
 </html>
 

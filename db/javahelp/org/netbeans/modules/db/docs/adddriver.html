@@ -7,109 +7,97 @@
 -->
 <html>
 
-<head>
+    <head>
 
-<title>Adding a New Driver</title>
+        <title>Adding a New Driver</title>
 
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
-</head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
+    </head>
 
 
 
-<body>
+    <body>
 
-<h2>Adding a New Driver</h2>
-<p><small><a href="#seealso">See Also</a></small></p>
-<ol>
+        <h2>Adding a New Driver</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <ol>
 
-  <li>In the Runtime window, expand the Databases node. </li>
+            <li>In the Runtime window, expand the Databases node. </li>
 
-  <li>Right-click the Drivers node and choose Add Driver. </li>
+            <li>Right-click the Drivers node and choose Add Driver. </li>
 
-  <li>In the Add JDBC Driver dialog box, click the Add button to open a file
-chooser. Then navigate to and select the archive files of the driver that you
-want to add. 
+            <li>In the Add JDBC Driver dialog box, click the Add button to open a file
+                chooser. Then navigate to and select the archive files of the driver that you
+                want to add. 
 
-<p>Once you choose a valid archive file, the Driver Class and
-the Name fields should be filled in by IDE.</p>
+                <p>Once you choose a valid archive file, the Driver Class and
+                the Name fields should be filled in by the IDE.</p>
 
-  </li>
+            </li>
 
-  <li>If the Driver Class field is empty or incorrect, click Find.
-  The IDE will search the archive files that you selected in the 
-  previous step and find all classes that implement the JDBC
-  API Driver interface (<tt>java.sql.Driver</tt>). The Driver 
-  Class combo box lists the classes that the IDE finds. Use the 
-  combo box to select the driver class that you need.
+            <li>If the Driver Class field is empty or incorrect, click Find.
+                The IDE will search the archive files that you selected in the 
+                previous step and find all classes that implement the JDBC
+                API Driver interface (<tt>java.sql.Driver</tt>). The Driver 
+                Class combo box lists the classes that the IDE finds. Use the 
+                combo box to select the driver class that you need.
 
-  </li>
+            </li>
 
-  <li>In the Name field, type a descriptive name for the new driver. 
+            <li>In the Name field, type a descriptive name for the new driver. 
 
-    <p> The IDE uses this name only for display purposes. </p></li>
-  <li>Click OK to add the new driver to the list. 
+            <p> The IDE uses this name only for display purposes. </p></li>
+            <li>Click OK to add the new driver to the list. </li>
 
-    <p>You can remove a driver by right-clicking its node in the Runtime
-window and choosing Delete.</p>
- <p>You can modify a driver's configurations by right-clicking the driver's node
-and choosing Customize. 
-</p>
+        </ol>
 
-  </li>
+        <p>You can remove a driver by right-clicking its node in the Runtime
+        window and choosing Delete.</p>
+        <p>You can modify a driver's configurations by right-clicking the driver's node
+            and choosing Customize.</p>
 
-</ol>
+  
 
-<table>
+        <table>
+            <tr>
+                <td valign=top align=left><img src="images/tip.gif" alt="tip"></td>
+                <td valign=top align=left>Adding a new driver just creates a template for 
+                    new connections. The IDE does not actually try to use that driver or check 
+                    to make sure it is the correct one until a connection is made using the driver. 
+                </td>
+            </tr>
+        </table>
 
-  <tr>
+        <table>
 
-    <td valign=top align=left><img src="images/tip.gif" alt="tip"></td>
+            <tr> 
 
-    <td valign=top align=left>Adding a new driver just creates a template for 
+                <th colspan=2 align=left><a name="seealso">See Also</a></th>
 
-      new connections. The IDE does not actually try to use that driver or check 
+            </tr>
 
-      to make sure it is the correct one until a connection is made using the 
+            <tr> 
 
-      driver. 
+                <td width="23"></td>
 
-    </td>
+                <td>
+                <a href="connectdb.html">Connecting to a Database</a> <br>
+                <a href="dbdrivernodes.html">Database Driver Nodes</a> <br>
+            </tr>
 
-  </tr>
+        </table>
 
-</table>
+        <hr>
 
-<table>
+        <small><a href="credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table>
 
-  <tr> 
-
-    <th colspan=2 align=left><a name="seealso">See Also</a></th>
-
-  </tr>
-
-  <tr> 
-
-    <td width="23"></td>
-
-    <td>
-
-      <a href="connectdb.html">Connecting to a Database</a> <br>
-      <a href="dbdrivernodes.html">Database Driver Nodes</a> <br>
-  </tr>
-
-</table>
-
-<hr>
-
-<small><a href="credits.html">Legal Notices</a></small> 
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table>
-
-</body>
+    </body>
 
 </html>
 

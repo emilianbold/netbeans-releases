@@ -7,193 +7,121 @@
 -->
 <html>
 
-<head>
+    <head>
 
-<title>Browsing Structures</title>
+        <title>Browsing Structures</title>
 
-<link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
-</head>
+        <link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
+    </head>
 
-<body> 
+    <body> 
 
 
 
-<h2>Browsing Structures</h2>
-<p><small><a href="#seealso">See Also</a></small></p>
-
-
-<p>Databases consist tables, views and stored procedures, each of which represents 
-
-  a list of columns: </p>
-
-<p>New nodes that appear under a connection when it is live represent tables, 
-
-  views, and procedures. </p>
-
-<h3><b>To browse a table:</b> </h3>
-
-<ol>
-
-  <li>Click the table node. </li>
-
-  <li> Expand the table node to see the table's columns and an index's node, showing 
-
-    all indexes defined for a given table. The table node has a list of columns 
-
-    and an indexes folder. The indexes folder contains a list of indexes created 
-
-    on the table. The table node also contains a list of foreign key nodes based 
-
-    on the table's foreign constraints. The foreign key node describes foreign 
-
-    key columns that reference a table's primary key.<br>
-
-    Refer to the table for a description of icons related to tables and their 
-
-    iconic representation.</li>
-
-</ol>
-
-<h4>Columns</h4>
-
-<p>The following table lists Runtime window icons and their descriptions.</p>
-
-<table width="50%" border="1">
-
-  <tr> 
-
-    <th scope="col" width="27%"><b>Icon </b></th>
-
-    <th scope="col" width="73%"><b>Description</b></th>
-
-  </tr>
-
-  <tr> 
-
-    <td width="27%"><img src="images/table.gif" width="16" height="16"></td>
-
-    <td width="73%">Table</td>
-
-  </tr>
-
-  <tr> 
-
-    <td width="27%"><img src="images/column.gif" width="16" height="16"></td>
-
-    <td width="73%">Column</td>
-
-  </tr>
-
-  <tr> 
-
-    <td width="27%"><img src="images/columnPrimary.gif" width="16" height="16"></td>
-
-    <td width="73%">Column (Primary key)</td>
-
-  </tr>
-
-  <tr> 
-
-    <td width="27%" height="22"><img src="images/columnIndex.gif" width="16" height="16"></td>
-
-    <td width="73%" height="22">Column (Unique key)</td>
-
-  </tr>
-
-  <tr> 
-
-    <td width="27%" height="22"><img src="images/index.gif" width="16" height="16"></td>
-
-    <td width="73%" height="22">Index</td>
-
-  </tr>
-
-  <tr> 
-
-    <td width="27%"><img src="images/foreignKey.gif" width="16" height="16"></td>
-
-    <td width="73%">Foreign key</td>
-
-  </tr>
-
-  <tr> 
-
-    <td width="27%"><img src="images/columnForeign.gif" width="16" height="16"></td>
-
-    <td width="73%">Column in foreign key</td>
-
-  </tr>
-
-  <tr> 
-
-    <td width="27%"><img src="images/view.gif" width="16" height="16"></td>
-
-    <td width="73%">View</td>
-
-  </tr>
-
-</table>
-
-
-<h4>Indexes</h4>
-
-<p>Click on an index node to see a list of the columns indexed for a given table. 
-
-</p>
-
-<h4>Foreign Keys</h4>
-
-Click on an Foreign Keys node to see a list of the columns in the foreign keys 
-
-for a given table. 
-
-<h4> <b>Views</b></h4>
-
-<p>Click the Views node to see the Views on a given database.<br>
-
-  View columns are dimmed to indicate that you cannot change the physical characteristics 
-
-  of the columns in a view. However, you can change a view by dropping the view 
-
-  and subsequently recreating it.<b> </b></p>
-
-<b>
-
-<h4>Procedures</h4>
-
-</b>Select a Procedures node to view stored procedure names and their <tt>in</tt> 
-
-and <tt>out</tt> parameters.<b> 
-
-<table>
-
-  <tr> 
-
-    <th colspan=2 align=left><a name="seealso">See Also</a></th>
-
-  </tr>
-
-  <tr> 
-
-    <td width="23"></td>
-
-    <td> <a href="manipsql.html">Enabling and Disabling Debug Mode to Monitor 
-
-      SQL Commands</a></td>
-
-  </tr>
-
-</table>
-
-<hr>
-
-<small><a href="credits.html">Legal Notices</a></small> </b> 
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table>
-</body>
+        <h2>Browsing Structures</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+
+
+        <p>Databases consist of tables, views and stored procedures, each of which represents  a list of columns: </p>
+        <p>New nodes that appear under a connection when it is live represent tables,  views, and procedures. </p>
+
+        <h3><b>To browse a table:</b> </h3>
+        <ol>
+            <li>In the Runtime window, expand the node for a connected database.</li>
+            <li>Right-click the Tables node to reveal the individual tables.</li>
+            <li>Expand a table node (&nbsp;<img src="images/table.gif" width="16" height="16" alt="table node">&nbsp;)
+            to see the table's columns, an Indexes node and Foreign keys node.</li>
+        </ol>
+
+        <h4>Columns</h4>
+        <p>The following table lists Runtime window icons and their descriptions.</p>
+
+        <table width="50%" border="1">
+            <tr> 
+                <th scope="col" width="27%"><b>Icon </b></th>
+                <th scope="col" width="73%"><b>Description</b></th>
+            </tr>
+
+            <tr> 
+                <td width="27%"><img src="images/table.gif" width="16" height="16"></td>
+                <td width="73%">Table</td>
+            </tr>
+
+            <tr> 
+                <td width="27%"><img src="images/column.gif" width="16" height="16"></td>
+                <td width="73%">Column</td>
+            </tr>
+
+            <tr> 
+                <td width="27%"><img src="images/columnPrimary.gif" width="16" height="16"></td>
+                <td width="73%">Column (Primary key)</td>
+            </tr>
+
+            <tr> 
+                <td width="27%" height="22"><img src="images/columnIndex.gif" width="16" height="16"></td>
+                <td width="73%" height="22">Column (Unique key)</td>
+            </tr>
+
+            <tr> 
+                <td width="27%" height="22"><img src="images/index.gif" width="16" height="16"></td>
+                <td width="73%" height="22">Index</td>
+            </tr>
+
+            <tr> 
+                <td width="27%"><img src="images/foreignKey.gif" width="16" height="16"></td>
+                <td width="73%">Foreign key</td>
+            </tr>
+
+            <tr> 
+                <td width="27%"><img src="images/columnForeign.gif" width="16" height="16"></td>
+                <td width="73%">Column in foreign key</td>
+            </tr>
+
+            <tr> 
+                <td width="27%"><img src="images/view.gif" width="16" height="16"></td>
+                <td width="73%">View</td>
+            </tr>
+
+        </table>
+
+
+        <h4>Indexes</h4>
+        <p>Click on an index node to see a list of the columns indexed for a given table.</p>
+
+        <h4>Foreign Keys</h4>
+        <p>Click on a Foreign Keys node to see a list of the columns in the foreign keys 
+        for a given table. The foreign key node describes foreign 
+            key columns that reference a table's primary key.</p>
+
+        <h4> <b>Views</b></h4>
+        <p>Click the Views node to see the Views on a given database.<br>
+        View columns are dimmed to indicate that you cannot change the physical characteristics 
+        of the columns in a view. However, you can change a view by dropping the view 
+        and subsequently recreating it.</p>
+
+        <h4>Procedures</h4>
+        <p>Select a Procedures node to view stored procedure names and their <tt>in</tt> 
+        and <tt>out</tt> parameters.</p> 
+
+        <table>
+            <tr> 
+                <th colspan=2 align=left><a name="seealso">See Also</a></th>
+            </tr>
+            <tr> 
+                <td width="23"></td>
+                <td> <a href="manipsql.html">Defining Database Explorer Debug Mode</a></td>
+            </tr>
+        </table>
+
+        <hr>
+
+        <small><a href="credits.html">Legal Notices</a></small> </b> 
+        <table border="0" cellpadding="20">
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+            <tr><td>&nbsp;</td></tr>
+        </table>
+    </body>
 
 </html>
 

@@ -21,18 +21,13 @@
 
 <h2>Creating Tables</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p> You can create a table using the Create Table dialog box.
+<p> You can create a table using the Create Table contextual menu item in the Runtime window .
 
 <p>You can also recreate a table in one of two ways:
 
 <ul>
-
-  <li><a href="#table_structure">Recreate a table and its structure using a database 
-
-    snapshot</a></li>
-
-  <li><a href="#table_different">Recreate a table in a different database</a></li>
-
+  <li>Recreate a table and its structure using a database snapshot</li>
+  <li>Recreate a table in a different database</li>
 </ul>
 
 <p><b><a name="create_table">To create a new table:</a></b></p>
@@ -42,7 +37,7 @@
   <li>In the Runtime window, expand the node for a connected database.</li>
   <li>Right-click the Tables node and choose Create Table.</li>
 
-  <li>Type the table name. 
+  <li>Enter the table name. 
 
     <p> This name must follow conventions for table names in your database. Case 
 
@@ -86,17 +81,15 @@ to a file in the file system.</li>
     definition).</li>
   <li>Right-click the Tables node (or the node of any table under the Tables node) 
 and choose Recreate Table.</li>
-  <li>Select the name of a file from which you want to re-create a table.</li>
+  <li>Select the database snapshot file from which you want to re-create a table.</li>
   <li>In the following dialog box, specify the table name and click OK to re-create 
 the table. If you want to modify the table definition command, click the Edit 
 table script button and edit the table definition command.</li>
 
 </ol>
 
-<table>
-  <tr> 
-    <td valign="top"><img src="images/tip.gif" alt="Tip"></td>
-    <td><a name="table_different">You can recreate a table in a different database from the one from which 
+<p><b>To recreate a table in a different database:</b></p>
+<p>You can recreate a table in a different database from the one from which 
 
   you saved the structure, even if the SQL syntax to create the second database 
 
@@ -104,15 +97,14 @@ table script button and edit the table definition command.</li>
 
   schemas. For example, you can develop a complete 
 
-  application with a PointBase database. For deployment, you can transfer the 
+  application with a database from one vendor and then for deployment, you can transfer the 
 
-  table structures to an Oracle database to create the Oracle database without 
+  table structures to a different database by a different vendor. You do not need to  
 
-  editing SQL.</a>
-    <td valign="top" align=left> 
-</table>
+  edit the SQL.</p>
+    
 
-  </b> </p>
+
 
 <table>
 
@@ -128,11 +120,9 @@ table script button and edit the table definition command.</li>
 
     <td> <a href="browstruct.html">Browsing Structures</a><br>
 
-      <a href="manipsql.html">Enabling and Disabling Debug Mode to Monitor SQL 
+      <a href="manipsql.html">Defining Database Explorer Debug Mode</a><br>
 
-      Commands</a><br>
-
-      <a href="addcopycols.html">Adding a Database Column to a Table</a> </td>
+      <a href="addcopycols.html">Adding Columns</a> </td>
 
   </tr>
 
