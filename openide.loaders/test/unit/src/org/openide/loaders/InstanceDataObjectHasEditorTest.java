@@ -13,6 +13,8 @@
 
 package org.openide.loaders;
 
+import java.awt.Button;
+import java.util.Date;
 import junit.framework.*;
 import java.io.*;
 import java.util.Enumeration;
@@ -52,7 +54,7 @@ public class InstanceDataObjectHasEditorTest extends org.netbeans.junit.NbTestCa
     }
 
     public void testSettingsFileOnSFSShouldHaveEditor () throws Exception {
-        FileObject set = FileUtil.createData (Repository.getDefault ().getDefaultFileSystem ().getRoot (), "x.settings");
+        FileObject set = createSettings (Repository.getDefault ().getDefaultFileSystem ().getRoot (), "x.settings");
         DataObject obj = DataObject.find (set);
         assertEquals (InstanceDataObject.class, obj.getClass ());
         assertNull ("It does not have edit cookie", obj.getCookie (EditCookie.class));
@@ -72,7 +74,7 @@ public class InstanceDataObjectHasEditorTest extends org.netbeans.junit.NbTestCa
         LocalFileSystem lfs = new LocalFileSystem ();
         lfs.setRootDirectory (getWorkDir ());
         
-        FileObject set = FileUtil.createData (lfs.getRoot (), "x.settings");
+        FileObject set = createSettings (lfs.getRoot (), "x.settings");
         DataObject obj = DataObject.find (set);
         assertEquals (InstanceDataObject.class, obj.getClass ());
         assertNotNull ("It has edit cookie", obj.getCookie (EditCookie.class));
@@ -83,5 +85,62 @@ public class InstanceDataObjectHasEditorTest extends org.netbeans.junit.NbTestCa
         Class c = o == null ? Object.class : o.getClass ();
         
         assertEquals ("Default actions should be open on non-SFS", org.openide.actions.OpenAction.class, c);
+    }
+    
+    public void testSettingsFileOnNonSFSAfterCopyShouldHaveEditor () throws Exception {
+        clearWorkDir ();
+        LocalFileSystem lfs = new LocalFileSystem ();
+        lfs.setRootDirectory (getWorkDir ());
+        
+        FileObject set = createSettings (lfs.getRoot (), "x.settings");
+        DataObject old = DataObject.find (set);
+        Date d = set.lastModified();
+        
+        /* This code would work only with core/settings, so moving the test there
+        InstanceCookie ic = (InstanceCookie)old.getCookie(InstanceCookie.class);
+        assertNotNull ("The cookie is there", ic);
+        Object instance = ic.instanceCreate();
+        assertNotNull ("It produces a result", instance);
+        assertEquals ("It is Button", Button.class, instance.getClass ());
+         */
+        
+        FileObject tgt = FileUtil.createFolder(lfs.getRoot (), "moved");
+        DataFolder fld = DataFolder.findFolder (tgt);
+        
+        DataObject obj = old.copy (fld);
+        
+        assertEquals ("No change in modifications", d, set.lastModified());
+        assertEquals ("The same name", obj.getPrimaryFile().getNameExt (), set.getNameExt());
+        
+        assertEquals (InstanceDataObject.class, obj.getClass ());
+        assertNotNull ("It has edit cookie", obj.getCookie (EditCookie.class));
+        assertNotNull ("It has open cookie", obj.getCookie (OpenCookie.class));
+        assertNotNull ("It has editor cookie", obj.getCookie (EditorCookie.class));
+
+        Object o = obj.getNodeDelegate ().getPreferredAction ();
+        Class c = o == null ? Object.class : o.getClass ();
+        
+        assertEquals ("Default actions should be open on non-SFS", org.openide.actions.OpenAction.class, c);
+    }
+
+    private FileObject createSettings (FileObject root, String name) throws IOException {
+        FileObject set = FileUtil.createData (root, name);
+
+        FileLock lock = set.lock ();
+        PrintStream os = new PrintStream (set.getOutputStream (lock));
+        
+        os.println ("<?xml version=\"1.0\"?>");
+        os.println ("<!DOCTYPE settings PUBLIC \"-//NetBeans//DTD Session settings 1.0//EN\" \"http://www.netbeans.org/dtds/sessionsettings-1_0.dtd\">");
+        os.println ("<settings version=\"1.0\">");
+//        os.println ("<module name=\"org.apache.tools.ant.module/3\" spec=\"3.15\"/>");
+        os.println ("<instanceof class=\"java.io.Serializable\"/>");
+        os.println ("<instanceof class=\"java.lang.Object\"/>");
+        os.println ("<instanceof class=\"java.awt.Component\"/>");
+        os.println ("<instance class=\"java.awt.Button\"/>");
+        os.println ("</settings>");
+        
+        os.close ();
+        lock.releaseLock();
+        return set;
     }
 }
