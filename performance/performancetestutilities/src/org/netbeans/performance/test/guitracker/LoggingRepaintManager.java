@@ -113,7 +113,7 @@ public class LoggingRepaintManager extends RepaintManager {
      */
     public void setOnlyEditor (boolean ignore) {
         if (ignore) {
-            setRegionFilter(EXPLORER_FILTER);
+            setRegionFilter(EDITOR_FILTER);
         } else {
             setRegionFilter(null);
         }
