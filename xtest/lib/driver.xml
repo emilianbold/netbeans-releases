@@ -134,7 +134,9 @@ Microsystems, Inc. All Rights Reserved.
         <copy overwrite="yes" file="${archive.file}" todir="${xtest.ship.results.to}"/>
         <chmod perm="ugo+rw" file="${xtest.ship.results.to}/${archive.filename}"/>
         <!-- now just for pilot project -->
+        <!--
         <copy file="${archive.file}" todir="${xtest.results}/../"/>        
+        -->
    </target>
 
    <target name="test-one-repository">
