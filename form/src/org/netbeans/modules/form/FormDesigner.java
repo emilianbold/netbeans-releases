@@ -118,15 +118,19 @@ public class FormDesigner extends TopComponent
         super.readExternal(in);
         Object o = in.readObject();
         if (o instanceof FormDataObject) {
-            FormEditorSupport formSupport = ((FormDataObject)o).getFormEditor();
-            if (formSupport.loadForm()) {
-//                FormModel model = formSupport.getFormModel();
-//                model.setFormDesigner(this);
-                setModel(formSupport.getFormModel());
-                initialize();
-                formSupport.setFormDesigner(this);
-                ComponentInspector.getInstance().focusForm(formSupport);
-            }
+            formEditorSupport = ((FormDataObject)o).getFormEditor();
+            formEditorSupport.setFormDesigner(this);
+
+            // invoke loading in AWT event queue, but don't block it
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (formEditorSupport.loadForm()) {
+                        setModel(formEditorSupport.getFormModel());
+                        initialize();
+                        ComponentInspector.getInstance().focusForm(formEditorSupport);
+                    }
+                }
+            });
         }
     }
 
@@ -151,6 +155,8 @@ public class FormDesigner extends TopComponent
 
     protected void componentActivated() {
         super.componentActivated();
+        if (formModel == null)
+            return;
 
         ComponentInspector ci = ComponentInspector.getInstance();
         if (ci.getFocusedForm() != formEditorSupport) {
@@ -169,6 +175,9 @@ public class FormDesigner extends TopComponent
     }
 
     protected void componentDeactivated() {
+        if (formModel == null)
+            return;
+
         if (textEditLayer != null && textEditLayer.isVisible()) {
             textEditLayer.finishEditing(false);
         }
