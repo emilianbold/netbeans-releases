@@ -121,6 +121,13 @@ Microsystems, Inc. All Rights Reserved.
     <target name="javadoc">
         <delete dir="javadoc"/>
         <mkdir dir="javadoc"/>
+        
+        <!-- external JavaDocs -->
+        <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
+        <property name="sax-docs-location" value="http://www.saxproject.org/apidoc"/>
+        <property name="openide-docs-location" value="http://www.netbeans.org/download/apis"/>
+        
+        
         <javadoc    destdir="javadoc" 
                     packagenames="org.netbeans.api.xml.*,org.netbeans.spi.xml.*"
                     doctitle="NetBeans XML Tools  APIs"
@@ -138,6 +145,20 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${parserimpl}"/> <!-- JAXP and SAX dependency -->
                 <pathelement location="${jaxp-transform}"/>
             </classpath>                       
+            
+          <link href="${jdk-docs-location}"
+                offline="true"
+                packagelistLoc="doc/external/jdk"
+          />
+          <link href="${sax-docs-location}"
+                offline="true"
+                packagelistLoc="doc/external/sax"
+          />
+          <link href="${openide-docs-location}"
+                offline="true"
+                packagelistLoc="doc/external/openide"
+          />
+            
         </javadoc>                
     </target>
     
