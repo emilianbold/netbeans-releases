@@ -153,6 +153,8 @@ public class FormUtils extends Object {
     }
     if (javax.swing.JDesktopPane.class.isAssignableFrom (beanClass) && "desktopManager".equals (propertyName))
       return true;
+    if (javax.swing.JInternalFrame.class.isAssignableFrom (beanClass) && "menuBar".equals (propertyName))
+      return true;
     return false;
   }
 
@@ -312,6 +314,8 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  15   Gandalf   1.14        7/4/99   Ian Formanek    aded menuBar ignored 
+ *       property to JInternalFrame
  *  14   Gandalf   1.13        6/27/99  Ian Formanek    method 
  *       getMethodHeaderText moved to JavaCodeGenerator
  *  13   Gandalf   1.12        6/9/99   Ian Formanek    ---- Package Change To 
