@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,6 +27,7 @@ import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 
 
@@ -118,15 +119,20 @@ final class ShortcutsFolder extends FolderInstance {
      * if possible
      * @return KeyActionPair or null if it cannot be created
      */
-    protected InstanceCookie acceptDataObject(DataObject dob) {
+    protected InstanceCookie acceptDataObject(final DataObject dob) {
         InstanceCookie ic = super.acceptDataObject(dob);
         if (ic != null) {
             try {
-                Object o = ic.instanceCreate();
+                final Object o = ic.instanceCreate();
                 if (o instanceof Action) {
                     // XXX #37306
                     if(dob instanceof DataShadow) {
-                        ((Action)o).putValue(KEY_ORIGINAL_FILE_PATH, ((DataShadow)dob).getOriginal().getPrimaryFile().getPath());
+                        // bugfix #41500, replan puting to EQ
+                        Mutex.EVENT.writeAccess (new Runnable () {
+                            public void run () {
+                                ((Action)o).putValue(KEY_ORIGINAL_FILE_PATH, ((DataShadow)dob).getOriginal().getPrimaryFile().getPath());
+                            }
+                        });
                     }
                     KeyActionPair pair = new KeyActionPair(dob.getName(), (Action)o);
                     return pair;
