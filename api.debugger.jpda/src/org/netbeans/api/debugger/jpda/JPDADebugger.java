@@ -266,6 +266,13 @@ public abstract class JPDADebugger {
     public abstract Variable evaluate (String expression) 
     throws InvalidExpressionException;
 
+    /**
+     * Returns excerption if initialization of VirtualMachine has failed.
+     *
+     * @returns excerption if initialization of VirtualMachine has failed
+     * @see AbstractDICookie#getVirtualMachine()
+     */
+    public abstract Exception getException ();
     
     /**
      * Adds property change listener.

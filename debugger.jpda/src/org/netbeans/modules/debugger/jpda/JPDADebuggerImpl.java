@@ -76,6 +76,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     //private DebuggerEngine              debuggerEngine;
     private VirtualMachine              virtualMachine = null;
+    private Exception                   exception;
     private Thread                      startingThread;
     private int                         state = STATE_DISCONNECTED;
     private ArrayList                   breakpointImpls;
@@ -110,7 +111,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
     
     
-    // JPDADebuggerCookie ......................................................
+    // JPDADebugger methods ....................................................
     
     /**
      * Gets value of suspend property.
@@ -163,15 +164,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public CallStackFrame getCurrentCallStackFrame () {
         return currentCallStackFrame;
     }
-    
-    /**
-     * {@link org.netbeans.api.debugger.DebuggerEngine}
-     *
-     * @return DebuggerEngine
-     */
-//    public DebuggerEngine getDebuggerEngine () {
-//        return debuggerEngine;
-//    }
      
     /**
      * Evaluates given expression in the current context.
@@ -186,8 +178,22 @@ public class JPDADebuggerImpl extends JPDADebugger {
         return getLocalsTreeModel ().getVariable (v);
     }
 
+    /**
+     * Returns excerption if initialization of VirtualMachine has failed.
+     *
+     * @returns excerption if initialization of VirtualMachine has failed
+     * @see AbstractDICookie#getVirtualMachine()
+     */
+    public Exception getException () {
+        return exception;
+    }
+
     
     // other methods ...........................................................
+
+    public void setException (Exception e) {
+        exception = e;
+    }
     
     public void setCurrentThread (JPDAThread thread) {
         updateCurrentCallStackFrame (thread);
@@ -261,9 +267,20 @@ public class JPDADebuggerImpl extends JPDADebugger {
         setState (STATE_STARTING);
     }
     
-    public void start (VirtualMachine vm, Operator o) {
+    public void setRunning (VirtualMachine vm, Operator o) {
         this.virtualMachine = vm;
         operator = o;
+        Iterator i = vm.allThreads ().iterator ();
+        int s = 0;
+        while (i.hasNext ()) {
+            ThreadReference tr = (ThreadReference) i.next ();
+            if (tr.isSuspended ()) {
+                setState (STATE_RUNNING);
+                virtualMachine.resume ();
+                return;
+            }
+        }
+        setState (STATE_RUNNING);
     }
 
     /**

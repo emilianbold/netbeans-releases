@@ -73,22 +73,28 @@ public class Operator {
              try {
                  for (;;) {
                      EventSet set = queue.remove ();
-                     boolean resume = true;
+                     boolean resume = true, startEventOnly = true;
                      EventIterator i = set.eventIterator ();
                      while (i.hasNext ()) {
                          Event e = i.nextEvent ();
                          if ((e instanceof VMDeathEvent) ||
                                  (e instanceof VMDisconnectEvent)
                             ) {
+
+                             if (verbose)
+                                 printEvent (e, null);
 //                             disconnected = true;
                              if (finalizer != null) finalizer.run ();
                              //S ystem.out.println ("EVENT: " + e); // NOI18N
                              //S ystem.out.println ("Operator end"); // NOI18N
                              return;
                          }
+                         
                          if ((e instanceof VMStartEvent) && (starter != null)) {
                              resume = resume & starter.exec (e);
                              //S ystem.out.println ("Operator.start VM"); // NOI18N
+                             if (verbose)
+                                 printEvent (e, null);
                              continue;
                          }
                          Executor exec = null;
@@ -103,6 +109,7 @@ public class Operator {
                          // safe invocation of user action
                          if (exec != null)
                              try {
+                                 startEventOnly = false;
                                  resume = resume & exec.exec (e);
                              } catch (VMDisconnectedException exc) {   
 //                                 disconnected = true;
@@ -115,7 +122,9 @@ public class Operator {
                              }
                      }
                      //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
-                     if (resume)
+                     if (verbose)
+                         System.out.println("JDI resume " + (resume && (!startEventOnly)));
+                     if (resume && (!startEventOnly))
                          virtualMachine.resume ();
                  }// for
              } catch (VMDisconnectedException e) {   

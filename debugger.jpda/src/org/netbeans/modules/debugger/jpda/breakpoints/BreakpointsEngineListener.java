@@ -137,7 +137,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
     private void updateBreakpoint (Breakpoint b) {
         if (breakpointToImpl.containsKey (b)) return;
         if (verbose)
-            System.out.println("Update breakpoint " + b);
+            System.out.println ("Update breakpoint " + b);
         if (b instanceof LineBreakpoint) {
             breakpointToImpl.put (
                 b,

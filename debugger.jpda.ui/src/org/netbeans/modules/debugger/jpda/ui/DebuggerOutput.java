@@ -161,7 +161,15 @@ PropertyChangeListener {
             );
         } else
         if (debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
-            print ("CTL_Debugger_finished", where, null, null);
+            Exception e = debugger.getException ();
+            if (e == null)
+                print ("CTL_Debugger_finished", where, null, null);
+            else
+                ioManager.println (
+                    e.getMessage (),
+                    where,
+                    null
+                );
         } else
         if (debugger.getState () == JPDADebugger.STATE_STOPPED) {
             //DebuggerEngine engine = debugger.getEngine ();

@@ -70,7 +70,7 @@ public class ClassesTreeModel implements TreeModel {
     
     private static boolean      verbose = 
         (System.getProperty ("netbeans.debugger.viewrefresh") != null) &&
-        (System.getProperty ("netbeans.debugger.viewrefresh").indexOf ('l') >= 0);
+        (System.getProperty ("netbeans.debugger.viewrefresh").indexOf ('s') >= 0);
     
     
     private JPDADebuggerImpl    debugger;
@@ -186,7 +186,10 @@ public class ClassesTreeModel implements TreeModel {
             if (clr == null)
                 loaders.add (NULL_CLASS_LOADER);
             else
-                loaders.add (rt.classLoader ());
+            if (clr.referenceType ().name ().equals ("sun.reflect.DelegatingClassLoader"))
+                continue;
+            else
+                loaders.add (clr);
         }
         ch = loaders.toArray ();
         cache.put (null, ch);
@@ -280,7 +283,7 @@ public class ClassesTreeModel implements TreeModel {
                 // cancel old task
                 task.cancel ();
                 if (verbose)
-                    System.out.println("LTM cancel old task " + task);
+                    System.out.println ("ClTM cancel old task " + task);
                 task = null;
             }
         }
@@ -312,23 +315,23 @@ public class ClassesTreeModel implements TreeModel {
                     // cancel old task
                     task.cancel ();
                     if (verbose)
-                        System.out.println("LTM cancel old task " + task);
+                        System.out.println ("ClTM cancel old task " + task);
                     task = null;
                 }
                 task = RequestProcessor.getDefault ().post (new Runnable () {
                     public void run () {
                         if (debugger.getState () != debugger.STATE_STOPPED) {
                             if (verbose)
-                                System.out.println("LTM cancel started task " + task);
+                                System.out.println ("ClTM cancel started task " + task);
                             return;
                         }
                         if (verbose)
-                            System.out.println("LTM do task " + task);
+                            System.out.println ("ClTM do task " + task);
                         ltm.fireTreeChanged ();
                     }
                 }, 500);
                 if (verbose)
-                    System.out.println("LTM  create task " + task);
+                    System.out.println ("ClTM  create task " + task);
             } else
             if ( (e.getPropertyName () == debugger.PROP_STATE) &&
                  (debugger.getState () != debugger.STATE_STOPPED) &&
@@ -338,7 +341,7 @@ public class ClassesTreeModel implements TreeModel {
                 // =>> cancel task
                 task.cancel ();
                 if (verbose)
-                    System.out.println("LTM cancel task " + task);
+                    System.out.println ("ClTM cancel task " + task);
                 task = null;
             }
         }
