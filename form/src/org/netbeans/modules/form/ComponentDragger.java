@@ -81,6 +81,10 @@ class ComponentDragger
             newConstraints.add(null);
         }
 
+        // adjust indices considering that some of dragged components
+        // might be in target container
+        adjustIndices(indices);
+
         // set components requiring exact position (index)
         for (int i=0; i < selectedComponents.length; i++) {
             int index = ((Integer)indices.get(i)).intValue();
@@ -327,6 +331,49 @@ class ComponentDragger
         }
 
         return true;
+    }
+
+    /** Modifies suggested indices of dragged components considering the fact
+     * that some of the components might be in the target container.
+     */
+    private void adjustIndices(List indices) {
+        int index;
+        int correction;
+        int prevIndex = -1;
+        int prevCorrection = 0;
+
+        for (int i=0; i < indices.size(); i++) {
+            index = ((Integer)indices.get(i)).intValue();
+            if (index >= 0) {
+                if (index == prevIndex) {
+                    correction = prevCorrection;
+                }
+                else {
+                    correction = 0;
+                    RADVisualComponent[] targetComps =
+                                         targetMetaContainer.getSubComponents();
+                    for (int j=0; j < index; j++) {
+                        RADVisualComponent tComp = targetComps[j];
+                        boolean isSelected = false;
+                        for (int k=0; k < selectedComponents.length; k++)
+                            if (tComp == selectedComponents[k]) {
+                                isSelected = true;
+                                break;
+                            }
+
+                        if (isSelected)
+                            correction++;
+                    }
+                    prevIndex = index;
+                    prevCorrection = correction;
+                }
+
+                if (correction != 0) {
+                    index -= correction;
+                    indices.set(i, new Integer(index));
+                }
+            }
+        }
     }
 
     private void paintDragFeedback(Graphics2D g, RADVisualComponent metacomp) {
