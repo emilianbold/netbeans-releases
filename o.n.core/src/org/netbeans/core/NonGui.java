@@ -28,6 +28,7 @@ import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.lang.reflect.Method;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -58,6 +59,7 @@ import org.openide.util.Utilities;
 import org.netbeans.TopSecurityManager;
 
 import org.netbeans.core.actions.*;
+import org.netbeans.core.modules.InstalledFileLocatorImpl;
 import org.netbeans.core.projects.ModuleLayeredFileSystem;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.projects.TrivialProjectManager;
@@ -411,25 +413,25 @@ public class NonGui extends NbTopManager implements Runnable {
                         //System.setProperty("import.canceled", canceled ? "true" : "false"); // NOI18N
                         
                         // Let's use reflection
-                        System.setProperty("import.canceled", "false"); // NOI18N
-                        try {
-                            Class wizardClass = Class.forName( "org.netbeans.core.upgrade.UpgradeWizard" ); // NOI18N
-                            Method showMethod = wizardClass.getMethod( "showWizard", new Class[] { Splash.SplashOutput.class } ); // NOI18N
-                            
-                            Boolean canceled = (Boolean)showMethod.invoke( null, new Object[] { getSplash() } );
-                            System.setProperty("import.canceled", canceled.toString()); // NOI18N
-                        }
-                        catch ( ClassNotFoundException e ) {
-                            // Assume there is no UpgradeWizard to run
-                        }
-                        catch ( NoSuchMethodException e ) {
-                            // Assume there is no UpgradeWizard to run
-                        }
-                        catch ( IllegalAccessException e ) {
-                            // Assume there is no UpgradeWizard to run
-                        }
-                        catch ( java.lang.reflect.InvocationTargetException e ) {
-                            // Assume there is no UpgradeWizard to run
+                        File coreide = new InstalledFileLocatorImpl().locate("modules/core-ide.jar", null, false);
+                        if (coreide != null) {
+                            // This module is included in our distro somewhere... may or may not be turned on.
+                            // Whatever - try running some classes from it anyway.
+                            try {
+                                // XXX JDK 1.4: use toURI().toURL()
+                                ClassLoader l = new URLClassLoader(new URL[] {coreide.toURL()}, NonGui.class.getClassLoader());
+                                Class wizardClass = Class.forName("org.netbeans.core.upgrade.UpgradeWizard", true, l); // NOI18N
+                                Method showMethod = wizardClass.getMethod( "showWizard", new Class[] { Splash.SplashOutput.class } ); // NOI18N
+
+                                Boolean canceled = (Boolean)showMethod.invoke( null, new Object[] { getSplash() } );
+                                System.setProperty("import.canceled", canceled.toString()); // NOI18N
+                            } catch (Exception e) {
+                                // If exceptions are thrown, notify them - something is broken.
+                                e.printStackTrace();
+                            } catch (LinkageError e) {
+                                // These too...
+                                e.printStackTrace();
+                            }
                         }
                         
                     }
