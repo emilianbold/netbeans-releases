@@ -1,12 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2003 Sun Microsystems, Inc. All rights reserved. 
- *	  
-Use is subject to license terms.
-> -->
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+
 <html>
 <head>
-<meta name="lastupdated" content="21mar03">
+<meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
 
 <title>Editing and Replaying Requests</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
@@ -55,24 +56,26 @@ Use is subject to license terms.
 </ol>
 <p><b>To edit and replay an HTTP request:</b></p>
 <ol>
-  <li>In the HTTP Monitor Records pane, right-click the record that 
-      you want to edit.</li>
+  <li>In the HTTP Monitor Records pane, right-click the record that you want to 
+    edit.</li>
   <li>Choose Edit and Replay from the contextual menu. The Edit and Replay dialog 
-    box appears. It enables you to modify query parameters, request information, 
-    or headers before sending the request. You can also send the request to a 
-    different server.</li>
-  <li>Edit information about the request. The following sections 
-    describe the information that you can edit 
-    in the HTTP Monitor's Edit and Replay dialog  box.</li>
+    box appears. In the dialog box, you can make the following changes, as described 
+    in the following sections:</li>  <ul>
+    <li>Modify query parameters</li>
+    <li>Modify request information</li>
+    <li>Add cookies</li>
+    <li>Designate a different server to which to send the request</li>
+    <li>Modify the headers</li>
+  </ul>
   <li>Click Send HTTP Request.</li>
 </ol>
 <p><b>To edit query parameters:</b></p>
 <ol>
   <li>Click the Query tab.</li>
-  <li>To add a query, click Add Parameter. The Add Parameter 
-    dialog box appears. Type in a name and value, and click OK. The query parameters appear in 
-    the Query tab.</li>
-  <li>To edit a query parameter, click the elipsis button next to the parameter.
+  <li>To add a parameter to the query, click Add Parameter. The Add Parameter 
+    dialog box appears. Type in a name and value, and click OK. The query parameters 
+    appear in the Query tab.</li>
+  <li>To edit a query parameter, click the elipsis (...) button next to the parameter. 
   <li>To delete a query parameter, select the parameter and click Delete 
     Parameters. Use the Shift or Control key to select multiple parameters
     for deletion.
@@ -81,10 +84,8 @@ Use is subject to license terms.
 <p><b>To edit request data:</b></p>
 <ol>
   <li>Click the Request tab.
-  <li>To edit the Request URI parameter or the Protocol parameter, 
-  click the ellipsis button next 
-  to the parameter. 
-  </li>
+  <li>To edit the Request URI parameter or the Protocol parameter, click the ellipsis 
+    (...) button next to the parameter. </li>
   <li>To change the request method, select the desired method from the combo box 
     in the Method parameter. For instance, change <tt>GET</tt> to <tt>POST</tt>.</li>
 </ol>
@@ -111,10 +112,9 @@ Use is subject to license terms.
       Not all servers support the editing of cookies.</p>
 <ol>
   <li>Click the Cookies tab.</li>
-  <li>To add a cookie, click Add Cookie. The Add Cookie 
-    dialog box appears. Type in a name and value, and click OK.</li>
-  <li>To edit a cookie, click the ellipses button next to the 
-    cookie.</li>
+  <li>To add a cookie, click Add Cookie. The Add Cookie dialog box appears. Type 
+    a name and value, and click OK.</li>
+  <li>To edit a cookie, click the ellipsis (...) button next to the cookie.</li>
   <li>To delete a cookie, select the cookie and click Delete Cookies. Use 
     the Shift or Control key to select multiple 
     cookies for deletion. </li>
@@ -125,7 +125,7 @@ Use is subject to license terms.
   <li>To add a header, click Add Header. 
     The Add Header dialog box appears. Type in a name and value and click OK.</li>
   <li>To edit a header parameter such as Accept, Connection, Host, or User-Agent, 
-    click the ellipsis button next to the parameter.</li>
+    click the ellipsis (...) button next to the parameter.</li>
   <li>To delete a header, select it and click Delete Headers. Use the Shift or 
     Control key to select multiple headers for deletion.</li>
 
@@ -134,11 +134,8 @@ Use is subject to license terms.
 <ol>
   <li>To edit server information, such as the hostname of servlet engine or the port number 
     of an HTTP service, click the Server tab.</li>
-  <li>To change a parameter's value, click the ellipsis button next 
-    to the parameter. Note that the server must be configured
-    to work with the HTTP Monitor. Otherwise, the server will not replay the
-    request properly. For more information, see
-<a href="servconfig.html">Deploying the HTTP Monitor for a Web Application</a>.</li>
+  <li>To change a parameter's value, click the ellipsis (...) button next to the 
+    parameter.</li>
 </ol>
 <table>
          <tr>

@@ -1,14 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 
-2003 Sun Microsystems, Inc. All rights reserved. 
- *	  Use is subject to 
-license terms.
-> -->
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+
 <html>
 <head>
-<meta name="lastupdated" 
-content="20mar2003">
+<meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
 
 
 <title>Monitoring Data Flow on the Web Server</title>
@@ -25,35 +24,24 @@ rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 <a href="#seealso">See Also</a> 
 </small></p> 
 
-<p>The HTTP Monitor gathers data about HTTP requests that are processed by the 
-  servlet engine. For each HTTP request that is processed, the monitor records 
-  data about the incoming request, the data states maintained on the server, and 
-  the servlet environment. You can view data, store data for future sessions, 
-  and replay and edit previous requests. HTTP monitor data records are stored 
-  until you exit the IDE, unless you explicitly save them. You can view data about 
-  JSP and servlet file execution at any time. </p>
-<p><b>To start the HTTP Monitor:</b></p>
-<ul>
-  <li> From the main menu bar, choose Debug&nbsp;<img src="../images/arrow.gif" 
-width="6" height="13" alt="and choose">&nbsp;HTTP Monitor or View&nbsp;<img src="../images/arrow.gif" 
-width="6" height="13" alt="and choose">&nbsp;HTTP Monitor</li>
-  <li>In the Debugging workspace, on the Debug (Full) toolbar, click&nbsp;<img src="../images/monicon.gif" width="21" height="20">.</li>
-  <li>The HTTP Monitor starts automatically when you debug JSP pages and servlets.</li>
-</ul>
+<p>The IDE provides the HTTP Monitor tool to help diagnose problems with data 
+  flow on the web server. The HTTP Monitor gathers data about HTTP requests that 
+  are processed by the servlet engine. For each HTTP request that is processed, 
+  the monitor records data about the incoming request and the data states maintained 
+  on the server.</p>
+<p>You can view data, store data for future sessions, and replay and edit previous 
+  requests. HTTP monitor data records are stored until you exit the IDE, unless 
+  you explicitly save them. You can view data about JSP and servlet file execution 
+  at any time. </p>
+<p>To display the HTTP Monitor, choose Window <img src="../images/arrow.gif" alt="and choosing">&nbsp;HTTP 
+  Monitor from the main menu.</p>
+
 <p>If the internal HTTP server is not running, the HTTP Monitor automatically 
   starts the server when attempting to record or view data.</p>
-<p>To configure the HTTP Server,
-  right-click the HTTP Server node in the Runtime tab, and choose Properties.
-  Note that the HTTP server is not the same as a web server 
-  instance, and therefore cannot be configured using a web server node in the Server 
-  Registry on the Runtime tab of the Explorer. 
-</p>
-<p><b>Troubleshooting</b></p>
-<p>If the HTTP Monitor is not recording, you might need to add an HTTP Monitor
-filter to the web application's deployment descriptor
-(<tt>WEB-INF/web.xml</tt>). For more information, see
-<a href="servconfig.html">Deploying the HTTP Monitor for a Web Application</a>.
-</p>
+<p>To configure the HTTP Server, right-click the HTTP Server node in the Runtime 
+  window, and choose Properties. Note that the HTTP server is not the same as 
+  a web server instance, and therefore cannot be configured using a web server 
+  node in the Server Registry on the Runtime tab of the Explorer. </p>
 <table>
 <tr>
 <th colspan=2 align=left><a name="seealso">See Also</a></th>
