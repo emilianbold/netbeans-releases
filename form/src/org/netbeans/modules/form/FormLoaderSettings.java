@@ -60,6 +60,8 @@ public class FormLoaderSettings extends SystemOption {
   /** Property name of the registeredEditors property */
   public static final String PROP_REGISTERED_EDITORS = "registeredEditors";
 
+  /** A constant for using the default modifier set in the variablesModifier property of FormLoaderSettings */
+  public static final int DEFAULT_MODIFIER = -1;
   /** A constant for "private" access modifier used in variablesModifier property */
   public static final int PRIVATE = 0;
   /** A constant for "package private" access modifier used in variablesModifier property */
@@ -68,6 +70,7 @@ public class FormLoaderSettings extends SystemOption {
   public static final int PROTECTED = 2;
   /** A constant for "public" access modifier used in variablesModifier property */
   public static final int PUBLIC = 3;
+
 
 // ------------------------------------------
 // properties
@@ -403,6 +406,8 @@ public class FormLoaderSettings extends SystemOption {
 
 /*
  * Log
+ *  10   Gandalf   1.9         6/29/99  Ian Formanek    Individual variable 
+ *       modifiers for each component
  *  9    Gandalf   1.8         6/10/99  Ian Formanek    loadedBeans -> 
  *       properties rather than FormSettings
  *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
