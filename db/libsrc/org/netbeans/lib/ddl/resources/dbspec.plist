@@ -936,6 +936,56 @@
   "ACCESS" = {
     DatabaseProductName = "ACCESS";
     DatabaseProductVersion = 2;
+    TypeMap = {
+      java.sql.Types.BIGINT = "BIG INTEGER";  
+      java.sql.Types.BINARY = BINARY;
+      java.sql.Types.BIT = BOOLEAN;
+      java.sql.Types.CHAR = CHAR;
+      java.sql.Types.DATE = DATE;
+      java.sql.Types.DECIMAL = DECIMAL;
+      java.sql.Types.DOUBLE = DOUBLE;
+      java.sql.Types.FLOAT = FLOAT;    
+      java.sql.Types.INTEGER = INTEGER;
+      java.sql.Types.NUMERIC = NUMERIC;
+      java.sql.Types.TIME = TIME;
+      java.sql.Types.TIMESTAMP = "TIME STAMP";
+      java.sql.Types.VARBINARY = VARBINARY;
+    };
+    SizelessTypes = ("BIG INTEGER",BINARY,BOOLEAN,DATE,DOUBLE,FLOAT,INTEGER,TIME,"TIME STAMP",VARBINARY);
+    DecimalTypes = (DECIMAL,NUMERIC);
+    CharacterTypes = (CHAR);
+    
+  };
+  
+//  ********************************************************************************
+//
+//  PointBase
+//
+//  ********************************************************************************/
+
+  "PointBase" = {
+    DatabaseProductName = "PointBase";
+    DatabaseProductVersion = 2;
+    TypeMap = {
+      java.sql.Types.BIT = BOOLEAN;
+      java.sql.Types.BLOB = BLOB;
+      java.sql.Types.CHAR = CHAR;
+      java.sql.Types.CLOB = CLOB;
+      java.sql.Types.DATE = DATE;
+      java.sql.Types.DECIMAL = DECIMAL;
+      java.sql.Types.DOUBLE = "DOUBLE PRECISION";
+      java.sql.Types.FLOAT = FLOAT;
+      java.sql.Types.INTEGER = INTEGER;
+      java.sql.Types.NUMERIC = NUMERIC;
+      java.sql.Types.REAL = REAL;
+      java.sql.Types.SMALLINT = SMALLINT;
+      java.sql.Types.TIME = TIME;
+      java.sql.Types.TIMESTAMP = TIMESTAMP;
+      java.sql.Types.VARCHAR = VARCHAR;
+    };
+    SizelessTypes = (BOOLEAN,BLOB,CLOB,DATE,"DOUBLE PRECISION",FLOAT,INTEGER,REAL,SMALLINT,TIME,TIMESTAMP,VARCHAR);
+    DecimalTypes = (DECIMAL,NUMERIC);
+    CharacterTypes = (CHAR);
     
   };
   
