@@ -17,6 +17,7 @@ import java.beans.IntrospectionException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import org.netbeans.editor.Settings;
+import org.netbeans.modules.editor.NbEditorSettingsInitializer;
 import org.openide.nodes.BeanNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -44,6 +45,7 @@ public class AllOptionsNode extends FilterNode {
     /** Creates new AllOptionsNode as BeanNode with Children.Array */
     public AllOptionsNode() throws IntrospectionException {
         super(new BeanNode(AllOptionsFolder.getDefault()), new EditorSubnodes());
+        NbEditorSettingsInitializer.init();
     }
     
     /** Gets display name of all options node from bundle */
