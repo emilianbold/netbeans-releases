@@ -350,7 +350,7 @@ public class DefaultDiff extends Diff implements Serializable {
         public void open(Workspace workspace) {
             super.open(workspace);
             //diffPanel.open();
-            requestFocus();
+            requestActive();
         }
         
     }
