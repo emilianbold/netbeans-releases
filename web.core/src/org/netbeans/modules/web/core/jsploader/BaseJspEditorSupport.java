@@ -54,6 +54,7 @@ import org.openide.util.Task;
 
 import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
 import org.openide.windows.CloneableOpenSupport;
+import org.openide.nodes.Node;
 
 public class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie, OpenCookie, LineCookie, CloseCookie, PrintCookie {
     
@@ -286,6 +287,8 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         }
         
         private void initialize() {
+            Node nodes[] = {((DataEditorSupport)cloneableEditorSupport()).getDataObject().getNodeDelegate()};
+            setActivatedNodes(nodes);
             caretListener = new CaretListener() {
                 public void caretUpdate(CaretEvent e) {
                     ((BaseJspEditorSupport)cloneableEditorSupport()).restartTimer(true);
