@@ -62,13 +62,20 @@ public class ParseBuildInfo extends Task {
     }
     
     /** Parse build number to timestamp string. For input like this 200303231200
+     * or 20030323-1200 (continuous builds)
      * it returns 2003-03-23 12:00 +0000. For build numbers like 030323
      * or 030323_1 it returns null.
      */
     private String getTimestamp(String buildNumber) {
         Date date = null;
         try {
-            date = new SimpleDateFormat("yyyyMMddHHmm").parse(buildNumber);
+            // pattern for regular builds
+            String pattern = "yyyyMMddHHmm";
+            if(buildNumber.indexOf('-') > -1) {
+                // pattern for continuous builds 
+                pattern = "yyyyMMdd-HHmm";
+            }
+            date = new SimpleDateFormat(pattern).parse(buildNumber);
         } catch (ParseException e) {
             // wrong format
             return null;
