@@ -29,6 +29,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
@@ -146,6 +147,12 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
                 break;
         }        
         resultSet.add (dir);
+
+        dirF = (dirF != null) ? dirF.getParentFile() : null;
+        if (dirF != null && dirF.exists()) {
+            ProjectChooser.setProjectsFolder (dirF);    
+        }
+                        
         return resultSet;
     }
     

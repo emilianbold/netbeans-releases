@@ -167,10 +167,6 @@ public class PanelSourceFolders extends SettingsPanel {
         settings.putProperty ("name",this.projectName.getText()); // NOI18N
         File projectsDir = new File(this.projectLocation.getText());
         settings.putProperty ("projdir", projectsDir); // NOI18N        
-        projectsDir = projectsDir.getParentFile();
-        if (projectsDir != null && projectsDir.isDirectory()) {
-            ProjectChooser.setProjectsFolder (projectsDir);
-        }
     }
     
     boolean valid (WizardDescriptor settings) {

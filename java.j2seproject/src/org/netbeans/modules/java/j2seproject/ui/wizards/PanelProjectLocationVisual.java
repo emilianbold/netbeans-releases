@@ -228,10 +228,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         
         d.putProperty( /*XXX Define somewhere */ "projdir", new File( folder )); // NOI18N
         d.putProperty( /*XXX Define somewhere */ "name", name ); // NOI18N
-        File projectsDir = new File(this.projectLocationTextField.getText());
-        if (projectsDir.isDirectory()) {
-            ProjectChooser.setProjectsFolder (projectsDir);
-        }
     }
     
     void read (WizardDescriptor settings) {
