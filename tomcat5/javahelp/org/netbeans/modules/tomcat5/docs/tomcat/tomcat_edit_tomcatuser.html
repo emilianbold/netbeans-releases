@@ -9,41 +9,78 @@
 <meta name="lastupdated" content="4Feb04">
 <!-- p1 -->
 
-<title>Starting and Stopping a Tomcat Server</title>
+<title>Setting a Username and Password for the Tomcat Manager</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Configuring Tomcat Manager Application Access</h2>
+<h2>Setting a Username and Password for the Tomcat Manager</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>It would be quite unsafe to ship Tomcat with default settings that allowed 
-anyone on the Internet to execute the Manager application on your server. 
-Therefore, the Manager application is shipped with the requirement that anyone 
-who attempts to use it must authenticate themselves, using a username and password 
-that have the role "manager" associated with them. 
+<p>It would be quite unsafe to ship web servers with default settings that allowed 
+anyone on the Internet to execute them on your server. 
+Therefore, the web servers are shipped with the requirement that anyone 
+who attempts to use them must authenticate themselves, using a username and password 
+with the appropriate role associated with them.</p> 
 
-There is a username called "ide" in the default users file 
-that is assigned the "manager" role.<p> 
-Do the following to get the password for the "ide" username:</p>
+<p>For example, to authenticate yourself when you want to use
+   the Tomcat Manager to deploy your web application, 
+   JSP file, or servlet, you need a username
+   and password for a user with the "manager" role. 
+   This username and password are defined in the
+   <tt>tomcat-users.xml</tt> file that is in your user
+   directory.</p>
+<table cellpadding="3" cellspacing="0" border="0">
+  <tr valign="top">
+      <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
+      <td>
+	 You can only use the usernames and passwords that are defined in  
+	 your NetBeans <b>user</b> directory's <tt>tomcat-users.xml</tt> file, 
+	 and not those that are in the NetBeans <b>installation</b> directory.
+      </td>
+   </tr>
+</table>
+<p>
+   During installation, the NetBeans IDE generates a user
+   called "ide" that is assigned the "manager" role. This
+   user is created in your user directory's <tt>tomcat-users.xml</tt> file.</p>
+<p><b>To get the password for the "ide" username from your user directory:</b></p>
 <ol>
-  <li>Select Help <img src="../images/arrow.gif" alt="and choose">&nbsp;About 
-  from the main menu and choose the Detail tab.</li>
-  <li>Make a note of the path to the User Dir folder.</li>
-  <li>In your file system, go to your User Dir and then to 
-  jakarta-tomcat-5.0.28_base\conf.</li>
-  <li>Open tomcat-users.xml and make a note of the password
+  <li>Right-click
+   the Tomcat Server instance node in the Runtime window and select Properties.
+   In the Properties
+   dialog box, the Base Directory property points to the
+   <i>base-dir</i><tt></tt> directory.</li>
+  <li>Make a note of the path to Tomcat's base directory.</li>
+  <li>In your system, go to Tomcat's base directory and then to its 
+  <tt>\conf</tt> subfolder.</li>
+  <li>Open the <tt>tomcat-users.xml</tt> file and make a note of the password
   that is defined for the "ide" username.</li>
 </ol>
-
+<table cellpadding="3" cellspacing="0" border="0">
+  <tr valign="top">
+      <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
+      <td>
+	 The username and password are <b>not</b> saved when you enter them
+	 in this dialog box. The username and password are only saved if
+	 you define them in the Tomcat Server's Properties dialog box. 
+	 To open the Properties dialog box, right-click the Tomcat Server's 
+	 instance node in the Runtime window and select
+	 Properties.
+      </td>
+   </tr>
+</table>
+<table>
+<tr>
+<th colspan=2 align=left><a name="seealso">See Also</a></th>
+</tr>
+<tr>
+<td width="23"></td>
+<td><a href="../overvw/intro.html">About Web Applications</a><br></td>
+</tr>
+</table>
 <hr>
-<small><a href="../credits.html">Legal Notices</a> 
-<table cellpadding="20" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-</table> 
-
-</small></body></html>
+<small><a href="../../credits.html">Legal Notices</a></small>
+</body></html>

@@ -20,14 +20,15 @@
 	<tocitem text="About the Tomcat Server" target="tomcat_plugin" />
 	<tocitem text="Setting Up the Tomcat Server">
         <tocitem text="Viewing the Tomcat Server in the IDE" target="tomcat_top_node" />
-        <tocitem text="Setting a Web Application Context for the Tomcat Server" target="tomcat_context_add" />
-	<tocitem text="Starting and Stopping a Tomcat Server" target="tomcat_start" />
+        <tocitem text="Setting a Context Path for a Tomcat Server" target="tomcat_context_add" />
+	<tocitem text="Starting and Stopping a Tomcat Server" target="tomcat_start" /> 
 	<tocitem text="Reconfiguring a Tomcat Server" target="tomcat_edit_config" />
 	<tocitem text="Customizing a Tomcat Server" target="tomcat_internal_props"/>
 	<tocitem text="Adding a Tomcat Server" target="tomcat_addinstall" />
 	</tocitem>
 	<tocitem text="Using the Tomcat Server">
 	<tocitem text="Targeting a Tomcat Server for Running Web Applications" target="tomcat_default" />
+	<tocitem text="Setting a Username and Password for the Tomcat Manager" target="tomcat_edit_tomcatuser" />
 	<tocitem text="Running a Web Application Using a Tomcat Server" target="webmod_singletest" />    
         <tocitem text="Running a JSP File Using a Tomcat Server" target="jsp_run" />
         <tocitem text="Running a Servlet Using a Tomcat Server" target="servlet_run" />

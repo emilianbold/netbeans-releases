@@ -19,8 +19,14 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>You open the Tomcat Instance property sheet from a server's instance node in 
-  the Runtime window. A Tomcat instance node has the following properties.</p>
+
+<p><b>To customize a Tomcat Server:</b></p>
+<ol><li>Choose Window <img src="../images/arrow.gif" alt="and choose">&nbsp;Runtime (Ctrl+5)
+from the main menu. The Runtime window appears.</li>
+<li>Expand the Server Registry node in the tree view to view the Tomcat Server nodes.</li>
+<li>Right-click a Tomcat Server's instance and select Properties from the contextual menu.</li></li>
+</ol>
+<p>A Tomcat Server's instance node has two sections:</p>
 <h3>Properties Section</h3>
 <ul>
   <li><b>Server Port.</b> The number of the TCP/IP port that the server listens 
@@ -33,9 +39,9 @@
     time the IDE starts the bundled Tomcat server, such as through the Start/Stop Server menu 
     action or by executing a web component from the IDE, the IDE adds an admin 
     user with a randomly-generated password to the <i>tomcat-base-path</i><tt>/conf/tomcat-users.xml</tt> 
-    file. (The <i>tomcat-base-path</i> is your User Dir. Select Help 
-    <img src="../images/arrow.gif" alt="and choose">&nbsp;About and choose
-    the Detail tab to identify your User Dir.) The admin user entry looks similar to the following: 
+    file. (Right-click the Tomcat Server instance node in the Runtime window and select Properties.
+    In the Properties dialog box, the Base Directory property points to the <tt><i>base-dir directory</i></tt>.)
+    The admin user entry in the <tt>tomcat-users.xml</tt> file looks similar to the following: 
     <PRE>  &lt;user username=&quot;ide&quot; password=&quot;woiehh&quot; roles=&quot;manager&quot;/&gt;</PRE>
   </li>
   <li><b>Password.</b> The user's password. See the "User" explanation above for details.</li>
