@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,6 +18,7 @@ import org.openide.util.Lookup;
 
 /** Provisional mechanism for displaying the Repository object.
  * It will show all filesystems, possibly with a filter.
+ * @deprecated Probably unwise to call this for any reason; obsolete UI.
  * @author Jesse Glick
  * @since 3.14
  */
@@ -40,7 +41,6 @@ public abstract class RepositoryNodeFactory {
      * parent, clone it first.
      * @param f a filter
      * @return a node showing part of the repository
-     * @deprecated Probably unwise to call this for any reason; obsolete UI.
      */
     public abstract Node repository(DataFilter f);
 
