@@ -62,13 +62,13 @@ public class ExplorerActionsImplTest extends ExplorerPanelTest {
 
     /** Creates a manager to operate on.
      */
-    protected Object[] createManagerAndContext () {
+    protected Object[] createManagerAndContext (boolean confirm) {
         ExplorerManager em = new ExplorerManager ();
         ActionMap map = new ActionMap ();
         map.put (DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(em));
         map.put (DefaultEditorKit.cutAction, ExplorerUtils.actionCut(em));
         map.put (DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(em));
-        map.put ("delete", ExplorerUtils.actionDelete(em, false));
+        map.put ("delete", ExplorerUtils.actionDelete(em, confirm));
         
         return new Object[] { em, org.openide.util.lookup.Lookups.singleton(map) };
     }

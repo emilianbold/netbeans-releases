@@ -24,6 +24,8 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
 import javax.swing.Action;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
@@ -78,7 +80,7 @@ public class ExplorerPanelTest extends NbTestCase {
     protected final void setUp () {
         System.setProperty ("org.openide.util.Lookup", "org.openide.explorer.ExplorerPanelTest$Lkp");
         
-        Object[] arr = createManagerAndContext ();
+        Object[] arr = createManagerAndContext (false);
         manager = (ExplorerManager)arr[0];
         context = (Lookup)arr[1];
         
@@ -86,8 +88,8 @@ public class ExplorerPanelTest extends NbTestCase {
     
     /** Creates a manager to operate on.
      */
-    protected Object[] createManagerAndContext () {
-        ep = new ExplorerPanel (null, false);
+    protected Object[] createManagerAndContext (boolean confirm) {
+        ep = new ExplorerPanel (null, confirm);
         return new Object[] { ep.getExplorerManager(), ep.getLookup() };
     }
     
@@ -169,6 +171,63 @@ public class ExplorerPanelTest extends NbTestCase {
         assertEquals ("Destoy was called", 1, enabledNode.countDelete);
         assertEquals ("Destoy was called", 1, enabledNode2.countDelete);
         
+        
+    }
+
+    public void testDeleteConfirmAction () throws Exception {
+        TestNode [] nodes = new TestNode [] {
+            new TestNode(true, true, true),
+            new TestNode(true, true, true, true),
+            new TestNode(true, true, true),
+            new TestNode(true, true, true, true),
+            new TestNode(false, false, false)
+        };
+
+        YesDialogDisplayer ydd = (YesDialogDisplayer)Lookup.getDefault().lookup(YesDialogDisplayer.class);
+        DialogDisplayer dd = (DialogDisplayer)Lookup.getDefault().lookup(DialogDisplayer.class);
+        assertNotNull("Custom DialogDisplayer is not set", ydd);
+        int notifyCount = ydd.getNotifyCount();
+        assertEquals("YesDialogDisplayer is current DialogDisplayer", ydd, dd);
+        
+        Object[] arr = createManagerAndContext (true);
+        
+        ExplorerPanel delep = new ExplorerPanel ((ExplorerManager)arr[0], true);
+        ExplorerManager delManager = delep.getExplorerManager();
+        delManager.setRootContext(new TestRoot(
+            nodes));
+
+        Action delete = ((ContextAwareAction)SystemAction.get(org.openide.actions.DeleteAction.class)).createContextAwareInstance((Lookup)arr[1]);
+
+        // delete should ask for confirmation
+        delManager.setSelectedNodes (new Node[] { nodes[0] });
+        assertTrue ("It gets enabled", delete.isEnabled ());
+        
+        delete.actionPerformed(new java.awt.event.ActionEvent (this, 0, "waitFinished"));
+        
+        assertEquals ("Destoy was called", 1, nodes[0].countDelete);
+        
+        assertEquals ("Confirm delete was called ", notifyCount+1, ydd.getNotifyCount());
+        
+        // but delete should not ask for confirmation if the node wants to perform handle delete 
+        delManager.setSelectedNodes (new Node[] { nodes[1] });
+        assertTrue ("It gets enabled", delete.isEnabled ());
+        
+        delete.actionPerformed(new java.awt.event.ActionEvent (this, 0, "waitFinished"));
+        
+        assertEquals ("Destoy was called", 1, nodes[1].countDelete);
+        
+        assertEquals ("Confirm delete was called ", notifyCount+1, ydd.getNotifyCount()); // no next dialog
+        
+        // anyway ask for confirmation if at least one node has default behaviour
+        delManager.setSelectedNodes (new Node[] { nodes[2], nodes[3] });
+        assertTrue ("It gets enabled", delete.isEnabled ());
+        
+        delete.actionPerformed(new java.awt.event.ActionEvent (this, 0, "waitFinished"));
+        
+        assertEquals ("Destoy was called", 1, nodes[2].countDelete);
+        assertEquals ("Destoy was called", 1, nodes[3].countDelete);
+        
+        assertEquals ("Confirm delete was called ", notifyCount+2, ydd.getNotifyCount()); // no next dialog
         
     }
 
@@ -317,12 +376,18 @@ public class ExplorerPanelTest extends NbTestCase {
         public boolean canCopy;
         public boolean canCut;
         public boolean canDelete;
+        private boolean customDelete;
         public PasteType[] types = new PasteType[0];
         public java.awt.datatransfer.Transferable lastTransferable;
         
         public int countCopy;
         public int countCut;
         public int countDelete;
+        
+        public TestNode(boolean canCopy, boolean canCut, boolean canDelete, boolean customDelete) {
+            this (canCopy, canCut, canDelete);
+            this.customDelete = customDelete;
+        }
         
         public TestNode(boolean b, boolean c, boolean d) {
             super(Children.LEAF);
@@ -370,6 +435,13 @@ public class ExplorerPanelTest extends NbTestCase {
             this.lastTransferable = t;
             s.addAll (Arrays.asList (types));
         }
+
+        public Object getValue(String attributeName) {
+            if (customDelete && "customDelete".equals(attributeName)) {
+                return Boolean.TRUE;
+            }
+            return super.getValue(attributeName);
+        }
         
     }
 
@@ -416,6 +488,7 @@ public class ExplorerPanelTest extends NbTestCase {
         private Lkp (org.openide.util.lookup.InstanceContent ic) {
             super (ic);
             ic.add (new Clb ("Testing clipboard"));
+            ic.add (new YesDialogDisplayer());
         }
     }
     
@@ -431,6 +504,27 @@ public class ExplorerPanelTest extends NbTestCase {
         public void setContents (Transferable t, ClipboardOwner o) {
             super.setContents (t, o);
             fireClipboardChange ();
+        }
+    }
+    
+    private static final class YesDialogDisplayer extends DialogDisplayer {
+        private int counter = 0;
+        
+        public YesDialogDisplayer() {
+            super();
+        }
+        
+        public Object notify(org.openide.NotifyDescriptor descriptor) {
+            counter++;
+            return NotifyDescriptor.YES_OPTION;
+        }
+
+        public java.awt.Dialog createDialog(org.openide.DialogDescriptor descriptor) {
+            return null;
+        }
+        
+        public int getNotifyCount() {
+            return counter;
         }
     }
 }
