@@ -1106,6 +1106,13 @@ public class XMLDataObject extends MultiDataObject {
             String previousID;
             String newID = null;
             
+            previousID = parsedId;
+
+            if (parsedId != null) {
+                // ok, has already been parsed
+                return;
+            }
+            
             URL url = null;
             InputStream in = null;
             try {
@@ -1116,13 +1123,6 @@ public class XMLDataObject extends MultiDataObject {
             }
 
             synchronized (this) {
-                previousID = parsedId;
-                
-                if (parsedId != null) {
-                    // ok, has already been parsed
-                    return;
-                }
-                
                 try {
                     if (!myFileObject.isValid())
                         return;
