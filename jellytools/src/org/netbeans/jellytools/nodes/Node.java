@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -26,24 +26,30 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.*;
 import org.netbeans.jemmy.operators.*;
 
-
 /** Ancestor class for all nodes.<p>
+ * Nodes should help to easier testing of JTree's.
+ * The most frequent usage in IDE is in the Explorer Window but nodes can be 
+ * used in any component which includes a JTree instance.
+ * Nodes are also used as parameters for action's performing.
+ * <p>
  * Example:<p>
  * <pre>
- *  JTreeOperator tree = ExplorerOperator.invoke().repositoryTab().tree();
- *  Node n = new Node(tree, "src");
- *  System.out.println(n.getText());
- *  n.performAPIActionNoBlock("org.openide.actions.NewTemplateAction");
- * </pre> */
+ *  Node node = new Node(RepositoryTabOperator.invoke().getRootNode(), "jellytools/src|org|netbeans|jellytools");
+ *  System.out.println(node.getText());
+ *  new NewTemplateAction().performAPI(node);
+ * </pre> 
+ */
 public class Node {
     
     static final String linkSuffix = Bundle.getString("org.openide.loaders.Bundle", "FMT_shadowName", new String[]{""});
-
-    /** JTreeOperator of tree where node lives */    
+    
+    /** JTreeOperator of tree where node lives */
     protected JTreeOperator treeOperator;
-    /** TreePath of node */    
+    /** TreePath of node */
     protected TreePath treePath;
-
+    /** Comparator used for this node instance. */
+    private Operator.StringComparator comparator;
+    
     static {
         // Checks if you run on correct jemmy version. Writes message to jemmy log if not.
         JellyVersion.checkJemmyVersion();
@@ -51,55 +57,76 @@ public class Node {
     
     /** creates new Node instance
      * @param treeOperator JTreeOperator of tree where node lives
-     * @param treePath String tree path of node */    
+     * @param treePath String tree path of node */
     public Node(JTreeOperator treeOperator, String treePath) {
         this(treeOperator, treeOperator.findPath(treePath, "|"));
     }
     
     /** creates new Node instance
      * @param treeOperator JTreeOperator of tree where node lives
-     * @param treePath String tree path of node     
-     * @param indexes String list of indexes of nodes in each level */    
+     * @param treePath String tree path of node
+     * @param indexes String list of indexes of nodes in each level */
     public Node(JTreeOperator treeOperator, String treePath, String indexes) {
         this(treeOperator, treeOperator.findPath(treePath, indexes, "|"));
     }
     
     /** creates new Node instance
      * @param parent parent Node
-     * @param treeSubPath String tree sub-path from parent */    
+     * @param treeSubPath String tree sub-path from parent */
     public Node(Node parent, String treeSubPath) {
         this(parent.tree(), parent.findSubPath(treeSubPath, "|"));
     }
     
     /** creates new Node instance
      * @param parent parent Node
-     * @param childIndex int index of child under parent node */    
-     public Node(Node parent, int childIndex) {
+     * @param childIndex int index of child under parent node */
+    public Node(Node parent, int childIndex) {
         this(parent.tree(), parent.tree().getChildPath(parent.getTreePath(), childIndex));
     }
     
     /** creates new Node instance
      * @param treeOperator JTreeOperator of tree where node lives
-     * @param path TreePath of node */    
+     * @param path TreePath of node */
     public Node(JTreeOperator treeOperator, TreePath path) {
         this.treeOperator=treeOperator;
         this.treePath=path;
     }
     
+    /** Sets comparator fot this node. Comparator is used for all methods
+     * after this method is called.
+     * @param comparator new comparator to be set (e.g.
+     *                   new Operator.DefaultStringComparator(true, true);
+     *                   to search string item exactly and case sensitive)
+     */
+    public void setComparator(Operator.StringComparator comparator) {
+        this.comparator = comparator;
+        tree().setComparator(comparator);
+    }
+    
+    /** Gets comparator for this node instance.
+     * @return comparator for this node instance.
+     */
+    public Operator.StringComparator getComparator() {
+        if(comparator == null) {
+            comparator = tree().getComparator();
+        }
+        return comparator;
+    }
+    
     /** getter for JTreeOperator of tree where node lives
-     * @return JTreeOperator of tree where node lives */    
+     * @return JTreeOperator of tree where node lives */
     public JTreeOperator tree() {
         return(treeOperator);
     }
     
     /** Getter for TreePath of node.
-     * @return TreePath of node */    
+     * @return TreePath of node */
     public TreePath getTreePath() {
         return(treePath);
     }
     
     /** getter for node text
-     * @return Streing node text */    
+     * @return Streing node text */
     public String getText() {
         return(treePath.getLastPathComponent().toString());
     }
@@ -113,63 +140,63 @@ public class Node {
             result += "|" + path.getPathComponent(i).toString();
         }
         return result;
-    }        
+    }
     
     /** getter for node path
-     * @return String node path */    
+     * @return String node path */
     public String getPath() {
         return convertPath(treePath);
     }
     
     /** getter for path of parent node
-     * @return String path of parent node */    
+     * @return String path of parent node */
     public String getParentPath() {
         return convertPath(treePath.getParentPath());
     }
     
     /** calls popup menu on node
-     * @return JPopupMenuOperator */    
+     * @return JPopupMenuOperator */
     public JPopupMenuOperator callPopup() {
         return new JPopupMenuOperator(treeOperator.callPopupOnPath(treePath));
     }
     
     /** performs action on node through main menu
-     * @param menuPath main menu path of action */    
+     * @param menuPath main menu path of action */
     public void performMenuAction(String menuPath) {
         new Action(menuPath, null).performMenu(this);
     }
     
     /** performs action on node through popup menu
-     * @param popupPath popup menu path of action */    
+     * @param popupPath popup menu path of action */
     public void performPopupAction(String popupPath) {
         new Action(null, popupPath).performPopup(this);
     }
     
     /** performs action on node through API menu
-     * @param systemActionClass String class name of SystemAction (use null value if API mode is not supported) */    
+     * @param systemActionClass String class name of SystemAction (use null value if API mode is not supported) */
     public void performAPIAction(String systemActionClass) {
         new Action(null, null, systemActionClass).performAPI(this);
     }
     
     /** performs action on node through main menu
-     * @param menuPath main menu path of action */    
+     * @param menuPath main menu path of action */
     public void performMenuActionNoBlock(String menuPath) {
         new ActionNoBlock(menuPath, null).performMenu(this);
     }
     
     /** performs action on node through popup menu
-     * @param popupPath popup menu path of action */    
+     * @param popupPath popup menu path of action */
     public void performPopupActionNoBlock(String popupPath) {
         new ActionNoBlock(null, popupPath).performPopup(this);
     }
     
     /** performs action on node through API menu
-     * @param systemActionClass String class name of SystemAction (use null value if API mode is not supported) */    
+     * @param systemActionClass String class name of SystemAction (use null value if API mode is not supported) */
     public void performAPIActionNoBlock(String systemActionClass) {
         new ActionNoBlock(null, null, systemActionClass).performAPI(this);
     }
     
-    /** selects node */    
+    /** selects node */
     public void select() {
         tree().selectPath(getTreePath());
         // sleep to workaround IDE's behavior. IDE consider as double click
@@ -182,21 +209,21 @@ public class Node {
         }
     }
     
-    /** adds node into set of selected nodes */    
+    /** adds node into set of selected nodes */
     public void addSelectionPath() {
         tree().addSelectionPath(getTreePath());
     }
     
     /** tests if node is leaf
-     * @return boolean true when node does not have children */    
+     * @return boolean true when node does not have children */
     public boolean isLeaf() {
         return tree().getChildCount(treePath)<1;
     }
     
     /** returns list of names of children
-     * @return String[] list of names of children */    
+     * @return String[] list of names of children */
     public String[] getChildren() {
-	tree().expandPath(treePath);
+        tree().expandPath(treePath);
         Object o[]=tree().getChildren(treePath.getLastPathComponent());
         if (o==null) return new String[0];
         String s[]=new String[o.length];
@@ -206,28 +233,28 @@ public class Node {
     }
     
     /** determines if current node is link
-     * @return boolean true if node is link */    
+     * @return boolean true if node is link */
     public boolean isLink() {
         return getText().endsWith(linkSuffix);
     }
     
     /** verifies if node is still present. It expands parent path of the node
      * during verification.
-     * @return boolean true when node is still present */    
+     * @return boolean true when node is still present */
     public boolean isPresent() {
         tree().expandPath(treePath.getParentPath());
         return tree().getRowForPath(treePath)>=0;
     }
     
     /** verifies node's popup path for presence (without invocation)
-     * @param popupPath String popup path */    
+     * @param popupPath String popup path */
     public void verifyPopup(String popupPath) {
         verifyPopup(new String[]{popupPath});
     }
     
     /** verifies node's popup paths for presence (without invocation)
      * @param popupPaths String[] popup paths
-     */    
+     */
     public void verifyPopup(String[] popupPaths) {
         //invocation of root popup
         final JPopupMenuOperator popup=callPopup();
@@ -252,67 +279,67 @@ public class Node {
             }
         });
     }
-
+    
     class StringArraySubPathChooser implements JTreeOperator.TreePathChooser {
-	String[] arr;
-	int[] indices;
-	JTreeOperator.StringComparator comparator;
+        String[] arr;
+        int[] indices;
+        JTreeOperator.StringComparator comparator;
         TreePath parentPath;
         int parentPathCount;
-	StringArraySubPathChooser(TreePath parentPath, String[] arr, int[] indices, JTreeOperator.StringComparator comparator) {
-	    this.arr = arr;
-	    this.comparator = comparator;
-	    this.indices = indices;
+        StringArraySubPathChooser(TreePath parentPath, String[] arr, int[] indices, JTreeOperator.StringComparator comparator) {
+            this.arr = arr;
+            this.comparator = comparator;
+            this.indices = indices;
             this.parentPath=parentPath;
             this.parentPathCount=parentPath.getPathCount();
         }
         /** implementation of JTreeOperator.TreePathChooser
          * @param path TreePath
          * @param indexInParent int
-         * @return boolean */        
-	public boolean checkPath(TreePath path, int indexInParent) {
-	    return(path.getPathCount() == arr.length + parentPathCount &&
-		   hasAsParent(path, indexInParent));
+         * @return boolean */
+        public boolean checkPath(TreePath path, int indexInParent) {
+            return(path.getPathCount() == arr.length + parentPathCount &&
+            hasAsParent(path, indexInParent));
         }
         /** implementation of JTreeOperator.TreePathChooser
          * @param path TreePath
          * @param indexInParent int
-         * @return boolean */        
-	public boolean hasAsParent(TreePath path, int indexInParent) {
+         * @return boolean */
+        public boolean hasAsParent(TreePath path, int indexInParent) {
             if (path.getPathCount()<=parentPathCount)
                 return path.isDescendant(parentPath);
             if(arr.length+parentPathCount < path.getPathCount()) {
                 return(false);
             }
             if(indices.length >= path.getPathCount()-parentPathCount &&
-               indices[path.getPathCount()-parentPathCount-1] != indexInParent) {
+            indices[path.getPathCount()-parentPathCount-1] != indexInParent) {
                 return(false);
             }
-	    Object[] comps = path.getPath();
-	    for(int i = parentPathCount; i < comps.length; i++) {
-		if(!comparator.equals(comps[i].toString(), arr[i-parentPathCount])) {
-		    return(false);
-		}
-	    }
-	    return(true);
+            Object[] comps = path.getPath();
+            for(int i = parentPathCount; i < comps.length; i++) {
+                if(!comparator.equals(comps[i].toString(), arr[i-parentPathCount])) {
+                    return(false);
+                }
+            }
+            return(true);
         }
         
         /** implementation of JTreeOperator.TreePathChooser
-         * @return String description */        
-	public String getDescription() {
-	    String desc = "";
+         * @return String description */
+        public String getDescription() {
+            String desc = "";
             Object parr[]=parentPath.getPath();
-	    for(int i = 0; i < parr.length; i++) {
-		desc = desc + parr[i].toString() + ", ";
-	    }
-	    for(int i = 0; i < arr.length; i++) {
-		desc = desc + arr[i] + ", ";
-	    }
-	    if(desc.length() > 0) {
-		desc = desc.substring(0, desc.length() - 2);
-	    }
-	    return("[ " + desc + " ]");
-	}
+            for(int i = 0; i < parr.length; i++) {
+                desc = desc + parr[i].toString() + ", ";
+            }
+            for(int i = 0; i < arr.length; i++) {
+                desc = desc + arr[i] + ", ";
+            }
+            if(desc.length() > 0) {
+                desc = desc.substring(0, desc.length() - 2);
+            }
+            return("[ " + desc + " ]");
+        }
         
     }
     
@@ -326,49 +353,49 @@ public class Node {
         int indexInt[]= new int[indexStr.length];
         for (int i=0; i<indexStr.length; i++)
             indexInt[i]=Integer.parseInt(indexStr[i]);
-        return o.findPath(new Node.StringArraySubPathChooser(treePath, o.parseString(subPath, delimiter), indexInt, o.getComparator()));
+        return o.findPath(new Node.StringArraySubPathChooser(treePath, o.parseString(subPath, delimiter), indexInt, getComparator()));
     }
     
-    /** Expands current node to see children */    
+    /** Expands current node to see children */
     public void expand() {
         treeOperator.expandPath(treePath);
         waitExpanded();
     }
     
-    /** Collapse current node to hide children */    
+    /** Collapse current node to hide children */
     public void collapse() {
         treeOperator.collapsePath(treePath);
         waitCollapsed();
     }
     
-    /** Waits for node to be expanded */    
+    /** Waits for node to be expanded */
     public void waitExpanded() {
         treeOperator.waitExpanded(treePath);
     }
     
-    /** Waits for node to be collapsed */    
+    /** Waits for node to be collapsed */
     public void waitCollapsed() {
         treeOperator.waitCollapsed(treePath);
     }
     
     /** Informs if current node is expanded
      * @return boolean true when node is expanded
-     */    
+     */
     public boolean isExpanded() {
         return treeOperator.isExpanded(treePath);
     }
     
     /** Informs if current node is collapsed
      * @return boolean true when node is collapsed
-     */    
+     */
     public boolean isCollapsed() {
         return treeOperator.isCollapsed(treePath);
     }
-         
+    
 /*    protected Action[] getActions() {
         return null;
     }
-    
+ 
     public boolean hasAction(Class actionClass) {
         Action actions[] = getActions();
         for (int i=0; actions!=null && i<actions.length; i++)
@@ -376,8 +403,10 @@ public class Node {
                 return true;
         return false;
     }*/
- 
-    /** verifies node's popup paths (of all actions) for presence (without invocation) */    
+    
+    /** verifies node's popup paths (of all actions) for presence (without invocation)
+     * @param actions array of actions to be verified
+     */
     public void verifyPopup(Action actions[]) {
         ArrayList popupPaths=new ArrayList();
         String path;
@@ -390,4 +419,55 @@ public class Node {
         verifyPopup((String[])popupPaths.toArray(new String[0]));
     }
     
+    
+    /** Checks whether child with specified name is present under this node.
+     * @param childName name of child node
+     * @return true if child is present; false otherwise
+     */
+    public boolean isChildPresent(String childName) {
+        String[] children = this.getChildren();
+        for(int i=0;i<children.length;i++) {
+            if(getComparator().equals(children[i], childName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /** Waits until child with specified name is not present under this node.
+     * It can throw TimeoutExpiredException, if child is still present.
+     * @param childName name of child node
+     */
+    public void waitChildNotPresent(final String childName) {
+        try {
+            new Waiter(new Waitable() {
+                public Object actionProduced(Object anObject) {
+                    return isChildPresent(childName) ? null : Boolean.TRUE;
+                }
+                public String getDescription() {
+                    return("Child \""+childName+"\" present under parent \""+getPath()+"\"");
+                }
+            }).waitAction(null);
+        } catch (InterruptedException e) {
+            throw new JemmyException("Interrupted.", e);
+        }
+    }
+    
+    /** Waits until this node is no longer present.
+     * It can throw TimeoutExpiredException, if the node is still present.
+     */
+    public void waitNotPresent() {
+        try {
+            new Waiter(new Waitable() {
+                public Object actionProduced(Object anObject) {
+                    return isPresent() ? null : Boolean.TRUE;
+                }
+                public String getDescription() {
+                    return("Wait node "+getPath()+" not present.");
+                }
+            }).waitAction(null);
+        } catch (InterruptedException e) {
+            throw new JemmyException("Interrupted.", e);
+        }
+    }
 }
