@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,31 +17,18 @@ import java.io.*;
 import java.net.URL;
 
 import java.util.ArrayList;
-import java.util.ResourceBundle;
 import javax.swing.DefaultListModel;
-import javax.swing.SwingUtilities;
-import java.awt.Image;
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import org.netbeans.api.javahelp.Help;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.SplittedPanel;
 import org.openide.windows.TopComponent;
-import org.openide.windows.Mode;
-import org.openide.windows.Workspace;
-import org.openide.windows.WindowManager;
 import org.openide.util.RequestProcessor;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 import org.openide.src.Element;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.*;
-
-import org.openide.execution.NbClassPath;
-import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 import org.openide.DialogDisplayer;
@@ -251,7 +238,11 @@ public class IndexSearch
         
         initAccessibility();
     }
-    
+
+    public int getPersistenceType() {
+        return TopComponent.PERSISTENCE_NEVER;
+    }
+
     public HelpCtx getHelpCtx () {
         return new HelpCtx (INDEX_SEARCH_HELP_CTX_KEY);
     }
@@ -623,7 +614,6 @@ public class IndexSearch
     public static IndexSearch getDefault() {
         if ( indexSearch == null ) {
             indexSearch = new IndexSearch ();
-            Workspace workspace = WindowManager.getDefault().getCurrentWorkspace();
             org.netbeans.modules.javadoc.JavadocModule.registerTopComponent(indexSearch);
 
             indexSearch.setName( ResourceUtils.getBundledString ("CTL_SEARCH_WindowTitle") );   //NOI18N

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,17 +15,14 @@
 package org.netbeans.modules.javadoc.search;
 
 import javax.swing.JEditorPane;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Element;
-import javax.swing.text.StyledDocument;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
-import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 import org.openide.windows.TopComponent;
+
+import java.awt.*;
 
 /**
  * Try to find generated and mounted documentation for selected node.
@@ -80,7 +77,7 @@ public final class ShowDocAction extends CookieAction {
                 indexSearch.setTextToFind( toFind );
         }
         indexSearch.open ();
-        indexSearch.requestFocus();        
+        indexSearch.requestActive();
     }
 
     protected String iconResource(){
@@ -110,5 +107,9 @@ public final class ShowDocAction extends CookieAction {
             }
         }
         return n.getName();
+    }
+
+    protected boolean asynchronous() {
+        return false;
     }
 }
