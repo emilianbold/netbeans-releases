@@ -1,6 +1,8 @@
 form/src/org/netbeans/modules/form/Bundle.properties
 form/src/org/netbeans/modules/form/actions/Bundle.properties
 form/src/org/netbeans/modules/form/compat2/border/Bundle.properties
+form/src/org/netbeans/modules/form/compat2/layouts/Bundle.properties
+form/src/org/netbeans/modules/form/compat2/layouts/support/Bundle.properties
 form/src/org/netbeans/modules/form/editors/Bundle.properties
 form/src/org/netbeans/modules/form/editors2/Bundle.properties
 form/src/org/netbeans/modules/form/layoutsupport/Bundle.properties
