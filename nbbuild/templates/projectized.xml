@@ -370,6 +370,11 @@ Microsystems, Inc. All Rights Reserved.
             <fileset includes="${fix.class}*.class" dir="${build.classes.dir}"/>
         </nbjpdareload>
     </target>
+    <target name="debug-fix-test-nb" if="netbeans.home" depends="init,-pre-debug-fix,compile-test-single">
+        <nbjpdareload>
+            <fileset includes="${fix.class}*.class" dir="${build.test.unit.classes.dir}"/>
+        </nbjpdareload>
+    </target>
 
     <target name="javahelp" depends="init" if="has.javahelp">
         <mkdir dir="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}"/>
