@@ -23,6 +23,7 @@ import org.netbeans.api.web.dd.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
@@ -347,7 +348,9 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
         
     public String getUrl () {
-        return "";
+         EditableProperties ep =  helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+         String warName = ep.getProperty(WebProjectProperties.WAR_NAME);
+         return warName == null ? "" : ("/"+warName); //NOI18N
     }
 
     public boolean isManifestChanged (long timestamp) {
