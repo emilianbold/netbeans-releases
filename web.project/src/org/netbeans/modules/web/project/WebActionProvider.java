@@ -38,11 +38,16 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.deployment.impl.projects.*;
-import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.execution.*;
-
+import org.netbeans.api.debugger.*;
+import org.netbeans.api.debugger.jpda.*;
+import javax.enterprise.deploy.spi.Target;
+import org.netbeans.modules.j2ee.deployment.impl.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
+import org.openide.*;
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
@@ -112,11 +117,37 @@ class WebActionProvider implements ActionProvider {
         String[] targetNames = (String[])commands.get(command);
         
         if (command.equals (COMMAND_RUN)) {             
+            if (isDebugged()) {
+                NotifyDescriptor nd;
+                nd = new NotifyDescriptor.Confirmation(
+                            NbBundle.getMessage(WebActionProvider.class, "MSG_SessionRunning"),
+                            NotifyDescriptor.OK_CANCEL_OPTION);
+                Object o = DialogDisplayer.getDefault().notify(nd);
+                if (o.equals(NotifyDescriptor.OK_OPTION)) {            
+                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
+                } else {
+                    return;
+                }
+            }            
             p = new Properties();
             p.setProperty("client.urlPart", project.getWebModule().getUrl());
+            
         } else if (command.equals (COMMAND_DEBUG)) {
+            if (isDebugged()) {
+                NotifyDescriptor nd;
+                nd = new NotifyDescriptor.Confirmation(
+                            NbBundle.getMessage(WebActionProvider.class, "MSG_FinishSession"),
+                            NotifyDescriptor.OK_CANCEL_OPTION);
+                Object o = DialogDisplayer.getDefault().notify(nd);
+                if (o.equals(NotifyDescriptor.OK_OPTION)) {            
+                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
+                } else {
+                    return;
+                }
+            }
             p = new Properties();
             p.setProperty("client.urlPart", project.getWebModule().getUrl());
+            
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] files = findSources( context );
             p = new Properties();
@@ -125,6 +156,7 @@ class WebActionProvider implements ActionProvider {
             } else {
                 return;
             }
+            
         } else {
             p = null;
             if (targetNames == null) {
@@ -172,6 +204,46 @@ class WebActionProvider implements ActionProvider {
         } else {
             return null;
         }
+    }
+    
+    private boolean isDebugged() {
+        
+        J2eeDeploymentLookup jdl = (J2eeDeploymentLookup)project.getLookup().lookup(J2eeDeploymentLookup.class);
+        J2eeProfileSettings settings = jdl.getJ2eeProfileSettings();
+        DeploymentTargetImpl target = new DeploymentTargetImpl(settings, jdl);
+
+        ServerString server = target.getServer();
+        
+        Target t = null;
+        Target[] targs = server.toTargets();
+        if (targs != null && targs.length > 0) {
+            t = targs[0];
+        }
+
+        ServerDebugInfo sdi = server.getServerInstance().getStartServer().getDebugInfo(null);
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        
+        for (int i=0; i < sessions.length; i++) {
+            Session s = sessions[i];
+            if (s != null) {
+                Object o = s.lookupFirst(AttachingDICookie.class);
+                if (o != null) {
+                    AttachingDICookie attCookie = (AttachingDICookie)o;
+                    if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
+                        if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                            if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
+                                return true;
+                            }
+                        } else {
+                            if (attCookie.getPortNumber() == sdi.getPort()) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
     
 //    private FileObject[] findJSPs(Lookup context) {
