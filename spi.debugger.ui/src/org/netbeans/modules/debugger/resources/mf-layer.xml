@@ -252,6 +252,7 @@ SystemFileSystem
             <file name="mixed_BP.xml" url="mixed_BP.xml"/>
             <file name="PC_mixedBP.xml" url="PC_mixedBP.xml"/>
             <file name="PC_anyBP.xml" url="PC_anyBP.xml"/>
+            <file name="CombCallSite.xml" url="CombCallSite.xml"/>
 
 	<!-- following are invisible annotation types which are used for combining -->
             <file name="_diff_BP.xml" url="_diff_BP.xml"/>
