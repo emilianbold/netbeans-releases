@@ -47,8 +47,9 @@ final class ShareableInputSource extends InputSource {
     }
 
     public InputStream getByteStream() {
-        if (initialized[1] == false) {
-           stream = new ByteStream(peer.getByteStream(), bufferSize);
+        InputStream in = peer.getByteStream();
+        if (initialized[1] == false && in != null) {
+           stream = new ByteStream(in , bufferSize);
            stream.mark(bufferSize);
            initialized[1] = true;
         }
