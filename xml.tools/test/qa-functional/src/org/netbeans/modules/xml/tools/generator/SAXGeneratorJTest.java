@@ -180,14 +180,7 @@ public class SAXGeneratorJTest extends JXTest {
     }
     
     // LIB ////////////////////////////////////////////////////////////////////
-    
-    private void deleteData(String path) {
-        try {
-        DataObject dao = TestUtil.THIS.findData(path);
-        if (dao != null) dao.delete();
-        } catch (Exception ex) {}
-    }
-    
+
     /**  @author David Kaspar */
     public String dumpFile(DataObject dao) {
         SourceCookie sc = (SourceCookie) dao.getCookie(SourceCookie.class);
