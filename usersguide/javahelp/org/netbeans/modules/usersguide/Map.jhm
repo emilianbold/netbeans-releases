@@ -396,6 +396,7 @@
 <mapID target="jsp_validate" url="web/create_jsp/jsp_validate.html" />
 <mapID target="jsp_servletview" url="web/create_jsp/jsp_servletview.html" />
 <mapID target="jsp_debug" url="web/jsp/jsp_debug.html" />
+<mapID target="jsp_encode" url="web/create_jsp/jsp_encoding.html" />
 <mapID target="quickref_webmod" url="web/overvw/mod_quickref.html" />
 <mapID target="servlet_create" url="web/servlet/servlet_create.html" />	
 <mapID target="servlet_edit" url="web/servlet/servlet_edit.html" />	
@@ -447,7 +448,7 @@
 <mapID target="ProjectTab_Projects" url="pending.html" />
 
 <!-- New Wizard tempaltes page -->
-<mapID target="org.netbeans.modules.project.ui.TemplatesPanel" url="pending.html" />
+<mapID target="org.netbeans.modules.project.ui.TemplatesPanel" url="project/proj_templates.html" />
 
 <!-- New J2SE lib, J2SE app, and J2SE project from existing sources -->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_APP" url="pending.html" />
