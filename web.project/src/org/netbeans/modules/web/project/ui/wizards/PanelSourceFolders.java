@@ -176,7 +176,8 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             try { if (r != null) r.close (); } catch (java.io.IOException ioe) { // ignore this 
             }
         }
-        return null;
+        // AB: fix for #56167: assume the class in the default package
+        return "";
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
