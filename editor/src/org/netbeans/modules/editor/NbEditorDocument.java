@@ -34,8 +34,8 @@ NbDocument.Printable, NbDocument.CustomEditor {
 
   PrintSupport printSupport;
 
-  public NbEditorDocument(Class kitClass, Syntax syntax) {
-    super(kitClass, syntax);
+  public NbEditorDocument(Class kitClass) {
+    super(kitClass);
     addStyleToLayerMapping(NbDocument.BREAKPOINT_STYLE_NAME,
         NbDocument.BREAKPOINT_STYLE_NAME + "Layer:5000");
     addStyleToLayerMapping(NbDocument.ERROR_STYLE_NAME,
@@ -82,6 +82,7 @@ NbDocument.Printable, NbDocument.CustomEditor {
 
 /*
  * Log
+ *  10   Gandalf   1.9         9/10/99  Miloslav Metelka 
  *  9    Gandalf   1.8         8/27/99  Miloslav Metelka 
  *  8    Gandalf   1.7         7/9/99   Miloslav Metelka 
  *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
