@@ -18,6 +18,7 @@ import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
@@ -43,6 +44,7 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
     private ReferenceHelper helper;
     private AntProjectHelper antHelper;
     private static final String SERVICE_LOCATOR_PROPERTY = "project.serviceLocator.class"; //NOI18N
+    private WebApp webApp;
     
     public WebContainerImpl(Project p, ReferenceHelper helper, AntProjectHelper antHelper) {
         webProject = p;
@@ -60,23 +62,19 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
     
     
     private String addReference(Object ref, AntArtifact target) throws IOException {
-         BaseBean bb = findDD();
-         // Using basebean here as the web dd implementation classes 
-         // perform downcasting. Pavel / Milan can this be resolved
-         // this idiom will be used for many other enterprise resources 
          String refName = null;
          if (ref instanceof EjbRef) {
             EjbRef ejbRef = (EjbRef) ref;
             refName = getUniqueName(getWebApp(), "EjbRef", "EjbRefName", 
                     ejbRef.getEjbRefName());
             ejbRef.setEjbRefName(refName);
-            bb.addValue("EjbRef", ref);
+            getWebApp().addEjbRef(ejbRef);
          } else {
             EjbLocalRef ejbRef = (EjbLocalRef) ref;
             refName = getUniqueName(getWebApp(), "EjbLocalRef", "EjbRefName", 
                     ejbRef.getEjbRefName());
-            ejbRef.setEjbRefName(refName);  
-            bb.addValue("EjbLocalRef", ref);
+            ejbRef.setEjbRefName(refName);
+            getWebApp().addEjbLocalRef(ejbRef);
          }
          
          if(helper.addReference(target)) {
@@ -89,7 +87,7 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
                 ProjectManager.getDefault().saveProject(webProject);
         }
          
-        writeDD(bb);
+        writeDD();
         return refName;
     }
     
@@ -106,30 +104,23 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
          antHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
          ProjectManager.getDefault().saveProject(webProject);
     }
-    
-    private BaseBean findDD() throws IOException {
-        WebApp wa = getWebApp();
-        return DDProvider.getDefault().getBaseBean(wa);
+
+    private WebApp getWebApp() throws IOException {
+        if (webApp==null) {
+            WebModuleImplementation jp = (WebModuleImplementation) webProject.getLookup().lookup(WebModuleImplementation.class);
+            FileObject fo = jp.getDeploymentDescriptor();
+            webApp = DDProvider.getDefault().getDDRoot(fo);
+        }
+        return webApp;
     }
     
-    private WebApp getWebApp() throws IOException {
+    private void writeDD() throws IOException {
         WebModuleImplementation jp = (WebModuleImplementation) webProject.getLookup().lookup(WebModuleImplementation.class);
         FileObject fo = jp.getDeploymentDescriptor();
-        fo.refresh();
-        return DDProvider.getDefault().getDDRootCopy(fo);
-    }
-    
-    private void writeDD(BaseBean bb) throws IOException {
-        WebModuleImplementation jp = (WebModuleImplementation) webProject.getLookup().lookup(WebModuleImplementation.class);
-        File f = FileUtil.toFile(jp.getDeploymentDescriptor());
-        bb.write(f);
+        getWebApp().write(fo);
     }
 
     public String addResourceRef(ResourceRef ref, String referencingClass) throws IOException {
-         BaseBean bb = findDD();
-         // Using basebean here as the web dd implementation classes 
-         // perform downcasting. Pavel / Milan can this be resolved
-         // this idiom will be used for many other enterprise resources 
          String resourceRefName = getUniqueName(getWebApp(), "ResourceRef", "ResRefName", //NOI18N
                                                ref.getResRefName());
          // see if jdbc resource has already been used in the app
@@ -145,8 +136,8 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
              }
          }
          ref.setResRefName(resourceRefName);
-         bb.addValue("ResourceRef", ref);
-         writeDD(bb);
+         getWebApp().addResourceRef(ref);
+         writeDD();
          return resourceRefName;
     }
 
@@ -173,15 +164,13 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
     }
 
     public String addDestinationRef(MessageDestinationRef ref, String referencingClass) throws IOException {
-        BaseBean bb = findDD();
-        // Using basebean here as the web dd implementation classes
-        // perform downcasting. Pavel / Milan can this be resolved
-        // this idiom will be used for many other enterprise resources
         String refName = getUniqueName(getWebApp(), "MessageDestinationRef", "MessageDestinationRefName", //NOI18N
                                 ref.getMessageDestinationRefName());
         ref.setMessageDestinationRefName(refName);
-        bb.addValue("MessageDestinationRef", ref);
-        writeDD(bb);
+        try {
+            getWebApp().addMessageDestinationRef(ref);
+            writeDD();
+        } catch (VersionNotSupportedException ex){}
         return refName;
     }
 
