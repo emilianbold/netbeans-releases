@@ -245,8 +245,11 @@ public final class NbMainExplorer extends CloneableTopComponent
                 // workspace where some top compoents from main explorer
                 // are already opened
                 tc = createTC(r);
-                for (Iterator iter2 = workspaces.iterator(); iter2.hasNext(); ) {
-                    tc.open((Workspace)iter2.next());
+                
+                if (tc != prjToClose) {
+                    for (Iterator iter2 = workspaces.iterator(); iter2.hasNext(); ) {
+                        tc.open((Workspace)iter2.next());
+                    }
                 }
             } 
 
