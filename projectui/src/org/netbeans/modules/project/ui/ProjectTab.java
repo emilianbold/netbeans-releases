@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,14 +16,11 @@ package org.netbeans.modules.project.ui;
 import java.awt.BorderLayout;
 import java.awt.Image;
 import java.awt.Rectangle;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,25 +34,20 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeModel;
 import org.openide.ErrorManager;
-import org.openide.actions.PopupAction;
 import org.openide.awt.StatusDisplayer;
-
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.Visualizer;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
-import org.openide.windows.*;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /** TopComponment for viewing open projects. 
  * <P>
@@ -87,10 +79,6 @@ public class ProjectTab extends TopComponent
     }
     
     public ProjectTab() {
-
-        // This should not be here but for some reason it does not work
-        // In the module installer
-        Hacks.hackFolderActions();
         
         // See #36315        
         manager = new ExplorerManager();
