@@ -283,7 +283,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module ant/browsetask..."/>
     <ant dir="../ant/browsetask" target="netbeans"/>
   </target>
-  <target name="all-apisupport" depends="all-openide,all-core/javahelp,all-java/api,all-openide/io,all-openide/loaders,all-java/srcmodel">
+  <target name="all-apisupport" depends="all-openide,all-core/javahelp,all-java/api,all-openide/io,all-openide/loaders,all-java/srcmodel,all-libs/xerces">
     <echo message="Building module apisupport..."/>
     <ant dir="../apisupport" target="netbeans"/>
   </target>
