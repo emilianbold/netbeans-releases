@@ -102,7 +102,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <file name="org-apache-tools-ant-module-AntSettings.settings" url="AntSettings.settings">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.Bundle"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
     </file>
 
