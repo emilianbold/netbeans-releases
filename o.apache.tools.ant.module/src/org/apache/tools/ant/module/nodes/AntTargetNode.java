@@ -332,8 +332,9 @@ public class AntTargetNode extends ElementNode {
     /**
      * Node displaying the sequence of all called targets when executing.
      */
-    public static class BuildSequenceProperty extends org.openide.nodes.Node.Property {
+    public static class BuildSequenceProperty extends org.openide.nodes.PropertySupport.ReadOnly {
         
+        /** Target Element of the build. */
         protected org.w3c.dom.Element el;
                 
         /** Creates new BuildSequenceProperty.
@@ -341,29 +342,45 @@ public class AntTargetNode extends ElementNode {
          * @param name the name of the target.
          * @param proj AntProjectCookie of the Ant file
          */
-        public BuildSequenceProperty (Element el) { //, String name, AntProjectCookie proj) {
-            super (String.class);
+        public BuildSequenceProperty (Element el) {
+            super ("sequenceproperty",
+                   String.class,
+                   NbBundle.getMessage (AntTargetNode.class, "PROP_target_sequence"),
+                   NbBundle.getMessage (AntTargetNode.class, "HINT_target_sequence")
+                  );
             this.el = el;
-            this.setDisplayName (NbBundle.getMessage (AntTargetNode.class, "PROP_target_sequence"));
-            this.setShortDescription (NbBundle.getMessage (AntTargetNode.class, "HINT_target_sequence"));
         }
-              
+
+        /** Returns the target of this BuildSequenceProperty. */
+        public Element getTarget() {
+            return el;
+        }
+        
         /** Computes the dependencies of all called targets and returns an ordered
          * sequence String.
+         * @param target the target that gets executed
          */
-        protected String computeTargetDependencies() {
+        protected String computeTargetDependencies(org.w3c.dom.Element target) {
+            if (target == null) {
+                return "";
+            }
+            
             // get ProjectElement
-            Element proj = (Element) el.getParentNode ();
+            Element proj = (Element) target.getParentNode ();
             if (proj == null) {
                 // just return current target name
-                return el.getAttribute ("name");
+                return target.getAttribute ("name"); // NOI18N
             } else {
                 // List with all called targets. the last called target is the first
                 // in the list
                 List callingList = new LinkedList(); 
                 // add this target.
-                addTarget(callingList, el, 0, proj); // add main target
-                return getReverseString(callingList);
+                callingList = addTarget (callingList, target, 0, proj);
+                if (callingList != null) {
+                    return getReverseString (callingList);
+                } else {
+                    return NbBundle.getMessage (AntProjectNode.class, "MSG_target_sequence_illegaldepends");
+                }
             }
         }
 
@@ -372,14 +389,16 @@ public class AntTargetNode extends ElementNode {
          * @param target the target that should be added
          * @param pos position where this target should be inserted
          * @projectElement the Element of the Ant project.
+         *
+         * @return list with all targets or null if a target was not found.
          */
         protected List addTarget(List runningList, Element target, int pos, Element projectElement) {
-            String targetName = target.getAttribute ("name"); //getName();
+            String targetName = target.getAttribute ("name"); // NOI18N
             if (targetName == null) return runningList;
             
             // search target, skip it if found
-            for (int x=0; x < runningList.size(); x++) {
-                if (targetName.equals(runningList.get(x))) {
+            for (int x=0; x < runningList.size (); x++) {
+                if (targetName.equals (runningList.get(x))) {
                     return runningList;
                 }
             }
@@ -387,15 +406,18 @@ public class AntTargetNode extends ElementNode {
             runningList.add(pos, targetName);
             
             // check dependenciesList
-            String dependsString = target.getAttribute ("depends");
+            String dependsString = target.getAttribute ("depends"); // NOI18N
             if (dependsString == null) return runningList;
             
             // add each target of the dependencies List
-            StringTokenizer st = new StringTokenizer(dependsString, ",");
+            StringTokenizer st = new StringTokenizer(dependsString, ", "); // NOI18N
             while (st.hasMoreTokens()) {
                 Element dependsTarget = getTargetElement(st.nextToken(), projectElement);
                 if (dependsTarget != null) {
                     addTarget(runningList, dependsTarget, (pos + 1), projectElement);
+                } else {
+                    // target is missing, we return null to indicate that something is wrong
+                    return null;
                 }
             }
             
@@ -403,13 +425,14 @@ public class AntTargetNode extends ElementNode {
         }
         
         /** Returns the Element of a target given by its name. */
-        public static Element getTargetElement(String targetName, Element projectElement) {
-            NodeList nl = projectElement.getElementsByTagName ("target"); // NOI18N
+        protected Element getTargetElement(String targetName, Element projectElement) {
+            NodeList nl = projectElement.getChildNodes();
             for (int i = 0; i < nl.getLength (); i++) {
-                Element target = (Element) nl.item (i);
-                String name = target.getAttribute ("name"); // NOI18N
-                if (targetName.equals (name)) {
-                    return target;
+                if (nl.item (i) instanceof Element) {
+                    Element el = (Element) nl.item (i);
+                    if (el.getTagName().equals("target") && el.getAttribute("name").equals(targetName)) { // NOI18N
+                        return el;
+                    }
                 }
             }
             return null;
@@ -420,26 +443,14 @@ public class AntTargetNode extends ElementNode {
             StringBuffer sb = new StringBuffer ();
             for (int x= (l.size() - 1); x > -1; x--) {
                 sb.append (l.get(x));
-                if (x > 0) sb.append (", ");
+                if (x > 0) sb.append (", "); // NOI18N
             }
             return sb.toString ();
         }
         
-        public void setValue (Object o) {
-            // do nothing
-        }
         /** Returns the value of this property. */
         public Object getValue () {
-            return computeTargetDependencies();
-        }
-
-        /** Returns always false. */
-        public boolean canWrite() {
-            return false;
-        }
-        /** See Node.Propery. */
-        public boolean canRead() {
-            return true;
+            return computeTargetDependencies(getTarget());
         }
     }
 }

@@ -240,14 +240,7 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         prop = new ProjectBasedirProperty (bundle.getString ("PROP_basedir"), bundle.getString ("HINT_basedir"));
         props.put (prop);
         // id prop unnecessary, since project name functions as an ID
-        // Build sequence
-        Element projElement = proj.getProjectElement ();
-        if (projElement != null && projElement.getAttribute("default") != null) {
-            Element defTarget = AntTargetNode.BuildSequenceProperty.getTargetElement(projElement.getAttribute("default"), projElement);
-            if (defTarget != null) {
-                props.put (new AntTargetNode.BuildSequenceProperty(defTarget));
-            }
-        }
+        props.put (new ProjectBuildSequenceProperty(proj.getProjectElement()));
     }
 
     public void propertyChange (PropertyChangeEvent evt) {
@@ -354,10 +347,37 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
     
     /** Returns true if the Antscript represented by the passed cookie is read-only. */
     public static boolean isScriptReadOnly(AntProjectCookie cookie) {
-        if (cookie.getFileObject() != null) {
+        if (cookie != null && cookie.getFileObject() != null) {
             return cookie.getFileObject().isReadOnly();
         } else {
             return ! cookie.getFile().canWrite();
+        }
+    }
+    
+    /** Property displaying the build sequence of the whole project. */
+    public static class ProjectBuildSequenceProperty extends AntTargetNode.BuildSequenceProperty {
+        /** Creates new ProjectBuildSequenceProperty.
+         * @param elem the project Element.
+         */
+        public ProjectBuildSequenceProperty(Element elem) {
+            super(elem);
+        }
+        
+        /** Override getTarget of superclass to find default target. */
+        public Element getTarget() {
+            if (el != null && el.getAttribute("default") != null) { // NOI18N
+                return getTargetElement(el.getAttribute("default"), el); // NOI18N
+            }
+            return null;
+        }
+        
+        /** Returns special String in case of missing default target. */
+        public Object getValue() {
+            Element el = getTarget();
+            if (el == null) {
+                return NbBundle.getMessage (AntProjectNode.class, "MSG_defaulttarget_missing");
+            }
+            return super.getValue();
         }
     }
 }
