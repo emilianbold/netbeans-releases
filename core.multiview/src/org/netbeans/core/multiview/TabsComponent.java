@@ -15,17 +15,20 @@ package org.netbeans.core.multiview;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.event.KeyEvent;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.*;
 import javax.swing.JToggleButton.ToggleButtonModel;
+import javax.swing.KeyStroke;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -166,7 +169,14 @@ class TabsComponent extends JPanel {
         button.setPreferredSize(new Dimension(dim.width,height+6));   
 //        button.setMinimumSize(new Dimension(dim.width,height+6));
 //        button.setMaximumSize(new Dimension(dim.width,height+6));
-        
+        KeyStroke stroke = (KeyStroke)GetLeftEditorAction.getSharedAccelerator("getLeftEditor"); //NOI18N
+        KeyStroke stroke2 = (KeyStroke)GetLeftEditorAction.getSharedAccelerator("getRightEditor");//NOI18N
+        String key1 = stroke == null ? "" : KeyEvent.getKeyModifiersText(stroke.getModifiers()) + "+" + KeyEvent.getKeyText(stroke.getKeyCode());//NOI18N
+        String key2 = stroke2 == null ? "" : KeyEvent.getKeyModifiersText(stroke2.getModifiers()) + "+" + KeyEvent.getKeyText(stroke2.getKeyCode());//NOI18N
+        button.setToolTipText(NbBundle.getMessage(TabsComponent.class, "TabButton.tooltip",//NOI18N
+                              description.getDisplayName(), 
+                              key1,
+                              key2));
         button.setFocusable(true);
         button.setFocusPainted(true);
         return button;
