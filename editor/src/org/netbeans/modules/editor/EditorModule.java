@@ -70,6 +70,7 @@ import org.openide.cookies.SourceCookie;
 import org.netbeans.modules.editor.java.JCUpdater;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.java.PDCustomizer;
+import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.JavaOptions;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileSystem;
@@ -319,7 +320,9 @@ public class EditorModule extends ModuleInstall {
                 InstanceCookie cookie = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
                 Class kitClass = cookie.instanceClass();
                 if(EditorKit.class.isAssignableFrom(kitClass)) {
-                    return BaseKit.getKit(kitClass);
+                    synchronized (AllOptionsFolder.class){
+                        return BaseKit.getKit(kitClass);
+                    }
                 }
             }
             catch (DataObjectNotFoundException e) {}

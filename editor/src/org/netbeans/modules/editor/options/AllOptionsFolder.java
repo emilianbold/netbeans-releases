@@ -94,51 +94,53 @@ public class AllOptionsFolder{
     }
     
     /** Gets the singleton of global options MIME folder */
-    public synchronized MIMEOptionFolder getMIMEFolder(){
-        if (mimeFolder!=null) return mimeFolder;
-        
-        FileObject f = TopManager.getDefault().getRepository().getDefaultFileSystem().
-        findResource(FOLDER+"/text/"+BaseOptions.BASE); //NOI18N
-        
-        // MIME folder doesn't exist, let's create it
-        if (f==null){
-            FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem().
-            findResource(AllOptionsFolder.FOLDER);
-            String fName = "text/"+BaseOptions.BASE; //NOI18N
-            
-            if (fo != null){
-                try{
-                    StringTokenizer stok = new StringTokenizer(fName,"/"); //NOI18N
-                    while (stok.hasMoreElements()) {
-                        String newFolder = stok.nextToken();
-                        if (fo.getFileObject(newFolder) == null)
-                            fo = fo.createFolder(newFolder);
-                        else
-                            fo = fo.getFileObject(newFolder);
+    public MIMEOptionFolder getMIMEFolder(){
+        synchronized (AllOptionsFolder.class){
+            if (mimeFolder!=null) return mimeFolder;
+
+            FileObject f = TopManager.getDefault().getRepository().getDefaultFileSystem().
+            findResource(FOLDER+"/text/"+BaseOptions.BASE); //NOI18N
+
+            // MIME folder doesn't exist, let's create it
+            if (f==null){
+                FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem().
+                findResource(AllOptionsFolder.FOLDER);
+                String fName = "text/"+BaseOptions.BASE; //NOI18N
+
+                if (fo != null){
+                    try{
+                        StringTokenizer stok = new StringTokenizer(fName,"/"); //NOI18N
+                        while (stok.hasMoreElements()) {
+                            String newFolder = stok.nextToken();
+                            if (fo.getFileObject(newFolder) == null)
+                                fo = fo.createFolder(newFolder);
+                            else
+                                fo = fo.getFileObject(newFolder);
+                        }
+                    }catch(IOException ioe){
+                        ioe.printStackTrace();
                     }
-                }catch(IOException ioe){
-                    ioe.printStackTrace();
+
+                    f = TopManager.getDefault().getRepository().getDefaultFileSystem().
+                    findResource(AllOptionsFolder.FOLDER+"/text/"+BaseOptions.BASE); //NOI18N
                 }
-                
-                f = TopManager.getDefault().getRepository().getDefaultFileSystem().
-                findResource(AllOptionsFolder.FOLDER+"/text/"+BaseOptions.BASE); //NOI18N
             }
-        }
-        
-        if (f != null) {
-            try {
-                DataObject d = DataObject.find(f);
-                DataFolder df = (DataFolder)d.getCookie(DataFolder.class);
-                if (df != null) {
-                    mimeFolder = new MIMEOptionFolder(df, getBase());
-                    return mimeFolder;
+
+            if (f != null) {
+                try {
+                    DataObject d = DataObject.find(f);
+                    DataFolder df = (DataFolder)d.getCookie(DataFolder.class);
+                    if (df != null) {
+                        mimeFolder = new MIMEOptionFolder(df, getBase());
+                        return mimeFolder;
+                    }
+                } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                    ex.printStackTrace();
                 }
-            } catch (org.openide.loaders.DataObjectNotFoundException ex) {
-                ex.printStackTrace();
             }
+
+            return null;
         }
-        
-        return null;
     }
     
     /** Returns list of installed Options. Values = options classes */
@@ -414,24 +416,25 @@ public class AllOptionsFolder{
     
     /** Updates MIME option initializer. Loads user's settings stored in XML
      *  files and updates Setting's initializers via reset method */
-    private synchronized void processInitializers(BaseOptions bo, boolean remove) {
-        
-        Settings.Initializer si = bo.getSettingsInitializer();
-        // Remove the old one
-        Settings.removeInitializer(si.getName());
-        if (!remove) { // add the new one
-            Settings.addInitializer(si, Settings.OPTION_LEVEL);
+    private void processInitializers(BaseOptions bo, boolean remove) {
+        synchronized (AllOptionsFolder.class){
+            Settings.Initializer si = bo.getSettingsInitializer();
+            // Remove the old one
+            Settings.removeInitializer(si.getName());
+            if (!remove) { // add the new one
+                Settings.addInitializer(si, Settings.OPTION_LEVEL);
+            }
+
+            // load all settings of this mime type from XML files
+            bo.loadXMLSettings();
+
+            //initialize popup menu
+            bo.initPopupMenuItems();
+
+            /* Reset the settings so that the new initializers take effect
+             * or the old are removed. */
+            Settings.reset();
         }
-
-        // load all settings of this mime type from XML files
-        bo.loadXMLSettings();
-
-        //initialize popup menu
-        bo.initPopupMenuItems();
-        
-        /* Reset the settings so that the new initializers take effect
-         * or the old are removed. */
-        Settings.reset();
     }
     
 }
