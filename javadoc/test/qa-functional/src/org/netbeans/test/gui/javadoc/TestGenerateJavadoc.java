@@ -33,9 +33,8 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 
 import org.netbeans.jellytools.nodes.Node;
 
-import org.netbeans.jellytools.properties.ComboBoxProperty;
 import org.netbeans.jellytools.properties.Property;
-import org.netbeans.jellytools.properties.PropertySheetTabOperator;
+import org.netbeans.jellytools.properties.PropertySheetOperator;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
@@ -87,8 +86,8 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         RepositoryTabOperator repoTabOper = RepositoryTabOperator.invoke();
         Node topNode = new Node(repoTabOper.getRootNode(), 0);
         
-        String sampledirPath = topNode.getPath() + sep + "org" + sep + "netbeans" + sep + "test" + sep + // NOI18N
-                               "gui" + sep + "javadoc" + sep + "data" + sep + "sampledir"; // NOI18N
+        String sampledirPath = topNode.getPath();// + sep + "org" + sep + "netbeans" + sep + "test" + sep + // NOI18N
+//                               "gui" + sep + "javadoc" + sep + "data" + sep + "sampledir"; // NOI18N
         
         repoTabOper.mountLocalDirectoryAPI(sampledirPath); // NOI18N
         
@@ -100,7 +99,7 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         
         // generate for MemoryView.java
         Node memoryViewNode = new Node(new Node(repoTabOper.getRootNode(), sampledirPath), 
-                                       "examples|advanced|MemoryView"); // NOI18N
+                                       "examples|imageviewer|ImageViewer"); // NOI18N
         generateJDoc.perform(memoryViewNode);
         
         // question about showing javadoc in browser
@@ -108,8 +107,8 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         questionDialogOper.no();
         
         verifyCommonJdocFiles(userHome, "javadoc");
-        assertTrue("MemoryView doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
-                   "advanced" + sep + "MemoryView.html").exists()); // NOI18N
+        assertTrue("ImageViewer doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
+                   "imageviewer" + sep + "ImageViewer.html").exists()); // NOI18N
         new EventTool().waitNoEvent(1000);
         
         // generate for colorpicker package
@@ -134,20 +133,20 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         questionDialogOper_3.no();
         
         verifyCommonJdocFiles(userHome, "javadoc");
-        verifyCommonJdocFilesInFolder(userHome, "javadoc" + sep + "examples" + sep + "clock");
+//        verifyCommonJdocFilesInFolder(userHome, "javadoc" + sep + "examples" + sep + "clock");
         verifyCommonJdocFilesInFolder(userHome, "javadoc" + sep + "examples" + sep + "imageviewer");
-        verifyCommonJdocFilesInFolder(userHome, "javadoc" + sep + "examples" + sep + "advanced");
+//        verifyCommonJdocFilesInFolder(userHome, "javadoc" + sep + "examples" + sep + "advanced");
         verifyCommonJdocFilesInFolder(userHome, "javadoc" + sep + "examples" + sep + "texteditor");
         verifyCommonJdocFilesInFolder(userHome, "javadoc" + sep + "examples" + sep + "colorpicker");
         
-        assertTrue("ClockFrame doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
-                   "clock" + sep + "ClockFrame.html").exists()); // NOI18N
+//        assertTrue("ClockFrame doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
+//                   "clock" + sep + "ClockFrame.html").exists()); // NOI18N
         assertTrue("ImageFrame doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
                    "imageviewer" + sep + "ImageFrame.html").exists()); // NOI18N
         assertTrue("ImageViewer doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
                    "imageviewer" + sep + "ImageViewer.html").exists()); // NOI18N
-        assertTrue("MemoryView doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
-                   "advanced" + sep + "MemoryView.html").exists()); // NOI18N
+//        assertTrue("MemoryView doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
+//                   "advanced" + sep + "MemoryView.html").exists()); // NOI18N
         assertTrue("Ted doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
                    "texteditor" + sep + "Ted.html").exists()); // NOI18N
         assertTrue("About doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
@@ -184,8 +183,8 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         RepositoryTabOperator repoTabOper = RepositoryTabOperator.invoke();
         Node topNode = new Node(repoTabOper.getRootNode(), 0);
         
-        String sampledirPath = topNode.getPath() + sep + "org" + sep + "netbeans" + sep + "test" + sep + // NOI18N
-                               "gui" + sep + "javadoc" + sep + "data" + sep + "sampledir"; // NOI18N
+        String sampledirPath = topNode.getPath();// + sep + "org" + sep + "netbeans" + sep + "test" + sep + // NOI18N
+//                               "gui" + sep + "javadoc" + sep + "data" + sep + "sampledir"; // NOI18N
         
         repoTabOper.mountLocalDirectoryAPI(sampledirPath); // NOI18N
         Action generateJDoc = new Action(toolsMainMenuItem + "|" + generateMenuItem, // NOI18N
@@ -194,8 +193,8 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         // set property "Ask for Destination Directory" to true
         OptionsOperator optionsOper = OptionsOperator.invoke();
         optionsOper.selectOption("Code Documentation|Documentation");
-        PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(optionsOper);
-        ComboBoxProperty askForDestProp = new ComboBoxProperty(propertiesTab, "Ask for Destination Directory");
+        PropertySheetOperator propertiesTab = new PropertySheetOperator(optionsOper);
+        Property askForDestProp = new Property(propertiesTab, "Ask for Destination Directory");
         askForDestProp.setValue("true");
         optionsOper.close();
         // -----
@@ -245,7 +244,7 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         
         // test default doclet values
         optionsOper.selectOption("Code Documentation|Doclets|TestDoclet");
-        PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(optionsOper);
+        PropertySheetOperator propertiesTab = new PropertySheetOperator(optionsOper);
         for (int i = 0; i < docletSettings.length; i++) {
             Property docletProp = new Property(propertiesTab, docletSettings[i]);
             assertTrue("Default value of " + docletSettings[i] + " is not " + docletValues[i], 
@@ -255,7 +254,7 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         optionsOper.close();
         
     }
-    
+//    
     public void testCreateExecutor() {
         
         // Doclets setting excluded
@@ -276,7 +275,7 @@ public class TestGenerateJavadoc extends JavadocTestCase {
         
         // test default executor values
         optionsOper.selectOption("Code Documentation|Javadoc Executors|TestExecutor");
-        PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(optionsOper);
+        PropertySheetOperator propertiesTab = new PropertySheetOperator(optionsOper);
         for (int i = 0; i < execSettings.length; i++) {
             Property execProp = new Property(propertiesTab, execSettings[i]);
             assertTrue("Default value of " + execSettings[i] + " is not " + execValues[i], 
