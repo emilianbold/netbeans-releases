@@ -14,21 +14,34 @@
 package org.netbeans.modules.ant.freeform;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -53,13 +66,11 @@ public final class Actions implements ActionProvider {
             return new String[0];
         }
         List/*<Element>*/ actions = Util.findSubElements(actionsEl);
-        List/*<String>*/ names = new ArrayList(actions.size());
+        // Use a set, not a list, since when using context you can define one action several times:
+        Set/*<String>*/ names = new LinkedHashSet(actions.size());
         Iterator it = actions.iterator();
         while (it.hasNext()) {
             Element actionEl = (Element)it.next();
-            if (Util.findElement(actionEl, "context", FreeformProjectType.NS_GENERAL) != null) { // NOI18N
-                throw new UnsupportedOperationException("XXX No support for <context> yet"); // NOI18N
-            }
             names.add(actionEl.getAttribute("name")); // NOI18N
         }
         return (String[])names.toArray(new String[names.size()]);
@@ -73,14 +84,41 @@ public final class Actions implements ActionProvider {
         }
         List/*<Element>*/ actions = Util.findSubElements(actionsEl);
         Iterator it = actions.iterator();
+        boolean foundAction = false;
         while (it.hasNext()) {
             Element actionEl = (Element)it.next();
             if (actionEl.getAttribute("name").equals(command)) { // NOI18N
-                // XXX check context, and also perhaps existence of script
-                return true;
+                foundAction = true;
+                // XXX perhaps check also existence of script
+                Element contextEl = Util.findElement(actionEl, "context", FreeformProjectType.NS_GENERAL); // NOI18N
+                if (contextEl != null) {
+                    // Check whether the context contains files all in this folder,
+                    // matching the pattern if any, and matching the arity (single/multiple).
+                    Map/*<String,FileObject>*/ selection = findSelection(contextEl, context, project);
+                    if (selection.size() == 1) {
+                        // Definitely enabled.
+                        return true;
+                    } else if (!selection.isEmpty()) {
+                        // Multiple selection; check arity.
+                        Element arityEl = Util.findElement(contextEl, "arity", FreeformProjectType.NS_GENERAL); // NOI18N
+                        assert arityEl != null : "No <arity> in <context> for " + command;
+                        if (Util.findElement(arityEl, "separated-files", FreeformProjectType.NS_GENERAL) != null) { // NOI18N
+                            // Supports multiple selection, take it.
+                            return true;
+                        }
+                    }
+                } else {
+                    // Not context-sensitive.
+                    return true;
+                }
             }
         }
-        throw new IllegalArgumentException("Unrecognized command: " + command); // NOI18N
+        if (foundAction) {
+            // Was at least one context-aware variant but did not match.
+            return false;
+        } else {
+            throw new IllegalArgumentException("Unrecognized command: " + command); // NOI18N
+        }
     }
     
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
@@ -91,20 +129,84 @@ public final class Actions implements ActionProvider {
         }
         List/*<Element>*/ actions = Util.findSubElements(actionsEl);
         Iterator it = actions.iterator();
+        boolean foundAction = false;
         while (it.hasNext()) {
             Element actionEl = (Element)it.next();
             if (actionEl.getAttribute("name").equals(command)) { // NOI18N
-                runConfiguredAction(project, actionEl);
-                return;
+                foundAction = true;
+                runConfiguredAction(project, actionEl, context);
             }
         }
-        throw new IllegalArgumentException("Unrecognized command: " + command); // NOI18N
+        if (!foundAction) {
+            throw new IllegalArgumentException("Unrecognized command: " + command); // NOI18N
+        }
+    }
+    
+    /**
+     * Find a file selection in a lookup context based on a project.xml <context> declaration.
+     * If all DataObject's (or FileObject's) in the lookup match the folder named in the declaration,
+     * and match any optional pattern declaration, then they are returned as a map from relative
+     * path to actual file object. Otherwise an empty map is returned.
+     */
+    private static Map/*<String,FileObject>*/ findSelection(Element contextEl, Lookup context, FreeformProject project) {
+        Collection/*<FileObject>*/ files = context.lookup(new Lookup.Template(FileObject.class)).allInstances();
+        if (files.isEmpty()) {
+            // Try again with DataObject's.
+            Collection/*<DataObject>*/ filesDO = context.lookup(new Lookup.Template(DataObject.class)).allInstances();
+            if (filesDO.isEmpty()) {
+                 return Collections.EMPTY_MAP;
+            }
+            files = new ArrayList(filesDO.size());
+            Iterator it = filesDO.iterator();
+            while (it.hasNext()) {
+                files.add(((DataObject) it.next()).getPrimaryFile());
+            }
+        }
+        Element folderEl = Util.findElement(contextEl, "folder", FreeformProjectType.NS_GENERAL); // NOI18N
+        assert folderEl != null : "Must have <folder> in <context>";
+        String rawtext = Util.findText(folderEl);
+        assert rawtext != null : "Must have text contents in <folder>";
+        String evaltext = project.evaluator().evaluate(rawtext);
+        if (evaltext == null) {
+            return Collections.EMPTY_MAP;
+        }
+        FileObject folder = project.helper().resolveFileObject(evaltext);
+        if (folder == null) {
+            return Collections.EMPTY_MAP;
+        }
+        Pattern pattern = null;
+        Element patternEl = Util.findElement(contextEl, "pattern", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (patternEl != null) {
+            String text = Util.findText(patternEl);
+            assert text != null : "Must have text contents in <pattern>";
+            try {
+                pattern = Pattern.compile(text);
+            } catch (PatternSyntaxException e) {
+                Util.err.annotate(e, ErrorManager.UNKNOWN, "From <pattern> in " + FileUtil.getFileDisplayName(project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH)), null, null, null); // NOI18N
+                Util.err.notify(e);
+                return Collections.EMPTY_MAP;
+            }
+        }
+        Map/*<String,FileObject>*/ result = new HashMap();
+        Iterator it = files.iterator();
+        while (it.hasNext()) {
+            FileObject file = (FileObject) it.next();
+            String path = FileUtil.getRelativePath(folder, file);
+            if (path == null) {
+                return Collections.EMPTY_MAP;
+            }
+            if (pattern != null && !pattern.matcher(path).find()) {
+                return Collections.EMPTY_MAP;
+            }
+            result.put(path, file);
+        }
+        return result;
     }
     
     /**
      * Run a project action as described by subelements <script> and <target>.
      */
-    private static void runConfiguredAction(FreeformProject project, Element actionEl) {
+    private static void runConfiguredAction(FreeformProject project, Element actionEl, Lookup context) {
         String script;
         Element scriptEl = Util.findElement(actionEl, "script", FreeformProjectType.NS_GENERAL); // NOI18N
         if (scriptEl != null) {
@@ -134,11 +236,77 @@ public final class Actions implements ActionProvider {
             // Run default target.
             targetNameArray = null;
         }
-        try {
-            ActionUtils.runTarget(scriptFile, targetNameArray, null);
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+        Properties props = new Properties();
+        Element contextEl = Util.findElement(actionEl, "context", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (contextEl != null) {
+            Map/*<String,FileObject>*/ selection = findSelection(contextEl, context, project);
+            if (selection.isEmpty()) {
+                return;
+            }
+            String separator = null;
+            if (selection.size() > 1) {
+                // Find the right separator.
+                Element arityEl = Util.findElement(contextEl, "arity", FreeformProjectType.NS_GENERAL); // NOI18N
+                assert arityEl != null : "No <arity> in <context> for " + actionEl.getAttribute("name");
+                Element sepFilesEl = Util.findElement(arityEl, "separated-files", FreeformProjectType.NS_GENERAL); // NOI18N
+                if (sepFilesEl == null) {
+                    // Only handles single files -> skip it.
+                    return;
+                }
+                separator = Util.findText(sepFilesEl);
+            }
+            Element formatEl = Util.findElement(contextEl, "format", FreeformProjectType.NS_GENERAL); // NOI18N
+            assert formatEl != null : "No <format> in <context> for " + actionEl.getAttribute("name");
+            String format = Util.findText(formatEl);
+            StringBuffer buf = new StringBuffer();
+            Iterator it = selection.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry entry = (Map.Entry) it.next();
+                if (format.equals("absolute-path")) { // NOI18N
+                    File f = FileUtil.toFile((FileObject) entry.getValue());
+                    if (f == null) {
+                        // Not a disk file??
+                        return;
+                    }
+                    buf.append(f.getAbsolutePath());
+                } else if (format.equals("relative-path")) { // NOI18N
+                    buf.append((String) entry.getKey());
+                } else {
+                    assert format.equals("java-name") : format;
+                    String path = (String) entry.getKey();
+                    int dot = path.lastIndexOf('.');
+                    String dotless;
+                    if (dot == -1 || dot < path.lastIndexOf('/')) {
+                        dotless = path;
+                    } else {
+                        dotless = path.substring(0, dot);
+                    }
+                    String javaname = dotless.replace('/', '.');
+                    buf.append(javaname);
+                }
+                if (it.hasNext()) {
+                    assert separator != null;
+                    buf.append(separator);
+                }
+            }
+            Element propEl = Util.findElement(contextEl, "property", FreeformProjectType.NS_GENERAL); // NOI18N
+            assert propEl != null : "No <property> in <context> for " + actionEl.getAttribute("name");
+            String prop = Util.findText(propEl);
+            assert prop != null : "Must have text contents in <property>";
+            props.setProperty(prop, buf.toString());
         }
+        it2 = targets.iterator();
+        while (it2.hasNext()) {
+            Element propEl = (Element)it2.next();
+            if (!propEl.getLocalName().equals("property")) { // NOI18N
+                continue;
+            }
+            String rawtext = Util.findText(propEl);
+            assert rawtext != null;
+            String evaltext = project.evaluator().evaluate(rawtext); // might be null
+            props.setProperty(propEl.getAttribute("name"), evaltext);
+        }
+        TARGET_RUNNER.runTarget(scriptFile, targetNameArray, props);
     }
     
     public static Action[] createContextMenu(FreeformProject p) {
@@ -165,6 +333,8 @@ public final class Actions implements ActionProvider {
                             displayName = cmd;
                         }
                         actions.add(ProjectSensitiveActions.projectCommandAction(cmd, displayName, null));
+                    } else if (actionEl.getLocalName().equals("separator")) { // NOI18N
+                        actions.add(null);
                     } else {
                         assert actionEl.getLocalName().equals("action") : actionEl;
                         actions.add(new CustomAction(p, actionEl));
@@ -197,7 +367,7 @@ public final class Actions implements ActionProvider {
         }
         
         public void actionPerformed(ActionEvent e) {
-            runConfiguredAction(p, actionEl);
+            runConfiguredAction(p, actionEl, Lookup.EMPTY);
         }
         
         public boolean isEnabled() {
@@ -214,6 +384,20 @@ public final class Actions implements ActionProvider {
             }
         }
         
+    }
+    
+    // Overridable for unit tests only:
+    static TargetRunner TARGET_RUNNER = new TargetRunner();
+    
+    static class TargetRunner {
+        public TargetRunner() {}
+        public void runTarget(FileObject scriptFile, String[] targetNameArray, Properties props) {
+            try {
+                ActionUtils.runTarget(scriptFile, targetNameArray, props);
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+        }
     }
     
 }

@@ -137,7 +137,6 @@ public class FreeformProjectGenerator {
             tm.name = actionEl.getAttribute("name"); // NOI18N
             List/*<Element>*/ subElems = Util.findSubElements(actionEl);
             List/*<String>*/ targetNames = new ArrayList(subElems.size());
-            List/*<TargetMapping.Context>*/ contexts = new ArrayList();
             Iterator it2 = subElems.iterator();
             while (it2.hasNext()) {
                 Element subEl = (Element)it2.next();
@@ -166,14 +165,22 @@ public class FreeformProjectGenerator {
                             ctx.folder = Util.findText(contextSubEl);
                             continue;
                         }
+                        if (contextSubEl.getLocalName().equals("pattern")) { // NOI18N
+                            ctx.pattern = Util.findText(contextSubEl);
+                            continue;
+                        }
+                        if (contextSubEl.getLocalName().equals("arity")) { // NOI18N
+                            Element sepFilesEl = Util.findElement(contextSubEl, "separated-files", FreeformProjectType.NS_GENERAL); // NOI18N
+                            if (sepFilesEl != null) {
+                                ctx.separator = Util.findText(sepFilesEl);
+                            }
+                            continue;
+                        }
                     }
-                    contexts.add(ctx);
+                    tm.context = ctx;
                 }
             }
             tm.targets = targetNames;
-            if (contexts.size() > 0) {
-                tm.contexts = contexts;
-            }
             list.add(tm);
         }
         return list;
@@ -238,28 +245,36 @@ public class FreeformProjectGenerator {
                     action.appendChild(target);
                 }
             }
-            if (tm.contexts != null && tm.contexts.size() > 0) {
-                Iterator it2 = tm.contexts.iterator();
-                while (it2.hasNext()) {
-                    Element context = doc.createElementNS(FreeformProjectType.NS_GENERAL, "context"); //NOI18N
-                    TargetMapping.Context ctx = (TargetMapping.Context)it2.next();
-                    if (ctx.property != null) {
-                        Element property = doc.createElementNS(FreeformProjectType.NS_GENERAL, "property"); //NOI18N
-                        property.appendChild(doc.createTextNode(ctx.property)); // NOI18N
-                        context.appendChild(property);
-                    }
-                    if (ctx.format != null) {
-                        Element format = doc.createElementNS(FreeformProjectType.NS_GENERAL, "format"); //NOI18N
-                        format.appendChild(doc.createTextNode(ctx.format)); // NOI18N
-                        context.appendChild(format);
-                    }
-                    if (ctx.folder != null) {
-                        Element folder = doc.createElementNS(FreeformProjectType.NS_GENERAL, "folder"); //NOI18N
-                        folder.appendChild(doc.createTextNode(ctx.folder)); // NOI18N
-                        context.appendChild(folder);
-                    }
-                    action.appendChild(context);
+            if (tm.context != null) {
+                Element context = doc.createElementNS(FreeformProjectType.NS_GENERAL, "context"); //NOI18N
+                TargetMapping.Context ctx = tm.context;
+                assert ctx.property != null;
+                Element property = doc.createElementNS(FreeformProjectType.NS_GENERAL, "property"); //NOI18N
+                property.appendChild(doc.createTextNode(ctx.property));
+                context.appendChild(property);
+                assert ctx.folder != null;
+                Element folder = doc.createElementNS(FreeformProjectType.NS_GENERAL, "folder"); //NOI18N
+                folder.appendChild(doc.createTextNode(ctx.folder));
+                context.appendChild(folder);
+                if (ctx.pattern != null) {
+                    Element pattern = doc.createElementNS(FreeformProjectType.NS_GENERAL, "pattern"); //NOI18N
+                    pattern.appendChild(doc.createTextNode(ctx.pattern));
+                    context.appendChild(pattern);
                 }
+                assert ctx.format != null;
+                Element format = doc.createElementNS(FreeformProjectType.NS_GENERAL, "format"); //NOI18N
+                format.appendChild(doc.createTextNode(ctx.format));
+                context.appendChild(format);
+                Element arity = doc.createElementNS(FreeformProjectType.NS_GENERAL, "arity"); // NOI18N
+                if (ctx.separator != null) {
+                    Element sepFilesEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "separated-files"); // NOI18N
+                    sepFilesEl.appendChild(doc.createTextNode(ctx.separator));
+                    arity.appendChild(sepFilesEl);
+                } else {
+                    arity.appendChild(doc.createElementNS(FreeformProjectType.NS_GENERAL, "one-file-only")); // NOI18N
+                }
+                context.appendChild(arity);
+                action.appendChild(context);
             }
             actions.appendChild(action);
         }
@@ -426,12 +441,15 @@ public class FreeformProjectGenerator {
         public String script;
         public List/*<String>*/ targets;
         public String name;
-        public List/*<Context>*/ contexts;
+        public Context context; // may be null
+        // XXX need to store properties too! as a map
         
         public static final class Context {
             public String property;
             public String format;
             public String folder;
+            public String pattern; // may be null
+            public String separator; // may be null
         }
     }
 

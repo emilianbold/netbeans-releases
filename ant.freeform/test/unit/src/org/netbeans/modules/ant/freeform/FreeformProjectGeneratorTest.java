@@ -158,7 +158,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         FreeformProjectGenerator.SourceFolder sf = new FreeformProjectGenerator.SourceFolder();
         sf.label = "folder3";
         sf.location = "location3";
-        sf.style = "style";
+        sf.style = "tree";
         folders.add(sf);
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
         FreeformProjectGenerator.putContextMenuAction(helper, mappings);
@@ -200,7 +200,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         customActions = FreeformProjectGenerator.getCustomContextMenuActions(helper);
         folders = FreeformProjectGenerator.getSourceFolders(helper, null);
         // style is not read by getSourceFolders and needs to be fixed here:
-        ((FreeformProjectGenerator.SourceFolder)folders.get(0)).style = "style";
+        ((FreeformProjectGenerator.SourceFolder)folders.get(0)).style = "tree";
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
         FreeformProjectGenerator.putContextMenuAction(helper, mappings);
         FreeformProjectGenerator.putCustomContextMenuActions(helper, customActions);
@@ -314,17 +314,12 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         tm.targets.add("target-1");
         tm.targets.add("target-2");
         tm.targets.add("target-3");
-        tm.contexts = new ArrayList();
         FreeformProjectGenerator.TargetMapping.Context ctx = new FreeformProjectGenerator.TargetMapping.Context();
         ctx.folder = "someFolder1";
-        ctx.format = "someFormat1";
+        ctx.format = "relative-path";
         ctx.property = "someProperty1";
-        tm.contexts.add(ctx);
-        ctx = new FreeformProjectGenerator.TargetMapping.Context();
-        ctx.folder = "someFolder2";
-        ctx.format = "someFormat2";
-        ctx.property = "someProperty2";
-        tm.contexts.add(ctx);
+        ctx.pattern = "somePattern1";
+        tm.context = ctx;
         mappings.add(tm);
         tm = new FreeformProjectGenerator.TargetMapping();
         tm.name = "second-targetName";
@@ -333,17 +328,12 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         tm.targets.add("second-target-1");
         tm.targets.add("second-target-2");
         tm.targets.add("second-target-3");
-        tm.contexts = new ArrayList();
         ctx = new FreeformProjectGenerator.TargetMapping.Context();
         ctx.folder = "second-someFolder1";
-        ctx.format = "second-someFormat1";
+        ctx.format = "java-name";
         ctx.property = "second-someProperty1";
-        tm.contexts.add(ctx);
-        ctx = new FreeformProjectGenerator.TargetMapping.Context();
-        ctx.folder = "second-someFolder2";
-        ctx.format = "second-someFormat2";
-        ctx.property = "second-someProperty2";
-        tm.contexts.add(ctx);
+        ctx.separator = "someSeparator1";
+        tm.context = ctx;
         mappings.add(tm);
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
         // test getter and setter here:
@@ -359,42 +349,34 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         Element el2 = (Element)subElements.get(0);
         assertElement(el2, "action", null, "name", "first-targetName");
         List l1 = Util.findSubElements(el2);
-        assertEquals(6, l1.size());
+        assertEquals(5, l1.size());
         assertElementArray(l1, 
-            new String[]{"script", "target", "target", "target", "context", "context"}, 
-            new String[]{"antScript", "target-1", "target-2", "target-3", null, null});
+            new String[]{"script", "target", "target", "target", "context"}, 
+            new String[]{"antScript", "target-1", "target-2", "target-3", null});
         el2 = (Element)l1.get(4);
         List l2 = Util.findSubElements(el2);
-        assertEquals(3, l2.size());
+        assertEquals(5, l2.size());
         assertElementArray(l2, 
-            new String[]{"property", "format", "folder"}, 
-            new String[]{"someProperty1", "someFormat1", "someFolder1"});
-        el2 = (Element)l1.get(5);
-        l2 = Util.findSubElements(el2);
-        assertEquals(3, l2.size());
-        assertElementArray(l2, 
-            new String[]{"property", "format", "folder"}, 
-            new String[]{"someProperty2", "someFormat2", "someFolder2"});
+            new String[]{"property", "folder", "pattern", "format", "arity"}, 
+            new String[]{"someProperty1", "someFolder1", "somePattern1", "relative-path", null});
+        assertNotNull("have <one-file-only>", Util.findElement((Element) l2.get(4), "one-file-only", FreeformProjectType.NS_GENERAL));
         // compare second target mapping
         el2 = (Element)subElements.get(1);
         assertElement(el2, "action", null, "name", "second-targetName");
         l1 = Util.findSubElements(el2);
-        assertEquals(6, l1.size());
+        assertEquals(5, l1.size());
         assertElementArray(l1, 
-            new String[]{"script", "target", "target", "target", "context", "context"}, 
-            new String[]{"second-antScript", "second-target-1", "second-target-2", "second-target-3", null, null});
+            new String[]{"script", "target", "target", "target", "context"},
+            new String[]{"second-antScript", "second-target-1", "second-target-2", "second-target-3", null});
         el2 = (Element)l1.get(4);
         l2 = Util.findSubElements(el2);
-        assertEquals(3, l2.size());
+        assertEquals(4, l2.size());
         assertElementArray(l2, 
-            new String[]{"property", "format", "folder"}, 
-            new String[]{"second-someProperty1", "second-someFormat1", "second-someFolder1"});
-        el2 = (Element)l1.get(5);
-        l2 = Util.findSubElements(el2);
-        assertEquals(3, l2.size());
-        assertElementArray(l2, 
-            new String[]{"property", "format", "folder"}, 
-            new String[]{"second-someProperty2", "second-someFormat2", "second-someFolder2"});
+            new String[]{"property", "folder", "format", "arity"}, 
+            new String[]{"second-someProperty1", "second-someFolder1", "java-name", null});
+        Element sepFilesEl = Util.findElement((Element) l2.get(3), "separated-files", FreeformProjectType.NS_GENERAL);
+        assertNotNull("have <separated-files>", sepFilesEl);
+        assertEquals("right separator", "someSeparator1", Util.findText(sepFilesEl));
         // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
         validate(p);
@@ -898,12 +880,12 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         List folders = new ArrayList();
         FreeformProjectGenerator.SourceFolder sf = new FreeformProjectGenerator.SourceFolder();
         sf.label = "folder1";
-        sf.style = "style1";
+        sf.style = "tree";
         sf.location = "location1";
         folders.add(sf);
         sf = new FreeformProjectGenerator.SourceFolder();
         sf.label = "folder2";
-        sf.style = "style2";
+        sf.style = "packages";
         sf.location = "location2";
         folders.add(sf);
         FreeformProjectGenerator.putSourceViews(helper, folders, null);
@@ -921,7 +903,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertEquals(3, subElements.size());
         // compare first source view
         Element el2 = (Element)subElements.get(0);
-        assertElement(el2, "source-folder", null, "style", "style1");
+        assertElement(el2, "source-folder", null, "style", "tree");
         List l1 = Util.findSubElements(el2);
         assertEquals(2, l1.size());
         assertElementArray(l1, 
@@ -929,7 +911,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
             new String[]{"folder1", "location1"});
         // compare second source view
         el2 = (Element)subElements.get(1);
-        assertElement(el2, "source-folder", null, "style", "style2");
+        assertElement(el2, "source-folder", null, "style", "packages");
         l1 = Util.findSubElements(el2);
         assertEquals(2, l1.size());
         assertElementArray(l1, 
@@ -944,10 +926,10 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         folders = new ArrayList();
         sf = new FreeformProjectGenerator.SourceFolder();
         sf.label = "folder3";
-        sf.style = "style2";
+        sf.style = "packages";
         sf.location = "location3";
         folders.add(sf);
-        FreeformProjectGenerator.putSourceViews(helper, folders, "style2");
+        FreeformProjectGenerator.putSourceViews(helper, folders, "packages");
         ProjectManager.getDefault().saveAllProjects();
         el = helper.getPrimaryConfigurationData(true);
         el = Util.findElement(el, "view", FreeformProjectType.NS_GENERAL);
@@ -956,10 +938,10 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertNotNull("View folders were not saved correctly",  el);
         subElements = Util.findSubElements(el);
         // there will be three sublements: <source-file> is added for build.xml during project.creation
-        assertEquals(3, subElements.size());
+        assertEquals("3 elements in " + subElements, 3, subElements.size());
         // compare first source view
         el2 = (Element)subElements.get(0);
-        assertElement(el2, "source-folder", null, "style", "style1");
+        assertElement(el2, "source-folder", null, "style", "tree");
         l1 = Util.findSubElements(el2);
         assertEquals(2, l1.size());
         assertElementArray(l1, 
@@ -967,7 +949,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
             new String[]{"folder1", "location1"});
         // compare second source view
         el2 = (Element)subElements.get(1);
-        assertElement(el2, "source-folder", null, "style", "style2");
+        assertElement(el2, "source-folder", null, "style", "packages");
         l1 = Util.findSubElements(el2);
         assertEquals(2, l1.size());
         assertElementArray(l1, 
