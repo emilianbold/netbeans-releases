@@ -16,6 +16,8 @@ package org.netbeans.modules.java.j2seproject.ui;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 
+import java.io.File;
+
 /**
  * Misnamed storage of information application to the new j2seproject wizard.
  */
@@ -28,6 +30,8 @@ public class FoldersListSettings extends SystemOption {
     private static final String NEW_APP_COUNT = "newApplicationCount";  //NOI18N
     
     private static final String NEW_LIB_COUNT = "newLibraryCount"; //NOI18N
+
+    private static final String LAST_USED_CP_FOLDER = "lastUsedClassPathFolder";    //NOI18N
 
     public static FoldersListSettings getDefault () {
         return (FoldersListSettings) SystemOption.findObject (FoldersListSettings.class, true);
@@ -62,6 +66,20 @@ public class FoldersListSettings extends SystemOption {
     
     public void setNewLibraryCount (int count) {
         this.putProperty(NEW_LIB_COUNT, new Integer(count),true);
+    }
+
+    public File getLastUsedClassPathFolder () {
+        String lucpr = (String) this.getProperty (LAST_USED_CP_FOLDER);
+        if (lucpr == null) {
+            lucpr = System.getProperty("user.home");
+        }
+        return new File (lucpr);
+    }
+
+    public void setLastUsedClassPathFolder (File cpRoot) {
+        assert cpRoot != null : "ClassPath root can not be null";
+        String path = cpRoot.getAbsolutePath();
+        this.putProperty(LAST_USED_CP_FOLDER, path, true);
     }
 
 }
