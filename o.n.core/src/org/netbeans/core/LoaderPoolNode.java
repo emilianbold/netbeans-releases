@@ -201,7 +201,7 @@ public final class LoaderPoolNode extends AbstractNode {
                 err.log("After sort: " + loaders);
             }
         } else {
-            err.log(ErrorManager.WARNING, "Contradictory loader ordering: " + deps);
+            err.log(ErrorManager.WARNING, "Contradictory loader ordering: " + deps + "; example problematic loader: " + Utilities.topologicalSortError(loaders, deps));
             // leave order as it was
         }
         update ();
