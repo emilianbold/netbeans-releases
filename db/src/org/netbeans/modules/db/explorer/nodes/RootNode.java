@@ -60,7 +60,7 @@ public class RootNode extends DatabaseNode
 			setInfo(nfo);
 			getInfo().setNode(this);
 		} catch (Exception e) {
-			System.out.println("root exception: "+e);
+			e.printStackTrace();
 		}
 	}
 
