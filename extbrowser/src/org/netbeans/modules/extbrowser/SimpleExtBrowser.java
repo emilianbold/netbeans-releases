@@ -27,6 +27,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.httpserver.WrapperServlet;
+import org.openide.util.Utilities;
 
 /** Simple external browser that uses new process for each URL request.
  *  Typically it runs command like <CODE>netscape [url]</CODE>.
@@ -38,14 +39,6 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
     public static final String PROP_DESCRIPTION = "description";   // NOI18N
     public static final String PROP_BROWSER_EXECUTABLE = "browserExecutable"; // NOI18N
     
-    private static NbProcessDescriptor DEFAULT_EXTERNAL_BROWSER = new NbProcessDescriptor(
-        // empty string for process
-        "", // NOI18N
-        // {URL}
-        " {" + BrowserFormat.TAG_URL + "}", // NOI18N
-        NbBundle.getBundle(SimpleExtBrowser.class).getString("MSG_BrowserExecutorHint")
-    );
-
     /** process descriptor for browser */
     private NbProcessDescriptor process;
     
@@ -58,7 +51,23 @@ public class SimpleExtBrowser implements HtmlBrowser.Factory, java.io.Serializab
     
     /** Creates new SimpleExtBrowser */
     public SimpleExtBrowser() {
-        process = DEFAULT_EXTERNAL_BROWSER;
+        if (Utilities.getOperatingSystem () == Utilities.OS_OS2) {
+            process = new NbProcessDescriptor(
+                "Netscape.exe", // NOI18N
+                // {URL}
+                " {" + BrowserFormat.TAG_URL + "}", // NOI18N
+                NbBundle.getBundle(SimpleExtBrowser.class).getString("MSG_BrowserExecutorHint")
+            );
+        }
+        else {
+            process = new NbProcessDescriptor(
+                // empty string for process
+                "", // NOI18N
+                // {URL}
+                " {" + BrowserFormat.TAG_URL + "}", // NOI18N
+                NbBundle.getBundle(SimpleExtBrowser.class).getString("MSG_BrowserExecutorHint")
+            );
+        }
         pcs = new PropertyChangeSupport (this);
     }
     
