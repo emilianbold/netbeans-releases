@@ -84,9 +84,9 @@ public class BasicTest extends NbTestCase {
             page0.selectItem(0);
             //String selected = page0.getSelectedItem();
             // use jelly2 here because jelly1 is not reliable
-            String selected = new JListOperator(Jemmy.getOp(page0), 1).getSelectedValue().toString();
+            Object selected = new JListOperator(Jemmy.getOp(page0), 1).getSelectedValue();
             assertNotNull("getSelectedValue() returned null.", selected);
-            assertTrue("Source file SimpleMainClass.java not selected", selected.endsWith("SimpleMainClass.java]"));
+            assertTrue("Source file SimpleMainClass.java not selected", selected.toString().endsWith("SimpleMainClass.java]"));
             
             log("###### Clicking 'Next >' button.");
             page0.next();
