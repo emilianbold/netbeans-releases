@@ -126,8 +126,14 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         try {
             // internal protocols cannot be displayed in external viewer
             url = URLUtil.createExternalURL(url, false);
+            if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                ExtWebBrowser.getEM ().log (ErrorManager.INFORMATIONAL, "External url: " + url); // NOI18N
+            }
             
             cmd = extBrowserFactory.getBrowserExecutable (); // NOI18N
+            if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                ExtWebBrowser.getEM ().log (ErrorManager.INFORMATIONAL, "Executable: " + cmd); // NOI18N
+            }
             sd.setStatusText (NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Running_command", cmd.getProcessName ()));
             p = cmd.exec (new ExtWebBrowser.UnixBrowserFormat (url.toString ()));
             
@@ -201,6 +207,9 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
          */
         public void run () {
             boolean retried = false;
+            if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                ExtWebBrowser.getEM ().log (ErrorManager.INFORMATIONAL, "Retried: " + retried); // NOI18N
+            }
             int exitStatus = 1;
             Reader r = new InputStreamReader (p.getErrorStream ());
             try {
@@ -208,14 +217,16 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
                 if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
                     ExtWebBrowser.getEM ().log (ErrorManager.INFORMATIONAL, "Command executed. exitValue = " + exitStatus); // NOI18N
                 }
-            }
-            catch (IllegalThreadStateException ex) {
+            } catch (IllegalThreadStateException ex) {
                 retries--;
+                if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                    ExtWebBrowser.getEM ().log (ErrorManager.INFORMATIONAL, "Retries: " + retries); // NOI18N
+                    ExtWebBrowser.getEM ().log (ErrorManager.INFORMATIONAL, "Time: " + System.currentTimeMillis()); // NOI18N
+                }
                 if (retries > 0) {
                     RequestProcessor.getDefault().post(this, 1000);
                     return;
-                }
-                else {
+                } else {
                     if (ExtWebBrowser.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
                         ExtWebBrowser.getEM ().log (ErrorManager.INFORMATIONAL, "Command not finished yet"); // NOI18N
                     }
