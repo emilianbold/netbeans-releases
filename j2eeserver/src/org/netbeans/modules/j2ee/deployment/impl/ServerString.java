@@ -86,8 +86,10 @@ public class ServerString implements java.io.Serializable {
             if (targets == null) return new String[0];
             return targets;
          }
-        if (targets.length > 0)
+
+        if (targets != null && targets.length > 0)
             return targets;
+
         if (theTargets != null)
             return theTargets;
         
