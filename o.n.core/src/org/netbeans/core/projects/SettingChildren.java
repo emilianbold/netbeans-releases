@@ -341,10 +341,10 @@ public final class SettingChildren extends FilterNode.Children {
             return new NA (this);
         }
         
-        /** Hacked to remove customize bean action from original nodes.
-         * According to UI group customize bean shouldn't be here.
+        /** commented out - waiting for nbui decision
+         * Hacked to remove customize bean action from original nodes.
          */
-        public SystemAction[] getActions () {
+        /*public SystemAction[] getActions () {
             SystemAction[] actions = super.getActions();
             List actList = new ArrayList(actions.length);
             for (int i = 0; i < actions.length; i++) {
@@ -354,7 +354,7 @@ public final class SettingChildren extends FilterNode.Children {
                 actList.add(actions[i]);
             }
             return (SystemAction[])actList.toArray(new SystemAction[actList.size()]);
-        }
+        }*/
 
         private static class NA extends NodeAdapter {
             public NA (SettingFilterNode sfn) {
