@@ -23,6 +23,7 @@ import javax.swing.JComponent;
 import java.text.MessageFormat;
 import java.security.*;
 
+import org.openide.ErrorManager;
 import org.openide.util.*;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
@@ -456,11 +457,10 @@ public class FormUtils
                 return new OIS(bais, bean.getClass().getClassLoader()).readObject();
             }
             catch (Exception ex) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
-                    System.err.println("[WARNING] Cannot clone "+bean.getClass().getName()); // NOI18N
-                    ex.printStackTrace();
-                }
-                throw new CloneNotSupportedException();
+                ErrorManager em = ErrorManager.getDefault();
+                em.annotate(ex, "Cannot clone "+bean.getClass().getName()); // NOI18N
+                em.notify(ErrorManager.INFORMATIONAL, ex);
+                throw new CloneNotSupportedException(ex.getMessage());
             }
         }
 
@@ -471,17 +471,11 @@ public class FormUtils
             if (clone == null)
                 throw new CloneNotSupportedException();
 
-            if (bInfo == null) {
-                try {
-                    bInfo = Utilities.getBeanInfo(bean.getClass());
-                } 
-                catch (IntrospectionException e) {
-                    throw new CloneNotSupportedException(e.getMessage());
-                }
-            }
+            if (bInfo == null)
+                bInfo = Utilities.getBeanInfo(bean.getClass());
         }
         catch (Exception ex) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             throw new CloneNotSupportedException(ex.getMessage());
         }
 
@@ -559,7 +553,7 @@ public class FormUtils
                     try { // clone common property value
                         propertyValue = FormUtils.cloneObject(propertyValue);
                     }
-                    catch (CloneNotSupportedException ex) { } // ignore
+                    catch (CloneNotSupportedException ex) {} // ignore, don't report
                 }
                 else { // handle FormDesignValue
                     Object val = copyFormDesignValue((FormDesignValue)
@@ -596,7 +590,7 @@ public class FormUtils
                 }
             }
             catch (Exception ex) { // ignore
-                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
     }
@@ -635,8 +629,10 @@ public class FormUtils
                 realValue = FormUtils.cloneObject(realValue);
                 writeMethod.invoke(targetBean, new Object[] { realValue });
             }
+            catch (CloneNotSupportedException ex) { // ignore, don't report
+            }
             catch (Exception ex) {
-                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
     }
@@ -657,7 +653,7 @@ public class FormUtils
                 return new BorderDesignSupport((BorderDesignSupport)value);
             }
             catch (Exception ex) {
-                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         } else if (value instanceof IconEditor.NbImageIcon) {
             return new IconEditor.NbImageIcon((IconEditor.NbImageIcon)value);
