@@ -86,7 +86,6 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
     // The cookie return itself i.e. MIMEResolver to be searchable by Lookup.
     //
     static class Impl extends MIMEResolver implements InstanceCookie {
-
         // This file object describes rules that drive ths instance
         private final FileObject data;
 
@@ -533,7 +532,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
                     // RFC2045; remove content type paramaters and ignore case
 
                     int l = s.indexOf(';');
-                    if (i>=0) s = s.substring(0, l-1);
+                    if (l>=0) s = s.substring(0, l-1);
                     s = s.toLowerCase();
                     if (s.equals(mimes[i])) return true;
 

@@ -38,8 +38,11 @@ public class MIMEResolverImplTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
+/*
         URL u = getClass().getProtectionDomain().getCodeSource().getLocation();
         u = new URL(u, "org/netbeans/core/filesystems/code-fs.xml");
+*/
+        URL u = this.getClass().getResource ("code-fs.xml");        
         FileSystem fs = new XMLFileSystem(u);
         
         FileObject coderoot = fs.getRoot().getFileObject("root");
@@ -51,12 +54,16 @@ public class MIMEResolverImplTest extends NbTestCase {
             resolvers.add(createResolver(fos[i]));
         }
         
+/*
         u = getClass().getProtectionDomain().getCodeSource().getLocation();
         u = new URL(u, "org/netbeans/core/filesystems/data-fs.xml");
+*/
+        u = this.getClass().getResource ("data-fs.xml");                
         fs = new XMLFileSystem(u);
         
         root = fs.getRoot().getFileObject("root");
         root.refresh();
+        FileUtil.setMIMEType("txt2", "text/plain; charset=us-ascii");        
     }
     
     public static void main(java.lang.String[] args) {
@@ -122,7 +129,11 @@ public class MIMEResolverImplTest extends NbTestCase {
         public void run() {
             String s;
             FileObject fo = null;
-            
+
+            fo = root.getFileObject("test","txt2");
+            s = resolve(fo);
+            if ("mime.xml".equals(s) == false) fail = "mime rule failure: " + fo + " => " + s;            
+                        
             fo = root.getFileObject("test","elf");
             s = resolve(fo);
             if ("magic-mask.xml".equals(s) == false) fail = "magic-mask rule failure: " + fo + " => " + s;

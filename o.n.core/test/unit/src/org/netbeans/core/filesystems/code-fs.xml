@@ -59,6 +59,16 @@
             </MIME-resolver>]]>
         </file>
 
+        <file name="mime.xml"><![CDATA[<?xml version="1.0"?>
+            <MIME-resolver>
+                <file>
+                    <ext name="txt2"/>
+                    <mime name="text/plain"/>
+                    <resolver mime="mime.xml"/>
+                </file>
+            </MIME-resolver>]]>
+        </file>
+        
 	<file name="ant.xml"><![CDATA[<?xml version="1.0"?>
 <MIME-resolver>
     <file>
