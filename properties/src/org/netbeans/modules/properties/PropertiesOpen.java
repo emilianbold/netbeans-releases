@@ -570,8 +570,6 @@ public class PropertiesOpen extends CloneableOpenSupport
         
         /** Default constructor for deserialization. */
         public PropertiesCloneableTopComponent() {
-            // instruct winsys to save state of this top component only if opened
-            putClientProperty("PersistenceType", "OnlyOpened"); //NOI18N
         }
 
         /** Constructor.
@@ -581,9 +579,6 @@ public class PropertiesOpen extends CloneableOpenSupport
             
             this.propDataObject  = propDataObject;
 
-            // instruct winsys to save state of this top component only if opened
-            putClientProperty("PersistenceType", "OnlyOpened"); //NOI18N
-            
             initialize();
         }
 
@@ -604,7 +599,7 @@ public class PropertiesOpen extends CloneableOpenSupport
             // add to CloneableOpenSupport - patch for a bug in deserialization
             propDataObject.getOpenSupport().setRef(getReference());
 
-            setName(propDataObject.getNodeDelegate().getDisplayName());
+            setNameInAwtThread(propDataObject.getNodeDelegate().getDisplayName());
             setToolTipText(messageToolTip());
 
             // Listen to saving and renaming.
@@ -613,7 +608,7 @@ public class PropertiesOpen extends CloneableOpenSupport
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (!propDataObject.isValid()) return;
                         if (DataObject.PROP_NAME.equals(evt.getPropertyName()) || DataObject.PROP_COOKIE.equals(evt.getPropertyName())) {
-                            setName(propDataObject.getNodeDelegate().getDisplayName());
+                            setNameInAwtThread(propDataObject.getNodeDelegate().getDisplayName());
                             setToolTipText(messageToolTip());
                         }
                     }
@@ -708,6 +703,26 @@ public class PropertiesOpen extends CloneableOpenSupport
             }
 
             super.setName(saveAwareName);
+        }
+        
+        public void setNameInAwtThread(final String name) {
+            if (EventQueue.isDispatchThread()) {
+                setName(name);
+            } else {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        setName(name);
+                    }
+                });
+            }
+        }
+        
+        protected String preferredID() {
+            return getName();
+        }
+        
+        public int getPersistenceType() {
+            return PERSISTENCE_ONLY_OPENED;
         }
         
         /** 
