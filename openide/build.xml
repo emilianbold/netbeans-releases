@@ -39,8 +39,6 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="compile-regular">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <!-- Needs core, it is deprecated anyway: -->
-      <exclude name="org/openide/loaders/ExtensionListEditor.java"/>
       <exclude name="org/openide/**/*14.java"/>
       <bootclasspath>
         <!-- XXX not nice to use undocumented property here: -->
@@ -50,19 +48,6 @@ Microsystems, Inc. All Rights Reserved.
       <classpath>
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>        
         <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
-      </classpath>
-    </javac>
-    <!-- Hack. Deprecated class. -->
-    <javac srcdir="../core/src" destdir="../core/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <include name="org/netbeans/beaninfo/editors/ExtensionListEditor.java"/>
-      <classpath>
-        <pathelement location="src"/>
-      </classpath>
-    </javac>
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <include name="org/openide/loaders/ExtensionListEditor.java"/>
-      <classpath>
-        <pathelement location="../core/src"/>
       </classpath>
     </javac>
   </target>
