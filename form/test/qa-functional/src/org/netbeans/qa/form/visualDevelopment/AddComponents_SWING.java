@@ -110,6 +110,7 @@ public class AddComponents_SWING extends JellyTestCase {
                 (org.netbeans.modules.form.palette.PaletteItemNode)(list.getModel().getElementAt(i));
             String component = comp.getDisplayName();
             System.out.println("component: " + component);
+            sleep(500);
             formeditor.addComponent(categoryName_1, component, formDesigner.componentLayer().getSource()  );            
         }        
         
@@ -119,6 +120,7 @@ public class AddComponents_SWING extends JellyTestCase {
                 (org.netbeans.modules.form.palette.PaletteItemNode)(list.getModel().getElementAt(i));
             String component = comp.getDisplayName();
             System.out.println("component: " + component);
+            sleep(500);
             formeditor.addComponent(categoryName_2, component, formDesigner.componentLayer().getSource()  );            
         }        
         
@@ -181,7 +183,9 @@ public class AddComponents_SWING extends JellyTestCase {
             compareReferenceFiles();
     }
     
-    
+    void sleep(int ms) {
+        try {Thread.sleep(ms);} catch (Exception e) {}
+    }
     
     /** Test could be executed internaly in Forte
      * @param args arguments from command line

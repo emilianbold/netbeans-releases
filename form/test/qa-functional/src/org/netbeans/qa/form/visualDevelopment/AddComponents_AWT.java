@@ -109,6 +109,7 @@ public class AddComponents_AWT extends JellyTestCase {
                 (org.netbeans.modules.form.palette.PaletteItemNode)(list.getModel().getElementAt(i));
             String component = comp.getDisplayName();
             System.out.println("component: " + component);
+            sleep(500);
             formeditor.addComponent(categoryName, component, formDesigner.componentLayer().getSource()  );            
         }        
         
@@ -170,7 +171,9 @@ public class AddComponents_AWT extends JellyTestCase {
             compareReferenceFiles();
     }
     
-    
+    void sleep(int ms) {
+        try {Thread.sleep(ms);} catch (Exception e) {}
+    }
     
     /** Test could be executed internaly in Forte
      * @param args arguments from command line
