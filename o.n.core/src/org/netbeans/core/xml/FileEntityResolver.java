@@ -44,6 +44,11 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
     /** Tries to find the entity on system file system.
      */
     public InputSource resolveEntity(String publicID, String systemID) throws IOException, SAXException {
+        if (publicID == null) {
+            return null;
+        }
+
+
         String id = convertPublicId (publicID);
         
         StringBuffer sb = new StringBuffer (200);
@@ -73,6 +78,10 @@ public class FileEntityResolver extends EntityCatalog implements Environment.Pro
                 return null;
             } catch (org.xml.sax.SAXException ex) {
                 TopManager.getDefault ().getErrorManager().notify (ex);
+                return null;
+            }
+
+            if (id == null) {
                 return null;
             }
             
