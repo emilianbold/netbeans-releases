@@ -62,6 +62,9 @@ public class JSPVariablesFilter implements TreeModelFilter {
             //retrieve all children
             int parentChildrenCount = original.getChildrenCount(parent);
             Object[] children = original.getChildren(parent, 0, parentChildrenCount);
+            if (parentChildrenCount == 1 && children[0] instanceof java.lang.String) 
+                return children;
+
             List visibleChildrenList = new ArrayList();
             ImplicitLocals implicitLocals = null;
             Object refThis = null;
@@ -160,6 +163,8 @@ public class JSPVariablesFilter implements TreeModelFilter {
         if (node.equals (original.getRoot())) {
             countVisible = original.getChildrenCount(node);
             Object[] children = original.getChildren (node, 0, countVisible);
+            if (countVisible == 1 && children[0] instanceof java.lang.String) 
+                return countVisible;
             for (int i = 0; i < children.length; i++) {
                 Object var = children[i];
                 //show the locals except of hidden locals and implicit locals 
