@@ -85,11 +85,13 @@ public class DatabaseModule extends ModuleInstall {
     }
     
     public void close () {
+        final Node environment = TopManager.getDefault().getPlaces().nodes().environment();
+        
         // closing all open connection
         Children.MUTEX.writeAccess (new Runnable () {
             public void run () {
                 try {
-                    Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
+                    Node n[] = environment.getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
                     for (int i = 0; i < n.length; i++)
                         if (n[i] instanceof ConnectionNode)
                             ((ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo()).disconnect();
