@@ -43,19 +43,19 @@ public interface UnitTestForSourceQueryImplementation {
     /**
      * Returns the test root for a given source root.
      *
-     * @param source java package root with sources
-     * @return corresponding java package root with unit tests. The
-     *     returned URL does not have to point to existing file. It can be null
-     *     when mapping from source to unit test is not known.
+     * @param source a Java package root with sources
+     * @return a corresponding Java package root with unit tests. The
+     *     returned URL need not point to an existing folder. It can be null
+     *     when no mapping from source to unit test is known.
      */
     URL findUnitTest(FileObject source);
     
     /**
      * Returns the source root for a given test root.
      *
-     * @param unitTest java package root with unit tests
-     * @return corresponding java package root with sources. It can be null
-     *     when mapping from unit test to source is not known.
+     * @param unitTest a Java package root with unit tests
+     * @return a corresponding Java package root with sources. It can be null
+     *     when no mapping from unit test to source is known.
      */
     URL findSource(FileObject unitTest);
     
