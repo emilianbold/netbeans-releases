@@ -77,7 +77,6 @@ public class NestedNode extends AbstractNode {
     protected SystemAction[] createActions () {
 
 	return new SystemAction[] {
-	    SystemAction.get(DisplayAction.class),
 	};
     }
 
@@ -94,15 +93,6 @@ public class NestedNode extends AbstractNode {
     public boolean canCut () {
 	return false;
     }
-
-
-    /**
-     * Display is the default action
-     */
-    public SystemAction getDefaultAction() {
-	return SystemAction.get(DisplayAction.class);
-    }
-
 
     private void setProperties() {
 

@@ -138,7 +138,6 @@ public class TransactionNode extends AbstractNode {
 
 	if(current) {
 	    return new SystemAction[] {
-		SystemAction.get(DisplayAction.class),
 		SystemAction.get(SaveAction.class),
 		null,
 		SystemAction.get(ReplayAction.class),
@@ -149,8 +148,6 @@ public class TransactionNode extends AbstractNode {
 	}
      
 	return new SystemAction[] {
-	    SystemAction.get(DisplayAction.class),
-	    null,
 	    SystemAction.get(ReplayAction.class),
 	    SystemAction.get(EditReplayAction.class),
 	    null,
@@ -163,7 +160,6 @@ public class TransactionNode extends AbstractNode {
 
 	if(current) {
 	    return new SystemAction[] {
-		SystemAction.get(DisplayAction.class),
 		SystemAction.get(SaveAction.class),
 		null,
 		SystemAction.get(ReplayAction.class),
@@ -174,8 +170,6 @@ public class TransactionNode extends AbstractNode {
 	}
      
 	return new SystemAction[] {
-	    SystemAction.get(DisplayAction.class),
-	    null,
 	    SystemAction.get(ReplayAction.class),
 	    SystemAction.get(EditReplayAction.class),
 	    null,
@@ -211,15 +205,6 @@ public class TransactionNode extends AbstractNode {
     public static boolean showTimeStamp() { 
 	return showTimeStamp; 
     }
-
-
-    /**
-     * Display is the default action
-     */
-    public SystemAction getDefaultAction() {
-	return SystemAction.get(DisplayAction.class);
-    }
-
 
     private void setProperties() {
 	
