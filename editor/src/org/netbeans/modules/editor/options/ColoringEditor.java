@@ -130,6 +130,8 @@ public class ColoringEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  11   Gandalf   1.10        1/11/00  Petr Nejedly    ScrollPane, distribution
+ *       of changes
  *  10   Gandalf   1.9         12/28/99 Miloslav Metelka 
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

@@ -29,7 +29,6 @@ import org.openide.explorer.propertysheet.PropertyPanel;
  *
  * @author  Petr Nejedly
  * @version 
- * TODO: propertyChangeListener
  */
 
 public class ColoringArrayEditor extends PropertyEditorSupport {

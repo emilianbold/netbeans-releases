@@ -34,10 +34,9 @@ import com.netbeans.editor.Settings;
  *
  * @author  Petr Nejedly
  * @version 1
- *
  */
 public class ColoringArrayEditorPanel extends javax.swing.JPanel {
-
+ 
   /** Access to our localized texts */
   static java.util.ResourceBundle bundle = 
     org.openide.util.NbBundle.getBundle( ColoringArrayEditorPanel.class );
@@ -83,6 +82,8 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
           Coloring newColoring = ((ColoringBean)coloringModel.getValue()).coloring;
           if( ! newColoring.equals( value.get( names[actValueIndex] ) ) ) {
 //System.err.println("updating coloring[" + actValueIndex + "] from " + value.get( names[actValueIndex] ) + " to " + newColoring );
+//Need to recreate value here (because of equals(), then set!
+            value = (HashMap)value.clone();           
             value.put( names[actValueIndex], newColoring );
             support.firePropertyChange( "value", null, null );
           }
@@ -204,9 +205,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
     masterPanel.setLayout (new java.awt.GridLayout (1, 1));
     masterPanel.setBorder (new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CAEP_SyntaxLabel" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
 
-      syntaxScroll.setPreferredSize (new java.awt.Dimension(150, 200));
   
-        syntaxList.setPreferredSize (new java.awt.Dimension(10, 10));
         syntaxList.addListSelectionListener (new javax.swing.event.ListSelectionListener () {
           public void valueChanged (javax.swing.event.ListSelectionEvent evt) {
             syntaxListValueChanged (evt);

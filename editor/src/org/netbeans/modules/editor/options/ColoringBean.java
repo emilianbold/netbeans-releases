@@ -27,11 +27,11 @@ public class ColoringBean implements java.io.Serializable {
   /** example text */
   transient String example;
 
-  /** Default coloring */
+  /** Default Coloring */
   transient Coloring defaultColoring;
 
   boolean isDefault;
-
+  
   public ColoringBean() {
   }
   
@@ -41,7 +41,7 @@ public class ColoringBean implements java.io.Serializable {
     this.defaultColoring = defaultColoring;
     this.isDefault = isDefault;
   }
-
+  
   public ColoringBean changeColoring( Coloring newColoring ) {
     return new ColoringBean( newColoring, example, defaultColoring, isDefault );
   }
@@ -66,6 +66,8 @@ public class ColoringBean implements java.io.Serializable {
 
 /*
  * Log
+ *  8    Gandalf   1.7         1/11/00  Petr Nejedly    ScrollPane, distribution
+ *       of changes
  *  7    Gandalf   1.6         12/29/99 Petr Jiricka    Submitting changes done 
  *       by Mila (fixing compilation errors)
  *  6    Gandalf   1.5         12/28/99 Miloslav Metelka 
