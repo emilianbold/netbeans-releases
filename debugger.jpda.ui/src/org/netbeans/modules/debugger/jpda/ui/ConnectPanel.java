@@ -53,6 +53,8 @@ import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 
@@ -249,6 +251,7 @@ Controller, ActionListener {
         int index = cbConnectors.getSelectedIndex ();
         Connector connector = (Connector) connectors.get (index);
         Map args = getEditedArgs (tfParams, connector);
+        if (args == null) return true; // CANCEL
         saveArgs (args, connector);
         
         if (connector instanceof AttachingConnector)
@@ -375,6 +378,33 @@ Controller, ActionListener {
             String paramName = tf.getName ();
             String paramValue = tf.getText ();
             Argument a = (Argument) args.get (paramName);
+            while ( (!a.isValid (paramValue)) &&
+                    ( (!paramValue.equals ("")) ||
+                      a.mustSpecify ()
+                    )
+            ) {
+                NotifyDescriptor.InputLine in = null;
+                if ( paramValue.equals ("") && a.mustSpecify ())
+                    in = new NotifyDescriptor.InputLine (
+                        a.label () + ": ",
+                        NbBundle.getMessage (
+                            ConnectPanel.class, 
+                            "CTL_Required_value_title"
+                        )
+                    );
+                else
+                    in = new NotifyDescriptor.InputLine (
+                        a.label () + ": ",
+                        NbBundle.getMessage (
+                            ConnectPanel.class, 
+                            "CTL_Invalid_value_title"
+                        )
+                    );
+                if (DialogDisplayer.getDefault ().notify (in) == 
+                    NotifyDescriptor.CANCEL_OPTION
+                ) return null;
+                paramValue = in.getInputText ();
+            }
             a.setValue (paramValue);
         }
         
