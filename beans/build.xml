@@ -29,14 +29,18 @@ Microsystems, Inc. All Rights Reserved.
     <tojar srcdir="src" unpackeddir="tojar"/>
   </target>
   <target name="jars" depends="compile,tojar">
+    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="netbeans/modules/beans.jar"
-         manifest="manifest-subst.mf"
-         basedir="src"
-	 excludesfile="../nbbuild/standard-jar-excludes.txt"
-	 compress="false"/>
+    <locjar jarfile="netbeans/modules/beans.jar"
+            manifest="manifest-subst.mf"
+            basedir="src"
+	    excludesfile="../nbbuild/standard-jar-excludes.txt"
+	    compress="false">
+      <locale name="ja"/>
+      <localekit dir="src" includesfile="../nbbuild/standard-localekit-includes.txt"/>
+    </locjar>
   </target>
   <target name="netbeans" depends="jars"/>
   <target name="nbm" depends="netbeans">
