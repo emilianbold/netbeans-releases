@@ -219,7 +219,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     /** Sets value ad text. Implements <code>PropertyEditor</code> interface. */
     public void setAsText(String text) throws IllegalArgumentException {
         if(text == null) {
-            throw new IllegalArgumentException(null);
+            throw new IllegalArgumentException("null parameter"); // NOI18N
         }
         
         text = text.trim();
