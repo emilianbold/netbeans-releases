@@ -315,7 +315,7 @@ Microsystems, Inc. All Rights Reserved.
         <testbaginfo name="${tbag.name}" testType="${tbag.testtype}" testAttribs="${xtest.attribs}"
                       executor="${tbag.executor}" module="${xtest.module}"
                       outfile="${xtest.workdir}/xmlresults/testbag.xml"/>  
-        <property name="xtest.nbjunit.jvmarg" value=""/>
+        <property name="nbjunit.jvmarg" value=""/>
         <!-- run the tests -->
         <nbjunit fork="${junit.fork}" printsummary="yes" timeout="${xtest.timeout}">            
             <sysproperty key="work.dir" value="${xtest.workdir}/sys"/>
@@ -323,7 +323,7 @@ Microsystems, Inc. All Rights Reserved.
             <sysproperty key="system.dir" value="${xtest.workdir}/sys"/>
             <sysproperty key="nbjunit.workdir" value="${xtest.workdir}/user"/>
             <syspropertyfile file="${test.propertyfile}"/>
-            <jvmarg value="${xtest.nbjunit.jvmarg}"/>
+            <jvmarg value="${nbjunit.jvmarg}"/>
             
             <formatter classname="org.netbeans.xtest.pe.junit.JUnitResultsReporter" extension=".xml"/>
             
