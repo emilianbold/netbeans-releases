@@ -23,11 +23,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -75,7 +71,7 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
     private int returnStatus = RET_CANCEL;
 
     /** Ordered list of <code>SearchTypePanel</code>'s. */
-    private List orderedSearchTypePanels;
+    private Set orderedSearchTypePanels;
 
     /** Whether some criterion is customized. */
     private boolean customized = false;
@@ -83,7 +79,7 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
     
     /** Creates new form SearchPanel */
     public SearchPanel(List searchTypeList) {
-        orderedSearchTypePanels = new ArrayList(searchTypeList.size());
+        orderedSearchTypePanels = new TreeSet(new SearchTypePanelComparator());
 
         // Default values of criterions.
         Iterator it = searchTypeList.iterator();
@@ -96,25 +92,22 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
             searchTypePanel.addPropertyChangeListener(this);
             
             orderedSearchTypePanels.add(searchTypePanel);
-            Collections.sort(orderedSearchTypePanels, new SearchTypePanelComparator());
         }
         
         initComponents();
 
         // For each search type create one tab as its search type panel.
-        it = getOrderedSearchTypePanels().iterator();
+        it = orderedSearchTypePanels.iterator();
 
         while(it.hasNext()) {
-            Component component = (SearchTypePanel)it.next();
-
-            try {
-                tabbedPane.add(component);
-            } catch (ArrayIndexOutOfBoundsException aie) {
-                if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    aie.printStackTrace();
-            }
+            tabbedPane.add((Component)it.next());
         }
-        
+
+        tabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                tabbedPaneStateChanged(evt);
+            }
+        });
         
         setName(NbBundle.getBundle(SearchPanel.class).getString("TEXT_TITLE_CUSTOMIZE")); // NOI18N
 
@@ -156,12 +149,6 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
-        tabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                tabbedPaneStateChanged(evt);
-            }
-        });
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints1.weightx = 1.0;
@@ -170,11 +157,11 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
         
     }//GEN-END:initComponents
 
-    private void tabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tabbedPaneStateChanged
+    private void tabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {
         Component component = getTypeCustomizer(tabbedPane.getSelectedIndex());
         if(component != null)
             component.requestFocus();
-    }//GEN-LAST:event_tabbedPaneStateChanged
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -195,7 +182,7 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
     /** @return name of criterion at index is modified. */
     private String getTabText(int index) {
         try {
-            return ((SearchTypePanel)orderedSearchTypePanels.get(index)).getName(); 
+            return ((SearchTypePanel)getOrderedSearchTypePanels().get(index)).getName(); 
         } catch (ArrayIndexOutOfBoundsException ex) {
             return null;
         }
@@ -313,6 +300,9 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
             SearchTypePanel cm1 = (SearchTypePanel)obj1;
             SearchTypePanel cm2 = (SearchTypePanel)obj2;
 
+            if(cm1.equals(cm2))
+                return 0;
+            
             if(cm1.getSearchType().getClass().equals(FullTextType.class))
                 return -1;
             

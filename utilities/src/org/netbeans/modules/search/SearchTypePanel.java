@@ -366,8 +366,9 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         while (en.hasMoreElements()) {
             SearchType type = (SearchType)en.nextElement();
             String name = type.getName();
+            
             if(name != null) {
-                if(name.equals(type.getName())) {
+                if(name.equals(searchType.getName())) {
                     searchTypesMap.put(NbBundle.getBundle(SearchTypePanel.class).getString("TEXT_DEFAULT_CRITERION"), type);
                 } else { 
                     searchTypesMap.put(name, type);
