@@ -152,6 +152,7 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="../../../openide/netbeans/lib">
               <include name="openide*.jar" />
             </fileset>
+            <pathelement location="../../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
             <pathelement location="../netbeans/modules/autoload/core-settings.jar"/>
 	</path>
     </target>
@@ -170,6 +171,7 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="../../../openide/netbeans/lib">
               <include name="openide*.jar" />
             </fileset>
+            <pathelement location="../../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
 	</path>
     </target>
     
@@ -188,6 +190,7 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="../../../openide/netbeans/lib">
               <include name="openide*.jar" />
             </fileset>
+            <pathelement location="../../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
    	</path>
     </target>
     
@@ -207,6 +210,7 @@ Microsystems, Inc. All Rights Reserved.
  	      -->
             <pathelement location="../netbeans/modules/autoload/core-settings.jar"/>
             <pathelement location="../../../openide/netbeans/lib/openide.jar"/>
+            <pathelement location="../../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
             <fileset dir="../../netbeans/lib">
                     <include name="core.jar"/>
                     <include name="ext/*.jar"/>
@@ -226,6 +230,7 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="../src"/>
             <pathelement location="../netbeans/modules/autoload/core-settings.jar"/>
             <pathelement location="../../../openide/netbeans/lib/openide.jar"/>
+            <pathelement location="../../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
             <fileset dir="../../netbeans/lib">
                     <include name="core.jar"/>
                     <include name="ext/*.jar"/>
@@ -245,6 +250,7 @@ Microsystems, Inc. All Rights Reserved.
  	      --> 
             <pathelement location="${netbeans.home}/modules/autoload/core-settings.jar"/>
             <pathelement location="${netbeans.home}/lib/openide.jar"/>
+            <pathelement location="${netbeans.home}/lib/openide-loaders.jar"/>
             <fileset dir="${netbeans.home}/lib">
                     <include name="core.jar"/>
                     <include name="ext/*.jar"/>
