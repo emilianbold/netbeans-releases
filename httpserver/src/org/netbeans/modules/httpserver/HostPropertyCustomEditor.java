@@ -14,16 +14,16 @@
 package org.netbeans.modules.httpserver;
 
 import java.awt.event.*;
-import javax.swing.*;
 
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author  Gabriel Tichy
  */
-public class HostPropertyCustomEditor extends javax.swing.JPanel implements ActionListener, EnhancedCustomPropertyEditor {
+public class HostPropertyCustomEditor extends javax.swing.JPanel implements HelpCtx.Provider, ActionListener, EnhancedCustomPropertyEditor {
     private HostPropertyEditor editor;
 
     /** Creates new form HostEditorPanel */
@@ -159,4 +159,11 @@ public class HostPropertyCustomEditor extends javax.swing.JPanel implements Acti
     private javax.swing.JLabel grantLabel;
     // End of variables declaration//GEN-END:variables
 
+    /** Help context where to find more about the paste type action.
+     * @return the help context for this action
+     */
+    public HelpCtx getHelpCtx() {
+        String helpid = HttpServerNode.class.getName()+"_properties"; //NOI18N
+        return new HelpCtx(helpid);
+    }        
 }
