@@ -216,7 +216,7 @@ public class EjbJarProjectProperties {
 
     /** XXX to be deleted when introduced in AntPropertyHeleper API
      */    
-    static String getAntPropertyName( String property ) {
+    public static String getAntPropertyName( String property ) {
         if ( property != null && 
              property.startsWith( "${" ) && // NOI18N
              property.endsWith( "}" ) ) { // NOI18N
@@ -657,7 +657,7 @@ public class EjbJarProjectProperties {
         }
     }
     
-     private static class PathParser extends PropertyParser {
+     public static class PathParser extends PropertyParser {
         
          private static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
 
