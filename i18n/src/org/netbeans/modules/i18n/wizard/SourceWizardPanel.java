@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -55,7 +54,7 @@ import org.openide.WizardDescriptor;
 public class SourceWizardPanel extends JPanel {
 
     /** Sources selected by user. */
-    private final Map sourceMap = new TreeMap(new SourceData.DataObjectComparator());
+    private final Map sourceMap = I18nUtil.createWizardSettings();
     
     /** This component panel wizard descriptor.
      * @see org.openide.WizardDescriptor.Panel 
@@ -241,11 +240,12 @@ public class SourceWizardPanel extends JPanel {
 
                 if(dataObject instanceof DataFolder) {
                     Iterator it = I18nUtil.getAcceptedDataObjects((DataFolder)dataObject).iterator();
-                    while(it.hasNext()) 
-                        sourceMap.put(it.next(), null);
+                    while(it.hasNext()) {
+                        I18nUtil.addSource(sourceMap, (DataObject)it.next());
+                    }
                     
                 } else
-                    sourceMap.put(selectedNodes[i].getCookie(DataObject.class), null);
+                    I18nUtil.addSource(sourceMap, (DataObject)selectedNodes[i].getCookie(DataObject.class));
             }
             
             sourcesList.setListData(sourceMap.keySet().toArray());

@@ -71,7 +71,7 @@ public class I18nWizardAction extends NodeAction {
 
         WizardDescriptor wizardDesc = new I18nWizardDescriptor(
             getWizardIterator(),
-            getSettings(activatedNodes)
+            I18nUtil.createWizardSettings(activatedNodes)
         );
 
         initWizard(wizardDesc);
@@ -138,32 +138,6 @@ public class I18nWizardAction extends NodeAction {
     /** Gets the action's help context. Implemenst superclass abstract method. */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(I18nUtil.HELP_ID_WIZARD);
-    }
-    
-    /** Utility method. Gets settings based on selected nodes. Finds all accepted data objects. 
-     * @param activatedNodes selected nodes 
-     * @return map with accepted data objects as keys or empty map if no such data objec were found */
-    static Map getSettings(Node[] activatedNodes) {
-        Map settings = new TreeMap(new SourceData.DataObjectComparator());
-        
-        if(activatedNodes != null && activatedNodes.length > 0) {
-            for(int i = 0; i < activatedNodes.length; i++) {
-                DataObject dataObject = (DataObject)activatedNodes[i].getCookie(DataObject.class);
-                
-                if(dataObject == null)
-                    continue;
-                
-                if(dataObject instanceof DataFolder) {
-                    Iterator it = I18nUtil.getAcceptedDataObjects((DataFolder)dataObject).iterator();
-                    
-                    while(it.hasNext())
-                        settings.put(it.next(), null);
-                } else if(FactoryRegistry.hasFactory(dataObject.getClass().getName()))                    
-                    settings.put(dataObject, null);
-            }
-        }
-        
-        return settings;
     }
     
 }

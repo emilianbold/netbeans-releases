@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.TreeMap;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -82,7 +81,7 @@ public class HardStringWizardPanel extends JPanel {
     private static final int COLUMN_INDEX_CUSTOM = 4;
         
     /** Local copy of i18n wizard data. */
-    private final Map sourceMap = new TreeMap(new SourceData.DataObjectComparator());
+    private final Map sourceMap = I18nUtil.createWizardSettings();
 
     /** Table model for <code>stringTable</code>. */
     private final AbstractTableModel tableModel = new HardCodedStringTableModel();

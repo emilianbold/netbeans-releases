@@ -16,11 +16,19 @@ package org.netbeans.modules.i18n;
 
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.TreeMap;
+
+import org.netbeans.modules.i18n.wizard.SourceData;
+import org.netbeans.modules.properties.PropertiesDataObject; // PENDING
 
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 
@@ -204,6 +212,66 @@ public abstract class I18nUtil {
 
         return accepted;
     }
+
+    /** Create empty settings used in i18n wizards. */
+    public static Map createWizardSettings() {
+        return new TreeMap(new DataObjectComparator());
+    }
+    
+    /** Create settings based on selected nodes. Finds all accepted data objects. 
+     * @param activatedNodes selected nodes 
+     * @return map with accepted data objects as keys or empty map if no such data objec were found */
+    public static Map createWizardSettings(Node[] activatedNodes) {
+        Map settings = createWizardSettings();
+        
+        if(activatedNodes != null && activatedNodes.length > 0) {
+            for(int i = 0; i < activatedNodes.length; i++) {
+                DataObject dataObject = (DataObject)activatedNodes[i].getCookie(DataObject.class);
+                
+                if(dataObject == null)
+                    continue;
+                
+                if(dataObject instanceof DataFolder) {
+                    Iterator it = I18nUtil.getAcceptedDataObjects((DataFolder)dataObject).iterator();
+                    
+                    while(it.hasNext())
+                        addSource(settings, (DataObject)it.next());
+                } else if(FactoryRegistry.hasFactory(dataObject.getClass().getName()))                    
+                    addSource(settings, dataObject);
+            }
+        }
+        
+        return settings;
+    }
+    
+    /** Adds source to source map (I18N wizard settings). If there is already no change is done.
+     * If it's added anew then it is tried to find correspondin reousrce, i.e.
+     * first resource from the same folder.
+     * @param sourceMap settings where to add teh sources
+     * @param source source to add */
+    public static void addSource(Map sourceMap, DataObject source) {
+        if(sourceMap.containsKey(source))
+            return;
+        
+        DataFolder folder = source.getFolder();
+        
+        if(folder == null) {
+            sourceMap.put(source, null);
+            return;
+        }
+        
+        DataObject[] children = folder.getChildren();
+        
+        for(int i = 0; i < children.length; i++) {
+            if(children[i] instanceof PropertiesDataObject) { // PENDING 
+                sourceMap.put(source, new SourceData(children[i]));
+                return;
+            }
+        }
+        
+        // No resource found in the same folder.
+        sourceMap.put(source, null);
+    }
     
     /** Gets resource bundle for i18n module. */
     public static ResourceBundle getBundle() {
@@ -222,5 +290,38 @@ public abstract class I18nUtil {
     public static boolean isDebug() {
         return Boolean.getBoolean("netbeans.debug.exceptions"); // NOI18N
     }
+
+    
+    /** <code>Comparator</code> for comparing data objects according their package names. */
+    private static class DataObjectComparator implements Comparator {
+
+        /** Implements <code>Comparator</code> interface. */
+        public int compare(Object o1, Object o2) {
+            if(!(o1 instanceof DataObject) || !(o2 instanceof DataObject))
+                return 0;
+            
+            DataObject d1 = (DataObject)o1;
+            DataObject d2 = (DataObject)o2;
+            
+            if(d1 == d2)
+                return 0;
+            
+            if(d1 == null)
+                return -1;
+            
+            if(d2 == null)
+                return 1;
+
+            return d1.getPrimaryFile().getPackageName('.').compareTo(d2.getPrimaryFile().getPackageName('.'));
+        }
+        
+        /** Implements <code>Comparator</code> interface method. */
+        public boolean equals(Object obj) {
+            if(this == obj)
+                return true;
+            else
+                return false;
+        }
+    } // End of class DataObjectComparator.
     
 }

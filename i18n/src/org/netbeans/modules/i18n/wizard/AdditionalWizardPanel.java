@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.TreeMap;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeListener;
 import javax.swing.JComponent;
@@ -53,7 +52,7 @@ import org.openide.WizardDescriptor;
 public class AdditionalWizardPanel extends JPanel {
 
     /** Local copy of i18n wizard data. */
-    private final Map sourceMap = new TreeMap(new SourceData.DataObjectComparator());
+    private final Map sourceMap = I18nUtil.createWizardSettings();
     
     /** Sources on which additional modifications coudl happen in this panel. */
     private final Set viewedSources = new HashSet(0);

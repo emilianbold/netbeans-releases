@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.TreeMap;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.ImageIcon;
@@ -65,7 +64,7 @@ import org.openide.WizardDescriptor;
 public class ResourceWizardPanel extends JPanel {
 
     /** Local copy of i18n wizard data. */
-    private final Map sourceMap = new TreeMap(new SourceData.DataObjectComparator());
+    private final Map sourceMap = I18nUtil.createWizardSettings();
 
     /** Table model for resourcesTable. */
     private final AbstractTableModel tableModel = new ResourceTableModel();

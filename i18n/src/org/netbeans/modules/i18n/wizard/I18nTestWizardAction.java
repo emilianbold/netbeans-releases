@@ -67,7 +67,7 @@ public class I18nTestWizardAction extends NodeAction {
         
         WizardDescriptor wizardDescriptor = new I18nWizardDescriptor(
             getWizardIterator(),
-            I18nWizardAction.getSettings(activatedNodes)
+            I18nUtil.createWizardSettings(activatedNodes)
         );
 
         initWizard(wizardDescriptor);

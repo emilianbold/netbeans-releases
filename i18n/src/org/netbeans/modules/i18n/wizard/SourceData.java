@@ -93,38 +93,5 @@ public class SourceData extends Object {
     public void setRemovedStrings(Set removedStrings) {
         this.removedStrings = removedStrings;
     }
-
-    
-    /** <code>Comparator</code> for comparing data objects according their package names. */
-    static class DataObjectComparator implements Comparator {
-
-        /** Implements <code>Comparator</code> interface. */
-        public int compare(Object o1, Object o2) {
-            if(!(o1 instanceof DataObject) || !(o2 instanceof DataObject))
-                return 0;
-            
-            DataObject d1 = (DataObject)o1;
-            DataObject d2 = (DataObject)o2;
-            
-            if(d1 == d2)
-                return 0;
-            
-            if(d1 == null)
-                return -1;
-            
-            if(d2 == null)
-                return 1;
-
-            return d1.getPrimaryFile().getPackageName('.').compareTo(d2.getPrimaryFile().getPackageName('.'));
-        }
-        
-        /** Implements <code>Comparator</code> interface method. */
-        public boolean equals(Object obj) {
-            if(this == obj)
-                return true;
-            else
-                return false;
-        }
-    }
     
 }
