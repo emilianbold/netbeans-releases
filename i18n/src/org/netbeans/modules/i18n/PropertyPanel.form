@@ -9,7 +9,7 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="commentLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Comment" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
@@ -45,7 +45,7 @@
     </Container>
     <Component class="javax.swing.JLabel" name="keyLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Key" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
@@ -57,7 +57,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="valueLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Value" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
@@ -131,7 +131,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="replaceFormatLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_ReplaceFormat" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>

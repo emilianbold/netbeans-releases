@@ -40,10 +40,6 @@ public class I18nPanel extends JPanel {
     /** <code>I18nString</code> cusomized in this panel. */
     private I18nString i18nString;
     
-    /** Customizer for additional source specific values. Can be null. 
-     * @see #advancedButton */
-    private JPanel additionalCustomizer;
-    
     /** Helper bundle used for i18n-zing strings in this source.  */
     private static ResourceBundle bundle;
 
@@ -99,23 +95,23 @@ public class I18nPanel extends JPanel {
         ((PropertyPanel)propertyPanel).setI18nString(i18nString);
         ((ResourcePanel)resourcePanel).setI18nString(i18nString);
         
-        if(!i18nString.hasAdditionalCustomizer() && SwingUtilities.isDescendingFrom(advancedButton, this))
+        if(!i18nString.getSupport().hasAdditionalCustomizer() && SwingUtilities.isDescendingFrom(advancedButton, this))
             remove(advancedButton);
-        else
-            additionalCustomizer = i18nString.getAdditionalCustomizer();
         
         // Set listener to enable/disable replace button.
-        i18nString.addPropertyChangeListener(WeakListener.propertyChange(
+        resourcePanel.addPropertyChangeListener(WeakListener.propertyChange(
             propListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if(I18nString.PROP_RESOURCE.equals(evt.getPropertyName()))
+                    if(ResourcePanel.PROP_RESOURCE.equals(evt.getPropertyName())) {
                         replaceButton.setEnabled(evt.getNewValue() != null);
+                        ((PropertyPanel)propertyPanel).updateBundleKeys();
+                    }
                 }
             },
-            i18nString
+            resourcePanel
         ));
 
-        replaceButton.setEnabled(i18nString.getResource() != null);
+        replaceButton.setEnabled(i18nString.getSupport().getResourceHolder().getResource() != null);
     }
 
     /** Replace button accessor. */
@@ -140,7 +136,7 @@ public class I18nPanel extends JPanel {
     
     /** Enables/disables buttons. */
     private void buttonsEnableDisable() {
-        boolean isBundle = i18nString.getResource() != null;
+        boolean isBundle = i18nString.getSupport().getResourceHolder().getResource() != null;
         replaceButton.setEnabled(isBundle);
     }
 
@@ -264,14 +260,20 @@ public class I18nPanel extends JPanel {
     }//GEN-END:initComponents
 
     private void advancedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_advancedButtonActionPerformed
-     DialogDescriptor dd = new DialogDescriptor(additionalCustomizer, bundle.getString("LBL_Replace"));
-      dd.setModal(true);
-      dd.setOptionType(DialogDescriptor.DEFAULT_OPTION);
-      dd.setOptions(new Object[] {DialogDescriptor.OK_OPTION});
-      dd.setAdditionalOptions(new Object[0]);
-      
-      Dialog replaceDialog = TopManager.getDefault().createDialog(dd);
-      replaceDialog.setVisible(true);
+        if(!i18nString.getSupport().hasAdditionalCustomizer()) {
+            throw new InternalError("I18N: Button has to be disabled. Has no additional cutomizer."); // NOI18N
+        }
+
+        JPanel additionalCustomizer = i18nString.getSupport().getAdditionalCustomizer(i18nString);
+                
+        DialogDescriptor dd = new DialogDescriptor(additionalCustomizer, bundle.getString("LBL_Replace"));
+        dd.setModal(true);
+        dd.setOptionType(DialogDescriptor.DEFAULT_OPTION);
+        dd.setOptions(new Object[] {DialogDescriptor.OK_OPTION});
+        dd.setAdditionalOptions(new Object[0]);
+        
+        Dialog replaceDialog = TopManager.getDefault().createDialog(dd);
+        replaceDialog.setVisible(true);
     }//GEN-LAST:event_advancedButtonActionPerformed
 
   private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed

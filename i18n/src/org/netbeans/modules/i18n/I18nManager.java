@@ -24,12 +24,9 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.text.Caret;
-import javax.swing.text.StyledDocument;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.DialogDescriptor;
@@ -89,14 +86,14 @@ public class I18nManager {
     }
     
     /** Get i18n support. */
-    private void initSupport(StyledDocument document, DataObject sourceDataObject) {
+    private void initSupport(DataObject sourceDataObject) {
         I18nSupport.Factory factory = FactoryRegistry.getFactory(sourceDataObject.getClass().getName());
         
-        support = factory.create(sourceDataObject, document);
+        support = factory.create(sourceDataObject);
     }
     
     /** The 'heart' method called by <code>I18nAction</code>. */
-    public void internationalize(StyledDocument document, DataObject sourceDataObject) {
+    public void internationalize(DataObject sourceDataObject) {
         // If there is insert i18n action working on the same document -> cancel it.
         ((InsertI18nStringAction)SystemAction.get(InsertI18nStringAction.class)).cancel();
 
@@ -104,7 +101,7 @@ public class I18nManager {
         closeDialog();
 
         // Initilialize support.
-        initSupport(document, sourceDataObject);
+        initSupport(sourceDataObject);
 
         // initialize the component
         EditorCookie ec = (EditorCookie)sourceDataObject.getCookie(EditorCookie.class);
@@ -161,8 +158,7 @@ public class I18nManager {
         // It has to work this way, at this time the strong reference in top component have to exist.
         I18nPanel i18nPanel = (I18nPanel)i18nPanelWRef.get();
 
-        i18nPanel.getI18nString().setKey(hcString.getText().replace(' ', '_' ));
-        i18nPanel.getI18nString().setValue(hcString.getText());
+        i18nPanel.setI18nString(support.getDefaultI18nString(hcString));
         
         showDialog();
     }
@@ -182,7 +178,7 @@ public class I18nManager {
         }
 
         // Try to add key to bundle.
-        i18nString.addProperty(i18nString.getKey(), i18nString.getValue(), i18nString.getComment());
+        support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), i18nString.getComment());
 
         // Replace hardcoded string.
         support.getReplacer().replace(hcString, i18nString);

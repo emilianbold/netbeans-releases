@@ -18,15 +18,12 @@ package org.netbeans.modules.i18n;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 
 import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 import org.openide.util.SharedClassObject;
-import org.openide.util.WeakListener;
 
 
 /**
@@ -42,11 +39,9 @@ public class PropertyPanel extends JPanel {
     /** Helper name for dummy action command. */
     private static final String DUMMY_ACTION = "dont_proceed"; // NOI18N
     
-    /** Cusomized <code>I18nString</code>. */
+    /** Customized <code>I18nString</code>. */
     private I18nString i18nString;
 
-    /** Helper listener. */
-    private PropertyChangeListener propListener;
     
     /** Creates new <code>PropertyPanel</code>. */
     public PropertyPanel() {
@@ -57,23 +52,6 @@ public class PropertyPanel extends JPanel {
     /** Seter for <code>i18nString</code> property. */
     public void setI18nString(I18nString i18nString) {
         this.i18nString = i18nString;
-        
-        i18nString.addPropertyChangeListener(WeakListener.propertyChange(
-            propListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if(I18nString.PROP_KEY.equals(evt.getPropertyName()))
-                        updateKey();
-                    else if(I18nString.PROP_VALUE.equals(evt.getPropertyName()))
-                        updateValue();
-                    else if(I18nString.PROP_COMMENT.equals(evt.getPropertyName()))
-                        updateComment();
-                    else if(I18nString.PROP_RESOURCE.equals(evt.getPropertyName()))
-                        updateBundleKeys();
-                    
-                }
-            },
-            i18nString
-        ));
         
         initAllValues();
     }
@@ -93,8 +71,15 @@ public class PropertyPanel extends JPanel {
     private void updateKey() {
         String key = i18nString.getKey();
         
-        if(key == null || !key.equals(keyBundleCombo.getSelectedItem()) )
+        if(key == null || !key.equals(keyBundleCombo.getSelectedItem()) ) {
+            // Trick to avoid firing key selected property change.
+            String oldActionCommand = keyBundleCombo.getActionCommand();
+            keyBundleCombo.setActionCommand(DUMMY_ACTION);
+
             keyBundleCombo.setSelectedItem(key == null ? "" : key); // NOI18N
+            
+            keyBundleCombo.setActionCommand(oldActionCommand);
+        }
     }
 
     /** Updates <code>valueText</code> UI. */
@@ -114,15 +99,16 @@ public class PropertyPanel extends JPanel {
     }
     
     /** Updates <code>keyBundleCombo</code> UI. */
-    private void updateBundleKeys() {
+    void updateBundleKeys() {
         // Trick to avoid firing key selected property change.
         String oldActionCommand = keyBundleCombo.getActionCommand();
         keyBundleCombo.setActionCommand(DUMMY_ACTION);
 
-        keyBundleCombo.setModel(new DefaultComboBoxModel(i18nString.getAllKeys()));
-        updateKey();
+        keyBundleCombo.setModel(new DefaultComboBoxModel(i18nString.getSupport().getResourceHolder().getAllKeys()));
 
         keyBundleCombo.setActionCommand(oldActionCommand);
+        
+        updateKey();
     }
     
     /** This method is called from within the constructor to
@@ -317,22 +303,30 @@ public class PropertyPanel extends JPanel {
             return;
 
         String key = (String)keyBundleCombo.getSelectedItem();
-        
         i18nString.setKey(key);
+        updateKey();
         
-        if(i18nString.getValueForKey(key) != null)
-            i18nString.setValue(i18nString.getValueForKey(key));
+        String value = i18nString.getSupport().getResourceHolder().getValueForKey(key);
+        if(value != null) {
+            i18nString.setValue(value);
+            updateValue();
+        }
         
-        if(i18nString.getCommentForKey(key) != null)
-            i18nString.setComment(i18nString.getCommentForKey(key));
+        String comment = i18nString.getSupport().getResourceHolder().getCommentForKey(key);
+        if(comment != null) {
+            i18nString.setComment(comment);
+            updateComment();
+        }
     }//GEN-LAST:event_keyBundleComboActionPerformed
 
     private void commentTextFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commentTextFocusLost
         i18nString.setComment(commentText.getText());
+        updateComment();
     }//GEN-LAST:event_commentTextFocusLost
 
     private void valueTextFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_valueTextFocusLost
         i18nString.setValue(valueText.getText());
+        updateValue();
     }//GEN-LAST:event_valueTextFocusLost
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

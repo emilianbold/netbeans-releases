@@ -15,11 +15,10 @@
 package org.netbeans.modules.i18n;
 
 
-import java.util.HashMap;
-
 import javax.swing.JPanel;
 import javax.swing.text.StyledDocument;
 
+import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 
 
@@ -31,57 +30,104 @@ import org.openide.loaders.DataObject;
  */
 public abstract class I18nSupport {
     
+    /** <code>I18nFinder</code>. */
+    private I18nFinder finder;
+    
+    /** <code>I18nReplacer</code>. */
+    private I18nReplacer replacer;
+
     /** <code>DataObject</code> which document the i18n session will run thru. */
     protected DataObject sourceDataObject;
 
     /** Document on which the i18n-session will be performed. */
     protected StyledDocument document;
     
-    /** <code>I18nFinder</code>. */
-    protected I18nFinder finder;
-    
-    /** <code>I18nReplacer</code>. */
-    protected I18nReplacer replacer;
+    /** Resource holder for sepcific subclass instance. */
+    protected final ResourceHolder resourceHolder;
     
 
     /** Constructor. */
-    public I18nSupport(DataObject sourceDataObject, StyledDocument document) {
+    public I18nSupport(DataObject sourceDataObject) {
         this.sourceDataObject = sourceDataObject;
-        this.document = document;
         
-        initialize();
+        EditorCookie editorCookie = (EditorCookie)sourceDataObject.getCookie(EditorCookie.class);
+        
+        if(editorCookie == null)
+            throw new IllegalArgumentException("I18N: Illegal data object type"+ sourceDataObject); // NOI18N
+        
+        this.document = editorCookie.getDocument();
+        
+        this.resourceHolder = createResourceHolder();
     }
     
     
-    /** Initializes finder and replacer for this support. */
-    private void initialize() {
-        finder = createFinder();
-        replacer = createReplacer();
-    }
-    
-    /** Creates finder, used for init. */
+    /** Creates <code>I18nFinder</code> instance used by this instance. */
     protected abstract I18nFinder createFinder();
     
-    /** Cretates replacer, used for init.*/
+    /** Cretates <code>I18nReplacer</code> instance used by this instance. */
     protected abstract I18nReplacer createReplacer();
-
-    /** Gets initialized I18nString instance for this i18n session. 
-     * have to have a non-null resource holder field, but resource of that holder needs not to be initialized yet. */
-    public abstract I18nString getDefaultI18nString();
     
-    /** Gets JPanel showing info about found hard coded value. */
-    public abstract JPanel getInfo(HardCodedString hcString);
-    
+    /** Creates <code>ResourceHolder<code> for this instance. */
+    protected abstract ResourceHolder createResourceHolder();
 
     /** Gets <code>I18nFinder</code>. */
-    public I18nFinder getFinder() {
+    public final I18nFinder getFinder() {
+        if(finder == null)
+            finder = createFinder();
+            
         return finder;
     }
     
     /** Gets <code>I18nReplacer</code> for this support. */
-    public I18nReplacer getReplacer() {
+    public final I18nReplacer getReplacer() {
+        if(replacer == null)
+            replacer = createReplacer();
+        
         return replacer;
     }
+
+    /** Getter for <code>sourceDataObject</code> property. */
+    public final DataObject getSourceDataObject() {
+        return sourceDataObject;
+    }
+    
+    /** Getter for <code>document</code> property. */
+    public final StyledDocument getDocument() {
+        return document;
+    }
+    
+    /** Gets default <code>I18nString</code> instance for this i18n session,
+     * has a non-null resource holder field, but resource of that holder may be not initialized yet. */
+    public I18nString getDefaultI18nString() {
+        return getDefaultI18nString(null);
+    }
+    
+    /** Gets default <code>I18nString</code> for this instance. */
+    public abstract I18nString getDefaultI18nString(HardCodedString hcString);
+    
+    /** Gets JPanel showing info about found hard coded value. */
+    public abstract JPanel getInfo(HardCodedString hcString);
+
+    /** Getter for <code>resourceHolder</code>. */
+    public ResourceHolder getResourceHolder() {
+        return resourceHolder;
+    }
+
+    /** Indicates if supports customizer for additional source specific values. Override in subclasses if nedded.
+     * @return false 
+     * @see #getAdditionalCustommizer */
+    public boolean hasAdditionalCustomizer() {
+        return false;
+    }
+    
+    /** Gets additional customizer. Override in subclasses if needed.
+     * @param i18nString instance for which could additional values be customized.
+     * @return null 
+     * @see #hasAdditionalCustomizer */
+    public JPanel getAdditionalCustomizer(I18nString i18nString) {
+        return null;
+    }
+
     
     /**
      * Interface for finder which will search for hard coded (non-i18n-ized)
@@ -113,7 +159,7 @@ public abstract class I18nSupport {
     public interface Factory {
         
         /** Creates <code>I18nSupport</code> instance for specified data object and document. */
-        public I18nSupport create(DataObject dataObject, StyledDocument document);
+        public I18nSupport create(DataObject dataObject);
     } // End of nested I18nSupportFactory class.
     
 }

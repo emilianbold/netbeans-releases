@@ -15,8 +15,6 @@
 package org.netbeans.modules.i18n;
 
 
-import javax.swing.text.StyledDocument;
-
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -53,12 +51,11 @@ public class I18nAction extends CookieAction {
         editorCookie.open(); 
         
         final DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
-        final StyledDocument document = editorCookie.getDocument();
         
         // Run in separate thread.
         RequestProcessor.postRequest(new Runnable() {
             public void run() {
-                I18nManager.getDefault().internationalize(document, dataObject);
+                I18nManager.getDefault().internationalize(dataObject);
             }
         });
     }

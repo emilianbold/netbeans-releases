@@ -15,6 +15,7 @@
 package org.netbeans.modules.i18n.jsp;
 
 
+import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
@@ -38,8 +39,8 @@ public class JspI18nSupport extends JavaI18nSupport {
 
 
     /** Constructor. */
-    public JspI18nSupport(DataObject sourceDataObject, StyledDocument document) {
-        super(sourceDataObject, document);
+    public JspI18nSupport(DataObject sourceDataObject) {
+        super(sourceDataObject);
     }
     
     
@@ -47,19 +48,20 @@ public class JspI18nSupport extends JavaI18nSupport {
     protected I18nFinder createFinder() {
         return new JspI18nFinder(document);
     }
-    
+ 
     /** Overrides superclass method. 
-     * @return <code>JspI18nString</code> instance */
-    public I18nString getDefaultI18nString() {
-        I18nString i18nString = new JspI18nString(sourceDataObject);
-        
-        if(I18nModule.getLastResourceUsed() != null)
-            i18nString.setResource(I18nModule.getLastResourceUsed());
-        
-        return i18nString;
+     * @return false */
+    public boolean hasAdditionalCustomizer() {
+        return false;
     }
     
-
+    /** Overrides superclass method. 
+     * @return null */
+    public JPanel getAdditionalCustomizer(I18nString i18nString) {
+        return null;
+    }
+    
+    
     /** Finder which search hard coded strings in java sources. */
     public static class JspI18nFinder extends JavaI18nFinder {
 
@@ -215,8 +217,8 @@ public class JspI18nSupport extends JavaI18nSupport {
     public static class Factory implements I18nSupport.Factory {
         
         /** Implements interface. */
-        public I18nSupport create(DataObject dataObject, StyledDocument document) {
-            return new JspI18nSupport(dataObject, document);
+        public I18nSupport create(DataObject dataObject) {
+            return new JspI18nSupport(dataObject);
         }
     }
 }

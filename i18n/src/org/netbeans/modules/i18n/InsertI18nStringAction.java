@@ -81,34 +81,23 @@ public class InsertI18nStringAction extends CookieAction {
         // Set position. 
         int position = panes[0].getCaret().getDot();
 
-        // Set document.
-        StyledDocument document = editorCookie.getDocument();
-        
-        if(document == null) {
-            // Shouldn't happen.
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                TopManager.getDefault().notifyException(new InternalError("I18N: InsertI18nAction: Document not initialized.")); // NOI18N
-            
-            return;
-        }
-        
         // If there is a i18n action in run on the same editor, cancel it.
         I18nManager.getDefault().cancel();
 
-        addPanel(dataObject, document, position);
+        addPanel(dataObject, position);
 
         // Ensure caret is visible.
         panes[0].getCaret().setVisible(true);;
     }
 
     /** Create panel used for specifying i18n string. */
-    private JPanel createPanel(final DataObject dataObject, final StyledDocument document, final int position) {
+    private JPanel createPanel(final DataObject dataObject, /*final StyledDocument document,*/ final int position) { //  TEMP
         I18nSupport.Factory factory = FactoryRegistry.getFactory(dataObject.getClass().getName());
         
         if(factory == null)
             throw new InternalError("I18N: No factory registered for data object type="+dataObject.getClass().getName()); // NOI18N
         
-        I18nSupport support = factory.create(dataObject, document);
+        final I18nSupport support = factory.create(dataObject);
         
         final I18nPanel i18nPanel = new I18nPanel(false, true);
         
@@ -159,15 +148,15 @@ public class InsertI18nStringAction extends CookieAction {
                         }
                         
                         // Try to add key to bundle.                            
-                        i18nString.addProperty(i18nString.getKey(), i18nString.getValue(), i18nString.getComment());
+                        support.getResourceHolder().addProperty(i18nString.getKey(), i18nString.getValue(), i18nString.getComment());
 
                         // Create field if necessary. 
                         // PENDING, should not be performed here -> capability moves to i18n wizard.
-                        if(i18nString instanceof JavaI18nString && i18nString.hasAdditionalCustomizer())
-                            I18nUtil.createField((JavaI18nString)i18nString, dataObject);
+                        if(i18nString instanceof JavaI18nString && i18nString.getSupport().hasAdditionalCustomizer())
+                            I18nUtil.createField((JavaI18nString)i18nString);
                         
                         // Replace string.
-                        document.insertString(position, I18nUtil.getReplaceJavaCode((JavaI18nString)i18nString, dataObject), null);
+                        support.getDocument().insertString(position, I18nUtil.getReplaceJavaCode((JavaI18nString)i18nString, dataObject), null);
 
                     } catch (IllegalStateException e) {
                         NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
@@ -200,11 +189,11 @@ public class InsertI18nStringAction extends CookieAction {
     }
     
     /** Adds panel to top component in split pane. */
-    private void addPanel(DataObject sourceDataObject, StyledDocument document, int position) {
+    private void addPanel(DataObject sourceDataObject, int position) {
         TopComponent topComponent = (TopComponent)topComponentWRef.get();
 
         if(topComponent == null) {
-            JPanel panel = createPanel(sourceDataObject, document, position);
+            JPanel panel = createPanel(sourceDataObject, position);
             
             // actually create the dialog as top component
             topComponent = new TopComponent() {

@@ -56,8 +56,6 @@ public abstract class ResourceHolder {
         if(!Arrays.asList(resourceClasses).contains(clazz))
             throw new IllegalArgumentException();
 
-        DataObject oldValue = this.resource;
-        
         if(!resource.equals(this.resource))
             this.resource = resource;
     }

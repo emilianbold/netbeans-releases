@@ -185,7 +185,7 @@ public abstract class I18nUtil {
     /** Gets the string used to replace found hardcoded string. */
     public static String getReplaceJavaCode(JavaI18nString javaI18nString, DataObject sourceDataObject) {
         if(javaI18nString != null) {
-            if(javaI18nString.getResource() != null && javaI18nString.getKey() != null) {
+            if(javaI18nString.getSupport().getResourceHolder().getResource() != null && javaI18nString.getKey() != null) {
                 String replaceJavaFormat = javaI18nString.getReplaceFormat();
                 
                 if(replaceJavaFormat == null)
@@ -194,10 +194,10 @@ public abstract class I18nUtil {
                 // Create map.
                 Map map = new HashMap(5);
                 
-                map.put("identifier", javaI18nString.getIdentifier()); // NOI18N
+                map.put("identifier", ((JavaI18nSupport)javaI18nString.getSupport()).getIdentifier()); // NOI18N
                 map.put("key", javaI18nString.getKey()); // NOI18N
-                map.put("bundleNameSlashes", javaI18nString.getResource().getPrimaryFile().getPackageName('/')); // NOI18N
-                map.put("bundleNameDots", javaI18nString.getResource().getPrimaryFile().getPackageName('.')); // NOI18N
+                map.put("bundleNameSlashes", javaI18nString.getSupport().getResourceHolder().getResource().getPrimaryFile().getPackageName('/')); // NOI18N
+                map.put("bundleNameDots", javaI18nString.getSupport().getResourceHolder().getResource().getPrimaryFile().getPackageName('.')); // NOI18N
                 map.put("sourceFileName", sourceDataObject == null ? "" : sourceDataObject.getPrimaryFile().getName()); // NOI18N
                 
                 // Gets the default replace string.
@@ -231,23 +231,25 @@ public abstract class I18nUtil {
      * @param sourceDataObject object to which source will be new field added,
      * the object have to have <code>SourceCookie</code>
      * @see org.openide.cookies.SourceCookie */
-    public static void createField(JavaI18nString javaI18nString, DataObject sourceDataObject) {
+    public static void createField(JavaI18nString javaI18nString) {
+        JavaI18nSupport javaI18nSupport = (JavaI18nSupport)javaI18nString.getSupport();
+        
         // Check if we have to generate field.
-        if(!javaI18nString.isGenerateField())
+        if(!javaI18nSupport.isGenerateField())
             return;
 
-        ClassElement sourceClass = getSourceClassElement(sourceDataObject);
+        ClassElement sourceClass = getSourceClassElement(javaI18nSupport.getSourceDataObject());
 
-        if(sourceClass.getField(Identifier.create(javaI18nString.getIdentifier())) != null)
+        if(sourceClass.getField(Identifier.create(javaI18nSupport.getIdentifier())) != null)
             // Field with such identifer exsit already, do nothing.
             return;
         
         try {
             FieldElement newField = new FieldElement();
-            newField.setName(Identifier.create(javaI18nString.getIdentifier()));
-            newField.setModifiers(javaI18nString.getModifiers());
+            newField.setName(Identifier.create(javaI18nSupport.getIdentifier()));
+            newField.setModifiers(javaI18nSupport.getModifiers());
             newField.setType(Type.parse("java.util.ResourceBundle")); // NOI18N
-            newField.setInitValue(getInitJavaCode(javaI18nString, sourceDataObject));
+            newField.setInitValue(getInitJavaCode(javaI18nString));
             
             if(sourceClass != null)
                 // Trying to add new field.
@@ -270,25 +272,23 @@ public abstract class I18nUtil {
      * <p>
      * java.util.ResourceBundle <identifier name> = <b>java.util.ResourceBundle.getBundle("<package name></b>")
      * @return String -> piece of initilizing code. */
-    private static String getInitJavaCode(JavaI18nString javaI18nString, DataObject sourceDataObject) {
-        if(javaI18nString != null) {
-            String initJavaFormat = javaI18nString.getInitFormat();
-            
-            if(initJavaFormat == null)
-                initJavaFormat = ((I18nOptions)SharedClassObject.findObject(I18nOptions.class, true)).getInitJavaCode();
-
-            // Create map.
-            Map map = new HashMap(3);
-
-            map.put("bundleNameSlashes", javaI18nString.getResource().getPrimaryFile().getPackageName('/')); // NOI18N
-            map.put("bundleNameDots", javaI18nString.getResource().getPrimaryFile().getPackageName('.')); // NOI18N
-            map.put("sourceFileName", sourceDataObject == null ? "" : sourceDataObject.getPrimaryFile().getName()); // NOI18N
-            
-            return MapFormat.format(initJavaFormat, 
-                map 
-            );
-        } else
+    private static String getInitJavaCode(JavaI18nString javaI18nString) {
+        if(javaI18nString == null)
             return null;
+            
+        String initJavaFormat = ((JavaI18nSupport)javaI18nString.getSupport()).getInitFormat();
+
+        if(initJavaFormat == null)
+            initJavaFormat = ((I18nOptions)SharedClassObject.findObject(I18nOptions.class, true)).getInitJavaCode();
+
+        // Create map.
+        Map map = new HashMap(3);
+
+        map.put("bundleNameSlashes", javaI18nString.getSupport().getResourceHolder().getResource().getPrimaryFile().getPackageName('/')); // NOI18N
+        map.put("bundleNameDots", javaI18nString.getSupport().getResourceHolder().getResource().getPrimaryFile().getPackageName('.')); // NOI18N
+        map.put("sourceFileName", javaI18nString.getSupport().getSourceDataObject().getPrimaryFile().getName()); // NOI18N
+
+        return MapFormat.format(initJavaFormat, map);
     }
     
     /** Helper method. Finds main top-level class element for <code>sourceDataObject</code> which should be initialized. */
