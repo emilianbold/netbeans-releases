@@ -43,7 +43,11 @@ public class CmpFieldHelper {
     public CmpFieldHelper(EntityHelper entityHelper, CmpField field) {
         this.entityHelper = entityHelper;
         this.field = field;
-        String fieldName = this.field.getFieldName();
+        initAccessMethods();
+    }
+
+    public void initAccessMethods() {
+        String fieldName = field.getFieldName();
         getterMethod = entityHelper.getGetterMethod(fieldName);
         if (getterMethod != null) {
             MethodElement getterMethod = this.getterMethod;
@@ -57,25 +61,62 @@ public class CmpFieldHelper {
         return getterMethod == null ? null : getterMethod.getReturn().getFullString();
     }
 
-    public void setType(String newType) {
+    public void setType(String type) {
+        initAccessMethods();
+        Type newType = createType(type);
         if (isPrimary()) {
-            entityHelper.setPrimKeyClass(newType);
+            entityHelper.setPrimKeyClass(type);
+            Identifier primaryMethod = Identifier.create("findByPrimaryKey");
+            ClassElement classElement = entityHelper.getLocalHomeInterfaceClass();
+            Type[] origArguments = new Type[]{createType(getType())};
+            if (classElement != null) {
+                MethodElement method = classElement.getMethod(primaryMethod, origArguments);
+                changeParameterType(method, newType);
+            }
+            classElement = entityHelper.getHomeInterfaceClass();
+            if (classElement != null) {
+                MethodElement method = classElement.getMethod(primaryMethod, origArguments);
+                changeParameterType(method, newType);
+            }
+            MethodElement method = entityHelper.beanClass.getMethod(Identifier.create("ejbCreate"), origArguments);
+            changeParameterType(method, newType);
+            changeReturnType(method, newType);
+
         }
-        Identifier identifier = Identifier.create(newType);
-        Type type = Type.createClass(identifier);
-        try {
-            getterMethod.setReturn(type);
-        } catch (SourceException e) {
-            Utils.notifyError(e);
-        }
-        if (setterMethod != null) {
-            MethodParameter[] parameters = setterMethod.getParameters();
+        ClassElement localBusinessInterfaceClass = entityHelper.getLocalBusinessInterfaceClass();
+        ClassElement remoteBusinessInterfaceClass = entityHelper.getRemoteBusinessInterfaceClass();
+        changeReturnType(getBusinessMethod(localBusinessInterfaceClass, getterMethod), newType);
+        changeParameterType(getBusinessMethod(localBusinessInterfaceClass, setterMethod), newType);
+        changeReturnType(getBusinessMethod(remoteBusinessInterfaceClass, getterMethod), newType);
+        changeParameterType(getBusinessMethod(remoteBusinessInterfaceClass, setterMethod), newType);
+        changeReturnType(getterMethod, newType);
+        changeParameterType(setterMethod, newType);
+    }
+
+    private static Type createType(String type) {
+        return Type.createClass(Identifier.create(type));
+    }
+
+    private void changeParameterType(final MethodElement method, Type type) {
+        if (method != null) {
+            MethodParameter[] parameters = method.getParameters();
             parameters[0].setType(type);
             try {
-                setterMethod.setParameters(parameters);
+                method.setParameters(parameters);
             } catch (SourceException e) {
                 Utils.notifyError(e);
             }
+        }
+    }
+
+    private void changeReturnType(MethodElement method, Type type) {
+        if (method != null) {
+            try {
+                method.setReturn(type);
+            } catch (SourceException e) {
+                Utils.notifyError(e);
+            }
+
         }
     }
 
@@ -210,7 +251,7 @@ public class CmpFieldHelper {
         FieldElement element = new FieldElement();
         try {
             element.setName(Identifier.create(getFieldName()));
-            element.setType(Type.createClass(Identifier.create(getType())));
+            element.setType(createType(getType()));
         } catch (SourceException e) {
             Utils.notifyError(e);
             return false;

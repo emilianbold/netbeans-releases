@@ -168,9 +168,13 @@ public class EntityHelper extends EntityAndSessionHelper {
         public void change(Object source, String propertyName, Object oldValue, Object newValue) {
             if (source instanceof Entity) {
                 cmpFieldHelperMap.keySet().retainAll(Arrays.asList(entity.getCmpField()));
+            } else if (source instanceof ClassElement) {
+                for (Iterator it = cmpFieldHelperMap.values().iterator(); it.hasNext();) {
+                    CmpFieldHelper cmpFieldHelper = (CmpFieldHelper) it.next();
+                    cmpFieldHelper.initAccessMethods();
+                }
             }
             firePropertyChange(new PropertyChangeEvent(source, propertyName, oldValue, newValue));
-
         }
 
         protected void firePropertyChange(PropertyChangeEvent evt) {
