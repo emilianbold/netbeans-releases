@@ -120,7 +120,6 @@
 <mapID target="beans.adding" url="beans/adding.html" />
 <mapID target="beans.glossary_serialized" url="beans/glossary_serialized.html" />
 <mapID target="beans.csh.serialize" url="pending.html" />
-<mapID target="beans.settings" url="beans/settings.html" />
 
 
 <mapID target="java.sync.intro" url="java/synchronizing/intro.html" />
@@ -157,7 +156,6 @@
 <mapID target="editing.find" url="editing/find.html" />
 <mapID target="editing.formatting" url="editing/formatting.html" />
 <mapID target="editing.tabs" url="editing/tabs.html" />
-<mapID target="editing.linenumbers" url="editing/linenumbers.html" />
 <mapID target="editing.codecompletion" url="editing/codecompletion/intro.html" />
 <mapID target="editing.completing-exp" url="editing/codecompletion/completing-exp.html" />
 <mapID target="editing.completing-tag" url="editing/codecompletion/completing-tag.html" />
@@ -171,7 +169,6 @@
 <mapID target="editing.macros.recording" url="editing/macros/recording.html" />
 <mapID target="editing.macros.editing" url="editing/macros/editing.html" />
 <mapID target="editing.macros.invoking" url="editing/macros/invoking.html" />
-<mapID target="editing.toolbar" url="editing/editing_toolbar.html" />
 <mapID target="editing.jumplist" url="editing/jumplist.html" />
 <mapID target="editing.bookmarks" url="editing/bookmarks.html" />
 <mapID target="editing.wordmatch" url="editing/wordmatch.html" />
@@ -185,14 +182,16 @@
 <mapID target="editing_error-marks" url="editing/editing_error-marks.html" />
 <mapID target="editing.tasks" url="editing/tasks_viewing.html" />
 <mapID target="editor.hiding" url="editing/editor_hiding.html" />
+<mapID target="editor.quickref" url="editing/editor_quickref.html" />
 <mapID target="editorwindow.maximize" url="editing/editorwindow_maximize.html" />
 <mapID target="editor.navigation" url="editing/editor_navigation.html" />
 <mapID target="editor.smart-brackets" url="editing/editor_smart-brackets.html" />
 
-<mapID target="editing.configuring.annotations" url="editing/configuring/annotations.html" />
 <mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
-<mapID target="editing.colorchooser" url="editing/configuring/colorchooser.html" />
 <mapID target="editing.keybindings" url="editing/configuring/keybindings.html" />
+
+<!--CSH<mapID target="editing.colorchooser" url="editing/configuring/colorchooser.html" />-->
+
 
 
 <mapID target="xml_nodes"   url="xml/xmlnodes.html" />

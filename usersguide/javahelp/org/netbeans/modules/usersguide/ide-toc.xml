@@ -92,11 +92,9 @@
     <tocitem text="Editing Java Code" target="editing.newcode"/>
     <tocitem text="Error Marking" target="editing_error-marks"/>
     <tocitem text="Formatting Code" target="editing.formatting"/>
-    <tocitem text="Working With Tabs" target="editing.tabs"/>
     <tocitem text="Finding and Replacing Text" target="editing.find"/>
     <tocitem text="Folding Blocks of Code" target="editor.hiding"/>
     <tocitem text="Pair Completion, Smart Enter, and Smart Semicolons" target="editor.smart-brackets"/>
-    <tocitem text="Displaying Line Numbers" target="editing.linenumbers"/>
     <tocitem text="Scanning for TODOs in Source Code" target="editing.tasks"/>
     <tocitem text="Using Code Completion" >
       <tocitem text="About" target="editing.codecompletion" />
@@ -140,7 +138,6 @@
       <tocitem text="Generating BeanInfo" target="beans.beaninfo.generating" />
       <tocitem text="BeanInfo Editor Dialog Box" target="beans.beaninfo.nodes" />
       <tocitem text="Generating Getter and Setter Methods" target="beans.getset" />
-      <tocitem text="Configuring Generation of Getter and Setter Methods" target="beans.settings" />
       <tocitem text="Making a Bean a Container" target="beans.container" />
       <tocitem text="Setting a Bean's Icon" target="beans.icon" />
       <tocitem text="Adding a Bean to the Palette Window" target="beans.adding" />
@@ -199,12 +196,11 @@
     <tocitem text="Configuring the Source Editor" >
       <tocitem text="About" target="editing.configuring"/>    
       <tocitem text="Source Editor Properties" target="editing.editor-props"/>
-      <tocitem text="Annotation Properties" target="editing.configuring.annotations"/>
+      <tocitem text="Setting Keyboard Shortcuts for the Source Editor" target="editing.settingkeybdshorts"/>
       <tocitem text="Indentation Properties" target="editing.indentation"/>
       <tocitem text="Print Properties" target="editing.printing"/>
       <tocitem text="Setting Fonts and Colors in the Source Editor" target="editing.fontsandcolors"/>
-      <tocitem text="Color Chooser" target="editing.colorchooser"/>
-      <tocitem text="Setting Keyboard Shortcuts for the Source Editor" target="editing.settingkeybdshorts"/>
+      <tocitem text="Working With Tabs" target="editing.tabs"/>
       <tocitem text="Key Bindings Property Editor" target="editing.keybindings"/>
     </tocitem>
   </tocitem>
