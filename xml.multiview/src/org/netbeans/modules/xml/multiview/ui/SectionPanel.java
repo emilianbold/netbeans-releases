@@ -91,8 +91,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
 
     private void openInnerPanel() {
         closeInnerPanel(); // close previous inner panel if exists
-        innerPanel = node instanceof SectionNode ?
-                ((SectionNode) node).createInnerPanel() : sectionView.getInnerPanelFactory().createInnerPanel(key);
+        innerPanel = sectionView.getInnerPanelFactory().createInnerPanel(key);
 
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
