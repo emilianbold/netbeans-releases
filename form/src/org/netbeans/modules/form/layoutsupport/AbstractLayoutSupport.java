@@ -62,63 +62,60 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     // -----------
     // LayoutSupportDelegate interface implementation
 
-    public void initialize(LayoutSupportContext layoutContext) {
+    public void initialize(LayoutSupportContext layoutContext,
+                           LayoutManager lmInstance,
+                           boolean fromCode)
+    {
         this.layoutContext = layoutContext;
         clean();
 
         Class cls = getSupportedClass();
         if (cls != null && LayoutManager.class.isAssignableFrom(cls)) {
-            // create default layout instance and metacomponent for it
-            LayoutManager lmInstance = null;
-            try {
-                lmInstance = createDefaultLayoutInstance();
-            }
-            catch (Exception ex) { // cannot make default layout instance
-                ex.printStackTrace(); // [just ignore??]
+            // create MetaLayout to manage layout manager as a bean
+            boolean defaultInstance = lmInstance == null;
+            if (lmInstance == null || !lmInstance.getClass().equals(cls)) {
+                // no valid layout manager instance - create a default one
+                try {
+                    lmInstance = createDefaultLayoutInstance();
+                    defaultInstance = true;
+                }
+                catch (Exception ex) { // cannot make default layout instance
+                    ex.printStackTrace(); // [just ignore??]
+                    lmInstance = null;
+                }
             }
 
             if (lmInstance != null)
-                metaLayout = new MetaLayout(this, lmInstance, true);
+                metaLayout = new MetaLayout(this, lmInstance, defaultInstance);
         }
         else metaLayout = null;
 
         // read layout code
         readLayoutCode(setLayoutCode);
-    }
 
-    public void initializeFromCode(LayoutSupportContext layoutContext) {
-        initialize(layoutContext);
+        if (fromCode) {
+            CodeGroup componentCode = null;
+            Iterator it = CodeStructure.getDefinedStatementsIterator(
+                                          getActiveContainerCodeExpression());
+            while (it.hasNext()) {
+                if (componentCode == null)
+                    componentCode =
+                        layoutContext.getCodeStructure().createCodeGroup();
 
-        CodeGroup componentCode = null;
-        Iterator it = CodeStructure.getDefinedStatementsIterator(
-                                        getActiveContainerCodeExpression());
-        while (it.hasNext()) {
-            if (componentCode == null)
-                componentCode =
-                    layoutContext.getCodeStructure().createCodeGroup();
+                CodeStatement statement = (CodeStatement) it.next();
+                CodeExpression compExp = readComponentCode(statement,
+                                                            componentCode);
+                if (compExp != null) {
+                    componentCodeExpressions.add(compExp);
+                    componentCodeGroups.add(componentCode);
+                    componentCode = null;
 
-            CodeStatement statement = (CodeStatement) it.next();
-            CodeExpression compExp = readComponentCode(statement,
-                                                        componentCode);
-            if (compExp != null) {
-                componentCodeExpressions.add(compExp);
-                componentCodeGroups.add(componentCode);
-                componentCode = null;
-
-                if (componentConstraints.size()
-                        < componentCodeExpressions.size())
-                    componentConstraints.add(null);
+                    if (componentConstraints.size()
+                            < componentCodeExpressions.size())
+                        componentConstraints.add(null);
+                }
             }
         }
-    }
-
-    public void initializeFromLayout(LayoutSupportContext layoutContext,
-                                     LayoutManager lmInstance)
-    {
-        this.layoutContext = layoutContext;
-        clean();
-        metaLayout = new MetaLayout(this, lmInstance, false);
-        readLayoutCode(setLayoutCode);
     }
 
     public boolean isDedicated() {
@@ -402,7 +399,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
             return null;
         }
 
-        clone.initialize(targetContext);
+        clone.initialize(targetContext, null, false);
 
         FormProperty[] sourceProperties = getAllProperties();
         FormProperty[] targetProperties = clone.getAllProperties();

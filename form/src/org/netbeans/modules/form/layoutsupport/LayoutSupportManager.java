@@ -125,57 +125,28 @@ public final class LayoutSupportManager implements LayoutSupportContext {
             return false;
         }
 
-        if (lmInstance == null) {
-            if (!fromCode)
-                setLayoutDelegate(delegate);
-            else
-                setLayoutDelegateInitFromCode(delegate);
-        }
-        else setLayoutDelegateInitFromLayout(delegate, lmInstance);
+        setLayoutDelegate(delegate, lmInstance, fromCode);
 
         return true;
     }
 
-    public void setLayoutDelegate(LayoutSupportDelegate newDelegate) {
-        LayoutConstraints[] oldConstraints;
-        if (layoutDelegate != null)
-            oldConstraints = removeLayoutDelegate(true);
-        else oldConstraints = null;
-
-        layoutDelegate = newDelegate;
-
-        if (layoutDelegate != null) {
-            layoutDelegate.initialize(this); // default initialization
-            fillLayout(oldConstraints);
-        }
-    }
-
-    public void setLayoutDelegateInitFromCode(LayoutSupportDelegate newDelegate)
-    {
-        if (layoutDelegate != null && layoutDelegate != newDelegate)
-            removeLayoutDelegate(false);
-
-        layoutDelegate = newDelegate;
-
-        if (layoutDelegate != null) {
-            layoutDelegate.initializeFromCode(this);
-        }
-    }
-
-    public void setLayoutDelegateInitFromLayout(
-                    LayoutSupportDelegate newDelegate,
-                    LayoutManager lmInstance)
+    public void setLayoutDelegate(LayoutSupportDelegate newDelegate,
+                                  LayoutManager lmInstance,
+                                  boolean fromCode)
     {
         LayoutConstraints[] oldConstraints;
-        if (layoutDelegate != null)
+        if (layoutDelegate != null
+                && (layoutDelegate != newDelegate || !fromCode))
             oldConstraints = removeLayoutDelegate(true);
-        else oldConstraints = null;
+        else
+            oldConstraints = null;
 
         layoutDelegate = newDelegate;
 
         if (layoutDelegate != null) {
-            layoutDelegate.initializeFromLayout(this, lmInstance);
-            fillLayout(oldConstraints);
+            layoutDelegate.initialize(this, lmInstance, fromCode);
+            if (!fromCode)
+                fillLayout(oldConstraints);
         }
     }
 

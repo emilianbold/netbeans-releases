@@ -24,10 +24,9 @@ import org.netbeans.modules.form.codestructure.*;
 public interface LayoutSupportDelegate {
 
     // initialization
-    public void initialize(LayoutSupportContext layoutContext);
-    public void initializeFromCode(LayoutSupportContext layoutContext);
-    public void initializeFromLayout(LayoutSupportContext layoutContext,
-                                     LayoutManager lmInstance);
+    public void initialize(LayoutSupportContext layoutContext,
+                           LayoutManager lmInstance,
+                           boolean fromCode);
 
     // type of support
     Class getSupportedClass();
