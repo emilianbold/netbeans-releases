@@ -314,21 +314,25 @@ public final class ServerRegistry implements java.io.Serializable {
             Server server = (Server) i.next();
             try {
                 if(server.handlesUri(url)) {
-                    ServerInstance instance = new ServerInstance(server,url);
-                    // PENDING persist url/password in ServerString as well
-                    instancesMap().put(url,instance);
-                    ServerString str = new ServerString(server.getShortName(),url,null);
-                    writeInstanceToFile(url,username,password);
-                    if (displayName != null) instance.getInstanceProperties().setProperty(
-                            InstanceProperties.DISPLAY_NAME_ATTR, displayName);
-                    fireInstanceListeners(url, true);
-                    return true;
+                    // try to create a disconnected deployment manager to see
+                    // whether the instance is not corrupted - see #46929
+                    DeploymentManager manager = server.getDeploymentManager();
+                    if (manager != null) {
+                        ServerInstance instance = new ServerInstance(server,url);
+                        // PENDING persist url/password in ServerString as well
+                        instancesMap().put(url,instance);
+                        ServerString str = new ServerString(server.getShortName(),url,null);
+                        writeInstanceToFile(url,username,password);
+                        if (displayName != null) instance.getInstanceProperties().setProperty(
+                                InstanceProperties.DISPLAY_NAME_ATTR, displayName);
+                        fireInstanceListeners(url, true);
+                        return true;
+                    }
                 }
             } catch (Exception e) {
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, e);
             }
         }
-        // PENDING need error dialog saying this server wasn't recognized by any plugin
         return false;
     }
     
