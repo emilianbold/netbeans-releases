@@ -378,7 +378,6 @@ final class ShortcutsFolder extends FolderInstance {
         transformOldFiles();
         DataFolder f = NbPlaces.getDefault().findSessionFolder(SHORTCUTS_FOLDER);
         shortcutsFolder = new ShortcutsFolder(f);
-        shortcutsFolder.recreate();
     }
 
     /** This should update the global key map. */
