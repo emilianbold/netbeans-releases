@@ -7,44 +7,30 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.db.explorer.infos;
 
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeListener;
-import java.io.InputStream;
 import java.io.IOException;
-import java.util.*;
-import java.sql.*;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Vector;
 
-import org.openide.nodes.Node;
+import org.openide.NotifyDescriptor;
+import org.openide.TopManager;
 
-import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.lib.ddl.util.PListReader;
-import org.netbeans.modules.db.*;
-import org.netbeans.modules.db.explorer.*;
+import org.netbeans.lib.ddl.impl.AbstractCommand;
+import org.netbeans.lib.ddl.impl.DriverSpecification;
+import org.netbeans.lib.ddl.impl.Specification;
+
+import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
-import org.netbeans.modules.db.explorer.DatabaseDriver;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
 
 public class ProcedureNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =-5984072379104199563L;
-
-    /*
-    	public DatabaseDriver getDatabaseDriver() {
-    		return (DatabaseDriver)get(DatabaseNodeInfo.DBDRIVER);
-    	}
-      
-    	public void setDatabaseDriver(DatabaseDriver drv) {
-    		put(DatabaseNodeInfo.NAME, drv.getName());
-    		put(DatabaseNodeInfo.URL, drv.getURL());
-    		put(DatabaseNodeInfo.DBDRIVER, drv);
-    	}
-    */
 
     public void initChildren(Vector children) throws DatabaseException {
         try {
@@ -77,7 +63,7 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo {
                     if (drvSpec.getDBName().indexOf("Oracle") != -1) {
                         String pac1 = (String) rset.get(new Integer(1));
                         if ((pac == null && pac1 != null) || (pac != null && pac1 == null) || (pac != null && pac1 != null && ! pac1.equals(pac)))
-                                continue;
+                            continue;
                     }
                     
                     info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE_COLUMN, rset);
@@ -134,16 +120,14 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo {
     }
 
     /* delete procedure from list of procedures and drop procedure in the database */	
-    public void delete()
-    throws IOException
-    {
+    public void delete() throws IOException {
         try {
-            Specification spec = (Specification)getSpecification();
-            AbstractCommand cmd = spec.createCommandDropProcedure((String)get(DatabaseNode.PROCEDURE));
-            cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
+            Specification spec = (Specification) getSpecification();
+            AbstractCommand cmd = spec.createCommandDropProcedure((String) get(DatabaseNode.PROCEDURE));
+            cmd.setObjectOwner((String) get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
         } catch (Exception e) {
-            throw new IOException(e.getMessage());
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 }
