@@ -141,11 +141,21 @@ final class Services extends ServiceType.Registry implements Comparator {
             
             // removes the default service, if present
             ServiceType st = s.getServiceType();
-            if (current.remove (st)) {
+            Iterator it = current.iterator ();
+            boolean one = false;
+            while (it.hasNext ()) {
+                ServiceType type = (ServiceType)it.next ();
+                if (type.getClass () == st.getClass ()) {
+                    it.remove ();
+                    INSTANCE.name2Service.remove(type.getName());
+                    one = true;
+                }
+            }
+            
+            if (one) {
                 servicesChangedNotify();
                 supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
             }
-            getDefault().name2Service.remove(st.getName());
         }
     }
     
@@ -524,6 +534,9 @@ final class Services extends ServiceType.Registry implements Comparator {
 
 /*
 * $Log$
+* Revision 1.42  2001/03/26 15:40:24  jtulach
+* Fix of 9629. When a service is uninstalled all instances with the same class are removed too.
+*
 * Revision 1.41  2001/02/20 18:31:08  dstrupl
 * #9696 better synchronization on Services.kinds
 *
