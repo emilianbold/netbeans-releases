@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../core/term/netbeans/modules/autoload/terminalemulator.jar"/>
         <pathelement location="../core/windows/netbeans/modules/core-windows.jar"/>
         <pathelement location="../jemmy/jemmy.jar"/>
-        <pathelement location="../xtest/external/junit-3.7.jar"/>
+        <pathelement location="../xtest/external/junit-3.8.1.jar"/>
         <pathelement location="../xtest/nbjunit/netbeans/modules/ext/nbjunit.jar"/>
     </path>
 
