@@ -134,7 +134,10 @@ Microsystems, Inc. All Rights Reserved.
             </xsl:attribute>
             <xsl:value-of select="$name" />
         </a>
-        - <xsl:apply-templates />
+        <!-- put "- and description" there only if there are some child nodes -->
+        <xsl:if test="child::node()" >
+            - <xsl:apply-templates />
+        </xsl:if>
     </xsl:template>
 
     <xsl:template name="api">
