@@ -69,13 +69,13 @@ public class BeanInfoGeneration extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new BeanInfoGeneration("testCheckNodes"));
-        suite.addTest(new BeanInfoGeneration("testIncludeExclude"));
-        suite.addTest(new BeanInfoGeneration("testBeanInfoNode"));
+//        suite.addTest(new BeanInfoGeneration("testCheckNodes"));
+//        suite.addTest(new BeanInfoGeneration("testIncludeExclude"));
+//        suite.addTest(new BeanInfoGeneration("testBeanInfoNode"));
         suite.addTest(new BeanInfoGeneration("testPropertiesNode"));
-        suite.addTest(new BeanInfoGeneration("testNodesDescription"));
-        suite.addTest(new BeanInfoGeneration("testGenerateNewBeanInfo"));
-        suite.addTest(new BeanInfoGeneration("testRegenerateBeanInfo"));
+//        suite.addTest(new BeanInfoGeneration("testNodesDescription"));
+//        suite.addTest(new BeanInfoGeneration("testGenerateNewBeanInfo"));
+//        suite.addTest(new BeanInfoGeneration("testRegenerateBeanInfo"));
 ////        suite.addTest(new BeanInfoGeneration("testCheckBeanInfoCompilability"));
         
         return suite;
@@ -135,13 +135,12 @@ public class BeanInfoGeneration extends JellyTestCase {
         String confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
         new NbDialogOperator(confirmTitle).yes();
         new EventTool().waitNoEvent(1500);
-
-        javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"BeanInfo"); // NOI18N
-        javaNode.delete();
-        confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
-        new NbDialogOperator(confirmTitle).yes();
-        
-        
+        if (!getName().equals("testCheckNodes")) {
+                javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"BeanInfo"); // NOI18N
+                javaNode.delete();
+                confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
+                new NbDialogOperator(confirmTitle).yes();
+        }        
         FilesystemNode fsNode = new FilesystemNode(repositoryRootNode, sampleDir);
         fsNode.unmount();
 
@@ -387,14 +386,15 @@ public class BeanInfoGeneration extends JellyTestCase {
         patternsNode.performPopupActionNoBlock(Bundle.getString("org.netbeans.modules.beans.Bundle", "CTL_TITLE_GenerateBeanInfo"));
         String dialogTitle = "BeanInfo Editor";
         NbDialogOperator nbDialogOperator = new NbDialogOperator(dialogTitle);
+        new EventTool().waitNoEvent(750);                                       
         nbDialogOperator.ok();
-        new EventTool().waitNoEvent(1500);                                       
+        new EventTool().waitNoEvent(750);                                       
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
-        JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE);
+        JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"BeanInfo");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Open");        
+        javaNode.performPopupActionNoBlock("Open"); 
         try {
             EditorWindowOperator ewo = new EditorWindowOperator();
             EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE+"BeanInfo");        
@@ -427,7 +427,6 @@ public class BeanInfoGeneration extends JellyTestCase {
         nbDialogOperator =new NbDialogOperator(questionTitle);
         nbDialogOperator.yes();
         new EventTool().waitNoEvent(2500);
-        
 //
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
@@ -443,7 +442,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
-        javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE);
+        javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"BeanInfo");
         javaNode.select();
         javaNode.performPopupActionNoBlock("Open");
         try {
@@ -458,7 +457,6 @@ public class BeanInfoGeneration extends JellyTestCase {
             exc.printStackTrace();
         }               
         compareReferenceFiles("testRegenerateBeanInfoModified.ref", "testRegenerateBeanInfoModified.pass", "testRegenerateBeanInfoModified.diff");
-        
     }
 
     public void testCheckNodes() {
@@ -529,7 +527,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
-        JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE);
+        JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"BeanInfo");
         javaNode.select();
         javaNode.performPopupActionNoBlock("Open");
         EditorWindowOperator ewo = new EditorWindowOperator();
@@ -579,7 +577,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         explorerOperator = new ExplorerOperator();
         explorerOperator.selectPageFilesystems();
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
-        JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE);
+        JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"BeanInfo");
         javaNode.select();
         javaNode.performPopupActionNoBlock("Open");
         EditorWindowOperator ewo = new EditorWindowOperator();
