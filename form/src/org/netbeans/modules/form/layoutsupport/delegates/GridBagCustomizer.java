@@ -148,6 +148,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         catch (java.beans.PropertyVetoException e) {
 //            ErrorManager.getDefault().notifyException(e);
         }
+        propertySheet.setPreferredSize(new Dimension(300, 380));
 
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
@@ -190,7 +191,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                 */
                 //System.out.println(" THE GET " + new Dimension(Math.max(400, width), Math.max(300, height))); // NOI18N
 
-                return  new Dimension(Math.max(400, width), Math.max(300, height));
+                return  new Dimension(Math.max(500, width), Math.max(300, height));
             }
         };
 
