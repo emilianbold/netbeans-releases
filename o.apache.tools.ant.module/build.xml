@@ -249,4 +249,11 @@ After that you should be done!
 </echo>
   </target>
 
+    <target name="apichanges-check" description="Check syntax of API changes list. Requires Ant 1.4!">
+        <xmlvalidate file="api/doc/changes/apichanges.xml" failonerror="true"/>
+    </target>
+    <target name="apichanges-generate" description="Regenerate HTML from XML API changes list.">
+        <style in="api/doc/changes/apichanges.xml" out="www/apichanges.html" destdir="www" style="../openide/api/doc/changes/apichanges.xsl"/>
+    </target>
+
 </project>
