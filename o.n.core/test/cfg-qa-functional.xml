@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
 
 
 <!-- Start Property Editors testbag -->
-    <testbag testattribs="pe" executor="ide" name="Property Editors and Customizers tests" resultsprocessor="unit">
+    <testbag testattribs="stable and ide and pe" executor="ide" name="Property Editors and Customizers tests" resultsprocessor="unit">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_*.class"/>
