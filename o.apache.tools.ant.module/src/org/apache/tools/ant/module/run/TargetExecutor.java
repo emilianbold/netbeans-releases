@@ -15,6 +15,7 @@
  
 package org.apache.tools.ant.module.run;
 
+import java.awt.EventQueue;
 import java.io.*;
 import java.util.*;
 import java.util.Map; // override org.apache.tools.ant.Map
@@ -135,8 +136,9 @@ public class TargetExecutor implements Runnable {
             io = IOProvider.getDefault ().getIO (name, false);
             // this will delete the output even if a script is still running.
             io.getOut ().reset ();
+            // Disabled since for Ant-based compilation it is usually annoying:
             // #16720:
-            io.select();
+            //io.select();
             
             task = ExecutionEngine.getDefault().execute (name, this, InputOutput.NULL);
             //System.err.println("execute #2: " + this);
@@ -188,10 +190,23 @@ public class TargetExecutor implements Runnable {
     synchronized public void run () {
         if (outputStream == null) {
             //System.out.println("run #1: " + this); // NOI18N
-            io.setFocusTaken (true);
+            // Just annoying during normal compilation:
+            //io.setFocusTaken (true);
             io.setErrVisible (false);
             // Generally more annoying than helpful:
             io.setErrSeparated (false);
+            // But want to bring I/O window to front without selecting, if possible:
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    // XXX would be cleaner to call ioTC.requestVisible but we have
+                    // no way of getting the TC corresponding to io...
+                    TopComponent orig = TopComponent.getRegistry().getActivated();
+                    io.select();
+                    if (orig != null) {
+                        orig.requestActive();
+                    }
+                }
+            });
         }
         
         if (AntSettings.getDefault ().getSaveAll ()) {
