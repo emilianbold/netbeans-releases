@@ -1,10 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.settings/1
 OpenIDE-Module-Specification-Version: 1.4
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Module-Dependencies: org.netbeans.core/1 > 1.1
 OpenIDE-Module-Layer: org/netbeans/modules/settings/resources/mf-layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/settings/resources/Bundle.properties
-OpenIDE-Module-Public-Packages: org.netbeans.api.settings.**, org.netbeans.spi.settings.**
 

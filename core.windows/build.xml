@@ -8,72 +8,9 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="core/windows" default="netbeans" basedir=".">
-    <import file="../../nbbuild/default.xml"/> 
-
-    <target name="init" depends="default.init">
-      <patternset id="core/windows.files">
-        <include name="${nb.modules.dir}/core-windows.jar"/>
-      </patternset>
-      <path id="cp">
-         <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
-         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-         <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-      </path>
-    </target>
-
-    <target name="compile" depends="init">
-        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-            <classpath refID="cp"/>
-        </javac>
-    </target>
-
-    <target name="jars" depends="init,compile">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/core-windows.jar"
-             basedir="src"
-             manifest="manifest-subst.mf"
-             excludesfile="../../nbbuild/standard-jar-excludes.txt"
-	     compress="false"/>
-    </target>
-
-    <target name="netbeans" depends="init,jars">
-      <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/core-windows.jar">
-        <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-          <patternset refID="core/windows.files"/>
-        </fileset>
-      </genlist>
-    </target>
-
-    <target name="nbm" depends="netbeans">
-        <makenbm file="core-windows.nbm"
-                 productdir="${netbeans.dest.dir}/${cluster.dir}"
-                 module="${nb.modules.dir}/core-windows.jar"
-                 homepage="http://core.${homepage.base}/"
-                 distribution="http://${dist.base}/core-windows.nbm">
-            <license file="${license.file}"/>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
-    </target>
-
-    <target name="clean" depends="init">
-        <delete>
-            <fileset dir="src">
-                <include name="**/*.class"/>
-            </fileset>
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-                <patternset refID="core/windows.files"/>
-            </fileset>
-        </delete>
-        <delete file="core-windows.nbm"/>
-        <delete file="manifest-subst.mf"/>
-    </target>
-
+    <import file="../../nbbuild/templates/projectized.xml"/>
 </project>
