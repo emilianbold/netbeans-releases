@@ -43,6 +43,8 @@ public class BreakpointsTest extends DebuggerApiTestBase {
         addBreakpoint(dm, tb, dml);
         removeBreakpoint(dm, tb, dml);
         removeBreakpoint(dm, tb, dml);
+
+        dm.removeDebuggerListener(dml);
     }
 
     private void initBreakpoints(DebuggerManager dm, DebuggerApiTestBase.TestDebuggerManagerListener dml) {
