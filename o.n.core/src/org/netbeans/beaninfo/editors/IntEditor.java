@@ -130,7 +130,14 @@ public class IntEditor extends ExPropertyEditorSupport {
     }
     
     public String getAsText() {
-        return getStringRep(((Integer) getValue()).intValue());
+        Integer i = (Integer) getValue();
+        String result;
+        if (i != null) {
+            result = getStringRep(((Integer) getValue()).intValue());
+        } else {
+            result = NbBundle.getMessage (IntEditor.class, "NULL"); //NOI18N
+        }
+        return result;
     }
     
     private void doSetAsText(String s) {
