@@ -50,7 +50,7 @@ public class ReplaceTest extends EditorTestCase {
             txtOper.pushKey(KeyEvent.VK_ESCAPE);
             
             // open replace and open help
-            txtOper.pushKey(KeyEvent.VK_F, KeyEvent.CTRL_MASK);
+            txtOper.pushKey(KeyEvent.VK_H, KeyEvent.CTRL_MASK);
             Replace replace = new Replace();
             replace.btHelp().doClick();
             
