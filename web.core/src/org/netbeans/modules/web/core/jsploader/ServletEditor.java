@@ -47,6 +47,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.cookies.SourceCookie;
 
 import org.netbeans.modules.java.JavaDataObject;
+import org.netbeans.modules.java.Util;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.util.WeakListeners;
@@ -83,7 +84,10 @@ public class ServletEditor extends CloneableEditorSupport
     /** Overriding the default loading from stream - need to look at encoding */
     protected void loadFromStreamToKit (StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
         FileObject fo = getServlet().getPrimaryFile();
-        String encoding = JspDataObject.getFileEncoding(fo);
+        String encoding = Util.getFileEncoding0(fo);
+        if (encoding == null) {
+            encoding = "ISO-8859-1"; // NOI18N
+        }
         InputStreamReader reader = new InputStreamReader(stream, encoding);
         kit.read(reader, doc, 0);
     }
