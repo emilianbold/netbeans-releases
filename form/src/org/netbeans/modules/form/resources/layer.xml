@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="java">
            <file name="org-netbeans-modules-form-absolutelayout-library.xml">
 	      <![CDATA[
-	          <!DOCTYPE JavaLibrary PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
+	          <!DOCTYPE Library PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
 	          <Library>
 	              <Archive name="modules/ext/AbsoluteLayout.jar"/>
 	          </Library>
