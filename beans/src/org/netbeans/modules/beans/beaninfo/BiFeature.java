@@ -13,9 +13,7 @@
 
 package org.netbeans.modules.beans.beaninfo;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 
 import org.openide.src.MethodElement;
 import org.openide.src.ClassElement;
@@ -573,7 +571,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
 
     }
 
-    public static class EventSet extends BiFeature {
+    public static class EventSet extends BiFeature implements Comparator {
 
         EventSetPattern pattern;
 
@@ -599,19 +597,29 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             this.isInDefaultEventSet = isInDefaultEventSet;
         }
 
+        public int compare(Object o1, Object o2) {
+            if (!(o1 instanceof MethodElement) || !(o2 instanceof MethodElement))
+                throw new IllegalArgumentException();
+            MethodElement m1 = (MethodElement)o1;
+            MethodElement m2 = (MethodElement)o2;
+
+            return m1.getName().getName().compareTo(m2.getName().getName());
+        }
+
         /** Returns the call to constructor of EventSetDescriptor */
         String getCreationString () {
             StringBuffer sb = new StringBuffer( 100 );
             
-            org.openide.src.MethodElement listenerMethods[];
+            MethodElement[] listenerMethods;
 
             try {
                 org.openide.src.Type listenerType = pattern.getType();
                 org.openide.src.ClassElement listener = org.openide.src.ClassElement.forName(listenerType.getClassName().getFullName());
                 listenerMethods = listener.getMethods();
+                Arrays.sort(listenerMethods, this);
             } catch (IllegalStateException e) {
                 ErrorManager.getDefault().notify(e);
-                listenerMethods = new org.openide.src.MethodElement[0];
+                listenerMethods = new MethodElement[0];
             }
 
             sb.append( "new EventSetDescriptor ( " ); // NOI18N
@@ -621,7 +629,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
                 sb.append( pattern.getType().getClassName().getFullName() + ".class, " ); // NOI18N
             } catch (IllegalStateException e) {
                 ErrorManager.getDefault().notify(e);
-                listenerMethods = new org.openide.src.MethodElement[0];
+                listenerMethods = new MethodElement[0];
             }
             sb.append( "new String[] {" ); // NOI18N
             for (int i = 0; i < listenerMethods.length; i++) {
