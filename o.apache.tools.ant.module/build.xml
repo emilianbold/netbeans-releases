@@ -230,6 +230,8 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     - ../usersguide/javahelp/org/netbeans/modules/usersguide/ant/*.html
     - manifest.mf
     - build.xml
+    - external/build.xml
+    - external/.cvsignore
 7a. Make sure OpenIDE-Module-Public-Packages in manifest.mf lists all packages
     actually present in ant.jar. Can use wildcard .** but not for org.apache.tools.ant
     package itself since that would cause all module classes to be public, not just the
@@ -239,7 +241,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
 10. Refresh these files with the prebuilt binaries from an Ant download:
     - ${ant.jar}.master
     - ${ant-optional.jar}.master
-    (and scramble them by running 'scramble in external/build.xml)
+    (and scramble them by running 'scramble' in external/build.xml)
 11. Test everything
 12. Submit a patch for cvs://cvs.apache.org/ant/xdocs/external.xml
     mentioning that the bundled version in NB is now ${release-version}.
