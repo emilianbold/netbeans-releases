@@ -25,6 +25,8 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
+import org.openide.TopManager;
+import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -367,6 +369,15 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     * @return the XML DOM element representing a subtree of XML from which the value should be loaded
     */
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
+        if (font == null) {
+            IllegalArgumentException iae = new IllegalArgumentException();
+            ErrorManager manager = TopManager.getDefault().getErrorManager();
+            manager.annotate(iae, ErrorManager.EXCEPTION, null, 
+                bundle.getString("MSG_FontIsNotInitialized"), null, null); // NOI18N
+            manager.notify(iae);
+            return null;
+        }
+        
         org.w3c.dom.Element el = doc.createElement (XML_FONT);
         el.setAttribute (ATTR_NAME, font.getName ());
         el.setAttribute (ATTR_STYLE, Integer.toString (font.getStyle ()));

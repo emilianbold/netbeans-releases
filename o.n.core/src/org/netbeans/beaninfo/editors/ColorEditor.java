@@ -46,6 +46,8 @@ import javax.swing.ListCellRenderer;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 
+import org.openide.TopManager;
+import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -755,6 +757,15 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
      * @return the XML DOM element representing a subtree of XML from which the value should be loaded
      */
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
+        if (color == null) {
+            IllegalArgumentException iae = new IllegalArgumentException();
+            ErrorManager manager = TopManager.getDefault().getErrorManager();
+            manager.annotate(iae, ErrorManager.EXCEPTION, null, 
+                getString("MSG_ColorIsNotInitialized"), null, null); // NOI18N
+            manager.notify(iae);
+            return null;
+        }
+        
         org.w3c.dom.Element el = doc.createElement (XML_COLOR);
         el.setAttribute (ATTR_TYPE, (color.getID () == null) ? VALUE_RGB : VALUE_PALETTE);
         el.setAttribute (ATTR_RED, Integer.toHexString (color.getRed ()));
