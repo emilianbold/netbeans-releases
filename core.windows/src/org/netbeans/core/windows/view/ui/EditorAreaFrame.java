@@ -34,6 +34,8 @@ public class EditorAreaFrame extends JFrame {
     /** Creates a new instance of EditorAreaFrame */
     public EditorAreaFrame() {
         super(NbBundle.getMessage(EditorAreaFrame.class, "LBL_EditorAreaFrameTitle"));
+        
+        setIconImage(MainWindow.createIDEImage());
     }
     
     

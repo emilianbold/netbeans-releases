@@ -145,7 +145,7 @@ public final class MainWindow extends JFrame {
         return new EmptyBorder(1, 1, 1, 1);
     }
     
-    private Image createIDEImage() {
+    static Image createIDEImage() {
         return Toolkit.getDefaultToolkit ().getImage (
                 NbBundle.getLocalizedFile(
                         "org.netbeans.core.resources.frames.ide" // NOI18N

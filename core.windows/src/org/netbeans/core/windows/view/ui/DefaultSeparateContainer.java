@@ -127,6 +127,8 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
             this.abstractModeContainer = abstractModeContainer;
             // To be able to activate on mouse click.
             enableEvents(java.awt.AWTEvent.MOUSE_EVENT_MASK);
+            
+            setIconImage(MainWindow.createIDEImage());
         }
         
         public ModeView getModeView() {
