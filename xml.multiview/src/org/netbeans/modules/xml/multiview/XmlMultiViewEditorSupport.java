@@ -25,15 +25,18 @@ import org.openide.windows.*;
 
 import java.beans.PropertyVetoException;
 import org.openide.NotifyDescriptor;
+
 /**
  * XmlMultiviewEditorSupport.java
  *
  * Created on October 5, 2004, 10:46 AM
  * @author  mkuchtiak
  */
-public class XmlMultiViewEditorSupport extends DataEditorSupport implements EditCookie, OpenCookie, EditorCookie.Observable, PrintCookie {
-    
+public class XmlMultiViewEditorSupport extends DataEditorSupport 
+    implements EditCookie, OpenCookie, EditorCookie.Observable, PrintCookie {
+        
     private XmlMultiViewDataObject dObj;
+    private XmlDocumentListener xmlDocListener;
     private int xmlMultiViewIndex;
     private static final int PARSING_DELAY = 2000;
     private static final int PARSING_INIT_DELAY = 100;
@@ -56,6 +59,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
 
         // Set a MIME type as needed, e.g.:
         setMIMEType ("text/xml");   // NOI18N
+        xmlDocListener = new XmlDocumentListener();
     }
     
     /** Restart the timer which starts source parsing after the specified delay.
@@ -98,9 +102,8 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
     protected boolean notifyModified () {
         if (!super.notifyModified())
             return false;
+        
         addSaveCookie();
-        if (dObj.isChangedFromUI()) restartTimer1(); // validation (without updating model)
-        else restartTimer(); // validation+model update
         return true;
     }
 
@@ -208,6 +211,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
             if (saveOption.equals(ret)) {
                 try {
                     saveDocument ();
+                    getDocument().removeDocumentListener(xmlDocListener);
                 } catch (java.io.IOException e) {
                     org.openide.ErrorManager.getDefault().notify(e);
                     return false;
@@ -215,6 +219,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
             } else if (discardOption.equals(ret)) {
                 try {
                     dObj.reloadModelFromFileObject();
+                    getDocument().removeDocumentListener(xmlDocListener);
                     notifyClosed();
                 } catch (java.io.IOException e) {
                     org.openide.ErrorManager.getDefault().notify(e);
@@ -222,7 +227,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
                 }
             }
         }
-         
         return true;
     }
 
@@ -262,6 +266,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
         MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
         handler.requestVisible(handler.getPerspectives()[index<0?xmlMultiViewIndex:index]);
         mvtc.requestActive();
+        getDocument().addDocumentListener(xmlDocListener);
     }
     
     void goToXmlPerspective() {
@@ -358,5 +363,24 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
     
     void setLastOpenView(int index) {
         lastOpenView=index;
+    }
+
+    private class XmlDocumentListener implements javax.swing.event.DocumentListener {
+        public void changedUpdate(javax.swing.event.DocumentEvent e) {
+            doUpdate();
+        }
+
+        public void insertUpdate(javax.swing.event.DocumentEvent e) {
+            doUpdate();
+        }
+
+        public void removeUpdate(javax.swing.event.DocumentEvent e) {
+            doUpdate();
+        }
+
+        private void doUpdate() {
+            if (dObj.isChangedFromUI()) restartTimer1(); // validation (without updating model)
+            else restartTimer(); // validation+model update
+        }
     }
 }
