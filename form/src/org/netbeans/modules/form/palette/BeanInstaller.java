@@ -280,7 +280,7 @@ public final class BeanInstaller
             }
         }
     }
-
+    
     static void createShadow(FileObject folder, FileObject original) {
         try {
             DataObject originalDO = DataObject.find(original);
@@ -289,10 +289,13 @@ public final class BeanInstaller
                 DataShadow.create(DataFolder.findFolder(folder), originalDO);
             }
         } catch (IOException e) {
-            TopManager.getDefault().notifyException(e);
+            ErrorManager manager = TopManager.getDefault().getErrorManager();
+            if (manager != null)
+                manager.notify(e);
+            else e.printStackTrace();
         }
     }
-
+    
     static void createInstance(FileObject folder, String className) {
         // first check if the class is valid and can be loaded
         try {
@@ -301,16 +304,21 @@ public final class BeanInstaller
         catch (Throwable ex) {
             if (ex instanceof ThreadDeath)
                 throw (ThreadDeath)ex;
-            if (System.getProperty("netbeans.debug.exceptions") != null)
+            if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
                 ex.printStackTrace();
-
-            String message = MessageFormat.format(
-                CPManager.getBundle().getString("FMT_ERR_CannotLoadClass"), // NOI18N
-                new Object [] { className, ex.getClass().getName(), ex.getMessage() });
-
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                message, NotifyDescriptor.ERROR_MESSAGE));
-
+            
+            ErrorManager manager = TopManager.getDefault().getErrorManager();
+            
+            if (manager != null) {
+                String message = MessageFormat.format(
+                    CPManager.getBundle().getString("FMT_ERR_CannotLoadClass"), // NOI18N
+                    new Object [] { className, ex.getClass().getName(), ex.getMessage() });
+                
+                manager.annotate(ex, ErrorManager.ERROR, null, message, null, null);
+                manager.notify(ex);
+            }
+            else ex.printStackTrace();
+            
             return;
         }
 
