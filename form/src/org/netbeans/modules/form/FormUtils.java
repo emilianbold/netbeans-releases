@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.formeditor;
+package com.netbeans.developer.modules.loaders.form;
 
 import java.awt.*;
 import java.beans.*;
@@ -23,9 +23,9 @@ import javax.swing.JComponent;
 import com.netbeans.developer.impl.IDESettings;
 import com.netbeans.ide.util.Utilities;
 import com.netbeans.ide.util.io.*;
-//import com.netbeans.developer.modules.loaders.form.formeditor.layouts.*;
-//import com.netbeans.developer.modules.loaders.form.formeditor.layouts.support.*;
-import com.netbeans.developer.modules.loaders.form.formeditor.util.*;
+//import com.netbeans.developer.modules.loaders.form.layouts.*;
+//import com.netbeans.developer.modules.loaders.form.layouts.support.*;
+import com.netbeans.developer.modules.loaders.form.util.*;
 import com.netbeans.developer.modules.loaders.form.FormBCObjectInputStream;
 
 /** A class that contains utility methods for the formeditor.
@@ -365,6 +365,7 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  7    Gandalf   1.6         5/4/99   Ian Formanek    Package change
  *  6    Gandalf   1.5         4/29/99  Ian Formanek    
  *  5    Gandalf   1.4         4/7/99   Ian Formanek    Debug finalized, 
  *       Hashtable->HashMap

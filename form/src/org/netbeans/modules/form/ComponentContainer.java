@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.formeditor;
+package com.netbeans.developer.modules.loaders.form;
 
 /**
  *
@@ -27,6 +27,7 @@ public interface ComponentContainer {
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/4/99   Ian Formanek    Package change
  *  1    Gandalf   1.0         4/29/99  Ian Formanek    
  * $
  */

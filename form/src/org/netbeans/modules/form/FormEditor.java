@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.formeditor;
+package com.netbeans.developer.modules.loaders.form;
 
 import java.awt.*;
 import java.beans.*;
@@ -36,7 +36,7 @@ import com.netbeans.developer.modules.loaders.form.actions.*;
 //import com.netbeans.developer.modules.loaders.form.FormDataNode;
 import com.netbeans.developer.modules.loaders.form.FormDataObject;
 import com.netbeans.developer.modules.loaders.form.FormLoaderSettings;
-//import com.netbeans.developer.modules.loaders.form.formeditor.layouts.support.*;
+//import com.netbeans.developer.modules.loaders.form.layouts.support.*;
 import com.netbeans.developer.modules.loaders.form.palette.PaletteAction;
 //import com.netbeans.developer.modules.loaders.java.JavaLoaderSettings;
 
@@ -522,6 +522,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  6    Gandalf   1.5         5/4/99   Ian Formanek    Package change
  *  5    Gandalf   1.4         5/2/99   Ian Formanek    
  *  4    Gandalf   1.3         4/7/99   Ian Formanek    Backward-compatible 
  *       deserialization finalized for Gandalf beta

@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.formeditor;
+package com.netbeans.developer.modules.loaders.form;
 
 /** 
 *
@@ -32,6 +32,7 @@ public class RADContainer extends RADComponent implements ComponentContainer {
 
 /*
  * Log
+ *  3    Gandalf   1.2         5/4/99   Ian Formanek    Package change
  *  2    Gandalf   1.1         4/29/99  Ian Formanek    
  *  1    Gandalf   1.0         4/26/99  Ian Formanek    
  * $

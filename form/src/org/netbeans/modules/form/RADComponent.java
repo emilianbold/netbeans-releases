@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.developer.modules.loaders.form.formeditor;
+package com.netbeans.developer.modules.loaders.form;
 
 import com.netbeans.ide.nodes.*;
 
@@ -51,12 +51,12 @@ public class RADComponent {
     auxValues = new HashMap (10);
   }
 
-// -----------------------------------------------------------------------------
-// Public interface
-
-  public void setFormManager (FormManager formManager) {
+  public void initialize (FormManager formManager) {
     this.formManager = formManager;
   }
+
+// -----------------------------------------------------------------------------
+// Public interface
 
   public FormManager getFormManager () {
     return formManager;
@@ -169,6 +169,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  4    Gandalf   1.3         5/4/99   Ian Formanek    Package change
  *  3    Gandalf   1.2         4/29/99  Ian Formanek    
  *  2    Gandalf   1.1         4/29/99  Ian Formanek    
  *  1    Gandalf   1.0         4/26/99  Ian Formanek    
