@@ -96,7 +96,7 @@ public class OptionSupport extends SystemOption {
     /** Get the value of the boolean setting from the <code>Settings</code>
      * @param settingName name of the setting to get.
      */
-    boolean getSettingBoolean(String settingName) {
+    protected final boolean getSettingBoolean(String settingName) {
         Boolean val = (Boolean)getSettingValue(settingName);
         return (val != null) ? val.booleanValue() : false;
     }
@@ -104,7 +104,7 @@ public class OptionSupport extends SystemOption {
     /** Get the value of the integer setting from the <code>Settings</code>
      * @param settingName name of the setting to get.
      */
-    int getSettingInteger(String settingName) {
+    protected final int getSettingInteger(String settingName) {
         Integer val = (Integer)getSettingValue(settingName);
         return (val != null) ? val.intValue() : 0;
     }
@@ -150,7 +150,7 @@ public class OptionSupport extends SystemOption {
      *  Firing is performed using the given property name. Nothing is fired
      *  when it's set to null.
      */
-    void setSettingBoolean(String settingName, boolean newValue, String propertyName) {
+    protected final void setSettingBoolean(String settingName, boolean newValue, String propertyName) {
         setSettingValue(settingName, newValue ? Boolean.TRUE : Boolean.FALSE);
     }
 
@@ -162,7 +162,7 @@ public class OptionSupport extends SystemOption {
      *  Firing is performed using the given property name. Nothing is fired
      *  when it's set to null.
      */
-    void setSettingInteger(String settingName, int newValue, String propertyName) {
+    protected final void setSettingInteger(String settingName, int newValue, String propertyName) {
         setSettingValue(settingName, new Integer(newValue));
     }
 
