@@ -42,7 +42,6 @@ public class ComponentInspector extends TopComponent
                                 implements ExplorerManager.Provider
 {
     private ExplorerManager explorerManager;
-    private Lookup lookup;
 
     private TestAction testAction = (TestAction)
                 SystemAction.findObject(TestAction.class, true);
@@ -104,13 +103,7 @@ public class ComponentInspector extends TopComponent
     private ComponentInspector() {
         explorerManager = new ExplorerManager();
 
-        javax.swing.ActionMap map = getActionMap ();
-        map.put(DefaultEditorKit.copyAction, copyActionPerformer);
-        map.put(DefaultEditorKit.cutAction, cutActionPerformer);
-        //map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(explorerManager));
-        map.put("delete", deleteActionPerformer); // NOI18N
-
-        lookup = ExplorerUtils.createLookup(explorerManager, map);
+        associateLookup(setupActionMap(getActionMap()));
 
         emptyInspectorNode = new EmptyInspectorNode();
         explorerManager.setRootContext(emptyInspectorNode);
@@ -118,12 +111,20 @@ public class ComponentInspector extends TopComponent
         explorerManager.addPropertyChangeListener(new NodeSelectionListener());
 
         setLayout(new java.awt.BorderLayout());
-
         createComponents();
 
         setIcon(Utilities.loadImage(iconURL));
         setName(FormUtils.getBundleString("CTL_InspectorTitle")); // NOI18N
         setToolTipText(FormUtils.getBundleString("HINT_ComponentInspector")); // NOI18N
+    }
+
+    Lookup setupActionMap(javax.swing.ActionMap map) {
+        map.put(DefaultEditorKit.copyAction, copyActionPerformer);
+        map.put(DefaultEditorKit.cutAction, cutActionPerformer);
+        //map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(explorerManager));
+        map.put("delete", deleteActionPerformer); // NOI18N
+
+        return ExplorerUtils.createLookup(explorerManager, map);
     }
 
     private void createComponents() {
@@ -141,11 +142,6 @@ public class ComponentInspector extends TopComponent
     // ExplorerManager.Provider
     public ExplorerManager getExplorerManager() {
         return explorerManager;
-    }
-
-    // Lookup.Provider from TopComponent
-    public Lookup getLookup() {
-        return lookup;
     }
 
     public UndoRedo getUndoRedo() {

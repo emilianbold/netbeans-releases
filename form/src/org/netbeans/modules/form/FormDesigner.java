@@ -124,6 +124,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     public void initialize() {
+        Lookup lookup = ComponentInspector.getInstance().setupActionMap(getActionMap());
+        associateLookup(new ProxyLookup(new Lookup[] {
+            lookup,
+            Lookups.singleton(formEditorSupport.getFormDataObject())
+        }));
         updateWholeDesigner();
     }
 
@@ -745,13 +750,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     // --------
     // methods of TopComponent
-
-    public Lookup getLookup() {
-        return new ProxyLookup(new Lookup[] {
-            ComponentInspector.getInstance().getLookup(),
-            Lookups.singleton(formEditorSupport.getFormDataObject())
-        });
-    }
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.formeditor"); // NOI18N
