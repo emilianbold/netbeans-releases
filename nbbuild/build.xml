@@ -244,6 +244,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
 
   <!-- And the modules: -->
+  <target name="all-a11y" depends="all-openide,all-openide/io,all-form,all-junit,all-xtest">
+    <echo message="Building module a11y..."/>
+    <ant dir="../a11y" target="netbeans"/>
+  </target>
   <target name="all-ant" depends="all-openide,all-core/javahelp,all-openide/compiler,all-openide/execution,all-openide/io,all-java/api">
     <echo message="Building module ant..."/>
     <ant dir="../ant" target="netbeans"/>
@@ -338,6 +342,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module webclient..."/>
     <ant dir="../extbrowser/webclient" target="netbeans"/>
   </target>
+  <target name="all-filecopy" depends="all-openide,all-openide/io,all-openide/execution">
+    <echo message="Building module filecopy..."/>
+    <ant dir="../filecopy" target="netbeans"/>
+  </target>
   <target name="all-form" depends="all-openide,all-java,all-java/srcmodel,all-java/api,all-openide/compiler,all-openide/execution">
     <echo message="Building module form..."/>
     <ant dir="../form" target="netbeans"/>
@@ -398,7 +406,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module java..."/>
     <ant dir="../java" target="netbeans"/>
   </target>
-  <target name="all-java/fastjavac" depends="all-openide,all-openide/compiler,all-openide/execution,all-java">
+  <target name="all-java/fastjavac" depends="all-openide,all-openide/compiler,all-openide/execution,all-openide/loaders,all-java">
     <echo message="Building module java/fastjavac..."/>
     <ant dir="../java/fastjavac" target="netbeans"/>
   </target>
@@ -452,7 +460,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module lexer/editorbridge/calc..."/>
     <ant dir="../lexer/editorbridge/calc" target="netbeans"/>
   </target>
-  <target name="all-makefile" depends="all-openide,all-openide/compiler,all-openide/execution,all-openide/deprecated">
+  <target name="all-makefile" depends="all-openide,all-openide/compiler,all-openide/execution,all-openide/deprecated,all-openide/loaders,all-debuggercore/oldapi">
     <echo message="Building module makefile..."/>
     <ant dir="../makefile" target="netbeans"/>
   </target>
