@@ -56,6 +56,55 @@ public class ViewEvent {
     public Object getNewValue() {
         return newValue;
     }
-        
+    
+    /**
+     * overriden for debugging reasons..
+     */
+    public String toString() {
+        StringBuffer buf = new StringBuffer(100);
+        buf.append("ViewEvent:"); //NOI18N
+        String typeStr = "Unknown"; //NOI18N
+        switch (type) {
+            case View.CHANGE_ACTIVE_MODE_CHANGED : typeStr = "CHANGE_ACTIVE_MODE_CHANGED"; break; //NOI18N
+            case View.CHANGE_DND_PERFORMED : typeStr = "CHANGE_DND_PERFORMED"; break; //NOI18N
+            case View.CHANGE_EDITOR_AREA_BOUNDS_CHANGED : typeStr = "CHANGE_EDITOR_AREA_BOUNDS_CHANGED"; break; //NOI18N
+            case View.CHANGE_EDITOR_AREA_CONSTRAINTS_CHANGED : typeStr = ".CHANGE_EDITOR_AREA_CONSTRAINTS_CHANGED"; break; //NOI18N
+            case View.CHANGE_EDITOR_AREA_FRAME_STATE_CHANGED : typeStr = "CHANGE_EDITOR_AREA_FRAME_STATE_CHANGED"; break; //NOI18N
+            case View.CHANGE_EDITOR_AREA_STATE_CHANGED : typeStr = "CHANGE_EDITOR_AREA_STATE_CHANGED"; break; //NOI18N
+            case View.CHANGE_MAIN_WINDOW_BOUNDS_JOINED_CHANGED : typeStr = "CHANGE_MAIN_WINDOW_BOUNDS_JOINED_CHANGED"; break; //NOI18N
+            case View.CHANGE_MAIN_WINDOW_BOUNDS_SEPARATED_CHANGED : typeStr = "CHANGE_MAIN_WINDOW_BOUNDS_SEPARATED_CHANGED"; break; //NOI18N
+            case View.CHANGE_MAIN_WINDOW_FRAME_STATE_JOINED_CHANGED : typeStr = "CHANGE_MAIN_WINDOW_FRAME_STATE_JOINED_CHANGED"; break; //NOI18N
+            case View.CHANGE_MAIN_WINDOW_FRAME_STATE_SEPARATED_CHANGED : typeStr = "CHANGE_MAIN_WINDOW_FRAME_STATE_SEPARATED_CHANGED"; break; //NOI18N
+            case View.CHANGE_MAXIMIZED_MODE_CHANGED : typeStr = "CHANGE_MAXIMIZED_MODE_CHANGED"; break; //NOI18N
+            case View.CHANGE_MODE_ADDED : typeStr = "CHANGE_MODE_ADDED"; break; //NOI18N
+            case View.CHANGE_MODE_CLOSED : typeStr = "CHANGE_MODE_CLOSED"; break; //NOI18N
+            case View.CHANGE_MODE_BOUNDS_CHANGED : typeStr = "CHANGE_MODE_BOUNDS_CHANGED"; break; //NOI18N
+            case View.CHANGE_MODE_CONSTRAINTS_CHANGED : typeStr = "CHANGE_MODE_CONSTRAINTS_CHANGED"; break; //NOI18N
+            case View.CHANGE_MODE_FRAME_STATE_CHANGED : typeStr = "CHANGE_MODE_FRAME_STATE_CHANGED"; break; //NOI18N
+            case View.CHANGE_MODE_REMOVED : typeStr = "CHANGE_MODE_REMOVED"; break; //NOI18N
+            case View.CHANGE_MODE_SELECTED_TOPCOMPONENT_CHANGED : typeStr = "CHANGE_MODE_SELECTED_TOPCOMPONENT_CHANGED"; break; //NOI18N
+            case View.CHANGE_MODE_TOPCOMPONENT_ADDED : typeStr = "CHANGE_MODE_TOPCOMPONENT_ADDED"; break; //NOI18N
+            case View.CHANGE_MODE_TOPCOMPONENT_REMOVED : typeStr = "CHANGE_MODE_TOPCOMPONENT_REMOVED"; break; //NOI18N
+            case View.CHANGE_PROJECT_NAME : typeStr = "CHANGE_PROJECT_NAME"; break; //NOI18N
+            case View.CHANGE_TOOLBAR_CONFIGURATION_CHANGED : typeStr = "CHANGE_TOOLBAR_CONFIGURATION_CHANGED"; break; //NOI18N
+            case View.CHANGE_TOPCOMPONENT_ACTIVATED : typeStr = "CHANGE_TOPCOMPONENT_ACTIVATED"; break; //NOI18N
+            case View.CHANGE_TOPCOMPONENT_ARRAY_ADDED : typeStr = "CHANGE_TOPCOMPONENT_ARRAY_ADDED"; break; //NOI18N
+            case View.CHANGE_TOPCOMPONENT_ARRAY_REMOVED : typeStr = "CHANGE_TOPCOMPONENT_ARRAY_REMOVED"; break; //NOI18N
+            case View.CHANGE_TOPCOMPONENT_ATTACHED : typeStr = "CHANGE_TOPCOMPONENT_ATTACHED"; break; //NOI18N
+            case View.CHANGE_TOPCOMPONENT_DISPLAY_NAME_ANNOTATION_CHANGED : typeStr = "CHANGE_TOPCOMPONENT_DISPLAY_NAME_ANNOTATION_CHANGED"; break; //NOI18N
+            case View.CHANGE_TOPCOMPONENT_DISPLAY_NAME_CHANGED : typeStr = "CHANGE_TOPCOMPONENT_DISPLAY_NAME_CHANGED"; break; //NOI18N
+            case View.CHANGE_TOPCOMPONENT_ICON_CHANGED : typeStr = "CHANGE_TOPCOMPONENT_ICON_CHANGED"; break; //NOI18N
+            case View.CHANGE_TOPCOMPONENT_TOOLTIP_CHANGED : typeStr = "CHANGE_TOPCOMPONENT_TOOLTIP_CHANGED"; break; //NOI18N
+            case View.CHANGE_UI_UPDATE : typeStr = "CHANGE_UI_UPDATE"; break; //NOI18N
+            case View.CHANGE_VISIBILITY_CHANGED : typeStr = "CHANGE_VISIBILITY_CHANGED"; break; //NOI18N
+        }
+        buf.append(typeStr);
+        buf.append("\nnewValue="); //NOI18N
+        buf.append(newValue);
+        buf.append("\noldValue="); //NOI18N
+        buf.append(oldValue);
+        return buf.toString();
+    }
+    
 }
 

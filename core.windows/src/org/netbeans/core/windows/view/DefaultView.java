@@ -91,7 +91,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         WindowSystemAccessor wsa = ViewHelper.createWindowSystemAccessor(snapshot);
         
         if(DEBUG) {
-            debugLog(""); // NOI18N
+            debugLog("CHANGEGUI()"); // NOI18N
             debugLog("Structure=" + wsa); // NOI18N
             debugLog(""); // NOI18N
         }
@@ -114,11 +114,17 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             TopComponent tc = (TopComponent)it.next();
             WindowManagerImpl.getInstance().componentShowing(tc);
         }
+        if(DEBUG) {
+            debugLog("ChangeGUI: Checking view events...") ; // NOI18N
+        }
         
         // PENDING Find main event first.
         for(int i = 0; i < viewEvents.length; i++) {
             ViewEvent viewEvent = viewEvents[i];
             int changeType = viewEvent.getType();
+            if(DEBUG) {
+                debugLog("ViewEvent=" + viewEvent) ; // NOI18N
+            }
             
             if(changeType == CHANGE_VISIBILITY_CHANGED) {
                 if(DEBUG) {
@@ -416,6 +422,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     //////////////////////////////////////////////////////////
     private void showWindowSystem(WindowSystemAccessor wsa) {
         long start = System.currentTimeMillis();
+        if(DEBUG) {
+            debugLog("ShowWindowSystem--"); // NOI18N
+        }
         
         hierarchy.getMainWindow().initializeComponents();
         // Init toolbar.
@@ -460,7 +469,10 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         }
         // XXX #37369 Again this needs to be called after setting possible 
         // Adjusts positions of splits.
-        hierarchy.updateSplits();
+        // Mkleint: this one gets called too early when the window is not maximazed yet, thus getting wrong bounds.
+        // moved to a later stage..
+//        hierarchy.updateSplits();
+        
         
         // Show separate modes.
         hierarchy.setSeparateModesVisible(true);
@@ -475,12 +487,30 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         
         // XXX PENDING
         if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
-            updateMainWindowBoundsSeparatedHelp();
-            updateEditorAreaBoundsHelp();
-            updateSeparateBoundsForView(hierarchy.getSplitRootElement());
+            // Ignore when main window is maximized.
+            if(hierarchy.getMainWindow().getExtendedState() != Frame.MAXIMIZED_BOTH) {
+                if (DEBUG) {
+                    debugLog("do updateMainWindowBoundsSeparatedHelp");
+                }
+                updateMainWindowBoundsSeparatedHelp();
+                updateEditorAreaBoundsHelp();
+                updateSeparateBoundsForView(hierarchy.getSplitRootElement());
+            }
         }
 
-        hierarchy.installMainWindowListeners();
+        //#39238 in maximazed mode swing posts a lot of stuff to Awt thread using SwingUtilities.invokeLater
+        // for that reason the installation of window listeners and the update of splits kicked in too early when
+        // the window was not maximazed yet -> resulted in wrong calculation of splits and also bad reactions from the listeners
+        // which considered the automated change to maximazed mode to be issued by the user.
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (DEBUG) {
+                    debugLog("Installing main window listeners.");
+                }
+                hierarchy.updateSplits();
+                hierarchy.installMainWindowListeners();
+            }
+        });
         
         if(DEBUG) {
             debugLog("Init view 5="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
@@ -554,13 +584,13 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     public void userResizedMainWindow(Rectangle bounds) {
         if(DEBUG) {
             debugLog("User resized main window"); // NOI18N
+            Debug.dumpStack(DefaultView.class);
         }
 
         // Ignore when main window is maximized.
         if(hierarchy.getMainWindow().getExtendedState() != Frame.MAXIMIZED_BOTH) {
             controllerHandler.userResizedMainWindow(bounds);
-        }
-
+        } 
         // Update also the splits.
         updateChangedSplits();
 
@@ -605,7 +635,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         }
 
         // Ignore when main window is maximized.
-        if(hierarchy.getMainWindow().getExtendedState() != Frame.MAXIMIZED_BOTH) {
+        if (hierarchy.getMainWindow().getExtendedState() != Frame.MAXIMIZED_BOTH) {
             controllerHandler.userResizedMainWindow(bounds);
         }
     }
@@ -635,6 +665,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     ViewElement first, ViewElement second) {
         if(DEBUG) {
             debugLog("User moved split"); // NOI18N
+            Debug.dumpStack(DefaultView.class);
         }
 
         SplitAccessor splitAccessor = (SplitAccessor)hierarchy.getAccessorForView(splitView);
