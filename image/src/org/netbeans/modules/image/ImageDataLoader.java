@@ -50,6 +50,15 @@ public class ImageDataLoader extends UniFileLoader {
         ext.addExtension("JPEG"); // NOI18N
         ext.addExtension("JPE"); // NOI18N
         ext.addExtension("GIF"); // NOI18N
+
+        // When will be supported jdk1.3 and higher only, remove this check.
+        // If it's runnning jdk1.3. or greater set support for .png format as well.
+        String javaSpecVersion = System.getProperty("java.specification.version"); // NOI18N
+        if(javaSpecVersion != null && javaSpecVersion.compareTo("1.3") >= 0) { // NOI18N
+            ext.addExtension("png"); // NOI18N
+            ext.addExtension("PNG"); // NOI18N
+        }
+        
         setExtensions(ext);
     }
 
