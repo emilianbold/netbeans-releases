@@ -278,7 +278,9 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="Separator1[javax-swing-JSeparator].instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
           <!-- OK to have both separators here: cf. #7391 -->
           <file name="Separator2[javax-swing-JSeparator].instance"/>
-          <attr name="Separator2[javax-swing-JSeparator].instance/org-netbeans-core-actions-ConfigureShortcutsAction.instance" boolvalue="true" />
+          <attr name="Separator2[javax-swing-JSeparator].instance/org-netbeans-core-actions-SetupWizardAction.instance" boolvalue="true" />
+          <file name="org-netbeans-core-actions-SetupWizardAction.instance"/>
+          <attr name="org-netbeans-core-actions-SetupWizardAction.instance/org-netbeans-core-actions-ConfigureShortcutsAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-ConfigureShortcutsAction.instance"/>
           <attr name="org-netbeans-core-actions-ConfigureShortcutsAction.instance/org-netbeans-core-actions-OptionsAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-OptionsAction.instance"/>
