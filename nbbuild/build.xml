@@ -3386,7 +3386,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </fileset>
     
     <pathconvert property="check-file-layout" refid="check-file-layout" dirsep="/" pathsep=",">
-        <map from="${check-file-layout-root}" to="" />
+        <map from="${check-file-layout-root}${file.separator}" to="" />
     </pathconvert>
     <mkdir dir="build" />
     <echo message="${check-file-layout}" file="${check.files.layout.generated}" />
