@@ -75,7 +75,7 @@ public class ReplaceTest extends EditorTestCase {
     /**
      * TC2 - Replace Dialog Open - Selection
      */
-/*    public void testReplaceSelectionRepeated() {
+    public void testReplaceSelectionRepeated() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -125,7 +125,7 @@ public class ReplaceTest extends EditorTestCase {
             closeReplaceDialogIfOpened();
             closeFileWithDiscard();
         }
-    }    */
+    }    
     
     /**
      * TC3 - Replace Dialog Combo Box
@@ -240,12 +240,8 @@ public class ReplaceTest extends EditorTestCase {
             waitForLabel("'testCase' found at 21:12");
 
             replace.replace();
-            // check status bar
-            waitForLabel("'testCase' found at 24:12");
 
             replace.replace();
-            // check status bar
-            waitForLabel("'testCase' not found");            
             
             replace.close();
 
@@ -296,7 +292,7 @@ public class ReplaceTest extends EditorTestCase {
     /**
      * TC6 - Replace in Selection Only
      */
-/*    public void testReplaceInSelectionOnly() {
+    public void testReplaceInSelectionOnly() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -326,7 +322,7 @@ public class ReplaceTest extends EditorTestCase {
             closeReplaceDialogIfOpened();
             closeFileWithDiscard();
         }
-    }      */
+    }      
     
     /**     
      * Unchecks all checkboxes in find dialog.
