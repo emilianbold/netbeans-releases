@@ -14,8 +14,6 @@
 package org.netbeans.spi.java.project.support.ui;
 
 import org.netbeans.api.project.SourceGroup;
-import org.openide.filesystems.FileObject;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 /**
@@ -26,17 +24,6 @@ import org.openide.nodes.Node;
 public class PackageView {
     
     private PackageView() {}
-    
-    /**
-     * Create a package-oriented view of a Java source root.
-     * @param root the root folder of a Java source tree (corresponds to default package)
-     * @return children to display packages and files in those packages
-     * @throws IllegalArgumentException if the supplied file object is not a folder
-     * @deprecated better use the {@link #createPackageView(SourceGroup)} method.
-     */
-    public static Children createPackageView(FileObject root) throws IllegalArgumentException {
-        return new PackageViewChildren( root );
-    }
     
     /** Create a node which will contain package-oriented view.
      * @param group SourceGroup which should be represented.

@@ -512,11 +512,7 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
             }
              */
             
-            AbstractNode srcGroupNode = new AbstractNode(
-                PackageView.createPackageView(srcRootFolder));
-            srcGroupNode.setIconBase(PACKAGES_NODE_ICON_BASE);
-            srcGroupNode.setName(srcSourceGroup.getName());
-            srcGroupNode.setDisplayName(srcSourceGroup.getDisplayName());
+            Node srcGroupNode = PackageView.createPackageView(srcSourceGroup);
             
             Node rootNode = new FilterNode(
                     srcGroupNode,
