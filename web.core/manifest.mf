@@ -2,7 +2,7 @@ OpenIDE-Module: org.netbeans.modules.web.core/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/core/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/web/core/ServletSupportModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/web/core/resources/layer.xml
-OpenIDE-Module-Specification-Version: 1.5
+OpenIDE-Module-Specification-Version: 1.6
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1,org.netbeans.modules.j2eeserver/1, org.netbeans.modules.httpserver/1, org.netbeans.modules.html/1, org.netbeans.modules.jarpackager/2

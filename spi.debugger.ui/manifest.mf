@@ -3,7 +3,7 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/debugger/MF-Bundle.proper
 OpenIDE-Module-Install: org/netbeans/modules/debugger/multisession/EnterpriseModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/debugger/resources/mf-layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
-OpenIDE-Module-Specification-Version: 2.1
+OpenIDE-Module-Specification-Version: 2.2
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 
 Name: org/netbeans/modules/debugger/multisession/EnterpriseDebugger.class
