@@ -367,6 +367,7 @@
    <tocitem text="Web Application Tasks: Quick Reference" target="mod_quickref"/>
    <tocitem text="How the IDE Supports Web Application Development" target="webmod_idesupport" />
    <tocitem text="Which Technology Versions Are Supported" target="webmod_techsupport" />
+   <tocitem text="Upgrading to the J2EE 1.4 Specification" target="spec_version" />
    <tocitem text="How to Structure a Web Application" target="webmod_struct" />
    <tocitem text="Where to Put Web Application Files" target="webmod_placefiles" />
 </tocitem> <!-- About Web Applications -->
@@ -384,7 +385,7 @@
       <tocitem text="Connection Pooling from a JSP Page" target="use_dbcp_in_jsp"/>
       <tocitem text="Compiling a JSP File" target="jsp_validate" />
       <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
-      <tocitem text="Passing Parameters to a JSP Page" target="jsp_queryparams"/>
+      <tocitem text="Passing Parameters to a JSP File or Servlet" target="jsp_queryparams"/>
       <tocitem text="Running a JSP File Using a Tomcat Server" target="run_jsp_use_tomcat" />
   </tocitem> <!-- Working With JSP Pages -->
 
@@ -395,6 +396,7 @@
      <tocitem text="Editing a Servlet" target="servlet_edit"/>
      <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
      <tocitem text="Adding a Servlet JAR file to a WAR File" target="webmod_addservlet" />
+     <tocitem text="Passing Parameters to a JSP File or Servlet" target="jsp_queryparams"/>
      <tocitem text="Running a Servlet Using a Tomcat Server" target="run_servlet_use_tomcat" />
   </tocitem> <!-- Working With Servlets -->
 
@@ -413,12 +415,13 @@
   <tocitem text="Tags">
 	  
       <tocitem text="About Tag Libraries" target="webmod_addtglb"/>
-      <tocitem text="About the JSTL" target="webmod_jstl" />
+      <tocitem text="About the JSTL" target="webmod_jstl" /> 
       <tocitem text="Tag Libraries" >
       <tocitem text="Managing Libraries" target="ctx_repaddto"/>
       <tocitem text="Creating a Separate Tag Library"  target="taglib_packlib"/>
       <tocitem text="Adding a Tag Library to a WAR File" target="tagsupport_fromfilesys" />        
       <tocitem text="Using a Tag Library in a JSP File" target="webmod_usetags"/>
+      <tocitem text="Upgrading to the J2EE 1.4 Specification" target="spec_version" />
       </tocitem>
     
       <tocitem text="Tag Library Descriptors" >
@@ -472,14 +475,16 @@
         <tocitem text="Removing a WAR File" target="war_delete"/>        
     </tocitem> <!-- Packaging Web Applications -->
     
-    <tocitem text="Deploying Web Applications"> 
-	<tocitem text="About Deploying Web Applications" target="webmod_servconfig" />
-        <tocitem text="Deploying Tasks: Quick Reference" target="deploying_tasks" />
-	<tocitem text="Changing Web Browsers" target="webmod_browser" />
+    <tocitem text="Running Web Applications"> 
+	<tocitem text="About Running Web Applications" target="webmod_servconfig" />
+	<tocitem text="Running Tasks: Quick Reference" target="deploying_tasks" />
+	<tocitem text="Passing Parameters to a JSP File or Servlet" target="jsp_queryparams"/>
+        <tocitem text="Setting a Username and Password for the Tomcat Manager" target="password_tomcat_manager" />
+        <tocitem text="Running a Web Application Using a Tomcat Server" target="run_webapp_use_tomcat" />
+        <tocitem text="Running a JSP File Using a Tomcat Server" target="run_jsp_use_tomcat" />
+	<tocitem text="Running a Servlet Using a Tomcat Server" target="run_servlet_use_tomcat" />
         <tocitem text="Changing Web Servers" target="webmod_server_set" />
-	<tocitem text="Passing Parameters to a JSP Page" target="jsp_queryparams"/>
-	<tocitem text="Running a JSP File Using a Tomcat Server" target="run_jsp_use_tomcat" />
-        <tocitem text="Running a Servlet Using a Tomcat Server" target="run_servlet_use_tomcat" />
+	<tocitem text="Changing Web Browsers" target="webmod_browser" />
 	<tocitem text="Deployment Descriptors"> 
 	   <tocitem text="About Deployment Descriptors" target="webmod_editdd" />  
 	   <tocitem text="Editing Deployment Descriptors" target="concepts_deploydes" />  

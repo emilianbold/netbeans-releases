@@ -409,6 +409,8 @@
 <mapID target="use_dbcp_in_jsp" url="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
 <mapID target="run_jsp_use_tomcat" url="nbdocs:/org/netbeans/modules/tomcat5/docs/create_jsp/jsp_run.html" />
 <mapID target="run_servlet_use_tomcat" url="nbdocs:/org/netbeans/modules/tomcat5/docs/servlet/servlet_run.html" />
+<mapID target="run_webapp_use_tomcat" url="nbdocs:/org/netbeans/modules/tomcat5/docs/webmod/mod_singletest.html" />
+<mapID target="password_tomcat_manager" url="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_edit_tomcatuser.html" />
 <mapID target="deploying_tasks" url="web/webmod/run_web_quickref.html" />
 
 
