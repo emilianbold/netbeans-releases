@@ -1,6 +1,5 @@
 OpenIDE-Module: org.netbeans.modules.httpserver/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/httpserver/Bundle.properties
-OpenIDE-Module-Display-Category: Web
 OpenIDE-Module-Install: org/netbeans/modules/httpserver/HttpServerModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/httpserver/layer.xml
 OpenIDE-Module-Specification-Version: 1.7
