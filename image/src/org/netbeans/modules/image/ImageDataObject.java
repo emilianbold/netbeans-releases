@@ -14,20 +14,14 @@
 package org.netbeans.modules.image;
 
 import java.io.*;
-import java.text.MessageFormat;
-import java.util.Enumeration;
-import javax.swing.*;
 
 import org.openide.*;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.windows.*;
 import org.openide.actions.OpenAction;
-import org.openide.util.*;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
-import org.openide.text.EditorSupport;
 
 /** Object that represents one file containing an image.
 *
@@ -72,13 +66,17 @@ public class ImageDataObject extends MultiDataObject {
     /** Get image data for the image.
     * @return the image data
     */
-    public byte[] getImageData() throws IOException {
-        FileObject fo = getPrimaryFile();
-        byte[] imageData = new byte[(int)fo.getSize()];
-        BufferedInputStream in = new BufferedInputStream(fo.getInputStream());
-        in.read(imageData, 0, (int)fo.getSize());
-        in.close();
-        return imageData; 
+    public byte[] getImageData() {
+        try {
+            FileObject fo = getPrimaryFile();
+            byte[] imageData = new byte[(int)fo.getSize()];
+            BufferedInputStream in = new BufferedInputStream(fo.getInputStream());
+            in.read(imageData, 0, (int)fo.getSize());
+            in.close();
+            return imageData; 
+        } catch(IOException ioe) {
+            return new byte[0];
+        }
     }
 
 
@@ -96,91 +94,91 @@ public class ImageDataObject extends MultiDataObject {
     * listening on changes of image file and renames on dataobject, 
     * so it can work appropriate in Editor window.
     */
-    class ImageOpenSupport extends OpenSupport implements OpenCookie {
+//    class ImageOpenSupport extends OpenSupport implements OpenCookie {
 
         /** Saves last modified time
         */
-        private long lastSaveTime;
+//        private long lastSaveTime;
 
         /** Listens for changes on file
         */
-        private FileChangeListener fileChangeL; 
+//        private FileChangeListener fileChangeL; 
 
 
         /** Constructs ImageOpenSupportObject on given MultiDataObject.Entry
         */
-        public ImageOpenSupport (MultiDataObject.Entry ent) {
-            super (ent);
-        }
+//        public ImageOpenSupport (MultiDataObject.Entry ent) {
+//            super (ent);
+//        }
 
         /** Creates the CloenableTOPComponent viewer of image
         */
-        public CloneableTopComponent createCloneableTopComponent () {
-            prepareViewer();
-            return new ImageViewer(ImageDataObject.this);
-        }
+//        public CloneableTopComponent createCloneableTopComponent () {
+//            prepareViewer();
+//            return new ImageViewer(ImageDataObject.this);
+//        }
 
         /**  Set listener for changes on image file
         */
-        void prepareViewer() {
+//        void prepareViewer() {
             // listen for changes on the image file
-            if(fileChangeL == null) {
-                fileChangeL = new FileChangeAdapter() {
-                    public void fileChanged(final FileEvent evt) {
-                        if (evt.getTime() > lastSaveTime) {
-                            lastSaveTime = System.currentTimeMillis();
+//            if(fileChangeL == null) {
+//                fileChangeL = new FileChangeAdapter() {
+//                    public void fileChanged(final FileEvent evt) {
+//                        if (evt.getTime() > lastSaveTime) {
+//                            lastSaveTime = System.currentTimeMillis();
                             // post in AWT event thread because of possible dialog popup
-                            SwingUtilities.invokeLater(
-                                new Runnable() {
-                                    public void run() {
-                                        reload(evt);
-                                    }
-                                }
-                            );
-                        }
-                    }
-                };
-            }
-            entry.getFile().addFileChangeListener(fileChangeL);
-            lastSaveTime = System.currentTimeMillis();
-        }
+//                            SwingUtilities.invokeLater(
+//                                new Runnable() {
+//                                    public void run() {
+//                                        reload(evt);
+//                                   }
+//                                }
+//                            );
+//                        }
+//                    }
+//                };
+//            }
+//            entry.getFile().addFileChangeListener(fileChangeL);
+//            lastSaveTime = System.currentTimeMillis();
+//        }
         
         /** Ask and reload/close image views
         */
-        private void reload(FileEvent evt) {
+//        private void reload(FileEvent evt) {
             // ask if reload?
-            MessageFormat fmt = new MessageFormat(NbBundle.getBundle(EditorSupport.class).getString("FMT_External_change")); // NOI18N
-            String msg = fmt.format(new Object[] { entry.getFile().getPackageNameExt('/', '.')});
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
-            Object ret = TopManager.getDefault().notify(nd);
+//            MessageFormat fmt = new MessageFormat(NbBundle.getBundle(EditorSupport.class).getString("FMT_External_change")); // NOI18N
+//            String msg = fmt.format(new Object[] { entry.getFile().getPackageNameExt('/', '.')});
+//            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
+//            Object ret = TopManager.getDefault().notify(nd);
 
-            if (NotifyDescriptor.YES_OPTION.equals(ret)) {
-                RequestProcessor.postRequest(new Runnable() {
+//            if (NotifyDescriptor.YES_OPTION.equals(ret)) {
+//                RequestProcessor.postRequest(new Runnable() {
                     // load icon from file
-                    public void run() {
-                        Icon icon1; // accessory vraiable cause javac don't compile following code with final icon variable
-                        try {
-                            icon1 = new NBImageIcon(ImageDataObject.this);
-                        } catch (IOException ioe) {
-                            icon1 = new ImageIcon(new byte[0]); // empty icon
-                        }
+//                    public void run() {
+//                        final Icon icon1; // accessory vraiable cause javac don't compile following code with final icon variable
+//                        try {
+//                            icon1 = new NBImageIcon(ImageDataObject.this);
+//                        } catch (IOException ioe) {
+//                            icon1 = new ImageIcon(new byte[0]); // empty icon
+//                        }
                         
-                        final Icon icon = icon1;
+//                        final Icon icon = icon1;
 
-                        Enumeration e = allEditors.getComponents();
-                        while(e.hasMoreElements()) {
-                            final Object pane = e.nextElement();
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    ((ImageViewer)pane).reloadIcon(icon);
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-        }
-    } // end of inner ImageOpenSupport class
+//                        Enumeration e = allEditors.getComponents();
+//                        while(e.hasMoreElements()) {
+//                            final Object pane = e.nextElement();
+//                            SwingUtilities.invokeLater(new Runnable() {
+//                                public void run() {
+//                                    ((ImageViewer)pane).reloadIcon(icon);
+//                                }
+//                            });
+//                        }
+//                    }
+//                });
+//            }
+//        }
+//    } // end of inner ImageOpenSupport class
 }
 
 /*
