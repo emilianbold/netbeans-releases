@@ -60,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/execution/*Test.class"/>
                 <include name="org/openide/explorer/*Test.class"/>
                 <!-- Under development: -->
-                <exclude name="org/openide/explorer/ExplorerPanelTest.class/testSelectedNodesInDeserializedPanel"/>
+                <exclude name="org/openide/explorer/*Test.class/testSelectedNodesInDeserializedPanel"/>
                 <!-- testGlobalStateInExplorerActionsIsImportant sometimes fails, have to be investigated -->
                 <exclude name="org/openide/explorer/ExplorerActionsTest.class/testGlobalStateInExplorerActionsIsImportant"/>
                 <!-- following test was excluded because of issue #22629 --> 
@@ -75,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- #28118 in faling testbag yet -->
                 <exclude name="org/openide/loaders/InstanceDataObjectTest.class/testFiringEventWhenDeleted"/>
                 <!-- Under development: -->
-                <exclude name="org/openide/loaders/CreateFromTemplate.class"/>
+                <exclude name="org/openide/loaders/CreateFromTemplateTest.class"/>
                 <!-- Don't worry about these, cannot be fixed currently: -->
 		<exclude name="org/openide/loaders/DataFolderTest.class/testSortMode"/> <!-- failing in cont. test -->
 		<exclude name="org/openide/loaders/DataFolderTest.class/testMove"/> <!-- failing in cont. test -->
