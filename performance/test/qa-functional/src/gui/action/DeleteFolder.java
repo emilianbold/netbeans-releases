@@ -94,10 +94,7 @@ public class DeleteFolder extends org.netbeans.performance.test.utilities.Perfor
         projectTab.getProjectRootNode("PerformanceTestData").collapse();
         projectTab.getProjectRootNode("jEdit").collapse();
         
-        // XXX how to filter this
-//        addClassNameToLookFor("explorer.view");
-//        setPrintClassNames(true);
-        fail("Cannot filter events yet");
+        repaintManager().setOnlyExplorer(true);
         turnBadgesOff();
     }
         
@@ -168,7 +165,7 @@ public class DeleteFolder extends org.netbeans.performance.test.utilities.Perfor
 
     public void shutdown() {
         new RestoreWindowAction().performAPI(projectTab);
-//        setPrintClassNames(false);
+        repaintManager().setOnlyExplorer(false);
         turnBadgesOn();
     }
     
