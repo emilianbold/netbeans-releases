@@ -42,7 +42,6 @@ public final class FileObjectFactory {
 
     public final FileObject findFileObject(final File f) {
         final FileObject retVal = this.findFileObjectImpl(f, new ArrayList());
-        assert (retVal != null || !new FileInfo(f).isConvertibleToFileObject()) : f.getAbsolutePath();
 
         return retVal;
     }
@@ -147,12 +146,11 @@ public final class FileObjectFactory {
 
                         mutexPrivileged.enterReadAccess();
                         try {
-                            final FileNaming child = parentChildrenCache.getChild(file.getName(), true);
+                            final FileNaming child = parentChildrenCache.getChild(file.getName(), false);
 
                             if (child != null) {
                                 assert child.getFile().equals(file) : (child.getFile().getAbsolutePath() + " | " + file.getAbsolutePath());//NOI18N
                                 retVal = this.create(fInfo);
-                                assert retVal != null : parent.getAbsolutePath();
                             } else {
                                 //TODO: find out why is this code here
                                 parentChildrenCache.getChild(file.getName(), false);
@@ -161,8 +159,6 @@ public final class FileObjectFactory {
                             mutexPrivileged.exitReadAccess();
                         }
                     }
-
-                    assert retVal != null || !fInfo.isConvertibleToFileObject() : (fInfo.getFile().getAbsolutePath() + " isConvertible:   " + fInfo.isConvertibleToFileObject()) ;//NOI18N
                 } else {
                     retVal = this.getRoot();
                 }
