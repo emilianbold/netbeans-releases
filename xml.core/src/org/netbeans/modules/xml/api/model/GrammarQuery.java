@@ -71,6 +71,8 @@ public interface GrammarQuery {
     Enumeration queryElements(HintContext virtualElementCtx);
 
     /**
+     * Query attribute options for given context. All implementations must handle
+     * queries based on owner element context.
      * @stereotype query
      * @output list of results that can be queried on name, and attributes
      * @time Performs fast up to 300 ms. 
@@ -94,11 +96,12 @@ public interface GrammarQuery {
     Enumeration queryValues(HintContext virtualTextCtx);
 
     /**
-     * Return default value for given context.
-     * @param virtualNodeCtx position for which default is queried
+     * query default value for given context. Two context types must be handled:
+     * an attribute and an element context.
+     * @param parentNodeCtx context for which default is queried
      * @return default value or <code>null</code>
      */
-    GrammarResult queryDefault(HintContext virtualNodeCtx);
+    GrammarResult queryDefault(HintContext parentNodeCtx);
 
     /**
      * Allow to get names of <b>parsed general entities</b>.
@@ -130,19 +133,19 @@ public interface GrammarQuery {
      * @param ctx the hint context node
      * @return a Component which can be used to customize the context node
      */
-    java.awt.Component getCustomizer(HintContext ctx);
+    java.awt.Component getCustomizer(HintContext nodeCtx);
     
     /**
      * Allows Grammars to supply customizer from the HintContext
      * @param ctx the hint context node
      * @return true if a customizer is available for this context
      */
-    boolean hasCustomizer(HintContext ctx);
+    boolean hasCustomizer(HintContext nodeCtx);
 
     /**
      * Allows Grammars to supply properties for the HintContext
      * @param ctx the hint context node
      * @return an array of properties for this context
      */
-    org.openide.nodes.Node.Property[] getProperties(HintContext ctx);
+    org.openide.nodes.Node.Property[] getProperties(HintContext nodeCtx);
 }

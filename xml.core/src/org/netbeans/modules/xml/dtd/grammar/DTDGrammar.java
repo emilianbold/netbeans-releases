@@ -229,24 +229,29 @@ public class DTDGrammar implements GrammarQuery {
         return EmptyEnumeration.EMPTY;
     }
 
-    // return defaults for attribute values
-    public GrammarResult queryDefault(HintContext ctx) {
+    // return defaults for attribute values (DTD does not declare content defaults)
+    public GrammarResult queryDefault(final HintContext ctx) {
+        
+        Node node = ctx;
+        
         if (ctx.getNodeType() == Node.TEXT_NODE) {
-            Node parent = ctx.getParentNode();
-            if (parent == null) return null;
-            if (parent.getNodeType() == Node.ATTRIBUTE_NODE) {
-                Attr attr = (Attr) parent;
-                Element element = attr.getOwnerElement();
-                if (element == null) return null;
-                
-                String elementName = element.getNodeName();
-                String attributeName = attr.getNodeName();
-                String key = elementName + " " + attributeName;                 // NOI18N
-                String def = (String) defaultAttributeValues.get(key);
-                if (def == null) return null;
-                return new MyText(def);
-            }
+            node = ctx.getParentNode();
+            if (node == null) return null;
         }
+        
+        if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
+            Attr attr = (Attr) node;
+            Element element = attr.getOwnerElement();
+            if (element == null) return null;
+
+            String elementName = element.getNodeName();
+            String attributeName = attr.getNodeName();
+            String key = elementName + " " + attributeName;                 // NOI18N
+            String def = (String) defaultAttributeValues.get(key);
+            if (def == null) return null;
+            return new MyText(def);
+        }
+        
         return null;
     }
     
