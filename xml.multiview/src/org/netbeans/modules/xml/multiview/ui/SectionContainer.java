@@ -60,6 +60,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
                 popup.show(foldButton,e.getX(), e.getY());
             }
         });
+        setIcon(true);
         if (!foldable) {  
             remove(filler);
             remove(foldButton);
@@ -271,12 +272,15 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     private void titleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_titleButtonActionPerformed
         // TODO add your handling code here:
         setActive(true);
+        open();
+        setIcon(true);
     }//GEN-LAST:event_titleButtonActionPerformed
 
     private void foldButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foldButtonActionPerformed
         // TODO add your handling code here:
         contentPanel.setVisible(!foldButton.isSelected());
         filler.setVisible(!foldButton.isSelected());
+        setIcon(!foldButton.isSelected());
     }//GEN-LAST:event_foldButtonActionPerformed
     
     
@@ -316,5 +320,17 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     public boolean isFoldable() {
         return foldable;
     }
+    
+    private void setIcon(boolean opened) {
+        java.awt.Image image=null;
+        if (opened)
+            image = (root == null ? null : root.getOpenedIcon(java.beans.BeanInfo.ICON_COLOR_16x16));
+        else
+            image = (root == null ? null : root.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16));
+        if (image != null) {
+            titleButton.setIcon(new javax.swing.ImageIcon(image));
+        }
+    }
+
     
 }
