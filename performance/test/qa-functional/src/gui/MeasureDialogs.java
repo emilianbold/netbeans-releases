@@ -42,54 +42,44 @@ public class MeasureDialogs  {
         suite.addTest(new OpenFileDialog("measureTime", "Open File dialog open"));
         suite.addTest(new UpdateCenter("measureTime", "Update Center wizard open"));
         suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
-        
+//TODO wait until implemented Favourite Folders tab        suite.addTest(new AllFilesWindow("measureTime", "All Files window open"));
         suite.addTest(new RuntimeWindow("measureTime", "Runtime window open"));
         suite.addTest(new VersioningWindow("measureTime", "Versioning window open"));
-//TODO        suite.addTest(new OutputWindow("measureTime", "Output window open"));
+//TODO it still fails in Promo D       suite.addTest(new OutputWindow("measureTime", "Output window open"));
         suite.addTest(new ToDoWindow("measureTime", "To Do window open"));
         suite.addTest(new HttpMonitorWindow("measureTime", "Http Monitor window open"));
         suite.addTest(new HelpContentsWindow("measureTime", "Help Contents window open"));
+        suite.addTest(new PropertyEditorString("measureTime", "String Property Editor open"));
         suite.addTest(new PropertyEditorColor("measureTime", "Color Property Editor open"));
         suite.addTest(new AddJDBCDriverDialog("measureTime", "Add JDBC Driver dialog open"));
+        suite.addTest(new NewDatabaseConnectionDialog("measureTime", "New Database Connection dialog open"));
+        suite.addTest(new AddNewServerInstanceDialog("measureTime", "Add Server Instance dialog open"));
+        suite.addTest(new SetDefaultServerDialog("measureTime", "Set Default Server dialog open"));
+        suite.addTest(new MountXMLCatalogDialog("measureTime", "Mount XML Catalog dialog open"));
+        suite.addTest(new FindInFiles("measureTime", "Find in Files dialog open"));
+        suite.addTest(new ProjectPropertiesWindow("measureTime", "Project Properties window open"));
  
-        
-        
-        
-//TODO        suite.addTest(new JavadocManagerDialog("measureTime", "Javadoc Manager dialog open"));
-//TODO        suite.addTest(new AttachDialog("measureTime", "Attach dialog open"));
-//TODO        suite.addTest(new ProjectManagerDialog("measureTime", "Project Manager dialog open"));
-//TODO        suite.addTest(new ProjectSetMainClassDialog("measureTime", "Set Project Main Class dialog open"));
-        //It doesn't work if printer isn't installed suite.addTest(new PageSetupDialog("measureTime", "Page Setup dialog open"));
-        
-        
+        suite.addTest(new AttachDialog("measureTime", "Attach dialog open"));
+        suite.addTest(new NewBreakpointDialog("measureTime", "New Breakpoint dialog open"));
+        suite.addTest(new NewWatchDialog("measureTime", "New Watch dialog open"));
 
-        // dialogs and windows which first select a node somewhere
-//TODO        suite.addTest(new PropertiesWindow("measureTime", "Properties window open"));
-//TODO        suite.addTest(new NewDatabaseConnectionDialog("measureTime", "New Database Connection dialog open"));
-//TODO        suite.addTest(new MountXMLCatalogDialog("measureTime", "Mount XML Catalog dialog open"));
-//TODO        suite.addTest(new AddNewServerInstanceDialog("measureTime", "Add Server Instance dialog open"));
-//TODO        suite.addTest(new SetDefaultServerDialog("measureTime", "Set Default Server dialog open"));
+        suite.addTest(new JavadocIndexSearch("measureTime", "Javadoc Index Search open"));
         
-//TODO        suite.addTest(new FindDialogExplorer("measureTime", "Explorer Find open"));
-//TODO        suite.addTest(new NewFromTemplate("measureTime", "New From Template open"));
-//        suite.addTest(new PrintToHTMLDialog("measureTime", "Print To HTML dialog open"));
-
+        suite.addTest(new CodeCompletionDatabaseManager("measureTime", "Code Completion Database Manager open"));
+        suite.addTest(new GotoClassDialog("measureTime", "Go To Class dialog open"));
+        suite.addTest(new JavaPlatformManager("measureTime", "Java Platform Manager open"));
+        suite.addTest(new LibrariesManager("measureTime", "Libraries Manager open"));
+        
         // dialogs and windows which first open a file in the editor
-//TODO        suite.addTest(new ImportManagementWizard("measureTime", "Import Management Tool open"));
-//TODO        suite.addTest(new AutoCommentWindow("measureTime", "Auto Comment Tool open"));
-//TODO        suite.addTest(new InternationalizeDialog("measureTime", "Internationalize dialog open"));
-//TODO        suite.addTest(new DocumentsDialog("measureTime", "Documents dialog open"));
-//TODO        suite.addTest(new FindDialogSourceEditor("measureTime", "Source Editor Find dialog open"));
-//TODO        suite.addTest(new GoToLineDialog("measureTime", "Go To dialog open"));
-//TODO        suite.addTest(new EditorProperties("measureTime", "Editor Properties open"));
-//TODO        suite.addTest(new NewBreakpointDialog("measureTime", "New Breakpoint dialog open"));
-//TODOs        suite.addTest(new NewWatchDialog("measureTime", "New Watch dialog open"));
-
+        suite.addTest(new DocumentsDialog("measureTime", "Documents dialog open"));
         
-        
-//        suite.addTest(new SetArgumentsDialog("measureTime", "Set Arguments dialog open"));
-        //It doesn't work if printer isn't installed suite.addTest(new PrintDialog("measureTime", "Print dialog open"));
-        
+        suite.addTest(new ImportManagementWizard("measureTime", "Import Management Tool open"));
+        suite.addTest(new OverrideMethods("measureTime", "Override and Implement Methods dialog open"));
+        suite.addTest(new GotoLineDialog("measureTime", "Go to Line dialog open"));
+        suite.addTest(new AutoCommentWindow("measureTime", "Auto Comment Tool open"));
+        suite.addTest(new EditorProperties("measureTime", "Editor Properties open"));
+        suite.addTest(new FindInSourceEditor("measureTime", "Find in Source Editor dialog open"));
+        suite.addTest(new InternationalizeDialog("measureTime", "Internationalize dialog open"));
         
         return suite;
     }
