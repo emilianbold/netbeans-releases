@@ -171,21 +171,13 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         s.setTransactionType("Container"); // NOI18N
         beans.addSession(s);
         try {
+            // This also saves server specific configuration, if necessary.
             ejbJar.write(ejbJarImpl.getDeploymentDescriptor());
-            //Hack to save any defaults put in vendor-specific DD
-            //Need a better way to save selectively from server plugins(an api that allows
-            //server plugins to save server configuration in selective manner)
-            org.openide.LifecycleManager.getDefault().saveAll();
         }
         catch(java.io.IOException e) {
             //FIX-ME: handle this
             throw new RuntimeException(e.getMessage());
         }
-        
-        //Hack to save any defaults put in vendor-specific DD
-        //Need a better way to save selectively from server plugins(an api that allows
-        //server plugins to save server configuration in selective manner)
-        //FIX-ME: Do we still need this?: org.openide.LifecycleManager.getDefault().saveAll();
     }
     
     public void addServiceImplLinkEntry(ServiceImplBean serviceImplBean, String wsName) {
