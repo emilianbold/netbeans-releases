@@ -41,9 +41,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.util.WeakListener;
 import org.openide.util.NbBundle;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
-import org.openide.util.RequestProcessor;
 import org.openide.text.EditorSupport;
 import org.openide.text.PositionRef;
 import org.openide.cookies.EditCookie;
@@ -79,9 +76,6 @@ public class PropertiesEditorSupport extends CloneableEditorSupport implements E
     
     /** Visible view of underlying file entry */
     transient PropertiesFileEntry myEntry;
-    
-    /** Properties Settings */
-    static final PropertiesSettings settings = new PropertiesSettings();
     
     
     static final long serialVersionUID =1787354011149868490L;
