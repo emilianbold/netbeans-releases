@@ -229,6 +229,10 @@ public abstract class XMLBean {
             field.setInt(obj,Integer.parseInt(value));
             return;
         }
+        if (fieldTypeName.equals("short")) {
+            field.setShort(obj,Short.parseShort(value));
+            return;
+        }
         
         if (fieldTypeName.equals("long")) {
             field.setLong(obj,Long.parseLong(value));
