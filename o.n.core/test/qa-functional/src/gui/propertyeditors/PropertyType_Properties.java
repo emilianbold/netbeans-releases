@@ -56,12 +56,13 @@ public class PropertyType_Properties extends PropertyEditorsTest {
     public void testCustomizerOk() {
         propertyValue_L = "propertyName1=propertyValue1";
         propertyValueExpectation_L = propertyValue_L;
-        waitDialog = false;                                     
+        waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
     
     public void testCustomizerCancel(){
         propertyValue_L = "pp=xx";
+        waitDialog = false;
         setByCustomizerCancel(propertyName_L, false);
     }
     
@@ -84,7 +85,7 @@ public class PropertyType_Properties extends PropertyEditorsTest {
     }
     
     public void verifyPropertyValue(boolean expectation) {
-        verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, false);
+        verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, waitDialog);
     }
     
     public void verifyCustomizerLayout() {

@@ -95,7 +95,7 @@ public class PropertyType_Executor extends PropertyEditorsTest {
     }
     
     public void verifyPropertyValue(boolean expectation) {
-        verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, false);
+        verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, waitDialog);
     }
     
     public void verifyCustomizerLayout() {

@@ -26,6 +26,8 @@ public class PropertyType_Class extends PropertyEditorsTest {
     public String propertyValue_L;
     public String propertyValueExpectation_L;
     
+    public boolean waitDialog = false;
+    
     /** Creates a new instance of PropertyType_Class */
     public PropertyType_Class(String testName) {
         super(testName);
@@ -47,17 +49,19 @@ public class PropertyType_Class extends PropertyEditorsTest {
     public void testByInPlace(){
         propertyValue_L = "java.lang.String";
         propertyValueExpectation_L = propertyValue_L;
+        waitDialog = false;        
         setByInPlace(propertyName_L, propertyValue_L, true);
     }
     
     public void testByInPlaceInvalid(){
         propertyValue_L = "java.lang.Stringxx";
         propertyValueExpectation_L = propertyValue_L;
+        waitDialog = true;
         setByInPlace(propertyName_L, propertyValue_L, false);
     }
     
     public void verifyPropertyValue(boolean expectation) {
-        verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, false);
+        verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, waitDialog);
     }
     
     public void setCustomizerValue(){}

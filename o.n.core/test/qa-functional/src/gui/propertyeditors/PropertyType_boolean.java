@@ -24,7 +24,6 @@ public class PropertyType_boolean extends PropertyEditorsTest {
     
     public String propertyName_L;
     public String propertyValue_L;
-    public boolean waitDialog = false;
     
     /** Creates a new instance of PropertyType_boolean */
     public PropertyType_boolean(String testName) {
