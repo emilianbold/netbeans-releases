@@ -86,7 +86,7 @@ public class OptionsAction extends CallableSystemAction {
                         new Object[] {closeButton},
                         closeButton,
                         DialogDescriptor.DEFAULT_ALIGN,
-                        null,
+                        getHelpCtx (),
                         null);
 
                     // #37673
