@@ -124,7 +124,7 @@ Microsystems, Inc. All Rights Reserved.
 
         if [ "$GENERATE" == "true" ]; then
             if [ "$DESC" == "" ]; then
-                DESC="This icon is used with ... for ..."
+                DESC="This icon represents "
             fi
             echo "$KEY=\"$DESC\"" >> $DESC_FILE
         fi
