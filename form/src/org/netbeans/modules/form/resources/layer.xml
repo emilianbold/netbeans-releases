@@ -657,8 +657,10 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Visual">
                 <file name="explorer.wsmode" url="windowmanager/Visual/explorer.wsmode" />
                 <folder name="explorer">
-                    <attr name="filesystems.wstcref/Javadoc.wstcref" boolvalue="true" />
+                    <attr name="filesystems.wstcref/Project Default.wstcref" boolvalue="true" />
+                    <attr name="Project Default.wstcref/Javadoc.wstcref" boolvalue="true" />
                     <file name="filesystems.wstcref" url="windowmanager/Visual/explorer/filesystems.wstcref" />
+                    <file name="Project Default.wstcref" url="windowmanager/Visual/explorer/Project Default.wstcref" />
                     <file name="Javadoc.wstcref" url="windowmanager/Visual/explorer/Javadoc.wstcref" />
                 </folder>
                 <file name="properties.wsmode" url="windowmanager/Visual/properties.wsmode" />
