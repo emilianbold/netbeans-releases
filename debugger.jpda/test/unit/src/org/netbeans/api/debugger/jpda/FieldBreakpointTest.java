@@ -13,9 +13,9 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import com.sun.jdi.AbsentInformationException;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.viewmodel.NoInformationException;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -159,7 +159,7 @@ public class FieldBreakpointTest extends NbTestCase {
         }
 
         private void checkEvent (JPDABreakpointEvent event) 
-        throws NoInformationException {
+        throws AbsentInformationException {
             
             FieldBreakpoint fb = (FieldBreakpoint) event.getSource ();
 

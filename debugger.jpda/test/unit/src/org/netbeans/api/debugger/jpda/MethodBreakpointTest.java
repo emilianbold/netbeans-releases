@@ -15,7 +15,7 @@ package org.netbeans.api.debugger.jpda;
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.viewmodel.NoInformationException;
+
 
 /**
  * Tests method breakpoints.
@@ -177,8 +177,7 @@ public class MethodBreakpointTest extends NbTestCase {
             }
         }
 
-        private void checkEvent (JPDABreakpointEvent event) 
-        throws NoInformationException {
+        private void checkEvent (JPDABreakpointEvent event) {
             MethodBreakpoint mb = (MethodBreakpoint) event.getSource ();
 
             assertEquals (

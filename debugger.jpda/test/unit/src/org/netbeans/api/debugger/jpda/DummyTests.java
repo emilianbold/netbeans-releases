@@ -17,7 +17,6 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
-import org.netbeans.spi.viewmodel.NoInformationException;
 
 
 /**
