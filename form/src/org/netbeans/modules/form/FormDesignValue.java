@@ -48,10 +48,27 @@ public interface FormDesignValue extends java.io.Serializable {
   * @return the real property value to be used during design-time
   */
   public Object getDesignValue (RADComponent radComponent);
+
+  /** Extended version of FormDesignValue which supports listening on changes of the design value */
+  public interface Listener extends FormDesignValue {
+    /** Attaches specified listener to the design value. 
+    * The change event is fired whenever the design value (accessible via getDesignValue () method call) changes
+    * @param listener the change listener to add
+    */
+    public void addChangeListener (javax.swing.event.ChangeListener listener);
+
+    /** Deattaches specified listener from the design value. 
+    * The change event is fired whenever the design value (accessible via getDesignValue () method call) changes
+    * @param listener the change listener to remove
+    */
+    public void removeChangeListener (javax.swing.event.ChangeListener listener);
+  }
 }
 
 /*
  * Log
+ *  4    Gandalf   1.3         7/22/99  Ian Formanek    Added Listener 
+ *       innerclass
  *  3    Gandalf   1.2         6/27/99  Ian Formanek    Added constant 
  *       IGNORED_VALUE
  *  2    Gandalf   1.1         6/27/99  Ian Formanek    implements serializable,
