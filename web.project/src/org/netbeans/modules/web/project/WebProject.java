@@ -476,10 +476,11 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/Classes/Class.java",
+            
             "Templates/JSP_Servlet/JSP.jsp",
+            "Templates/JSP_Servlet/Html.html",
             "Templates/JSP_Servlet/Servlet.java",
-            "Templates/JSP_Servlet/ServletListener.java",
+            "Templates/Classes/Class.java"
         };
         
         public String[] getRecommendedTypes() {
