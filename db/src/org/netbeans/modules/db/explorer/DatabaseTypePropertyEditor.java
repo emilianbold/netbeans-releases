@@ -51,7 +51,7 @@ public class DatabaseTypePropertyEditor implements PropertyEditor
 	public void setValue (Object object) 
 	{
 		if (!(object instanceof Number)) {
-			throw new IllegalArgumentException("can't operate with "+object);
+			throw new IllegalArgumentException("cannot operate with "+object);
 		}
 		int ii = ((Number)object).intValue ();
 		int i, k = constants.length;
@@ -60,7 +60,7 @@ public class DatabaseTypePropertyEditor implements PropertyEditor
 		}
 		
 		if (i == k) {
-			throw new IllegalArgumentException("can't find "+ii);
+			throw new IllegalArgumentException("cannot find "+ii);
 		} 
 		index = i;
 		name = names [i];
@@ -75,7 +75,7 @@ public class DatabaseTypePropertyEditor implements PropertyEditor
   throws IllegalArgumentException {
     int i, k = names.length;
     for (i = 0; i < k; i++) if (names [i].equals (string)) break;
-    if (i == k)  throw new IllegalArgumentException("can't find as text "+string);
+    if (i == k)  throw new IllegalArgumentException("cannot find as text "+string);
     index = i;
     name = names [i];
     return;
@@ -115,6 +115,7 @@ public class DatabaseTypePropertyEditor implements PropertyEditor
 
 /*
  * <<Log>>
+ *  6    Gandalf   1.5         8/19/99  Slavek Psenicka English
  *  5    Gandalf   1.4         8/18/99  Slavek Psenicka debug log removed
  *  4    Gandalf   1.3         7/21/99  Slavek Psenicka 
  *  3    Gandalf   1.2         6/15/99  Slavek Psenicka debug prints

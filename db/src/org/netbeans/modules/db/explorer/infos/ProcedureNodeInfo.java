@@ -81,7 +81,7 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo
 					if (ibase != null) info.put("iconbase", ibase);
 					info.put("type", itype);
 					children.add(info);
-				} else throw new Exception("unable to create node info for procedure column");
+				} else throw new Exception("unable to create node information for procedure column");
 			}
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	

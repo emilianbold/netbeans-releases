@@ -38,7 +38,7 @@ implements ProcedureOwnerOperations
 				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.PROCEDURE, rs);
 				info.put(DatabaseNode.PROCEDURE, info.getName());
 				if (info != null) children.add(info);
-				else throw new Exception("unable to create node info for view");
+				else throw new Exception("unable to create node information for view");
 			}
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	

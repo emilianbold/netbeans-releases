@@ -97,14 +97,14 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		try {
 			String nodec = (String)((Map)DatabaseNodeInfo.getGlobalNodeInfo().get(nodecode)).get(INFOCLASS);
 			if (nodec != null) e_ni = (DatabaseNodeInfo)Class.forName(nodec).newInstance();
-			else throw new Exception("unable to find class info for "+nodecode);
+			else throw new Exception("unable to find class information for "+nodecode);
 		} catch (Exception e) { 
 			System.out.println(e);
 			throw new DatabaseException(e.getMessage()); 
 		}
 		
 		if (e_ni != null) e_ni.setParentInfo(parent, nodecode);	
-		else throw new DatabaseException("unable to create node info "+nodecode);
+		else throw new DatabaseException("unable to create node information "+nodecode);
 		return e_ni;
 	}
 
@@ -166,7 +166,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		}
 		Map ltab = (Map)getGlobalNodeInfo(sname);
 		if (ltab != null) putAll(ltab);
-		else throw new DatabaseException("unable to read info for "+sname);
+		else throw new DatabaseException("unable to read information for "+sname);
 		put(CODE, sname);
 	}
 	

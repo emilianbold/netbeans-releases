@@ -44,7 +44,7 @@ public class IndexNodeInfo extends TableNodeInfo
 					if (way == null) way = "A";
 					info.put(DatabaseNodeInfo.ICONBASE, info.get(DatabaseNodeInfo.ICONBASE+way));
 					if (info != null) children.add(info);
-					else throw new Exception("unable to create node info for index");
+					else throw new Exception("unable to create node information for index");
 				}
 			}
 			rs.close();

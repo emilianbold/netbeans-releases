@@ -47,7 +47,7 @@ implements DriverOperations
 					} else throw new Exception("driver "+drv);
 				}
 			} catch (Exception e) {
-				System.out.println("can't restore all drivers; "+e);
+				System.out.println("cannot restore all drivers; "+e);
 			}
 		}
 	}

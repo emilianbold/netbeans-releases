@@ -43,7 +43,7 @@ public class TableNode extends DatabaseNode
 			super.setName(newname);
 			info.put(DatabaseNode.TABLE, newname);
 		} catch (Exception e) {
-			System.out.println("Unable to change the name: "+e);
+			System.out.println("Unable to change name: "+e);
 		}
 	}
 
@@ -140,7 +140,7 @@ public class TableNode extends DatabaseNode
 					throw new IOException(e.getMessage());
 				}
 				
-			} else throw new IOException("can't find table owner info");
+			} else throw new IOException("cannot find table owner information");
 			return null;
 		}
 	}
@@ -200,7 +200,7 @@ public class TableNode extends DatabaseNode
 					});
 */					
 				}
-			} else throw new IOException("can't find Column owner info");
+			} else throw new IOException("cannot find Column owner information");
 			return null;
 		}
 	}

@@ -42,7 +42,7 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 						info.put("index", info.getName());
 						children.add(info);
 					}
-				} else throw new Exception("unable to create node info for index");
+				} else throw new Exception("unable to create node information for index");
 			}
 			rs.close();
  		} catch (Exception e) {
@@ -63,7 +63,7 @@ public class IndexListNodeInfo extends DatabaseNodeInfo
 				if (findex.equals(name)) {
 					IndexNodeInfo info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, rs);
 					if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
-				} else throw new Exception("unable to create node info for index");
+				} else throw new Exception("unable to create node information for index");
 			}
 			rs.close();
  		} catch (Exception e) {

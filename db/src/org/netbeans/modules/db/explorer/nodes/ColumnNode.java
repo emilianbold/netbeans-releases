@@ -51,7 +51,7 @@ public class ColumnNode extends LeafNode
 			cmd.execute();
 			super.setName(newname);
 		} catch (Exception e) {
-			System.out.println("Unable to change the name: "+e);
+			System.out.println("Unable to change name: "+e);
 		}
 	}
 }

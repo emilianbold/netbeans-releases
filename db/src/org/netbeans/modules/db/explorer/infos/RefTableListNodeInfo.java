@@ -39,7 +39,7 @@ public class RefTableListNodeInfo extends DatabaseNodeInfo
 			while (rs.next()) {
 				DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.EXPORTED_KEY, rs);
 				if (info != null) children.add(info);
-				else throw new Exception("unable to create node info for exported key");
+				else throw new Exception("unable to create node information for exported key");
 			}
 			rs.close();
 		} catch (Exception e) {

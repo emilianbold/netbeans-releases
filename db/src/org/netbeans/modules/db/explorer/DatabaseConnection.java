@@ -210,7 +210,7 @@ public class DatabaseConnection extends Object implements DBConnection
 			return connection;
 
 		} catch (Exception e) {
-			throw new DDLException("can't establish a connection to "+db+" using "+drv+"("+e+")");
+			throw new DDLException("cannot establish a connection to "+db+" using "+drv+"("+e+")");
 		}
 	}
 

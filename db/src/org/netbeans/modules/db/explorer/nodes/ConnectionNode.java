@@ -13,11 +13,12 @@
 
 package com.netbeans.enterprise.modules.db.explorer.nodes;
 
-import java.util.*;
-import java.beans.*;
-import java.sql.*;
-import java.io.IOException;
 import java.awt.datatransfer.Transferable;
+import java.beans.*;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.sql.*;
+import java.util.*;
 
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.MapFormat;
@@ -63,15 +64,34 @@ public class ConnectionNode extends DatabaseNode implements InstanceCookie
 
 	public Class instanceClass() throws IOException, ClassNotFoundException
 	{
-		return Class.forName("com.netbeans.sql.ConnectionSource");
+		return Class.forName("com.netbeans.sql.ConnectionSource", true, org.openide.TopManager.getDefault ().currentClassLoader ());
 	}
 	
 	public Object instanceCreate()
 	{
+		DatabaseNodeInfo info = getInfo();
 		try {
-			Object obj = Beans.instantiate(null, instanceName());
-			return obj; 				
+			Method met;
+			Class objclass = instanceClass();
+			String drv = info.getDriver();
+			String db = info.getDatabase();
+			String usr = info.getUser();
+			String pwd = info.getPassword();
+			Object obj =  objclass.newInstance();
+			
+			met = objclass.getMethod("setDriver", new Class[] {String.class});
+			if (met != null) met.invoke(obj, new String[] {drv});
+			met = objclass.getMethod("setDatabase", new Class[] {String.class});
+			if (met != null) met.invoke(obj, new String[] {db});
+			met = objclass.getMethod("setUsername", new Class[] {String.class});
+			if (met != null) met.invoke(obj, new String[] {usr});
+			met = objclass.getMethod("setPassword", new Class[] {String.class});
+			if (met != null) met.invoke(obj, new String[] {pwd});
+			
+			return obj;
+			
 		} catch (Exception ex) {
+			ex.printStackTrace ();
 			return null;
 		}
 	}

@@ -43,7 +43,7 @@ public class IndexNode extends DatabaseNode
 			cmd.execute();
 			super.setName(newname);
 		} catch (Exception e) {
-			System.out.println("Unable to change the name: "+e);
+			System.out.println("Unable to change name: "+e);
 		}
 	}
 */
@@ -133,7 +133,7 @@ public class IndexNode extends DatabaseNode
 							IndexNodeInfo ixinfo = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(destinfo, DatabaseNode.INDEX, rs);
 							if (ixinfo != null) {
 								((DatabaseNodeChildren)destinfo.getNode().getChildren()).createSubnode(ixinfo,true);
-							} else throw new Exception("unable to create node info for index");
+							} else throw new Exception("unable to create node information for index");
 						}
 					}
 					rs.close();
@@ -142,7 +142,7 @@ public class IndexNode extends DatabaseNode
 					throw new IOException(e.getMessage());
 				}
 
-			} else throw new IOException("can't find index owner info");
+			} else throw new IOException("cannot find index owner information");
 			return null;
 		}
 	}	

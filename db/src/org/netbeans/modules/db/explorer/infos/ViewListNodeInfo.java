@@ -38,7 +38,7 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 				if (info != null) {
 					info.put(DatabaseNode.TABLE, info.getName());
 					children.add(info);
-				} else throw new Exception("unable to create node info for table");
+				} else throw new Exception("unable to create node information for table");
 			}
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
@@ -62,7 +62,7 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 			rs.next();
 			DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.VIEW, rs);
 			if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
-			else throw new Exception("unable to create node info for view");
+			else throw new Exception("unable to create node information for view");
 			rs.close();
  		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	

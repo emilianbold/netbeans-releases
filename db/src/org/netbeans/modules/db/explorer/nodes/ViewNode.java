@@ -44,7 +44,7 @@ public class ViewNode extends DatabaseNode
 		} catch (CommandNotSupportedException e) {
 			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to change the name, command "+e.getCommand()+" is not supported by system", NotifyDescriptor.ERROR_MESSAGE));				
 		} catch (Exception e) {
-			System.out.println("Unable to change the name: "+e);
+			System.out.println("Unable to change name: "+e);
 		}
 	}
 }

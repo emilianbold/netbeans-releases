@@ -40,7 +40,7 @@ implements TableOwnerOperations
 				if (info != null) {
 					info.put(DatabaseNode.TABLE, info.getName());
 					children.add(info);
-				} else throw new Exception("unable to create node info for table");
+				} else throw new Exception("unable to create node information for table");
 			}
 		} catch (Exception e) {
 			throw new DatabaseException(e.getMessage());	
@@ -64,7 +64,7 @@ implements TableOwnerOperations
 			DatabaseNodeInfo info = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.TABLE, rs);
 			rs.close();
 			if (info != null) info.put(DatabaseNode.TABLE, info.getName());
-			else throw new Exception("unable to create node info for table");
+			else throw new Exception("unable to create node information for table");
 			DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();		
 			chld.createSubnode(info, true);
 		} catch (Exception e) {
