@@ -40,6 +40,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ExtensibleMetadataProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.netbeans.spi.project.support.SourceContainers;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -127,6 +128,7 @@ final class J2SEProject implements Project, AntProjectListener {
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
             new UnitTestForSourceQueryImpl(helper),
+            SourceContainers.genericOnly( this ),
             fileBuilt,
         });
     }

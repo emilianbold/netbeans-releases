@@ -13,7 +13,8 @@
 
 package org.netbeans.spi.java.project.support.ui.templates;
 
-import org.netbeans.spi.project.SourceFolderContainer;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -35,9 +36,9 @@ public class JavaTemplates {
      * @param folders a list of possible Java package roots to create the new file in
      * @return a wizard panel(s) prompting the user to choose a name and package
      */
-    public static TemplateWizard.Iterator createPackageChooser(FileObject template, SourceFolderContainer.SourceFolderGroup[] folders) {
+    public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders) {
         // XXX
-        return Templates.createSimpleTargetChooser(template, folders);
+        return Templates.createSimpleTargetChooser(project, folders);
     }
     
 }
