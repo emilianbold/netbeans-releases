@@ -120,7 +120,7 @@ public class NewTemplateAction extends NodeAction {
                 try {
                     selectedTemplate = wizard.getTemplate();
                     // Put the template in the recent list
-                    if (selectedTemplate != null) addRecent (selectedTemplate);
+                    if (selectedTemplate != null) recentChanged = addRecent (selectedTemplate);
                     targetFolder = wizard.getTargetFolder();
                 }
                 catch (IOException ignore) {
@@ -239,11 +239,20 @@ public class NewTemplateAction extends NodeAction {
                 }
 
                 // all recent items
-                if (getRecentList ().size() > 0) popup.add(new JSeparator()); // separator
+                boolean regenerate = false;
+                boolean addSeparator = ! getRecentList ().isEmpty ();
                 for (Iterator it = getRecentList ().iterator(); it.hasNext(); ) {
-                    popup.add(new Item((DataObject)it.next(), false));
+                    DataObject dobj = (DataObject)it.next ();
+                    if (isValidTemplate (dobj)) {
+                        if (addSeparator) popup.add (new JSeparator ()); // separator
+                        addSeparator = false;
+                        popup.add (new Item (dobj, false));
+                    } else {
+                        // some template was unvalidated => have to regenerate next time
+                        regenerate = true;
+                    }
                 }
-                
+                recentChanged = recentChanged || regenerate;
                 initialized = true;
             }
             return popup;
@@ -369,11 +378,13 @@ public class NewTemplateAction extends NodeAction {
             recentList = new ArrayList (0);
         }
         
+        recentChanged = false;
+        
         return recentList;
     }
     
     private boolean isValidTemplate (DataObject template) {
-        return (template != null) && template.isTemplate ();
+        return (template != null) && template.isTemplate () && template.isValid ();
     }
 
     private boolean addRecent (DataObject template) {
@@ -415,8 +426,6 @@ public class NewTemplateAction extends NodeAction {
             size--;
         }
         
-        recentChanged = true;
-        
         return true;
     }
     
@@ -428,7 +437,6 @@ public class NewTemplateAction extends NodeAction {
         
         try {
             template.delete ();
-            recentChanged = true;
             return true;
         } catch (IOException ioe) {
             ErrorManager em = ErrorManager.getDefault();
@@ -439,7 +447,7 @@ public class NewTemplateAction extends NodeAction {
     }
     
     private boolean isRecent (DataObject template) {
-        return recentList.contains (template);
+        return getRecentList ().contains (template);
     }
     
     /** Create a hierarchy of templates.
