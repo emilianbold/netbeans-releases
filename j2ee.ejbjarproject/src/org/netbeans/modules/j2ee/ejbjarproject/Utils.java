@@ -13,12 +13,23 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject;
 
+import java.util.ArrayList;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 
 import javax.swing.*;
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.openide.filesystems.FileObject;
 
 public class Utils {
 
@@ -83,4 +94,31 @@ public class Utils {
     public static void setSteps(WizardDescriptor.Panel[] panels, String[] steps) {
         setSteps(panels, steps, steps, 0);
     }
+    
+    /**
+     * Returns Java source groups for all source packages in given project.<br>
+     * Doesn't include test packages.
+     *
+     * @param project Project to search
+     * @return Array of SourceGroup. It is empty if any probelm occurs.
+     */
+    public static SourceGroup[] getJavaSourceGroups(Project project) {
+        Sources sources = (Sources) project.getLookup().lookup(Sources.class);
+        EjbJarImplementation ejbJarImpl = (EjbJarImplementation) project.getLookup().lookup(EjbJarImplementation.class);
+        if (sources == null || ejbJarImpl == null) {
+            return new SourceGroup[0];
+        }
+        FileObject[] sourceRoots = ejbJarImpl.getJavaSources();
+        Set sourceRootsSet = new HashSet(Arrays.asList(sourceRoots));
+        SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        List result = new ArrayList();
+        for (int i = 0; i < sourceGroups.length; i++) {
+            FileObject rootFolder = sourceGroups[i].getRootFolder();
+            if (sourceRootsSet.contains(rootFolder)) {
+                result.add(sourceGroups[i]);
+            }
+        }
+        return (SourceGroup[]) result.toArray(new SourceGroup[result.size()]);
+    }
+    
 }
