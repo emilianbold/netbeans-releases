@@ -124,7 +124,6 @@ public class BaseOptions extends OptionSupport {
     public static final String INDENT_ENGINE_PROP = "indentEngine"; // NOI18N
     public static final String KEY_BINDING_LIST_PROP = "keyBindingList"; // NOI18N
     public static final String LINE_HEIGHT_CORRECTION_PROP = "lineHeightCorrection"; // NOI18N
-    public static final String LINE_NUMBER_MARGIN_PROP = "lineNumberMargin"; // NOI18N
     public static final String LINE_NUMBER_VISIBLE_PROP = "lineNumberVisible"; // NOI18N
     public static final String MACRO_MAP_PROP = "macroMap"; // NOI18N
     public static final String MARGIN_PROP = "margin"; // NOI18N
