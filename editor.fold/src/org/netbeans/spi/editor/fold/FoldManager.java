@@ -81,9 +81,20 @@ public interface FoldManager {
     
     /**
      * Initialize the folds provided by this manager.
-     * The default implementation does not add any folds.
      * <br>
-     * Attach any listeners necessary for the maintenance of the folds.
+     * The fold manager should create initial set of folds here
+     * if it does not require too much resource consumption.
+     * <br>
+     * As this method is by default called at the file opening time
+     * then it may be better to schedule the initial fold computations
+     * for later time and do nothing here. 
+     *
+     * <p>
+     * Any listeners necessary for the maintenance of the folds
+     * can be attached here.
+     * <br>
+     * Generally there should be just weak listeners used
+     * to not prevent the GC of the text component.
      *
      * @param transaction transaction in terms of which the intial
      *  fold changes can be performed.
