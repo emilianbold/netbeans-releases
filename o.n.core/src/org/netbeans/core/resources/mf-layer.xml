@@ -24,8 +24,8 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="NoOps">
             <file name="NoIndentEngine.instance">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.beaninfo.editors.Bundle"/>
-              <!-- The special icon for no indentaion doesn't exits yet #, using the default one -->
-              <!-- <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/beaninfo/editors/resources/noIndentationEngine.gif"/> -->
+              <!-- The special icon for no indentation doesn't exist yet; using the default one -->
+              <!-- <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/beaninfo/editors/resources/noIndentationEngine.gif"/> -->
               <attr name="instanceOf" stringvalue="org.openide.ServiceType,org.openide.text.IndentEngine,org.openide.text.IndentEngine$Default" />
               <attr name="instanceClass" stringvalue="org.openide.text.IndentEngine$Default" />
               <attr name="instanceCreate" methodvalue="org.openide.text.IndentEngine.getDefault" />
@@ -57,7 +57,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceOf" stringvalue="org.openide.filesystems.URLMapper"/>
                 <attr name="instanceCreate" methodvalue="org.openide.filesystems.URLMapper.getDefault"/>                
             </file>
-            <!-- in memory EntityCalalog intance (it serves for deprecated method implementations) -->
+            <!-- in-memory EntityCatalog instance (used for deprecated method implementations) -->
             <file name="org-openide-loaders-XMLDataObject-compat.instance" >
                 <attr name="instanceClass" stringvalue="org.openide.xml.EntityCatalog" />
                 <attr name="instanceCreate" methodvalue="org.openide.loaders.XMLDataObject.createEntityCatalog"/>
