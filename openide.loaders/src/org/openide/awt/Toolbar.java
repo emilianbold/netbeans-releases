@@ -135,16 +135,25 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         setName (name);
         
         setFloatable (false);
-        Border b = UIManager.getBorder ("ToolBar.border"); //NOI18N
-        //(TDB) hack to avoid no borders on toolbars
-        //Can be removed once theme file ships with NetBeans, so that
-        //NB will respect toolbar.border from other look and feels.
-        if ((b==null) || (b instanceof javax.swing.plaf.metal.MetalBorders.ToolBarBorder))  
-            b=BorderFactory.createEtchedBorder (EtchedBorder.LOWERED);
-        setBorder (new CompoundBorder ( 
-               b,
-               new EmptyBorder (TOP, LEFT, BOTTOM, RIGHT))
-               );  
+        String lAndF = UIManager.getLookAndFeel().getName();
+        if (lAndF.equals("Windows")) {
+            //Get rid of extra height, also allow for minimalist main
+            //window
+            setBorder(Boolean.getBoolean("netbeans.small.main.window") ?
+                BorderFactory.createEmptyBorder(1,1,1,1) : 
+                BorderFactory.createEmptyBorder()); //NOI18N
+        } else {
+            Border b = UIManager.getBorder ("ToolBar.border"); //NOI18N
+            //(TDB) hack to avoid no borders on toolbars
+            //Can be removed once theme file ships with NetBeans, so that
+            //NB will respect toolbar.border from other look and feels.
+            if ((b==null) || (b instanceof javax.swing.plaf.metal.MetalBorders.ToolBarBorder))  
+                b=BorderFactory.createEtchedBorder (EtchedBorder.LOWERED);
+            setBorder (new CompoundBorder ( 
+                   b,
+                   new EmptyBorder (TOP, LEFT, BOTTOM, RIGHT))
+                   );  
+        }
         putClientProperty("JToolBar.isRollover", Boolean.TRUE); // NOI18N
         addGrip();
 
@@ -165,8 +174,11 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         if (floatable) {
             /** Uses L&F's grip **/
             String lAndF = UIManager.getLookAndFeel().getName();
-            JPanel dragarea = lAndF.equals("Windows") ?
-                                (JPanel)new ToolbarGrip() : (JPanel)new ToolbarBump();
+            JPanel dragarea = lAndF.equals("Windows") ? isXPTheme() ?
+                                    (JPanel)new ToolbarXP() : 
+                                    (JPanel) new ToolbarGrip() :
+                                    (JPanel)new ToolbarBump();
+                                
             if (mouseListener == null)
                 mouseListener = new ToolbarMouseListener ();
 
@@ -502,6 +514,113 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
     } // end of inner class ToolbarBump
 
+    /** Recognizes if XP theme is set.
+     * @return true if XP theme is set, false otherwise
+     */
+    private static boolean isXPTheme () {
+        Boolean isXP = (Boolean)Toolkit.getDefaultToolkit().
+        getDesktopProperty("win.xpstyle.themeActive");
+        return isXP == null ? false : isXP.booleanValue();
+    }    
+    
+    private final class ToolbarXP extends JPanel {
+        /** Width of grip */
+        static final int WIDTH = 6;
+        /** Minimum size. */
+        Dimension dim;
+        /** Maximum size. */
+        Dimension max;
+        
+        static final long serialVersionUID =-8819972936203315277L;
+        public ToolbarXP() {
+            dim = new Dimension (WIDTH, WIDTH);
+            max = new Dimension (WIDTH, Integer.MAX_VALUE);
+            this.setToolTipText (Toolbar.this.getDisplayName());
+        }
+        
+        public void paintComponent (Graphics g) {
+            super.paintComponent(g);
+            int x = 2;
+            for (int i=3; i < getHeight()-3; i+=4) {
+                //first draw the rectangular highlight below each dot
+                g.setColor(UIManager.getColor("controlLtHighlight")); //NOI18N
+                g.fillRect(x + 1, i + 1, 2, 2);
+                //Get the shadow color.  We'll paint the darkest dot first,
+                //and work our way to the lightest
+                Color col = UIManager.getColor("controlShadow"); //NOI18N
+                g.setColor(col);
+                //draw the darkest dot
+                g.drawLine(x+1, i+1, x+1, i+1);
+                
+                //Get the color components and calculate the amount each component
+                //should increase per dot
+                int red = col.getRed();
+                int green = col.getGreen();
+                int blue = col.getBlue();
+                
+                //Get the default component background - we start with the dark
+                //color, and for each dot, add a percentage of the difference
+                //between this and the background color
+                Color back = getBackground();
+                int rb = back.getRed();
+                int gb = back.getGreen();
+                int bb = back.getBlue();
+                
+                //Get the amount to increment each component for each dot
+                int incr = (rb - red) / 5;
+                int incg = (gb - green) / 5;
+                int incb = (bb - blue) / 5;
+                
+                //Increment the colors
+                red += incr;
+                green += incg;
+                blue += incb;
+                //Create a slightly lighter color and draw the dot
+                col = new Color(red, green, blue);
+                g.setColor(col);
+                g.drawLine(x+1, i, x+1, i);
+                
+                //And do it for the next dot, and so on, for all four dots
+                red += incr;
+                green += incg;
+                blue += incb;
+                col = new Color(red, green, blue);
+                g.setColor(col);
+                g.drawLine(x, i+1, x, i+1);
+                
+                red += incr;
+                green += incg;
+                blue += incb;
+                col = new Color(red, green, blue);
+                g.setColor(col);
+                g.drawLine(x, i, x, i);
+            }
+        }
+        
+        /** @return minimum size */
+        public Dimension getMinimumSize () {
+            return dim;
+        }
+        
+        /** @return preferred size */
+        public Dimension getPreferredSize () {
+            return this.getMinimumSize ();
+        }
+        
+        public Dimension getMaximumSize () {
+            return max;
+        }
+    }
+/*    
+    public static void main(String[] args) {
+        JFrame jf = new JFrame();
+        jf.getContentPane().add (new ToolbarXP());
+        jf.setSize(new java.awt.Dimension(200,200));
+        jf.setLocation(20,20);
+        jf.show();
+    }
+ */
+    
     /** Grip for floatable toolbar, used for Windows L&F */
     private final class ToolbarGrip extends JPanel {
         /** Horizontal gaps. */
