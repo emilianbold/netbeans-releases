@@ -71,6 +71,10 @@ is divided into following sections:
             <target name="init-user">
                 <xsl:attribute name="depends">pre-init,init-private</xsl:attribute>
                 <property file="${{user.properties.file}}"/>
+                <xsl:comment> The two properties below are usually overridden </xsl:comment>
+                <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
+                <property name="default.javac.source" value="1.4"/>
+                <property name="default.javac.target" value="1.4"/>
             </target>
 
             <target name="init-project">
@@ -99,10 +103,6 @@ is divided into following sections:
                     <fail unless="platform.java">Must set platform.java</fail>
                     <fail unless="platform.javac">Must set platform.javac</fail>
                 </xsl:if>
-                <xsl:comment> The two properties below are usually overridden </xsl:comment>
-                <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
-                <property name="default.javac.source" value="1.4"/>
-                <property name="default.javac.target" value="1.4"/>
                 <available file="${{manifest.file}}" property="manifest.available"/>
                 <available property="have.tests" file="${{test.src.dir}}"/>
                 <condition property="netbeans.home+have.tests">
