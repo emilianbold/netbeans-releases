@@ -3,10 +3,15 @@ OpenIDE-Module-Name: JPDA Debugger
 OpenIDE-Module-Display-Category: Debugging
 OpenIDE-Module-Install: org/netbeans/modules/debugger/jpda/JPDADebuggerModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/debugger/jpda/resources/mf-layer.xml
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.26
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.debugger.core/2 > 1.1.4
 OpenIDE-Module-Specification-Version: 1.9
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Short-Description: Enables debugging with the JPDA debugger implementation.
 OpenIDE-Module-Package-Dependencies: com.sun.jdi[VirtualMachineManager]
+OpenIDE-Module-Package-Dependency-Message: The JPDA Debugger Module requires the
+  jpda.jar files from Sun's distribution of JPDA to be installed as Java extensions.
+  You can download JPDA from http://java.sun.com/products/jpda/.
+  See the JPDA Debugger documentation for more information.
 OpenIDE-Module-Long-Description: The JPDA Debugger module enables you to debug applications
   using the Java Platform Debugging Architecture.
