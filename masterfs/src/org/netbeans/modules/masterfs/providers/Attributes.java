@@ -159,7 +159,14 @@ public class Attributes extends DefaultAttributes {
 
     /** adds prefix: systemName of FileSystem */
     private String translateName(String name) {
-        return attributePrefix + name; //NOI18N        
+        String prefix;
+        if ((attributePrefix.endsWith("/"))) { //NOI18N
+            prefix = attributePrefix;            
+        } else {
+            prefix = attributePrefix+"/"; //NOI18N
+        }
+        
+        return (prefix + name);        
     }
     
     private DefaultAttributes getPreferedAttributes() {
