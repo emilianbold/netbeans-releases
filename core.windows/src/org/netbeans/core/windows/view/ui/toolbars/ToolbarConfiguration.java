@@ -134,6 +134,10 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     public ToolbarConfiguration (String name, String displayName) {
         configName = name;
         configDisplayName = displayName;
+        // fix #44537 - just doing the simple thing of hacking the extension out of the display name.. node.getDisplayName is too unpredictable.
+        if (configDisplayName.endsWith(".xml")) {
+            configDisplayName = configDisplayName.substring(0, configDisplayName.length() - ".xml".length());
+        }
         initInstance ();
         // asociate name and configuration instance
         confs2Names.put(this, name);
