@@ -18,18 +18,6 @@
   <tocitem text="IDE Overview" target="gs.tour" />
   <tocitem text="Key Concepts" target="gs.key" />
   <tocitem text="Starting With the Basic IDE Tasks" target="gs.howto" />
-  <tocitem text="Getting Started Tutorial" target="gs.gstutor" >
-    <tocitem text="Creating the ColorSwitch Application" target="gs.csw">
-      <tocitem text="Creating a Container" target="gs.cont" />
-      <tocitem text="Selecting a Layout Manager" target="gs.lyt" />
-      <tocitem text="Adding a Label and Setting Its Properties" target="gs.label" />
-      <tocitem text="Adding a Button" target="gs.button" />
-      <tocitem text="Setting Up the Button to Switch Color" target="gs.setup" />
-      <tocitem text="Adding Event Handler Code" target="gs.evt" />
-      <tocitem text="Compiling and Running Your Program" target="gs.run" />
-      <tocitem text="Stepping Through the Code" target="gs.step" />
-    </tocitem>
-  </tocitem>
 </tocitem>
 
 
