@@ -32,6 +32,9 @@ import org.openide.src.nodes.ElementNodeFactory;
 */
 public class PatternChildren extends ClassChildren {
 
+  private MethodElementListener methodListener = new MethodElementListener();
+  private FieldElementListener fieldListener = new FieldElementListener();
+
   static {
     Integer i = new Integer (PatternFilter.METHOD | PatternFilter.PROPERTY | 
       PatternFilter.IDXPROPERTY | PatternFilter.EVENT_SET
@@ -42,7 +45,6 @@ public class PatternChildren extends ClassChildren {
   
   /** Object for finding patterns in class */ 
   private PatternAnalyser       patternAnalyser;
-
   
   // Constructors -----------------------------------------------------------------------
 
@@ -54,7 +56,7 @@ public class PatternChildren extends ClassChildren {
     super (classElement);
     patternAnalyser = new PatternAnalyser( classElement );
     // PENDING : Solve this cyclic references
-    patternAnalyser.setPatternChildren( this );
+    //patternAnalyser.setPatternChildren( this );
   }
 
   /** Create pattern children. The children are initilay unfiltered. 
@@ -65,7 +67,7 @@ public class PatternChildren extends ClassChildren {
     super (factory, classElement);
     patternAnalyser = new PatternAnalyser( classElement );
     // PENDING : Solve this cyclic references
-    patternAnalyser.setPatternChildren( this );
+    //patternAnalyser.setPatternChildren( this );
   }
 
   
@@ -82,7 +84,17 @@ public class PatternChildren extends ClassChildren {
   /** Updates all the keys with given filter. Overriden to provide package access tothis method.
   */
   protected void refreshKeys (int filter) {
+    
+    // Method is added or removed ve have to re-analyze the pattern abd to
+    // registrate Children as listener
+
+    reassignMethodListener();
+    reassignFieldListener();
+    patternAnalyser.analyzeAll();
+
     super.refreshKeys (filter);
+    //System.out.println ( "Refresh keys" );
+    //Thread.dumpStack();
   }
 
   /** @return The class of currently associated filter or null
@@ -119,21 +131,69 @@ public class PatternChildren extends ClassChildren {
 
   protected Collection getKeysOfType (int elementType) {
     LinkedList keys = (LinkedList) super.getKeysOfType (elementType);
-    if ((elementType & PatternFilter.PROPERTY) != 0) 
+    
+    if ((elementType & PatternFilter.PROPERTY) != 0)  
       keys.addAll( patternAnalyser.getPropertyPatterns() );
     if ((elementType & PatternFilter.IDXPROPERTY) != 0) 
       keys.addAll( patternAnalyser.getIdxPropertyPatterns() );
-    if ((elementType & PatternFilter.EVENT_SET) != 0)
+    if ((elementType & PatternFilter.EVENT_SET) != 0) 
       keys.addAll( patternAnalyser.getEventSetPatterns() );
 
 //    if ((filter == null) || filter.isSorted ()) 
 //      Collections.sort (keys, comparator);
     return keys;
   }
+
+  /** Method for removing method listener */
+  private void reassignMethodListener() {
+    MethodElement[] methods = element.getMethods();
+    for ( int i = 0; i < methods.length ; i++ ) {
+      methods[i].removePropertyChangeListener( methodListener );
+      methods[i].addPropertyChangeListener( methodListener );
+    }
+  }
+
+
+  /** Method for removing field listener */
+  private void reassignFieldListener() {
+    FieldElement[] fields = element.getFields();
+    for ( int i = 0; i < fields.length ; i++ ) {
+      fields[i].removePropertyChangeListener( fieldListener );
+      fields[i].addPropertyChangeListener( fieldListener );
+    }
+  }
+
+
+
+  
+
+  // Inner classes ----------------------------------------------------------------------
+
+  /** The listener of method changes temporary used in PatternAnalyser to
+   * track changes in 
+   */
+
+  final class MethodElementListener implements PropertyChangeListener {
+    public void propertyChange ( PropertyChangeEvent e ) {
+      patternAnalyser.analyzeAll();
+    }
+  }  
+  
+  /** The listener of method changes temporary used in PatternAnalyser to
+   * track changes in 
+   */
+
+  final class FieldElementListener implements PropertyChangeListener {
+    public void propertyChange ( PropertyChangeEvent e ) {
+      reassignFieldListener();
+      patternAnalyser.resolveFields();
+    }
+  }
 }
 
 /* 
  * Log
+ *  4    Gandalf   1.3         7/20/99  Petr Hrebejk    
  *  3    Gandalf   1.2         7/3/99   Ian Formanek    Overriden method 
  *       refreshKeys to provide access to classes in thes package and make it 
  *       compilable

@@ -53,7 +53,7 @@ public class PropertyPattern extends Pattern {
 
   protected MethodElement getterMethod = null;
   protected MethodElement setterMethod = null;
-  protected FieldElement estimatedField = null;
+  protected FieldElement  estimatedField = null;
 
   protected Type type;
 
@@ -77,6 +77,21 @@ public class PropertyPattern extends Pattern {
   PropertyPattern( PatternAnalyser patternAnalyser ) {
     super( patternAnalyser );
   }
+
+  /*
+  public boolean equals( Object o ) {
+    if ( ! (o instanceof PropertyPattern ) )
+      return false;
+    
+    return ((PropertyPattern)o).getterMethod == getterMethod &&
+           ((PropertyPattern)o).setterMethod == setterMethod ;
+  }
+
+  public int hashCode( ) {
+    return ( getterMethod != null ? getterMethod.hashCode() : 0 ) +
+           ( setterMethod != null ? setterMethod.hashCode() : 0 );
+  }
+  */
 
   static PropertyPattern create( PatternAnalyser patternAnalyser, 
                                  String name, String type ) throws SourceException {
@@ -433,7 +448,7 @@ public class PropertyPattern extends Pattern {
     ClassElement declaringClass = getDeclaringClass();
     MethodElement newGetter = new MethodElement();
 
-    newGetter.setName( Identifier.create( "get" + capitalizeFirstLetter( getName() ) ) );
+    newGetter.setName( Identifier.create( (type == Type.BOOLEAN ? "is" : "get") + capitalizeFirstLetter( getName() ) ) );
     newGetter.setReturn( type );
     newGetter.setModifiers( Modifier.PUBLIC );
     if ( body != null )
@@ -502,7 +517,7 @@ public class PropertyPattern extends Pattern {
     ClassElement declaringClass = getDeclaringClass();
     FieldElement newField = new FieldElement();
     
-    newField.setName( Identifier.create( getName() ) );
+    newField.setName( Identifier.create( Introspector.decapitalize( getName() ) ) );
     newField.setType( type );
     newField.setModifiers( Modifier.PRIVATE );
     if ( javadoc ) {
@@ -583,6 +598,7 @@ public class PropertyPattern extends Pattern {
 
 /* 
  * Log
+ *  2    Gandalf   1.1         7/20/99  Petr Hrebejk    
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
  * $ 
  */ 

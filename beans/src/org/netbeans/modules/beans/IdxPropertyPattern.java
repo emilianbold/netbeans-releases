@@ -60,6 +60,24 @@ public class IdxPropertyPattern extends PropertyPattern {
     name = findIndexedPropertyName();
   }
 
+
+  /*
+  public boolean equals( Object o ) {
+    if ( ! (o instanceof IdxPropertyPattern ) )
+      return false;
+    
+    return super.equals( o ) &&
+           ((IdxPropertyPattern)o).indexedGetterMethod == getterMethod &&
+           ((IdxPropertyPattern)o).indexedSetterMethod == setterMethod ;
+  }
+
+  public int hashCode( ) {
+    return super.hashCode() + 
+      ( indexedGetterMethod != null ? indexedGetterMethod.hashCode() : 0 ) + 
+      ( indexedSetterMethod != null ? indexedSetterMethod.hashCode() : 0 );
+  }
+  */
+
   private IdxPropertyPattern( PatternAnalyser patternAnalyser ) {
     super( patternAnalyser );
   }
@@ -450,7 +468,7 @@ public class IdxPropertyPattern extends PropertyPattern {
     MethodElement newGetter = new MethodElement();
     MethodParameter[] newParameters = { new MethodParameter( "index", Type.INT, false ) };
 
-    newGetter.setName( Identifier.create( "get" + capitalizeFirstLetter( getName() ) ) );
+    newGetter.setName( Identifier.create( (type == Type.BOOLEAN ? "is" : "get") + capitalizeFirstLetter( getName() ) ) );
     newGetter.setReturn( indexedType );
     newGetter.setModifiers( Modifier.PUBLIC );
     newGetter.setParameters( newParameters );
@@ -548,6 +566,7 @@ public class IdxPropertyPattern extends PropertyPattern {
 
 /* 
  * Log
+ *  2    Gandalf   1.1         7/20/99  Petr Hrebejk    
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
  * $ 
  */ 

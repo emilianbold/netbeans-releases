@@ -59,7 +59,6 @@ public abstract class  Pattern extends Object {
   public void destroy() throws SourceException {
   }
 
-
   /** Utility method capitalizes the first letter of string, used to
    * generate method names for patterns
    */
@@ -76,6 +75,7 @@ public abstract class  Pattern extends Object {
 
 /* 
  * Log
+ *  2    Gandalf   1.1         7/20/99  Petr Hrebejk    
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
  * $ 
  */ 
