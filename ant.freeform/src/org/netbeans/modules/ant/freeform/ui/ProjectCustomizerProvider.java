@@ -103,6 +103,7 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
             null,                                   // helpCtx
             null );                                 // listener 
 
+        pc.setDialogDescriptor( dialogDescriptor );        
         dialogDescriptor.setClosingOptions( new Object[] { options[ OPTION_OK ], options[ OPTION_CANCEL ] } );
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
