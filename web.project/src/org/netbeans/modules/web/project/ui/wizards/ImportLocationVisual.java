@@ -26,7 +26,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author  pb97924
+ * @author  Pavel Buzek, Radko Najman
  */
 public class ImportLocationVisual extends javax.swing.JPanel implements DocumentListener {
     
@@ -304,22 +304,42 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
             } catch (IllegalArgumentException exc) {
                 return;
             }
-            if (fo != null && panel.isSuitableProjectRoot(fo)) {
-                projectLocationTextField.setText (moduleFolder);
-                createdFolderTextField.setText (moduleFolder);
+            if (fo != null && isJakartaStructure(fo)) {
+                projectLocationTextField.setText(moduleFolder);
+                createdFolderTextField.setText(moduleFolder);
             }
-        } else if (e.getDocument() == locationDocument || !projectLocationTextField.getText ().equals (moduleLocationTextField.getText ())) {
+        } else if (e.getDocument() == locationDocument || !projectLocationTextField.getText().equals(moduleLocationTextField.getText())) {
             StringBuffer folder = new StringBuffer(projectLocationTextField.getText().trim());
-            if (!folder.toString ().endsWith(File.separator))
+            if (!folder.toString().endsWith(File.separator))
                 folder.append(File.separatorChar);
             folder.append(projectNameTextField.getText().trim());
-            createdFolderTextField.setText (folder.toString());
+            createdFolderTextField.setText(folder.toString());
         }
 
         if (e.getDocument() == nameDocument && !contextModified)
             jTextFieldContextPath.setText("/" + projectNameTextField.getText().replace(' ', '_'));
 
-        panel.fireChangeEvent ();
+        panel.fireChangeEvent();
     }
     
+    private boolean isJakartaStructure(FileObject dir) {
+        boolean web = false;
+        boolean src = false;
+    
+        FileObject[] ch = dir.getChildren();
+        for (int i = 0; i < ch.length; i++) {
+            if (ch[i].isFolder())
+                if (ch[i].getName().equals("web")) { //NOI18N
+                    web = true;
+                    if (src)
+                        return true;
+                } else if (ch[i].getName().equals("src")) { //NOI18N
+                    src = true;
+                    if (web)
+                        return true;
+                }
+        }
+    
+        return false;
+    }
 }

@@ -58,7 +58,7 @@ import org.openide.WizardValidationException;
 
 /**
  * Wizard to create a new Web project for an existing web module.
- * @author Pavel Buzek
+ * @author Pavel Buzek, Radko Najman
  */
 public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     
@@ -347,25 +347,12 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         
         public boolean isValid () {
             File f = new File(panel.moduleLocationTextField.getText().trim());
-            File prjFolder = new File(panel.projectLocationTextField.getText().trim());
-            String prjName = panel.projectNameTextField.getText().trim();
-
             if (!f.isDirectory()) {
                 wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportWebProjectWizardIterator.class,"MSG_ProvideExistingSourcesLocation")); //NOI18N
                 return false; //Existing sources location not specified
             }
 
-//Do we need this check?
-//            if (!prjFolder.isDirectory()) {
-//                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportWebProjectWizardIterator.class,"MSG_ProjectFolderDoesNotExists")); //NOI18N
-//                return false; //Project folder not specified
-//            }
-
-            if (!isWebModule(FileUtil.toFileObject(f))) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportWebProjectWizardIterator.class,"MSG_NoWebModule")); //NOI18N
-                return false; //No web module location
-            }
-            
+            String prjName = panel.projectNameTextField.getText().trim();
             if (prjName == null || prjName.length() == 0) {
                 wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportWebProjectWizardIterator.class,"MSG_ProvideProjectName")); //NOI18N
                 return false; //Project name not specified
@@ -410,7 +397,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
 
             String moduleLoc = panel.moduleLocationTextField.getText().trim();
 
-            d.putProperty(WizardProperties.PROJECT_DIR, new File(panel.createdFolderTextField.getText()));
+            d.putProperty(WizardProperties.PROJECT_DIR, FileUtil.normalizeFile(new File(panel.createdFolderTextField.getText())));
             d.putProperty(WizardProperties.SOURCE_ROOT, new File(moduleLoc));
             d.putProperty(WizardProperties.NAME, name);
             d.putProperty(WizardProperties.CONTEXT_PATH, contextPath);
