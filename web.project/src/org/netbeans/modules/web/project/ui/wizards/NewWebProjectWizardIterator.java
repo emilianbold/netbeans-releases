@@ -65,7 +65,8 @@ public class NewWebProjectWizardIterator implements TemplateWizard.Iterator {
         String codename = (String) wiz.getProperty(WizardProperties.CODE_NAME);
         String displayName = (String) wiz.getProperty(WizardProperties.DISPLAY_NAME);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
-        WebProjectGenerator.createProject(dirF, codename, displayName, j2eeLevel);
+        String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
+        WebProjectGenerator.createProject(dirF, codename, displayName, j2eeLevel, contextPath);
         FileObject dir = FileUtil.fromFile(dirF)[0];
         Project p = ProjectManager.getDefault().findProject(dir);
         // Returning set of DataObject of project diretory. 

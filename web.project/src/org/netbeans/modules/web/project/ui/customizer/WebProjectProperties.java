@@ -74,7 +74,8 @@ public class WebProjectProperties {
     public static final String DEBUG_CLASSPATH = "debug.classpath";    
     public static final String JAR_COMPRESS = "jar.compress";
     public static final String CONTEXT_PATH = "context.path";
-    public static final String LAUNCH_URL = "launch.url";
+    public static final String LAUNCH_URL_RELATIVE = "launch.url.relative";
+    public static final String LAUNCH_URL_FULL = "launch.url.full";
     public static final String DISPLAY_BROWSER = "display.browser";
     public static final String JAVAC_SOURCE = "javac.source";
     public static final String JAVAC_DEBUG = "javac.debug";
@@ -136,7 +137,8 @@ public class WebProjectProperties {
         new PropertyDescriptor( DEBUG_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( JAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),
         new PropertyDescriptor( CONTEXT_PATH, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( LAUNCH_URL, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( LAUNCH_URL_RELATIVE, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( LAUNCH_URL_FULL, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DISPLAY_BROWSER, PROJECT, BOOLEAN_PARSER ),
         new PropertyDescriptor( JAVAC_SOURCE, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_DEBUG, PROJECT, BOOLEAN_PARSER ),       

@@ -178,7 +178,7 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
     private javax.swing.JLabel projectLocationLabel;
     private javax.swing.JTextField projectLocationTextField;
     private javax.swing.JLabel projectNameLabel;
-    private javax.swing.JTextField projectNameTextField;
+    protected javax.swing.JTextField projectNameTextField;
     // End of variables declaration//GEN-END:variables
         
     private static JFileChooser createChooser() {

@@ -54,7 +54,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
             jButtonMoveDown );
         vps.register( vcs, WebProjectProperties.JAVAC_CLASSPATH );
 
-        jButtonEdit.setVisible( false );
+//        jButtonEdit.setVisible( false );
     }
 
     /** This method is called from within the constructor to
@@ -122,8 +122,8 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         jPanel2.add(jLabelClasspath, gridBagConstraints);
 
         jTableClasspath.setModel(new javax.swing.table.DefaultTableModel(
@@ -215,7 +215,6 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         add(jPanel2, gridBagConstraints);
 
     }//GEN-END:initComponents
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonAddJar;

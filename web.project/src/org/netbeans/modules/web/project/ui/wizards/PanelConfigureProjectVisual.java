@@ -14,6 +14,9 @@
 package org.netbeans.modules.web.project.ui.wizards;
 
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -31,9 +34,30 @@ public class PanelConfigureProjectVisual extends JPanel {
                 
         projectLocationPanel = new PanelProjectLocationVisual(panel);
         locationContainer.add(projectLocationPanel, java.awt.BorderLayout.NORTH);
-        
+                
         optionsPanel = new PanelOptionsVisual(panel);
         optionsContainer.add(optionsPanel, java.awt.BorderLayout.NORTH);
+        
+        DocumentListener dl = new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                setContextPath(e);
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+                setContextPath(e);
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                setContextPath(e);
+            }
+            
+            private void setContextPath(DocumentEvent e) {
+                if (!optionsPanel.isContextModified())
+                    optionsPanel.jTextFieldContextPath.setText("/" + projectLocationPanel.projectNameTextField.getText().trim().replace(' ', '_'));
+            }
+        };
+        projectLocationPanel.projectNameTextField.getDocument().addDocumentListener(dl);
+
         
         // Provide a name in the title bar.
         setName(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_NWP1_ProjectTitleName")); //NOI18N
@@ -78,6 +102,7 @@ public class PanelConfigureProjectVisual extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(locationContainer, gridBagConstraints);
@@ -85,6 +110,7 @@ public class PanelConfigureProjectVisual extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
         add(jSeparator1, gridBagConstraints);
@@ -94,6 +120,8 @@ public class PanelConfigureProjectVisual extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
         add(optionsContainer, gridBagConstraints);

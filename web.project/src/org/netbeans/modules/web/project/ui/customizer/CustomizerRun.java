@@ -34,9 +34,10 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
         
         vps.register(jTextFieldContextPath, WebProjectProperties.CONTEXT_PATH);
         vps.register(jCheckBoxDisplayBrowser, WebProjectProperties.DISPLAY_BROWSER);
-        vps.register(jTextFieldLaunchURL, WebProjectProperties.LAUNCH_URL);
+        vps.register(jTextFieldRelativeURL, WebProjectProperties.LAUNCH_URL_RELATIVE);
+        vps.register(jTextFieldFullURL, WebProjectProperties.LAUNCH_URL_FULL);
         
-        jTextFieldLaunchURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
+        jTextFieldRelativeURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
     } 
     
     /** This method is called from within the constructor to
@@ -49,9 +50,14 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
 
         jLabelContextPath = new javax.swing.JLabel();
         jTextFieldContextPath = new javax.swing.JTextField();
+        jLabelServer = new javax.swing.JLabel();
+        jComboBoxServer = new javax.swing.JComboBox();
         jCheckBoxDisplayBrowser = new javax.swing.JCheckBox();
-        jLabelLaunchURL = new javax.swing.JLabel();
-        jTextFieldLaunchURL = new javax.swing.JTextField();
+        jLabelContextPathDesc = new javax.swing.JLabel();
+        jLabelRelativeURL = new javax.swing.JLabel();
+        jTextFieldRelativeURL = new javax.swing.JTextField();
+        jLabelFullURL = new javax.swing.JLabel();
+        jTextFieldFullURL = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -66,9 +72,26 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 11, 11, 11);
+        gridBagConstraints.weightx = 1.0;
         add(jTextFieldContextPath, gridBagConstraints);
+
+        jLabelServer.setLabelFor(jComboBoxServer);
+        jLabelServer.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Server_JLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
+        add(jLabelServer, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
+        add(jComboBoxServer, gridBagConstraints);
 
         jCheckBoxDisplayBrowser.setSelected(true);
         jCheckBoxDisplayBrowser.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_DisplayBrowser_JCheckBox"));
@@ -80,48 +103,79 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(jCheckBoxDisplayBrowser, gridBagConstraints);
 
-        jLabelLaunchURL.setLabelFor(jTextFieldLaunchURL);
-        jLabelLaunchURL.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_LaunchURL_JLabel"));
+        jLabelContextPathDesc.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ContextPathDesc_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        add(jLabelLaunchURL, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 24, 11, 11);
+        add(jLabelContextPathDesc, gridBagConstraints);
+
+        jLabelRelativeURL.setLabelFor(jTextFieldRelativeURL);
+        jLabelRelativeURL.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_RelativeURL_JLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 24, 11, 0);
+        add(jLabelRelativeURL, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 11, 11, 11);
+        add(jTextFieldRelativeURL, gridBagConstraints);
+
+        jLabelFullURL.setLabelFor(jTextFieldFullURL);
+        jLabelFullURL.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_FullURL_JLabel"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 24, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        add(jLabelFullURL, gridBagConstraints);
+
+        jTextFieldFullURL.setEditable(false);
+        jTextFieldFullURL.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 11);
-        add(jTextFieldLaunchURL, gridBagConstraints);
+        add(jTextFieldFullURL, gridBagConstraints);
 
     }//GEN-END:initComponents
 
     private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxDisplayBrowserActionPerformed
-        jTextFieldLaunchURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
+        jTextFieldRelativeURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
     }//GEN-LAST:event_jCheckBoxDisplayBrowserActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox jCheckBoxDisplayBrowser;
+    private javax.swing.JComboBox jComboBoxServer;
     private javax.swing.JLabel jLabelContextPath;
-    private javax.swing.JLabel jLabelLaunchURL;
+    private javax.swing.JLabel jLabelContextPathDesc;
+    private javax.swing.JLabel jLabelFullURL;
+    private javax.swing.JLabel jLabelRelativeURL;
+    private javax.swing.JLabel jLabelServer;
     private javax.swing.JTextField jTextFieldContextPath;
-    private javax.swing.JTextField jTextFieldLaunchURL;
+    private javax.swing.JTextField jTextFieldFullURL;
+    private javax.swing.JTextField jTextFieldRelativeURL;
     // End of variables declaration//GEN-END:variables
     
 }
