@@ -91,14 +91,17 @@ public class BeansTemplates extends JellyTestCase {
         tlso.selectLocation(sampleDir);
         tlso.finish();
         
+        new EventTool().waitNoEvent(500);
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_JAVA_BEAN);
+        new EventTool().waitNoEvent(500);
+        eo.select(9,12);
+        new EventTool().waitNoEvent(500);
+        new DeleteAction().perform();
+        new DeleteAction().perform();
         eo.select(1,5);
         new EventTool().waitNoEvent(500);
-        new DeleteAction().performAPI(eo);
-        eo.select(4,7);
-        new EventTool().waitNoEvent(500);
-        new DeleteAction().performAPI(eo);
+        new DeleteAction().perform();
         ref(eo.getText());
         compareReferenceFiles();
     }
@@ -187,6 +190,7 @@ public class BeansTemplates extends JellyTestCase {
         repositoryRootNode = new ExplorerOperator().repositoryTab().getRootNode();
         JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_CUSTOMIZER); // NOI18N
         javaNode.performPopupActionNoBlock("Edit");
+        new EventTool().waitNoEvent(100);
         EditorWindowOperator ewo = new EditorWindowOperator();
         ewo.getEditor();
         EditorOperator eo = new EditorOperator(ewo, NAME_CUSTOMIZER);
@@ -217,6 +221,7 @@ public class BeansTemplates extends JellyTestCase {
         tlso.tree().setComparator(comparator);
         tlso.selectLocation(sampleDir);
         tlso.finish();
+        new EventTool().waitNoEvent(500);
         
         EditorWindowOperator ewo = new EditorWindowOperator();
         ewo.getEditor();

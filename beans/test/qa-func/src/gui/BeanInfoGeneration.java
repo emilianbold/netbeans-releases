@@ -334,7 +334,8 @@ public class BeanInfoGeneration extends JellyTestCase {
         repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
         JavaNode javaNode = new JavaNode(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"BeanInfo");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Open");
+        javaNode.open();
+        new EventTool().waitNoEvent(100);
         try {
             EditorWindowOperator ewo = new EditorWindowOperator();
             EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE+"BeanInfo");
@@ -431,7 +432,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         //new EventTool().waitNoEvent(1000);
         node = new Node(jTreeOperator, "Event Sources|itemListener");
         node.select();
-        //new EventTool().waitNoEvent(1000);
+        new EventTool().waitNoEvent(100);
         node = new Node(jTreeOperator, "Event Sources|focusListener");
         node.select();
         //new EventTool().waitNoEvent(1000);
