@@ -83,14 +83,22 @@ public class JavaKit extends ExtKit {
         } catch( MissingResourceException exc ) {}
 
         if( jcPath != null ) {
-            JCBaseFinder finder = new JCBaseFinder();
-	    DAFileProvider provider = new DAFileProvider(
-		new URLAccessor(JavaKit.class.getResource("/" + jcPath + ".jcs")),
-		new URLAccessor(JavaKit.class.getResource("/" + jcPath + ".jcb"))
-	    );
+	    URL skeleton = JavaKit.class.getResource("/" + jcPath + ".jcs");
+	    URL body     = JavaKit.class.getResource("/" + jcPath + ".jcb");
 	    
-            finder.append( provider );
-            JavaCompletion.setFinder( finder );
+	    if (skeleton == null || body == null) {
+	       System.err.println("Warning: Java parser databases not found. Ignoring.");
+	    } else {
+	        DAFileProvider provider = new DAFileProvider(
+		    new URLAccessor(skeleton),
+		    new URLAccessor(body)
+	        );
+	    
+                JCBaseFinder finder = new JCBaseFinder();
+	    
+                finder.append( provider );
+                JavaCompletion.setFinder( finder );
+	    }
         }
     }
 

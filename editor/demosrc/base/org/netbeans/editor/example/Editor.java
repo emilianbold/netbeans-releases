@@ -11,7 +11,11 @@ import java.net.URL;
 import java.io.*;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.MenuItem;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 import javax.swing.*;
 import javax.swing.text.Document;
@@ -53,7 +57,10 @@ public class Editor extends javax.swing.JFrame {
     private ResourceBundle settings = ResourceBundle.getBundle( "settings" );
 
     private JFileChooser fileChooser;
-    
+
+    private boolean createBackups;
+    private boolean safeSave;
+
     private int fileCounter = -1;
     Map com2text = new HashMap();
     
@@ -99,46 +106,47 @@ public class Editor extends javax.swing.JFrame {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             Object src = evt.getSource();
 
-            if (src == openItem) {
-                fileChooser.setMultiSelectionEnabled( true );
-                int returnVal = fileChooser.showOpenDialog(Editor.this);
-                if(returnVal == JFileChooser.APPROVE_OPTION) {
-                    File[] files = fileChooser.getSelectedFiles();
-                    for( int i=0; i<files.length; i++ ) openFile( files[i] );
-                }
-                fileChooser.setMultiSelectionEnabled( false );
-            } else if (src == closeItem) {
-                Component editor = tabPane.getSelectedComponent();
-                if( checkClose( editor ) ) {
-                    tabPane.remove( editor );
-                    com2text.remove( editor );
-                }
-            } else if (src == saveItem) {
-                saveFile( tabPane.getSelectedComponent() );
-            } else if (src == saveAsItem) {
-                saveAs( tabPane.getSelectedComponent() );
-            } else if (src == saveAllItem) {
-                int index = tabPane.getSelectedIndex();
-                for( int i = 0; i < tabPane.getComponentCount(); i++ ) {
-                    saveFile( tabPane.getComponentAt( i ) );
-                }
-                tabPane.setSelectedIndex( index );
-            } else if (src == exitItem) {
-                doExit();
-            } else if (src instanceof JMenuItem) {
-                Object ki = ((JMenuItem)src).getClientProperty("kitInfo");
-                
-                if (ki instanceof KitInfo) {
-                    createNewFile( (KitInfo)ki );
+            if (!handleOpenRecent(src)) {
+                if (src == openItem) {
+                    fileChooser.setMultiSelectionEnabled(true);
+                    int returnVal = fileChooser.showOpenDialog(Editor.this);
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        File[] files = fileChooser.getSelectedFiles();
+                        for (int i = 0; i < files.length; i++) openFile(files[i]);
+                    }
+                    fileChooser.setMultiSelectionEnabled(false);
+                } else if (src == closeItem) {
+                    Component editor = tabPane.getSelectedComponent();
+                    if (checkClose(editor)) {
+                        doCloseEditor(editor);
+                    }
+                } else if (src == saveItem) {
+                    saveFile(tabPane.getSelectedComponent());
+                } else if (src == saveAsItem) {
+                    saveAs(tabPane.getSelectedComponent());
+                } else if (src == saveAllItem) {
+                    int index = tabPane.getSelectedIndex();
+                    for (int i = 0; i < tabPane.getComponentCount(); i++) {
+                        saveFile(tabPane.getComponentAt(i));
+                    }
+                    tabPane.setSelectedIndex(index);
+                } else if (src == exitItem) {
+                    doExit();
+                } else if (src instanceof JMenuItem) {
+                    Object ki = ((JMenuItem) src).getClientProperty("kitInfo");
+
+                    if (ki instanceof KitInfo) {
+                        createNewFile((KitInfo) ki);
+                    }
                 }
             }
-        }        
+        }
     }
     
     public Editor() {
         super( "NetBeans Editor" );
-	LocaleSupport.addLocalizer(impl);
-	
+        LocaleSupport.addLocalizer(impl);
+
         // Feed our kits with their default Settings
         Settings.addInitializer(new BaseSettingsInitializer(), Settings.CORE_LEVEL);
         Settings.addInitializer(new ExtSettingsInitializer(), Settings.CORE_LEVEL);
@@ -160,6 +168,14 @@ public class Editor extends javax.swing.JFrame {
         // Do the actual layout
         setLocation( 150, 150 );
         pack ();
+
+        fileToMenu = new HashMap();
+        menuToFile = new HashMap();
+        recentFiles = new Vector();
+        maxRecent = 4;
+
+        createBackups = false;
+        safeSave = true;
     }
     
     public Dimension getPreferredSize() {
@@ -245,16 +261,45 @@ public class Editor extends javax.swing.JFrame {
             );
             if( choice != 0 ) return false;
         }
-        
+
+        File safeSaveFile = new File(file.getAbsolutePath() + "~~");
+        File backupFile = new File(file.getAbsolutePath() + "~");
+
+        if (safeSave || createBackups) {
+            file.renameTo(safeSaveFile);
+        }
+
+        FileWriter output = null;
+
         try {
-            edit.write( new FileWriter( file ) );
+            output = new FileWriter( file );
+            edit.write( output );
+
+            if (createBackups) {
+                safeSaveFile.renameTo(backupFile);
+            } else {
+                if (safeSave) {
+                    safeSaveFile.delete();
+                }
+            }
         } catch( IOException exc ) {
             JOptionPane.showMessageDialog( this, "Can't write to file '" +
             file.getName() + "'.", "Error", JOptionPane.ERROR_MESSAGE );
+
+            if (safeSave)
+                safeSaveFile.renameTo(file);
+
             return false;
+        } finally {
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    e.printStackTrace(System.err);
+                }
+            }
         }
-        
-        
+
         doc.putProperty( MODIFIED, Boolean.FALSE );
         doc.putProperty( CREATED, Boolean.FALSE );
         doc.putProperty( FILE, file );
@@ -306,24 +351,52 @@ public class Editor extends javax.swing.JFrame {
             return;
         }
         addEditorPane( pane, info.getIcon(), file, false );
+
+        removeFromRecent(file.getAbsolutePath());
     }
 
     private void doExit() {
         boolean exit = true;
-        while( tabPane.getComponentCount() > 0 ) {
-            Component editor = tabPane.getComponentAt( 0 );
-            if( checkClose( editor ) ) {
-                tabPane.remove( editor );
-                com2text.remove( editor );
-            } else {
-                System.err.println("keeping");
+        int components = tabPane.getComponentCount();
+
+        for (int cntr = 0; cntr < components; cntr++) {
+            Component editor = tabPane.getComponentAt( cntr );
+
+            if( ! checkClose( editor ) ) {
                 exit = false;
-                break;
+                return;
             }
         }
+
+        if (!exit) {
+            System.err.println("keeping");
+            return;
+        }
+
+        writeUserConfiguration();
+
+        while( tabPane.getComponentCount() > 0 ) {
+            Component editor = tabPane.getComponentAt( 0 );
+
+            if ((editor != null) && (com2text.get(editor) != null))
+                doCloseEditor(editor);
+        }
+
         if( exit ) System.exit (0);
     }
-    
+
+    private void doCloseEditor(Component editor) {
+        JTextComponent editorPane = (JTextComponent ) com2text.get(editor);
+        if (editorPane != null) {
+            File file = (File) editorPane.getDocument().getProperty(FILE);
+
+            addToRecent(file.getAbsolutePath());
+        }
+
+        tabPane.remove( editor );
+        com2text.remove( editor );
+    }
+
     private boolean checkClose( Component comp ) {
         if( comp == null ) return false;
         JTextComponent edit = (JTextComponent)com2text.get( comp );
@@ -410,20 +483,262 @@ public class Editor extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main (String args[]) {
-      if (!getDistributionDirectory().canRead()) {
-         System.err.println("Fatal error while startup - can read from distribution directory.");
-         System.exit(0);
-      }
+        if (!getDistributionDirectory().canRead()) {
+            System.err.println("Fatal error while startup - can read from distribution directory.");
+            System.exit(0);
+        }
       
         Editor editor = new Editor ();
+
         editor.show ();
-        
+
+        editor.readUserConfiguration();
+
         for( int i = 0; i < args.length; i++ ) {
             String fileName = args[i];
             editor.openFile( new File( fileName ) );
         }
     }
     
+    private Map        fileToMenu;
+    private Map        menuToFile;
+    private Vector     recentFiles;
+    private int        maxRecent;
+    private JSeparator recentSeparator;
+    
+    private String[] getOpenedFiles() {
+        ArrayList opened = new ArrayList();
+
+        int components = tabPane.getComponentCount();
+
+        for (int cntr = 0; cntr < components; cntr++) {
+            Component editorComponent = tabPane.getComponentAt( cntr );
+
+            JTextComponent editor = (JTextComponent) com2text.get(editorComponent);
+	    
+	    if (editor == null) {
+	        continue;
+	    }
+	    
+            Document doc = editor.getDocument();
+            File file = (File) doc.getProperty(FILE);
+            
+            if (file != null) {
+                opened.add(file.getAbsolutePath());
+            }
+        }
+	
+        return (String []) opened.toArray(new String[opened.size()]);
+    }
+    
+    private int findInRecent(String fileToFind) {
+        for (int cntr = 0; cntr < recentFiles.size(); cntr++) {
+            String file = (String) recentFiles.get(cntr);
+            
+            if (fileToFind.equals(file))
+                return cntr;
+        }
+        
+        return -1;
+    }
+
+    private boolean handleOpenRecent(Object source) {
+        String fileName = (String) menuToFile.get(source);
+
+        if (fileName == null)
+            return false;
+
+        openFile(new File(fileName));
+
+        return true;
+    }
+
+    private String generateMenuItemName(int index, String file) {
+        return "" + index + ". " + file;
+    }
+
+    private void addToRecent(String fileToAdd) {
+        //Remove possible previous occurence:
+        removeFromRecent(fileToAdd);
+        
+        if (recentFiles.size() >= maxRecent) {
+            while (recentFiles.size() >= maxRecent) {
+                removeFromRecent(0);
+            }
+        }
+        
+        recentFiles.add(fileToAdd);
+        
+        JMenuItem newItem = new JMenuItem(generateMenuItemName(recentFiles.size(), fileToAdd));
+	
+	if (recentFiles.size() == 1) {
+	    recentSeparator = new JSeparator();
+	    fileMenu.add(recentSeparator);
+	}
+
+        newItem.addActionListener(impl);
+
+        fileMenu.add(newItem);
+        fileToMenu.put(fileToAdd, newItem);
+        menuToFile.put(newItem, fileToAdd);
+    }
+
+    private void correctItemNumbers() {
+        for (int cntr = 0; cntr < recentFiles.size(); cntr++) {
+            JMenuItem item = (JMenuItem ) fileToMenu.get(recentFiles.get(cntr));
+
+            item.setText(generateMenuItemName(cntr + 1, (String) recentFiles.get(cntr)));
+        }
+    }
+
+    private void removeFromRecent(String fileToRemove) {
+        int position = findInRecent(fileToRemove);
+        
+        if (position != (-1))
+            removeFromRecent(position);
+    }
+
+    private void removeFromRecent(int indexToRemove) {
+        String file = (String) recentFiles.get(indexToRemove);
+        
+        recentFiles.remove(indexToRemove);
+        
+        JMenuItem fileItem = (JMenuItem) fileToMenu.get(file);
+        
+        fileMenu.remove(fileItem);
+
+        fileToMenu.remove(file);
+        menuToFile.remove(fileItem);
+
+        correctItemNumbers();
+
+	if (recentFiles.size() == 0) {
+	    fileMenu.remove(recentSeparator);
+	    recentSeparator = null;
+	}
+    }
+    
+    private String[] readStrings(ResourceBundle bundle, String prefix) {
+        int count = 0;
+        boolean finish = false;
+        ArrayList result = new ArrayList();
+        
+        while (!finish) {
+            try {
+                String current = bundle.getString(prefix + "_" + count);
+                
+                result.add(current);
+                count++;
+            } catch (MissingResourceException e) {
+                finish = true;
+            }
+        }
+        
+        return (String []) result.toArray(new String[result.size()]);
+    }
+    
+    private void readUserConfiguration(ResourceBundle bundle) {
+        String[] openedFiles = readStrings(bundle, "Open-File");
+        String[] recentFiles = readStrings(bundle, "Recent-File");
+        String   recentFilesMaxCount = bundle.getString("Max-Recent-Files");
+        String   safeSaveString = bundle.getString("Safe-Save");
+        String   createBackupsString = bundle.getString("Create-Backups");
+
+        this.maxRecent = Integer.parseInt(recentFilesMaxCount);
+        this.safeSave  = Boolean.valueOf(safeSaveString).booleanValue();
+        this.createBackups = Boolean.valueOf(createBackupsString).booleanValue();
+
+        for (int cntr = 0; cntr < recentFiles.length; cntr++) {
+            addToRecent(recentFiles[cntr]);
+        }
+
+        for (int cntr = 0; cntr < openedFiles.length; cntr++) {
+            openFile(new File(openedFiles[cntr]));
+        }
+    }
+
+    private void writeUserConfiguration(PrintWriter output) {
+        output.println("Max-Recent-Files=" + maxRecent);
+        output.println("Safe-Save=" + safeSave);
+        output.println("Create-Backups=" + createBackups);
+
+        for (int cntr = 0; cntr < recentFiles.size(); cntr++) {
+            output.println("Recent-File_" + cntr + "=" + recentFiles.get(cntr));
+        }
+        String[] openFiles = getOpenedFiles();
+
+        for (int cntr = 0; cntr < openFiles.length; cntr++) {
+            output.println("Open-File_" + cntr + "=" + openFiles[cntr]);
+        }
+    }
+
+    private File getConfigurationFileName() {
+        File homedir = new File( System.getProperty( "user.home" ) ).getAbsoluteFile();
+        File configurationFile = new File(homedir, ".nb-editor");
+
+        return configurationFile;
+    }
+
+    private void writeUserConfiguration() {
+        File configurationFile = getConfigurationFileName();
+        File configurationFileBackup = new File(configurationFile.getAbsolutePath() + "~");
+        boolean backup = false;
+
+        if (configurationFile.exists()) {
+            backup = true;
+            configurationFile.renameTo(configurationFileBackup);
+        }
+
+        PrintWriter output = null;
+        try {
+            output = new PrintWriter(new FileWriter(configurationFile));
+
+            writeUserConfiguration(output);
+
+            if (backup) {
+                if (!output.checkError()) {
+                    configurationFileBackup.delete();
+                } else {
+                    //Put back to original configuration:
+                    configurationFileBackup.renameTo(configurationFile);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (output != null) {
+                output.close();
+            }
+        }
+    }
+
+    private void readUserConfiguration() {
+        File        configurationFileName = getConfigurationFileName();
+        InputStream in = null;
+        try {
+            in = new FileInputStream(configurationFileName);
+            readUserConfiguration(new PropertyResourceBundle(in));
+        } catch (FileNotFoundException e) {
+            //The file containing user-defined configuration not found.
+            //This is nothing really important.
+            try {
+                System.err.println("User configuration not found in \"" + configurationFileName.getCanonicalPath() + "\".");
+            } catch (IOException f) {
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSeparator sep2;
     private javax.swing.JSeparator sep1;
