@@ -225,7 +225,7 @@ public class ColorEditor implements PropertyEditor {
                         ", " + color.getBlue () + ")";
       return "(java.awt.Color) javax.swing.UIManager.getDefaults ().get (\"" +
              color.getID () + "\")";
-    };
+    }
   }
 
   public String[] getTags () {
@@ -238,7 +238,7 @@ public class ColorEditor implements PropertyEditor {
       initSwingConstants();
       return swingColorNames;
     default: return awtColorNames;
-    };
+    }
   }
 
   public boolean isPaintable () {
@@ -517,6 +517,7 @@ public class ColorEditor implements PropertyEditor {
 
 /*
  * Log
+ *  3    Gandalf   1.2         2/4/99   Petr Hamernik   
  *  2    Gandalf   1.1         1/6/99   Ian Formanek    some cotemporarily 
  *       commented out to compile under JDK 1.2
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
