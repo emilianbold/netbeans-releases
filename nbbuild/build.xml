@@ -153,6 +153,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module core/javahelp..."/>
     <ant dir="../core/javahelp" target="netbeans"/>
   </target>
+  <target name="all-core/favorites" depends="all-openide,all-openide/loaders">
+    <echo message="Building module core/favorites..."/>
+    <ant dir="../core/favorites" target="netbeans"/>
+  </target>
   <target name="all-core/execution" depends="all-openide,all-openide/io,all-openide/execution,all-core,all-core/bootstrap">
     <echo message="Building module core/execution..."/>
     <ant dir="../core/execution" target="netbeans"/>
@@ -973,11 +977,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../contrib/workplace" target="netbeans"/>
   </target>
 
-  <target name="all-contrib/favourites" depends="build-platform">
-    <echo message="Building module contrib/favourites..."/>
-    <ant dir="../contrib/favourites" target="netbeans"/>
-  </target>
-  
   <target name="all-jasm" depends="build-platform,all-editor,all-java/srcmodel,all-openide/deprecated,all-openide/compiler,all-clazz">
       <echo message="Building module jasm..."/>
       <ant dir="../jasm" target="netbeans"/>
