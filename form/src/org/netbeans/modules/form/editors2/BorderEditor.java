@@ -31,6 +31,7 @@ import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.explorer.propertysheet.PropertySheetView;
 import com.netbeans.ide.explorer.view.ListView;
 import com.netbeans.ide.explorer.*;
+import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.util.actions.SystemAction;
 import com.netbeans.ide.util.NbBundle;
 
@@ -48,19 +49,10 @@ import com.netbeans.developer.modules.loaders.form.palette.*;
 */
 public final class BorderEditor extends PropertyEditorSupport {
 
-  private static Image noBorderIcon;
-  private static Image noBorderIcon32;
-  private static Image unknownBorderIcon;
-  private static Image unknownBorderIcon32;
-
-  static {
-    Toolkit t = Toolkit.getDefaultToolkit();
-
-    noBorderIcon = t.getImage(Object.class.getResource ("/com/netbeans/developerx/resources/form/nullBorder.gif"));
-    noBorderIcon32 = t.getImage(Object.class.getResource ("/com/netbeans/developerx/resources/form/nullBorder32.gif"));
-    unknownBorderIcon = t.getImage(Object.class.getResource ("/com/netbeans/developerx/resources/form/unknownBorder.gif"));
-    unknownBorderIcon32 = t.getImage(Object.class.getResource ("/com/netbeans/developerx/resources/form/unknownBorder32.gif"));
-  }
+  /** Icon bases for unknown border node. */
+  private static final String UNKNOWN_BORDER_BASE = "com/netbeans/developer/explorer/propertysheet/editors/unknownBorder";
+  /** Icon bases for no border node. */
+  private static final String NO_BORDER_BASE = "com/netbeans/developer/explorer/propertysheet/editors/nullBorder";
 
   private static final ResourceBundle bundle = NbBundle.getBundle(BorderEditor.class);
 
@@ -69,14 +61,14 @@ public final class BorderEditor extends PropertyEditorSupport {
   
   // variables ..................................................................................
 
-  //private BorderPanel bPanel;
+  private BorderPanel bPanel;
 
   private Border current;
 
   // init .......................................................................................
 
   public BorderEditor() {
-    //bPanel = null;
+    bPanel = null;
     current = null;
   }
 
@@ -90,9 +82,9 @@ public final class BorderEditor extends PropertyEditorSupport {
     if (object instanceof Border) {
       current = (Border) object;
 
-   /*   if (bPanel != null) {
+      if (bPanel != null) {
         bPanel.setValue(current);
-      } */
+      } 
     }
   }
 
@@ -106,7 +98,7 @@ public final class BorderEditor extends PropertyEditorSupport {
 
   public String getJavaInitializationString () {
     if (current == null) {
-      return "null";
+      return null; // no code to generate
     }
     else {
       if (current instanceof DesignBorder) {
@@ -115,41 +107,40 @@ public final class BorderEditor extends PropertyEditorSupport {
         return buf.toString();
       }
       else {
-        return "null"; //????
+        return null; // no code to generate
       }
     }
   }
 
   public boolean supportsCustomEditor () {
-    return false; // [PENDING]
+    return true;
   }
 
-/*  public Component getCustomEditor () {
+  public Component getCustomEditor () {
     if (bPanel == null) {
       bPanel = new BorderPanel();
       bPanel.setValue(current);
     }
     return bPanel;
-  } */
+  } 
 
   // innerclasses ............................................................................................
 
-/*  final class BorderPanel extends JPanel implements PropertyChangeListener, VetoableChangeListener {
-    ListView list;
-    PropertySheetView sheet;
-    ExplorerManager manager;
+  final class BorderPanel extends ExplorerPanel implements PropertyChangeListener, VetoableChangeListener {
+    ListView listView;
+    PropertySheetView sheetView;
 
     NoBorderNode noBorder;
     UnknownBorderNode unknownBorder;
     Node root;
 
     BorderPanel() {
-      root = new ContextNode(null);
-      root.add(noBorder = new NoBorderNode(root));
+      root = new AbstractNode(Children.LEAF);
+//      root.add(noBorder = new NoBorderNode(root));
 
       PropertyChangeListener pListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent evt) {
-          updateBorder(manager.getSelectedNodes()[0]);
+          updateBorder(getExplorerManager ().getSelectedNodes()[0]);
         }
       };
       
@@ -163,12 +154,11 @@ public final class BorderEditor extends PropertyEditorSupport {
             root.add(listNode);
           }
         }
-      } * /
+      } */
       
-      manager = new ExplorerManager();
-      manager.setRootContext(root);
-      manager.addPropertyChangeListener(this);
-      manager.addVetoableChangeListener(this);
+      getExplorerManager ().setRootContext(root);
+      getExplorerManager ().addPropertyChangeListener(this);
+      getExplorerManager ().addVetoableChangeListener(this);
 
       setLayout(new BorderLayout ());
       setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -178,15 +168,15 @@ public final class BorderEditor extends PropertyEditorSupport {
       split.setSplitAbsolute(false);
       split.setSplitPosition(40);
 
-      list = new ListView(manager);
+      listView = new ListView();
       JPanel ppp = new JPanel();
       ppp.setBorder(new TitledBorder(bundle.getString("LAB_AvailableBorders")));
       ppp.setLayout(new BorderLayout());
-      ppp.add(BorderLayout.CENTER, list.getComponent());
+      ppp.add(BorderLayout.CENTER, listView);
       split.add(ppp, SplittedPanel.ADD_TOP);
 
-      sheet = new PropertySheetView(manager);
-      split.add(sheet.getComponent(), SplittedPanel.ADD_BOTTOM);
+      sheetView = new PropertySheetView();
+      split.add(sheetView, SplittedPanel.ADD_BOTTOM);
 
       add(BorderLayout.CENTER, split);
     }
@@ -196,9 +186,9 @@ public final class BorderEditor extends PropertyEditorSupport {
     }
 
     void setValue(Border border) {
-      if (border == null) {
+/*      if (border == null) {
         try {
-          manager.setSelectedNodes(new Node[] { noBorder });
+          getExplorerManager ().setSelectedNodes(new Node[] { noBorder });
         }
         catch (PropertyVetoException e) {
         }
@@ -220,7 +210,7 @@ public final class BorderEditor extends PropertyEditorSupport {
             if (nodeBorderInfo.getClass().isAssignableFrom(info.getClass())) {
               ((BorderListNode)nodes[i]).setDesignBorder((DesignBorder)border);
               try {
-                manager.setSelectedNodes(new Node[] { nodes[i] });
+                getExplorerManager ().setSelectedNodes(new Node[] { nodes[i] });
               }
               catch (PropertyVetoException e) {
               }
@@ -237,16 +227,16 @@ public final class BorderEditor extends PropertyEditorSupport {
           unknownBorder = new UnknownBorderNode(root, border);
           root.add(unknownBorder);
           try {
-            manager.setSelectedNodes(new Node[] { unknownBorder });
+            getExplorerManager ().setSelectedNodes(new Node[] { unknownBorder });
           }
           catch (PropertyVetoException e) {
           }
         }
-      }
+      } */
     }
 
     void updateBorder(Node node) {
-      if (node instanceof NoBorderNode) {
+/*      if (node instanceof NoBorderNode) {
         BorderEditor.this.current = null;
       }
       else if (node instanceof UnknownBorderNode) {
@@ -255,16 +245,16 @@ public final class BorderEditor extends PropertyEditorSupport {
       else {
         BorderEditor.this.current = ((BorderListNode) node).getDesignBorder();
       }
-      BorderEditor.this.firePropertyChange();
+      BorderEditor.this.firePropertyChange(); */
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-      if (ExplorerManager.PROP_SELECTEDNODES.equals(evt.getPropertyName())) {
+/*      if (ExplorerManager.PROP_SELECTEDNODES.equals(evt.getPropertyName())) {
         Node[] nodes = (Node[]) evt.getNewValue();
         switch (nodes.length) {
           case 0:
             try {
-              manager.setSelectedNodes(new Node[] { noBorder });
+              getExplorerManager ().setSelectedNodes(new Node[] { noBorder });
             }
             catch (PropertyVetoException e) {
             }
@@ -273,11 +263,11 @@ public final class BorderEditor extends PropertyEditorSupport {
             updateBorder(nodes[0]);
             break;
         }
-      }
+      } */
     }
 
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
-      if (ExplorerManager.PROP_SELECTEDNODES.equals(evt.getPropertyName())) {
+      if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
         Node[] nodes = (Node[]) evt.getNewValue();
         if (nodes.length != 1)
           throw new PropertyVetoException("", evt);
@@ -286,11 +276,11 @@ public final class BorderEditor extends PropertyEditorSupport {
                                      
     public void removeNotify () {
       super.removeNotify ();
-      manager.removeListeners ();
+      getExplorerManager ().removeListeners ();
     }
   }
   
-  static final class BorderListNode extends FilterNode implements PropertyChangeListener {
+/*  static final class BorderListNode extends FilterNode implements PropertyChangeListener {
     private PaletteItem palNode;
     private DesignBorder designBorder;
 
@@ -326,34 +316,30 @@ public final class BorderEditor extends PropertyEditorSupport {
       designBorder = new DesignBorder(designBorder.getInfo());
       firePropertyChange("", null, null);
     }
-  }
+  } */
 
   static final class NoBorderNode extends AbstractNode {
-    /** generated Serialized Version UID * /
+    /** generated Serialized Version UID */
     static final long serialVersionUID = 3454994916520236035L;
     
-    NoBorderNode(Node parent) {
-      super(parent);
+    NoBorderNode() {
+      super(Children.LEAF);
       setDisplayName(NO_BORDER);
+      setIconBase (NO_BORDER_BASE);
     }
 
-    public Image getIcon(int type) {
-      if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16))
-        return noBorderIcon;
-      else
-        return noBorderIcon32;
-    }
   }
 
   static final class UnknownBorderNode extends AbstractNode {
-    /** generated Serialized Version UID * /
+    /** generated Serialized Version UID */
     static final long serialVersionUID = 3063018048992659100L;
     
     private Border border;
     
-    UnknownBorderNode(Node parent, Border border) {
-      super(parent);
+    UnknownBorderNode(Border border) {
+      super(Children.LEAF);
       setBorder(border);
+      setIconBase (UNKNOWN_BORDER_BASE);
     }
 
     void setBorder(Border border) {
@@ -368,18 +354,12 @@ public final class BorderEditor extends PropertyEditorSupport {
       return border;
     }
 
-    public Image getIcon(int type) {
-      if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16))
-        return unknownBorderIcon;
-      else
-        return unknownBorderIcon32;
-    }
-
-  } */
+  } 
 }
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/24/99  Ian Formanek    
  *  1    Gandalf   1.0         5/14/99  Ian Formanek    
  * $
  */

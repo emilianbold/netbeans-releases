@@ -352,6 +352,7 @@ public class FormLoaderSettings extends SystemOption {
 
 /*
  * Log
+ *  4    Gandalf   1.3         5/24/99  Ian Formanek    
  *  3    Gandalf   1.2         3/16/99  Ian Formanek    
  *  2    Gandalf   1.1         3/10/99  Ian Formanek    Gandalf updated
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    

@@ -198,13 +198,12 @@ public class JavaCodeGenerator extends CodeGenerator {
     }
     Map changedProps = comp.getChangedProperties ();
     for (Iterator it = changedProps.keySet ().iterator (); it.hasNext ();) {
-      PropertyDescriptor desc = (PropertyDescriptor) it.next ();
-      Object value = changedProps.get (desc);
-      if (desc instanceof IndexedPropertyDescriptor) {
+      RADComponent.RADProperty rprop = (RADComponent.RADProperty)it.next ();
+/*      if (desc instanceof IndexedPropertyDescriptor) {
         generateIndexedPropertySetter (comp, desc, value, text, indent);
-      } else {
-        generatePropertySetter (comp, desc, value, text, indent);
-      }
+      } else { */
+        generatePropertySetter (comp, rprop, text, indent);
+//      }
     }
   }
 
@@ -213,15 +212,25 @@ public class JavaCodeGenerator extends CodeGenerator {
     text.append (dl.generateComponentCode (indent, container, (RADVisualComponent)comp)); // [PENDING incorrect cast]
   }
   
-  private void generateIndexedPropertySetter (RADComponent comp, PropertyDescriptor desc, Object value, StringBuffer text, String indent) {
+/*  private void generateIndexedPropertySetter (RADComponent comp, PropertyDescriptor desc, StringBuffer text, String indent) {
     System.out.println("generateIndexedPropertySetter: NotImplemented... (Property: "+desc.getName ()+", Value: "+value+")"); // [PENDING]
   }
-
+*/
   
-  private void generatePropertySetter (RADComponent comp, PropertyDescriptor desc, Object value, StringBuffer text, String indent) {
+  private void generatePropertySetter (RADComponent comp, RADComponent.RADProperty prop, StringBuffer text, String indent) {
+    PropertyDescriptor desc = prop.getPropertyDescriptor ();
     Method writeMethod = desc.getWriteMethod ();
     String indentToUse = indent;
-    PropertyEditor ed = BeanSupport.getPropertyEditor (desc);
+    PropertyEditor ed = prop.getPropertyEditor ();
+    Object value = null;
+    try {
+      value = prop.getValue ();
+    } catch (java.lang.reflect.InvocationTargetException e) {
+      return; // no code generated
+    } catch (IllegalAccessException e) {
+      return; // no code generated
+    }
+    
     if (ed == null) { // cannot generate without property editor
       return;
     }
@@ -686,6 +695,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  15   Gandalf   1.14        5/24/99  Ian Formanek    
  *  14   Gandalf   1.13        5/16/99  Ian Formanek    
  *  13   Gandalf   1.12        5/15/99  Ian Formanek    
  *  12   Gandalf   1.11        5/15/99  Ian Formanek    

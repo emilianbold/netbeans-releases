@@ -596,7 +596,7 @@ final public class FormEditor extends Object {
         )
      ); 
     
-    //new ErrorLogDialog (errorLog).show ();
+    //new ErrorLogDialog (errorLog).show (); // [PENDING]
     clearLog ();
   }
 
@@ -604,6 +604,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  15   Gandalf   1.14        5/24/99  Ian Formanek    
  *  14   Gandalf   1.13        5/20/99  Ian Formanek    FormNodeCookie->RADComponentCookie
  *       
  *  13   Gandalf   1.12        5/16/99  Ian Formanek    Persistence 
