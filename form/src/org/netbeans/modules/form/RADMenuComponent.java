@@ -166,7 +166,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
             case T_POPUPMENU:
                 if (comp.getMenuItemType() == T_SEPARATOR) {
                     ((Menu)o).addSeparator();
-                    ((JMenu)dto).addSeparator();
+                    ((JPopupMenu)dto).addSeparator();
                 } else {
                     ((Menu)o).add((MenuItem)m);
                     ((JPopupMenu)dto).add((JMenuItem)dtm);
