@@ -21,12 +21,12 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.mdr.MDRepository;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.loaders.DataObject;
 
@@ -98,7 +98,7 @@ class SelectCodeElementAction extends BaseAction {
                     DataObject dob = NbEditorUtilities.getDataObject(target.getDocument());
                     if (dob != null) {
                         JavaMetamodel manager = JavaMetamodel.getManager();
-                        MDRepository repository = JavaMetamodel.getDefaultRepository();
+                        MDRepository repository = JavaModel.getJavaRepository();
                         repository.beginTrans(true); // write access to enforce reparsing if necessary
                         try {
                             //Resource resource = manager.getResource(dob.getPrimaryFile());

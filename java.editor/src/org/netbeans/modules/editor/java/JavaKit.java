@@ -38,6 +38,7 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.javacore.TryWrapper;
+import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -190,11 +191,11 @@ public class JavaKit extends NbEditorKit {
     }
 
     protected void toolTipAnnotationsLock(Document doc) {
-        JavaMetamodel.getDefaultRepository().beginTrans(false);
+        JavaModel.getJavaRepository().beginTrans(false);
     }
     
     protected void toolTipAnnotationsUnlock(Document doc) {
-        JavaMetamodel.getDefaultRepository().endTrans();
+        JavaModel.getJavaRepository().endTrans();
     }
     
 
@@ -824,7 +825,7 @@ public class JavaKit extends NbEditorKit {
                 Position caretPosition = null;
                 TryWrapper wrapper;
                 JavaMetamodel.getManager().addModified(NbEditorUtilities.getDataObject(doc));
-                JavaMetamodel.getDefaultRepository().beginTrans(true);
+                JavaModel.getJavaRepository().beginTrans(true);
                 try {
                     doc.atomicLock();
                     wrapper = new TryWrapper(NbEditorUtilities.getDataObject(doc).getPrimaryFile(), target.getSelectionStart(), target.getSelectionEnd());
@@ -834,11 +835,11 @@ public class JavaKit extends NbEditorKit {
                 }
                 finally {
                     doc.atomicUnlock();
-                    JavaMetamodel.getDefaultRepository().endTrans();
+                    JavaModel.getJavaRepository().endTrans();
                     target.requestFocus();
                 }
                 
-                JavaMetamodel.getDefaultRepository().beginTrans(true);
+                JavaModel.getJavaRepository().beginTrans(true);
                 boolean fail = true;
                 try {
                     doc.atomicLock();
@@ -850,7 +851,7 @@ public class JavaKit extends NbEditorKit {
                 }
                 finally {
                     doc.atomicUnlock();
-                    JavaMetamodel.getDefaultRepository().endTrans(fail);
+                    JavaModel.getJavaRepository().endTrans(fail);
                     if (caretPosition != null) { 
                         try {
                             if (fail==false) {
