@@ -223,7 +223,9 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         } else {
             frameViewer.setVisible(true);
         }
-        frameViewer.requestFocus();
+        //#29417: This call of requestFocus causes lost focus when Help window
+        //is reopened => removed.
+        //frameViewer.requestFocus();
         lastJH = jh;
     }
     private void displayHelpInDialog(JHelp jh) {
