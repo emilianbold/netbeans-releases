@@ -25,13 +25,23 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 
 /** Operator serving property of type File
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
-public class FileProperty extends TextFieldProperty {
+public class FileProperty extends Property {
     
     /** Creates a new instance of FileProperty
      * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name */
+     * @param name String property name 
+     * @deprecated Use {@link #FileProperty(PropertySheetOperator, String)} instead
+     */
     public FileProperty(ContainerOperator contOper, String name) {
         super(contOper, name);
+    }
+    
+    /** Creates a new instance of FileProperty
+     * @param propertySheetOper PropertySheetOperator where to find property.
+     * @param name String property name 
+     */
+    public FileProperty(PropertySheetOperator propertySheetOper, String name) {
+        super(propertySheetOper, name);
     }
     
     /** invokes custom property editor and returns proper custom editor operator

@@ -28,9 +28,19 @@ public class StringArrayProperty extends TextFieldProperty {
     
     /** Creates a new instance of StringArrayProperty
      * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name */
+     * @param name String property name 
+     * @deprecated Use {@link #StringArrayProperty(PropertySheetOperator, String)} instead
+     */
     public StringArrayProperty(ContainerOperator contOper, String name) {
         super(contOper, name);
+    }
+    
+    /** Creates a new instance of StringArrayProperty
+     * @param propertySheetOper PropertySheetOperator where to find property.
+     * @param name String property name 
+     */
+    public StringArrayProperty(PropertySheetOperator propertySheetOper, String name) {
+        super(propertySheetOper, name);
     }
     
     /** invokes custom property editor and returns proper custom editor operator

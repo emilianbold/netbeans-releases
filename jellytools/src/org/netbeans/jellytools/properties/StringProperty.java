@@ -24,13 +24,23 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 
 /** Operator serving property of type String
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
-public class StringProperty extends TextFieldProperty {
+public class StringProperty extends Property {//TextFieldProperty {
     
     /** Creates a new instance of StringProperty
      * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name */
+     * @param name String property name 
+     * @deprecated Use {@link #StringProperty(PropertySheetOperator, String)} instead
+     */
     public StringProperty(ContainerOperator contOper, String name) {
         super(contOper, name);
+    }
+    
+    /** Creates a new instance of StringProperty
+     * @param propertySheetOper PropertySheetOperator where to find property.
+     * @param name String property name 
+     */
+    public StringProperty(PropertySheetOperator propertySheetOper, String name) {
+        super(propertySheetOper, name);
     }
     
     /** invokes custom property editor and returns proper custom editor operator

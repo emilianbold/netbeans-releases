@@ -16,11 +16,14 @@ import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
 /** Used to call "Help|Contents" or "Help|Help Sets|{help_set} main menu item,
- * "org.openide.actions.HelpAction" or F1 shortcut.
+ * "org.openide.actions.HelpAction" or F1 shortcut. It can also be used
+ * to invoke help on a property sheet from popup menu.
  * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class HelpAction extends Action {
 
+    // String used in property sheets
+    private static final String popupPath = Bundle.getString("org.openide.explorer.propertysheet.Bundle", "CTL_Help");
     private static final String helpMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Help")
                                          + "|" 
                                          + Bundle.getStringTrimmed("org.netbeans.modules.usersguide.Bundle", "Menu/Help/org-netbeans-modules-usersguide-master.xml");
@@ -37,8 +40,10 @@ public class HelpAction extends Action {
         super(helpSetsMenu+helpSet, null);
     }
 
-    /** Creates new HelpAction instance for master help set (Help|Contents). */
+    /** Creates new HelpAction instance for master help set (Help|Contents)
+     * or for generic use e.g. in property sheets.
+     */
     public HelpAction() {
-        super(helpMenu, null, "org.openide.actions.HelpAction", helpShortcut);
+        super(helpMenu, popupPath, "org.openide.actions.HelpAction", helpShortcut);
     }
 }

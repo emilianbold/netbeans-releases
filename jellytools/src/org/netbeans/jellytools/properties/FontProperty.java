@@ -25,7 +25,7 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 
 /** Operator serving property of type Font
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
-public class FontProperty extends TextFieldProperty {
+public class FontProperty extends Property {
 
     /** String constant for plain font style */    
     public static final String STYLE_PLAIN = FontCustomEditorOperator.STYLE_PLAIN; 
@@ -38,9 +38,19 @@ public class FontProperty extends TextFieldProperty {
    
     /** Creates a new instance of FontProperty
      * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name */
+     * @param name String property name 
+     * @deprecated Use {@link #FontProperty(PropertySheetOperator, String)} instead
+     */
     public FontProperty(ContainerOperator contOper, String name) {
         super(contOper, name);
+    }
+    
+    /** Creates a new instance of FontProperty
+     * @param propertySheetOper PropertySheetOperator where to find property.
+     * @param name String property name 
+     */
+    public FontProperty(PropertySheetOperator propertySheetOper, String name) {
+        super(propertySheetOper, name);
     }
     
     /** invokes custom property editor and returns proper custom editor operator

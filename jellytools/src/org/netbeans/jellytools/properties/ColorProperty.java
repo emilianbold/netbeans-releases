@@ -12,15 +12,10 @@
  */
 package org.netbeans.jellytools.properties;
 
-/*
- * ColorProperty.java
- *
- * Created on June 18, 2002, 11:53 AM
- */
-
 import java.awt.Color;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.properties.editors.ColorCustomEditorOperator;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.*;
 
 /** Operator serving property of type Color
@@ -29,50 +24,82 @@ public class ColorProperty extends Property {
     
     /** Creates a new instance of ColorProperty
      * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name */
+     * @param name String property name 
+     * @deprecated Use {@link #ColorProperty(PropertySheetOperator, String)} instead
+     */
     public ColorProperty(ContainerOperator contOper, String name) {
         super(contOper, name);
     }
 
+    /** Creates a new instance of ColorProperty
+     * @param propertySheetOper PropertySheetOperator where to find property.
+     * @param name String property name 
+     */
+    public ColorProperty(PropertySheetOperator propertySheetOper, String name) {
+        super(propertySheetOper, name);
+    }
+    
     /** getter for text filed of property (if available)
-     * @return JTextFieldOperator */    
+     * @return JTextFieldOperator 
+     * @deprecated Use {@link #setValue} to change property value
+     */    
     public JTextFieldOperator textField() {
+        throw new JemmyException("Don't use this! Property sheet uses JTable instead of SheetButton.");
+        /*
         startEditing();
         return new JTextFieldOperator(contOper);
+         */
     }
     
     /** Sets value of the property. It makes property editable, finds
      * JTextField, sets its value and pushes Enter key.
      * @param value new value of property
+     * @deprecated Use {@link #setValue} to change property value
      */
     public void setTextValue(String value) {
+        setValue(value);
+        /*
         JTextFieldOperator textOper = textField();
         textOper.enterText(value);
+         */
     }
 
     /** getter for combo box of property (if available)
-     * @return JComboBoxOperator */    
+     * @return JComboBoxOperator 
+     * @deprecated Use {@link #setValue} to change property value
+     */
     public JComboBoxOperator comboBox() {
+        throw new JemmyException("Don't use this! Property sheet uses JTable instead of SheetButton.");
+        /*
         startEditing();
         return new JComboBoxOperator(contOper);
+         */
     }        
 
     /** Sets value of the property. It makes property editable, finds
      * JComboBox and selects specified item.
      * @param value item to be selected
+     * @deprecated Use {@link #setValue(String)} to change property value
      */
     public void setComboValue(String value) {
+        setValue(value);
+        /*
         JComboBoxOperator comboOper = comboBox();
         comboOper.setSelectedItem(value);
+         */
     }
     
     /** Sets value of the property. It makes property editable, finds
      * JComboBox and selects index-th item.
      * @param index index of item to be selected (Start at 0)
+     * @deprecated Use {@link #setValue(int)} to change property value
      */
     public void setComboValue(int index) {
+        setValue(index);
+        /*
         JComboBoxOperator comboOper = comboBox();
         comboOper.setSelectedIndex(index);
+         */
     }
     
     /** invokes custom property editor and returns proper custom editor operator

@@ -10,7 +10,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
  
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
   <title></title>
@@ -18,35 +18,41 @@ Microsystems, Inc. All Rights Reserved.
   <body bgcolor="white">
  Provides a set of classes for setting properties. 
 <p>  In the IDE properties settings happens through so called property sheets.
- Property sheet can be docked to any other window. Property sheet consists
- of toolbar ({@link org.netbeans.jellytools.properties.PropertySheetToolbarOperator
-PropertySheetToolbarOperator}) and tabbed pane ({@link org.netbeans.jellytools.properties.PropertySheetOperator
-PropertySheetOperator}). Each tab in pane ({@link org.netbeans.jellytools.properties.PropertySheetTabOperator
-PropertySheetTabOperator}) shows pairs of property name and property value.
-Property names are collected in left panel and property values are colected
-in right panel.To edit a property, user have to click on property name in
-the left panel. Then property value become editable - text field or combo
-box appears. That means properties in IDE can be classified into two categories:
- </p>
-<ul>
-   <li> text field property - JTextField used to enter a new value</li>
-   <li> combo box property - JComboBox used to enter a new value</li>
- 
-</ul>
-  Both these types become editable by mouse click or enter keystroke. Also
- both these types can have associated custom editor which can be invoked
-by "..." button press.<br>
- You can extend {@link org.netbeans.jellytools.properties.TextFieldProperty TextFieldProperty}
-or {@link org.netbeans.jellytools.properties.ComboBoxProperty ComboBoxProperty}, if 
+ Property sheet ({@link org.netbeans.jellytools.properties.PropertySheetOperator})
+can be docked to any other window. Property sheet consists
+of JTable with properties and optional description area. The table has two
+columns showing property name and property value. Properties are grouped to
+logical categories which can be collapsed or expanded when properties are
+sorted by category. It is also possible to sort properties alphabetically (Sort
+by Name). 
+Property value can be changed by inline editors (text field for string values,
+check box for boolean values - {@link
+org.netbeans.jellytools.properties.Property#setValue(String)} and combo box for list values
+- {@link
+org.netbeans.jellytools.properties.Property#setValue(int)}) or by custom editors
+where they are available ({@link
+org.netbeans.jellytools.properties.Property#openEditor}).
+<P> 
+ You can extend {@link org.netbeans.jellytools.properties.Property Property}, if 
 you want to create your specific property. Some common properties are already 
-created in this package (ColorProperty, PointProperty, ...).<br>
+created in this package (ColorProperty, PointProperty, ...).
+</P>
  Properties can be used the following way:<br>
  
-<pre>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PropertySheetOperator pso = new PropertySheetOperator("Properties of MyClass");<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PropertySheetTabOperator psto = new PropertySheetTabOperator(pso, "Properties");<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TextFieldProperty pr = new TextFieldProperty(psto, "Name");<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pr.setValue("NewValue");</pre>
+<pre>
+        PropertySheetOperator pso = new PropertySheetOperator("Properties of MyClass");
+        Property p = new Property(pso, "Name");
+        System.out.println("\nProperty name="+p.getName());
+        System.out.println("\nProperty value="+p.getValue());
+        p.setValue("ANewValue");
+        // set a new value by index where it is applicable
+        //p.setValue(2);
+        // open custom editor where it is applicable
+        //p.openEditor();
+</pre>
+
  Common custom editors are grouped in package {@link org.netbeans.jellytools.properties.editors 
 editors}.<br>
- 
-<p></p>
  <br>
 </body>
 </html>

@@ -22,9 +22,19 @@ public class RectangleProperty extends TextFieldProperty {
     
     /** Creates a new instance of RectangleProperty
      * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name */    
+     * @param name String property name 
+     * @deprecated Use {@link #RectangleProperty(PropertySheetOperator, String)} instead
+     */
     public RectangleProperty(ContainerOperator contOper, String name) {
         super(contOper, name);
+    }
+    
+    /** Creates a new instance of RectangleProperty
+     * @param propertySheetOper PropertySheetOperator where to find property.
+     * @param name String property name 
+     */
+    public RectangleProperty(PropertySheetOperator propertySheetOper, String name) {
+        super(propertySheetOper, name);
     }
     
     /** invokes custom property editor and returns proper custom editor operator

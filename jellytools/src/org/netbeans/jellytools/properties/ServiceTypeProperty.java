@@ -28,9 +28,19 @@ public class ServiceTypeProperty extends TextFieldProperty {
     
     /** Creates a new instance of ServiceTypeProperty
      * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name */
+     * @param name String property name 
+     * @deprecated Use {@link #ServiceTypeProperty(PropertySheetOperator, String)} instead
+     */
     public ServiceTypeProperty(ContainerOperator contOper, String name) {
         super(contOper, name);
+    }
+    
+    /** Creates a new instance of ServiceTypeProperty
+     * @param propertySheetOper PropertySheetOperator where to find property.
+     * @param name String property name 
+     */
+    public ServiceTypeProperty(PropertySheetOperator propertySheetOper, String name) {
+        super(propertySheetOper, name);
     }
     
     /** invokes custom property editor and returns proper custom editor operator

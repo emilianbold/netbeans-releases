@@ -24,13 +24,23 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 
 /** Operator serving property of type ProcessDescriptor
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
-public class ProcessDescriptorProperty extends TextFieldProperty {
+public class ProcessDescriptorProperty extends Property {
     
     /** Creates a new instance of ProcessDescriptorProperty
      * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name */
+     * @param name String property name 
+     * @deprecated Use {@link #ProcessDescriptorProperty(PropertySheetOperator, String)} instead
+     */
     public ProcessDescriptorProperty(ContainerOperator contOper, String name) {
         super(contOper, name);
+    }
+    
+    /** Creates a new instance of ProcessDescriptorProperty
+     * @param propertySheetOper PropertySheetOperator where to find property.
+     * @param name String property name 
+     */
+    public ProcessDescriptorProperty(PropertySheetOperator propertySheetOper, String name) {
+        super(propertySheetOper, name);
     }
     
     /** invokes custom property editor and returns proper custom editor operator

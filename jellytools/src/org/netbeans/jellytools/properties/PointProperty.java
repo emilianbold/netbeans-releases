@@ -17,13 +17,23 @@ import org.netbeans.jellytools.properties.editors.PointCustomEditorOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 
 /** Operator serving property of type Point */
-public class PointProperty extends TextFieldProperty {
+public class PointProperty extends Property {
     
     /** Creates a new instance of PointProperty
      * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name */    
+     * @param name String property name 
+     * @deprecated Use {@link #PointProperty(PropertySheetOperator, String)} instead
+     */
     public PointProperty(ContainerOperator contOper, String name) {
         super(contOper, name);
+    }
+    
+    /** Creates a new instance of PointProperty
+     * @param propertySheetOper PropertySheetOperator where to find property.
+     * @param name String property name 
+     */
+    public PointProperty(PropertySheetOperator propertySheetOper, String name) {
+        super(propertySheetOper, name);
     }
     
     /** invokes custom property editor and returns proper custom editor operator

@@ -18,13 +18,23 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 
 /** Operator serving property of type Dimension
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
-public class DimensionProperty extends TextFieldProperty {
+public class DimensionProperty extends Property {
     
     /** Creates a new instance of DimensionProperty
      * @param contOper ContainerOperator of parent container to search property in
-     * @param name String property name */    
+     * @param name String property name 
+     * @deprecated Use {@link #DimensionProperty(PropertySheetOperator, String)} instead
+     */
     public DimensionProperty(ContainerOperator contOper, String name) {
         super(contOper, name);
+    }
+    
+    /** Creates a new instance of DimensionProperty
+     * @param propertySheetOper PropertySheetOperator where to find property.
+     * @param name String property name 
+     */
+    public DimensionProperty(PropertySheetOperator propertySheetOper, String name) {
+        super(propertySheetOper, name);
     }
     
     /** invokes custom property editor and returns proper custom editor operator
