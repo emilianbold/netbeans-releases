@@ -109,8 +109,12 @@ public class EntityHelper extends EntityAndSessionHelper {
         return entity.getPrimKeyClass();
     }
 
-    public void setPrimkeyField(String fieldName) throws ClassNotFoundException {
+    public void setPrimkeyFieldName(String fieldName) {
         entity.setPrimkeyField(fieldName);
+    }
+
+    public void setPrimkeyField(String fieldName) throws ClassNotFoundException {
+        setPrimkeyFieldName(fieldName);
         if (fieldName != null) {
             CmpFieldHelper helper = cmpFields.getCmpFieldHelper(fieldName);
             helper.reloadType();
@@ -264,7 +268,7 @@ public class EntityHelper extends EntityAndSessionHelper {
                     return i;
                 }
             }
-            return -1;            
+            return -1;
         }
     }
 

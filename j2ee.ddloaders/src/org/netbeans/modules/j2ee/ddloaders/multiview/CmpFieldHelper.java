@@ -244,12 +244,7 @@ public class CmpFieldHelper {
     public void setFieldName(String newName) {
         //todo: launch refactoring instead of following code
         if (isPrimary()) {
-            try {
-                entityHelper.setPrimkeyField(newName);
-            } catch (ClassNotFoundException e) {
-                Utils.notifyError(e);
-                return;
-            }
+            entityHelper.setPrimkeyFieldName(newName);
         }
         String fieldName = getFieldName();
         MethodElement[] methods = entityHelper.beanClass.getMethods();
@@ -281,13 +276,13 @@ public class CmpFieldHelper {
         Identifier getterName = Identifier.create(Utils.getMethodName(newName, true));
         Identifier setterName = Identifier.create(Utils.getMethodName(newName, false));
         field.setFieldName(newName);
-        modelUpdatedFromUI();
         Utils.renameMethod(getterMethod, getterName);
         Utils.renameMethod(setterMethod, setterName);
         Utils.renameMethod(localGetter, getterName);
         Utils.renameMethod(localSetter, setterName);
         Utils.renameMethod(remoteGetter, getterName);
         Utils.renameMethod(remoteSetter, setterName);
+        modelUpdatedFromUI();
     }
 
     public void setDescription(String s) {
