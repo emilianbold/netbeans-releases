@@ -1333,6 +1333,17 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                             item = item.getNext();
                         }
                     }
+                    
+                    //expression language - just put its content into attribute value
+                    if((item != null) && (item.getTokenContextPath().contains(ELTokenContext.contextPath))) {
+                        //go over all EL tokens and add them to the attribute value
+                        while(item.getTokenContextPath().contains(ELTokenContext.contextPath)) {
+                            if(item == null) break;
+                            item = item.getNext();
+                            value.append(item.getImage());
+                        }
+                    }
+                    
                 }
                 String vString = value.toString();
                 // cut off the beginning and ending quotes
