@@ -382,7 +382,8 @@ Microsystems, Inc. All Rights Reserved.
             </classpath>
         </taskdef>
         <checkhelpsets>
-            <fileset dir="javahelp">
+            <!-- XXX need to check against real files (since there may be some processing) but should use a link mapper: -->
+            <fileset dir="${build.javahelp.dir}">
                 <include name="${javahelp.base}/${javahelp.hs}"/>
             </fileset>
         </checkhelpsets>
