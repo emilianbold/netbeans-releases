@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.editor;
@@ -42,7 +42,6 @@ import java.text.MessageFormat;
 public class ExportHtmlAction extends CookieAction {
 
     private static final String HTML_EXT = ".html";  //NOI18N
-    private static final String FILE_PROTOCOL = "file://"; //NOI18N
 
     private Dialog dlg;
 
@@ -114,7 +113,7 @@ public class ExportHtmlAction extends CookieAction {
                                         this.setCursor (org.openide.util.Utilities.createProgressCursor (jtc));
                                     export (bdoc, file, lineNumbers, selectionStart, selectionEnd);
                                     if (open) {
-                                        HtmlBrowser.URLDisplayer.getDefault().showURL (new URL (FILE_PROTOCOL+file));
+                                        HtmlBrowser.URLDisplayer.getDefault().showURL(new File(file).toURI().toURL());
                                     }
                                 } catch (MalformedURLException mue) {
                                         ErrorManager.getDefault().notify (mue);
