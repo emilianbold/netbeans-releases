@@ -193,13 +193,10 @@ public class JspI18nSupport extends JavaI18nSupport {
          * @param character char to proceede 
          * @return null */
         protected HardCodedString handleStateJspScripting(char character) {
-            if(character == '!' // JSP declaraction.
-                || character == '=' // JSP expression.
-                || Character.isWhitespace(character)) // JSP scriptlet.
-                    
-                state = STATE_JAVA;
-            else
-                state = STATE_JSP;
+            if(character == '@' || character == '-') 
+                state = STATE_JSP; // JSP directive or comment
+            else 
+                state = STATE_JAVA;  // java code
                 
             return null;
         }
