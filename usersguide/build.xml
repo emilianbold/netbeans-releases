@@ -14,6 +14,8 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="usersguide" default="netbeans" basedir=".">
 
+  <property name="binroot" value=".."/>
+  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
 
@@ -42,6 +44,14 @@ Microsystems, Inc. All Rights Reserved.
         <exclude name="**/usergdto.xml"/>
       </fileset>
     </copy>
+    <mkdir dir="netbeans/docs/org/netbeans/modules/usersguide/JavaHelpSearch"/>
+    <jhindexer basedir="javahelp/org/netbeans/modules/usersguide"
+               db="netbeans/docs/org/netbeans/modules/usersguide/JavaHelpSearch"
+               jhall="${binroot}/nbbuild/lib/jhall.jar">
+      <include name="**/*.html"/>
+      <exclude name="credits.html"/>
+      <exclude name="pending.html"/>
+    </jhindexer>
   </target>
 
   <target name="netbeans" depends="jars,javahelp"/>
@@ -54,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
 	     distribution="http://www.netbeans.org/download/nbms/40/usersguide.nbm">
       <license file="../nbbuild/standard-nbm-license.txt"/>
       <description>
-        The User's Guide (just documentation).
+        Online help for the IDE in JavaHelp format.
       </description>
       <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
     </makenbm>
