@@ -178,7 +178,7 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(getClass());;
+        return new HelpCtx(getClass());
     }
 
     public String getName() {
