@@ -468,37 +468,37 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public  Value evaluateIn (Expression expression, StackFrame frame) 
     throws InvalidExpressionException {
-        if (frame == null)
-            throw new InvalidExpressionException ("No current context");
+        synchronized (LOCK) {
+            if (frame == null)
+                throw new InvalidExpressionException ("No current context");
 
-        // TODO: get imports from the source file
-        List imports = new ArrayList ();
-        List staticImports = new ArrayList ();
-        imports.add ("java.lang.*");
-        imports.addAll (Arrays.asList (EditorContextBridge.getImports (
-            getEngineContext ().getURL (frame, "Java")
-        )));
-        try {
-            org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator = 
-                expression.evaluator (
-                    new EvaluationContext (
-                        frame,
-                        imports, 
-                        staticImports
-                    )
-                );
-            synchronized (LOCK) {
+            // TODO: get imports from the source file
+            List imports = new ArrayList ();
+            List staticImports = new ArrayList ();
+            imports.add ("java.lang.*");
+            try {
+                imports.addAll (Arrays.asList (EditorContextBridge.getImports (
+                    getEngineContext ().getURL (frame, "Java")
+                )));
+                org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator = 
+                    expression.evaluator (
+                        new EvaluationContext (
+                            frame,
+                            imports, 
+                            staticImports
+                        )
+                    );
                 List l = disableAllBreakpoints ();
                 try {
                     return evaluator.evaluate ();
                 } finally {
                     enableAllBreakpoints (l);
                 }
+            } catch (Throwable e) {
+                InvalidExpressionException iee = new InvalidExpressionException (e);
+                iee.initCause (e);
+                throw iee;
             }
-        } catch (Throwable e) {
-            InvalidExpressionException iee = new InvalidExpressionException (e);
-            iee.initCause (e);
-            throw iee;
         }
     }
 
