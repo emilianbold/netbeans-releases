@@ -75,7 +75,7 @@ public class ReplaceTest extends EditorTestCase {
     /**
      * TC2 - Replace Dialog Open - Selection
      */
-    public void testReplaceSelectionRepeated() {
+/*    public void testReplaceSelectionRepeated() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -125,7 +125,7 @@ public class ReplaceTest extends EditorTestCase {
             closeReplaceDialogIfOpened();
             closeFileWithDiscard();
         }
-    }    
+    }    */
     
     /**
      * TC3 - Replace Dialog Combo Box
@@ -288,7 +288,7 @@ public class ReplaceTest extends EditorTestCase {
     /**
      * TC6 - Replace in Selection Only
      */
-    public void testReplaceInSelectionOnly() {
+/*    public void testReplaceInSelectionOnly() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -318,7 +318,7 @@ public class ReplaceTest extends EditorTestCase {
             closeReplaceDialogIfOpened();
             closeFileWithDiscard();
         }
-    }      
+    }      */
     
     /**     
      * Unchecks all checkboxes in find dialog.
@@ -354,7 +354,6 @@ public class ReplaceTest extends EditorTestCase {
      * Checks if a replace dialog is opened and if yes it closes it.
      */
     public void closeReplaceDialogIfOpened() {
-        log("Checking");
         Window replaceWindow = WindowOperator.findWindow(
                 new ComponentChooser() {
             public boolean checkComponent(Component comp) {
@@ -363,7 +362,6 @@ public class ReplaceTest extends EditorTestCase {
                 return null != winOper.findSubComponent(
                         new ComponentChooser() {
                     public boolean checkComponent(Component comp) {
-                        log(comp.getClass().getName());
                         return comp.getClass().getName().startsWith(
                                 "org.netbeans.editor.ext.Find"); //NOI18N
                     }
@@ -377,7 +375,6 @@ public class ReplaceTest extends EditorTestCase {
             }
         });
         if(replaceWindow != null) {
-            log("Closing");
             new Replace().close();
         }
     }

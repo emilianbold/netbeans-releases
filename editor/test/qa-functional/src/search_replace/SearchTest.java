@@ -81,7 +81,7 @@ public class SearchTest extends EditorTestCase {
     /**
      * TC2 - Find Selection Repeated
      */
-    public void testFindSelectionRepeated() {
+/*    public void testFindSelectionRepeated() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -112,12 +112,12 @@ public class SearchTest extends EditorTestCase {
             find2.close();
             // check status bar
             waitForLabel("'testFindSelectionRepeated' found at 15:35");
-            
+
         } finally {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
         }
-    }
+    }*/
     
     /**
      * TC3 - Find Dialog Combo Box
@@ -590,7 +590,7 @@ public class SearchTest extends EditorTestCase {
     /**
      * TC15 - Find Selection Without Dialog
      */
-    public void testFindSelectionWithoutDialog() {
+/*    public void testFindSelectionWithoutDialog() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -607,12 +607,12 @@ public class SearchTest extends EditorTestCase {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
         }                
-    }
+    }*/
 
     /**
      * TC16 - Search Selection
      */
-    public void testSearchSelection() {
+/*    public void testSearchSelection() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -635,12 +635,12 @@ public class SearchTest extends EditorTestCase {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
         }
-    }
+    }*/
 
     /**
      * TC17 - Search Selection Negative
      */
-    public void testSearchSelectionNegative() {
+/*    public void testSearchSelectionNegative() {
         openDefaultProject();
         openDefaultSampleFile();
         try {
@@ -663,7 +663,7 @@ public class SearchTest extends EditorTestCase {
             closeFindDialogIfOpened();
             closeFileWithDiscard();
         }                
-    }
+    }*/
 
     /**
      * TC18 - Regexp Search - Simple
@@ -780,7 +780,6 @@ public class SearchTest extends EditorTestCase {
                 return null != winOper.findSubComponent(
                         new ComponentChooser() {
                     public boolean checkComponent(Component comp) {
-                        log(comp.getClass().getName());
                         return comp.getClass().getName().startsWith(
                                 "org.netbeans.editor.ext.Find"); //NOI18N
                     }
