@@ -42,7 +42,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="init">
         <available property="openide/build.xml" file="${openide.jar}/../../../build.xml"/>
-        <available property="looks/build.xml" file="${looks}/build.xml"/>
         <property name="build.compiler.debug" value="true"/>
     </target>
     
@@ -50,8 +49,8 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="${openide.jar}/../../.." target="jars"/>
     </target>
     
-    <target name="build-looks" depends="init,build-openide" if="looks/build.xml">
-        <ant dir="${looks}" target="jars"/>
+    <target name="build-looks" depends="init,build-openide">
+        <ant dir="${nbroot}/nbbuild" target="all-openide/looks"/>
     </target>
 
     <target name="build" depends="build-openide,build-looks">
