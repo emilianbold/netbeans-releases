@@ -572,7 +572,7 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
         String palette = attributes.getNamedItem (ATTR_PALETTE).getNodeValue (); 
         setValue (new SuperColor (id, Integer.parseInt (palette), new Color (Integer.parseInt (red, 16), Integer.parseInt (green, 16), Integer.parseInt (blue, 16))));
       } else {
-        setValue (new SuperColor (new Color (Integer.parseInt (red), Integer.parseInt (green), Integer.parseInt (blue))));
+        setValue (new SuperColor (new Color (Integer.parseInt (red, 16), Integer.parseInt (green, 16), Integer.parseInt (blue, 16))));
       }
     } catch (NullPointerException e) {
       throw new java.io.IOException ();
@@ -601,6 +601,8 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
 
 /*
  * Log
+ *  16   Gandalf   1.15        7/30/99  Ian Formanek    Fixed bug 2480 - Color 
+ *       attribute can have haxedecimal values but int is expected.
  *  15   Gandalf   1.14        7/13/99  Ian Formanek    Fixed readFromXML
  *  14   Gandalf   1.13        7/12/99  Ian Formanek    Implements 
  *       XMLPropertyEditor
