@@ -7,6 +7,7 @@
 package lib;
 
 import java.io.File;
+import java.util.StringTokenizer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.jellytools.EditorOperator;
@@ -157,6 +158,9 @@ public class EditorTestCase extends NbTestCase {
     /** Open file in open project
      *  @param treeSubPath e.g. "Source Packages|test","sample1" */
     public void openFile(String treeSubPackagePathToFile, String fileName) {
+        // debug info, to be removed
+        log("Tree: "+treeSubPackagePathToFile);
+        log("Filename: "+fileName);
         this.treeSubPackagePathToFile = treeSubPackagePathToFile;
         ProjectsTabOperator pto = new ProjectsTabOperator();
         pto.invoke();
@@ -164,8 +168,38 @@ public class EditorTestCase extends NbTestCase {
         prn.select();
         
         // fix of issue #51191
-        Node parent = new Node(prn, treeSubPackagePathToFile);
-        final String finalFileName = fileName;
+        // each of nodes is checked by calling method waitForChildNode 
+        // before they are actually opened
+        StringTokenizer st = new StringTokenizer(treeSubPackagePathToFile, 
+                treeSeparator+"");
+        String token = "";
+        String oldtoken = "";
+        // if there are more then one tokens process each of them
+        if (st.countTokens()>1) {
+            token = st.nextToken();
+            String fullpath = token;
+            while (st.hasMoreTokens()) {            
+                token = st.nextToken();
+                log("waitForChildNode("+fullpath+", "+token+")");
+                waitForChildNode(fullpath, token);
+                fullpath += treeSeparator+token;
+            }
+        } 
+        // last node
+        log("waitForChildNode("+treeSubPackagePathToFile+", "+fileName+")");
+        waitForChildNode(treeSubPackagePathToFile, fileName);
+        // end of fix of issue #51191
+        
+        Node node = new Node(prn,treeSubPackagePathToFile+treeSeparator+fileName);
+        node.performPopupAction("Open");
+    }
+    
+    public void waitForChildNode(String parentPath, String childName) {
+        ProjectsTabOperator pto = new ProjectsTabOperator();
+        ProjectRootNode prn = pto.getProjectRootNode(projectName);
+        prn.select();
+        Node parent = new Node(prn, parentPath);
+        final String finalFileName = childName;
         try {
             // wait for max. 30 seconds for the file node to appear
             JemmyProperties.setCurrentTimeout("Waiter.WaitingTime", 30000);
@@ -180,11 +214,7 @@ public class EditorTestCase extends NbTestCase {
             }).waitAction(parent);
         } catch (InterruptedException e) {
             throw new JemmyException("Interrupted.", e);
-        }        
-        // end of fix of issue #51191
-        
-        Node node = new Node(prn,treeSubPackagePathToFile+treeSeparator+fileName);
-        node.performPopupAction("Open");
+        }                
     }
     
     /** Open the default file in open project */
