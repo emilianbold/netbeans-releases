@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -67,14 +67,10 @@ public class HelloWorldTest extends NbTestCase {
     
     protected void setUp() {
         String packageName = "";
-        if (null != getClass().getPackage())
+        if (null != getClass().getPackage()) {
             packageName = getClass().getPackage().getName();
-
-        // when running this code inside IDE, getResource method returns URL in NBFS
-        // format, so we need to convert it to filename
-        // when running this code inside code mode, nothing happens        
-        String dataDirName = NbTestCase.convertNBFSURL(HelloWorldTest.class.getResource("data"));
-        dataDir = new File(dataDirName);
+        }
+        dataDir = getDataDir();
         
         testObject = new HelloWorld();
     }
