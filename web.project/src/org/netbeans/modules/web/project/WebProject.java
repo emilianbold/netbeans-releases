@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.SoftReference;
 import java.util.*;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -31,23 +30,17 @@ import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.openide.filesystems.FileLock;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.queries.CompiledSourceForBinaryQuery;
 import org.netbeans.modules.web.project.ui.WebCustomizerProvider;
 import org.netbeans.modules.web.project.ui.WebPhysicalViewProvider;
 import org.netbeans.modules.web.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
-import org.netbeans.spi.java.classpath.ClassPathFactory;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -72,6 +65,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileAttributeEvent;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -108,7 +102,106 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     private FileObject libFolder = null;
     private CopyOnSaveSupport css;
     private WebModule apiWebModule;
-    
+
+    private class FileWatch implements AntProjectListener, FileChangeListener {
+
+        private String propertyName;
+
+        private FileObject fileObject = null;
+        private boolean watchRename = false;
+
+        public FileWatch(String property) {
+            this.propertyName = property;
+            helper.addAntProjectListener(this);
+            updateFileChangeListener();
+        }
+
+        public void updateFileChangeListener() {
+            File resolvedFile;
+            FileObject fo = null;
+            String propertyValue = helper.getStandardPropertyEvaluator().getProperty(propertyName);
+            if (propertyValue != null) {
+                String resolvedPath = helper.resolvePath(propertyValue);
+                resolvedFile = new File(resolvedPath).getAbsoluteFile();
+                if (resolvedFile != null) {
+                    File f = resolvedFile;
+                    while (f != null && (fo = FileUtil.toFileObject(f)) == null) {
+                        f = f.getParentFile();
+                    }
+                    watchRename = f == resolvedFile;
+                } else {
+                    watchRename = false;
+                }
+            } else {
+                resolvedFile = null;
+                watchRename = false;
+            }
+            if (!isEqual(fo, fileObject)) {
+                if (fileObject != null) {
+                    fileObject.removeFileChangeListener(this);
+                }
+                fileObject = fo;
+                if (fileObject != null) {
+                    fileObject.addFileChangeListener(this);
+                }
+            }
+        }
+
+        private boolean isEqual(Object object1, Object object2) {
+            if (object1 == object2) {
+                return true;
+            }
+            if(object1 == null) {
+                return false;
+            }
+            return object1.equals(object2);
+        }
+
+        // AntProjectListener
+
+        public void configurationXmlChanged(AntProjectEvent ev) {
+            updateFileChangeListener();
+        }
+
+        public void propertiesChanged(AntProjectEvent ev) {
+            updateFileChangeListener();
+        }
+
+        // FileChangeListener
+
+        public void fileFolderCreated(FileEvent fe) {
+            updateFileChangeListener();
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            updateFileChangeListener();
+        }
+
+        public void fileChanged(FileEvent fe) {
+            updateFileChangeListener();
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            updateFileChangeListener();
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            if(watchRename && fileObject.isValid()) {
+                File f = new File(helper.getStandardPropertyEvaluator().getProperty(propertyName));
+                if(f.getName().equals(fe.getName())) {
+                    EditableProperties properties = new EditableProperties();
+                    properties.setProperty(propertyName, new File(f.getParentFile(), fe.getFile().getName()).getPath());
+                    Utils.updateProperties(helper, AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
+                    getWebProjectProperties().store();
+                }
+            }
+            updateFileChangeListener();
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+        }
+    };
+
     WebProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
@@ -120,6 +213,8 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
         css = new CopyOnSaveSupport();
+        new FileWatch(WebProjectProperties.WEB_DOCBASE_DIR);
+        new FileWatch(WebProjectProperties.SRC_DIR);
     }
 
     public FileObject getProjectDirectory() {
@@ -252,9 +347,13 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         checkLibraryFolder (fo);
     }
     
+    public WebProjectProperties getWebProjectProperties() {
+        return new WebProjectProperties (this, helper, refHelper);
+    }
+
     private void checkLibraryFolder (FileObject fo) {
         if (fo.getParent ().equals (libFolder)) {
-            WebProjectProperties wpp = new WebProjectProperties (this, helper, refHelper);
+            WebProjectProperties wpp = getWebProjectProperties();
             List cpItems = (List) wpp.get (WebProjectProperties.JAVAC_CLASSPATH);
             if (addLibrary (cpItems, fo)) {
                 wpp.put (WebProjectProperties.JAVAC_CLASSPATH, cpItems);
@@ -267,7 +366,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             }
         }
     }
-    
+
     /** Last time in ms when the Broken References alert was shown. */
     private static long brokenAlertLastTime = 0;
     
@@ -448,7 +547,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             try {
                 //Check libraries and add them to classpath automatically
                 String libFolderName = helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.LIBRARIES_DIR);
-                WebProjectProperties wpp = new WebProjectProperties (WebProject.this, helper, refHelper);
+                WebProjectProperties wpp = getWebProjectProperties();
                     //DDDataObject initialization to be ready to listen on changes (#45771)
                     try {
                         FileObject ddFO = webModule.getDeploymentDescriptor();
@@ -517,7 +616,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                 BrokenReferencesSupport.showAlert();
             }
         }
-        
+
         protected void projectClosed() {
             // Probably unnecessary, but just in case:
             try {
@@ -656,7 +755,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             try {
                 FileObject fo = fe.getFile();
                 FileObject docBase = getWebModule().getDocumentBase();
-                if (FileUtil.isParentOf(docBase, fo)) {
+                if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
                     // inside docbase
                     handleCopyFileToDestDir(fo);
                     FileObject parent = fo.getParent();
@@ -682,7 +781,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             try {
                 FileObject fo = fe.getFile();
                 FileObject docBase = getWebModule().getDocumentBase();
-                if (FileUtil.isParentOf(docBase, fo)) {
+                if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
                     // inside docbase
                     String path = FileUtil.getRelativePath(docBase, fo);
                     if (!isSynchronizationAppropriate(path)) 
