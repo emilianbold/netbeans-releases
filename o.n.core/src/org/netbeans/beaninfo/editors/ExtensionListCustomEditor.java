@@ -13,6 +13,7 @@
 
 package org.netbeans.beaninfo.editors;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -41,8 +42,6 @@ public class ExtensionListCustomEditor extends javax.swing.JPanel {
     ExtensionListEditor editor;
     
 //    private Vector itemsVector;
-
-    private final static int DEFAULT_WIDTH = 400;
 
     static final long serialVersionUID =-4347656479280614636L;
     
@@ -124,6 +123,7 @@ public class ExtensionListCustomEditor extends javax.swing.JPanel {
         }); 
         addButton.setEnabled(false);
         changeButton.setEnabled(false);
+        setMinimumSize(new Dimension (200, 400));
     }
     
     /** Determine if the text of the text field matches an item in the 
@@ -141,12 +141,6 @@ public class ExtensionListCustomEditor extends javax.swing.JPanel {
             }
         }
         return -1;
-    }
-
-    public java.awt.Dimension getPreferredSize () {
-        // ensure minimum width
-        java.awt.Dimension sup = super.getPreferredSize ();
-        return new java.awt.Dimension (Math.max (sup.width, DEFAULT_WIDTH), sup.height);
     }
 
     /** This method is called from within the constructor to
