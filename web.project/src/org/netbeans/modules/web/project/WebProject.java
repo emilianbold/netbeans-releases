@@ -545,8 +545,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
 
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
-                // XXX provide WAR as an artifact (for j2ee application?):
-//                helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.war", "war", "clean"), // NOI18N
+                helper.createSimpleAntArtifact(WebProjectConstants.ARTIFACT_TYPE_WAR, "dist.war", evaluator(), "war", "clean"), // NOI18N
             };
         }
 
