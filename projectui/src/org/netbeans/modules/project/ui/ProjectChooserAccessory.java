@@ -52,15 +52,6 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     public ProjectChooserAccessory( JFileChooser chooser, boolean isOpenSubprojects, boolean isOpenAsMain ) {
         initComponents();
         
-        // Workaround for strange behavior of FormEditor
-        jLabelProjectName.setText( NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_ProjectName_Label" ) ); //NOI18N
-        jCheckBoxMain.setText( NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_Main_CheckBox" ) ); //NOI18N
-        jCheckBoxMain.setMnemonic ( NbBundle.getMessage( ProjectChooserAccessory.class, "MNM_PrjChooser_Main_CheckBox" ).charAt (0) ); //NOI18N
-        jCheckBoxSubprojects.setText( NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_Subprojects_CheckBox" ) ); //NOI18N
-        jCheckBoxSubprojects.setMnemonic( NbBundle.getMessage( ProjectChooserAccessory.class, "MNM_PrjChooser_Subprojects_CheckBox" ).charAt (0) ); //NOI18N
-        
-        
-        
         // Listen on the subproject checkbox to change the option accordingly
         jCheckBoxSubprojects.setSelected( isOpenSubprojects );
         jCheckBoxSubprojects.addActionListener( this );
@@ -98,6 +89,8 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 12, 0, 0)));
+        jLabelProjectName.setLabelFor(jTextFieldProjectName);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelProjectName, org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "LBL_PrjChooser_ProjectName_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -112,24 +105,29 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(jTextFieldProjectName, gridBagConstraints);
 
-        jCheckBoxMain.setText(org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "LBL_PrjChooser_Main_CheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxMain, org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "LBL_PrjChooser_Main_CheckBox"));
         jCheckBoxMain.setMargin(new java.awt.Insets(2, 0, 2, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jCheckBoxMain, gridBagConstraints);
+        jCheckBoxMain.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "ACSD_ProjectChooserAccessory_jCheckBoxMain"));
 
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxSubprojects, org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "LBL_PrjChooser_Subprojects_CheckBox"));
         jCheckBoxSubprojects.setMargin(new java.awt.Insets(2, 0, 2, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(jCheckBoxSubprojects, gridBagConstraints);
+        jCheckBoxSubprojects.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "ACSD_ProjectChooserAccessory_jCheckBoxSubprojects"));
 
         jListSubprojects.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jListSubprojects.setEnabled(false);
         jScrollPaneSubprojects.setViewportView(jListSubprojects);
+        jListSubprojects.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "ACSN_ProjectChooserAccessory_jListSubprojects"));
+        jListSubprojects.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectChooserAccessory.class, "ACSD_ProjectChooserAccessory_jListSubprojects"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -383,6 +381,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         
         chooser.setApproveButtonText( NbBundle.getMessage( ProjectChooserAccessory.class, "BTN_PrjChooser_ApproveButtonText" ) ); // NOI18N
         chooser.setApproveButtonMnemonic( NbBundle.getMessage( ProjectChooserAccessory.class, "MNM_PrjChooser_ApproveButtonText" ).charAt (0) ); // NOI18N
+        chooser.setApproveButtonToolTipText (NbBundle.getMessage( ProjectChooserAccessory.class, "BTN_PrjChooser_ApproveButtonTooltipText")); // NOI18N
         chooser.setMultiSelectionEnabled( false );        
         chooser.setDialogTitle( NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_Title" ) ); // NOI18N
         chooser.setFileFilter( ProjectDirFilter.INSTANCE );        
