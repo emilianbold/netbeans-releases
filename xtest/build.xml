@@ -201,7 +201,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="buildxtest"
-            description="Builds XTest framework.">
+            description="Builds XTest framework." unless="distexec">
         <ant antfile="xtest.xml"/>
     </target>
     
