@@ -17,6 +17,7 @@ package org.netbeans.modules.java.j2seproject.ui.wizards;
 import java.awt.Color;
 import java.awt.Component;
 import java.io.File;
+import java.text.MessageFormat;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
@@ -24,7 +25,10 @@ import javax.swing.JList;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 
 
@@ -195,8 +199,21 @@ public final class FolderList extends javax.swing.JPanel {
     private static class Renderer extends DefaultListCellRenderer {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             File f = (File) value;
-            Component result = super.getListCellRendererComponent(list, f.getAbsolutePath(), index, isSelected, cellHasFocus);
-            if (FileOwnerQuery.getOwner(f.toURI())!=null) {
+            Project p = FileOwnerQuery.getOwner(f.toURI());
+            String message = f.getAbsolutePath();
+            if (p != null) {
+                ProjectInformation info = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+                if (info != null) {
+                    String projectName = info.getDisplayName();
+                    if (projectName != null) {
+                        message = MessageFormat.format (NbBundle.getMessage(FolderList.class,"TXT_RootOwnedByProject"), new Object[] {
+                            message,
+                            projectName});
+                    }
+                }
+            }
+            Component result = super.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
+            if (p!=null) {
                 result.setForeground (new Color(164,0,0));
             }
             return result;
