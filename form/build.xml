@@ -115,7 +115,7 @@ Microsystems, Inc. All Rights Reserved.
     <echo message="Build form module API documentation..."/>
     <mkdir dir="javadoc"/>
     <javadoc destdir="javadoc"
-             packagenames="org.netbeans.modules.form,org.netbeans.modules.form.actions,org.netbeans.modules.form.codestructure,org.netbeans.modules.form.compat2.border,org.netbeans.modules.form.editors,org.netbeans.modules.form.editors2,org.netbeans.modules.form.fakepeer,org.netbeans.modules.form.forminfo,org.netbeans.modules.form.layoutsupport,org.netbeans.modules.form.layoutsupport.delegates,org.netbeans.modules.form.palette,org.netbeans.modules.form.util"
+             packagenames="org.netbeans.modules.form,org.netbeans.modules.form.actions,org.netbeans.modules.form.codestructure,org.netbeans.modules.form.editors,org.netbeans.modules.form.editors2,org.netbeans.modules.form.fakepeer,org.netbeans.modules.form.layoutsupport,org.netbeans.modules.form.layoutsupport.delegates,org.netbeans.modules.form.palette"
              doctitle="NetBeans form module APIs"
              windowtitle="NetBeans form module APIs"
              bottom="${apis-footer}"
@@ -140,7 +140,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
         <pathelement location="tmp"/>
       </classpath>
-    </javadoc>    
+    </javadoc>
   </target>
 
 </project>
