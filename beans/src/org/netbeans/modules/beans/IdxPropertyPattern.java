@@ -148,14 +148,25 @@ public class IdxPropertyPattern extends PropertyPattern {
         String vetoSupportName = null;
 
         if ( withSupport ) {
-            if ( bound )
+
+            boolean boundSupport = bound;
+            boolean constrainedSupport = constrained;
+
+            if( boundSupport )
+                if( ( supportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  ipp.getDeclaringClass()), "PropertyChangeSupport")) != null )
+                    boundSupport = false;
+            if( constrainedSupport )
+                if( ( vetoSupportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  ipp.getDeclaringClass()), "VetoableChangeSupport")) != null )
+                    constrainedSupport = false;
+
+            if ( boundSupport )
                 supportName = BeanPatternGenerator.supportField( ipp.getDeclaringClass() );
-            if ( constrained )
+            if ( constrainedSupport )
                 vetoSupportName = BeanPatternGenerator.vetoSupportField( ipp.getDeclaringClass() );
 
-            if ( bound )
+            if ( boundSupport )
                 BeanPatternGenerator.supportListenerMethods( ipp.getDeclaringClass(), supportName );
-            if ( constrained )
+            if ( constrainedSupport )
                 BeanPatternGenerator.vetoSupportListenerMethods( ipp.getDeclaringClass(), vetoSupportName );
         }
 

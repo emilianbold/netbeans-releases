@@ -22,6 +22,7 @@ import java.util.ResourceBundle;
 import org.openide.src.ClassElement;
 import org.openide.src.FieldElement;
 import org.openide.src.MethodElement;
+import org.openide.src.MemberElement;
 import org.openide.src.MethodParameter;
 import org.openide.src.Type;
 import org.openide.src.SourceException;
@@ -149,14 +150,26 @@ public class PropertyPattern extends Pattern {
         String vetoSupportName = null;
 
         if ( withSupport ) {
-            if ( bound )
+            // i try to generate support - try to look up if not in the parent defined
+            
+            boolean boundSupport = bound;
+            boolean constrainedSupport = constrained;
+            
+            if( boundSupport )
+                if( ( supportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  pp.getDeclaringClass()), "PropertyChangeSupport")) != null )
+                    boundSupport = false;
+            if( constrainedSupport )
+                if( ( vetoSupportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  pp.getDeclaringClass()), "VetoableChangeSupport")) != null )
+                    constrainedSupport = false;
+
+            if ( boundSupport )
                 supportName = BeanPatternGenerator.supportField( pp.getDeclaringClass() );
-            if ( constrained )
+            if ( constrainedSupport )
                 vetoSupportName = BeanPatternGenerator.vetoSupportField( pp.getDeclaringClass() );
 
-            if ( bound )
+            if ( boundSupport )
                 BeanPatternGenerator.supportListenerMethods( pp.getDeclaringClass(), supportName );
-            if ( constrained )
+            if ( constrainedSupport )
                 BeanPatternGenerator.vetoSupportListenerMethods( pp.getDeclaringClass(), vetoSupportName );
         }
 
