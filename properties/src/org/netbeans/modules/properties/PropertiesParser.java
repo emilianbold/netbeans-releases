@@ -103,9 +103,9 @@ class PropertiesParser {
   */
   public void parseFile() {
     try {
-System.out.println("parsing-begin  //" + Thread.currentThread().toString());  
+//System.out.println("parsing-begin  //" + Thread.currentThread().toString());  
       PropertiesStructure ps = parseFileMain(input);
-System.out.println("parsing-end  //" + Thread.currentThread().toString());  
+//System.out.println("parsing-end  //" + Thread.currentThread().toString());  
       input.close();
       pfe.getHandler().setPropertiesStructure(ps);
     }

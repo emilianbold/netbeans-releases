@@ -266,18 +266,18 @@ public class PropertiesFileEntry extends PresentableFileEntry {
                   PropertiesStructure ps = getHandler().getStructure();
                   if (ps != null) {
                     Element.ItemElem it = ps.getItem(evt.getItemName());
-                 System.out.println("firing -all fine " + evt.getItemName() + " , " + it.getKey());
+//                 System.out.println("firing -all fine " + evt.getItemName() + " , " + it.getKey());
                     kn.fireChange(new PropertyChangeEvent(kn, Element.ItemElem.PROP_ITEM_VALUE, null, it.getValue()));
-                 System.out.println("fired " + evt.getItemName() + " , " + it.getValue());
+//                 System.out.println("fired " + evt.getItemName() + " , " + it.getValue());
                     kn.fireChange(new PropertyChangeEvent(kn, Element.ItemElem.PROP_ITEM_COMMENT, null, it.getComment()));
-                 System.out.println("fired " + evt.getItemName() + " , " + it.getComment());
-                 System.out.println("firing -all fine - done ");
+//                 System.out.println("fired " + evt.getItemName() + " , " + it.getComment());
+//                 System.out.println("firing -all fine - done ");
                   }                                                                                      
                   else
-                    System.out.println("listening to CHANGE_ITEM - propstruct is null " + evt.getItemName());
+                    /*System.out.println("listening to CHANGE_ITEM - propstruct is null " + evt.getItemName())*/;
                 }                   
                 else
-                  System.out.println("listening to CHANGE_ITEM - kyNode is null : " + evt.getItemName());
+                  /*System.out.println("listening to CHANGE_ITEM - kyNode is null : " + evt.getItemName())*/;
                 // if it's me
                 // in theory do nothing
                 //PropKeysChildren.this.refreshKey(evt.getItemName());

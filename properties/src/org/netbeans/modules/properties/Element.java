@@ -89,10 +89,12 @@ implements Serializable {
       bounds.setText(printString());
     }
     catch (BadLocationException e) {
-      System.out.println("Properties Element - silently caught BadLocationException !");
+      // PENDING
+      //System.out.println("Properties Element - silently caught BadLocationException !");
     }  
     catch (IOException e) {
-      System.out.println("Properties Element - silently caught IOException !");
+      // PENDING
+      //System.out.println("Properties Element - silently caught IOException !");
     }  
   }
 
@@ -385,6 +387,7 @@ implements Serializable {
 
 /*
  * <<Log>>
+ *  6    Gandalf   1.5         6/10/99  Petr Jiricka    
  *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  4    Gandalf   1.3         6/6/99   Petr Jiricka    

@@ -86,8 +86,8 @@ public class KeyNode extends AbstractNode {
   */
   public Element.ItemElem getItem() {
     Element.ItemElem item = struct.getItem(itemKey);
-    if (item == null)
-      System.out.println("Warning - item not found for KeyNode : " + itemKey);
+    /*if (item == null)
+      System.out.println("Warning - item not found for KeyNode : " + itemKey);*/
     return item;
   }
 
@@ -134,7 +134,6 @@ public class KeyNode extends AbstractNode {
   public void setName (String name) {
     String oldKey = itemKey;
     itemKey = name;
-//System.out.println("Setting name = " + name);
     if (!struct.renameItem(oldKey, name)) {
       itemKey = oldKey;
       NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
@@ -275,6 +274,7 @@ public class KeyNode extends AbstractNode {
 
 /*
  * <<Log>>
+ *  7    Gandalf   1.6         6/10/99  Petr Jiricka    
  *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  5    Gandalf   1.4         6/8/99   Petr Jiricka    

@@ -82,11 +82,9 @@ public class BundleStructure extends PropertyChangeSupport {
     
       public void propertyChange(PropertyChangeEvent evt) { 
         if (evt.getPropertyName().equals(PropertiesDataObject.PROP_FILES)) {
-System.out.println("updating entries"); 
           updateEntries();
           // PENDING
           firePropertyChange (evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-//System.out.println("PropertyChange in BundleStructure"); 
         }
       }
       
@@ -228,7 +226,6 @@ System.out.println("updating entries");
   * Fires a change event for this item.
   */
   void itemChanged(Element.ItemElem item) {
-//System.out.println("firing item change");
     support.fireItemChanged(item.getParent()/*PropertiesStructure*/
                                 .getParent()/*StructHandler*/
                                 .getEntry()/*PropertiesFileEntry*/
@@ -240,17 +237,14 @@ System.out.println("updating entries");
   * Fires changes for a bundle or a file according to the changes in the keys.
   */
   void oneFileChanged(StructHandler handler) {
-//System.out.println("firing file change 1");
     // PENDING - events should be finer
     // find out whether global key table has changed and fire a change according to that
     SortedArrayList oldKeyList = keyList;
     buildKeySet();                       
     if (keyList.equals(oldKeyList)) {
-//System.out.println("firing bundle change 1");
       support.fireBundleDataChanged();
     }  
     else {
-//System.out.println("firing file change " + handler.getEntry().getFile().getName());
       support.fireFileChanged(handler.getEntry().getFile().getName());
     }  
   }
@@ -260,12 +254,10 @@ System.out.println("updating entries");
   */
   void oneFileChanged(StructHandler handler, ArrayMapList itemsChanged, 
                       ArrayMapList itemsAdded, ArrayMapList itemsDeleted) {
-//System.out.println("firing file change 2");
     // PENDING - events should be finer
     // find out whether global key table has changed
     // should use a faster algorithm of building the keyset
     buildKeySet();  
-//System.out.println("firing bundle change 2");
     support.fireBundleDataChanged();
   }
 
