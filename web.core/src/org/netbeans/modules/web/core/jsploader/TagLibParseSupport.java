@@ -252,9 +252,9 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                         TagLibParseSupport.this.openedLock.wait();
                         
                         //since the EditorCookie.Observable fires the event for changed(opened) view panes 
-                        //before the document is really rendered, we have to wait for an additional 
-                        //time interval, so the thread doesn't slow down the document showing.
-                        Thread.currentThread().sleep(100);
+                        //before the document is really rendered, we need to slow down the current parsing task,
+                        //so the thread doesn't affect the document showing speed significantly.
+                        Thread.currentThread().setPriority(Thread.NORM_PRIORITY - 1);
                     }
                 }
             }catch(InterruptedException e) { }
