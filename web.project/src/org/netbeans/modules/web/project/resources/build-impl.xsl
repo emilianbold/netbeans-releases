@@ -482,13 +482,13 @@ is divided into following sections:
     ======================
     </xsl:comment>
 
-            <target name="pre-dist">
+            <target name="-pre-dist">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
             <target name="do-dist">
-                <xsl:attribute name="depends">init,compile,compile-jsps,pre-dist</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
@@ -496,13 +496,13 @@ is divided into following sections:
                 </jar>
             </target>
 
-            <target name="post-dist">
+            <target name="-post-dist">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
             <target name="dist">
-                <xsl:attribute name="depends">init,compile,pre-dist,do-dist,post-dist</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-dist,do-dist,-post-dist</xsl:attribute>
                 <xsl:attribute name="description">Build distribution (WAR).</xsl:attribute>
             </target>
 
@@ -730,13 +730,13 @@ is divided into following sections:
                 -->
             </target>
 
-            <target name="post-clean">
+            <target name="-post-clean">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
             <target name="clean">
-                <xsl:attribute name="depends">init,deps-clean,do-clean,post-clean</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-clean,do-clean,-post-clean</xsl:attribute>
                 <xsl:attribute name="description">Clean build products.</xsl:attribute>
             </target>
         </project>
