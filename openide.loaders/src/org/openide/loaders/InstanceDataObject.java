@@ -1446,10 +1446,15 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             if (fo != null) {
                 String providerPath = (String) fo.getAttribute(EA_PROVIDER_PATH);
                 if (providerPath == null) break;
-                return sfs.findResource(providerPath);
+                FileObject ret = sfs.findResource(providerPath);
+               if (ret == null) {
+                   throw new FileNotFoundException("Invalid settings.providerPath under SFS/xml/memory/ for " + obj.getClass()); // NOI18N
+               } else {
+                   return ret;
+               }
             }
         }
-        throw new FileNotFoundException("None convertor was found under SFS/xml/memory/ for " + obj); //NOI18N
+        throw new FileNotFoundException("None convertor was found under SFS/xml/memory/ for " + obj.getClass()); //NOI18N
     }
 
     private void attachToConvertor(Object obj) throws IOException {
