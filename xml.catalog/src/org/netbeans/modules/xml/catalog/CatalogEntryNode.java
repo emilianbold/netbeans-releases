@@ -28,17 +28,15 @@ import org.openide.*;
 import org.netbeans.modules.xml.catalog.lib.*;
 
 /**
- * Node representing single catalog.
+ * Node representing single catalog entry. It can be viewed.
  *
  * @author  Petr Kuzel
  * @version 1.0
  */
 final class CatalogEntryNode extends BeanNode {
 
-    // following cached view is valid 
-    // if cached URL is the same as one a new view is requested for
-    private String cachedURL;
-    private ViewCookie view;
+    // cached ViewCookie instance
+    private transient ViewCookie view;
     
     /** Creates new CatalogNode */
     public CatalogEntryNode(CatalogEntry entry) throws IntrospectionException {        
@@ -64,16 +62,11 @@ final class CatalogEntryNode extends BeanNode {
             try {
                 String sys = getSystemID();
                 if (sys == null) return null;
-                
-                // do not attach the cookie if can not open stream
-                // ??? it may block for a while
-                URL url = new URL(sys);
-                InputStream in = url.openStream();
-                
-                if (view == null || sys.equals(cachedURL) == false) {
-                    MyEnv env = new MyEnv(in);
+                                
+                if (view == null) {                    
+                    URL url = new URL(sys);                    
+                    ViewEnv env = new ViewEnv(url);
                     view = new ViewCookieImpl(env);
-                    cachedURL = sys;
                 }
                 return view;                
                 
@@ -96,6 +89,15 @@ final class CatalogEntryNode extends BeanNode {
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CatalogEntryNode.class);
     }
+
+    private String getPublicID() {
+        return ((CatalogEntry)getBean()).getPublicID();
+    }
+    
+    private String getSystemID() {
+        return ((CatalogEntry)getBean()).getSystemID();
+    }
+
     
     /**
      * OpenSupport that is able to open an input stream.
@@ -136,26 +138,19 @@ final class CatalogEntryNode extends BeanNode {
                 
     }    
     
-    private String getPublicID() {
-        return ((CatalogEntry)getBean()).getPublicID();
-    }
-    
-    private String getSystemID() {
-        return ((CatalogEntry)getBean()).getSystemID();
-    }
     
     // ~~~~~~~~~~~~~~~~~ environment ~~~~~~~~~~~~~~~~~~~
 
     /**
      * text/xml stream environment.
      */
-    private class MyEnv extends StreamEnvironment {
+    private class ViewEnv extends URLEnvironment {
 
         /** Serial Version UID */
         private static final long serialVersionUID =-5031004511063404433L;
         
-        MyEnv (InputStream in) {
-            super(in);
+        ViewEnv (URL url) {
+            super(url);
         }
 
         public org.openide.windows.CloneableOpenSupport findCloneableOpenSupport() {

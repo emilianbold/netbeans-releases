@@ -13,35 +13,34 @@
 package org.netbeans.modules.xml.catalog.lib;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
 
 import org.openide.text.*;
 
 /**
- * Defines numb InputStream environment but finding CloneableOpenSupport (outerclass).
+ * Defines numb read-only URL environment but finding CloneableOpenSupport (outerclass).
  * It hardcodes <code>text/xml</code> MIME type.
  *
  * @author  Petr Kuzel
  * @version 
- * @deprecated in favour of URLEnvironment. It can reopen the stream.
  */
-public abstract class StreamEnvironment implements CloneableEditorSupport.Env {
+public abstract class URLEnvironment implements CloneableEditorSupport.Env {
 
     /** Serial Version UID */
-    private static final long serialVersionUID =9098951539895727443L;
+    private static final long serialVersionUID =9098933339895727443L;
     
-    private InputStream peer;
+    private final URL peer;
     
-    private final Date modified;
-
-    
+    private transient Date modified;
+        
     /** Creates new StreamEnvironment */
-    public StreamEnvironment(InputStream in) {
-        if (in == null) throw new NullPointerException();
-        peer = in;
+    public URLEnvironment(URL url) {
+        if (url == null) throw new NullPointerException();
+        peer = url;
         modified = new Date();
-    }        
-    
+    }
+        
     public void markModified() throws java.io.IOException {
         throw new IOException("r/o"); // NOI18N
     }    
@@ -77,9 +76,12 @@ public abstract class StreamEnvironment implements CloneableEditorSupport.Env {
     public java.lang.String getMimeType() {
         return "text/xml"; // NOI18N
     }
-    
+
+    /**
+     * Always return fresh stream.
+     */
     public java.io.InputStream inputStream() throws java.io.IOException {
-        return peer;
+        return peer.openStream();
     }
     
     public void addVetoableChangeListener(java.beans.VetoableChangeListener vetoableChangeListener) {
