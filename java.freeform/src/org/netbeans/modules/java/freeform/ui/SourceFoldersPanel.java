@@ -15,9 +15,24 @@ package org.netbeans.modules.java.freeform.ui;
 
 import java.awt.Component;
 import java.awt.FontMetrics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.io.File;
+import java.text.MessageFormat;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -26,6 +41,9 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
 import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
@@ -35,6 +53,8 @@ import org.netbeans.modules.java.freeform.JavaProjectNature;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -591,14 +611,30 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         chooser.setMultiSelectionEnabled(true);
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File files[] = chooser.getSelectedFiles();
-            for (int i=0; i<files.length; i++) {
-                File sourceLoc = FileUtil.normalizeFile(files[i]);
-                JavaProjectGenerator.SourceFolder sf = new JavaProjectGenerator.SourceFolder();
-                sf.location = Util.relativizeLocation(model.getBaseFolder(), model.getNBProjectFolder(), sourceLoc);
-                sf.type = ProjectModel.TYPE_JAVA;
-                sf.style = JavaProjectNature.STYLE_PACKAGES;
-                sf.label = getDefaultLabel(sf.location);
-                model.addSourceFolder(sf, isTests);
+            Set/*<File>*/ invalidRoots = new HashSet ();
+nextRoot:   for (int i=0; i<files.length; i++) {
+                File sourceLoc = FileUtil.normalizeFile(files[i]);                
+                String location = Util.relativizeLocation(model.getBaseFolder(), model.getNBProjectFolder(), sourceLoc);
+                Project p, thisProject = isWizard ? null : FileOwnerQuery.getOwner(model.getNBProjectFolder().toURI());
+                if ((p=FileOwnerQuery.getOwner(sourceLoc.toURI()))!=null && (thisProject == null || !thisProject.equals(p))) {
+                    invalidRoots.add (sourceLoc);
+                }
+                else {
+                    List/*JavaProjectGenerator.SourceFolder*/ sourceFolders = model.getSourceFolders();
+                    for (Iterator it = sourceFolders.iterator(); it.hasNext();) {
+                        JavaProjectGenerator.SourceFolder sf = (JavaProjectGenerator.SourceFolder) it.next();
+                        if (location.equals(sf.location)) {
+                            invalidRoots.add (sourceLoc);
+                            continue nextRoot;
+                        }                        
+                    }                    
+                    JavaProjectGenerator.SourceFolder sf = new JavaProjectGenerator.SourceFolder();
+                    sf.location = location;
+                    sf.type = ProjectModel.TYPE_JAVA;
+                    sf.style = JavaProjectNature.STYLE_PACKAGES;
+                    sf.label = getDefaultLabel(sf.location);
+                    model.addSourceFolder(sf, isTests);
+                }
             }
             if (isTests) {
                 testFoldersModel.fireTableDataChanged();
@@ -609,8 +645,36 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
                 listener.stateChanged(null);
             }            
             updateButtons();
+            if (invalidRoots.size()>0) {
+                showInvalidRootsWarning (invalidRoots);
+            }
         }
-    }                                         
+    }                                                
+    
+    private void showInvalidRootsWarning (Set/*<File>*/ invalidRoots) {
+        JButton closeOption = new JButton (NbBundle.getMessage(SourceFoldersPanel.class,"CTL_SourceFolderPanel_Close"));
+        closeOption.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(SourceFoldersPanel.class,"AD_SourceFolderPanel_Close"));        
+        JPanel warning = new WarningDlg (invalidRoots);                
+        String message = NbBundle.getMessage(SourceFoldersPanel.class,"MSG_InvalidRoot");
+        JOptionPane optionPane = new JOptionPane (new Object[] {message, warning},
+            JOptionPane.WARNING_MESSAGE,
+            0, 
+            null, 
+            new Object[0], 
+            null);
+        optionPane.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(SourceFoldersPanel.class,"AD_InvalidRootDlg"));
+        DialogDescriptor dd = new DialogDescriptor (optionPane,
+            NbBundle.getMessage(SourceFoldersPanel.class,"TITLE_InvalidRoot"),
+            true,
+            new Object[] {
+                closeOption,
+            },
+            closeOption,
+            DialogDescriptor.DEFAULT_ALIGN,
+            null,
+            null);                
+        DialogDisplayer.getDefault().notify(dd);
+    }
     
     private String getDefaultLabel(String location) {
         // #47386 - remove "${project.dir}/" from label
@@ -837,6 +901,86 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
             return c;
         }
         
+    }
+    
+    private static class WarningDlg extends JPanel {
+
+        public WarningDlg (Set invalidRoots) {            
+            this.initGui (invalidRoots);
+        }
+
+        private void initGui (Set invalidRoots) {
+            setLayout( new GridBagLayout ());                        
+            JLabel label = new JLabel ();
+            label.setText (NbBundle.getMessage(SourceFoldersPanel.class,"LBL_InvalidRoot"));
+            label.setDisplayedMnemonic(NbBundle.getMessage(SourceFoldersPanel.class,"MNE_InvalidRoot").charAt(0));            
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridx = GridBagConstraints.RELATIVE;
+            c.gridy = GridBagConstraints.RELATIVE;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.anchor = GridBagConstraints.NORTHWEST;
+            c.weightx = 1.0;
+            c.insets = new Insets (12,0,6,0);
+            ((GridBagLayout)this.getLayout()).setConstraints(label,c);
+            this.add (label);            
+            JList roots = new JList (invalidRoots.toArray());
+            roots.setCellRenderer (new InvalidRootRenderer(true));
+            JScrollPane p = new JScrollPane (roots);
+            c = new GridBagConstraints();
+            c.gridx = GridBagConstraints.RELATIVE;
+            c.gridy = GridBagConstraints.RELATIVE;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.fill = GridBagConstraints.BOTH;
+            c.anchor = GridBagConstraints.NORTHWEST;
+            c.weightx = c.weighty = 1.0;
+            c.insets = new Insets (0,0,12,0);
+            ((GridBagLayout)this.getLayout()).setConstraints(p,c);
+            this.add (p);
+            label.setLabelFor(roots);
+            roots.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(SourceFoldersPanel.class,"AD_InvalidRoot"));
+            JLabel label2 = new JLabel ();
+            label2.setText (NbBundle.getMessage(SourceFoldersPanel.class,"MSG_InvalidRoot2"));
+            c = new GridBagConstraints();
+            c.gridx = GridBagConstraints.RELATIVE;
+            c.gridy = GridBagConstraints.RELATIVE;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.anchor = GridBagConstraints.NORTHWEST;
+            c.weightx = 1.0;
+            c.insets = new Insets (0,0,0,0);
+            ((GridBagLayout)this.getLayout()).setConstraints(label2,c);
+            this.add (label2);            
+        }
+
+        private static class InvalidRootRenderer extends DefaultListCellRenderer {
+
+            private boolean projectConflict;
+
+            public InvalidRootRenderer (boolean projectConflict) {
+                this.projectConflict = projectConflict;
+            }
+
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                File f = (File) value;
+                String message = f.getAbsolutePath();
+                if (projectConflict) {
+                    Project p = FileOwnerQuery.getOwner(f.toURI());
+                    if (p!=null) {
+                        ProjectInformation pi = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+                        if (pi != null) {
+                            String projectName = pi.getDisplayName();
+                            if (projectName != null) {
+                                message = MessageFormat.format (NbBundle.getMessage(SourceFoldersPanel.class,"TXT_RootOwnedByProject"), new Object[] {
+                                    message,
+                                    projectName});
+                            }
+                        }
+                    }
+                }
+                return super.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);
+            }
+        }
     }
     
 }
