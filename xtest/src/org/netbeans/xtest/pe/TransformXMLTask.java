@@ -47,6 +47,7 @@ public class TransformXMLTask extends Task{
     public final static String SYSTEMINFO_XSL = "systeminfo.xsl";
     public final static String FRAMESET_XSL = "frameset.xsl";
     public final static String MAIN_NAVIGATOR_XSL = "main-navigator.xsl";
+    public final static String PERFORMANCE_XSL = "performance.xsl";
     
     // debugging flag - should be set to false :-)
     private static final boolean DEBUG = false;
@@ -255,6 +256,7 @@ public class TransformXMLTask extends Task{
                 transformFailuresReport(inputDir,outputDir);
                 transformFrameSet(inputDir,outputDir);
                 transformMainNavigator(inputDir,outputDir);
+                transformPerformance(inputDir,outputDir);
         }
     }
     
@@ -326,7 +328,30 @@ public class TransformXMLTask extends Task{
            // we want other suites to be transformed as well in
            // the case of any problem - so catch the exception
            // print out some info and get back to work
-           System.out.println("TransformXMLTask:transformUnitSuites: cannot transform this suite:"+reportInputFile);
+           System.out.println("TransformXMLTask:transformReport: cannot transform this report:"+reportInputFile);
+       }       
+    }
+    
+    // this will create a page with performance data   
+    public static void transformPerformance(File inputRoot, File outputRoot) throws TransformerException, IOException {
+       debugInfo("transformPerformance(): inputRoot="+inputRoot+" outputRoot="+outputRoot); 
+       
+       File reportInputDir = ResultsUtils.getXMLResultDir(inputRoot);
+       File reportInputFile = new File(reportInputDir,PEConstants.TESTREPORT_PERFORMANCE_XML_FILE);
+       
+       File reportOutputDir = ResultsUtils.getHTMLResultDir(outputRoot);
+       File reportOutputFile = new File(reportOutputDir,PEConstants.TESTREPORT_PERFORMANCE_HTML_FILE);       
+              
+       Transformer transformer = getTransformer(getXSLFile(PERFORMANCE_XSL));      
+       try {
+           if (reportInputFile.exists()) {
+                transform(reportInputFile,reportOutputFile,transformer);
+           }
+       }  catch (TransformerException te) {
+           // we want other suites to be transformed as well in
+           // the case of any problem - so catch the exception
+           // print out some info and get back to work
+           System.out.println("TransformXMLTask:transformPerformance: cannot transform performance:"+reportInputFile);
        }       
     }
     

@@ -89,7 +89,7 @@ Microsystems, Inc. All Rights Reserved.
         </antcall>
         
         <!-- regenerate and transform results. -->
-        <regenerateXML inputDir="${xtest.results}"/>
+        <regenerateXML inputDir="${xtest.results}" serverUsage="${_xtest.server.usage}"/>
 	<transformXML inputDir="${xtest.results}"
                       outputDir="${xtest.results}"/>              
 

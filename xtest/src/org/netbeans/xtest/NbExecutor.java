@@ -149,7 +149,7 @@ public class NbExecutor extends Task {
                 while (enum.hasMoreElements()) {
                     String name = (String) enum.nextElement();
                     String value = (String) ps.get(name);
-                    if (name.startsWith("xtest")) {
+                    if (name.startsWith("xtest") || name.startsWith("_xtest")) {
                         callee.createArg().setValue("-D" + name + "=" + value);
                     }
                 }

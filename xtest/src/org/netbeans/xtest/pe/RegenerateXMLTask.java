@@ -67,6 +67,11 @@ public class RegenerateXMLTask extends Task{
         this.inputDir = inputDir;
     }
     
+    private boolean serverUsage = false;
+
+    public void setServerUsage(boolean serverUsage) {
+        this.serverUsage = serverUsage;
+    }
     
     public TestBag getTestBag() throws Exception {
         return ResultsUtils.getTestBag(new File(inputDir,PEConstants.TESTBAG_XML_FILE));
@@ -117,10 +122,10 @@ public class RegenerateXMLTask extends Task{
                 case ResultsUtils.TESTBAG_DIR:
                 case ResultsUtils.TESTRUN_DIR:
                 case ResultsUtils.TESTREPORT_DIR:
-                    regenerateXMLs(inputDir,false,false);
+                    regenerateXMLs(inputDir,false,false,serverUsage);
                     break;
                 case ResultsUtils.UNKNOWN_DIR:
-                    regenerateTestReport(inputDir,false,false);
+                    regenerateTestReport(inputDir,false,false,serverUsage);
                     break;
                 default:
                     log("cannot regenerate (not a suitable input dir)");
@@ -132,20 +137,23 @@ public class RegenerateXMLTask extends Task{
         }
     }
     
-   
     public static void regenerateXMLs(File rootDir, boolean fullRegenerate, boolean produceBigReportOnly) throws Exception {
+        regenerateXMLs(rootDir, fullRegenerate, produceBigReportOnly, false);
+    }
+    
+    public static void regenerateXMLs(File rootDir, boolean fullRegenerate, boolean produceBigReportOnly, boolean serverUsage) throws Exception {
          debugInfo("regenerateXMLs(rootDir="+rootDir+", fullRegenerate="+fullRegenerate+
                 ", produceBigReportOnly="+produceBigReportOnly+")");
          int rootDirType = ResultsUtils.resolveResultsDir(rootDir);
             switch (rootDirType) {
                 case ResultsUtils.TESTBAG_DIR:
-                    regenerateTestBag(rootDir,fullRegenerate,produceBigReportOnly);
+                    regenerateTestBag(rootDir,fullRegenerate,produceBigReportOnly,serverUsage);
                     break;
                 case ResultsUtils.TESTRUN_DIR:
-                    regenerateTestRun(rootDir,fullRegenerate,produceBigReportOnly);
+                    regenerateTestRun(rootDir,fullRegenerate,produceBigReportOnly,serverUsage);
                     break;
                 case ResultsUtils.TESTREPORT_DIR:
-                    regenerateTestReport(rootDir,fullRegenerate,produceBigReportOnly);
+                    regenerateTestReport(rootDir,fullRegenerate,produceBigReportOnly,serverUsage);
                     break;
                 default:
                     throw new IOException("regenerateXMLs: specified directory is not recognized: "+rootDir);                    
@@ -153,15 +161,19 @@ public class RegenerateXMLTask extends Task{
             
     }
     
-    
-    
     // regenerates testbag.xml if out of sync with stored suites in suites subdir
     public static TestBag regenerateTestBag(File testBagRoot, boolean fullRegenerate, boolean produceBigReportOnly) throws Exception {
+        return regenerateTestBag(testBagRoot, fullRegenerate, produceBigReportOnly, false);
+    }
+    
+    // regenerates testbag.xml if out of sync with stored suites in suites subdir
+    public static TestBag regenerateTestBag(File testBagRoot, boolean fullRegenerate, boolean produceBigReportOnly, boolean serverUsage) throws Exception {
         debugInfo("regenerateTestBag(testBagRoot="+testBagRoot+", fullRegenerate="+fullRegenerate+
             ", produceBigReportOnly="+produceBigReportOnly+")");
         File testBagResultDir = new File(testBagRoot,PEConstants.XMLRESULTS_DIR);
         File testBagFile = new File(testBagResultDir,PEConstants.TESTBAG_XML_FILE);
         File testBagFailuresFile = new File(testBagResultDir,PEConstants.TESTBAG_FAILURES_XML_FILE);
+        File testBagPerformanceFile = new File(testBagResultDir,PEConstants.TESTBAG_PERFORMANCE_XML_FILE);
         TestBag testBag = (TestBag)ResultsUtils.getTestBag(testBagFile);
         debugInfo("regenerateTestBag(): got testBag from testbag.xml");
         // now scan the directory and get a list of test suites available in suite directory
@@ -204,6 +216,7 @@ public class RegenerateXMLTask extends Task{
         File suitesDir = new File(testBagResultDir,PEConstants.TESTSUITES_SUBDIR);
         UnitTestSuite[] testSuites = ResultsUtils.getUnitTestSuites(suitesDir); 
         UnitTestSuite[] failingTestSuites = new UnitTestSuite[testSuites.length];
+        UnitTestSuite[] performanceTestSuites = new UnitTestSuite[testSuites.length];
         // clean old values
         testBag.xmlat_testsPass = 0;
         testBag.xmlat_testsFail = 0;
@@ -226,6 +239,7 @@ public class RegenerateXMLTask extends Task{
             // if we generate also failures
             if (!produceBigReportOnly) {                
                 failingTestSuites[i] = testSuites[i];
+                performanceTestSuites[i] = testSuites[i];
             }
         }
 
@@ -305,13 +319,36 @@ public class RegenerateXMLTask extends Task{
             testBag.xmlel_UnitTestSuite = failingTestSuites;
             SerializeDOM.serializeToFile(testBag.toDocument(),testBagFailuresFile);
             
-            debugInfo("regenerateTestBag(): serializing new testbag");
             // delete the rest of testcases
             for (int i=0;i<testSuites.length;i++) {
                 testSuites[i].xmlel_UnitTestCase = null;
             }
+            
+            //
+            // now serialize performance results
+            if (!serverUsage) {
+                // delete all testsuites without performance data
+                boolean perf_data_present = false;
+                for (int i=0;i<performanceTestSuites.length;i++) {
+                    if (performanceTestSuites[i].xmlel_Data == null ||
+                       (performanceTestSuites[i].xmlel_Data.length == 1 && performanceTestSuites[i].xmlel_Data[0].xmlel_PerformanceData == null))
+                        performanceTestSuites[i] = null;
+                    else 
+                        perf_data_present = true;
+                }                    
+                if (perf_data_present) {
+                    testBag.xmlel_UnitTestSuite = performanceTestSuites;
+                    SerializeDOM.serializeToFile(testBag.toDocument(),testBagPerformanceFile);
+                } else {
+                    testBagPerformanceFile.delete();   
+                }
+            }
+
+            debugInfo("regenerateTestBag(): serializing new testbag");
+            
             testBag.xmlel_UnitTestSuite = testSuites;
             SerializeDOM.serializeToFile(testBag.toDocument(),testBagFile);
+            
         }
         
         testBag.xmlel_UnitTestSuite = testSuites;
@@ -319,10 +356,13 @@ public class RegenerateXMLTask extends Task{
     }     
     
     
-    
-    
     // regenerate testrun
     public static TestRun regenerateTestRun(File testRunRoot, boolean fullRegenerate, boolean produceBigReportOnly) throws Exception {
+        return regenerateTestRun(testRunRoot, fullRegenerate, produceBigReportOnly, false);
+    }
+    
+    // regenerate testrun
+    public static TestRun regenerateTestRun(File testRunRoot, boolean fullRegenerate, boolean produceBigReportOnly, boolean serverUsage) throws Exception {
         debugInfo("regenerateTestRun(testRunRoot="+testRunRoot+", fullRegenerate="+fullRegenerate+
             ", produceBigReportOnly="+produceBigReportOnly+")");
         File testRunResultsDir = new File(testRunRoot,PEConstants.XMLRESULTS_DIR);
@@ -333,6 +373,7 @@ public class RegenerateXMLTask extends Task{
         }
         File testRunFile = new File(testRunResultsDir,PEConstants.TESTRUN_XML_FILE);
         File testRunFailuresFile = new File(testRunResultsDir,PEConstants.TESTRUN_FAILURES_XML_FILE);
+        File testRunPerformanceFile = new File(testRunResultsDir,PEConstants.TESTRUN_PERFORMANCE_XML_FILE);
         TestRun testRun = (TestRun)ResultsUtils.getTestRun(testRunFile);
         debugInfo("regenerateTestRun(): regenerating testrun.xml");
         File[] testBagsDirs = ResultsUtils.listTestBags(testRunRoot);
@@ -340,7 +381,7 @@ public class RegenerateXMLTask extends Task{
         // now try to regenerate testbags first, then regenerate testRun;       
         debugInfo("regenerateTestRun(): regenerating child TestBags");
         for (int i=0;i<testBagsDirs.length;i++) {
-            testBags[i] = regenerateTestBag(testBagsDirs[i],fullRegenerate,produceBigReportOnly);            
+            testBags[i] = regenerateTestBag(testBagsDirs[i],fullRegenerate,produceBigReportOnly, serverUsage);            
             debugInfo("regenerateTestRun(): succesfully regenerated testBag "+testBagsDirs[i].getName());
         }
         // now regenerate our stuff
@@ -393,6 +434,25 @@ public class RegenerateXMLTask extends Task{
             debugInfo("regenerateTestRun(): serializing new testrun with failures");
             testRun.xmlel_TestBag = testBagsWithFailures;
             SerializeDOM.serializeToFile(testRun.toDocument(),testRunFailuresFile);             
+            
+            if (!serverUsage) {
+                // serialize performance results
+                TestBag[] testBagsWithPerformance = new TestBag[testBagsDirs.length];
+                debugInfo("regenerateTestRun(): loading testbags with performance");
+                boolean exist_perf = false;
+                for (int i=0;i<testRun.xmlel_TestBag.length;i++) {
+                    File testbagfile = new File(testBagsDirs[i],PEConstants.XMLRESULTS_DIR+File.separator+PEConstants.TESTBAG_PERFORMANCE_XML_FILE);
+                    if (testbagfile.exists()) {
+                        testBagsWithPerformance[i] = ResultsUtils.getTestBag(testbagfile);
+                        exist_perf = true;
+                    }
+                }
+                if (exist_perf) {
+                    debugInfo("regenerateTestRun(): serializing new testrun with performance");
+                    testRun.xmlel_TestBag = testBagsWithPerformance;
+                    SerializeDOM.serializeToFile(testRun.toDocument(),testRunPerformanceFile);      
+                }
+            }
                         
             // here delete all suites - no longer needed
             for (int i=0; i<testBags.length;i++) {
@@ -406,10 +466,13 @@ public class RegenerateXMLTask extends Task{
     }
     
     
-    
-    
     // regenerate testreport
     public static XTestResultsReport regenerateTestReport(File testReportRoot, boolean fullRegenerate, boolean produceBigReportOnly) throws Exception {
+        return regenerateTestReport(testReportRoot, fullRegenerate, produceBigReportOnly, false);
+    }
+    
+    // regenerate testreport
+    public static XTestResultsReport regenerateTestReport(File testReportRoot, boolean fullRegenerate, boolean produceBigReportOnly, boolean serverUsage) throws Exception {
         debugInfo("regenerateTestReport(testReportRoot="+testReportRoot+", fullRegenerate="+fullRegenerate+
             ", produceBigReportOnly="+produceBigReportOnly+")");
         File testReportResultsDir = new File(testReportRoot,PEConstants.XMLRESULTS_DIR);
@@ -429,7 +492,7 @@ public class RegenerateXMLTask extends Task{
         // now try to regenerate testbags first, then regenerate testRun;       
         debugInfo("regenerateTestReport(): regenerating child TestRuns");
         for (int i=0;i<testRunsDirs.length;i++) {
-            testRuns[i] = regenerateTestRun(testRunsDirs[i],fullRegenerate,produceBigReportOnly);
+            testRuns[i] = regenerateTestRun(testRunsDirs[i],fullRegenerate,produceBigReportOnly, serverUsage);
             debugInfo("regenerateTestReport(): succesfully regenerated testRun "+testRunsDirs[i].getName());
         }
         // now regenerate our stuff
@@ -498,6 +561,27 @@ public class RegenerateXMLTask extends Task{
             SystemInfo[] si = testReport.xmlel_SystemInfo;
             testReport.xmlel_SystemInfo = null;
             SerializeDOM.serializeToFile(testReport.toDocument(),testReportFailuresFile);          
+            
+            if (!serverUsage) {
+                // serialize performance data
+                File testReportPerformanceFile = new File(testReportResultsDir,PEConstants.TESTREPORT_PERFORMANCE_XML_FILE);
+                TestRun[] testRunsWithPerformance = new TestRun[testRunsDirs.length];
+                debugInfo("regenerateTestReport(): loading testruns with performance");
+                boolean empty_report = true;
+                for (int i=0;i<testReport.xmlel_TestRun.length;i++) {
+                    testRunsWithPerformance[i] = ResultsUtils.getTestRun(new File(testRunsDirs[i],PEConstants.XMLRESULTS_DIR+File.separator+PEConstants.TESTRUN_PERFORMANCE_XML_FILE));
+                    if (testRunsWithPerformance[i].xmlel_TestBag == null || testRunsWithPerformance[i].xmlel_TestBag.length == 0)
+                        testRunsWithPerformance[i] = null;
+                    if (testRunsWithPerformance[i] != null) 
+                        empty_report = false;
+                }
+                if (!empty_report) {
+                    debugInfo("regenerateTestReport(): serializing new testrun with performance");
+                    testReport.xmlel_TestRun = testRunsWithPerformance;
+                    SerializeDOM.serializeToFile(testReport.toDocument(),testReportPerformanceFile);          
+                }
+            }
+            
             testReport.xmlel_SystemInfo = si;
         }
         

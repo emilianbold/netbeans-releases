@@ -29,12 +29,16 @@ public class PEConstants {
     public static final String TESTBAG_XML_FILE="testbag.xml";
     public static final String TESTBAG_HTML_FILE="testbag.html";
     public static final String TESTBAG_FAILURES_XML_FILE="testbag-failures.xml";
+    public static final String TESTBAG_PERFORMANCE_XML_FILE="testbag-performance.xml";
     public static final String TESTBAG_DIR_PREFIX="testbag_";
     public static final String TESTRUN_XML_FILE="testrun.xml";
     public static final String TESTRUN_FAILURES_XML_FILE="testrun-failures.xml";
+    public static final String TESTRUN_PERFORMANCE_XML_FILE="testrun-performance.xml";
     public static final String TESTRUN_DIR_PREFIX="testrun_";
     public static final String TESTREPORT_FAILURES_XML_FILE="testreport-failures.xml";
     public static final String TESTREPORT_FAILURES_HTML_FILE = "testreport-failures.html";
+    public static final String TESTREPORT_PERFORMANCE_XML_FILE="testreport-performance.xml";
+    public static final String TESTREPORT_PERFORMANCE_HTML_FILE = "testreport-performance.html";
     public static final String TESTREPORT_XML_FILE="testreport.xml";
     public static final String TESTREPORT_HTML_FILE="testreport.html";
     public static final String TESTREPORT_TXT_FILE="testreport.txt";
