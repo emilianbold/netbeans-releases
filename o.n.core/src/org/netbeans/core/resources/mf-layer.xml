@@ -453,26 +453,12 @@ Microsystems, Inc. All Rights Reserved.
       <folder name="Mount">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
-          <file name="org-netbeans-core-ExLocalFileSystem.settings">
-<![CDATA[
-<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-<settings version="1.0">
-    <instanceof class="org.openide.filesystems.FileSystem"/>
-    <instance class="org.netbeans.core.ExLocalFileSystem"/>
-</settings>
-]]>
+          <file name="org-netbeans-core-ExLocalFileSystem.settings" url="ExLocalFileSystem.settings">
               <attr name="template" boolvalue="true" />
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
               <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.MountNode.createIterator" />
           </file>
-          <file name="org-netbeans-core-ExJarFileSystem.settings">
-<![CDATA[
-<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-<settings version="1.0">
-    <instanceof class="org.openide.filesystems.FileSystem"/>
-    <instance class="org.netbeans.core.ExJarFileSystem"/>
-</settings>
-]]>
+          <file name="org-netbeans-core-ExJarFileSystem.settings" url="ExJarFileSystem.settings">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
               <attr name="template" boolvalue="true" />
               <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.MountNode.createIterator" />
@@ -574,106 +560,12 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
     </file>
 
-    <file name="IDESettings.settings">
-        <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN"
-    "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-<settings version="1.0">
-    <module name="org.netbeans.core/1" spec="1.0"/>
-    <instanceof class="org.openide.util.SharedClassObject"/>
-    <instanceof class="org.openide.options.SystemOption"/>
-    <instanceof class="org.netbeans.core.IDESettings"/>
-    <instanceof class="java.lang.Object"/>
-    <instanceof class="java.io.Serializable"/>
-    <instanceof class="java.io.Externalizable"/>
-    <instance class="org.netbeans.core.IDESettings"/>
-</settings>
-        ]]>
-    </file>
-
-    <file name="OutputSettings.settings">
-        <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN"
-    "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-<settings version="1.0">
-    <module name="org.netbeans.core/1" spec="1.0"/>
-    <instanceof class="org.openide.util.SharedClassObject"/>
-    <instanceof class="org.openide.options.SystemOption"/>
-    <instanceof class="org.netbeans.core.output.OutputSettings"/>
-    <instanceof class="java.lang.Object"/>
-    <instanceof class="java.io.Serializable"/>
-    <instanceof class="java.io.Externalizable"/>
-    <instance class="org.netbeans.core.output.OutputSettings"/>
-</settings>
-        ]]>
-    </file>
-
-    <file name="ExecutionSettings.settings">
-        <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN"
-    "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-<settings version="1.0">
-    <module name="org.netbeans.core/1" spec="1.0"/>
-    <instanceof class="org.openide.util.SharedClassObject"/>
-    <instanceof class="org.openide.options.SystemOption"/>
-    <instanceof class="org.netbeans.core.execution.ExecutionSettings"/>
-    <instanceof class="java.lang.Object"/>
-    <instanceof class="java.io.Serializable"/>
-    <instanceof class="java.io.Externalizable"/>
-    <instance class="org.netbeans.core.execution.ExecutionSettings"/>
-</settings>
-        ]]>
-    </file>
-
-    <file name="PropertySheetSettings.settings">
-        <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN"
-    "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-<settings version="1.0">
-    <instanceof class="org.openide.util.SharedClassObject"/>
-    <instanceof class="org.openide.options.SystemOption"/>
-    <instanceof class="org.openide.explorer.propertysheet.PropertySheetSettings"/>
-    <instanceof class="java.lang.Object"/>
-    <instanceof class="java.io.Serializable"/>
-    <instanceof class="java.io.Externalizable"/>
-    <instance class="org.openide.explorer.propertysheet.PropertySheetSettings"/>
-</settings>
-        ]]>
-    </file>
-
-    <file name="SourceOptions.settings">
-        <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN"
-    "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-<settings version="1.0">
-    <instanceof class="org.openide.util.SharedClassObject"/>
-    <instanceof class="org.openide.options.SystemOption"/>
-    <instanceof class="org.openide.src.nodes.SourceOptions"/>
-    <instanceof class="java.lang.Object"/>
-    <instanceof class="java.io.Serializable"/>
-    <instanceof class="java.io.Externalizable"/>
-    <instance class="org.openide.src.nodes.SourceOptions"/>
-</settings>
-        ]]>
-    </file>
-
-    <file name="PrintSettings.settings">
-        <![CDATA[<?xml version="1.0"?>
-<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN"
-    "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
-<settings version="1.0">
-    <instanceof class="org.openide.util.SharedClassObject"/>
-    <instanceof class="org.openide.options.SystemOption"/>
-    <instanceof class="org.openide.text.PrintSettings"/>
-    <instanceof class="java.lang.Object"/>
-    <instanceof class="java.beans.beancontext.BeanContextProxy"/>
-    <instanceof class="org.openide.options.ContextSystemOption"/>
-    <instanceof class="java.io.Serializable"/>
-    <instanceof class="java.io.Externalizable"/>
-    <instance class="org.openide.text.PrintSettings"/>
-</settings>
-        ]]>
-    </file>
+    <file name="IDESettings.settings" url="IDESettings.settings"/>
+    <file name="OutputSettings.settings" url="OutputSettings.settings"/>
+    <file name="ExecutionSettings.settings" url="ExecutionSettings.settings"/>
+    <file name="PropertySheetSettings.settings" url="PropertySheetSettings.settings"/>
+    <file name="SourceOptions.settings" url="SourceOptions.settings"/>
+    <file name="PrintSettings.settings" url="PrintSettings.settings"/>
 
   </folder>
   
