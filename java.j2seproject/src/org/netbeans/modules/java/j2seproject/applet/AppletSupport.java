@@ -18,6 +18,7 @@ import java.net.*;
 import java.util.*;
 
 import org.openide.*;
+import org.openide.modules.SpecificationVersion;
 import org.openide.filesystems.*;
 import org.openide.util.*;
 
@@ -38,14 +39,13 @@ import org.openide.src.*;
 */
 public class AppletSupport {
 
+    // JDK issue #6193279: Appletviewer does not accept encoded URLs
+    private static final SpecificationVersion JDK_15 = new SpecificationVersion("1.5"); // NOI18N
+
     /** constant for html extension */
     private static final String HTML_EXT = "html"; // NOI18N
     /** constant for class extension */
     private static final String CLASS_EXT = "class"; // NOI18N
-
-    // JDK issue #6193279: Appletviewer does not accept encoded URLs
-    //Package private and non final to make it testable
-    /*private*/ static /*final*/ boolean workAround6193279 = System.getProperty("java.version").startsWith("1.5");
 
     private AppletSupport() {}
 
@@ -118,7 +118,7 @@ public class AppletSupport {
     /**
     * @return URL of the html file with the same name as sibling
     */
-    public static URL generateHtmlFileURL(FileObject appletFile, FileObject buildDir, FileObject classesDir) throws FileStateInvalidException {
+    public static URL generateHtmlFileURL(FileObject appletFile, FileObject buildDir, FileObject classesDir, String activePlatform) throws FileStateInvalidException {
         FileObject html = null;
         IOException ex = null;
         if ((appletFile == null) || (buildDir == null) || (classesDir == null)) {
@@ -133,6 +133,21 @@ public class AppletSupport {
         try {
             if (ex == null) {
                 // JDK issue #6193279: Appletviewer does not accept encoded URLs
+                JavaPlatformManager pm = JavaPlatformManager.getDefault();
+                JavaPlatform platform = null;
+                if (activePlatform == null) {
+                    platform = pm.getDefaultPlatform();
+                }
+                JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification ("j2se",null));   //NOI18N
+                for (int i=0; i<installedPlatforms.length; i++) {
+                    String antName = (String) installedPlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
+                    if (antName != null && antName.equals(activePlatform)) {
+                        platform = installedPlatforms[i];
+                    }
+                }
+
+                boolean workAround6193279 = platform != null    //In case of nonexisting platform don't use the workaround 
+                        && platform.getSpecification().getVersion().compareTo(JDK_15)>=0; //JDK1.5 and higher
                 if (workAround6193279) {
                     File f = FileUtil.toFile(html);
                     try {

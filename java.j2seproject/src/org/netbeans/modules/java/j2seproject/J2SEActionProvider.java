@@ -543,7 +543,8 @@ class J2SEActionProvider implements ActionProvider {
             if (classesDir == null) {
                 classesDir = FileUtil.createFolder(project.getProjectDirectory(), classesDirProp);
             }
-            url = AppletSupport.generateHtmlFileURL(file, buildDir, classesDir);
+            String activePlatformName = project.evaluator().getProperty("platform.active"); //NOI18N
+            url = AppletSupport.generateHtmlFileURL(file, buildDir, classesDir, activePlatformName);
         } catch (FileStateInvalidException fe) {
             //ingore
         } catch (IOException ioe) {
