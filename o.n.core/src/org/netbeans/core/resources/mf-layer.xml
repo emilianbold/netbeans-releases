@@ -546,6 +546,19 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="instanceCreate" methodvalue="org.netbeans.core.modules.ModuleSystem.getTestModuleDeployer"/>
         </file>
         
+        <!--
+        Register the default error manager. It looks for the system property org.openide.ErrorManager
+        first, but normally just loads an NbErrorManager singleton. Modules wishing to provide a
+        different error manager should place an instance in this folder and make sure it comes before
+        this one so it can override. However this one will still be used during the early startup
+        phases before module layer merging and folder lookup are ready.
+        -->
+        <file name="org-netbeans-core-default-error-manager.instance">
+            <attr name="instanceClass" stringvalue="org.openide.ErrorManager"/>
+            <attr name="instanceOf" stringvalue="org.openide.ErrorManager"/>
+            <attr name="instanceCreate" methodvalue="org.netbeans.core.NbTopManager.getDefaultErrorManager"/>
+        </file>
+        
     </folder>
         
     <file name="org-netbeans-core-IDESettings.settings" url="IDESettings.settings">

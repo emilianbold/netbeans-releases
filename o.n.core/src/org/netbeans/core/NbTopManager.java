@@ -111,7 +111,7 @@ public abstract class NbTopManager extends TopManager {
     private ExecutionEngine execEngine;
 
     /** error manager */
-    private ErrorManager errorManager;
+    private static ErrorManager defaultErrorManager;
 
     /** CompilationMachine */
     private CompilationEngine compilationEngine;
@@ -412,42 +412,35 @@ public abstract class NbTopManager extends TopManager {
         }
     }
 
-    // XXX stop overriding, and make NbErrorManager available directly in lookup
-    /** Get the exception manager for the IDE. It can be used to rafine
+    /** Get the default exception manager for the IDE. It can be used to rafine
     * handling of exception and the way they are presented to the user.
-    * 
+    * @deprecated Do not call directly! Use ErrorManager.getDefault. This method
+    * is here only for the purpose of being referenced from the core layer.
     * @return the manager
     */
-    public ErrorManager getErrorManager () {
-        if (errorManager != null) {
-            return errorManager;
+    public static synchronized ErrorManager getDefaultErrorManager () {
+        if (defaultErrorManager == null) {
+            String className = System.getProperty("org.openide.ErrorManager"); // NOI18N
+            if (className != null) {
+                try {
+                    // Use the startup classloader. This will be called early anyway, long before
+                    // modules are ready to be used. So there is no point in trying systemClassLoader.
+                    Class c = Class.forName(className);
+                    defaultErrorManager = (ErrorManager)c.newInstance();
+                    System.err.println("WARNING - use of the system property org.openide.ErrorManager is deprecated."); // NOI18N
+                    System.err.println("Please register Services/Hidden/" + className.replace('.', '-') + ".instance instead."); // NOI18N
+                    System.err.println("This should be placed before Services/Hidden/org-netbeans-core-default-error-manager.instance."); // NOI18N
+                } catch (Exception e) {
+                    System.err.println("Cannot create ErrorManager: " + className); // NOI18N
+                    e.printStackTrace();
+                }
+            }
         }
-
-        synchronized (this) {
-            if (errorManager == null) {
-                errorManager = initErrorManager ();
-            }            
+        if (defaultErrorManager == null) {
+            defaultErrorManager = new NbErrorManager();
+            //System.err.println("Creating NbErrorManager");
         }
-        return errorManager;
-    }
-    /** Allows to use another implementation of ErrorManager. 
-     *  Configuration is easy and needs add system property: org.openide.ErrorManager.
-     *  For example:  -J-Dorg.openide.ErrorManager=org.netbeans.core.NbTraceErrorManager
-     *  @return implementation of ErrorManager
-     */
-    private ErrorManager initErrorManager () {
-        String className = System.getProperty ("org.openide.ErrorManager");// NOI18N
-        if (className == null) 
-            return new NbErrorManager();
-
-        try {
-            Class c = Class.forName (className, true, systemClassLoader ());
-            return (ErrorManager) c.newInstance();
-        } catch(Exception e) {
-            System.err.println("Cannot create ErrorManager: "+className);// NOI18N
-            e.printStackTrace();
-        }
-        return new NbErrorManager();    
+        return defaultErrorManager;
     }
 
     /** Window manager.
@@ -710,9 +703,17 @@ public abstract class NbTopManager extends TopManager {
         try {
             if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog(null, true) ) {
                 if (getModuleSystem().shutDown()) {
-                    // save project
-                    NbProjectOperation.storeLastProject ();
-                    org.netbeans.core.projects.SessionManager.getDefault().close();
+                    try {
+                        // save project
+                        NbProjectOperation.storeLastProject ();
+                        org.netbeans.core.projects.SessionManager.getDefault().close();
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (Throwable t) {
+                        // Do not let problems here prevent system shutdown. The module
+                        // system is down; the IDE cannot be used further.
+                        ErrorManager.getDefault().notify(t);
+                    }
                     Runtime.getRuntime().exit ( 0 );
                 }
             }
@@ -922,13 +923,60 @@ public abstract class NbTopManager extends TopManager {
     
     /** The default lookup for the system.
      */
-    public static final class Lkp extends org.openide.util.lookup.ProxyLookup {
-        private FolderLookup lookup;
+    public static final class Lkp extends ProxyLookup {
 
         /** Initialize the lookup to delegate to NbTopManager.
         */
         public Lkp () {
-            super (new Lookup[] { new org.netbeans.core.lookup.TMLookup () });
+            super (new Lookup[] {
+                new org.netbeans.core.lookup.TMLookup(),
+                createInitialErrorManagerLookup(),
+            });
+            //System.err.println("creating default lookup");
+        }
+        
+        private static Lookup createInitialErrorManagerLookup() {
+            InstanceContent c = new InstanceContent();
+            c.add(Boolean.TRUE, new InitialErrorManagerConvertor());
+            return new AbstractLookup(c);
+        }
+        
+        private static final class InitialErrorManagerConvertor implements InstanceContent.Convertor, TaskListener {
+            public Object convert(Object obj) {
+                //System.err.println("IEMC.convert");
+                return getDefaultErrorManager();
+            }
+            public Class type(Object obj) {
+                return ErrorManager.class;
+            }
+            public String id(Object obj) {
+                return "NbTopManager.defaultErrorManager"; // NOI18N
+            }
+            public String displayName(Object obj) {
+                return id(obj); // ???
+            }
+            public void taskFinished(Task task) {
+                //System.err.println("FolderLookup finished, removing old EM");
+                // FolderLookup has finished recognizing things. Remove the forced ErrorManager
+                // override from the set of lookups.
+                task.removeTaskListener(this);
+                Lookup lookup = Lookup.getDefault();
+                if (lookup instanceof Lkp) {
+                    Lkp lkp = (Lkp)lookup;
+                    Lookup[] old = lkp.getLookups();
+                    if (old.length != 5) throw new IllegalStateException();
+                    Lookup[] nue = new Lookup[] {
+                        old[0], // TMLookup
+                        // do NOT include initialErrorManagerLookup; this is now replaced by the layer entry
+                        // Services/Hidden/org-netbeans-core-default-error-manager.instance
+                        old[2], // NbTM.instanceLookup
+                        old[3], // FolderLookup
+                        old[4], // moduleLookup
+                    };
+                    lkp.setLookups(nue);
+                }
+            }
+            
         }
 
         /** When all module classes are accessible thru systemClassLoader, this
@@ -936,6 +984,7 @@ public abstract class NbTopManager extends TopManager {
          */
 	    
         public static final synchronized void modulesClassPathInitialized () {
+            //System.err.println("mCPI");
 	    StartLog.logStart ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
 
             // replace the lookup by new one
@@ -954,12 +1003,15 @@ public abstract class NbTopManager extends TopManager {
 		    StartLog.logProgress ("Got Services folder"); // NOI18N
 
                     FolderLookup folder = new FolderLookup (df, "SL["); // NOI18N
-                    lkp.lookup = folder;
+                    folder.addTaskListener(new InitialErrorManagerConvertor());
 		    StartLog.logProgress ("created FolderLookup"); // NOI18N
                     
                     // extend the lookup
-                    Lookup[] arr = new org.openide.util.Lookup[] {
+                    Lookup[] arr = new Lookup[] {
                         lkp.getLookups ()[0],
+                        // Include initialErrorManagerLookup provisionally, until the folder lookup
+                        // is actually ready and usable
+                        lkp.getLookups()[1],
                         NbTopManager.get ().getInstanceLookup (),
                         folder.getLookup (),
                         NbTopManager.get().getModuleSystem().getManager().getModuleLookup(),
@@ -975,5 +1027,13 @@ public abstract class NbTopManager extends TopManager {
             }
 	    StartLog.logEnd ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
         }
+        /* for testing only:
+        protected void beforeLookup(Lookup.Template t) {
+            super.beforeLookup(t);
+            if (t.getType() == ErrorManager.class) {
+                System.err.println("looking up ErrorManager; lookups=" + getLookups() + " length=" + getLookups().length); // NOI18N
+            }
+        }
+         */
     }
 }
