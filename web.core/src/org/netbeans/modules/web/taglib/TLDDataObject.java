@@ -32,9 +32,11 @@ import org.netbeans.modules.web.taglib.model.Taglib;
  * can be unfinaled if desired.
  *
  */
-public final class TLDDataObject extends XMLDataObject { 
+public final class TLDDataObject extends MultiDataObject implements org.openide.nodes.CookieSet.Factory { 
 
     private static final boolean debug = false;
+    /** Editor support for text data object. */
+    private transient TLDEditorSupport editorSupport;
     /** generated Serialized Version UID */
     private static final long serialVersionUID = -7581377241494497816L;
     
@@ -47,6 +49,8 @@ public final class TLDDataObject extends XMLDataObject {
     public TLDDataObject (final FileObject obj, final MultiFileLoader loader)
 	throws DataObjectExistsException, IOException {
 	super (obj, loader);
+        
+        getCookieSet().add(TLDEditorSupport.class, this);
         
         // Creates Check XML and Validate XML context actions
         InputSource in = DataObjectAdapters.inputSource(this);
@@ -96,6 +100,11 @@ public final class TLDDataObject extends XMLDataObject {
 	return new TLDNode(this);
     }
     
+     // Accessibility from TXTEditorSupport:
+    org.openide.nodes.CookieSet getCookieSet0() {
+        return getCookieSet();
+    }
+    
     public Taglib getTaglib() throws java.io.IOException {
         java.io.InputStream is = getPrimaryFile().getInputStream();
         try {
@@ -131,4 +140,25 @@ public final class TLDDataObject extends XMLDataObject {
             // PENDING should write a message
         }
     }
+    
+    /** Implements <code>CookieSet.Factory</code> interface. */
+    public Node.Cookie createCookie(Class clazz) {
+        if(clazz.isAssignableFrom(TLDEditorSupport.class))
+            return getEditorSupport();
+        else
+            return null;
+    }
+    
+    /** Gets editor support for this data object. */
+    private TLDEditorSupport getEditorSupport() {
+        if(editorSupport == null) {
+            synchronized(this) {
+                if(editorSupport == null)
+                    editorSupport = new TLDEditorSupport(this);
+            }
+        }
+        
+        return editorSupport;
+    }
+    
 }
