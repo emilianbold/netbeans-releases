@@ -44,6 +44,7 @@ public class JHIndexer extends MatchingTask {
     private File jhall;
     private File db;
     private File basedir;
+    private String locale;
 
     /** Set the location of <samp>jhall.jar</samp> (JavaHelp tools library). */
     public void setJhall (File jhall) {
@@ -65,6 +66,9 @@ public class JHIndexer extends MatchingTask {
      */
     public void setBasedir (File basedir) {
         this.basedir = basedir;
+    }
+    public void setLocale (String locale) {
+        this.locale = locale;
     }
 
     public void execute () throws BuildException {
@@ -142,6 +146,10 @@ public class JHIndexer extends MatchingTask {
                 java.createArg ().setFile (config);
                 java.createArg ().setValue ("-db");
                 java.createArg ().setFile (db);
+                if (locale != null) {
+                    java.createArg ().setValue("-locale");
+                    java.createArg ().setValue(locale);
+                }
                 java.setFailonerror (true);
                 // Does not work when run using Ant support internally to the IDE:
                 // IllegalAccessError since some classes are
