@@ -44,19 +44,9 @@ import com.netbeans.ide.explorer.view.BeanTreeView;
 
 import com.netbeans.developer.impl.actions.*;
 import com.netbeans.developer.impl.output.OutputTab;
-/*
-import com.netbeans.developer.impl.presenters.MenuContext;
-import com.netbeans.developer.impl.presenters.ShortcutNode;
-import com.netbeans.developer.impl.presenters.ToolbarContext;
-*/
-import com.netbeans.ide.util.NbBundle;
-import com.netbeans.ide.util.RequestProcessor;
-import com.netbeans.ide.util.UserCancelException;
-import com.netbeans.ide.util.actions.ActionPerformer;
-import com.netbeans.ide.util.actions.SystemAction;
+import com.netbeans.ide.util.*;
 import com.netbeans.ide.util.io.*;
 import com.netbeans.ide.nodes.*;
-import com.netbeans.ide.util.Utilities;
 
 /** This class is a TopManager for Corona environment.
 *
@@ -124,8 +114,13 @@ public class NbTopManager extends TopManager {
   /** Shows a specified HelpCtx in IDE's help window.
   * @param helpCtx thehelp to be shown
   */
-  public void showHelp(com.netbeans.ide.util.HelpCtx helpCtx) {
-    showUrl (helpCtx.getHelp ());
+  public void showHelp(HelpCtx helpCtx) {
+    URL helpURL = helpCtx.getHelp();
+    if (helpURL != null)
+      showUrl(helpURL);
+    else
+      notify(new NotifyDescriptor.Message(
+        NbBundle.getBundle(getClass()).getString("MSG_NoURL")));
   }
 
   /** Provides support for www documents.
