@@ -118,11 +118,11 @@ public class Operator {
     public void stopRequest () {
         stopRequest = true;
     }
-
+    
     public boolean isDisconnected () {
         return disconnected;
     }
-    
+
     private void printEvent (Event e, Executor exec) {
         try {
             if (e instanceof ClassPrepareEvent) {
