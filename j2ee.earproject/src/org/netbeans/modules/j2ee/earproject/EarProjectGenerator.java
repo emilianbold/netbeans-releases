@@ -344,7 +344,11 @@ public class EarProjectGenerator {
         ep.setProperty(EarProjectProperties.DIST_JAVADOC_DIR, "${"+EarProjectProperties.DIST_DIR+"}/javadoc");
         ep.setProperty(EarProjectProperties.NO_DEPENDENCIES, "false");
         ep.setProperty(EarProjectProperties.JAVA_PLATFORM, "default_platform");
-        ep.setProperty(EarProjectProperties.DEBUG_CLASSPATH, "${"+EarProjectProperties.JAVAC_CLASSPATH+"}:${"+EarProjectProperties.BUILD_CLASSES_DIR+"}");
+        ep.setProperty(EarProjectProperties.DEBUG_CLASSPATH, 
+            "${"+EarProjectProperties.JAVAC_CLASSPATH+"}:${"+
+            EarProjectProperties.BUILD_CLASSES_DIR+"}:${"+
+            EarProjectProperties.JAR_CONTENT_ADDITIONAL+"}:${"+
+            EarProjectProperties.RUN_CLASSPATH+"}");
         
         ep.setProperty(EarProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
         ep.setProperty(EarProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N

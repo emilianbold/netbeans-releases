@@ -278,11 +278,21 @@ is divided into following sections:
 
             <xsl:call-template name="deps.target">
                 <xsl:with-param name="targetname" select="'deps-jar'"/>
+                <xsl:with-param name="type" select="'jar'"/>
+            </xsl:call-template>
+
+            <xsl:call-template name="deps.target">
+                <xsl:with-param name="targetname" select="'deps-war'"/>
                 <xsl:with-param name="type" select="'war'"/>
             </xsl:call-template>
 
+            <xsl:call-template name="deps.target">
+                <xsl:with-param name="targetname" select="'deps-j2ee-archive'"/>
+                <xsl:with-param name="type" select="'j2ee_archive'"/>
+            </xsl:call-template>
+
             <target name="pre-pre-compile">
-                <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,deps-war,deps-j2ee-archive</xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}"/>
             </target>
 

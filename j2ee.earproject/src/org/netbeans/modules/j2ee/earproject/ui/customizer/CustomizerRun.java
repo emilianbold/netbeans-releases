@@ -24,12 +24,16 @@ import org.openide.util.HelpCtx;
 
 import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveCustomizerPanel;
 import org.netbeans.modules.j2ee.common.ui.customizer.VisualPropertySupport;
+//import org.netbeans.modules.j2ee.common.ui.customizer.VisualArchiveIncludesSupport;
+import org.netbeans.modules.j2ee.common.ui.customizer.VisualClasspathSupport;
 //import org.netbeans.modules.j2ee.common.ui.customizer.CustomizerGeneral;
 
 public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, HelpCtx.Provider {
     
     // Helper for storing properties
     private VisualPropertySupport vps;
+    //private VisualArchiveIncludesSupport vws;
+    private VisualClasspathSupport vws;
     private ProjectEar wm;
 
     String[] serverInstanceIDs;
@@ -44,8 +48,19 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         this.webProperties = webProperties;
         initComponents();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ACS_CustomizeRun_A11YDesc")); //NOI18N
+//        vws = new VisualArchiveIncludesSupport( webProperties.getProject(),
+        vws = new VisualClasspathSupport( webProperties.getProject(),
+            (String) webProperties.get(EarProjectProperties.J2EE_PLATFORM),
+                                            jTableAddContent,
+                                            jButtonAddJar,
+                                            jButtonAddLib,
+                                            jButtonAddProject,
+                                            new javax.swing.JButton(), // edit button
+                                            jButtonRemove, 
+                                            new javax.swing.JButton(), 
+                                            new javax.swing.JButton(),true);
 
-        this.wm = wm;        
+        this.wm = wm;
         vps = new VisualPropertySupport(webProperties);
     }
     
@@ -69,6 +84,7 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         vps.register(jCheckBoxDisplayBrowser, EarProjectProperties.DISPLAY_BROWSER);
         vps.register(jTextFieldRelativeURL, EarProjectProperties.LAUNCH_URL_RELATIVE);
         vps.register(jComboBoxServer, serverNames, serverInstanceIDs, EarProjectProperties.J2EE_SERVER_INSTANCE);
+        vps.register(vws, EarProjectProperties.RUN_CLASSPATH);
 
 //        EarProjectProperties.PropertyDescriptor.Saver contextPathSaver = new EarProjectProperties.PropertyDescriptor.Saver() {
 //            public void save(WebProjectProperties.PropertyInfo propertyInfo) {
@@ -111,21 +127,34 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         jLabelContextPathDesc = new javax.swing.JLabel();
         jLabelRelativeURL = new javax.swing.JLabel();
         jTextFieldRelativeURL = new javax.swing.JTextField();
+        jLabelEmbeddedCP = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTableAddContent = new javax.swing.JTable();
+        jButtonAddJar = new javax.swing.JButton();
+        jButtonAddLib = new javax.swing.JButton();
+        jButtonAddProject = new javax.swing.JButton();
+        jButtonRemove = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EtchedBorder());
         jLabelContextPath.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/customizer/Bundle").getString("LBL_CustomizeRun_ContextPath_LabelMnemonic").charAt(0));
-        jLabelContextPath.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ContextPath_JLabel"));
         jLabelContextPath.setLabelFor(jTextFieldContextPath);
+        jLabelContextPath.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ContextPath_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 0);
         add(jLabelContextPath, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 11, 11, 11);
         add(jTextFieldContextPath, gridBagConstraints);
@@ -138,6 +167,7 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
         add(jLabelServer, gridBagConstraints);
 
@@ -150,8 +180,9 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(jComboBoxServer, gridBagConstraints);
         jComboBoxServer.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/customizer/Bundle").getString("ACS_CustomizeRun_Server_A11YDesc"));
@@ -170,6 +201,7 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(jCheckBoxDisplayBrowser, gridBagConstraints);
         jCheckBoxDisplayBrowser.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/customizer/Bundle").getString("ACS_CustomizeRun_DisplayBrowser_A11YDesc"));
@@ -178,9 +210,10 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 24, 11, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(jLabelContextPathDesc, gridBagConstraints);
 
         jLabelRelativeURL.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/customizer/Bundle").getString("LBL_CustomizeRun_RelativeURL_LabelMnemonic").charAt(0));
@@ -192,18 +225,84 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 24, 11, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
         add(jLabelRelativeURL, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 11, 11);
         add(jTextFieldRelativeURL, gridBagConstraints);
         jTextFieldRelativeURL.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/customizer/Bundle").getString("ACS_CustomizeRun_RelativeURL_A11YDesc"));
+
+        jLabelEmbeddedCP.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabelEmbeddedCP.setText(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("LBL_CustomizerRun_EmbeddedClasspathElements_JLabel"));
+        jLabelEmbeddedCP.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+        add(jLabelEmbeddedCP, gridBagConstraints);
+
+        jTableAddContent.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
+        jScrollPane2.setViewportView(jTableAddContent);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 10.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
+        add(jScrollPane2, gridBagConstraints);
+
+        jButtonAddJar.setText(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("LBL_CustomizeWAR_AddJar_JButton"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
+        add(jButtonAddJar, gridBagConstraints);
+
+        jButtonAddLib.setText(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("LBL_CustomizeCompile_Classpath_AddLibrary_JButton"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
+        add(jButtonAddLib, gridBagConstraints);
+
+        jButtonAddProject.setText(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("LBL_CustomizeCompile_Classpath_AddProject_JButton"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(jButtonAddProject, gridBagConstraints);
+
+        jButtonRemove.setText(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("LBL_CustomizeCompile_Classpath_Remove_JButton"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        add(jButtonRemove, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -225,12 +324,19 @@ public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, Hel
     }//GEN-LAST:event_jCheckBoxDisplayBrowserActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButtonAddJar;
+    private javax.swing.JButton jButtonAddLib;
+    private javax.swing.JButton jButtonAddProject;
+    private javax.swing.JButton jButtonRemove;
     private javax.swing.JCheckBox jCheckBoxDisplayBrowser;
     private javax.swing.JComboBox jComboBoxServer;
     private javax.swing.JLabel jLabelContextPath;
     private javax.swing.JLabel jLabelContextPathDesc;
+    private javax.swing.JLabel jLabelEmbeddedCP;
     private javax.swing.JLabel jLabelRelativeURL;
     private javax.swing.JLabel jLabelServer;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTable jTableAddContent;
     private javax.swing.JTextField jTextFieldContextPath;
     private javax.swing.JTextField jTextFieldRelativeURL;
     // End of variables declaration//GEN-END:variables
