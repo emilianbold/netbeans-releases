@@ -1,0 +1,8 @@
+<%-- The tag file segment can be included to JSP document using the <jsp:directive.include .../>, e.g.:
+    <jsp:directive.include file="segment.tagf" />
+--%>
+
+<%-- any content can be specified here e.g.: --%>
+<jsp:element name="title">
+    <jsp:body>${title}</jsp:body>
+</jsp:element>

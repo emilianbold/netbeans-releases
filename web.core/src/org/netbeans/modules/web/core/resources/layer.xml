@@ -55,8 +55,9 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <!--  Tag File Document --> 
       <file name="TagFileX.tagx" url="templates/TagFileX.template"/>
-      <!--  Tag File Segment --> 
+      <!--  Tag File Segments --> 
       <file name="TagFileF.tagf" url="templates/TagFileF.template"/>
+      <file name="TagFileFX.tagf" url="templates/TagFileFX.template"/>
       <!-- Servlet --> 
       <file name="Servlet.java" url="templates/Servlet.template">
           <attr name="template" boolvalue="true"/>
