@@ -110,7 +110,9 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 5);
         add(jLabel3, gridBagConstraints);
 
+        descriptionTextArea.setLineWrap(true);
         descriptionTextArea.setRows(3);
+        descriptionTextArea.setWrapStyleWord(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;

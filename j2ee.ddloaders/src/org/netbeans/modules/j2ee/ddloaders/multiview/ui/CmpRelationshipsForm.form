@@ -50,7 +50,9 @@
     </Component>
     <Component class="javax.swing.JTextArea" name="descriptionTextArea">
       <Properties>
+        <Property name="lineWrap" type="boolean" value="true"/>
         <Property name="rows" type="int" value="3"/>
+        <Property name="wrapStyleWord" type="boolean" value="true"/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
