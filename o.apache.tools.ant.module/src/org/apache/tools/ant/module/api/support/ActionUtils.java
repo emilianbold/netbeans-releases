@@ -41,14 +41,14 @@ public final class ActionUtils {
     /**
      * Runs an Ant target (or a sequence of them).
      * @param buildXml an Ant build script
-     * @param targetNames one or more targets to run
+     * @param targetNames one or more targets to run; or null for the default target
      * @param properties any Ant properties to define, or null
      * @return a task tracking the progress of Ant
      * @throws IOException if there was a problem starting Ant
      * @throws IllegalArgumentException if you did not provide any targets
      */
     public static ExecutorTask runTarget(FileObject buildXml, String[] targetNames, Properties properties) throws IOException, IllegalArgumentException {
-        if (targetNames == null || targetNames.length == 0) {
+        if (targetNames != null && targetNames.length == 0) {
             throw new IllegalArgumentException("No targets supplied"); // NOI18N
         }
         AntProjectCookie apc = (AntProjectCookie)DataObject.find(buildXml).getCookie(AntProjectCookie.class);
