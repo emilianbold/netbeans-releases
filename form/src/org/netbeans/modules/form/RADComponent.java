@@ -239,10 +239,20 @@ public class RADComponent {
     }
     getFormManager ().getVariablesPool ().createVariable (componentName, beanClass);
 
+    // [PENDING - patch to make JInternalFrames appear under JDK 1.3]
+    if (getBeanInstance () instanceof javax.swing.JInternalFrame) {
+      String oldInitCode = oldName + ".setVisible (true);";
+      String oldInitSet = (String)getAuxValue (JavaCodeGenerator.AUX_CREATE_CODE_POST);
+      if ((oldInitSet != null) && (oldInitSet.equals (oldInitCode))) {
+        setAuxValue (JavaCodeGenerator.AUX_CREATE_CODE_POST, componentName+".setVisible (true);");
+      }
+    }
+
     getFormManager ().fireComponentChanged (this, PROP_NAME, oldName, componentName);
     if (getNodeReference () != null) {
       getNodeReference ().updateName ();
     }
+
   }
   
   /** @return component name preserved between Cut and Paste */
@@ -1276,6 +1286,9 @@ public class RADComponent {
 
 /*
  * Log
+ *  57   Gandalf   1.56        11/15/99 Ian Formanek    Fixed bug 4717 - On JDK 
+ *       1.3, added JInternalFrames are not visible and the generated code does 
+ *       not contain the required setVisible call.
  *  56   Gandalf   1.55        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  55   Gandalf   1.54        9/24/99  Ian Formanek    Fixed bug with 
