@@ -574,9 +574,15 @@ public class JTreeOperator extends JComponentOperator
 	Timeouts times = timeouts.cloneThis();
 	times.setTimeout("Waiter.WaitingTime", timeouts.getTimeout("JTreeOperator.WaitNextNodeTimeout"));
 	Waiter loadedWaiter = new Waiter(new Waitable() {
+            // fields used in getDescription() method
+            TreePath currentPath;
+            String requestedPath;
+            
 	    public Object actionProduced(Object obj) {
 		TreePathChooser chsr = (TreePathChooser)((Object[])obj)[0];
+                requestedPath = chsr.getDescription();
 		TreePath path = (TreePath)((Object[])obj)[1];
+                currentPath = path;
 		Object[] result = new Object[2];
                 int count = getChildCount(path.getLastPathComponent());
 		for(int j = 0; j < count; j++) {
@@ -599,7 +605,7 @@ public class JTreeOperator extends JComponentOperator
 		return(null);
 	    }
 	    public String getDescription() {
-		return("Wait next node loaded");
+                return "Wait next node loaded under parent "+currentPath+ " when requested was "+requestedPath;
 	    }
 	});
 	loadedWaiter.setTimeouts(times);
