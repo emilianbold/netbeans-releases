@@ -1200,6 +1200,9 @@ public class BaseOptions extends OptionSupport {
 
         val = (Boolean)getSettingValue(SettingsNames.CODE_FOLDING_COLLAPSE_JAVADOC);
         map.put(SettingsNames.CODE_FOLDING_COLLAPSE_JAVADOC, val);
+
+        val = (Boolean)getSettingValue(SettingsNames.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT);
+        map.put(SettingsNames.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT, val);
         
         return map;
     }
@@ -1214,6 +1217,8 @@ public class BaseOptions extends OptionSupport {
         name = SettingsNames.CODE_FOLDING_COLLAPSE_IMPORT;
         setSettingValue(name, props.get(name));
         name = SettingsNames.CODE_FOLDING_COLLAPSE_JAVADOC;
+        setSettingValue(name, props.get(name));
+        name = SettingsNames.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT;
         setSettingValue(name, props.get(name));
     }
         
