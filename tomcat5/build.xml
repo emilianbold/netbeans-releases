@@ -13,36 +13,13 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="tomcat5" default="netbeans" basedir=".">
-  <import file="../../nbbuild/default.xml"/> 
-
-  <property name="tomcat5_dir" location="src/org/netbeans/modules/tomcat5"/>
-	
-  <target name="init" depends="default.init">
-    <patternset id="tomcatint/tomcat5.files">
-      <include name="${nb.modules.dir}/tomcat5.jar"/>
-      <include name="${nb.modules/docs.dir}/tomcat5.jar"/>
-    </patternset>
-    <path id="cp">
-        <pathelement location="${jdkhome}/lib/tools.jar"/>
-        <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/>
-        <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-        <pathelement location="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar"/>
-        <pathelement location="${j2eeserver.dir}/${nb.modules/autoload.dir}/j2eeserver.jar"/>
-        <pathelement location="${j2eeserver/j2eeapis.dir}/${nb.modules/autoload.dir}/ext/ejb20.jar"/>
-        <pathelement location="${j2eeserver/j2eeapis.dir}/${nb.modules/autoload.dir}/ext/jmxri.jar"/>
-        <pathelement location="${j2eeserver/j2eeapis.dir}/${nb.modules/autoload.dir}/ext/javax77.jar"/>
-        <pathelement location="${j2eeserver/j2eeapis.dir}/${nb.modules/autoload.dir}/ext/jsr88javax.jar"/>
-        <pathelement location="${web/ddapi.dir}/${nb.modules.dir}/org-netbeans-api-web-dd.jar"/>
-        <pathelement location="${debuggercore/api.dir}/${nb.modules.dir}/org-netbeans-api-debugger.jar"/>
-        <pathelement location="${debuggerjpda/api.dir}/${nb.modules.dir}/org-netbeans-api-debugger-jpda.jar"/>
-        <pathelement location="${libs/xerces.dir}/${nb.modules/autoload.dir}/ext/xerces-2.6.0.jar"/>
-        <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>	
-    </path>
-  </target>
+  <import file="../../nbbuild/templates/projectized.xml"/> 
   
-  <target name="s2binit" depends="init">
+  <property name="tomcat5_dir" location="src/org/netbeans/modules/tomcat5"/>
+
+  <target name="build-init" depends="projectized.build-init"/>
+
+  <target name="s2binit" depends="build-init">
 	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
 	  <classpath>
 		<pathelement path="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar" />
@@ -66,73 +43,9 @@ Microsystems, Inc. All Rights Reserved.
 	  rootDir="src"/>
   </target>
   
-  <target name="compile" depends="init,dd2beans_gen">
-    <javac srcdir="src" destdir="src" source="1.4" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath refid="cp"/>
-    </javac>
-  </target>
-  
-  <target name="jars" depends="compile">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/tomcat5.jar"
-         manifest="manifest-subst.mf"
-         basedir="src"
-	 excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
-	 compress="false"/>
-  </target>
-
-  <target name="netbeans" depends="jars,javahelp">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/tomcat5.jar">
-       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-         <patternset refID="tomcatint/tomcat5.files"/>
-       </fileset>
-    </genlist>
-  </target>
-
-  <target name="nbm" depends="jars">
-    <makenbm file="tomcat5.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules.dir}/tomcat5.jar"
-	     homepage="http://text.${homepage.base}/"
-	     distribution="http://${dist.base}/tomcat5.nbm">
-      <license file="${license.file}"/>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
-  <target name="javadoc" depends="init" description="Build Javadoc.">
-      <ant dir="../../nbbuild/javadoctools" antfile="template.xml" target="javadoc">
-          <property name="javadoc.base" location="."/>
-          <property name="javadoc.name" value="Tomcat5PluginAPI"/>
-          <property name="javadoc.title" value="Tomcat 5 Plugin API"/>
-          <property name="javadoc.packages" value="org.netbeans.modules.tomcat5,org.netbeans.modules.tomcat5.ide,org.netbeans.modules.tomcat5.nodes,org.netbeans.modules.tomcat5.progress"/>
-          <property name="javadoc.classpath" refid="cp"/>
-          <!--
-          <property name="javadoc.arch" location="../arch/arch-tomcatint-tomcat5.xml"/>
-          <property name="javadoc.apichanges" location="api/doc/changes/apichanges.xml"/>
-          <property name="javadoc.docfiles" location="api/doc"/>
-          -->
-      </ant>
-  </target>
-  
-  <target name="clean" depends="init">
-    <antcall target="clean-ddgen-src"/>  
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-        <include name="**/*.jar"/>
-      </fileset>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="tomcatint/tomcat5.files"/>
-      </fileset>
-    </delete>
-    <delete file="manifest-subst.mf"/>
-    <delete file="tomcat5.nbm"/>
-    <delete dir="javahelp/org/netbeans/modules/tomcat5/docs/JavaHelpSearch2"/>
-    <delete dir="javadoc"/>
-  </target>
+  <target name="compile" depends="dd2beans_gen, projectized.compile"/>
+    
+  <target name="clean" depends="init, clean-ddgen-src, projectized.clean"/>
 
   <target name="clean-ddgen-check">
     <available property="have-config" file="${tomcat5_dir}/config"/>
@@ -147,46 +60,4 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="${tomcat5_dir}/config"/>
   </target>
   
-  <target name="javahelp" depends="init">
-    <mkdir dir="javahelp/org/netbeans/modules/tomcat5/docs/JavaHelpSearch2"/>
-    <jhindexer basedir="javahelp/org/netbeans/modules/tomcat5/docs/"
-               db="javahelp/org/netbeans/modules/tomcat5/docs/JavaHelpSearch2">
-      <classpath>
-        <fileset dir="${nb_all}/nbbuild/external">
-          <include name="jhall*.jar"/>
-        </fileset>
-      </classpath>
-      <include name="**/*.html"/>
-      <exclude name="JavaHelpSearch2/"/>
-      <exclude name="ja/"/>
-      <exclude name="credits.html"/>
-    </jhindexer>
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/tomcat5.jar"
-         compress="true">
-      <fileset dir="javahelp" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
-    </jar>
-  </target>
-  
-  <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors.">
-    <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
-      <classpath>
-        <pathelement location="../../nbbuild/nbantext.jar"/>
-        <fileset dir="../../nbbuild/external">
-          <include name="jhall*.jar"/>
-        </fileset>
-      </classpath>
-    </taskdef>
-    <checkhelpsets>
-      <fileset dir="javahelp">
-        <include name="org/netbeans/modules/tomcat5/docs/tomcat.hs"/>
-      </fileset>
-    </checkhelpsets>
-  </target>
-  
-  <!-- This target will only work *inside* the IDE! -->
-  <target depends="jars" description="Test the module inside the running IDE." name="test">
-    <nbinstaller action="reinstall" module="netbeans/modules/tomcat5.jar"/>
-  </target>
-
 </project>

@@ -1,20 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.tomcat5/1
-OpenIDE-Module-Public-Packages: -
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/tomcat5/resources/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/tomcat5/resources/layer.xml
 OpenIDE-Module-Specification-Version: 1.1
-OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Provides: org.netbeans.modules.tomcat5
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.j2eeserver/3,
- org.netbeans.modules.j2eeapis/1,
- org.netbeans.api.web.dd/1,
- org.openide.execution > 1.3,
- org.netbeans.api.debugger/1,
- org.netbeans.api.debugger.jpda/1,
- org.openide.io,
- org.netbeans.modules.schema2beans/1,
- org.netbeans.libs.xerces/1 > 1.2,
- org.netbeans.api.java/1
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.30
-Class-Path: docs/tomcat5.jar
+Class-Path: docs/org-netbeans-modules-tomcat5.jar
