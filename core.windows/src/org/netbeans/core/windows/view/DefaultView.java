@@ -232,9 +232,9 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 if(DEBUG) {
                     debugLog("Editor area state changed"); // NOI18N
                 }
-
-                hierarchy.updateDesktop(wsa);
+                //#45832 updating the main windo bounds goes first. need to have the correct bounds when updating desktop.
                 hierarchy.updateMainWindowBounds(wsa);
+                hierarchy.updateDesktop(wsa);
                 hierarchy.setSeparateModesVisible(true);
             } else if(changeType == CHANGE_EDITOR_AREA_FRAME_STATE_CHANGED) {
                 if(DEBUG) {

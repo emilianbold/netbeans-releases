@@ -521,6 +521,10 @@ final class ViewHierarchy {
         if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
             mainWindow.setBounds(wsa.getMainWindowBoundsJoined());
         } else {
+            // #45832 clear the desktop when going to SDI,
+            setMainWindowDesktop(null);
+            // invalidate to recalculate the main window's preffered size..
+            mainWindow.invalidate();
             mainWindow.setBounds(wsa.getMainWindowBoundsSeparated());
         }
         // #38146 So the updateSplit works with correct size.
