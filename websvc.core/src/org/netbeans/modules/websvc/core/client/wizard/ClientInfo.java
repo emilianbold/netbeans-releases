@@ -14,6 +14,10 @@
 package org.netbeans.modules.websvc.core.client.wizard;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
 import java.util.Iterator;
 import java.util.List;
 
@@ -562,6 +566,34 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
                 return false; // invalid WSDL file
             }
 
+            // 50103 - could be done via xml api, but this way should be quicker and suffice the need
+            FileReader fr = null;
+            try {
+                fr = new FileReader(f);
+                LineNumberReader lnReader = new LineNumberReader(fr);
+                if (lnReader != null) {
+                    String line = null;
+                    try {
+                        line = lnReader.readLine();
+                    } catch (IOException ioe) {
+                        //ignore
+                    }
+                    while (line != null) {
+                        if (line.indexOf("REPLACE_WITH_ACTUAL_URL") > 0) {
+                            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WrongWsdl")); // NOI18N
+                            return false;
+                        } //NOI18N
+                        try {
+                            line = lnReader.readLine();
+                        } catch (IOException ioe) {
+                            //ignore
+                        }
+                    }
+                }
+            } catch (FileNotFoundException fne) {
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WsdlDoesNotExist")); // NOI18N
+            }
+            
             // !PW FIXME should also detect if WSDL file has previously been added to
             // this project.  Note that not doing so and overwriting the existing entry
             // is the equivalent of doing an update on it.  Nothing bad will happen
