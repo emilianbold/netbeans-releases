@@ -51,6 +51,10 @@ public class MacroInputPanel extends javax.swing.JPanel {
         String[] retVal = { macroField.getText(), expandTextArea.getText() };
         return retVal;
     }
+    
+    public void requestFocus(){
+        macroField.requestFocus();
+    }
 
 
     private void initComponents() {//GEN-BEGIN:initComponents

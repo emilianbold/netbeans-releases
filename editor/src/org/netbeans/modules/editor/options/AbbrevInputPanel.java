@@ -43,6 +43,10 @@ public class AbbrevInputPanel extends javax.swing.JPanel {
     private String getBundleString(String s) {
         return NbBundle.getMessage(AbbrevInputPanel.class, s);
     }        
+    
+    public void requestFocus(){
+        abbrevField.requestFocus();
+    }
 
     public void setAbbrev( String[] abbrev ) {
         abbrevField.setText( abbrev[0] );
