@@ -17,11 +17,10 @@ import java.util.Iterator;
 
 /**
  * Defines which <code>DataObject</code>s should be searched.
- * List returned by this interface may contain also other
- * <code>SearchInfo</code> objects &ndash; it has the same effect as if
- * <code>DataObject</code>s returned by the nested <code>SearchInfo</code>
- * object were included in the containing <code>SeachInfo</code> object.
+ * Iterator returned by this interface's method enumerates
+ * <code>DataObject</code>s that should be searched.
  *
+ * @see  DataObject
  * @see  SimpleSearchInfo
  * @author  Marian Petras
  */
@@ -30,9 +29,7 @@ public interface SearchInfo {
     /**
      * Specifies which <code>DataObject</code>s should be searched.
      *
-     * @return  list of <code>DataObject</code>s and other
-     *          <code>SearchInfo</code> objects
-     * @see  DataObject#Container
+     * @return  iterator which iterates over <code>DataObject</code>s
      */
     public Iterator objectsToSearch();
     
