@@ -61,6 +61,15 @@ public final class I18nUtil {
     /** Help ID for Locale execution. */
     public static final String HELP_ID_RUNLOCALE = "internation.runlocale"; // NOI18N
     
+    /** Help ID for property editor */
+    public static final String PE_REPLACE_CODE_HELP_ID = "i18n.pe.replacestring";
+    /** Help ID for property editor */
+    public static final String PE_I18N_REGEXP_HELP_ID = "i18n.pe.i18nregexp";
+    /** Help ID for property editor */
+    public static final String PE_BUNDLE_CODE_HELP_ID = "i18n.pe.bundlestring";
+    /** Help ID for property editor */
+    public static final String PE_TEST_REGEXP_HELP_ID = "i18n.pe.testregexp";
+    
     /** Items for init format customizer. */
     private static List initFormatItems;
 

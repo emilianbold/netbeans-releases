@@ -44,7 +44,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
      * @param items for sleecteing in combo box
      * @param help patterns described in list
      */
-    public HelpStringCustomEditor(String value, List items, List helpItems, String comboText) {
+    public HelpStringCustomEditor(String value, List items, List helpItems, String comboText, String helpID) {
         initComponents();
         
         combo.setModel(new DefaultComboBoxModel(items.toArray()));
@@ -60,7 +60,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         
         initAccessibility ();     
         
-        HelpCtx.setHelpIDString(this, I18nUtil.HELP_ID_CUSTOM);
+        HelpCtx.setHelpIDString(this, helpID);
     }
 
     /**
@@ -195,7 +195,9 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
                 (String)getValue(), 
                 I18nUtil.getInitFormatItems(), 
                 I18nUtil.getInitHelpItems(),
-                I18nUtil.getBundle().getString("LBL_InitCodeFormat"));
+                I18nUtil.getBundle().getString("LBL_InitCodeFormat"),
+                I18nUtil.PE_BUNDLE_CODE_HELP_ID
+            );
         }
     } // End of nested class InitCodeEditor.
     
@@ -208,7 +210,9 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
                 (String)getValue(),
                 I18nUtil.getReplaceFormatItems(),
                 I18nUtil.getReplaceHelpItems(),
-                I18nUtil.getBundle().getString("LBL_ReplaceCodeFormat"));
+                I18nUtil.getBundle().getString("LBL_ReplaceCodeFormat"),
+                I18nUtil.PE_REPLACE_CODE_HELP_ID
+            );
         }
     } // End of nested class ReplaceCodeEditor.
     
@@ -221,7 +225,9 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
                 (String)getValue(),
                 I18nUtil.getRegExpItems(),
                 I18nUtil.getRegExpHelpItems(),
-                I18nUtil.getBundle().getString("LBL_NonI18nRegExpFormat"));
+                I18nUtil.getBundle().getString("LBL_NonI18nRegExpFormat"),
+                I18nUtil.PE_I18N_REGEXP_HELP_ID
+            );
         }
     } // End of nested class RegExpEditor.
     
@@ -234,7 +240,9 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
                 (String)getValue(), 
                 I18nUtil.getI18nRegExpItems(), 
                 I18nUtil.getRegExpHelpItems(),
-                I18nUtil.getBundle().getString("LBL_I18nRegExpFormat"));
+                I18nUtil.getBundle().getString("LBL_I18nRegExpFormat"),
+                I18nUtil.PE_TEST_REGEXP_HELP_ID
+            );
         }
     } // End of nested class I18nRegExpEditor.
     

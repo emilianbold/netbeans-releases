@@ -427,7 +427,8 @@ public class JavaReplacePanel extends JPanel {
                                                     javaI18nSupport.getInitFormat(),
                                                     I18nUtil.getInitFormatItems(),
                                                     I18nUtil.getInitHelpItems(),
-                                                    I18nUtil.getBundle().getString("LBL_InitCodeFormat"));
+                                                    I18nUtil.getBundle().getString("LBL_InitCodeFormat"),
+                                                    I18nUtil.PE_BUNDLE_CODE_HELP_ID);
 
         DialogDescriptor dd = new DialogDescriptor(
             customPanel,
