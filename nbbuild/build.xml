@@ -1289,7 +1289,9 @@ Tag:
       <zipfileset file="${netbeans.dest}" filemode="755" prefix="${netbeans.dest}">
         <include name="*.sh"/>
       </zipfileset>
-      <zipfileset dir="${netbeans.dest}" prefix="${netbeans.dest}"/>
+      <zipfileset dir="${netbeans.dest}" prefix="${netbeans.dest}">
+        <exclude name="*.built" />
+      </zipfileset>
     </zip>
     <echo>Build created; see NetBeans-${buildnum}.zip (in nbbuild/).
 If you like, you may run the IDE straight from
@@ -1381,7 +1383,7 @@ the ${netbeans.dest}/bin/ directory.
 
   <target name="build-one-cluster-check">
     <condition property="${one.cluster.name}-is-built">
-      <available file="build/${one.cluster.name}.built"/>
+      <available file="${netbeans.dest.dir}/${one.cluster.name}.built"/>
     </condition>
   </target>
 
@@ -1404,8 +1406,7 @@ the ${netbeans.dest}/bin/ directory.
              targetprefix="all-" 
              mergedependentmodules="false">
     </nbmerge>
-    <mkdir dir="build"/>
-    <touch file="build/${one.cluster.name}.built"/>
+    <touch file="${netbeans.dest.dir}/${one.cluster.name}.built"/>
   </target>
 
   <target name="zipclusters" depends="init">
@@ -1773,7 +1774,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="clean-cluster-flags" unless="do-not-rebuild-clusters">
     <delete>
       <fileset dir=".">
-        <include name="build/*.built"/>
+        <include name="${netbeans.dest.dir}/*.built"/>
       </fileset>
     </delete>
   </target>
