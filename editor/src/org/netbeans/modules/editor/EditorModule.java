@@ -77,6 +77,7 @@ public class EditorModule extends ModuleInstall implements Runnable {
     public void restored () {
         LocaleSupport.addLocalizer(new NbLocalizer(AllOptions.class));
         LocaleSupport.addLocalizer(new NbLocalizer(BaseKit.class));
+        LocaleSupport.addLocalizer(new NbLocalizer(org.netbeans.editor.ext.java.JavaSettingsNames.class));
 
         // Initializations
         DialogSupport.setDialogFactory( new NbDialogSupport() );
