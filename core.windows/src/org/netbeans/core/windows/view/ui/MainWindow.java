@@ -511,11 +511,13 @@ public final class MainWindow extends JFrame {
         }
     }
 
-    boolean firstTimeHack = !System.getProperty( "java.version" ).startsWith( "1.6" );
+    boolean firstTimeHack = true;
     public void setExtendedState(int state) {
 
         int prevState = getExtendedState();
-        
+
+        releaseWaitingForPaintDummyGraphic();
+
         super.setExtendedState(state);
         
         if( firstTimeHack && state != prevState && state == Frame.MAXIMIZED_BOTH ) {
