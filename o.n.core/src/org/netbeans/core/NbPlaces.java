@@ -214,7 +214,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     }
     
     
-    final static class Ch extends Children.Keys implements Runnable {
+    final static class Ch extends Children.Keys 
+    implements javax.swing.event.ChangeListener {
         /** result */
         private NbLookup.Result result;
         /** remebmber the section name */
@@ -229,7 +230,9 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
             this.result = re (nodeSectionName);
 
-            result.notify (this);
+            result.addChangeListener (
+                org.openide.util.WeakListener.change (this, result)
+            );
         }
         
         protected void addNotify () {
@@ -253,7 +256,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
         /** Method called when we are about to update the keys for 
          * this children. Hopefully never called difectly.
          */
-        public final void run () {
+        public final void stateChanged (javax.swing.event.ChangeEvent ev) {
             setKeys (result.allInstances ());
             // notify that the set of nodes has changed (probably)
             NbTopManager.get ().firePropertyChange (TopManager.PROP_PLACES, null, null);
