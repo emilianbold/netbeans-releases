@@ -162,18 +162,17 @@ public class AbstractCommand implements Serializable, DDLCommand {
             executionWithException = true;
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
             return;
-//            throw new DDLException(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage()); // NOI18N
         }
 
-        //		System.out.println(fcmd);
-        // In case of debug mode, you simply print command and don't execute
+        //In case of debug mode print command
         if (spec.getSpecificationFactory().isDebugMode()) {
 
             try {
-                OutputWriter ow = IOProvider.getDefault().getStdOut();
-                if (ow != null)
+                OutputWriter ow = IOProvider.getDefault().getIO(bundle.getString("LBL_Output_Window"), false).getOut(); //NOI18N
+                if (ow != null) {
                     ow.println(fcmd);
-                else
+                    ow.println(" "); //NOI18N
+                } else
                     throw new Exception();
 
             } catch (Exception e) {
@@ -217,7 +216,6 @@ public class AbstractCommand implements Serializable, DDLCommand {
             Map props = getCommandProperties();
             return CommandFormatter.format(format, props);
         } catch (Exception e) {
-//            e.printStackTrace();
             throw new DDLException(e.getMessage());
         }
     }
