@@ -24,37 +24,33 @@ import org.openide.util.actions.CallableSystemAction;
 */
 public class SearchDocAction extends CallableSystemAction {
 
-  /** generated Serialized Version UID */
-  //static final long serialVersionUID = 1391479985940417455L;
-
-
   /** Human presentable name of the action. This should be
-  * presented as an item in a menu.
-  * @return the name of the action
-  */
+   * presented as an item in a menu.
+   * @return the name of the action
+   */
   public String getName () {
     return NbBundle.getBundle (SearchDocAction.class).getString ("CTL_SEARCH_MenuItem");
   }
 
   /** The action's icon location.
-  * @return the action's icon location
-  */
+   * @return the action's icon location
+   */
   protected String iconResource () {
     return "/com/netbeans/developer/modules/javadoc/resources/searchDoc.gif";
   }
   
   /** Help context where to find more about the action.
-  * @return the help context for this action
-  */
+   * @return the help context for this action
+   */
   public HelpCtx getHelpCtx () {
     return new HelpCtx (SearchDocAction.class);
   }
 
   /** This method is called by one of the "invokers" as a result of
-  * some user's action that should lead to actual "performing" of the action.
-  * This default implementation calls the assigned actionPerformer if it
-  * is not null otherwise the action is ignored.
-  */
+   * some user's action that should lead to actual "performing" of the action.
+   * This default implementation calls the assigned actionPerformer if it
+   * is not null otherwise the action is ignored.
+   */
   public void performAction () {
     
     IndexSearch indexSearch = IndexSearch.getDefault();
@@ -71,6 +67,8 @@ public class SearchDocAction extends CallableSystemAction {
 
 /*
  * Log
+ *  12   Gandalf   1.11        8/17/99  Petr Hrebejk    IndexSearch window 
+ *       serialization
  *  11   Gandalf   1.10        8/13/99  Petr Hrebejk    Exception icopn added & 
  *       Jdoc repository moved to this package
  *  10   Gandalf   1.9         7/30/99  Petr Hrebejk    Search uses 

@@ -27,6 +27,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.SplittedPanel;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Mode;
 import org.openide.windows.Workspace;
@@ -35,6 +36,8 @@ import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
+import com.netbeans.developer.modules.javadoc.settings.DocumentationSettings;
+
 /** Main window for documentation index search
  *
  * @author Petr Hrebejk
@@ -42,13 +45,20 @@ import org.openide.util.NbBundle;
 public class IndexSearch 
         extends TopComponent 
         implements Externalizable {
-          
+
+  //static final long serialVersionUID =3206093459760846163L;          
+
+  static final long serialVersionUID =1200348578933093459L;          
+
   /** The only instance allowed in system */        
   private static IndexSearch indexSearch;
 
   /** Search engine */
   private SearchEngine searchEngine = null;
 
+  /** The state of the window is stored in hidden options of DocumentationSettings */
+  DocumentationSettings ds = new DocumentationSettings(); 
+  
   private String quickFind;
   
   /* Button icons */
@@ -92,7 +102,7 @@ public class IndexSearch
   private static final DefaultListModel waitModel = new DefaultListModel();
   
   static {
-    DocIndexItem dii = new DocIndexItem( "Please wait ...", "", null, "" );
+    DocIndexItem dii = new DocIndexItem( "Please Wait ...", "", null, "" );
     dii.setIconIndex( DocSearchIcons.ICON_WAIT );
     waitModel.addElement( dii ); 
   }
@@ -110,6 +120,20 @@ public class IndexSearch
     splitPanel.setSplitPosition( oldSplit = 50 );
     splitPanel.setSplitDragable( true );
     splitPanel.setSplitTypeChangeEnabled( true );
+    splitPanel.addSplitChangeListener( new SplittedPanel.SplitChangeListener() { 
+      public void splitChanged (SplittedPanel.SplitChangeEvent evt) {
+        int value = evt.getNewValue();
+        ds.setIdxSearchSplit( value );
+        if ( value == 100 ) {
+          quickViewButton.setSelected( false );
+          ds.setIdxSearchNoHtml( true );
+        }
+        else {
+          quickViewButton.setSelected( true );
+          ds.setIdxSearchNoHtml( false );
+        }
+      }
+    } );
     
     java.awt.GridBagConstraints gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.gridwidth = 0;
@@ -220,8 +244,8 @@ public class IndexSearch
       byNameButton.setSelected (true);
       byNameButton.setPreferredSize (new java.awt.Dimension(25, 25));
       byNameButton.setRequestFocusEnabled (false);
-      byNameButton.setActionCommand ("A");
       byNameButton.setMinimumSize (new java.awt.Dimension(25, 25));
+      byNameButton.setActionCommand ("A");
       byNameButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           sortButtonActionPerformed (evt);
@@ -235,8 +259,8 @@ public class IndexSearch
       byReferenceButton = new javax.swing.JToggleButton ();
       byReferenceButton.setPreferredSize (new java.awt.Dimension(25, 25));
       byReferenceButton.setRequestFocusEnabled (false);
-      byReferenceButton.setActionCommand ("R");
       byReferenceButton.setMinimumSize (new java.awt.Dimension(25, 25));
+      byReferenceButton.setActionCommand ("R");
       byReferenceButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           sortButtonActionPerformed (evt);
@@ -250,8 +274,8 @@ public class IndexSearch
       byTypeButton = new javax.swing.JToggleButton ();
       byTypeButton.setPreferredSize (new java.awt.Dimension(25, 25));
       byTypeButton.setRequestFocusEnabled (false);
-      byTypeButton.setActionCommand ("T");
       byTypeButton.setMinimumSize (new java.awt.Dimension(25, 25));
+      byTypeButton.setActionCommand ("T");
       byTypeButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           sortButtonActionPerformed (evt);
@@ -289,7 +313,7 @@ public class IndexSearch
   private void sortButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortButtonActionPerformed
 
     currentSort = evt.getActionCommand(); 
-    System.out.println( currentSort );
+    ds.setIdxSearchSort( currentSort );
     sortResults();
      
   }//GEN-LAST:event_sortButtonActionPerformed
@@ -297,11 +321,15 @@ public class IndexSearch
   private void quickViewButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_quickViewButtonActionPerformed
     if ( quickViewButton.isSelected() ) {
       splitPanel.setSplitPosition( oldSplit == 100 ? 50 : oldSplit );
+      ds.setIdxSearchSplit( oldSplit == 100 ? 50 : oldSplit );
+      ds.setIdxSearchNoHtml( false );
       showHelp( true );
       }
     else {
       oldSplit = splitPanel.getSplitPosition();
       splitPanel.setSplitPosition( 100 );
+      ds.setIdxSearchSplit( 100 );
+      ds.setIdxSearchNoHtml( true );
     }
   }//GEN-LAST:event_quickViewButtonActionPerformed
 
@@ -322,6 +350,7 @@ public class IndexSearch
   private void showHelp(  ) {
     showHelp( false );
   }
+  
   /** Invokes the browser with help */
   private void showHelp( boolean quick ) {
     
@@ -439,12 +468,32 @@ public class IndexSearch
     
     return indexSearch;
   }
-  
+
+  public void resolveButtonState() {
+    
+    final String sort = ds.getIdxSearchSort();
+    final boolean noHtml = ds.isIdxSearchNoHtml();
+    final int split = ds.getIdxSearchSplit();
+    
+    javax.swing.SwingUtilities.invokeLater( new Runnable() {
+    public void run() {
+        byNameButton.setSelected( sort.equals( "A" ) ); 
+        byReferenceButton.setSelected( sort.equals( "R" ) ); 
+        byTypeButton.setSelected( sort.equals( "T" ) ); 
+        
+        quickViewButton.setSelected( !noHtml );
+        
+        splitPanel.setSplitPosition( split );
+     }
+    } );
+  }
+
   public void readExternal(final ObjectInput in ) 
       throws java.io.IOException, java.lang.ClassNotFoundException {
         
     super.readExternal( in );
     indexSearch = this;
+    resolveButtonState();
   }
   
   public void writeExternal(final ObjectOutput out) 

@@ -28,9 +28,6 @@ import com.netbeans.developer.modules.javadoc.comments.AutoCommenter;
 */
 public class DocumentationSettings extends ContextSystemOption //implements ViewerConstants 
   {
-  /** generated Serialized Version UID */
-  //static final long serialVersionUID = -60561536266234354L;
-
 
   /** autocoment window settings */
   private static int autocommentModifierMask = 
@@ -46,8 +43,16 @@ public class DocumentationSettings extends ContextSystemOption //implements View
 
   /** searchpath */
   private static String[] searchPath = new String[] {"c:/Jdk1.2/doc" };
-  
 
+  /** Holds value of property idxSearchSort. */
+  private static String idxSearchSort = "A";
+  
+  /** Holds value of property idxSearchNoHtml. */
+  private static boolean idxSearchNoHtml = false;
+  
+  /** Holds value of property idxSearchSplit. */
+  private static int idxSearchSplit = 50;
+  
   // Private attributes for option's children
 
   private static JavadocSettings javadocSettings;
@@ -59,6 +64,7 @@ public class DocumentationSettings extends ContextSystemOption //implements View
     javadocSettings  = new JavadocSettings ();
     stdDocletSettings =  new StdDocletSettings ();
   }
+
 
   /** Constructor for DocumentationSettings adds optipn's children */
   public DocumentationSettings () {
@@ -138,11 +144,55 @@ public class DocumentationSettings extends ContextSystemOption //implements View
     autocommentErrorMask = mask;
   }
   
+  /** Getter for property idxSearchSort.
+   *@return Value of property idxSearchSort.
+   */
+  public String getIdxSearchSort() {
+    return idxSearchSort;
+  }
+  
+  /** Setter for property idxSearchSort.
+   *@param idxSearchSort New value of property idxSearchSort.
+   */
+  public void setIdxSearchSort(String idxSearchSort) {
+    this.idxSearchSort = idxSearchSort;
+  }
+  
+  /** Getter for property idxSearchNoHtml.
+   *@return Value of property idxSearchNoHtml.
+   */
+  public boolean isIdxSearchNoHtml() {
+      return idxSearchNoHtml;
+  }
+  
+  /** Setter for property idxSearchNoHtml.
+   *@param idxSearchNoHtml New value of property idxSearchNoHtml.
+   */
+  public void setIdxSearchNoHtml(boolean idxSearchNoHtml) {
+    this.idxSearchNoHtml = idxSearchNoHtml;
+  }
+  
+  /** Getter for property idxSearchSplit.
+   *@return Value of property idxSearchSplit.
+   */
+  public int getIdxSearchSplit() {
+    return idxSearchSplit;
+  }
+  
+  /** Setter for property idxSearchSplit.
+   *@param idxSearchSplit New value of property idxSearchSplit.
+   */
+  public void setIdxSearchSplit(int idxSearchSplit) {
+    this.idxSearchSplit = idxSearchSplit;
+  }
+  
 }
 
 
 /*
  * Log
+ *  6    Gandalf   1.5         8/17/99  Petr Hrebejk    IndexSearch window 
+ *       serialization
  *  5    Gandalf   1.4         8/13/99  Petr Hrebejk    Serialization of 
  *       autocomment window added  
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
