@@ -60,18 +60,17 @@ public class J2SEProjectUtil {
      * Returns the property value evaluated by J2SEProject's PropertyEvaluator.
      *
      * @param p project
-     * @param properties project's j2seproperties
-     * @param property name of property
+     * @param value of property
      * @return evaluated value of given property or null if the property not set or
      * if the project doesn't provide AntProjectHelper
      */    
-    final public static Object getEvaluatedProperty (Project p, J2SEProjectProperties properties, String property) {
+    final public static Object getEvaluatedProperty (Project p, String value) {
         J2SEProject.AntProjectHelperProvider provider = (J2SEProject.AntProjectHelperProvider)p.getLookup ().lookup (J2SEProject.AntProjectHelperProvider.class);
-        if (provider != null) {
+        if (provider != null && value != null) {
             assert provider.getAntProjectHelper () != null : p;
-            return provider.getAntProjectHelper ().getStandardPropertyEvaluator ().getProperty (property);
+            return provider.getAntProjectHelper ().getStandardPropertyEvaluator ().evaluate (value);
         } else {
-            return properties.get (property);
+            return value;
         }
     }
     
