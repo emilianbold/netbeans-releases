@@ -24,6 +24,9 @@ import org.openide.options.SystemOption;
  * @author  Peter Zavadsky
  */
 public class I18nOptions extends SystemOption {
+    
+    /** Generated serial version UID.  */
+    static final long serialVersionUID = -1045171977263973656L;
 
     /** Property name for generate field. */
     public static final String PROP_GENERATE_FIELD = "generateField"; // NOI18N

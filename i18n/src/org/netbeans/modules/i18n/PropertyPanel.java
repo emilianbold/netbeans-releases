@@ -145,7 +145,7 @@ public class PropertyPanel extends JPanel {
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
-        commentLabel.setText("Comment:");
+        commentLabel.setText(I18nUtil.getBundle().getString("LBL_Comment"));
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
@@ -178,7 +178,7 @@ public class PropertyPanel extends JPanel {
         add(commentScroll, gridBagConstraints1);
         
         
-        keyLabel.setText("Key:");
+        keyLabel.setText(I18nUtil.getBundle().getString("LBL_Key"));
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
@@ -188,7 +188,7 @@ public class PropertyPanel extends JPanel {
         add(keyLabel, gridBagConstraints1);
         
         
-        valueLabel.setText("Value:");
+        valueLabel.setText(I18nUtil.getBundle().getString("LBL_Value"));
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
@@ -266,7 +266,7 @@ public class PropertyPanel extends JPanel {
         add(replaceFormatButton, gridBagConstraints1);
         
         
-        replaceFormatLabel.setText("Replace Format:");
+        replaceFormatLabel.setText(I18nUtil.getBundle().getString("LBL_ReplaceFormat"));
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
