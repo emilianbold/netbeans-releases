@@ -138,23 +138,23 @@ public abstract class IndexSearchThread extends Thread  {
                 if( diiField.startsWith(lastField) && diiDeclaringClass.equals(middleField) ){
                     ddiConsumer.addDocIndexItem ( dii );
                 }
-                else if( diiPackage.startsWith( middleField.toUpperCase() ) && diiDeclaringClass.equals( lastField ) ){
+                else if( diiPackage.startsWith( middleField ) && diiDeclaringClass.equals( lastField ) ){
                     ddiConsumer.addDocIndexItem ( dii );
                 }
-                else if( diiPackage.startsWith( (middleField + '.' + lastField).toUpperCase() ) && dii.getIconIndex() == DocSearchIcons.ICON_PACKAGE ){
+                else if( diiPackage.startsWith( (middleField + '.' + lastField) ) && dii.getIconIndex() == DocSearchIcons.ICON_PACKAGE ){
                     ddiConsumer.addDocIndexItem ( dii );
                 }
             }
             else{            
                 //class and field (method etc. are equals)
-                if( diiField.startsWith(lastField) && diiDeclaringClass.equals(middleField) && diiPackage.startsWith( reminder.toUpperCase() ) ){
+                if( diiField.startsWith(lastField) && diiDeclaringClass.equals(middleField) && diiPackage.startsWith( reminder ) ){
                     ddiConsumer.addDocIndexItem ( dii );
                 }
                 //else if( diiDeclaringClass.equals(lastField) && diiPackage.startsWith( (reminder + '.' + middleField).toUpperCase()) ){
-                else if( diiDeclaringClass.startsWith(lastField) && diiPackage.equals( (reminder + '.' + middleField + '.').toUpperCase()) ){
+                else if( diiDeclaringClass.startsWith(lastField) && diiPackage.equals( (reminder + '.' + middleField + '.')) ){
                     ddiConsumer.addDocIndexItem ( dii );
                 }
-                else if( diiPackage.startsWith( (reminder + '.' + middleField + '.' + lastField).toUpperCase() ) && dii.getIconIndex() == DocSearchIcons.ICON_PACKAGE ){
+                else if( diiPackage.startsWith( (reminder + '.' + middleField + '.' + lastField) ) && dii.getIconIndex() == DocSearchIcons.ICON_PACKAGE ){
                     ddiConsumer.addDocIndexItem ( dii );
                 }
             }

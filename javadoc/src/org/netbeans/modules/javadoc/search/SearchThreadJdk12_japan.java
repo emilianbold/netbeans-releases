@@ -326,7 +326,6 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                 */
                 
                 currentDii.setRemark( text );
-                text = text.toUpperCase();
 
                 StringTokenizer st = new StringTokenizer( text );
                 String token = st.nextToken();
@@ -340,21 +339,21 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                     token = st.nextToken();
                 }
                 
-                if ( token.equals( STR_CLASS ) )
+                if ( token.equalsIgnoreCase( STR_CLASS ) )
                     currentDii.setIconIndex( DocSearchIcons.ICON_CLASS );
-                else if ( token.equals( STR_INTERFACE ) )
+                else if ( token.equalsIgnoreCase( STR_INTERFACE ) )
                     currentDii.setIconIndex( DocSearchIcons.ICON_INTERFACE );
-                else if ( token.equals( STR_EXCEPTION ) )
+                else if ( token.equalsIgnoreCase( STR_EXCEPTION ) )
                     currentDii.setIconIndex( DocSearchIcons.ICON_EXCEPTION );
-                else if ( token.equals( STR_ERROR ) )
+                else if ( token.equalsIgnoreCase( STR_ERROR ) )
                     currentDii.setIconIndex( DocSearchIcons.ICON_ERROR );
-                else if ( token.equals( STR_PACKAGE ) )
+                else if ( token.equalsIgnoreCase( STR_PACKAGE ) )
                     currentDii.setIconIndex( DocSearchIcons.ICON_PACKAGE );
-                else if ( token.equals( STR_CONSTRUCTOR ) )
+                else if ( token.equalsIgnoreCase( STR_CONSTRUCTOR ) )
                     currentDii.setIconIndex( DocSearchIcons.ICON_CONSTRUCTOR );
-                else if ( token.equals( STR_METHOD ) )
+                else if ( token.equalsIgnoreCase( STR_METHOD ) )
                     currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_METHOD_ST : DocSearchIcons.ICON_METHOD );
-                else if ( token.equals( STR_VARIABLE ) )
+                else if ( token.equalsIgnoreCase( STR_VARIABLE ) )
                     currentDii.setIconIndex( isStatic ? DocSearchIcons.ICON_VARIABLE_ST : DocSearchIcons.ICON_VARIABLE );
 
                 // Add the item when all information is available
@@ -374,9 +373,6 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
                 String declaringClass = new String( data ).trim();
                 if( !(".".equals(declaringClass))){    //NOI18N
                     currentDii.setDeclaringClass(declaringClass);
-
-                    // System.out.println("Data: " + text );
-                    text = text.toUpperCase();
 
                     // System.out.println("Data: " + text );
                     text = text.toUpperCase();
