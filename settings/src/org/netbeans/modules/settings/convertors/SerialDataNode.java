@@ -56,6 +56,10 @@ public final class SerialDataNode extends DataNode {
     private final SerialDataConvertor convertor;
     private WeakReference settingInstance = new WeakReference(null);
     private boolean isNameChanged = false;
+    /** true after passing the constructors code
+     * @see #getName
+     */
+    private final Boolean isAfterNodeConstruction;
 
     /** used by general setting objects */
     public SerialDataNode(DataObject dobj) {
@@ -77,9 +81,7 @@ public final class SerialDataNode extends DataNode {
         
         this.convertor = conv;
         this.noBeanInfo = noBeanInfo;
-        if (!noBeanInfo) {
-            initName();
-        }
+        isAfterNodeConstruction = Boolean.TRUE;
     }
     
     private static Children getChildren(DataObject dobj, boolean noBeanInfo) {
@@ -200,6 +202,7 @@ public final class SerialDataNode extends DataNode {
                 }
             }
         } catch (Exception ex) {
+            // ignore
         }
     }
     
@@ -252,44 +255,6 @@ public final class SerialDataNode extends DataNode {
         return beanInfoIcon;
     }
 
-    /** try to initialize display name.
-    */
-    private void initName() {
-        Class clazz;
-        try {
-            InstanceCookie ic = ic();
-            if (ic == null) return;
-            clazz = ic.instanceClass();
-        } catch (Exception e) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
-            return;
-        }
-        
-        String className = clazz.getName ();
-        if (className.equals ("javax.swing.JSeparator") || // NOI18N
-            className.equals ("javax.swing.JToolBar$Separator")) { // NOI18N
-                
-            setDisplayName (NbBundle.getMessage (InstanceDataObject.class,
-                "LBL_separator_instance")); // NOI18N
-            return;
-        }
-        // Also specially handle SystemAction's.
-        if (SystemAction.class.isAssignableFrom (clazz)) {
-            SystemAction action = SystemAction.get (clazz);
-            // Set node's display name.
-            String name = action.getName ();
-            int amper = name.indexOf ((char) '&');
-            if (amper != -1)
-                name = name.substring (0, amper) + name.substring (amper + 1);
-            if (name.endsWith ("...")) // NOI18N
-                name = name.substring (0, name.length () - 3);
-            name = name.trim ();
-            setDisplayName (name);
-            return;
-        }
-        setDisplayName(getDataObject().getName());
-    }
-    
     /** Try to get display name of the bean.
      */
     private String getNameForBean() {
@@ -318,6 +283,7 @@ public final class SerialDataNode extends DataNode {
             setSettingsInstance(bean);
             return (String) nameGetter.invoke (bean, null);
         } catch (Exception ex) {
+            // ignore
             return null;
         }
     }
@@ -336,6 +302,9 @@ public final class SerialDataNode extends DataNode {
             } catch (NoSuchMethodException e) {
                 nameSetter = clazz.getMethod ("setDisplayName", param); // NOI18N
             }
+            if (!java.lang.reflect.Modifier.isPublic(nameSetter.getModifiers())) {
+                nameSetter = null;
+            }
         } catch (Exception ex) {
             // ignore
         }
@@ -343,11 +312,10 @@ public final class SerialDataNode extends DataNode {
     }
     
     public void setName(String name) {
-        String old = getNameImpl();
+        String old = getName();
         if (old != null && old.equals(name)) return;
         InstanceCookie ic = ic();
         if (ic == null) {
-            super.setName(name);
             return;
         }
         
@@ -360,11 +328,34 @@ public final class SerialDataNode extends DataNode {
                 isNameChanged = true;
                 resolvePropertyChange();
                 return;
-            } catch (Exception ex) {
-                // ignore
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            } catch (ClassNotFoundException ex) {
+                ErrorManager.getDefault().notify(ex);
+            } catch (IllegalAccessException ex) {
+                ErrorManager err = ErrorManager.getDefault();
+                err.annotate(ex, getDataObject().toString());
+                err.notify(ex);
+            } catch (IllegalArgumentException ex) {
+                ErrorManager err = ErrorManager.getDefault();
+                err.annotate(ex, getDataObject().toString());
+                err.notify(ex);
+            } catch (InvocationTargetException ex) {
+                ErrorManager err = ErrorManager.getDefault();
+                err.annotate(ex, ex.getTargetException());
+                err.annotate(ex, getDataObject().toString());
+                err.notify(ex);
             }
         }
-        super.setName(name);
+    }
+    
+    public String getName() {
+        // the fix of #17247; DataNode performs some weird initialization of
+        // the name in its constructor so SDN delegates to lazy getDisplayName
+        // impl when it is really necessary to prevent useless creating of
+        // the setting object.
+        if (isAfterNodeConstruction == null) return super.getName();
+        return getDisplayName();
     }
     
     /** Get the display name for the node.
@@ -397,22 +388,14 @@ public final class SerialDataNode extends DataNode {
                     if (name != null) {
                         name = fsStatus.annotateName (name, getDataObject().files());
                     } else {
-                        name = super.getDisplayName();
+                        name = fsStatus.annotateName (getDataObject().getName(),
+                            getDataObject().files());
                     }
                 }
             } catch (FileStateInvalidException e) {
                 // no fs, do nothing
             }
         }
-        return name;
-    }
-    
-    /** try to get name by colling getter on the instance. */
-    private String getNameImpl() {
-        String name;
-        name = getNameForBean();
-        if (name == null) name = getName();
-
         return name;
     }
     
@@ -1006,10 +989,14 @@ public final class SerialDataNode extends DataNode {
             isChanged = true;
             String name = e.getPropertyName();
             firePropertyChange (name, e.getOldValue (), e.getNewValue ());
-            if (name != null && name.equals("name")) { // NOI18N
+            
+            if (name == null) return;
+            if (name.equals("name")) { // NOI18N
                 SerialDataNode.this.isNameChanged = true;
                 // ensure the display name is updated also for ServiceTypes
                 SerialDataNode.this.fireDisplayNameChange(null, null);
+            } else if (name.equals("displayName")) { // NOI18N
+                SerialDataNode.this.isNameChanged = true;
             }
         }
         
