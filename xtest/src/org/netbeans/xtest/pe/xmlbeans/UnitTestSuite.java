@@ -19,6 +19,8 @@
 
 package org.netbeans.xtest.pe.xmlbeans;
 
+import java.io.*;
+
 /**
  *
  * @author  mb115822
@@ -171,5 +173,15 @@ public class UnitTestSuite extends XMLBean {
 
     /** Holds value of property testBag_id. */
     private long testBag_id;
+    
+    
+    // load UnitTestSuite from a file
+    public static UnitTestSuite loadFromFile(File aFile) throws IOException, ClassNotFoundException {
+        XMLBean xmlBean = XMLBean.loadXMLBean(aFile);
+        if (!(xmlBean instanceof UnitTestSuite)) {
+            throw new ClassNotFoundException("Loaded file "+aFile+" does not contain UnitTestSuite");
+        }
+        return (UnitTestSuite)xmlBean;
+    }
     
 }

@@ -21,8 +21,7 @@ package org.netbeans.xtest.util;
 
 import java.io.*;
 import java.util.*;
-import java.util.jar.*;
-import java.util.zip.*;
+
 
 /**
  *
@@ -44,10 +43,45 @@ public class FileUtils {
     // we depend on ant on for copying a file
     private static org.apache.tools.ant.util.FileUtils antFileUtils;
     
+
+    /** checks if given file exists
+     * @param aFile file to check
+     * @throws IOException when file does not exist
+     */    
+    public static void checkFileExists(File aFile) throws IOException {
+        if (!aFile.exists()) {
+            throw new IOException("File "+aFile+" does not exist");
+        }
+    }
     
-    /** Normalizes name, so everythinh is in lower case
-     * and spaces are converted to underscored
-     *
+
+    /** check whether given file is a normal file
+     * @param aFile file to check
+     * @throws IOException when file is not a normal file
+     */    
+    public static void checkFileIsFile(File aFile) throws IOException {
+        checkFileExists(aFile);
+        if (!aFile.isFile()) {
+            throw new IOException("File "+aFile+" is not a normal file");
+        }
+    }
+    
+    /** check whether file is a directory
+     * @param aFile file to check
+     * @throws IOException when file is not a directory
+     */    
+    public static void checkFileIsDirectory(File aFile) throws IOException {
+        checkFileExists(aFile);
+        if (!aFile.isDirectory()) {
+            throw new IOException("File "+aFile+" is not a directory");
+        }        
+    }
+    
+    
+    /** Normalizes name, so everything is in lower case and spaces are converted to
+     * underscores
+     * @param name filename to normalize
+     * @return 'normalized' name
      */
     public static String normalizeName(String name) {
         String newName = name.toLowerCase().replace(' ','_');
@@ -152,91 +186,7 @@ public class FileUtils {
     }
     
     
-    public static void unpackZip(String zip, String dest) throws IOException {
-        unpackZip(new File(zip), new File(dest),"");
-    }
-    
-    public static void unpackZip(String zip, String dest, String fileToUnpack) throws IOException {
-        unpackZip(new File(zip), new File(dest), fileToUnpack);
-    }
-    
-    public static void unpackZip(File zipFile, File destFile) throws IOException {
-        unpackZip(zipFile,destFile,"");
-    }
-    
-    public static void unpackZip(File zipFile, File destFile, String fileToUnpack) throws IOException {
-        
-        if (DEBUG) System.out.println("Unpacking zip:"+zipFile+" to:"+destFile+" fileToUnpack:"+fileToUnpack);
-        
-        
-        if (!destFile.exists()) {
-            destFile.mkdirs();
-        }        
-        if (!zipFile.exists()) {
-            if (DEBUG) System.out.println("unpackZip: File "+zipFile.getName()+" does not exist");
-            throw new IllegalArgumentException("Zip "+zipFile.getName()+" does not exist");
-        }
-        FileInputStream fis = null;
-        ZipInputStream zis = null;
-        FileOutputStream out = null;
-        try {
-            fis = new FileInputStream(zipFile);
-            zis = new ZipInputStream(fis);
-            ZipEntry entry = zis.getNextEntry();
-            
-            if (entry == null) {
-                if (DEBUG) System.out.println("Not a valid zip file - does not have entry");
-                fis.close();
-                zis.close();
-                throw new IOException("File "+zipFile.getName()+"Not a valid zip file - does not have Zip entry");
-            }
-                   
-                       
-            while (entry != null) {
-                String entryName = entry.getName();
-                if (entryName.startsWith(fileToUnpack)) {
-                    String outFilename = destFile.getAbsolutePath()+File.separator+entryName;                    
-                    if (DEBUG) System.out.println("Extracting "+outFilename);
-                    if (entry.isDirectory()) {
-                        File dir  = new File(outFilename);
-                        boolean result = false;
-                        if (dir.isDirectory()) {
-                            result = true;
-                        } else {
-                            result = dir.mkdirs();
-                        }
-                        if (DEBUG) System.out.println("Making directory");
-                        if (result != true) {
-                            // we have problem ---
-                            throw new IOException("Directory cannot be created:"+outFilename);
-                        }
-                    } else {
-                        if (DEBUG) System.out.println("Extracting file");
-
-                            out = new FileOutputStream(outFilename);
-                            byte[] buffer = new byte[4096];
-                            int bytesRead;
-                            while ((bytesRead = zis.read(buffer)) != -1) {
-                                out.write(buffer,0,bytesRead);
-                            }
-                            out.close();                            
-                    }
-                }
-                // next entry
-                entry = zis.getNextEntry();   
-            }
-        } finally {
-            if (zis != null) {
-                zis.close();
-            }
-            if (fis != null) {
-                fis.close();
-            }
-            if (out != null) {
-                out.close();
-            }
-        }
-    }
+  
     
     /** delete directory including its contents
          * @param dirFile directory to delete (as File) 

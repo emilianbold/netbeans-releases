@@ -19,6 +19,8 @@
 
 package org.netbeans.xtest.pe.xmlbeans;
 
+import java.io.*;
+
 /**
  *
  * @author  mb115822
@@ -204,5 +206,15 @@ public class TestRun extends XMLBean {
 
     /** Holds value of property XTestResultsReport_id. */
     private long XTestResultsReport_id;    
+    
+ 
+    // load TestRun from a file
+    public static TestRun loadFromFile(File aFile) throws IOException, ClassNotFoundException {
+        XMLBean xmlBean = XMLBean.loadXMLBean(aFile);
+        if (!(xmlBean instanceof TestRun)) {
+            throw new ClassNotFoundException("Loaded file "+aFile+" does not contain TestRun");
+        }
+        return (TestRun)xmlBean;
+    }
 
 }

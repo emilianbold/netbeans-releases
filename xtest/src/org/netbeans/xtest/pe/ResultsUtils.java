@@ -20,6 +20,7 @@
 package org.netbeans.xtest.pe;
 
 import org.netbeans.xtest.pe.xmlbeans.*;
+import org.netbeans.xtest.util.FileUtils;
 import org.w3c.dom.*;
 import java.io.*;
 import java.util.*;
@@ -178,8 +179,8 @@ public class ResultsUtils {
         return validTestRuns;
     }
     
-    
-    public static final File getHTMLResultDir(File rootDir) throws IOException {
+    // get HTML results dir - if does not exist and create=true, create it
+    public static final File getHTMLResultDir(File rootDir, boolean create) throws IOException {
         File resultDir = new File(rootDir,PEConstants.HTMLRESULTS_DIR);
         if (resultDir.exists()) {
             if (resultDir.isDirectory()) {
@@ -188,15 +189,26 @@ public class ResultsUtils {
                 throw new IOException("File "+PEConstants.HTMLRESULTS_DIR+" exist, but is not a directory");
             }
         } else {
-            if (resultDir.mkdirs()) {
-                return resultDir;
+            if (create) {
+                if (resultDir.mkdirs()) {
+                    return resultDir;
+                } else {
+                    throw new IOException("Cannot create :"+PEConstants.HTMLRESULTS_DIR+" directory");
+                }
             } else {
-                throw new IOException("Cannot create :"+PEConstants.HTMLRESULTS_DIR+" directory");
+                throw new IOException("Cannot open "+rootDir+"/"+PEConstants.HTMLRESULTS_DIR+" directory");
             }
         }        
     }
     
-    public static final File getXMLResultDir(File rootDir) throws IOException {
+    // backward compatibility method
+    public static final File getHTMLResultDir(File rootDir) throws IOException {
+        return getHTMLResultDir(rootDir,true);
+    }
+    
+    
+    // get XML results dir - if does not exist and create=true, create it
+    public static final File getXMLResultDir(File rootDir, boolean create) throws IOException {
         File resultDir = new File(rootDir,PEConstants.XMLRESULTS_DIR);
         if (resultDir.exists()) {
             if (resultDir.isDirectory()) {
@@ -205,20 +217,31 @@ public class ResultsUtils {
                 throw new IOException("File "+PEConstants.XMLRESULTS_DIR+" exist, but is not a directory");
             }
         } else {
-            if (resultDir.mkdirs()) {
-                return resultDir;
+            if (create) {
+                if (resultDir.mkdirs()) {
+                    return resultDir;
+                } else {
+                    throw new IOException("Cannot create :"+PEConstants.XMLRESULTS_DIR+" directory");
+                }
             } else {
-                throw new IOException("Cannot create :"+PEConstants.HTMLRESULTS_DIR+" directory");
+                throw new IOException("Cannot open "+rootDir+"/"+PEConstants.XMLRESULTS_DIR+" directory");
             }
         }        
-    }    
+    }
+    
+    // backward compatibility method
+    public static final File getXMLResultDir(File rootDir) throws IOException {
+        return getXMLResultDir(rootDir,true);
+    }
+    
+    
 
    public static Document getDOMDocFromFile(File file) throws IOException {
         //return SerializeDOM.parseFile(file);
         return SerializeDOM.parseFile(file);
     }
     
-    public static XTestResultsReport getXTestResultsReport(File reportFile)    {
+    public static XTestResultsReport getXTestResultsReport(File reportFile) {
         try {
             debugInfo("getXTestResultsReport(): file="+reportFile);
             Document doc = getDOMDocFromFile(reportFile);
@@ -241,7 +264,8 @@ public class ResultsUtils {
             debugInfo("getXTestResultsReport(): have to create new XTestResultsReport!");  
             return new XTestResultsReport();
         }
-    }
+     }
+    
     
     public static TestRun getTestRun(File testRunFile) {
         try {
@@ -316,7 +340,7 @@ public class ResultsUtils {
         return testBagFile;
     }
     
-    public static File getTestSuiteFile(File reportRoot, TestRun testRun, TestBag testBag, UnitTestSuite testSuite) {
+    public static File getUnitTestSuiteFile(File reportRoot, TestRun testRun, TestBag testBag, UnitTestSuite testSuite) {
         File testRunDir = new File(reportRoot,testRun.xmlat_runID);
         File testBagDir = new File(testRunDir,testBag.xmlat_bagID);
         File testBagXMLDir = new File(testBagDir,PEConstants.XMLRESULTS_DIR);
@@ -325,6 +349,77 @@ public class ResultsUtils {
         return testSuiteFile;
     }
     
+    // backward compatibiliy method- should be deprecated
+    public static File getTestSuiteFile(File reportRoot, TestRun testRun, TestBag testBag, UnitTestSuite testSuite) {
+        return getUnitTestSuiteFile(reportRoot,testRun,testBag,testSuite);
+    }
+    
+    
+    
+    // helper methods
+    
+
+    
+    public static XTestResultsReport loadXTestResultsReport(File reportRoot, boolean divided) throws IOException, ClassNotFoundException {
+        if (!reportRoot.isDirectory()) {
+            throw new IOException("specified reportRoot is not a valid directory: "+reportRoot);
+        }
+        // get the root XTestResultsReport
+        File xtrFile = new File(getXMLResultDir(reportRoot,false),PEConstants.TESTREPORT_XML_FILE);
+        FileUtils.checkFileIsFile(xtrFile);
+        
+        // get the results report 
+        XTestResultsReport xtr = XTestResultsReport.loadFromFile(xtrFile);               
+        
+        // report is not divided, so we're done :-)
+        if (!divided) {
+            return xtr;
+        }
+        
+        // there's nothing to do if test run is empty (broken report?)
+        if (xtr.xmlel_TestRun == null) {
+            // is this correct?
+            return xtr;
+        }
+        
+        
+        // load test runs
+        for (int i=0; i< xtr.xmlel_TestRun.length; i++) {            
+            File aTestRunFile = getTestRunFile(reportRoot, xtr.xmlel_TestRun[i]);
+            FileUtils.checkFileIsFile(aTestRunFile);
+            // ok - replace the the test run with the testrun with children
+            TestRun aTestRun = TestRun.loadFromFile(aTestRunFile);
+            xtr.xmlel_TestRun[i] = aTestRun;
+
+            // continue with testbags
+            if (aTestRun.xmlel_TestBag != null) {                
+                for (int j=0; j < aTestRun.xmlel_TestBag.length; j++) {
+                    File aTestBagFile = getTestBagFile(reportRoot, aTestRun, aTestRun.xmlel_TestBag[j]);
+                    FileUtils.checkFileIsFile(aTestBagFile);
+                    TestBag aTestBag = TestBag.loadFromFile(aTestBagFile);
+                    aTestRun.xmlel_TestBag[j] = aTestBag;
+                       
+                    // continue with suites
+                    if (aTestBag.xmlel_UnitTestSuite != null) {
+                        for (int k=0; k < aTestBag.xmlel_UnitTestSuite.length ; k++) {
+                            File anUnitTestSuiteFile = getUnitTestSuiteFile(reportRoot,aTestRun,aTestBag,aTestBag.xmlel_UnitTestSuite[k]);
+                            FileUtils.checkFileIsFile(anUnitTestSuiteFile);
+                            UnitTestSuite anUnitTestSuite = UnitTestSuite.loadFromFile(anUnitTestSuiteFile);
+                            aTestBag.xmlel_UnitTestSuite[k] = anUnitTestSuite;
+                        }
+                    }
+                    // test suites done
+                }
+                
+            }
+            // test bags done
+            
+        }   
+        // test runs done
+        // indicate the report is full
+        xtr.xmlat_fullReport = true;
+        return xtr;
+    }
 
     
 }

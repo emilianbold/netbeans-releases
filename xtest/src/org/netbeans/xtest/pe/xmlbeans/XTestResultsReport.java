@@ -269,13 +269,31 @@ public class XTestResultsReport extends XMLBean {
     }
     
     
-    // load XTestResultsReport from file
-    public static XTestResultsReport loadReportFromFile(File reportFile) throws IOException, ClassNotFoundException {
+    // load XTestResultsReport from a file
+    /**
+     * @param reportFile
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * @return
+     */    
+    public static XTestResultsReport loadFromFile(File reportFile) throws IOException, ClassNotFoundException {
         XMLBean xmlBean = XMLBean.loadXMLBean(reportFile);
         if (!(xmlBean instanceof XTestResultsReport)) {
             throw new ClassNotFoundException("Loaded file "+reportFile+" does not contain XTestRestultsReport");
         }
         return (XTestResultsReport)xmlBean;
+    }
+    
+    // old method name - should be deprecated
+    /**
+     * @param reportFile
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * @return
+     * @deprecated
+     */    
+    public static XTestResultsReport loadReportFromFile(File reportFile) throws IOException, ClassNotFoundException {
+        return loadFromFile(reportFile);
     }
     
 }
