@@ -888,7 +888,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         private void handleCopyFileToDestDir(FileObject fo) throws IOException {
             if (!fo.isVirtual()) {
                 FileObject docBase = getWebModule().getDocumentBase();
-                if (FileUtil.isParentOf(docBase, fo)) {
+                if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
                     // inside docbase
                     String path = FileUtil.getRelativePath(docBase, fo);
                     if (!isSynchronizationAppropriate(path)) 
