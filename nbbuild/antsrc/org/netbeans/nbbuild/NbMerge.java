@@ -65,7 +65,7 @@ public class NbMerge extends Task {
         tasks.addElement (deltree);
         for (int i = 0; i < modules.size (); i++) {
             String module = (String) modules.elementAt (i);
-            Expand expand = (Expand) project.createTask ("expand");
+            Expand expand = (Expand) project.createTask ("unzip");
             expand.setLocation (location);
             expand.setDest (upperdir);
             expand.setSrc (topdir + '/' + module + '/' + module + ".nbm");
