@@ -142,7 +142,7 @@ public class DataNode extends AbstractNode {
         String s = super.getDisplayName ();
 
         try {
-            s = obj.getPrimaryFile ().getFileSystem ().getStatus ().annotateName (s, obj.files ());
+            s = obj.getPrimaryFile ().getFileSystem ().getStatus ().annotateName (s, new LazyFilesSet());
         } catch (FileStateInvalidException e) {
             // no fs, do nothing
         }
@@ -161,7 +161,7 @@ public class DataNode extends AbstractNode {
         java.awt.Image img = super.getIcon (type);
 
         try {
-            img = obj.getPrimaryFile ().getFileSystem ().getStatus ().annotateIcon (img, type, obj.files ());
+            img = obj.getPrimaryFile ().getFileSystem ().getStatus ().annotateIcon (img, type, new LazyFilesSet());
         } catch (FileStateInvalidException e) {
             // no fs, do nothing
         }
@@ -180,7 +180,7 @@ public class DataNode extends AbstractNode {
         java.awt.Image img = super.getOpenedIcon(type);
 
         try {
-            img = obj.getPrimaryFile ().getFileSystem ().getStatus ().annotateIcon (img, type, obj.files ());
+            img = obj.getPrimaryFile ().getFileSystem ().getStatus ().annotateIcon (img, type, new LazyFilesSet());
         } catch (FileStateInvalidException e) {
             // no fs, do nothing
         }
@@ -733,4 +733,83 @@ public class DataNode extends AbstractNode {
             return clone ? n.cloneNode () : n;
         }
     }
+    
+    /** Wrapping class for obj.files(). Used in getIcon() and getDisplayName()
+        to have something lazy to pass to annotateIcon() and annotateName()
+        instead of calling obj.files() immediately. */
+    private class LazyFilesSet implements Set {
+        
+        private Set obj_files;
+        
+        synchronized private void lazyInitialization () {
+           obj_files = obj.files();
+        }
+        
+        public boolean add(Object o) {
+            lazyInitialization();
+            return obj_files.add(o);
+        }
+        
+        public boolean addAll(Collection c) {
+            lazyInitialization();
+            return obj_files.addAll(c);
+        }
+        
+        public void clear() {
+            lazyInitialization();
+            obj_files.clear();
+        }
+        
+        public boolean contains(Object o) {
+            lazyInitialization();
+            return obj_files.contains(o);
+        }
+        
+        public boolean containsAll(Collection c) {
+            lazyInitialization();
+            return obj_files.containsAll(c);
+        }
+        
+        public boolean isEmpty() {
+            lazyInitialization();
+            return obj_files.isEmpty();
+        }
+        
+        public Iterator iterator() {
+            lazyInitialization();
+            return obj_files.iterator();
+        }
+        
+        public boolean remove(Object o) {
+            lazyInitialization();
+            return obj_files.remove(o);
+        }
+        
+        public boolean removeAll(Collection c) {
+            lazyInitialization();
+            return obj_files.removeAll(c);
+        }
+        
+        public boolean retainAll(Collection c) {
+            lazyInitialization();
+            return obj_files.retainAll(c);
+        }
+        
+        public int size() {
+            lazyInitialization();
+            return obj_files.size();
+        }
+        
+        public Object[] toArray() {
+            lazyInitialization();
+            return obj_files.toArray();
+        }
+        
+        public Object[] toArray(Object[] a) {
+            lazyInitialization();
+            return obj_files.toArray(a);
+        }
+        
+    }    
+    
 }
