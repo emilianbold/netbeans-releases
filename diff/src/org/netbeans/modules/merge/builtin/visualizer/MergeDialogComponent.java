@@ -35,6 +35,7 @@ public class MergeDialogComponent extends TopComponent {
     
     public static final String PROP_PANEL_CLOSING = "panelClosing"; // NOI18N
     public static final String PROP_ALL_CLOSED = "allPanelsClosed"; // NOI18N
+    public static final String PROP_ALL_CANCELLED = "allPanelsCancelled"; // NOI18N
     
     private Map actionListenerMap = new HashMap();
 
@@ -44,6 +45,7 @@ public class MergeDialogComponent extends TopComponent {
     /** Creates new form MergeDialogComponent */
     public MergeDialogComponent() {
         initComponents();
+        getRootPane().setDefaultButton(okButton);
         //mergePanels = new ArrayList();
         //chSupport = new VetoableChangeSupport(this);
     }
@@ -64,6 +66,7 @@ public class MergeDialogComponent extends TopComponent {
 
         setLayout(new java.awt.GridBagLayout());
 
+        mergeTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -80,9 +83,9 @@ public class MergeDialogComponent extends TopComponent {
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         buttonsPanel.add(okButton, gridBagConstraints);
 
         cancelButton.setText(org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "BTN_Cancel"));
@@ -93,8 +96,8 @@ public class MergeDialogComponent extends TopComponent {
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         buttonsPanel.add(cancelButton, gridBagConstraints);
 
         helpButton.setText(org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "BTN_Help"));
@@ -105,15 +108,15 @@ public class MergeDialogComponent extends TopComponent {
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         buttonsPanel.add(helpButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(buttonsPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
@@ -139,6 +142,7 @@ public class MergeDialogComponent extends TopComponent {
                 try {
                     fireVetoableChange(PROP_ALL_CLOSED, null, null);
                 } catch (PropertyVetoException pvex) {}
+                close();
             }
         }
     }//GEN-LAST:event_okButtonActionPerformed
@@ -149,6 +153,12 @@ public class MergeDialogComponent extends TopComponent {
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         // Add your handling code here:
+        synchronized (this) {
+            try {
+                fireVetoableChange(PROP_ALL_CANCELLED, null, null);
+            } catch (PropertyVetoException pvex) {}
+            close();
+        }
     }//GEN-LAST:event_cancelButtonActionPerformed
     
     
