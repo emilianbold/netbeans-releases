@@ -13,25 +13,13 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
-    <name>org.netbeans.modules.debugger.jpda</name>
+    <name>org.netbeans.api.debugger.jpda</name>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
-            <path>debuggerjpda</path>
+            <path>debuggerjpda/api</path>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.api.debugger</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.spi.debugger.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.api.debugger.jpda</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency/>
@@ -42,17 +30,12 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.openide</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>4.20</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.api.debugger.jpda</package>
+                <package>org.netbeans.spi.debugger.jpda</package>
+            </public-packages>
+            <javadoc/>
         </data>
     </configuration>
 </project>

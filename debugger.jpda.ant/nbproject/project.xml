@@ -44,6 +44,24 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.src</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.java.platform</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.loaders</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.execution</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -51,38 +69,17 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
-                <!-- XXX for ExecInfo via DebuggerInfo: -->
                 <dependency>
-                    <code-name-base>org.openide.execution.deprecated</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.debugger</code-name-base>
+                    <code-name-base>org.netbeans.api.debugger.jpda</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.debugger.core</code-name-base>
+                    <code-name-base>org.netbeans.api.debugger</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency>
-                        <release-version>3</release-version>
-                        <specification-version>2.10</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.debugger.jpda</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.17</specification-version>
-                    </run-dependency>
+                    <run-dependency/>
                 </dependency>
             </module-dependencies>
             <public-packages/>

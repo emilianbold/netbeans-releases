@@ -11,118 +11,38 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project name="debuggerjpda/ant" basedir="." default="netbeans">
+<project basedir="." default="netbeans" name="debuggerjpda/ant">
 
-    <import file="../../nbbuild/default.xml"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <!-- XXX this is a mess; can probably just revert to rev. 1.11 -->
-
-    <target name="init" depends="default.init">
-        <patternset id="module.product.files">
-            <include name="${nb.modules.dir}/org-netbeans-modules-debugger-jpda-ant.jar"/>
+    <target name="files-init">
+        <patternset id="module.files">
+            <include name="${module.jar}"/>
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
             <include name="ant/nblib/org-netbeans-modules-debugger-jpda-ant.jar"/>
         </patternset>
-        <path id="cp">
-            <pathelement location="${debuggercore/api.dir}/${nb.modules/autoload.dir}/debuggercore-api.jar"/>
-            <pathelement location="${debuggerjpda/api.dir}/${nb.modules/autoload.dir}/debuggerjpda-api.jar"/>
-            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-            <pathelement location="${java/api.dir}/${nb.modules.dir}/org-netbeans-api-java.jar"/>
-            <pathelement location="${java/platform.dir}/${nb.modules.dir}/org-netbeans-modules-java-platform.jar"/>
-            <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
-            <pathelement location="${jdkhome}/lib/tools.jar"/>
-            <pathelement location="${ant.jar}"/>
-        </path>
     </target>
 
-    <target name="compile" depends="init">
-        <javac deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-            <src path="src"/>
-            <src path="antsrc"/>
-            <classpath refID="cp"/>
+    <target name="nblib" depends="init">
+        <mkdir dir="build/antclasses"/>
+        <javac srcdir="antsrc" destdir="build/antclasses" source="1.4" debug="true" deprecation="true">
+            <classpath>
+                <path refid="cp"/>
+                <pathelement location="${ant.jar}"/>
+                <pathelement location="${tools.jar}"/>
+            </classpath>
         </javac>
-    </target>
-
-    <target name="jars" depends="compile">
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-debugger-jpda-ant.jar" manifest="manifest-subst.mf" compress="false">
-            <fileset dir="src">
-                <include name="META-INF/**/*"/>
-                <include name="**/*.class"/>
-                <include name="**/Bundle.properties"/>
-                <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
-            </fileset>
-        </jar>
-
+        <copy todir="build/antclasses">
+            <fileset dir="antsrc" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+        </copy>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/nblib"/>
         <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/ant/nblib/org-netbeans-modules-debugger-jpda-ant.jar" compress="false">
-            <fileset dir="antsrc">
-                <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
-                <include name="org/netbeans/modules/debugger/jpda/ant/**/*.class"/>
-                <include name="org/netbeans/modules/debugger/jpda/ant/antlib.xml"/>
+            <fileset dir="build/antclasses">
+                <excludesfile name="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
             </fileset>
         </jar>
     </target>
 
-    <target name="release" depends="init">
-    </target>
-
-    <target name="netbeans" depends="jars,release">
-        <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/org-netbeans-modules-debugger-jpda-ant.jar">
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-                <patternset refID="module.product.files"/>
-            </fileset>
-        </genlist>
-    </target>
-
-    <target name="nbm" depends="netbeans">
-      <makenbm file="org-netbeans-modules-debugger-jpda-ant.nbm"
-               productdir="${netbeans.dest.dir}/${cluster.dir}"
-               module="${nb.modules.dir}/org-netbeans-modules-debugger-jpda-ant.jar"
-           homepage="http://debuggerjpda.${homepage.base}/"
-           distribution="http://${dist.base}/org-netbeans-modules-debugger-jpda-ant.nbm">
-        <license file="${license.file}"/>
-        <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-      </makenbm>
-    </target>
-
-    <target name="clean" depends="init" description="Clean build products.">
-        <delete>
-            <fileset dir="src">
-                <include name="**/*.class"/>
-            </fileset>
-            <fileset dir="antsrc">
-                <include name="**/*.class"/>
-            </fileset>
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-                <patternset refID="module.product.files"/>
-            </fileset>
-        </delete>
-        <delete file="manifest-subst.mf"/>
-        <delete file="org-netbeans-modules-debugger-jpda-ant.nbm"/>
-        <delete dir="javadoc"/>
-    </target>
-
-    <target name="javadoc" depends="init" description="Build JPDA debugger ANT documentation.">
-       <selector id="debuggerjpda_ant_javadoc_files" >
-         <or>
-           <filename name="src/**/*.java" />
-         </or>
-       </selector>
-
-      <ant dir="../../nbbuild/javadoctools" antfile="template.xml" target="javadoc" inheritRefs="true">
-          <property name="javadoc.base" location="."/>
-          <property name="javadoc.name" value="JPDADebuggerANT"/>
-          <property name="javadoc.title" value="JPDA Debugger ANT"/>
-          <property name="javadoc.packages" value="org.netbeans.modules.debugger.jpda"/>
-          <property name="javadoc.classpath" refid="cp"/>
-          <property name="javadoc.src" value="../../debuggerjpda"/>
-          <property name="javadoc.files" value="debuggerjpda_ant_javadoc_files" />
-          <property name="javadoc.arch" location="../arch/arch-debugger-api-viewmodel.xml"/>
-      </ant>
-    </target>
+    <target name="netbeans-extra" depends="nblib"/>
 
 </project>

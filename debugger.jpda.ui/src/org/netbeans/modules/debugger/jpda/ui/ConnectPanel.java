@@ -51,8 +51,6 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
-import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
-import org.netbeans.modules.debugger.ui.Utils;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.util.NbBundle;
 

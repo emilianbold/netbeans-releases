@@ -25,7 +25,6 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
-import org.openide.windows.Workspace;
 
 
 /**
