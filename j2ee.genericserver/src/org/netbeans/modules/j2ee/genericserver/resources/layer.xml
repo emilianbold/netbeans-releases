@@ -38,7 +38,12 @@
         </folder>
         <folder name="InstalledServers">
             <file name="Generic_Server_Instance">
-                <attr name="displayName" stringvalue="Bundled Generic Server"/>
+                <attr name="url" stringvalue="generic"/>
+                <!-- 
+                    This is without name to make it unvisible in EJB project wizards,
+                    better would be to add property is_visible to j2eeserver api
+                 -->
+                <attr name="displayName" stringvalue=""/>
             </file>
         </folder>
     </folder>
