@@ -7,26 +7,18 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.beans.*;
-import java.io.*;
-import java.sql.*;
-import java.util.*;
+import java.util.ResourceBundle;
 
-import org.openide.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
-import org.openide.nodes.*;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.nodes.*;
+import org.openide.util.actions.CookieAction;
 
 public class DatabaseAction extends CookieAction {
     
@@ -36,23 +28,19 @@ public class DatabaseAction extends CookieAction {
     protected String aname;
     protected String nodename;
 
-    public String getName()
-    {
+    public String getName() {
         return aname;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         aname = name;
     }
 
-    public String getNode()
-    {
+    public String getNode() {
         return nodename;
     }
 
-    public void setNode(String name)
-    {
+    public void setNode(String name) {
         nodename = name;
     }
 
@@ -63,24 +51,24 @@ public class DatabaseAction extends CookieAction {
         return new HelpCtx ("dbexpovew");
     }
 
-    protected Class[] cookieClasses()
-    {
+    protected Class[] cookieClasses() {
         return new Class[] {
                    this.getClass()
                };
     }
 
-    protected int mode()
-    {
+    protected int mode() {
         return MODE_ONE;
     }
 
-    protected boolean enable(Node[] activatedNodes)
-    {
+    protected boolean enable(Node[] activatedNodes) {
         return true;
     }
 
-    public void performAction (Node[] activatedNodes)
-    {
+    public void performAction (Node[] activatedNodes) {
+    }
+    
+    protected boolean asynchronous() {
+        return false;
     }
 }
