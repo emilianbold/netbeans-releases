@@ -351,7 +351,28 @@ public class NonGui extends NbTopManager implements Runnable {
         java.security.Policy.getPolicy().getPermissions(new java.security.CodeSource(null, null)).implies(new java.security.AllPermission());
 
         // set security manager
-        System.setSecurityManager(new org.netbeans.core.execution.TopSecurityManager());
+
+        org.netbeans.core.execution.TopSecurityManager secman =
+            new org.netbeans.core.execution.TopSecurityManager();
+
+        // XXX(-trung) workaround for IBM JDK 1.3 Linux bug in
+        // java.net.URLClassLoader.findClass().  The IBM implementation of this
+        // method is not reentrant. The problem happens when findClass()
+        // indirectly calls methods of TopSecurityManager for the first time.
+        // This may trigger other classes to be loaded, thus findClass() is
+        // re-entered.
+        //
+        // We try to force dependent classes of TopSecurityManager to be loaded
+        // before setting it as system's SecurityManager
+        
+        try {
+            secman.checkRead("xxx"); // NOI18N
+        }
+        catch (Throwable ex) {
+            // ignore
+        }
+        
+        System.setSecurityManager(secman);
 
         // install java.net.Authenticator
         java.net.Authenticator.setDefault (new NbAuthenticator ());
