@@ -120,7 +120,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         while (files.hasMoreElements()) {
             FileObject fo = (FileObject)files.nextElement();
             
-            if (skipFile (fo.toString ())) {
+            if (skipFile(fo.getPath())) {
                 continue;
             }
             
