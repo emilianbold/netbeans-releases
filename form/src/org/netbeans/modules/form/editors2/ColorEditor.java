@@ -226,7 +226,7 @@ public final class ColorEditor implements PropertyEditor {
                         ", " + color.getBlue () + ")"; // NOI18N
       return "(java.awt.Color) com.sun.java.swing.UIManager.getDefaults ().get (\"" + // NOI18N
              color.getID () + "\")"; // NOI18N
-    };
+    }
   }
 
   public String[] getTags () {
@@ -239,7 +239,7 @@ public final class ColorEditor implements PropertyEditor {
       initSwingConstants();
       return swingColorNames;
     default: return awtColorNames;
-    };
+    }
   }
 
   public boolean isPaintable () {
@@ -538,6 +538,8 @@ public final class ColorEditor implements PropertyEditor {
 
 /*
  * Log
+ *  7    Gandalf   1.6         2/15/00  Tran Duc Trung  minor change to make 
+ *       jikes happy
  *  6    Gandalf   1.5         1/13/00  Ian Formanek    NOI18N #2
  *  5    Gandalf   1.4         11/27/99 Patrik Knakal   
  *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
