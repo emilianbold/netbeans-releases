@@ -227,8 +227,8 @@ public class Main extends Object {
         }
         
         if (!localeOnly) {
-            append_jars_to_cp (new File (base, "core/patches"), toAdd);
-            append_jars_to_cp (new File (base, "core"), toAdd);
+            append_jars_to_cp(new File(base, "core/patches"), toAdd); // NOI18N
+            append_jars_to_cp(new File(base, "core"), toAdd); // NOI18N
         }
         // XXX a minor optimization: exclude any unused locale JARs
         // For example, lib/locale/ might contain:
@@ -242,6 +242,6 @@ public class Main extends Object {
         // [etc.]
         // Only some of these will apply to the current session, based on the
         // current values of Locale.default and NbBundle.branding.
-        append_jars_to_cp (new File (base, "core/locale"), toAdd);
+        append_jars_to_cp(new File(base, "core/locale"), toAdd); // NOI18N
     }
 }
