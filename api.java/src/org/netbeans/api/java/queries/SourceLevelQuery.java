@@ -32,17 +32,14 @@ public class SourceLevelQuery {
     }
 
     /**
-     * Returns source level of the given Java file. For acceptable return values
+     * Returns source level of the given Java file, Java package or source folder. For acceptable return values
      * see the documentation of <code>-source</code> command line switch of 
      * <code>javac</code> compiler .
-     * @param javaFile Java source file in question
+     * @param javaFile Java source file, Java package or source folder in question
      * @return source level of the Java file, e.g. "1.3", "1.4" or "1.5", or null
      *     if it is not known
      */
     public static String getSourceLevel(FileObject javaFile) {
-        if (javaFile.isFolder()) {
-            throw new IllegalArgumentException("Not a file: " + javaFile); // NOI18N
-        }
         Iterator it = implementations.allInstances().iterator();
         while (it.hasNext()) {
             SourceLevelQueryImplementation sqi = (SourceLevelQueryImplementation)it.next();
