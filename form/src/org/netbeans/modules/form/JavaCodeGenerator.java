@@ -110,8 +110,8 @@ class JavaCodeGenerator extends CodeGenerator {
         if (!initialized) {
             this.formManager = formManager;
             formManager.addFormListener(new JCGFormListener());
+            initialized = true;
         }
-        initialized = true;
         FormEditorSupport s = formManager.getFormEditorSupport();
         initComponentsSection = s.findSimpleSection(SECTION_INIT_COMPONENTS);
         variablesSection = s.findSimpleSection(SECTION_VARIABLES);
@@ -1110,10 +1110,10 @@ class JavaCodeGenerator extends CodeGenerator {
     private String getEventHandlerHeader(String handlerName, String[] paramTypes, String[] exceptTypes) {
         StringBuffer buf = new StringBuffer();
 
-        // [IAN] following line contains a hack, where the first two spaces in the event handler header
+        // [IAN] following line contains a hack, where the first four spaces in the event handler header
         // is a quick workaround for the bug, where sections in JavaEditor do not use Indentation Engine
         // and thus the first line of event handlers was not indented correctly
-        buf.append("  private void "); // NOI18N
+        buf.append("    private void "); // NOI18N
         buf.append(handlerName);
         buf.append("("); // NOI18N
 
@@ -1160,11 +1160,11 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     private String getEventHandlerFooter(String handlerName, String[] paramTypes) {
-        return "  }\n"; // NOI18N
+        return "    }\n"; // NOI18N
     }
 
     private String getDefaultEventBody() {
-        return FormEditor.getFormBundle().getString("MSG_EventHandlerBody");
+        return "        "+FormEditor.getFormBundle().getString("MSG_EventHandlerBody");
     }
 
     /** Renames the specified event handler to the given new name.
@@ -1412,12 +1412,6 @@ class JavaCodeGenerator extends CodeGenerator {
 
         public void propertyChanged(FormPropertyEvent evt) {
             regenerateInitializer();
-
-            RADComponent comp = evt.getRADComponent();
-            Integer generationType =(Integer) comp.getAuxValue(AUX_CODE_GENERATION);
-            if (generationType != null && generationType.equals(VALUE_SERIALIZE)) {
-                serializeComponentsRecursively(comp);
-            }
         }
 
         /**
