@@ -181,7 +181,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="tomcat-monitor" depends="compile">
     <locjar jarfile="netbeans/modules/ext/tomcat-monitor.jar"
-            manifest="${nbroot}/web/manifest-jsp-tomcat-subst.mf"
+            manifest="${nbroot}/tomcatint/tomcat32/manifest-subst.mf"
             compress="false">
       <locale name="ja"/>
       <fileset dir="src">
