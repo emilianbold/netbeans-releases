@@ -174,6 +174,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
   protected void notifyClose () {
     super.notifyClose ();
+    if (!formLoaded) return;
     if (getFormTopComponent () != null) getFormTopComponent ().close ();
     FormEditor.getComponentInspector().focusForm (null);
     SourceChildren sc = (SourceChildren)formObject.getNodeDelegate ().getChildren ();
@@ -338,6 +339,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  29   Gandalf   1.28        8/13/99  Ian Formanek    Fixed bug 3253 - Messy 
+ *       editor when started with more files open.
  *  28   Gandalf   1.27        8/6/99   Ian Formanek    loadFormInternal
  *  27   Gandalf   1.26        8/1/99   Ian Formanek    Fixed potential problem 
  *       with closing forms which were not loaded
