@@ -86,21 +86,16 @@ public class Node {
         return(treeOperator);
     }
     
-    /** Getter for TreePath of node. If the node is recreated (node is removed and 
-     * then physically new node with the same name is added), the old TreePath 
-     * is no longer valid and this method tries to find a new valid TreePath.
+    /** Getter for TreePath of node.
      * @return TreePath of node */    
     public TreePath getTreePath() {
-        if(!isPresent()) {
-            treePath = tree().findPath(convertPath(treePath), "|");
-        }
         return(treePath);
     }
     
     /** getter for node text
      * @return Streing node text */    
     public String getText() {
-        return(getTreePath().getLastPathComponent().toString());
+        return(treePath.getLastPathComponent().toString());
     }
     
     private static String convertPath(TreePath path) {
@@ -117,19 +112,19 @@ public class Node {
     /** getter for node path
      * @return String node path */    
     public String getPath() {
-        return convertPath(getTreePath());
+        return convertPath(treePath);
     }
     
     /** getter for path of parent node
      * @return String path of parent node */    
     public String getParentPath() {
-        return convertPath(getTreePath().getParentPath());
+        return convertPath(treePath.getParentPath());
     }
     
     /** calls popup menu on node
      * @return JPopupMenuOperator */    
     public JPopupMenuOperator callPopup() {
-        return new JPopupMenuOperator(treeOperator.callPopupOnPath(getTreePath()));
+        return new JPopupMenuOperator(treeOperator.callPopupOnPath(treePath));
     }
     
     /** performs action on node through main menu
@@ -189,13 +184,13 @@ public class Node {
     /** tests if node is leaf
      * @return boolean true when node does not have children */    
     public boolean isLeaf() {
-        return tree().getChildCount(getTreePath())<1;
+        return tree().getChildCount(treePath)<1;
     }
     
     /** returns list of names of children
      * @return String[] list of names of children */    
     public String[] getChildren() {
-        Object o[]=tree().getChildren(getTreePath().getLastPathComponent());
+        Object o[]=tree().getChildren(treePath.getLastPathComponent());
         if (o==null) return new String[0];
         String s[]=new String[o.length];
         for (int i=0; i<o.length; i++)
@@ -324,43 +319,43 @@ public class Node {
         int indexInt[]= new int[indexStr.length];
         for (int i=0; i<indexStr.length; i++)
             indexInt[i]=Integer.parseInt(indexStr[i]);
-        return o.findPath(new Node.StringArraySubPathChooser(getTreePath(), o.parseString(subPath, delimiter), indexInt, o.getComparator()));
+        return o.findPath(new Node.StringArraySubPathChooser(treePath, o.parseString(subPath, delimiter), indexInt, o.getComparator()));
     }
     
     /** Expands current node to see children */    
     public void expand() {
-        treeOperator.expandPath(getTreePath());
+        treeOperator.expandPath(treePath);
         waitExpanded();
     }
     
     /** Collapse current node to hide children */    
     public void collapse() {
-        treeOperator.collapsePath(getTreePath());
+        treeOperator.collapsePath(treePath);
         waitCollapsed();
     }
     
     /** Waits for node to be expanded */    
     public void waitExpanded() {
-        treeOperator.waitExpanded(getTreePath());
+        treeOperator.waitExpanded(treePath);
     }
     
     /** Waits for node to be collapsed */    
     public void waitCollapsed() {
-        treeOperator.waitCollapsed(getTreePath());
+        treeOperator.waitCollapsed(treePath);
     }
     
     /** Informs if current node is expanded
      * @return boolean true when node is expanded
      */    
     public boolean isExpanded() {
-        return treeOperator.isExpanded(getTreePath());
+        return treeOperator.isExpanded(treePath);
     }
     
     /** Informs if current node is collapsed
      * @return boolean true when node is collapsed
      */    
     public boolean isCollapsed() {
-        return treeOperator.isCollapsed(getTreePath());
+        return treeOperator.isCollapsed(treePath);
     }
          
 /*    protected Action[] getActions() {
