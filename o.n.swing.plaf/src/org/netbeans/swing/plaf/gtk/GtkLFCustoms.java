@@ -118,22 +118,144 @@ public class GtkLFCustoms extends LFCustoms {
                 "textText", new ThemeValue (ThemeValue.REGION_PANEL, ThemeValue.TEXT_FOREGROUND, Color.BLACK), //NOI18N
                 "text", new ThemeValue (ThemeValue.REGION_PANEL, ThemeValue.TEXT_BACKGROUND, Color.GRAY), //NOI18N
                 
-                "tab_unsel_fill", control,
+                "tab_unsel_fill", control, //NOI18N
                  
-                "SplitPane.dividerSize", new Integer (2),
+                "SplitPane.dividerSize", new Integer (2),  //NOI18N
                 
                 SYSTEMFONT, controlFont, //NOI18N
                 USERFONT, controlFont, //NOI18N
                 MENUFONT, controlFont, //NOI18N
                 LISTFONT, controlFont, //NOI18N
                 "Label.font", controlFont, //NOI18N
-                "Panel.font", controlFont //NOI18N
+                "Panel.font", controlFont, //NOI18N
+
+                "Tree.expandedIcon", new GTKExpandedIcon(), //NOI18N
+                "Tree.collapsedIcon", new GTKCollapsedIcon() //NOI18N
             };
         } else {
             Object[] result = new Object[] {
                 TOOLBAR_UI, new UIDefaults.ProxyLazyValue("org.netbeans.swing.plaf.gtk.GtkToolbarUI"), //NOI18N
             };
             return result;
+        }
+    }
+
+    /** Temporary workaround for GTK L&F */
+    private static abstract class GTKIcon implements Icon {
+        private static final int SIZE = 11;
+        public int getIconWidth() {
+            return GTKIcon.SIZE;
+        }
+        
+        public int getIconHeight() {
+            return GTKIcon.SIZE;
+        }
+    }
+
+    /**
+     * Temporary workaround for GTK L&F - they provide an icon which does not
+     * know its width or height until it has been painted.  So for it to work
+     * correctly, we have this silliness.
+     */
+    private static final class GTKCollapsedIcon extends GTKIcon {
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            g.translate(x, y);
+            int mid, height, thick, i, j, up, down;
+            int size = Math.min(getIconWidth(),getIconHeight());
+            mid = (size / 2);
+            height = size / 2 + 1;
+            thick = Math.max(1, size / 7);
+            
+            i = size / 2 - height / 2 - 1;
+            
+            // Fill in the background of the expander icon.
+            g.setColor((Color) UIManager.get("Button.background"));
+            for (j = height - 1; j > 0; j--) {
+                g.drawLine(i, mid - j + 1, i, mid + j - 1);
+                i++;
+            }
+            
+            g.setColor((Color) UIManager.get("Button.foreground"));
+            i = size / 2 - height / 2 - 1;
+            down = thick - 1;
+            // Draw the base of the triangle.
+            for (up = 0; up < thick; up++) {
+                g.drawLine(i + up, 0 - down, i + up, size + down);
+                down--;
+            }
+            i++;
+            
+            // Paint sides of triangle.
+            for (j = height - 1; j > 0; j--) {
+                for (up = 0; up < thick; up++) {
+                    g.drawLine(i, mid - j + 1 - up, i, mid - j + 1 - up);
+                    g.drawLine(i, mid + j - 1 + up, i, mid + j - 1 + up);
+                }
+                i++;
+            }
+            
+            // Paint remainder of tip if necessary.
+            if (thick > 1) {
+                for (up = thick - 2; up >= 0; up--) {
+                    g.drawLine(i, mid - up, i, mid + up);
+                    i++;
+                }
+            }
+            
+            g.translate(-x, -y);
+        }
+    }
+
+    /**
+     * Temporary workaround for GTK L&F - they provide an icon which does not
+     * know its width or height until it has been painted.  So for it to work
+     * correctly, we have this silliness.
+     */
+    private static final class GTKExpandedIcon extends GTKIcon {
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            g.translate(x, y);
+            int mid, height, thick, i, j, up, down;
+            int size = Math.min(getIconWidth(),getIconHeight());
+            mid = (size / 2);
+            height = size / 2 + 1;
+            thick = Math.max(1, size / 7);
+ 
+            j = size / 2 - height / 2 - 1;
+            // Fill in the background of the expander icon.
+            g.setColor((Color) UIManager.get("Button.background"));
+            for (i = height - 1; i > 0; i--) {
+                g.drawLine(mid - i + 1, j, mid + i - 1, j);
+                j++;
+            }
+
+            g.setColor((Color) UIManager.get("Button.foreground"));
+            j = size / 2 - height / 2 - 1;
+            down = thick - 1;
+            // Draw the base of the triangle.
+            for (up = 0; up < thick; up++) {
+                g.drawLine(0 - down, j + up, size + down, j + up);
+                down--;
+            }
+            j++;
+
+            // Paint sides of triangle.
+            for (i = height - 1; i > 0; i--) {
+                for (up = 0; up < thick; up++ ) {
+                    g.drawLine(mid - i + 1 - up, j, mid - i + 1 - up, j);
+                    g.drawLine(mid + i - 1 + up, j, mid + i - 1 + up, j);
+                }
+                j++;
+            }
+
+            // Paint remainder of tip if necessary.
+            if (thick > 1) {
+                for (up = thick - 2; up >= 0; up--) {
+                    g.drawLine(mid - up, j, mid + up, j);
+                    j++;
+                }
+            }
+             
+            g.translate(-x, -y);
         }
     }
 }
