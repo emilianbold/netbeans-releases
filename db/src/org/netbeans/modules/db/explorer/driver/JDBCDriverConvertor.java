@@ -154,6 +154,9 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             }
         urls = (URL[]) urlList.toArray(new URL[urlList.size()]);
+        if (checkClassPathDrivers(handler.clazz, urls) == false) {
+            return null;
+        }
         JDBCDriver d = new JDBCDriver(handler.name, handler.clazz, urls);
 
         d.addPropertyChangeListener(this);
@@ -353,4 +356,27 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
             }
         }
     }
+
+    /**
+     * Checks, if given class is on classpath.
+     *
+     * @param   className  name of class to be loaded
+     * @param   urls       file urls, checking classes only for 'file:/' URL.
+     * @return  true, if driver is available on classpath, otherwise false
+     */
+    private static boolean checkClassPathDrivers(String className, URL[] urls) {
+        for (int i = 0; i < urls.length; i++) {
+            if ("file:/".equals(urls[i].toString())) {
+                try {
+                    Class.forName(className);
+                } catch (ClassNotFoundException e) {
+                    // do not create driver because its class is not
+                    // on classpath
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 }
