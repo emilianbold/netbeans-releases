@@ -45,10 +45,17 @@ public class Utils {
     }
 
     public static ClassElement getBeanClass(FileObject ejbJarFile, final Ejb ejb) {
-        EjbJarProject enterpriseProject = (EjbJarProject) FileOwnerQuery.getOwner(ejbJarFile);
         String ejbClassName = ejb.getEjbClass();
+        return getClassElement(ejbJarFile, ejbClassName);
+    }
+
+    public static ClassElement getClassElement(FileObject ejbJarFile, String className) {
+        if (className == null) {
+            return null;
+        }
+        EjbJarProject enterpriseProject = (EjbJarProject) FileOwnerQuery.getOwner(ejbJarFile);
         ClassPath classPath = enterpriseProject.getEjbModule().getJavaSources();
-        FileObject src = classPath.findResource(ejbClassName.replace('.', '/') + ".java");
-        return ClassElement.forName(ejbClassName, src);
+        FileObject src = classPath.findResource(className.replace('.', '/') + ".java");
+        return ClassElement.forName(className, src);
     }
 }

@@ -24,12 +24,15 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.src.ClassElement;
 
+import java.util.HashMap;
+
 /**
  * @author pfiala
  */
 class CmpFieldsTableModel extends InnerTableModel {
     private final FileObject ejbJarFile;
-    Entity entity;
+    private Entity entity;
+    private HashMap cmpFieldHelperMap = new HashMap();
     private static final String[] COLUMN_NAMES = {"Field Name", "Type", "Local Getter", "Local Setter", "Remote Getter",
                                                   "Remote Setter", "Description"};
     private static final int[] COLUMN_WIDTHS = new int[]{120, 160, 70, 70, 70, 70, 220};
@@ -71,8 +74,11 @@ class CmpFieldsTableModel extends InnerTableModel {
         }
     }
 
-    public void removeRow(int selectedRow) {
-        // TODO: implement field removal
+    public void removeRow(int row) {
+        CmpField cmpField = entity.getCmpField()[row];
+        if (getCmpFieldHelper(cmpField).deleteKey()) {
+            fireTableRowsDeleted(row, row);
+        }
     }
 
     public int getRowCount() {
@@ -81,8 +87,7 @@ class CmpFieldsTableModel extends InnerTableModel {
 
     public Object getValueAt(int rowIndex, int columnIndex) {
         CmpField field = entity.getCmpField(rowIndex);
-        ClassElement beanClass = Utils.getBeanClass(ejbJarFile, entity);
-        CmpFieldHelper helper = new CmpFieldHelper(beanClass, field);
+        CmpFieldHelper helper = getCmpFieldHelper(field);
         switch (columnIndex) {
             case 0:
                 return field.getFieldName();
@@ -100,6 +105,19 @@ class CmpFieldsTableModel extends InnerTableModel {
                 return field.getDefaultDescription();
         }
         return null;
+    }
+
+    private CmpFieldHelper getCmpFieldHelper(CmpField field) {
+        CmpFieldHelper cmpFieldHelper = (CmpFieldHelper) cmpFieldHelperMap.get(field);
+        if (cmpFieldHelper == null) {
+            cmpFieldHelper = new CmpFieldHelper(ejbJarFile, entity, field);
+            cmpFieldHelperMap.put(field, cmpFieldHelper);
+        }
+        return cmpFieldHelper;
+    }
+
+    public boolean isCellEditable(int rowIndex, int columnIndex) {
+        return false;
     }
 
     public Class getColumnClass(int columnIndex) {
