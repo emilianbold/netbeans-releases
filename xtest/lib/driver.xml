@@ -127,7 +127,13 @@ Microsystems, Inc. All Rights Reserved.
          <zip zipfile="${archive.file}">
             <fileset dir="${xtest.results}" excludes="xtr*.zip"/>                          
          </zip>
+         <property name="archive.filename2" value="xtr-nb-${xtest.tested.project}-${ide.build}-${xtest.testing.group}-${xtest.tested.type}-${xtest.machine}.zip"/>
+         <property name="archive.file2" value="${xtest.results}/${archive.filename2}"/>
+         <zip zipfile="${archive.file2}">
+            <zipfileset dir="${xtest.results}/xmlresults" prefix="xmlresults" includes="**/*.xml"/>
+         </zip>
          <antcall target="ship-results"/>
+         <antcall target="ship-nbresults"/>
    </target>
    
    <target name="ship-results" if="xtest.ship.results.to">
@@ -138,6 +144,12 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${archive.file}" todir="${xtest.results}/../"/>        
         -->
    </target>
+
+   <target name="ship-nbresults" if="xtest.ship.nbresults.to">
+        <copy overwrite="yes" file="${archive.file2}" todir="${xtest.ship.nbresults.to}"/>
+        <chmod perm="ugo+rw" file="${xtest.ship.nbresults.to}/${archive.filename2}"/>
+   </target>
+
 
    <target name="test-one-repository">
      <setproperty input="xtest.instance.cvs.workdir${xtest.instance.postfix}"
