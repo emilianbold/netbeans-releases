@@ -149,11 +149,18 @@ final class Services extends ServiceType.Registry {
             );
         }
     }
+
+    // PATCH
+    boolean doinit = true;
     
     /** Getter for list of all services types.
     * @return list of ServiceType
     */
     public synchronized java.util.List getServiceTypes () {
+        if (doinit) {
+            doinit = false;
+            setServiceTypes(null);
+        }
         return new LinkedList (current);
     }
 
@@ -164,6 +171,7 @@ final class Services extends ServiceType.Registry {
     * @param arr list of ServiceTypes 
     */
     public synchronized void setServiceTypes (java.util.List arr) {
+        
         if (arr == null) {
 
             InstantiationException mainExc = null;
@@ -175,6 +183,7 @@ final class Services extends ServiceType.Registry {
                 ManifestSection.ServiceSection ss = (ManifestSection.ServiceSection)it.next ();
                 try {
                     ServiceType type = ss.getServiceType();
+                    arr.add(type);
                 } catch (InstantiationException ex) {
                       TopManager.getDefault().getErrorManager().copyAnnotation(ex, mainExc);
                       mainExc = ex;
@@ -188,7 +197,7 @@ final class Services extends ServiceType.Registry {
                 );
             }
         }
-
+        
         current.clear ();
         current.addAll (arr);
         supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
@@ -406,6 +415,12 @@ final class Services extends ServiceType.Registry {
 
 /*
 * $Log$
+* Revision 1.28  2000/06/19 08:16:19  anovak
+* #6817 patch - ServiceTypes not visible after start
+* doinit flag added
+* setServiceTypes(null) called
+* needs further rewriting
+*
 * Revision 1.27  2000/06/08 21:13:17  jtulach
 * Implements two level Compiler Type/instance
 * instead of Compiler Type/External Compiler/instance
