@@ -120,6 +120,7 @@
 
 	<!-- Start of "Debug" section -->
 	<mapID target="about_debug" url="web/debug/about_debug.html" />
+	<mapID target="debug_webapp" url="web/debug/debug_webapp.html" />
 <mapID target="debug_freeform" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/proj_webfree_debug.html" />
 	<!-- End of "Debug" section -->
 

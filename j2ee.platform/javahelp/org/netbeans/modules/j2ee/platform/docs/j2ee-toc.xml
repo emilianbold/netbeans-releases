@@ -83,7 +83,7 @@
           <tocitem text="Defining an Applet in a JSP File" target="jsp_useapplet"/>
 	  <tocitem text="Defining a Tomcat Database Connection Pool in a JSP File" target="jsp_connectionpool_tomcat"/>
           <tocitem text="Compiling a JSP File" target="jsp_compile" />
-          <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
+          <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
           <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
           <tocitem text="Running a JSP File" target="jsp_run" />
      </tocitem>
@@ -134,7 +134,7 @@
          <tocitem text="About Servlets" target="about_servlet" />
          <tocitem text="Creating a Servlet" target="servlet_create" />
 	 <tocitem text="Editing a Servlet" target="servlet_edit"/>
-         <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
+         <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
          <tocitem text="Adding a Servlet JAR file to a WAR File" target="servlet_addtowar" />
          <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
 	 <tocitem text="Running a Servlet" target="servlet_run" />
@@ -177,9 +177,10 @@
        
     <tocitem text="Debugging and Testing Web Applications"> 
             <tocitem text="About Debugging and Testing Web Applications" target="about_debug"/>
-    <!--    <tocitem text="Validating JSP Syntax" target="jsp_validate" />  -->
-    	    <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
-            <tocitem text="Writing A Debug Target for a Free-Form Web Project" target="debug_freeform" />
+    	    <tocitem text="Compiling a JSP File" target="jsp_compile" /> 
+	    <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
+	    <tocitem text="Debugging a Web Application" target="debug_webapp" /> 
+	    <tocitem text="Writing A Debug Target for a Free-Form Web Project" target="debug_freeform" />
      </tocitem>
     
 <!-- End of web applications -->
