@@ -38,13 +38,20 @@ specify a package where the client is to be generated.</li>
 <li>Specify a package name for the generated interfaces that will be used by your 
 user code to access and interact with the web service.</li>
 <li>Specify the web service client type:
-<ul><li><b>J2EE 1.4 (JSR-109).</b> Enhances JSR-101 by defining the packaging
+<ul><li><b>J2EE 1.4 (JSR-109).</b> 
+This type is based on JSR-109, which enhances JSR-101 by defining the packaging
 of web services into standard J2EE modules, including a new deployment descriptor,
 and defining web services that are implemented as session beans or servlets.
-This is the recommended and portable (via J2EE 1.4 specification) type.</li>
-<li><b>JAX-RPC Static Stub.</b> Defines the mapping of WSDL to Java and vice versa.
+This is the recommended and portable (via J2EE 1.4 specification) type.
+When you choose this type, the IDE adds deployment information in the 
+ deployment descriptors and the container does the generation of the stub and other artifacts.</li>
+ <li><b>JAX-RPC Static Stub.</b> 
+This type is based on JSR-101, which defines the mapping of WSDL to Java and vice versa.
 It also defines a client API to invoke a remote web service and a runtime environment 
-on the server to host a web service.</li></ul>
+on the server to host a web service. This type is not portable.
+When you choose this type, the IDE generates 
+the stub and other 
+artifacts, packages them in the archive, and deploys them.</li></ul>
 </li>
 
 <li>Click Finish.</li>
