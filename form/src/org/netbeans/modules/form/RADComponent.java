@@ -626,6 +626,9 @@ public class RADComponent {
     public boolean supportsDefaultValue ();
     public void restoreDefaultValue ();
     public Object getDefaultValue ();
+
+    public String getPreCode ();
+    public String getPostCode ();
   }
 
   private Node.Property createProperty (final PropertyDescriptor desc) {
@@ -647,7 +650,9 @@ public class RADComponent {
   class RADPropertyImpl extends Node.Property implements RADProperty {
     private PropertyEditor currentPropertyEditor;
     private PropertyDescriptor desc;
-    
+    String preCode = null;                      // custom pre-initialization code to be used before calling the property setter
+    String postCode = null;                     // custom post-initialization code to be used after calling the property setter
+
     RADPropertyImpl (PropertyDescriptor desc) {
       super (desc.getPropertyType ());
       this.desc = desc;
@@ -851,12 +856,33 @@ public class RADComponent {
         return defaultEditor;
       }
     }
+
+    public String getPreCode () {
+      return preCode;
+    }
+
+    void setPreCode (String value) {
+      preCode = value;
+      getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), null, null);
+    }
+
+    public String getPostCode () {
+      return postCode;
+    }
+
+    void setPostCode (String value) {
+      postCode = value;
+      getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), null, null);
+    }
+
   }
 
   
   class RADIndexedPropertyImpl extends Node.IndexedProperty implements RADProperty {
     private PropertyEditor currentEditor;
     private IndexedPropertyDescriptor desc;
+    String preCode = null;                      // custom pre-initialization code to be used before calling the property setter
+    String postCode = null;                     // custom post-initialization code to be used after calling the property setter
     
     RADIndexedPropertyImpl (IndexedPropertyDescriptor desc) {
       super (getIndexedType (desc), desc.getIndexedPropertyType ());
@@ -1106,6 +1132,25 @@ public class RADComponent {
 //    public PropertyEditor getIndexedPropertyEditor () { // [PENDING indexed]
 //      return java.beans.PropertyEditorManager.findEditor (elementType);
 //    }
+
+    public String getPreCode () {
+      return preCode;
+    }
+
+    void setPreCode (String value) {
+      preCode = value;
+      getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), null, null);
+    }
+
+    public String getPostCode () {
+      return postCode;
+    }
+
+    void setPostCode (String value) {
+      postCode = value;
+      getFormManager ().firePropertyChanged (RADComponent.this, desc.getName (), null, null);
+    }
+
   }
 
   /** Utility method for obtaining array type for indexed properties */  
@@ -1200,6 +1245,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  50   Gandalf   1.49        9/10/99  Ian Formanek    Pre/Post code added to 
+ *       RADProperty
  *  49   Gandalf   1.48        9/7/99   Ian Formanek    Properties access and 
  *       RADProperty interface made public
  *  48   Gandalf   1.47        9/6/99   Ian Formanek    Fixed bug 3252 - 
