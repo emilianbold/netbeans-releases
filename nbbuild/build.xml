@@ -2975,6 +2975,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="${netbeans.dest.dir}"/>
     <delete file="moduleCluster.properties"/>
   </target>
+  
+  <target name="localtest" depends="bootstrap,all-xtest/nbjunit" >
+    <ant dir="test" />
+  </target>
 
   <target name="cleanall" depends="init">
     <cleanall topdir=".." 
