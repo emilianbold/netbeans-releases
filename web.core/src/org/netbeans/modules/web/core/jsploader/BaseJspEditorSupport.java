@@ -189,7 +189,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     }
     
     public void open(){
-        encoding = getObjectEncoding(false);
+        encoding = getObjectEncoding(false, true); //use encoding from fileobject & cache it
         if (!isSupportedEncoding(encoding)){
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                 NbBundle.getMessage (BaseJspEditorSupport.class, "MSG_BadEncodingDuringLoad", //NOI18N
@@ -207,7 +207,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
 
         Reader reader = null;
-        encoding = getObjectEncoding(false);
+        encoding = getObjectEncoding(false, true);//use encoding from fileobject & cache it
         
         if (!isSupportedEncoding(encoding)){
             encoding = defaulEncoding;
@@ -275,7 +275,21 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     }
     
     protected String getObjectEncoding(boolean useEditor) {
-        return ((JspDataObject)getDataObject()).getFileEncoding( useEditor).trim();
+        return getObjectEncoding(useEditor, false);
+    }
+    
+    /** Returns encoding of the JSP file. 
+     * @param useEditor if <code>true</code> then the encoding is got from the editor 
+     *        otherwise the encoding is obtained from webmodule parser.
+     * @param useCache if <code>true</code> then the encoding parsed from the webmodule and JSP is 
+     *        cached. So the next call of this method wont parse the wm and the JSP again until the JSP file is changed.
+     * @return JSP page encoding.
+     */
+    protected String getObjectEncoding(boolean useEditor, boolean useCache) {
+        return useCache ? 
+            ((TagLibParseSupport)getDataObject().getCookie(TagLibParseSupport.class)).getCachedOpenInfo(false, useEditor).getEncoding()
+            :
+            ((JspDataObject)getDataObject()).getFileEncoding( useEditor).trim();
     }
     
     /** Save the document in this thread and start reparsing it.
@@ -300,7 +314,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
      */
     private void saveDocument(boolean parse, boolean forceSave) throws IOException {
         if (forceSave || isModified()) {
-            encoding = getObjectEncoding(true);
+            encoding = getObjectEncoding(true); //use encoding from editor 
             if (!isSupportedEncoding(encoding)){
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                 NbBundle.getMessage (BaseJspEditorSupport.class, "MSG_BadEncodingDuringSave", //NOI18N
