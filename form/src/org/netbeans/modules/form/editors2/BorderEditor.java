@@ -204,6 +204,7 @@ public final class BorderEditor extends PropertyEditorSupport
             try {
                 BorderEditor.this.borderSupport = new BorderDesignSupport(
                     ((BorderNode)node).getBorderSupport());
+                borderSupport.setPropertyContext(propertyContext);
                 needsUpdate = true; // update current value
             }
             catch (Exception ex) {}
