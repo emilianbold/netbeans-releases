@@ -38,6 +38,10 @@ public class FoldersListSettings extends SystemOption {
     private static final String SHOW_AGAIN_BROKEN_SERVER_ALERT = "showAgainBrokenServerAlert"; //NOI18N
     
     private static final String LAST_USED_CHOOSER_LOCATIONS = "lastUsedChooserLocations"; //NOI18N
+    
+    private static final String AGREED_SET_JDK_14 = "agreeSetJdk14"; // NOI18N
+    
+    private static final String AGREED_SET_SOURCE_LEVEL_14 = "agreeSetSourceLevel14"; // NOI18N
 
     public static FoldersListSettings getDefault () {
         return (FoldersListSettings) SystemOption.findObject (FoldersListSettings.class, true);
@@ -117,5 +121,23 @@ public class FoldersListSettings extends SystemOption {
 
     public void setLastUsedChooserLocations(Map map) {
         this.putProperty(LAST_USED_CHOOSER_LOCATIONS, map, true);
+    }
+    
+    public boolean isAgreedSetJdk14() {
+        Boolean b = (Boolean)getProperty(AGREED_SET_JDK_14);
+        return b == null ? true : b.booleanValue();
+    }
+    
+    public void setAgreedSetJdk14(boolean agreed) {
+        this.putProperty(AGREED_SET_JDK_14, Boolean.valueOf(agreed), true);
+    }
+    
+    public boolean isAgreedSetSourceLevel14() {
+        Boolean b = (Boolean)getProperty(AGREED_SET_SOURCE_LEVEL_14);
+        return b == null ? true : b.booleanValue();
+    }
+    
+    public void setAgreedSetSourceLevel14(boolean agreed) {
+        this.putProperty(AGREED_SET_SOURCE_LEVEL_14, Boolean.valueOf(agreed), true);
     }
 }

@@ -30,4 +30,7 @@ public class WizardProperties {
     public static final String TEST_ROOT = "testRoot"; //NOI18N
     
     public static final String EAR_APPLICATION = "earApplication"; //NOI18N
+    
+    public static final String JAVA_PLATFORM = "setJavaPlatform"; // NOI18N
+    public static final String SOURCE_LEVEL = "setSourceLevel"; // NOI18N
 }

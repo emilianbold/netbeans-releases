@@ -55,6 +55,7 @@ import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProjectGenerator;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 /**
  * Wizard to create a new Web project for an existing web module.
@@ -132,7 +133,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
 
         String buildfile = getBuildfile();
         
-        WebProjectGenerator.importProject (dirF, name, wmFO, sourceFolders, testFolders, docBase, libFolder, j2eeLevel, serverInstanceID, buildfile);
+        AntProjectHelper h = WebProjectGenerator.importProject (dirF, name, wmFO, sourceFolders, testFolders, docBase, libFolder, j2eeLevel, serverInstanceID, buildfile);
         
         FileObject dir = FileUtil.toFileObject(dirF);
         Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
@@ -155,6 +156,13 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
         wiz.putProperty(WizardProperties.NAME, null); // reset project name
 
+        // downgrade the Java platform or src level to 1.4        
+        String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
+        String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);
+        if (platformName != null || sourceLevel != null) {
+            WebProjectGenerator.setPlatform(h, platformName, sourceLevel);
+        }
+        
         return Collections.singleton(DataObject.find(dir));
     }
     

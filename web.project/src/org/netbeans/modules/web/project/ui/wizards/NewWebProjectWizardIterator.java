@@ -24,6 +24,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.web.project.UpdateHelper;
 
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -100,6 +101,13 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
             if (ear != null) {
                 ear.addWebModule(createdWebProject.getAPIWebModule());
             }
+        }
+
+        // downgrade the Java platform or src level to 1.4
+        String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
+        String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);
+        if (platformName != null || sourceLevel != null) {
+            WebProjectGenerator.setPlatform(h, platformName, sourceLevel);
         }
         
         // save last project location

@@ -35,6 +35,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     private boolean contextModified = false;
     private List serverInstanceIDs;
     
+    private J2eeVersionWarningPanel warningPanel;
+    
     private static final String J2EE_SPEC_13_LABEL = NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_13"); //NOI18N
     private static final String J2EE_SPEC_14_LABEL = NbBundle.getMessage(PanelOptionsVisual.class, "J2EESpecLevel_14"); //NOI18N
 
@@ -43,6 +45,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     /** Creates new form PanelOptionsVisual */
     public PanelOptionsVisual(PanelConfigureProject panel) {
         initComponents();
+        setJ2eeVersionWarningPanel();
         this.panel = panel;
         initServerInstances();
         initJSrcStructureSpecs();
@@ -69,6 +72,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         j2eeSpecComboBox = new javax.swing.JComboBox();
         jLabelContextPath = new javax.swing.JLabel();
         jTextFieldContextPath = new javax.swing.JTextField();
+        warningPlaceHolderPanel = new javax.swing.JPanel();
         setAsMainCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
@@ -203,19 +207,29 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jPanel1, gridBagConstraints);
 
+        warningPlaceHolderPanel.setLayout(new java.awt.BorderLayout());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        add(warningPlaceHolderPanel, gridBagConstraints);
+
         setAsMainCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
         setAsMainCheckBox.setSelected(true);
         setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBox"));
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 0);
         add(setAsMainCheckBox, gridBagConstraints);
         setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc"));
 
@@ -267,6 +281,10 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         d.putProperty(WizardProperties.J2EE_LEVEL, getSelectedJ2eeSpec());
         d.putProperty(WizardProperties.CONTEXT_PATH, jTextFieldContextPath.getText().trim());
         d.putProperty(WizardProperties.EAR_APPLICATION, getSelectedEarApplication());
+        if (warningPanel != null && warningPanel.getDowngradeAllowed()) {
+            d.putProperty(WizardProperties.JAVA_PLATFORM, warningPanel.getJava14PlatformName());
+            d.putProperty(WizardProperties.SOURCE_LEVEL, "1.4"); // NOI18N
+        }
     }
     
     void read(WizardDescriptor d) {
@@ -285,6 +303,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     private javax.swing.JCheckBox setAsMainCheckBox;
     private javax.swing.JComboBox srcStructComboBox;
     private javax.swing.JLabel srcStructLabel;
+    private javax.swing.JPanel warningPlaceHolderPanel;
     // End of variables declaration//GEN-END:variables
 
     private void initServerInstances() {
@@ -349,5 +368,14 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         if (earProjects.size() <= 0) {
             jComboBoxEnterprise.setEnabled(false);
         }
+    }
+    
+    private void setJ2eeVersionWarningPanel() {
+        String warningType = J2eeVersionWarningPanel.findWarningType();
+        if (warningType == null)
+            return;
+        
+        warningPanel = new J2eeVersionWarningPanel(warningType);
+        warningPlaceHolderPanel.add(warningPanel, java.awt.BorderLayout.CENTER);
     }
 }
