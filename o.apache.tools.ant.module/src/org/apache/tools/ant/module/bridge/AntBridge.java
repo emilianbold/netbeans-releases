@@ -359,4 +359,36 @@ public final class AntBridge {
         
     }
     
+    private static PrintStream origOut, origErr;
+    
+    /**
+     * Handle I/O scoping for overlapping project runs.
+     * You must call {@link #restoreSystemOutErr} in a finally block.
+     * @param out new temporary output stream for the VM
+     * @param err new temporary error stream for the VM
+     * @see "#36396"
+     */
+    public static synchronized void pushSystemOutErr(PrintStream out, PrintStream err) {
+        if (origOut == null) {
+            origOut = System.out;
+            origErr = System.err;
+            System.setOut(out);
+            System.setErr(err);
+        } else {
+            // Oh well, output may be sent to the wrong window...
+        }
+    }
+    
+    /**
+     * Restore original I/O streams after a call to {@link #pushSystemOutErr}.
+     */
+    public static synchronized void restoreSystemOutErr() {
+        if (origOut != null) {
+            System.setErr(origErr);
+            System.setOut(origOut);
+        } else {
+            // Again, never mind.
+        }
+    }
+    
 }

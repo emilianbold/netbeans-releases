@@ -14,6 +14,7 @@
 package org.apache.tools.ant.module.bridge.impl;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.*;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.input.InputHandler;
@@ -145,10 +146,8 @@ public class BridgeImpl implements BridgeInterface {
         logger.buildStarted(new BuildEvent(project));
         
         // Save & restore system output streams.
-        PrintStream sysout = System.out;
-        PrintStream syserr = System.err;
-        System.setOut(new PrintStream(new DemuxOutputStream(project, false)));
-        System.setErr(new PrintStream(new DemuxOutputStream(project, true)));
+        AntBridge.pushSystemOutErr(new PrintStream(new DemuxOutputStream(project, false)),
+                                   new PrintStream(new DemuxOutputStream(project, true)));
 
         try {
             // Execute the configured project
@@ -180,8 +179,7 @@ public class BridgeImpl implements BridgeInterface {
             ev.setException(e);
             logger.buildFinished(ev);
         } finally {
-            System.setOut(sysout);
-            System.setErr(syserr);
+            AntBridge.restoreSystemOutErr();
         }
         
         // Now check to see if the Project defined any cool new custom tasks.
@@ -202,14 +200,107 @@ public class BridgeImpl implements BridgeInterface {
                         AntModule.err.notify(ErrorManager.WARNING, e);
                     }
                 }
+                gutProject(p2);
             }
         }, 1000); // a bit later; the target can finish first!
+        
+        {// XXX #36393 - memory leak. Remove when Ant 1.6 integrated.
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    hack36393();
+                }
+            });
+        }
         
         } finally {
             Thread.currentThread().setContextClassLoader(oldCCL);
         }
         
         return ok;
+    }
+    
+    private static boolean doHack36393 = true;
+    /**
+     * Remove any outstanding ProcessDestroyer shutdown hooks.
+     * They should not be left in the JRE static area.
+     */
+    private static void hack36393() {
+        if (!doHack36393) {
+            // Failed last time, skip this time.
+            return;
+        }
+        try {
+            Class shutdownC = Class.forName("java.lang.Shutdown"); // NOI18N
+            Class wrappedHookC = Class.forName("java.lang.Shutdown$WrappedHook"); // NOI18N
+            Field hooksF = shutdownC.getDeclaredField("hooks"); // NOI18N
+            hooksF.setAccessible(true);
+            Field hookF = wrappedHookC.getDeclaredField("hook"); // NOI18N
+            hookF.setAccessible(true);
+            Field lockF = shutdownC.getDeclaredField("lock"); // NOI18N
+            lockF.setAccessible(true);
+            Object lock = lockF.get(null);
+            Set toRemove = new HashSet(); // Set<Thread>
+            synchronized (lock) {
+                Set hooks = (Set)hooksF.get(null);
+                Iterator it = hooks.iterator();
+                while (it.hasNext()) {
+                    Object wrappedHook = it.next();
+                    Thread hook = (Thread)hookF.get(wrappedHook);
+                    if (hook.getClass().getName().equals("org.apache.tools.ant.taskdefs.ProcessDestroyer")) { // NOI18N
+                        // Don't remove it now - will get ConcurrentModificationException.
+                        toRemove.add(hook);
+                    }
+                }
+            }
+            Iterator it = toRemove.iterator();
+            while (it.hasNext()) {
+                Thread hook = (Thread)it.next();
+                if (!Runtime.getRuntime().removeShutdownHook(hook)) {
+                    throw new IllegalStateException("Hook was not really registered!"); // NOI18N
+                }
+                AntModule.err.log("#36393: removing an unwanted ProcessDestroyer shutdown hook");
+            }
+        } catch (Exception e) {
+            // Oh well.
+            AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+            doHack36393 = false;
+        }
+    }
+    
+    /**
+     * Try to break up as many references in a project as possible.
+     * Helpful to mitigate the effects of unsolved memory leaks: at
+     * least one project will not hold onto all subprojects, and a
+     * taskdef will not hold onto its siblings, etc.
+     */
+    private static void gutProject(Project p) {
+        try {
+            Collection[] stuff1 = {
+                p.getBuildListeners(),
+            };
+            for (int i = 0; i < stuff1.length; i++) {
+                if (stuff1[i] != null) {
+                    stuff1[i].clear();
+                }
+            }
+            Map[] stuff2 = {
+                p.getDataTypeDefinitions(),
+                p.getFilters(),
+                p.getProperties(),
+                p.getReferences(),
+                p.getTargets(),
+                p.getTaskDefinitions(),
+                p.getUserProperties(),
+            };
+            for (int i = 0; i < stuff2.length; i++) {
+                if (stuff2[i] != null) {
+                    stuff2[i].clear();
+                }
+            }
+        } catch (Exception e) {
+            // Oh well.
+            AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+        }
     }
     
 }
