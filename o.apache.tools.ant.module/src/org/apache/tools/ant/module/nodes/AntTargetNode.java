@@ -116,18 +116,19 @@ public class AntTargetNode extends ElementNode {
 
     protected void addProperties (Sheet.Set props) {
         String[] attrs = new String[] { "name", "description", "if", "unless", /*"id"*/ }; // NOI18N
+        AntProjectCookie proj = (AntProjectCookie) getCookie(AntProjectCookie.class);
         for (int i = 0; i < attrs.length; i++) {
-            org.openide.nodes.Node.Property prop = new AntProperty (el, attrs[i]);
+            org.openide.nodes.Node.Property prop = new AntProperty (el, attrs[i], proj);
             prop.setDisplayName (NbBundle.getMessage (AntTargetNode.class, "PROP_target_" + attrs[i]));
             prop.setShortDescription (NbBundle.getMessage (AntTargetNode.class, "HINT_target_" + attrs[i]));
             props.put (prop);
         }
-        props.put (new DependsProperty ());
+        props.put (new DependsProperty (proj));
     }
 
     private class DependsProperty extends AntProperty {
-        public DependsProperty () {
-            super (el, "depends"); // NOI18N
+        public DependsProperty (AntProjectCookie proj) {
+            super (el, "depends", proj); // NOI18N
             this.setDisplayName (NbBundle.getMessage (AntTargetNode.class, "PROP_target_depends"));
             this.setShortDescription (NbBundle.getMessage (AntTargetNode.class, "HINT_target_depends"));
         }
@@ -253,11 +254,15 @@ public class AntTargetNode extends ElementNode {
     }
 
     public NewType[] getNewTypes () {
-        List names = new ArrayList ();
-        names.addAll (IntrospectedInfo.getDefaults ().getTaskdefs ().keySet ());
-        names.addAll (AntSettings.getDefault ().getCustomDefs ().getTaskdefs ().keySet ());
-        Collections.sort (names);
-        return new NewType[] { new TaskNewType (names) };
+        if (! AntProjectNode.isScriptReadOnly ((AntProjectCookie) getCookie (AntProjectCookie.class))) {
+            List names = new ArrayList ();
+            names.addAll (IntrospectedInfo.getDefaults ().getTaskdefs ().keySet ());
+            names.addAll (AntSettings.getDefault ().getCustomDefs ().getTaskdefs ().keySet ());
+            Collections.sort (names);
+            return new NewType[] { new TaskNewType (names) };
+        } else {
+            return new NewType[0];
+        }
     }
 
     private class TaskNewType extends NewType {

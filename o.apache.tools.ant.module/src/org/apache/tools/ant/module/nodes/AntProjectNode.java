@@ -130,8 +130,8 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
     }
 
     private class ProjectProperty extends AntProperty {
-        public ProjectProperty (String name) {
-            super (name);
+        public ProjectProperty (String name, AntProjectCookie proj) {
+            super (name, proj);
         }
         protected Element getElement () {
             return ((AntProjectCookie) getCookie (AntProjectCookie.class)).getProjectElement ();
@@ -169,8 +169,8 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
     }
 
     private class ProjectTargetProperty extends ProjectProperty {
-        public ProjectTargetProperty (String name) {
-            super (name);
+        public ProjectTargetProperty (String name, AntProjectCookie proj) {
+            super (name, proj);
         }
         public PropertyEditor getPropertyEditor () {
             return new TargetEditor ();
@@ -212,7 +212,7 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
             }
         }
         public boolean canWrite () {
-            return (getElement () != null);
+            return (getElement () != null && ! isScriptReadOnly((AntProjectCookie) getCookie(AntProjectCookie.class)));
         }
         public boolean supportsDefaultValue () {
             return (getElement () != null);
@@ -224,14 +224,16 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
 
     private void add2Sheet (Sheet.Set props) {
         ResourceBundle bundle = NbBundle.getBundle (AntProjectNode.class);
+        AntProjectCookie proj = (AntProjectCookie) getCookie (AntProjectCookie.class);
+        
         // Create the required properties (XML attributes) of the Ant project
-        Node.Property prop = new ProjectProperty ("name"); // NOI18N
+        Node.Property prop = new ProjectProperty ("name", proj); // NOI18N
         // Cannot reuse 'name' because it conflicts with the DataObject.PROP_NAME:
         prop.setName ("projectName"); // NOI18N
         prop.setDisplayName (bundle.getString ("PROP_projectName"));
         prop.setShortDescription (bundle.getString ("HINT_projectName"));
         props.put (prop);
-        prop = new ProjectTargetProperty ("default"); // NOI18N
+        prop = new ProjectTargetProperty ("default", proj); // NOI18N
         prop.setDisplayName (bundle.getString ("PROP_default"));
         prop.setShortDescription (bundle.getString ("HINT_default"));
         props.put (prop);
@@ -264,7 +266,7 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
     protected void createPasteTypes (Transferable t, List l) {
         AntProjectCookie proj = (AntProjectCookie) getCookie (AntProjectCookie.class);
         Element pel = proj.getProjectElement ();
-        if (pel != null) {
+        if (pel != null && ! isScriptReadOnly (proj)) {
             ElementCookie cookie = (ElementCookie) NodeTransfer.cookie (t, NodeTransfer.COPY, ElementCookie.class);
             if (cookie != null && canPasteElement (cookie.getElement ())) {
                 l.add (new ElementNode.ElementPaste (pel, cookie.getElement (), false));
@@ -286,18 +288,22 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
     }
 
     public NewType[] getNewTypes () {
-        List names = new ArrayList ();
-        names.addAll (IntrospectedInfo.getDefaults ().getTypedefs ().keySet ());
-        names.addAll (AntSettings.getDefault ().getCustomDefs ().getTypedefs ().keySet ());
-        Collections.sort (names);
-        names.add (0, "target"); // NOI18N
-        names.add (1, "property"); // NOI18N
-        names.add (2, "taskdef"); // NOI18N
-        NewType[] types = new NewType[names.size ()];
-        for (int i = 0; i < types.length; i++) {
-            types[i] = new ProjectNewType ((String) names.get (i));
+        if (! isScriptReadOnly ((AntProjectCookie) getCookie(AntProjectCookie.class))) {
+            List names = new ArrayList ();
+            names.addAll (IntrospectedInfo.getDefaults ().getTypedefs ().keySet ());
+            names.addAll (AntSettings.getDefault ().getCustomDefs ().getTypedefs ().keySet ());
+            Collections.sort (names);
+            names.add (0, "target"); // NOI18N
+            names.add (1, "property"); // NOI18N
+            names.add (2, "taskdef"); // NOI18N
+            NewType[] types = new NewType[names.size ()];
+            for (int i = 0; i < types.length; i++) {
+                types[i] = new ProjectNewType ((String) names.get (i));
+            }
+            return types;
+        } else {
+            return new NewType[0];
         }
-        return types;
     }
 
     private class ProjectNewType extends NewType {
@@ -336,4 +342,14 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
         }
     }
 
+    
+    
+    /** Returns true if the Antscript represented by the passed cookie is read-only. */
+    public static boolean isScriptReadOnly(AntProjectCookie cookie) {
+        if (cookie.getFileObject() != null) {
+            return cookie.getFileObject().isReadOnly();
+        } else {
+            return ! cookie.getFile().canWrite();
+        }
+    }
 }

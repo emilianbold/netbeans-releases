@@ -23,22 +23,25 @@ import org.w3c.dom.Element;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
+import org.apache.tools.ant.module.api.AntProjectCookie;
 /** Wraps an Ant property in an IDE node property.
  */
 public class AntProperty extends Node.Property {
     
     private Element el;
     private String name;
+    private AntProjectCookie proj;
     
-    public AntProperty (Element el, String name) {
-        this (name);
+    public AntProperty (Element el, String name, AntProjectCookie proj) {
+        this (name, proj);
         this.el = el;
     }
     
-    protected AntProperty (String name) {
+    protected AntProperty (String name, AntProjectCookie proj) {
         super (String.class);
         setName (name);
         this.name = name;
+        this.proj = proj;
     }
     
     protected Element getElement () {
@@ -74,7 +77,7 @@ public class AntProperty extends Node.Property {
     }
     
     public boolean canWrite () {
-        return (getElement () != null);
+        return (getElement () != null && ! AntProjectNode.isScriptReadOnly(proj));
     }
     
     public boolean supportsDefaultValue () {
