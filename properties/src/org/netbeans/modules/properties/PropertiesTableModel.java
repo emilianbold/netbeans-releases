@@ -74,7 +74,6 @@ public class PropertiesTableModel extends AbstractTableModel {
     }
 
     class TablePropertyBundleListener implements PropertyBundleListener {
-
         public void bundleChanged(PropertyBundleEvent evt) {
             // PENDING - should be maybe even finer
             switch (evt.getChangeType()) {
@@ -86,8 +85,20 @@ public class PropertiesTableModel extends AbstractTableModel {
             // all items changed (keyset)
             case PropertyBundleEvent.CHANGE_ALL:
                 cancelEditingInTables(getDefaultCancelSelector());
+                // reset all header values as well
+                Object list[] = listenerList.getListenerList();
+                for (int i = 0; i < list.length; i++) {
+                    if (list[i] instanceof JTable) {
+                        JTable jt = (JTable)list[i];
+
+                        for (int j=0 ; j < jt.getColumnModel().getColumnCount(); j++) {
+                            TableColumn column = jt.getColumnModel().getColumn(j);
+                            column.setHeaderValue(jt.getModel().getColumnName(j));
+                        }
+                    }
+                }
                 fireTableDataChanged();
-                //System.out.println(PropertiesTableModel.this.toString());
+                
                 break;
             // file changed
             case PropertyBundleEvent.CHANGE_FILE:
@@ -153,11 +164,11 @@ public class PropertiesTableModel extends AbstractTableModel {
             return stringPairForKey(row);//bs.getNthKey(row);
         default:
             Element.ItemElem item;
-            try { // TEMP>>
+            try {
                 item = bs.getItem(column - 1, row);
             } catch (ArrayIndexOutOfBoundsException aie) {
                 item = null;
-            } // TEMP<<
+            }
             return stringPairForValue(item);
             /*
             if (item == null)
@@ -193,14 +204,25 @@ public class PropertiesTableModel extends AbstractTableModel {
 
     /** Returns the name for a column */
     public String getColumnName(final int column) {
+        String mark;
+        if(column == obj.getBundleStructure().getSortIndex()) {
+            if(obj.getBundleStructure().getSortOrder())
+                // ascending
+                mark = " \u25B2 "; // NOI18N
+            else
+                // descending
+                mark = " \u25BC "; // NOI18N
+        } else
+            mark = " "; // NOI18N
+        
         switch (column) {
         case 0:
-            return NbBundle.getBundle(PropertiesTableModel.class).getString("LAB_KeyColumnLabel");
+            return mark+NbBundle.getBundle(PropertiesTableModel.class).getString("LAB_KeyColumnLabel"); // NOI18N
         default:
             if (obj.getBundleStructure().getEntryCount() == 1)
-                return NbBundle.getBundle(PropertiesTableModel.class).getString("LBL_ColumnValue");
+                return mark+NbBundle.getBundle(PropertiesTableModel.class).getString("LBL_ColumnValue"); // NOI18N
             else
-                return Util.getPropertiesLabel (obj.getBundleStructure().getNthEntry(column - 1));
+                return mark+Util.getPropertiesLabel (obj.getBundleStructure().getNthEntry(column - 1)); // NOI18N
         }
     }
 
@@ -235,6 +257,9 @@ public class PropertiesTableModel extends AbstractTableModel {
                             // set the key
                             if (!oldValue.equals(newValue)) {
                                 ps.renameItem(oldValue, UtilConvert.escapePropertiesSpecialChars(newValue));
+                                // this resorting is necessary only if this column index is same as
+                                // column according the sort is performed, REFINE
+                                obj.getBundleStructure().sort(-1);
                             }
                             // set the comment
                             if (i == 0) {
@@ -261,10 +286,16 @@ public class PropertiesTableModel extends AbstractTableModel {
                     if (item != null) {
                         item.setValue(UtilConvert.escapeLineContinuationChar(((StringPair)aValue).getValue()));
                         item.setComment(((StringPair)aValue).getComment());
+                        // this resorting is necessary only if this column index is same as
+                        // column according the sort is performed, REFINE
+                        obj.getBundleStructure().sort(-1);
                     }
                     else {
                         if ((((StringPair)aValue).getValue().length() > 0) || (((StringPair)aValue).getComment().length() > 0))  {
                             ps.addItem(key, UtilConvert.escapeLineContinuationChar(((StringPair)aValue).getValue()), ((StringPair)aValue).getComment());
+                            // this resorting is necessary only if this column index is same as
+                            // column according the sort is performed, REFINE
+                            obj.getBundleStructure().sort(-1);
                         }
                     }
                 }
@@ -278,9 +309,20 @@ public class PropertiesTableModel extends AbstractTableModel {
     }
 
     /** Fires a TableModelEvent - change of one column */
-    public void fireTableColumnChanged(int column) {
-        fireTableChanged(new TableModelEvent(this, TableModelEvent.HEADER_ROW));
-        fireTableChanged(new TableModelEvent(this, 0, getRowCount() - 1, column));
+    public void fireTableColumnChanged(int index) {
+        // reset the header value as well
+        Object list[] = listenerList.getListenerList();
+        for (int i = 0; i < list.length; i++) {
+            if (list[i] instanceof JTable) {
+                JTable jt = (JTable)list[i];
+
+                TableColumn column = jt.getColumnModel().getColumn(index);
+                column.setHeaderValue(jt.getModel().getColumnName(index));
+                
+                jt.getTableHeader().repaint();
+            }
+        }
+        fireTableChanged(new TableModelEvent(this, 0, getRowCount() - 1, index));
     }
 
     public String toString() {
