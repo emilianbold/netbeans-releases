@@ -57,16 +57,6 @@ public class Utils {
                                            supportedNodeTypes)) {
                     continue;
                 }
-                //String projectType = getProjectType(node);
-                //if (projectType != null) {
-                //    String[] supportedProjectTypes
-                //            = infoProvider.getSupportedProjectTypes();
-                //    if (supportedProjectTypes != null
-                //            && !isListedString(projectType,
-                //                               supportedProjectTypes))  {
-                //        continue;
-                //    }
-                //}
                 if (infoProvider.hasSearchInfo(node)) {
                     return true;
                 }
