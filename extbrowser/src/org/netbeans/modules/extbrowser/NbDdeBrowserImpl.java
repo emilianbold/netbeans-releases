@@ -18,7 +18,6 @@ import java.awt.event.*;
 import java.beans.*;
 import java.net.*;
 import javax.swing.*;
-import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask; 
@@ -56,29 +55,44 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     private static final String WWW_ACTIVATE      = "WWW_Activate";          // NOI18N
     private static final String WWW_OPEN_URL      = "WWW_OpenURL";           // NOI18N
     
-    public static final String BEGIN_PROGRESS     = "WWW_BeginProgress";     // NOI18N
-    public static final String MAKING_PROGRESS    = "WWW_MakingProgress";    // NOI18N
-    public static final String END_PROGRESS       = "WWW_EndProgress";       // NOI18N
-    public static final String CANCEL_PROGRESS    = "WWW_CancelProgress";    // NOI18N
-    public static final String SET_PROGRESS_RANGE = "WWW_SetProgressRange";  // NOI18N
+    /** Timeout used in DDE call. */
+    private static int activateTimeout = 5000;
+    /** Timeout used in DDE call. */
+    private static int openUrlTimeout = 3000;
     
     static {
         try {
             if (org.openide.util.Utilities.isWindows ())
                 System.loadLibrary("extbrowser");   // NOI18N
+            
+            Integer i = Integer.getInteger("org.netbeans.modules.extbrowser.WinWebBrowser.timeout"); // NOI18N
+            if (i != null) {
+                activateTimeout = i.intValue();
+                openUrlTimeout = i.intValue();
+            }
         } catch(Exception e) {
             TopManager.getDefault ().notify (
-                new NotifyDescriptor.Message(java.util.ResourceBundle.getBundle("org/netbeans/modules/extbrowser/Bundle").getString("ERR_cant_locate_dll"),
+                new NotifyDescriptor.Message(NbBundle.getMessage(NbDdeBrowserImpl.class, "ERR_cant_locate_dll"),
                 NotifyDescriptor.INFORMATION_MESSAGE)
             );
         }
     }
     
-    private static final boolean debug = true;
+    /** Returns timeout (in milliseconds) used for DDE operations.
+     * Default value is 5000 for browser activation and 3000 for opening URL.
+     * These values can be overriden using system property
+     * <SAMP>org.netbeans.modules.extbrowser.WinWebBrowser.timeout</SAMP>.
+     */
+    private static int ddeOperationTimeout (String operation) {
+        if (WWW_ACTIVATE.equals (operation)) {
+            return activateTimeout;
+        }
+        else if (WWW_OPEN_URL.equals (operation)) {
+            return openUrlTimeout;
+        }
+        throw new IllegalArgumentException ();
+    }
     
-    private static java.util.ResourceBundle bundle = 
-        java.util.ResourceBundle.getBundle("org/netbeans/modules/extbrowser/Bundle"); // NOI18N
-
     /** reference to creator */
     private WinWebBrowser winBrowserFactory;
     
@@ -92,15 +106,6 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     
     /** runnable class that implements the work of nativeThread */
     private static NbDdeBrowserImpl.URLDisplayer nativeRunnable = null;
-    
-    /** name of DDE server receiving progress */
-    private String  ddeProgressSrvName;
-    boolean bProgressInitialized = false;
-    
-    /** transaction ID for progress comunication, 
-     *  it is incremented for each new reported progress 
-     */
-    protected int   txID = 0;
     
     /** windowID of servicing window (-1 if there is no assocciated window) */
     private int     currWinID = -1;
@@ -189,7 +194,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     /** Stops loading of current html page.
      */
     public void stopLoading() {
-        // if we have current progress in NETSCAPE we can send CANCEL_PROGRESS topic
+        // if we had current progress in NETSCAPE we could send CANCEL_PROGRESS topic
     }
     
     /** Finds the name of DDE server. 
@@ -284,7 +289,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                             if (isDisplaying) {
                                 NbDdeBrowserImpl.nativeThread.interrupt ();
                                 TopManager.getDefault().notify(
-                                new NotifyDescriptor.Message(bundle.getString("MSG_win_browser_invocation_failed"),
+                                new NotifyDescriptor.Message(NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_win_browser_invocation_failed"),
                                 NotifyDescriptor.INFORMATION_MESSAGE)
                                 );
                             }
@@ -315,8 +320,6 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 byte [] data;
                 boolean hasNoWindow = (task.browser.currWinID == -1);
 
-                // initProgress ();
-
                 String winID;
                 // activate browser window (doesn't work on Win9x)
                 if (!win9xHack (task.browser.realDDEServer())) {
@@ -335,11 +338,11 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     
                     if (data != null && data.length >= 4) {
                         task.browser.currWinID=DdeBrowserSupport.getDWORDAtOffset(data, 0);
-                        task.browser.setStatusMessage(bundle.getString("MSG_use_win")+task.browser.currWinID);
+                        task.browser.setStatusMessage(NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_use_win")+task.browser.currWinID);
                     }
                     else {
                         task.browser.currWinID = -1;
-                        task.browser.setStatusMessage(bundle.getString("ERR_cant_activate_browser"));
+                        task.browser.setStatusMessage(NbBundle.getMessage(NbDdeBrowserImpl.class, "ERR_cant_activate_browser"));
                         return;
                     }
                 }
@@ -349,24 +352,10 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
 
 
                 TopManager.getDefault ().setStatusText (NbBundle.getMessage (NbDdeBrowserImpl.class, "MSG_openingURLInBrowser"));
-                /*
-                if (task.browser.realDDEServer().equals(WinWebBrowser.IEXPLORE)) {
-                    winID = (hasNoWindow && !win9xHack(task.browser.realDDEServer()))? "0": "-1";   // NOI18N
-                }
-                else if (task.browser.realDDEServer().equals(WinWebBrowser.NETSCAPE6) 
-                || task.browser.realDDEServer().equals(WinWebBrowser.MOZILLA)) {
-                    winID = "0xFFFFFFFF"; // NOI18N
-                }
-                else {
-                    winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: task.browser.currWinID).toUpperCase(); // NOI18N
-                    if (winID.length() > 10) 
-                        winID = "0x"+winID.substring(winID.length()-8); // NOI18N
-                }
-                 */
                 winID = windowId (task.browser.realDDEServer(), hasNoWindow? 0: task.browser.currWinID);
                     
                 String args1;
-                args1="\""+url.toString()+"\",,"+winID+",0x1,,,"+(task.browser.ddeProgressSrvName==null?"":task.browser.ddeProgressSrvName);  // NOI18N
+                args1="\""+url.toString()+"\",,"+winID+",0x1,,,";  // NOI18N
                 if (!win9xHack (task.browser.realDDEServer())) {
                     data = task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_OPEN_URL,args1,3000);
                 }
@@ -379,7 +368,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                         startBrowser (task);
 
                         winID = windowId (task.browser.realDDEServer(), -1);
-                        args1="\""+url.toString()+"\",,"+winID+",0x1,,,"+(task.browser.ddeProgressSrvName==null?"":task.browser.ddeProgressSrvName);  // NOI18N
+                        args1="\""+url.toString()+"\",,"+winID+",0x1,,,";  // NOI18N
                         data = task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_OPEN_URL,args1,3000);
                     }
                 }
@@ -389,7 +378,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                         task.browser.currWinID=DdeBrowserSupport.getDWORDAtOffset(data, 0);
                         if (task.browser.currWinID < 0) task.browser.currWinID = -task.browser.currWinID;
                     }
-                    task.browser.setStatusMessage(bundle.getString("MSG_use_win"));
+                    task.browser.setStatusMessage(NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_use_win"));
                 }
                 URL oldUrl = task.browser.url;
                 task.browser.url = url;
@@ -403,7 +392,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             }
             catch (Exception ex) {
                 final Exception ex1 = ex;
-                ErrorManager.getDefault ().annotate(ex1, bundle.getString("MSG_win_browser_invocation_failed"));
+                ErrorManager.getDefault ().annotate(ex1, NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_win_browser_invocation_failed"));
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         ErrorManager.getDefault ().notify (ex1);
@@ -433,7 +422,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             String b;
             if (task.browser.winBrowserFactory.isStartWhenNotRunning()) {
                 NbProcessDescriptor cmd = task.browser.winBrowserFactory.getBrowserExecutable();
-                TopManager.getDefault ().setStatusText (bundle.getString("MSG_startingBrowser"));
+                TopManager.getDefault ().setStatusText (NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_startingBrowser"));
                 cmd.exec();
                 // wait for browser start
                 Thread.currentThread().sleep(5000);
