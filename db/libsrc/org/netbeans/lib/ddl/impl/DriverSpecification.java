@@ -231,8 +231,15 @@ public class DriverSpecification {
 //        list.add("InstantDB"); // NOI18N - isn't necessary in the list - getTables() returns empty result set for views
 
         try {
-            if (list.contains(dmd.getDatabaseProductName().trim()))
-                return false;
+            String productName = dmd.getDatabaseProductName().trim();
+            if (list.contains(productName))
+                if (productName.equalsIgnoreCase("PointBase"))
+                    if ((dmd.getDriverMajorVersion() == 4 && dmd.getDriverMinorVersion() >= 1) || dmd.getDriverMajorVersion() > 4)
+                        return true;
+                    else
+                        return false;
+                else
+                    return false;
             else
                 return true;
         } catch(SQLException exc) {
