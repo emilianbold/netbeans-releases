@@ -67,6 +67,17 @@ public class TextFieldOperator extends TextComponentOperator
 	super(b);
     }
 
+    public TextFieldOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((TextField)cont.
+             waitSubComponent(new TextFieldFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public TextFieldOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits for a component in a container to show. The component is
@@ -118,8 +129,7 @@ public class TextFieldOperator extends TextComponentOperator
     public TextFieldOperator(ContainerOperator cont, int index) {
 	this((TextField)
 	     waitComponent(cont, 
-			   new TextFieldFinder(ComponentSearcher.
-						    getTrueChooser("Any TextField")),
+			   new TextFieldFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -363,12 +373,15 @@ public class TextFieldOperator extends TextComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    protected static class TextFieldByTextFinder implements ComponentChooser {
+    public static class TextFieldByTextFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
 	public TextFieldByTextFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
+	}
+	public TextFieldByTextFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof TextField) {
@@ -384,19 +397,12 @@ public class TextFieldOperator extends TextComponentOperator
 	}
     }
 
-    static class TextFieldFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class TextFieldFinder extends Finder {
 	public TextFieldFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(TextField.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof TextField) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public TextFieldFinder() {
+            super(TextField.class);
 	}
     }
 }

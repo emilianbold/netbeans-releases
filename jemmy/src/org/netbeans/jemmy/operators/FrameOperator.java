@@ -57,6 +57,22 @@ public class FrameOperator extends WindowOperator implements Outputable {
 	driver = DriverManager.getFrameDriver(getClass());
     }
 
+    public FrameOperator(ComponentChooser chooser, int index, Operator env) {
+	this(waitFrame(new FrameFinder(chooser),
+                       index, 
+                       env.getTimeouts(),
+                       env.getOutput()));
+	copyEnvironment(env);
+    }
+
+    public FrameOperator(ComponentChooser chooser, int index) {
+	this(chooser, index, Operator.getEnvironmentOperator());
+    }
+
+    public FrameOperator(ComponentChooser chooser) {
+	this(chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits for the frame with "title" subtitle.
@@ -70,7 +86,7 @@ public class FrameOperator extends WindowOperator implements Outputable {
      * @throws TimeoutExpiredException
      */
     public FrameOperator(String title, int index, Operator env) {
-	this(waitFrame(new FrameByTitleChooser(title, 
+	this(waitFrame(new FrameByTitleFinder(title, 
 						 env.getComparator()),
 			index,
 			env.getTimeouts(),
@@ -113,8 +129,7 @@ public class FrameOperator extends WindowOperator implements Outputable {
      */
     public FrameOperator(int index) {
 	this((Frame)
-	     waitFrame(new FrameSubChooser(ComponentSearcher.
-					   getTrueChooser("Any Frame")),
+	     waitFrame(new FrameFinder(),
 		       index,
 		       ComponentOperator.getEnvironmentOperator().getTimeouts(),
 		       ComponentOperator.getEnvironmentOperator().getOutput()));
@@ -170,7 +185,7 @@ public class FrameOperator extends WindowOperator implements Outputable {
 	getOutput().printLine("Wait \"" + title + "\" title of frame \n    : "+
 			      getSource().toString());
 	getOutput().printGolden("Wait \"" + title + "\" title");
-	waitState(new FrameByTitleChooser(title, getComparator()));
+	waitState(new FrameByTitleFinder(title, getComparator()));
     }
 
     public void iconify() {
@@ -289,38 +304,31 @@ public class FrameOperator extends WindowOperator implements Outputable {
 	    FrameWaiter waiter = new FrameWaiter();
 	    waiter.setTimeouts(timeouts);
 	    waiter.setOutput(output);
-	    return((Frame)waiter.waitFrame(new FrameSubChooser(chooser), index));
+	    return((Frame)waiter.waitFrame(new FrameFinder(chooser), index));
 	} catch(InterruptedException e) {
 	    output.printStackTrace(e);
 	    return(null);
 	}
     }
 
-    private static class FrameSubChooser implements ComponentChooser {
-	private ComponentChooser chooser;
-	public FrameSubChooser(ComponentChooser c) {
-	    super();
-	    chooser = c;
+    public static class FrameFinder extends Finder {
+	public FrameFinder(ComponentChooser sf) {
+            super(Frame.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof Frame) {
-		return(chooser.checkComponent(comp));
-	    } else {
-		return(false);
-	    }
-	}
-	public String getDescription() {
-	    return(chooser.getDescription());
+	public FrameFinder() {
+            super(Frame.class);
 	}
     }
 
-    protected static class FrameByTitleChooser implements ComponentChooser {
+    public static class FrameByTitleFinder implements ComponentChooser {
 	String title;
 	StringComparator comparator;
-	public FrameByTitleChooser(String t, StringComparator comparator) {
-	    super();
+	public FrameByTitleFinder(String t, StringComparator comparator) {
 	    title = t;
 	    this.comparator = comparator;
+	}
+	public FrameByTitleFinder(String t) {
+            this(t, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof Frame) {

@@ -1102,7 +1102,7 @@ public class JFileChooserOperator extends JComponentOperator
 	return(-1);
     }
 
-    private static class JFileChooserJDialogFinder implements ComponentChooser {
+    public static class JFileChooserJDialogFinder implements ComponentChooser {
 	TestOut output;
 	ComponentChooser subChooser;
 	public JFileChooserJDialogFinder(TestOut output) {
@@ -1120,14 +1120,12 @@ public class JFileChooserOperator extends JComponentOperator
 	}
     }
 
-    private static class JFileChooserFinder implements ComponentChooser {
+    public static class JFileChooserFinder extends Finder {
+	public JFileChooserFinder(ComponentChooser sf) {
+            super(JFileChooser.class, sf);
+	}
 	public JFileChooserFinder() {
-	}
-	public boolean checkComponent(Component comp) {
-	    return(comp instanceof JFileChooser);
-	}
-	public String getDescription() {
-	    return("JFileChooser");
+            super(JFileChooser.class);
 	}
     }
 

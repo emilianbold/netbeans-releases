@@ -17,6 +17,7 @@
 
 package org.netbeans.jemmy;
 
+import java.awt.AWTEvent;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
 
@@ -161,6 +162,11 @@ public class QueueTool implements Outputable, Timeoutable {
 	waiter.setOutput(output);
 	try {
 	    waiter.waitAction(null);
+	} catch(TimeoutExpiredException e) {
+            AWTEvent event = getQueue().peekEvent();
+            getOutput().printErrLine("Event at the top of stack: " + 
+                                     ((event == null) ? "null" : event.toString()));
+            throw(e);
 	} catch(InterruptedException e) {
 	    output.printStackTrace(e);
 	}
@@ -180,6 +186,11 @@ public class QueueTool implements Outputable, Timeoutable {
 	waiter.setOutput(output);
 	try {
 	    waiter.waitAction(null);
+	} catch(TimeoutExpiredException e) {
+            AWTEvent event = getQueue().peekEvent();
+            getOutput().printErrLine("Event at the top of stack: " + 
+                                     ((event == null) ? "null" : event.toString()));
+            throw(e);
 	} catch(InterruptedException e) {
 	    output.printStackTrace(e);
 	}

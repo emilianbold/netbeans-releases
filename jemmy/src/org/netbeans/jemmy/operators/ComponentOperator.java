@@ -138,6 +138,17 @@ public class ComponentOperator extends Operator
 	setEventDispatcher(new EventDispatcher(comp));
     }
 
+    public ComponentOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this(waitComponent((Container)cont.getSource(), 
+			   chooser,
+			   index, cont.getTimeouts(), cont.getOutput()));
+	copyEnvironment(cont);
+    }
+
+    public ComponentOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits for a component in a container to show. The component is
@@ -149,10 +160,7 @@ public class ComponentOperator extends Operator
      * @throws TimeoutExpiredException
      */
     public ComponentOperator(ContainerOperator cont, int index) {
-	this(waitComponent((Container)cont.getSource(), 
-			   ComponentSearcher.getTrueChooser("Any component"),
-			   index, cont.getTimeouts(), cont.getOutput()));
-	copyEnvironment(cont);
+	this(cont, ComponentSearcher.getTrueChooser("Any component"), index);
     }
 
     /**
@@ -167,7 +175,6 @@ public class ComponentOperator extends Operator
      */
     public ComponentOperator(ContainerOperator cont) {
 	this(cont, 0);
-	copyEnvironment(cont);
     }
 
     /**

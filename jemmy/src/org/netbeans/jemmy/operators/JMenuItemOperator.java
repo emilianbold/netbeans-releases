@@ -77,6 +77,17 @@ implements Timeoutable, Outputable{
 	setOutput(JemmyProperties.getProperties().getOutput());
     }
 
+    public JMenuItemOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JMenuItem)cont.
+             waitSubComponent(new JMenuItemFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JMenuItemOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -117,8 +128,7 @@ implements Timeoutable, Outputable{
     public JMenuItemOperator(ContainerOperator cont, int index) {
 	this((JMenuItem)
 	     waitComponent(cont, 
-			   new JMenuItemFinder(ComponentSearcher.
-					       getTrueChooser("Any JMenuItem")),
+			   new JMenuItemFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -432,12 +442,15 @@ implements Timeoutable, Outputable{
 	return(choosers);
     }
 
-    protected static class JMenuItemByLabelFinder implements ComponentChooser {
+    public static class JMenuItemByLabelFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
 	public JMenuItemByLabelFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
+	}
+	public JMenuItemByLabelFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JMenuItem) {
@@ -453,19 +466,12 @@ implements Timeoutable, Outputable{
 	}
     }
 
-    private static class JMenuItemFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JMenuItemFinder extends Finder {
 	public JMenuItemFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JMenuItem.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JMenuItem) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JMenuItemFinder() {
+            super(JMenuItem.class);
 	}
     }
 }

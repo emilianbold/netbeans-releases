@@ -22,6 +22,7 @@ import org.netbeans.jemmy.ActionProducer;
 import org.netbeans.jemmy.CharBindingMap;
 import org.netbeans.jemmy.ClassReference;
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Outputable;
@@ -861,6 +862,27 @@ public abstract class Operator extends Object
 		return(c.indexOf(t) != -1);
 	    }
 	}
+    }
+
+    public static class Finder implements ComponentChooser {
+        Class clz;
+        ComponentChooser subchooser;
+        public Finder(Class clz, ComponentChooser subchooser) {
+            this.clz = clz;
+            this.subchooser = subchooser;
+        }
+        public Finder(Class clz) {
+            this(clz, ComponentSearcher.getTrueChooser("Any " + clz.getName()));
+        }
+        public boolean checkComponent(Component comp) {
+            if(clz.isInstance(comp)) {
+                return(subchooser.checkComponent(comp));
+            }
+            return(false);
+        }
+        public String getDescription() {
+            return(subchooser.getDescription());
+        }
     }
 
     /**

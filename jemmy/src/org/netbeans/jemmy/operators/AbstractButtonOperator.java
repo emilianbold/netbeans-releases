@@ -84,6 +84,17 @@ public class AbstractButtonOperator extends JComponentOperator
 	driver = DriverManager.getButtonDriver(getClass());
     }
 
+    public AbstractButtonOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((AbstractButton)cont.
+             waitSubComponent(new AbstractButtonFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public AbstractButtonOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits for a component in a container to show. The component is
@@ -135,8 +146,7 @@ public class AbstractButtonOperator extends JComponentOperator
     public AbstractButtonOperator(ContainerOperator cont, int index) {
 	this((AbstractButton)
 	     waitComponent(cont, 
-			   new AbstractButtonFinder(ComponentSearcher.
-						    getTrueChooser("Any AbstractButton")),
+			   new AbstractButtonFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -799,12 +809,15 @@ public class AbstractButtonOperator extends JComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    protected static class AbstractButtonByLabelFinder implements ComponentChooser {
+    public static class AbstractButtonByLabelFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
 	public AbstractButtonByLabelFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
+	}
+	public AbstractButtonByLabelFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof AbstractButton) {
@@ -820,19 +833,12 @@ public class AbstractButtonOperator extends JComponentOperator
 	}
     }
 
-    static class AbstractButtonFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class AbstractButtonFinder extends Finder {
 	public AbstractButtonFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(AbstractButton.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof AbstractButton) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public AbstractButtonFinder() {
+            super(AbstractButton.class);
 	}
     }
 }

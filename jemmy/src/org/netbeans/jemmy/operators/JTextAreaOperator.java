@@ -75,6 +75,17 @@ public class JTextAreaOperator extends JTextComponentOperator
 	super(b);
     }
 
+    public JTextAreaOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JTextArea)cont.
+             waitSubComponent(new JTextAreaFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JTextAreaOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -116,8 +127,7 @@ public class JTextAreaOperator extends JTextComponentOperator
     public JTextAreaOperator(ContainerOperator cont, int index) {
 	this((JTextArea)
 	     waitComponent(cont, 
-			   new JTextAreaFinder(ComponentSearcher.
-					       getTrueChooser("Any JTextArea")),
+			   new JTextAreaFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -521,19 +531,12 @@ public class JTextAreaOperator extends JTextComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private static class JTextAreaFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JTextAreaFinder extends Finder {
 	public JTextAreaFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JTextArea.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JTextArea) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JTextAreaFinder() {
+            super(JTextArea.class);
 	}
     }
 }

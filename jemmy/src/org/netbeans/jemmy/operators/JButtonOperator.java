@@ -50,6 +50,17 @@ public class JButtonOperator extends AbstractButtonOperator{
 	super(b);
     }
 
+    public JButtonOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JButton)cont.
+             waitSubComponent(new JButtonFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JButtonOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -91,8 +102,7 @@ public class JButtonOperator extends AbstractButtonOperator{
     public JButtonOperator(ContainerOperator cont, int index) {
 	this((JButton)
 	     waitComponent(cont, 
-			   new JButtonFinder(ComponentSearcher.
-					     getTrueChooser("Any JButton")),
+			   new JButtonFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -256,19 +266,12 @@ public class JButtonOperator extends AbstractButtonOperator{
 	makeComponentVisible();
     }
 
-    public static class JButtonFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JButtonFinder extends Finder {
 	public JButtonFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JButton.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JButton) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JButtonFinder() {
+            super(JButton.class);
 	}
     }
 }

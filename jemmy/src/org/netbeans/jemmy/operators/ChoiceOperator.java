@@ -65,6 +65,17 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
 	driver = DriverManager.getListDriver(getClass());
     }
 
+    public ChoiceOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((Choice)cont.
+             waitSubComponent(new ChoiceFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public ChoiceOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -105,8 +116,7 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
     public ChoiceOperator(ContainerOperator cont, int index) {
 	this((Choice)
 	     waitComponent(cont, 
-			   new ChoiceFinder(ComponentSearcher.
-					       getTrueChooser("Any Choice")),
+			   new ChoiceFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -154,10 +164,9 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
      */
     public static Choice findChoice(Container cont, String text, boolean ce, boolean ccs, int index) {
 	return(findChoice(cont, 
-			     new ChoiceFinder(new ChoiceOperator.
-					ChoiceBySelectedItemFinder(text, 
-					new DefaultStringComparator(ce, ccs))), 
-			     index));
+                          new ChoiceBySelectedItemFinder(text, 
+                                                         new DefaultStringComparator(ce, ccs)), 
+                          index));
     }
 
     /**
@@ -209,10 +218,9 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
      */
     public static Choice waitChoice(Container cont, String text, boolean ce, boolean ccs, int index) {
 	return(waitChoice(cont,  
-			     new ChoiceFinder(new ChoiceOperator.
-						 ChoiceBySelectedItemFinder(text, 
-	                                         new DefaultStringComparator(ce, ccs))), 
-			     index));
+                          new ChoiceBySelectedItemFinder(text, 
+                                                         new DefaultStringComparator(ce, ccs)), 
+                          index));
     }
 
     /**
@@ -425,12 +433,15 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    protected static class ChoiceBySelectedItemFinder implements ComponentChooser {
+    public static class ChoiceBySelectedItemFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
 	public ChoiceBySelectedItemFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
+	}
+	public ChoiceBySelectedItemFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof Choice) {
@@ -446,19 +457,12 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
 	}
     }
 
-    private static class ChoiceFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class ChoiceFinder extends Finder {
 	public ChoiceFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(Choice.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof Choice) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public ChoiceFinder() {
+            super(Choice.class);
 	}
     }
 }

@@ -70,6 +70,17 @@ public class JColorChooserOperator extends JComponentOperator
 	tabbed = new JTabbedPaneOperator(this);
     }
 
+    public JColorChooserOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JColorChooser)cont.
+             waitSubComponent(new JColorChooserFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JColorChooserOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -81,7 +92,7 @@ public class JColorChooserOperator extends JComponentOperator
     public JColorChooserOperator(ContainerOperator cont, int index) {
 	this((JColorChooser)
 	     waitComponent(cont,
-			   new JColorChooserFinder(ComponentSearcher.getTrueChooser("Any JColorChooser")),
+			   new JColorChooserFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -406,17 +417,12 @@ public class JColorChooserOperator extends JComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private static class JColorChooserFinder implements ComponentChooser {
-	ComponentChooser subChooser;
-	public JColorChooserFinder(ComponentChooser subChooser) {
-	    this.subChooser = subChooser;
+    public static class JColorChooserFinder extends Finder {
+	public JColorChooserFinder(ComponentChooser sf) {
+            super(JColorChooser.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    return(comp instanceof JColorChooser &&
-		   subChooser.checkComponent(comp));
-	}
-	public String getDescription() {
-	    return("JColorChooser");
+	public JColorChooserFinder() {
+            super(JColorChooser.class);
 	}
     }
 

@@ -64,9 +64,20 @@ public class ScrollbarOperator extends ComponentOperator
 	super(b);
 	driver = DriverManager.getScrollDriver(getClass());
     }
+
+    public ScrollbarOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((Scrollbar)cont.
+             waitSubComponent(new ScrollbarFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public ScrollbarOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
     public ScrollbarOperator(ContainerOperator cont, int index) {
 	this((Scrollbar)waitComponent(cont, 
-				       new ScrollbarFinder(ComponentSearcher.getTrueChooser("Any container")), 
+				       new ScrollbarFinder(), 
 				       index));
 	copyEnvironment(cont);
     }
@@ -362,19 +373,12 @@ public class ScrollbarOperator extends ComponentOperator
 	    return(w.getDescription());
 	}
     }
-    private static class ScrollbarFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class ScrollbarFinder extends Finder {
 	public ScrollbarFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(Scrollbar.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof Scrollbar) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public ScrollbarFinder() {
+            super(Scrollbar.class);
 	}
     }
 }

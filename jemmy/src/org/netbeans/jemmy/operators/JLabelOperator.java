@@ -50,6 +50,17 @@ public class JLabelOperator extends JComponentOperator {
 	super(b);
     }
 
+    public JLabelOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JLabel)cont.
+             waitSubComponent(new JLabelFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JLabelOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -89,8 +100,7 @@ public class JLabelOperator extends JComponentOperator {
     public JLabelOperator(ContainerOperator cont, int index) {
 	this((JLabel)
 	     waitComponent(cont, 
-			   new JLabelFinder(ComponentSearcher.
-					    getTrueChooser("Any JLabel")),
+			   new JLabelFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -396,12 +406,15 @@ public class JLabelOperator extends JComponentOperator {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private static class JLabelByLabelFinder implements ComponentChooser {
+    public static class JLabelByLabelFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
 	public JLabelByLabelFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
+	}
+	public JLabelByLabelFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JLabel) {
@@ -417,19 +430,12 @@ public class JLabelOperator extends JComponentOperator {
 	}
     }
 
-    private static class JLabelFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JLabelFinder extends Finder {
 	public JLabelFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JLabel.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JLabel) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JLabelFinder() {
+            super(JLabel.class);
 	}
     }
 }

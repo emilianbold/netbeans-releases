@@ -99,6 +99,17 @@ public class JScrollBarOperator extends JComponentOperator
 	driver = DriverManager.getScrollDriver(getClass());
     }
 
+    public JScrollBarOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JScrollBar)cont.
+             waitSubComponent(new JScrollBarFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JScrollBarOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -109,7 +120,7 @@ public class JScrollBarOperator extends JComponentOperator
      */
     public JScrollBarOperator(ContainerOperator cont, int index) {
 	this((JScrollBar)waitComponent(cont, 
-				       new JScrollBarFinder(ComponentSearcher.getTrueChooser("Any container")), 
+				       new JScrollBarFinder(), 
 				       index));
 	copyEnvironment(cont);
    }
@@ -733,19 +744,12 @@ public class JScrollBarOperator extends JComponentOperator
 	}
     }
 
-    private static class JScrollBarFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JScrollBarFinder extends Finder {
 	public JScrollBarFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JScrollBar.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JScrollBar) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JScrollBarFinder() {
+            super(JScrollBar.class);
 	}
     }
 }

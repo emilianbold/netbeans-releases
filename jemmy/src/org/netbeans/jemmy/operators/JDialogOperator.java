@@ -57,6 +57,33 @@ public class JDialogOperator extends DialogOperator {
 	super(w);
     }
 
+    public JDialogOperator(ComponentChooser chooser, int index, Operator env) {
+	this(waitJDialog(new JDialogFinder(chooser),
+                         index, 
+                         env.getTimeouts(),
+                         env.getOutput()));
+	copyEnvironment(env);
+    }
+    
+    public JDialogOperator(ComponentChooser chooser, int index) {
+	this(chooser, index, Operator.getEnvironmentOperator());
+    }
+    
+    public JDialogOperator(ComponentChooser chooser) {
+	this(chooser, 0);
+    }
+    
+    public JDialogOperator(WindowOperator owner, ComponentChooser chooser, int index) {
+	this((JDialog)owner.
+             waitSubWindow(new JDialogFinder(chooser),
+                           index));
+	copyEnvironment(owner);
+    }
+    
+    public JDialogOperator(WindowOperator owner, ComponentChooser chooser) {
+	this(owner, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits for the dialog with "title" subtitle.
@@ -69,8 +96,8 @@ public class JDialogOperator extends DialogOperator {
      */
     public JDialogOperator(WindowOperator owner, String title, int index) {
 	this(waitJDialog(owner,
-			 new JDialogSubChooser(new DialogByTitleChooser(title,
-									owner.getComparator())), 
+			 new JDialogFinder(new DialogByTitleFinder(title,
+                                                                    owner.getComparator())), 
 			 index));
 	copyEnvironment(owner);
     }
@@ -98,8 +125,7 @@ public class JDialogOperator extends DialogOperator {
     public JDialogOperator(WindowOperator owner, int index) {
 	this((JDialog)
 	     waitJDialog(owner, 
-			 new JDialogSubChooser(ComponentSearcher.
-					       getTrueChooser("Any JDialog")),
+			 new JDialogFinder(),
 			 index));
 	copyEnvironment(owner);
     }
@@ -127,10 +153,9 @@ public class JDialogOperator extends DialogOperator {
      * @throws TimeoutExpiredException
      */
     public JDialogOperator(String title, int index, Operator env) {
-	this(waitJDialog(new JDialogSubChooser(new DialogByTitleChooser(title, 
-									env.getComparator())), 
-			 index, env.getTimeouts(), env.getOutput()));
-	copyEnvironment(env);
+	this(new JDialogFinder(new DialogByTitleFinder(title, 
+                                                       env.getComparator())), 
+             index, env);
     }
 
     /**
@@ -172,8 +197,7 @@ public class JDialogOperator extends DialogOperator {
      */
     public JDialogOperator(int index) {
 	this((JDialog)
-	     waitJDialog(new JDialogSubChooser(ComponentSearcher.
-					       getTrueChooser("Any JDialog")),
+	     waitJDialog(new JDialogFinder(),
 			 index,
 			 ComponentOperator.getEnvironmentOperator().getTimeouts(),
 			 ComponentOperator.getEnvironmentOperator().getOutput()));
@@ -194,7 +218,7 @@ public class JDialogOperator extends DialogOperator {
      * Searches an index'th dialog.
      */
     public static JDialog findJDialog(ComponentChooser chooser, int index) {
-	return((JDialog)DialogWaiter.getDialog(new JDialogSubChooser(chooser), index));
+	return((JDialog)DialogWaiter.getDialog(new JDialogFinder(chooser), index));
     }
 
     /**
@@ -210,8 +234,8 @@ public class JDialogOperator extends DialogOperator {
      */
     public static JDialog findJDialog(String title, boolean ce, boolean cc, int index) {
 	return((JDialog)DialogWaiter.
-	       getDialog(new JDialogSubChooser(new DialogByTitleChooser(title, 
-									new DefaultStringComparator(ce, cc))), 
+	       getDialog(new JDialogFinder(new DialogByTitleFinder(title, 
+                                                                    new DefaultStringComparator(ce, cc))), 
 			 index));
     }
 
@@ -228,7 +252,7 @@ public class JDialogOperator extends DialogOperator {
      * @param owner Window - dialog owner.
      */
     public static JDialog findJDialog(Window owner, ComponentChooser chooser, int index) {
-	return((JDialog)DialogWaiter.getDialog(owner, new JDialogSubChooser(chooser), index));
+	return((JDialog)DialogWaiter.getDialog(owner, new JDialogFinder(chooser), index));
     }
 
     /**
@@ -247,8 +271,8 @@ public class JDialogOperator extends DialogOperator {
     public static JDialog findJDialog(Window owner, String title, boolean ce, boolean cc, int index) {
 	return((JDialog)DialogWaiter.
 	       getDialog(owner, 
-			 new JDialogSubChooser(new DialogByTitleChooser(title, 
-									new DefaultStringComparator(ce, cc))), 
+			 new JDialogFinder(new DialogByTitleFinder(title, 
+                                                                    new DefaultStringComparator(ce, cc))), 
 			 index));
     }
 
@@ -285,8 +309,8 @@ public class JDialogOperator extends DialogOperator {
      * @throws TimeoutExpiredException
      */
     public static JDialog waitJDialog(String title, boolean ce, boolean cc, int index) {
-	return(waitJDialog(new JDialogSubChooser(new DialogByTitleChooser(title, 
-									  new DefaultStringComparator(ce, cc))), 
+	return(waitJDialog(new JDialogFinder(new DialogByTitleFinder(title, 
+                                                                      new DefaultStringComparator(ce, cc))), 
 						 index));
     }
 
@@ -326,8 +350,8 @@ public class JDialogOperator extends DialogOperator {
      * @throws TimeoutExpiredException
      */
     public static JDialog waitJDialog(Window owner, String title, boolean ce, boolean cc, int index) {
-	return(waitJDialog(owner, new JDialogSubChooser(new DialogByTitleChooser(title, 
-										 new DefaultStringComparator(ce, cc))), 
+	return(waitJDialog(owner, new JDialogFinder(new DialogByTitleFinder(title, 
+                                                                             new DefaultStringComparator(ce, cc))), 
 			   index));
     }
 
@@ -473,7 +497,7 @@ public class JDialogOperator extends DialogOperator {
 	    waiter.setTimeouts(timeouts);
 	    waiter.setOutput(output);
 	    return((JDialog)waiter.
-		   waitDialog(new JDialogSubChooser(chooser), index));
+		   waitDialog(new JDialogFinder(chooser), index));
 	} catch(InterruptedException e) {
 	    output.printStackTrace(e);
 	    return(null);
@@ -493,28 +517,19 @@ public class JDialogOperator extends DialogOperator {
 	    waiter.setTimeouts(timeouts);
 	    waiter.setOutput(output);
 	    return((JDialog)waiter.
-		   waitDialog(owner, new JDialogSubChooser(chooser), index));
+		   waitDialog(owner, new JDialogFinder(chooser), index));
 	} catch(InterruptedException e) {
 	    JemmyProperties.getCurrentOutput().printStackTrace(e);
 	    return(null);
 	}
     }
 
-    private static class JDialogSubChooser implements ComponentChooser {
-	private ComponentChooser chooser;
-	public JDialogSubChooser(ComponentChooser c) {
-	    super();
-	    chooser = c;
+    public static class JDialogFinder extends Finder {
+	public JDialogFinder(ComponentChooser sf) {
+            super(JDialog.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JDialog) {
-		return(chooser.checkComponent(comp));
-	    } else {
-		return(false);
-	    }
-	}
-	public String getDescription() {
-	    return(chooser.getDescription());
+	public JDialogFinder() {
+            super(JDialog.class);
 	}
     }
 }

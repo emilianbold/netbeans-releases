@@ -565,3 +565,46 @@ DefaultWindowDriver.java
 	COMPONENT_RESIZED is posted during resizing.
 
 
+#VERSION 2.0.2
+
+25983 
+        JTreeOperator
+25255 
+        Added new package - src.org.netbeans.jemmy.accessibility
+        Classes: AccessibilityChooser, AccessibleNameChooser, AccessibleNameChooser
+	
+25307
+        - all inner finders made public:
+                AbstractButtonOperator.AbstractButtonFinder
+                AbstractButtonOperator.AbstractButtonByLabelFinder
+
+        - new constructor added to all by-class finders:
+                public AbstractButtonOperator.AbstractButtonFinder()
+
+        - new constructor added to all by-string resource finders:
+                public AbstractButtonOperator.AbstractButtonByLabelFinder(String)
+                public JListOperator.JListByItemFinder(String, int)
+
+        - new constructors are added to all operators:
+                public AbstractButtonOperator(ContainerOperator, ComponentChooser, int)
+                public AbstractButtonOperator(ContainerOperator, ComponentChooser)
+
+        - methods for finding subcomponent added to ContainerOperator:
+                public Component findSubComponent(ComponentChooser, int)
+                public Component findSubComponent(ComponentChooser)
+                
+        - methods for finding subwindow added to WindowOperator:
+                public Window findSubWindow(ComponentChooser, int)
+                public Window findSubWindow(ComponentChooser)
+
+
+
+25409, 25406, 25407, 25408
+
+        New methods in JTableOperator:
+        Point findCell(*)
+        int findCellRow(*, int column, int index)
+        int findCellColumn(*, int row, int index)
+        int findColumn(String)
+
+        new classes JTableHeaderOperator, OrderedListDriver

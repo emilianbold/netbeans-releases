@@ -48,6 +48,17 @@ public class JRadioButtonOperator extends JToggleButtonOperator{
 	super(b);
     }
 
+    public JRadioButtonOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JRadioButton)cont.
+             waitSubComponent(new JRadioButtonFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JRadioButtonOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -89,8 +100,7 @@ public class JRadioButtonOperator extends JToggleButtonOperator{
     public JRadioButtonOperator(ContainerOperator cont, int index) {
 	this((JRadioButton)
 	     waitComponent(cont, 
-			   new JRadioButtonFinder(ComponentSearcher.
-						  getTrueChooser("Any JRadioButton")),
+			   new JRadioButtonFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -213,19 +223,12 @@ public class JRadioButtonOperator extends JToggleButtonOperator{
 	return(waitJRadioButton(cont, text, ce, ccs, 0));
     }
 
-    private static class JRadioButtonFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JRadioButtonFinder extends Finder {
 	public JRadioButtonFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JRadioButton.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JRadioButton) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JRadioButtonFinder() {
+            super(JRadioButton.class);
 	}
     }
 }

@@ -69,6 +69,17 @@ public class ListOperator extends ComponentOperator
 	driver = DriverManager.getMultiSelListDriver(getClass());
     }
 
+    public ListOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((List)cont.
+             waitSubComponent(new ListFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public ListOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits item text first.
@@ -121,8 +132,7 @@ public class ListOperator extends ComponentOperator
     public ListOperator(ContainerOperator cont, int index) {
 	this((List)
 	     waitComponent(cont, 
-			   new ListFinder(ComponentSearcher.
-					   getTrueChooser("Any List")),
+			   new ListFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -437,7 +447,7 @@ public class ListOperator extends ComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private static class ListByItemFinder implements ComponentChooser {
+    public static class ListByItemFinder implements ComponentChooser {
 	String label;
 	int itemIndex;
 	StringComparator comparator;
@@ -445,6 +455,9 @@ public class ListOperator extends ComponentOperator
 	    label = lb;
 	    itemIndex = ii;
 	    this.comparator = comparator;
+	}
+	public ListByItemFinder(String lb, int ii) {
+            this(lb, ii, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof List) {
@@ -471,19 +484,12 @@ public class ListOperator extends ComponentOperator
 	}
     }
 
-    private static class ListFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class ListFinder extends Finder {
 	public ListFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(List.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof List) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public ListFinder() {
+            super(List.class);
 	}
     }
 }

@@ -48,6 +48,17 @@ public class JCheckBoxMenuItemOperator extends JMenuItemOperator {
 	setOutput(JemmyProperties.getProperties().getOutput());
     }
 
+    public JCheckBoxMenuItemOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JCheckBoxMenuItem)cont.
+             waitSubComponent(new JCheckBoxMenuItemFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JCheckBoxMenuItemOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -88,8 +99,7 @@ public class JCheckBoxMenuItemOperator extends JMenuItemOperator {
     public JCheckBoxMenuItemOperator(ContainerOperator cont, int index) {
 	this((JCheckBoxMenuItem)
 	     waitComponent(cont, 
-			   new JCheckBoxMenuItemFinder(ComponentSearcher.
-						       getTrueChooser("Any JCheckBoxMenuItem")),
+			   new JCheckBoxMenuItemFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -124,12 +134,15 @@ public class JCheckBoxMenuItemOperator extends JMenuItemOperator {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    static class JCheckBoxMenuItemByLabelFinder implements ComponentChooser {
+    public static class JCheckBoxMenuItemByLabelFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
 	public JCheckBoxMenuItemByLabelFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
+	}
+	public JCheckBoxMenuItemByLabelFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JCheckBoxMenuItem) {
@@ -145,19 +158,12 @@ public class JCheckBoxMenuItemOperator extends JMenuItemOperator {
 	}
     }
 
-    private static class JCheckBoxMenuItemFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JCheckBoxMenuItemFinder extends Finder {
 	public JCheckBoxMenuItemFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JCheckBoxMenuItem.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JCheckBoxMenuItem) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JCheckBoxMenuItemFinder() {
+            super(JCheckBoxMenuItem.class);
 	}
     }
 } 

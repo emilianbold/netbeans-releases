@@ -88,6 +88,17 @@ public class JSliderOperator extends JComponentOperator
 	super(b);
     }
 
+    public JSliderOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JSlider)cont.
+             waitSubComponent(new JSliderFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JSliderOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -98,7 +109,7 @@ public class JSliderOperator extends JComponentOperator
      */
     public JSliderOperator(ContainerOperator cont, int index) {
 	this((JSlider)waitComponent(cont, 
-				    new JSliderFinder(ComponentSearcher.getTrueChooser("Any container")), 
+				    new JSliderFinder(), 
 				    index));
 	copyEnvironment(cont);
     }
@@ -645,19 +656,12 @@ public class JSliderOperator extends JComponentOperator
 	}
     }
 
-    private static class JSliderFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JSliderFinder extends Finder {
 	public JSliderFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JSlider.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JSlider) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JSliderFinder() {
+            super(JSlider.class);
 	}
     }
 

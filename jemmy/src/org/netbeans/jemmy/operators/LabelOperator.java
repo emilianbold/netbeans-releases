@@ -45,6 +45,17 @@ public class LabelOperator extends ComponentOperator {
 	super(b);
     }
 
+    public LabelOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((Label)cont.
+             waitSubComponent(new LabelFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public LabelOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -56,9 +67,9 @@ public class LabelOperator extends ComponentOperator {
      */
     public LabelOperator(ContainerOperator cont, String text, int index) {
 	this((Label)waitComponent(cont, 
-				   new LabelByLabelFinder(text, 
-							   cont.getComparator()),
-				   index));
+                                  new LabelByLabelFinder(text, 
+                                                         cont.getComparator()),
+                                  index));
 	copyEnvironment(cont);
     }
 
@@ -84,8 +95,7 @@ public class LabelOperator extends ComponentOperator {
     public LabelOperator(ContainerOperator cont, int index) {
 	this((Label)
 	     waitComponent(cont, 
-			   new LabelFinder(ComponentSearcher.
-					    getTrueChooser("Any Label")),
+			   new LabelFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -247,12 +257,15 @@ public class LabelOperator extends ComponentOperator {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private static class LabelByLabelFinder implements ComponentChooser {
+    public static class LabelByLabelFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
 	public LabelByLabelFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
+	}
+	public LabelByLabelFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof Label) {
@@ -268,19 +281,12 @@ public class LabelOperator extends ComponentOperator {
 	}
     }
 
-    private static class LabelFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class LabelFinder extends Finder {
 	public LabelFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(Label.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof Label) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public LabelFinder() {
+            super(Label.class);
 	}
     }
 }

@@ -64,6 +64,17 @@ public class CheckboxOperator extends ComponentOperator implements Outputable {
 	driver = DriverManager.getButtonDriver(getClass());
     }
 
+    public CheckboxOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((Checkbox)cont.
+             waitSubComponent(new CheckboxFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public CheckboxOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -104,8 +115,7 @@ public class CheckboxOperator extends ComponentOperator implements Outputable {
     public CheckboxOperator(ContainerOperator cont, int index) {
 	this((Checkbox)
 	     waitComponent(cont, 
-			   new CheckboxFinder(ComponentSearcher.
-					       getTrueChooser("Any Checkbox")),
+			   new CheckboxFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -153,10 +163,9 @@ public class CheckboxOperator extends ComponentOperator implements Outputable {
      */
     public static Checkbox findCheckbox(Container cont, String text, boolean ce, boolean ccs, int index) {
 	return(findCheckbox(cont, 
-			     new CheckboxFinder(new CheckboxOperator.
-					CheckboxByLabelFinder(text, 
-					new DefaultStringComparator(ce, ccs))), 
-			     index));
+                            new CheckboxByLabelFinder(text, 
+                                                      new DefaultStringComparator(ce, ccs)), 
+                            index));
     }
 
     /**
@@ -208,10 +217,9 @@ public class CheckboxOperator extends ComponentOperator implements Outputable {
      */
     public static Checkbox waitCheckbox(Container cont, String text, boolean ce, boolean ccs, int index) {
 	return(waitCheckbox(cont,  
-			     new CheckboxFinder(new CheckboxOperator.
-						 CheckboxByLabelFinder(text, 
-	                                         new DefaultStringComparator(ce, ccs))), 
-			     index));
+                            new CheckboxByLabelFinder(text, 
+                                                      new DefaultStringComparator(ce, ccs)), 
+                            index));
     }
 
     /**
@@ -355,12 +363,15 @@ public class CheckboxOperator extends ComponentOperator implements Outputable {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    protected static class CheckboxByLabelFinder implements ComponentChooser {
+    public static class CheckboxByLabelFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
 	public CheckboxByLabelFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
+	}
+	public CheckboxByLabelFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof Checkbox) {
@@ -376,19 +387,12 @@ public class CheckboxOperator extends ComponentOperator implements Outputable {
 	}
     }
 
-    private static class CheckboxFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class CheckboxFinder extends Finder {
 	public CheckboxFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(Checkbox.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof Checkbox) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public CheckboxFinder() {
+            super(Checkbox.class);
 	}
     }
 }

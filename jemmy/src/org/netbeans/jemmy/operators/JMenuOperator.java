@@ -77,6 +77,17 @@ implements Outputable, Timeoutable{
 	driver = DriverManager.getMenuDriver(this);
     }
 
+    public JMenuOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JMenu)cont.
+             waitSubComponent(new JMenuFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JMenuOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -116,8 +127,7 @@ implements Outputable, Timeoutable{
     public JMenuOperator(ContainerOperator cont, int index) {
 	this((JMenu)
 	     waitComponent(cont, 
-			   new JMenuFinder(ComponentSearcher.
-					   getTrueChooser("Any JMenu")),
+			   new JMenuFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -676,6 +686,9 @@ implements Outputable, Timeoutable{
 	    label = lb;
 	    this.comparator = comparator;
 	}
+	public JMenuByLabelFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
+	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JMenu) {
 		if(((JMenu)comp).getText() != null) {
@@ -690,19 +703,12 @@ implements Outputable, Timeoutable{
 	}
     }
     
-    public static class JMenuFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JMenuFinder extends Finder {
 	public JMenuFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JMenu.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JMenu) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JMenuFinder() {
+            super(JMenu.class);
 	}
     }
 }

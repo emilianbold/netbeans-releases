@@ -48,6 +48,17 @@ public class JRadioButtonMenuItemOperator extends JMenuItemOperator {
 	setOutput(JemmyProperties.getProperties().getOutput());
     }
 
+    public JRadioButtonMenuItemOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JRadioButtonMenuItem)cont.
+             waitSubComponent(new JRadioButtonMenuItemFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JRadioButtonMenuItemOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -88,8 +99,7 @@ public class JRadioButtonMenuItemOperator extends JMenuItemOperator {
     public JRadioButtonMenuItemOperator(ContainerOperator cont, int index) {
 	this((JRadioButtonMenuItem)
 	     waitComponent(cont, 
-			   new JRadioButtonMenuItemFinder(ComponentSearcher.
-						       getTrueChooser("Any JRadioButtonMenuItem")),
+			   new JRadioButtonMenuItemFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -109,12 +119,15 @@ public class JRadioButtonMenuItemOperator extends JMenuItemOperator {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    static class JRadioButtonMenuItemByLabelFinder implements ComponentChooser {
+    public static class JRadioButtonMenuItemByLabelFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
 	public JRadioButtonMenuItemByLabelFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
+	}
+	public JRadioButtonMenuItemByLabelFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JRadioButtonMenuItem) {
@@ -130,19 +143,12 @@ public class JRadioButtonMenuItemOperator extends JMenuItemOperator {
 	}
     }
 
-    private static class JRadioButtonMenuItemFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JRadioButtonMenuItemFinder extends Finder {
 	public JRadioButtonMenuItemFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JRadioButtonMenuItem.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JRadioButtonMenuItem) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JRadioButtonMenuItemFinder() {
+            super(JRadioButtonMenuItem.class);
 	}
     }
 } 

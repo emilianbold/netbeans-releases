@@ -109,6 +109,17 @@ public class JTextComponentOperator extends JComponentOperator
 	driver = DriverManager.getTextDriver(getClass());
     }
 
+    public JTextComponentOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JTextComponent)cont.
+             waitSubComponent(new JTextComponentFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JTextComponentOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -148,8 +159,7 @@ public class JTextComponentOperator extends JComponentOperator
     public JTextComponentOperator(ContainerOperator cont, int index) {
 	this((JTextComponent)
 	     waitComponent(cont, 
-			   new JTextComponentFinder(ComponentSearcher.
-						    getTrueChooser("Any JTextComponent")),
+			   new JTextComponentFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -1127,6 +1137,9 @@ public class JTextComponentOperator extends JComponentOperator
 	    label = lb;
 	    this.comparator = comparator;
 	}
+	public JTextComponentByTextFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
+	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JTextComponent) {
 		if(((JTextComponent)comp).getText() != null) {
@@ -1141,22 +1154,12 @@ public class JTextComponentOperator extends JComponentOperator
 	}
     }
 
-    public static class JTextComponentFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JTextComponentFinder extends Finder {
 	public JTextComponentFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JTextComponent.class, sf);
 	}
 	public JTextComponentFinder() {
-	    this(ComponentSearcher.getTrueChooser("Any JTextComponent"));
-	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JTextComponent) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+            super(JTextComponent.class);
 	}
     }
 }

@@ -102,6 +102,17 @@ implements Timeoutable, Outputable {
 	driver = DriverManager.getListDriver(getClass());
     }
 
+    public JComboBoxOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JComboBox)cont.
+             waitSubComponent(new JComboBoxFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JComboBoxOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -141,8 +152,7 @@ implements Timeoutable, Outputable {
     public JComboBoxOperator(ContainerOperator cont, int index) {
 	this((JComboBox)
 	     waitComponent(cont, 
-			   new JComboBoxFinder(ComponentSearcher.
-					       getTrueChooser("Any JComboBox")),
+			   new JComboBoxFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -879,7 +889,7 @@ implements Timeoutable, Outputable {
 	}
     }
 
-    private static class JComboBoxByItemFinder implements ComponentChooser {
+    public static class JComboBoxByItemFinder implements ComponentChooser {
 	String label;
 	int itemIndex;
 	StringComparator comparator;
@@ -887,6 +897,9 @@ implements Timeoutable, Outputable {
 	    label = lb;
 	    itemIndex = ii;
 	    this.comparator = comparator;
+	}
+	public JComboBoxByItemFinder(String lb, int ii) {
+            this(lb, ii, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JComboBox) {
@@ -913,19 +926,12 @@ implements Timeoutable, Outputable {
 	}
     }
 
-    private static class JComboBoxFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JComboBoxFinder extends Finder {
 	public JComboBoxFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JComboBox.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JComboBox) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JComboBoxFinder() {
+            super(JComboBox.class);
 	}
     }
 

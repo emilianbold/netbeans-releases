@@ -66,6 +66,17 @@ public class JTabbedPaneOperator extends JComponentOperator
 	driver = DriverManager.getListDriver(getClass());
     }
 
+    public JTabbedPaneOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JTabbedPane)cont.
+             waitSubComponent(new JTabbedPaneFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JTabbedPaneOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component by tab title first.
@@ -119,8 +130,7 @@ public class JTabbedPaneOperator extends JComponentOperator
     public JTabbedPaneOperator(ContainerOperator cont, int index) {
 	this((JTabbedPane)
 	     waitComponent(cont, 
-			   new JTabbedPaneFinder(ComponentSearcher.
-						    getTrueChooser("Any JTabbedPane")),
+			   new JTabbedPaneFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -201,8 +211,7 @@ public class JTabbedPaneOperator extends JComponentOperator
      * @return JTabbedPane instance or null if component was not found.
      */
     public static JTabbedPane findJTabbedPaneUnder(Component comp) {
-	return(findJTabbedPaneUnder(comp, new JTabbedPaneFinder(ComponentSearcher.
-								getTrueChooser("JTabbedPane component"))));
+	return(findJTabbedPaneUnder(comp, new JTabbedPaneFinder()));
     }
     
     /**
@@ -690,6 +699,9 @@ public class JTabbedPaneOperator extends JComponentOperator
 	    itemIndex = ii;
 	    this.comparator = comparator;
 	}
+	public JTabbedPaneByItemFinder(String lb, int ii) {
+            this(lb, ii, Operator.getDefaultStringComparator());
+	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JTabbedPane) {
 		if(label == null) {
@@ -716,19 +728,12 @@ public class JTabbedPaneOperator extends JComponentOperator
 	}
     }
 
-    public static class JTabbedPaneFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JTabbedPaneFinder extends Finder {
 	public JTabbedPaneFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JTabbedPane.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JTabbedPane) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JTabbedPaneFinder() {
+            super(JTabbedPane.class);
 	}
     }
 }

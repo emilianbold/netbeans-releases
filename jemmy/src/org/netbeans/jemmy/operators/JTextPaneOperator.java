@@ -43,6 +43,17 @@ public class JTextPaneOperator extends JEditorPaneOperator {
 	super(b);
     }
 
+    public JTextPaneOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JTextPane)cont.
+             waitSubComponent(new JTextPaneFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JTextPaneOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -84,8 +95,7 @@ public class JTextPaneOperator extends JEditorPaneOperator {
     public JTextPaneOperator(ContainerOperator cont, int index) {
 	this((JTextPane)
 	     waitComponent(cont, 
-			   new JTextPaneFinder(ComponentSearcher.
-						    getTrueChooser("Any JTextPane")),
+			   new JTextPaneFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -312,19 +322,12 @@ public class JTextPaneOperator extends JEditorPaneOperator {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private static class JTextPaneFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JTextPaneFinder extends Finder {
 	public JTextPaneFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JTextPane.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JTextPane) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JTextPaneFinder() {
+            super(JTextPane.class);
 	}
     }
 }

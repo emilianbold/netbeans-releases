@@ -48,6 +48,17 @@ public class JCheckBoxOperator extends JToggleButtonOperator{
 	super(b);
     }
 
+    public JCheckBoxOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JCheckBox)cont.
+             waitSubComponent(new JCheckBoxFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JCheckBoxOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -89,8 +100,7 @@ public class JCheckBoxOperator extends JToggleButtonOperator{
     public JCheckBoxOperator(ContainerOperator cont, int index) {
 	this((JCheckBox)
 	     waitComponent(cont, 
-			   new JCheckBoxFinder(ComponentSearcher.
-					       getTrueChooser("Any JCheckBox")),
+			   new JCheckBoxFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -213,19 +223,12 @@ public class JCheckBoxOperator extends JToggleButtonOperator{
 	return(waitJCheckBox(cont, text, ce, ccs, 0));
     }
 
-    private static class JCheckBoxFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JCheckBoxFinder extends Finder {
 	public JCheckBoxFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JCheckBox.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JCheckBox) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JCheckBoxFinder() {
+            super(JCheckBox.class);
 	}
     }
 }

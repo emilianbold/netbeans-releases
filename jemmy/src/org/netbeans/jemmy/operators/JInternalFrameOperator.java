@@ -96,6 +96,17 @@ public class JInternalFrameOperator extends JComponentOperator
 	fDriver = DriverManager.getFrameDriver(getClass());
     }
 
+    public JInternalFrameOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JInternalFrame)cont.
+             waitSubComponent(new JInternalFrameFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JInternalFrameOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -132,8 +143,7 @@ public class JInternalFrameOperator extends JComponentOperator
     public JInternalFrameOperator(ContainerOperator cont, int index) {
 	this((JInternalFrame)
 	     waitComponent(cont, 
-			   new JInternalFrameFinder(ComponentSearcher.
-						    getTrueChooser("Any JInternalFrame")),
+			   new JInternalFrameFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -222,8 +232,7 @@ public class JInternalFrameOperator extends JComponentOperator
      * @return JInternalFrame instance or null if component was not found.
      */
     public static JInternalFrame findJInternalFrameUnder(Component comp) {
-	return(findJInternalFrameUnder(comp, new JInternalFrameFinder(ComponentSearcher.
-								getTrueChooser("JInternalFrame component"))));
+	return(findJInternalFrameUnder(comp, new JInternalFrameFinder()));
     }
     
     /**
@@ -893,45 +902,6 @@ public class JInternalFrameOperator extends JComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    /**
-     * Exception can be throwht if as a result of an attempt to produce
-     * operation for the frame in incorrect state.
-     * Like activate iconified frame, for example.
-     */
-    public class WrongInternalFrameStateException extends JemmyInputException {
-	public WrongInternalFrameStateException(String message, Component comp) {
-	    super(message, comp);
-	}
-    }
-
-    private static class JInternalFrameByTitleFinder implements ComponentChooser {
-	String label;
-	StringComparator comparator;
-	public JInternalFrameByTitleFinder(String lb, StringComparator comparator) {
-	    label = lb;
-	    this.comparator = comparator;
-	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JInternalFrame || comp instanceof JInternalFrame.JDesktopIcon) {
-		JInternalFrame frame = null;
-		if(comp instanceof JInternalFrame) {
-		    frame = (JInternalFrame)comp;
-		} else {
-		    JDesktopIconOperator io = new JDesktopIconOperator((JInternalFrame.JDesktopIcon)comp);
-		    frame = io.getInternalFrame();
-		}
-		if(frame.getTitle() != null) {
-		    return(comparator.equals(((JInternalFrame)frame).getTitle(),
-					     label));
-		}
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return("JInternalFrame with title \"" + label + "\"");
-	}
-    }
-
     protected Container findTitlePane() {
 	ComponentSearcher cs = new ComponentSearcher((Container)getSource());
 	cs.setOutput(output.createErrorOutput());
@@ -1007,6 +977,48 @@ public class JInternalFrameOperator extends JComponentOperator
     }
 
     /**
+     * Exception can be throwht if as a result of an attempt to produce
+     * operation for the frame in incorrect state.
+     * Like activate iconified frame, for example.
+     */
+    public class WrongInternalFrameStateException extends JemmyInputException {
+	public WrongInternalFrameStateException(String message, Component comp) {
+	    super(message, comp);
+	}
+    }
+
+    public static class JInternalFrameByTitleFinder implements ComponentChooser {
+	String label;
+	StringComparator comparator;
+	public JInternalFrameByTitleFinder(String lb, StringComparator comparator) {
+	    label = lb;
+	    this.comparator = comparator;
+	}
+	public JInternalFrameByTitleFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
+	}
+	public boolean checkComponent(Component comp) {
+	    if(comp instanceof JInternalFrame || comp instanceof JInternalFrame.JDesktopIcon) {
+		JInternalFrame frame = null;
+		if(comp instanceof JInternalFrame) {
+		    frame = (JInternalFrame)comp;
+		} else {
+		    JDesktopIconOperator io = new JDesktopIconOperator((JInternalFrame.JDesktopIcon)comp);
+		    frame = io.getInternalFrame();
+		}
+		if(frame.getTitle() != null) {
+		    return(comparator.equals(((JInternalFrame)frame).getTitle(),
+					     label));
+		}
+	    }
+	    return(false);
+	}
+	public String getDescription() {
+	    return("JInternalFrame with title \"" + label + "\"");
+	}
+    }
+
+    /**
      * Class to operate with javax.swing.JInternalFrame.JDesktopIconOperator component.
      */
     public static class JDesktopIconOperator extends JComponentOperator 
@@ -1060,22 +1072,12 @@ public class JInternalFrameOperator extends JComponentOperator
 	}
     }
 
-    private static class JInternalFrameFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JInternalFrameFinder extends Finder {
 	public JInternalFrameFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JInternalFrame.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JInternalFrame) {
-		return(subFinder.checkComponent(comp));
-	    } else if(comp instanceof JInternalFrame.JDesktopIcon) {
-		JDesktopIconOperator io = new JDesktopIconOperator((JInternalFrame.JDesktopIcon)comp);
-		return(subFinder.checkComponent(io.getInternalFrame()));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JInternalFrameFinder() {
+            super(JInternalFrame.class);
 	}
     }
 

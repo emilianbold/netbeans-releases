@@ -80,6 +80,17 @@ public class JSplitPaneOperator extends JComponentOperator
 	super(b);
 	driver = DriverManager.getScrollDriver(getClass());
     }
+
+    public JSplitPaneOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JSplitPane)cont.
+             waitSubComponent(new JSplitPaneFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JSplitPaneOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
     
     /**
      * Constructor.
@@ -91,7 +102,7 @@ public class JSplitPaneOperator extends JComponentOperator
      */
     public JSplitPaneOperator(ContainerOperator cont, int index) {
 	this((JSplitPane)waitComponent(cont, 
-				       new JSplitPaneFinder(ComponentSearcher.getTrueChooser("Any container")), 
+				       new JSplitPaneFinder(), 
 				       index));
 	copyEnvironment(cont);
     }
@@ -163,8 +174,7 @@ public class JSplitPaneOperator extends JComponentOperator
      * @return JSplitPane instance or null if component was not found.
      */
     public static JSplitPane findJSplitPaneUnder(Component comp) {
-	return(findJSplitPaneUnder(comp, new JSplitPaneFinder(ComponentSearcher.
-								getTrueChooser("JSplitPane component"))));
+	return(findJSplitPaneUnder(comp, new JSplitPaneFinder()));
     }
     
     /**
@@ -614,19 +624,12 @@ public class JSplitPaneOperator extends JComponentOperator
 	bo.push();
     }
 
-    public static class JSplitPaneFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JSplitPaneFinder extends Finder {
 	public JSplitPaneFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JSplitPane.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JSplitPane) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JSplitPaneFinder() {
+            super(JSplitPane.class);
 	}
     }
     private class ValueScrollAdjuster implements ScrollAdjuster {

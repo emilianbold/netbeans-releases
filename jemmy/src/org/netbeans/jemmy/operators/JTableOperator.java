@@ -44,6 +44,7 @@ import java.awt.event.KeyEvent;
 import java.util.EventObject;
 import java.util.Hashtable;
 
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -95,6 +96,17 @@ implements Outputable, Timeoutable {
     public JTableOperator(JTable b) {
 	super(b);
 	driver = DriverManager.getTableDriver(getClass());
+    }
+
+    public JTableOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JTable)cont.
+             waitSubComponent(new JTableFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JTableOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
     }
 
     /**
@@ -165,8 +177,7 @@ implements Outputable, Timeoutable {
     public JTableOperator(ContainerOperator cont, int index) {
 	this((JTable)
 	     waitComponent(cont, 
-			   new JTableFinder(ComponentSearcher.
-					    getTrueChooser("Any JTable")),
+			   new JTableFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -180,6 +191,11 @@ implements Outputable, Timeoutable {
     public JTableOperator(ContainerOperator cont) {
 	this(cont, 0);
     }
+
+    ////////////////////////////////////////////////////////
+    //Static finds                                        //
+    ////////////////////////////////////////////////////////
+
 
     /**
      * Searches JTable in container.
@@ -293,6 +309,10 @@ implements Outputable, Timeoutable {
 	Timeouts.initDefault("JTableOperator.WaitEditingTimeout", WAIT_EDITING_TIMEOUT);
     }
 
+    ////////////////////////////////////////////////////////
+    //Environment                                         //
+    ////////////////////////////////////////////////////////
+
     /**
      * Defines current timeouts.
      * @param times A collection of timeout assignments.
@@ -345,75 +365,59 @@ implements Outputable, Timeoutable {
 		      anotherOperator.getProperties());
     }
 
+    ////////////////////////////////////////////////////////
+    //Find methods                                        //
+    ////////////////////////////////////////////////////////
+
+    //text, comparator and index
+
     /**
-     * Ask renderer for component to be displayed.
-     * @param row cell row.
-     * @param column cell column.
-     * @param isSelected True if the specified cell was selected.
-     * @param cellHasFocus True if the specified cell has the focus.
-     * @return Component to be displayed.
-     * @see #getCellRenderer(int, int)
+     * Searches cell coordinates.
+     * @return Point indicating coordinates (x - column, y - row)
      */
-    public Component getRenderedComponent(int row, int column, boolean isSelected, boolean cellHasFocus) {
-	return(getCellRenderer(row, column).
-	       getTableCellRendererComponent((JTable)getSource(),
-					     getValueAt(row, column),
-					     isSelected,
-					     cellHasFocus,
-					     row,
-					     column));
+    public Point findCell(String text, StringComparator comparator, int index) {
+	return(findCell(new BySubStringTableCellChooser(text, 
+                                                        comparator), 
+			     index));
     }
 
     /**
-     * Ask renderer for component to be displayed.
-     * Uses isCellSelected(itemIndex) to determine whether cell is selected.
-     * Supposes item do not have focus.
-     * @param row cell row.
-     * @param column cell column.
-     * @return Component to be displayed.
+     * Searches cell coordinates.
+     * @return Point indicating coordinates (x - column, y - row)
      */
-    public Component getRenderedComponent(int row, int column) {
-	return(getRenderedComponent(row, column, isCellSelected(row, column), 
-				    false));
+    public Point findCell(String text, StringComparator comparator, int[] rows, int[] columns, int index) {
+	return(findCell(new BySubStringTableCellChooser(text, comparator), rows, columns, index));
     }
 
     /**
-     * Returns a point at the center of the cell rectangle.
+     * Searches cell row index.
      */
-    public Point getPointToClick(int row, int column) {
-	Rectangle rect = getCellRect(row, column, false);
-	return(new Point((int)(rect.getX() + rect.getWidth() / 2),
-			 (int)(rect.getY() + rect.getHeight() / 2)));
-    }
-
-    /**
-     * Does mouse click on the cell.
-     */
-    public void clickOnCell(int row, int column, int clickCount) {
-	output.printLine("Click on (" + 
-			 Integer.toString(row) + ", " +
-			 Integer.toString(column) + 
-			 ") cell");
-	output.printGolden("Click on path");
-	makeComponentVisible();
-	Point point = getPointToClick(row, column);
-	clickMouse((int)point.getX(), (int)point.getY(), clickCount);
-    }
-
-    /**
-     * Does single mouse click on the cell.
-     */
-    public void clickOnCell(int row, int column) {
-	clickOnCell(row, column, 1);
-    }
-
     public int findCellRow(String text, StringComparator comparator, int index) {
-	return((int)findCellPoint(text, comparator, index).getX());
+	return(findCell(text, comparator, index).y);
     }
 
-    public int findCellColumn(String text, StringComparator comparator, int index) {
-	return((int)findCellPoint(text, comparator, index).getY());
+    /**
+     * Searches cell row index.
+     */
+    public int findCellRow(String text, StringComparator comparator, int column, int index) {
+	return(findCell(text, comparator, null, new int[] {column}, index).y);
     }
+
+    /**
+     * Searches cell column visible index.
+     */
+    public int findCellColumn(String text, StringComparator comparator, int index) {
+	return(findCell(text, comparator, index).x);
+    }
+
+    /**
+     * Searches cell column visible index.
+     */
+    public int findCellColumn(String text, StringComparator comparator, int row, int index) {
+	return(findCell(text, comparator, new int[] {row}, null, index).x);
+    }
+
+    //booleans - deprecated
 
     /**
      * Searches cell row by cell text.
@@ -425,7 +429,7 @@ implements Outputable, Timeoutable {
      * @deprecated Use findCellRow(String, int) or findCellRow(String, StringComparator, int)
      */
     public int findCellRow(String text, boolean ce, boolean ccs, int index) {
-	return((int)findCellPoint(text, ce, ccs, index).getX());
+	return(findCell(text, ce, ccs, index).y);
     }
 
     /**
@@ -438,15 +442,7 @@ implements Outputable, Timeoutable {
      * @deprecated Use findCellColumn(String, int) or findCellColumn(String, StringComparator, int)
      */
     public int findCellColumn(String text, boolean ce, boolean ccs, int index) {
-	return((int)findCellPoint(text, ce, ccs, index).getX());
-    }
-
-    public int findCellRow(String text, StringComparator comparator) {
-	return(findCellRow(text, comparator, 0));
-    }
-
-    public int findCellColumn(String text, StringComparator comparator) {
-	return(findCellColumn(text, comparator, 0));
+	return(findCell(text, ce, ccs, index).x);
     }
 
     /**
@@ -473,13 +469,38 @@ implements Outputable, Timeoutable {
 	return(findCellColumn(text, ce, ccs, 0));
     }
 
+    //text and comparator only
+
+    /**
+     * Searches cell row index.
+     */
+    public int findCellRow(String text, StringComparator comparator) {
+	return(findCellRow(text, comparator, 0));
+    }
+
+    /**
+     * Searches cell column visible index.
+     */
+    public int findCellColumn(String text, StringComparator comparator) {
+	return(findCellColumn(text, comparator, 0));
+    }
+
+    //text and index
+
     /**
      * Searches cell row by cell text.
      * @param text Text to search by.
      * @param index Ordinal index in suitable cells.
      */
     public int findCellRow(String text, int index) {
-	return((int)findCellPoint(text, index).getX());
+	return(findCell(text, index).y);
+    }
+
+    /**
+     * Searches cell row index.
+     */
+    public int findCellRow(String text, int column, int index) {
+	return(findCell(text, null, new int[] {column}, index).y);
     }
 
     /**
@@ -488,8 +509,33 @@ implements Outputable, Timeoutable {
      * @param index Ordinal index in suitable cells.
      */
     public int findCellColumn(String text, int index) {
-	return((int)findCellPoint(text, index).getX());
+	return(findCell(text, index).x);
     }
+
+    /**
+     * Searches cell column visible index.
+     */
+    public int findCellColumn(String text, int row, int index) {
+	return(findCell(text, new int[] {row}, null, index).x);
+    }
+
+    /**
+     * Searches cell coordinates.
+     * @return Point indicating coordinates (x - column, y - row)
+     */
+    public Point findCell(String text, int index) {
+	return(findCell(text, getComparator(), index));
+    }
+
+    /**
+     * Searches cell coordinates.
+     * @return Point indicating coordinates (x - column, y - row)
+     */
+    public Point findCell(String text, int[] rows, int[] columns, int index) {
+	return(findCell(new BySubStringTableCellChooser(text, getComparator()), rows, columns, index));
+    }
+
+    //text only
 
     /**
      * Searches first cell row by cell text.
@@ -507,13 +553,22 @@ implements Outputable, Timeoutable {
 	return(findCellColumn(text, 0));
     }
 
+    //component chooser and index
+
     /**
      * Searches cell row by rendered component.
      * @param chooser Component verifying object.
      * @param index Ordinal index in suitable cells.
      */
     public int findCellRow(ComponentChooser chooser, int index) {
-	return((int)findCellPoint(chooser, index).getX());
+	return(findCell(chooser, index).y);
+    }
+
+    /**
+     * Searches cell row index.
+     */
+    public int findCellRow(ComponentChooser chooser, int column, int index) {
+	return(findCell(chooser, null, new int[] {column}, index).y);
     }
 
     /**
@@ -522,8 +577,33 @@ implements Outputable, Timeoutable {
      * @param index Ordinal index in suitable cells.
      */
     public int findCellColumn(ComponentChooser chooser, int index) {
-	return((int)findCellPoint(chooser, index).getX());
+	return(findCell(chooser, index).x);
     }
+
+    /**
+     * Searches cell column visible index.
+     */
+    public int findCellColumn(ComponentChooser chooser, int row, int index) {
+	return(findCell(chooser, new int[] {row}, null, index).x);
+    }
+
+    /**
+     * Searches cell coordinates.
+     * @return Point indicating coordinates (x - column, y - row)
+     */
+    public Point findCell(ComponentChooser chooser, int index) {
+	return(findCell(new ByRenderedComponentTableCellChooser(chooser), index));
+    }
+
+    /**
+     * Searches cell coordinates.
+     * @return Point indicating coordinates (x - column, y - row)
+     */
+    public Point findCell(ComponentChooser chooser, int[] rows, int[] columns, int index) {
+	return(findCell(new ByRenderedComponentTableCellChooser(chooser), rows, columns, index));
+    }
+
+    //component chooser only
 
     /**
      * Searches cell row by rendered component.
@@ -542,12 +622,29 @@ implements Outputable, Timeoutable {
     }
 
     /**
+     * Searches cell coordinates.
+     * @return Point indicating coordinates (x - column, y - row)
+     */
+    public Point findCell(ComponentChooser chooser) {
+        return(findCell(chooser, 0));
+    }
+
+    //cell chooser and index
+
+    /**
      * Searches cell row by TableCellChooser.
      * @param chooser Component verifying object.
      * @param index Ordinal index in suitable cells.
      */
     public int findCellRow(TableCellChooser chooser, int index) {
-	return((int)findCellPoint(chooser, index).getX());
+	return(findCell(chooser, index).y);
+    }
+
+    /**
+     * Searches cell row index.
+     */
+    public int findCellRow(TableCellChooser chooser, int column, int index) {
+	return(findCell(chooser, null, new int[] {column}, index).y);
     }
 
     /**
@@ -556,8 +653,64 @@ implements Outputable, Timeoutable {
      * @param index Ordinal index in suitable cells.
      */
     public int findCellColumn(TableCellChooser chooser, int index) {
-	return((int)findCellPoint(chooser, index).getX());
+	return(findCell(chooser, index).x);
     }
+
+    /**
+     * Searches cell column visible index.
+     */
+    public int findCellColumn(TableCellChooser chooser, int row, int index) {
+	return(findCell(chooser, new int[] {row}, null, index).x);
+    }
+
+    /**
+     * Searches cell coordinates.
+     * @return Point indicating coordinates (x - column, y - row)
+     */
+    public Point findCell(TableCellChooser chooser, int index) {
+        return(findCell(chooser, null, null, index));
+    }
+
+    /**
+     * Searches cell coordinates.
+     * @return Point indicating coordinates (x - column, y - row)
+     */
+    public Point findCell(TableCellChooser chooser, int[] rows, int[] columns, int index) {
+	TableModel model = getModel();
+        int[] realRows;
+        if(rows != null) {
+            realRows = rows;
+        } else {
+            realRows = new int[model.getRowCount()];
+            for(int i = 0; i < model.getRowCount(); i++) {
+                realRows[i] = i;
+            }
+        }
+        int[] realColumns;
+        if(columns != null) {
+            realColumns = columns;
+        } else {
+            realColumns = new int[model.getColumnCount()];
+            for(int i = 0; i < model.getColumnCount(); i++) {
+                realColumns[i] = i;
+            }
+        }
+	int count = 0;
+	for(int i = 0; i < realRows.length; i++) {
+	    for(int j = 0; j < realColumns.length; j++) {
+		if(chooser.checkCell(this, realRows[i], realColumns[j])) {
+		    if(count == index) {
+			return(new Point(realColumns[j], realRows[i]));
+		    } else {
+			count++;
+		    }
+		}
+	    }
+	}
+	return(new Point(-1, -1));
+    }
+
+    //cell chooser only
 
     /**
      * Searches cell row by TableCellChooser.
@@ -573,6 +726,53 @@ implements Outputable, Timeoutable {
      */
     public int findCellColumn(TableCellChooser chooser) {
 	return(findCellColumn(chooser, 0));
+    }
+
+    /**
+     * Searches cell coordinates.
+     * @return Point indicating coordinates (x - column, y - row)
+     */
+    public Point findCell(TableCellChooser chooser) {
+        return(findCell(chooser, 0));
+    }
+
+    ////////////////////////////////////////////////////////
+    //Actions                                             //
+    ////////////////////////////////////////////////////////
+
+    /**
+     * Does mouse click on the cell.
+     */
+    public void clickOnCell(int row, int column, int clickCount, int button, int modifiers) {
+	output.printLine("Click on (" + 
+			 Integer.toString(row) + ", " +
+			 Integer.toString(column) + 
+			 ") cell");
+	output.printGolden("Click on cell");
+	makeComponentVisible();
+	Point point = getPointToClick(row, column);
+	clickMouse(point.x, point.y, clickCount, button, modifiers);
+    }
+
+    /**
+     * Does mouse click on the cell.
+     */
+    public void clickOnCell(int row, int column, int clickCount, int button) {
+        clickOnCell(row, column, clickCount, button, 0);
+    }
+
+    /**
+     * Does mouse click on the cell.
+     */
+    public void clickOnCell(int row, int column, int clickCount) {
+        clickOnCell(row, column, clickCount, getDefaultMouseButton());
+    }
+
+    /**
+     * Does single mouse click on the cell.
+     */
+    public void clickOnCell(int row, int column) {
+	clickOnCell(row, column, 1);
     }
 
     /**
@@ -643,6 +843,81 @@ implements Outputable, Timeoutable {
 	driver.selectCell(this, row, cell);
     }
 
+    public int findColumn(String name, StringComparator comparator) {
+        int columnCount = getColumnCount();
+        for(int i = 0; i < columnCount; i++) {
+            if(comparator.equals(getColumnName(i),
+                                      name)) {
+                return(i);
+            }
+        }
+        return(-1);
+    }
+
+    public int findColumn(String name) {
+        return(findColumn(name, getComparator()));
+    }
+
+    public JPopupMenu callPopupOnCell(int row, int column) {
+        output.printLine("Call popup on (" + row + ", " + column + ") cell");
+        output.printGolden("Call popup on cell");
+	makeComponentVisible();
+	Point point = getPointToClick(row, column);
+	return(JPopupMenuOperator.callPopup(getSource(), 
+					    (int)point.getX(), 
+					    (int)point.getY(), 
+					    getPopupMouseButton()));
+    }
+
+    ////////////////////////////////////////////////////////
+    //Gets                                                //
+    ////////////////////////////////////////////////////////
+
+    /**
+     * Ask renderer for component to be displayed.
+     * @param row cell row index.
+     * @param column cell column visible index.
+     * @param isSelected True if the specified cell was selected.
+     * @param cellHasFocus True if the specified cell has the focus.
+     * @return Component to be displayed.
+     * @see #getCellRenderer(int, int)
+     */
+    public Component getRenderedComponent(int row, int column, boolean isSelected, boolean cellHasFocus) {
+	return(getCellRenderer(row, column).
+	       getTableCellRendererComponent((JTable)getSource(),
+					     getValueAt(row, column),
+					     isSelected,
+					     cellHasFocus,
+					     row,
+					     column));
+    }
+
+    /**
+     * Ask renderer for component to be displayed.
+     * Uses isCellSelected(itemIndex) to determine whether cell is selected.
+     * Supposes item do not have focus.
+     * @param row cell row index.
+     * @param column cell column visible index.
+     * @return Component to be displayed.
+     */
+    public Component getRenderedComponent(int row, int column) {
+	return(getRenderedComponent(row, column, isCellSelected(row, column), 
+				    false));
+    }
+
+    /**
+     * Returns a point at the center of the cell rectangle.
+     */
+    public Point getPointToClick(int row, int column) {
+	Rectangle rect = getCellRect(row, column, false);
+	return(new Point((int)(rect.getX() + rect.getWidth() / 2),
+			 (int)(rect.getY() + rect.getHeight() / 2)));
+    }
+
+    public JTableHeaderOperator getHeaderOperator() {
+        return(new JTableHeaderOperator(getTableHeader()));
+    }
+
     /**
      * Waits for an editor.
      */
@@ -662,8 +937,8 @@ implements Outputable, Timeoutable {
     /**
      * Waits for certain cell contents.
      * @param cellText Text comparing to cell text by <code>getComparator()</code> comparator.
-     * @param row Cell row. If -1, selected one is checked.
-     * @param row Cell column. If -1, selected one is checked.
+     * @param row cell row index. If -1, selected one is checked.
+     * @param row cell column visible index. If -1, selected one is checked.
      */
     public void waitCell(String cellText, int row, int column) {
 	getOutput().printLine("Wait \"" + cellText + "\" text at (" + 
@@ -1467,39 +1742,8 @@ implements Outputable, Timeoutable {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private Point findCellPoint(String text, StringComparator comparator, int index) {
-	return(findCellPoint(new BySubStringTableCellChooser(text, 
-							     comparator), 
-			     index));
-    }
-
-    private Point findCellPoint(String text, boolean ce, boolean ccs, int index) {
-	return(findCellPoint(text, new DefaultStringComparator(ce, ccs), index));
-    }
-
-    private Point findCellPoint(String text, int index) {
-	return(findCellPoint(text, getComparator(), index));
-    }
-
-    private Point findCellPoint(ComponentChooser chooser, int index) {
-	return(findCellPoint(new ByRenderedComponentTableCellChooser(chooser), index));
-    }
-
-    private Point findCellPoint(TableCellChooser chooser, int index) {
-	TableModel model = getModel();
-	int count = 0;
-	for(int i = 0; i < model.getRowCount(); i++) {
-	    for(int j = 0; j < model.getColumnCount(); j++) {
-		if(chooser.checkCell(this, i, j)) {
-		    if(count == index) {
-			return(new Point(i, j));
-		    } else {
-			count++;
-		    }
-		}
-	    }
-	}
-	return(new Point(-1, -1));
+    private Point findCell(String text, boolean ce, boolean ccs, int index) {
+	return(findCell(text, new DefaultStringComparator(ce, ccs), index));
     }
 
     /**
@@ -1559,7 +1803,7 @@ implements Outputable, Timeoutable {
 	}
     }
 
-    private static class JTableByCellFinder implements ComponentChooser {
+    public static class JTableByCellFinder implements ComponentChooser {
 	String label;
 	int row;
 	int column;
@@ -1569,6 +1813,9 @@ implements Outputable, Timeoutable {
 	    row = r;
 	    column = c;
 	    this.comparator = comparator;
+	}
+	public JTableByCellFinder(String lb, int r, int c) {
+            this(lb, r, c, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JTable) {
@@ -1607,19 +1854,12 @@ implements Outputable, Timeoutable {
 	}
     }
 
-    private static class JTableFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JTableFinder extends Finder {
 	public JTableFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JTable.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JTable) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JTableFinder() {
+            super(JTable.class);
 	}
     }
 

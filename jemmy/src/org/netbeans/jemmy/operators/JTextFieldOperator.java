@@ -56,6 +56,17 @@ public class JTextFieldOperator extends JTextComponentOperator{
 	super(b);
     }
 
+    public JTextFieldOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JTextField)cont.
+             waitSubComponent(new JTextFieldFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JTextFieldOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -97,8 +108,7 @@ public class JTextFieldOperator extends JTextComponentOperator{
     public JTextFieldOperator(ContainerOperator cont, int index) {
 	this((JTextField)
 	     waitComponent(cont, 
-			   new JTextFieldFinder(ComponentSearcher.
-						getTrueChooser("Any JTextField")),
+			   new JTextFieldFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -325,19 +335,12 @@ public class JTextFieldOperator extends JTextComponentOperator{
 	return(buff.toString());
     }
 
-    private static class JTextFieldFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JTextFieldFinder extends Finder {
 	public JTextFieldFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JTextField.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JTextField) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JTextFieldFinder() {
+            super(JTextField.class);
 	}
     }
 }

@@ -70,6 +70,17 @@ public class ScrollPaneOperator extends ContainerOperator
 	driver = DriverManager.getScrollDriver(getClass());
     }
 
+    public ScrollPaneOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((ScrollPane)cont.
+             waitSubComponent(new ScrollPaneFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public ScrollPaneOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -80,7 +91,7 @@ public class ScrollPaneOperator extends ContainerOperator
      */
     public ScrollPaneOperator(ContainerOperator cont, int index) {
 	this((ScrollPane)waitComponent(cont, 
-					new ScrollPaneFinder(ComponentSearcher.getTrueChooser("Any container")), 
+					new ScrollPaneFinder(), 
 					index));
 	copyEnvironment(cont);
    }
@@ -152,8 +163,7 @@ public class ScrollPaneOperator extends ContainerOperator
      * @return ScrollPane instance or null if component was not found.
      */
     public static ScrollPane findScrollPaneUnder(Component comp) {
-	return(findScrollPaneUnder(comp, new ScrollPaneFinder(ComponentSearcher.
-								getTrueChooser("ScrollPane component"))));
+	return(findScrollPaneUnder(comp, new ScrollPaneFinder()));
     }
     
     /**
@@ -680,19 +690,12 @@ public class ScrollPaneOperator extends ContainerOperator
 	}
     }
 
-    static class ScrollPaneFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class ScrollPaneFinder extends Finder {
 	public ScrollPaneFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(ScrollPane.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof ScrollPane) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public ScrollPaneFinder() {
+            super(ScrollPane.class);
 	}
     }
 }

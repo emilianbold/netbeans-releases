@@ -67,6 +67,17 @@ public class TextAreaOperator extends TextComponentOperator
 	super(b);
     }
 
+    public TextAreaOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((TextArea)cont.
+             waitSubComponent(new TextAreaFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public TextAreaOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits for a component in a container to show. The component is
@@ -118,8 +129,7 @@ public class TextAreaOperator extends TextComponentOperator
     public TextAreaOperator(ContainerOperator cont, int index) {
 	this((TextArea)
 	     waitComponent(cont, 
-			   new TextAreaFinder(ComponentSearcher.
-						    getTrueChooser("Any TextArea")),
+			   new TextAreaFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -363,12 +373,15 @@ public class TextAreaOperator extends TextComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    protected static class TextAreaByTextFinder implements ComponentChooser {
+    public static class TextAreaByTextFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
 	public TextAreaByTextFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
+	}
+	public TextAreaByTextFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof TextArea) {
@@ -384,19 +397,12 @@ public class TextAreaOperator extends TextComponentOperator
 	}
     }
 
-    static class TextAreaFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class TextAreaFinder extends Finder {
 	public TextAreaFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(TextArea.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof TextArea) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public TextAreaFinder() {
+            super(TextArea.class);
 	}
     }
 }

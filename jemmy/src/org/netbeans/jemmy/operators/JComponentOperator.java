@@ -88,6 +88,17 @@ public class JComponentOperator extends ContainerOperator
 	super(b);
     }
 
+    public JComponentOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JComponent)cont.
+             waitSubComponent(new JComponentFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JComponentOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -786,6 +797,9 @@ public class JComponentOperator extends ContainerOperator
 	    label = lb;
 	    this.comparator = comparator;
 	}
+	public JComponentByTipFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
+	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JComponent) {
 		if(((JComponent)comp).getToolTipText() != null) {
@@ -800,19 +814,12 @@ public class JComponentOperator extends ContainerOperator
 	}
     }
 
-    public static class JComponentFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JComponentFinder extends Finder {
 	public JComponentFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JComponent.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JComponent) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JComponentFinder() {
+            super(JComponent.class);
 	}
     }
 }

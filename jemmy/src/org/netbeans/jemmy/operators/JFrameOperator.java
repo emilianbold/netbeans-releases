@@ -54,6 +54,22 @@ public class JFrameOperator extends FrameOperator {
 	super(w);
     }
 
+    public JFrameOperator(ComponentChooser chooser, int index, Operator env) {
+	this((JFrame)waitFrame(new JFrameFinder(chooser),
+                               index, 
+                               env.getTimeouts(),
+                               env.getOutput()));
+	copyEnvironment(env);
+    }
+
+    public JFrameOperator(ComponentChooser chooser, int index) {
+	this(chooser, index, Operator.getEnvironmentOperator());
+    }
+
+    public JFrameOperator(ComponentChooser chooser) {
+	this(chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits for the frame with "title" subtitle.
@@ -67,12 +83,9 @@ public class JFrameOperator extends FrameOperator {
      * @throws TimeoutExpiredException
      */
     public JFrameOperator(String title, int index, Operator env) {
-	this((JFrame)waitFrame(new JFrameSubChooser(new FrameByTitleChooser(title, 
-									    env.getComparator())),
-			       index,
-			       env.getTimeouts(),
-			       env.getOutput()));
-	copyEnvironment(env);
+	this(new JFrameFinder(new FrameByTitleFinder(title, 
+                                                     env.getComparator())),
+             index, env);
     }
 
     /**
@@ -114,8 +127,7 @@ public class JFrameOperator extends FrameOperator {
      */
     public JFrameOperator(int index) {
 	this((JFrame)
-	     (JFrame)waitFrame(new JFrameSubChooser(ComponentSearcher.
-						    getTrueChooser("Any JFrame")),
+	     (JFrame)waitFrame(new JFrameFinder(),
 			       index,
 			       ComponentOperator.getEnvironmentOperator().getTimeouts(),
 			       ComponentOperator.getEnvironmentOperator().getOutput()));
@@ -136,7 +148,7 @@ public class JFrameOperator extends FrameOperator {
      * Searches an index'th frame.
      */
     public static JFrame findJFrame(ComponentChooser chooser, int index) {
-	return((JFrame)FrameWaiter.getFrame(new JFrameSubChooser(chooser), index));
+	return((JFrame)FrameWaiter.getFrame(new JFrameFinder(chooser), index));
     }
 
     /**
@@ -152,8 +164,8 @@ public class JFrameOperator extends FrameOperator {
      */
     public static JFrame findJFrame(String title, boolean ce, boolean cc, int index) {
 	return((JFrame)FrameWaiter.
-	       getFrame(new JFrameSubChooser(new FrameByTitleChooser(title, 
-								     new DefaultStringComparator(ce, cc))), 
+	       getFrame(new JFrameFinder(new FrameByTitleFinder(title, 
+                                                                 new DefaultStringComparator(ce, cc))), 
 			index));
     }
 
@@ -170,7 +182,7 @@ public class JFrameOperator extends FrameOperator {
      * @throws TimeoutExpiredException
      */
     public static JFrame waitJFrame(ComponentChooser chooser, int index) {
-	return((JFrame)waitFrame(new JFrameSubChooser(chooser), index,
+	return((JFrame)waitFrame(new JFrameFinder(chooser), index,
 				 JemmyProperties.getCurrentTimeouts(),
 				 JemmyProperties.getCurrentOutput()));
     }
@@ -191,9 +203,9 @@ public class JFrameOperator extends FrameOperator {
     public static JFrame waitJFrame(String title, boolean ce, boolean cc, int index) {
 	try {
 	    return((JFrame)(new FrameWaiter()).
-		   waitFrame(new JFrameSubChooser(new 
-						  FrameByTitleChooser(title, 
-								      new DefaultStringComparator(ce, cc))), 
+		   waitFrame(new JFrameFinder(new 
+                                              FrameByTitleFinder(title, 
+                                                                  new DefaultStringComparator(ce, cc))), 
 			     index));
 	} catch(InterruptedException e) {
 	    JemmyProperties.getCurrentOutput().printStackTrace(e);
@@ -300,21 +312,12 @@ public class JFrameOperator extends FrameOperator {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private static class JFrameSubChooser implements ComponentChooser {
-	private ComponentChooser chooser;
-	public JFrameSubChooser(ComponentChooser c) {
-	    super();
-	    chooser = c;
+    public static class JFrameFinder extends Finder {
+	public JFrameFinder(ComponentChooser sf) {
+            super(JFrame.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JFrame) {
-		return(chooser.checkComponent(comp));
-	    } else {
-		return(false);
-	    }
-	}
-	public String getDescription() {
-	    return(chooser.getDescription());
+	public JFrameFinder() {
+            super(JFrame.class);
 	}
     }
 }

@@ -74,6 +74,17 @@ public class JScrollPaneOperator extends JComponentOperator
 	super(b);
     }
 
+    public JScrollPaneOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JScrollPane)cont.
+             waitSubComponent(new JScrollPaneFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JScrollPaneOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -84,7 +95,7 @@ public class JScrollPaneOperator extends JComponentOperator
      */
     public JScrollPaneOperator(ContainerOperator cont, int index) {
 	this((JScrollPane)waitComponent(cont, 
-					new JScrollPaneFinder(ComponentSearcher.getTrueChooser("Any container")), 
+					new JScrollPaneFinder(), 
 					index));
 	copyEnvironment(cont);
    }
@@ -156,8 +167,7 @@ public class JScrollPaneOperator extends JComponentOperator
      * @return JScrollPane instance or null if component was not found.
      */
     public static JScrollPane findJScrollPaneUnder(Component comp) {
-	return(findJScrollPaneUnder(comp, new JScrollPaneFinder(ComponentSearcher.
-								getTrueChooser("JScrollPane component"))));
+	return(findJScrollPaneUnder(comp, new JScrollPaneFinder()));
     }
     
     /**
@@ -735,19 +745,12 @@ public class JScrollPaneOperator extends JComponentOperator
 	}
     }
 
-    static class JScrollPaneFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JScrollPaneFinder extends Finder {
 	public JScrollPaneFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JScrollPane.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JScrollPane) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JScrollPaneFinder() {
+            super(JScrollPane.class);
 	}
     }
 }

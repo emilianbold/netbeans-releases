@@ -71,6 +71,17 @@ public class JProgressBarOperator extends JComponentOperator
 	super(b);
     }
 
+    public JProgressBarOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JProgressBar)cont.
+             waitSubComponent(new JProgressBarFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JProgressBarOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -81,7 +92,7 @@ public class JProgressBarOperator extends JComponentOperator
      */
     public JProgressBarOperator(ContainerOperator cont, int index) {
 	this((JProgressBar)waitComponent(cont, 
-				    new JProgressBarFinder(ComponentSearcher.getTrueChooser("Any container")), 
+				    new JProgressBarFinder(), 
 				    index));
 	copyEnvironment(cont);
     }
@@ -446,19 +457,12 @@ public class JProgressBarOperator extends JComponentOperator
 	public String getDescription();
     }
 
-    private static class JProgressBarFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JProgressBarFinder extends Finder {
 	public JProgressBarFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JProgressBar.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JProgressBar) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JProgressBarFinder() {
+            super(JProgressBar.class);
 	}
     }
 

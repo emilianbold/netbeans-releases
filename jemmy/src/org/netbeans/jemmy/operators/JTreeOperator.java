@@ -108,6 +108,17 @@ public class JTreeOperator extends JComponentOperator
 	driver = DriverManager.getTreeDriver(getClass());
     }
 
+    public JTreeOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JTree)cont.
+             waitSubComponent(new JTreeFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JTreeOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -160,8 +171,7 @@ public class JTreeOperator extends JComponentOperator
     public JTreeOperator(ContainerOperator cont, int index) {
 	this((JTree)
 	     waitComponent(cont, 
-			   new JTreeFinder(ComponentSearcher.
-					   getTrueChooser("Any JTree")),
+			   new JTreeFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -1184,12 +1194,16 @@ public class JTreeOperator extends JComponentOperator
 	waitState(new ComponentChooser() {
 		public boolean checkComponent(Component comp) {
 		    TreePath[] rpaths = getSelectionModel().getSelectionPaths();
-		    for(int i = 0; i < rpaths.length; i++) {
-			if(!rpaths[i].equals(paths[i])) {
-			    return(false);
-			}
-		    }
-		    return(true);
+                    if(rpaths != null) {
+                        for(int i = 0; i < rpaths.length; i++) {
+                            if(!rpaths[i].equals(paths[i])) {
+                                return(false);
+                            }
+                        }
+                        return(true);
+                    } else {
+                        return(false);
+                    }
 		}
 		public String getDescription() {
 		    return("Has right selection");
@@ -2116,19 +2130,12 @@ public class JTreeOperator extends JComponentOperator
 	}
     }
 
-    public static class JTreeFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JTreeFinder extends Finder {
 	public JTreeFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JTree.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JTree) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JTreeFinder() {
+            super(JTree.class);
 	}
     }
 
@@ -2140,6 +2147,9 @@ public class JTreeOperator extends JComponentOperator
 	    label = lb;
 	    rowIndex = ii;
 	    this.comparator = comparator;
+	}
+	public JTreeByItemFinder(String lb, int ii) {
+            this(lb, ii, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JTree) {

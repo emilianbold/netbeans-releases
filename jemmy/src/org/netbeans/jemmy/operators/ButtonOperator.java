@@ -76,6 +76,17 @@ public class ButtonOperator extends ComponentOperator
 	driver = DriverManager.getButtonDriver(getClass());
     }
 
+    public ButtonOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((Button)cont.
+             waitSubComponent(new ButtonFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public ButtonOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits for a component in a container to show. The component is
@@ -127,8 +138,7 @@ public class ButtonOperator extends ComponentOperator
     public ButtonOperator(ContainerOperator cont, int index) {
 	this((Button)
 	     waitComponent(cont, 
-			   new ButtonFinder(ComponentSearcher.
-						    getTrueChooser("Any Button")),
+			   new ButtonFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -406,12 +416,15 @@ public class ButtonOperator extends ComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    protected static class ButtonByLabelFinder implements ComponentChooser {
+    public static class ButtonByLabelFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
 	public ButtonByLabelFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
+	}
+	public ButtonByLabelFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof Button) {
@@ -427,19 +440,12 @@ public class ButtonOperator extends ComponentOperator
 	}
     }
 
-    static class ButtonFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class ButtonFinder extends Finder {
 	public ButtonFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(Button.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof Button) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public ButtonFinder() {
+            super(Button.class);
 	}
     }
 }

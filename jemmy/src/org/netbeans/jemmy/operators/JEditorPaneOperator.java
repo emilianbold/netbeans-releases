@@ -73,6 +73,17 @@ public class JEditorPaneOperator extends JTextComponentOperator {
 	super(b);
     }
 
+    public JEditorPaneOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JEditorPane)cont.
+             waitSubComponent(new JEditorPaneFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JEditorPaneOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -114,8 +125,7 @@ public class JEditorPaneOperator extends JTextComponentOperator {
     public JEditorPaneOperator(ContainerOperator cont, int index) {
 	this((JEditorPane)
 	     waitComponent(cont, 
-			   new JEditorPaneFinder(ComponentSearcher.
-						    getTrueChooser("Any JEditorPane")),
+			   new JEditorPaneFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -353,19 +363,12 @@ public class JEditorPaneOperator extends JTextComponentOperator {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private static class JEditorPaneFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JEditorPaneFinder extends Finder {
 	public JEditorPaneFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JEditorPane.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JEditorPane) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JEditorPaneFinder() {
+            super(JEditorPane.class);
 	}
     }
 }

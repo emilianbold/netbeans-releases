@@ -75,6 +75,17 @@ public class JMenuBarOperator extends JComponentOperator
 	driver = DriverManager.getMenuDriver(getClass());
     }
 
+    public JMenuBarOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JMenuBar)cont.
+             waitSubComponent(new JMenuBarFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JMenuBarOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -505,31 +516,13 @@ public class JMenuBarOperator extends JComponentOperator
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private static class JMenuBarFinder extends Object implements ComponentChooser {
+    public static class JMenuBarFinder extends Finder {
+	public JMenuBarFinder(ComponentChooser sf) {
+            super(JMenuBar.class, sf);
+	}
 	public JMenuBarFinder() {
-	    super();
-	}
-	public boolean checkComponent(Component comp) {
-	    return(comp instanceof JMenuBar);
-	}
-	public String getDescription() {
-	    return("Menubar");
+            super(JMenuBar.class);
 	}
     }
 
-    private static class JMenuFinder implements ComponentChooser {
-	ComponentChooser subFinder;
-	public JMenuFinder(ComponentChooser sf) {
-	    subFinder = sf;
-	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JMenu) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
-	}
-    }
 }

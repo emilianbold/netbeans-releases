@@ -76,6 +76,17 @@ public class JListOperator extends JComponentOperator
 	driver = DriverManager.getMultiSelListDriver(getClass());
     }
 
+    public JListOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JList)cont.
+             waitSubComponent(new JListFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JListOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits item text first.
@@ -128,8 +139,7 @@ public class JListOperator extends JComponentOperator
     public JListOperator(ContainerOperator cont, int index) {
 	this((JList)
 	     waitComponent(cont, 
-			   new JListFinder(ComponentSearcher.
-					   getTrueChooser("Any JList")),
+			   new JListFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -1130,6 +1140,9 @@ public class JListOperator extends JComponentOperator
 	    itemIndex = ii;
 	    this.comparator = comparator;
 	}
+	public JListByItemFinder(String lb, int ii) {
+            this(lb, ii, Operator.getDefaultStringComparator());
+	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof JList) {
                 if(label == null) {
@@ -1155,19 +1168,12 @@ public class JListOperator extends JComponentOperator
 	}
     }
 
-    public static class JListFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JListFinder extends Finder {
 	public JListFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JList.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JList) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JListFinder() {
+            super(JList.class);
 	}
     }
 }

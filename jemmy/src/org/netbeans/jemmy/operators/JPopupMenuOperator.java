@@ -83,6 +83,17 @@ implements Outputable, Timeoutable {
 	driver = DriverManager.getMenuDriver(getClass());
     }
 
+    public JPopupMenuOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JPopupMenu)cont.
+             waitSubComponent(new JPopupMenuFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JPopupMenuOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component first.
@@ -95,13 +106,11 @@ implements Outputable, Timeoutable {
     public JPopupMenuOperator(Operator env) {
 	this((JPopupMenu)
 	     waitComponent(WindowOperator.
-			   waitWindow(new JPopupWindowFinder(ComponentSearcher.
-							     getTrueChooser("Popup window")),
+			   waitWindow(new JPopupWindowFinder(),
 				      0,
 				      env.getTimeouts(),
 				      env.getOutput()),
-			   new JPopupMenuFinder(ComponentSearcher.
-						getTrueChooser("Popup")),
+			   new JPopupMenuFinder(),
 			   0,
 			   env.getTimeouts(),
 			   env.getOutput()));
@@ -117,8 +126,7 @@ implements Outputable, Timeoutable {
     public JPopupMenuOperator(ContainerOperator cont) {
 	this((JPopupMenu)
 	     waitComponent(cont, 
-			   new JPopupMenuFinder(ComponentSearcher.
-						getTrueChooser("Popup")),
+			   new JPopupMenuFinder(),
 			   0));
 	copyEnvironment(cont);
     }
@@ -731,27 +739,22 @@ implements Outputable, Timeoutable {
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private static class JPopupMenuFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JPopupMenuFinder extends Finder {
 	public JPopupMenuFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JPopupMenu.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    //workaroud for the 4394642 java bug
-	    if(comp instanceof JPopupMenu && comp.isShowing() && comp.isVisible()) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JPopupMenuFinder() {
+            super(JPopupMenu.class);
 	}
     }
 
-    private static class JPopupWindowFinder implements ComponentChooser {
+    public static class JPopupWindowFinder implements ComponentChooser {
 	ComponentChooser subFinder;
 	public JPopupWindowFinder(ComponentChooser sf) {
 	    subFinder = sf;
+	}
+	public JPopupWindowFinder() {
+            this(ComponentSearcher.getTrueChooser("Any JPopupWindow"));
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp.isShowing() && comp instanceof Window) {

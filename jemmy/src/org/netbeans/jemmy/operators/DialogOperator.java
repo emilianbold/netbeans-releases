@@ -48,6 +48,33 @@ public class DialogOperator extends WindowOperator {
 	super(w);
     }
 
+    public DialogOperator(ComponentChooser chooser, int index, Operator env) {
+	this(waitDialog(new DialogFinder(chooser),
+                        index, 
+                        env.getTimeouts(),
+			env.getOutput()));
+	copyEnvironment(env);
+    }
+
+    public DialogOperator(ComponentChooser chooser, int index) {
+	this(chooser, index, Operator.getEnvironmentOperator());
+    }
+
+    public DialogOperator(ComponentChooser chooser) {
+	this(chooser, 0);
+    }
+
+    public DialogOperator(WindowOperator owner, ComponentChooser chooser, int index) {
+	this((Dialog)owner.
+             waitSubWindow(new DialogFinder(chooser),
+                           index));
+	copyEnvironment(owner);
+    }
+
+    public DialogOperator(WindowOperator owner, ComponentChooser chooser) {
+	this(owner, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits for a dialog to show. The dialog is identified as the
@@ -63,8 +90,8 @@ public class DialogOperator extends WindowOperator {
      */
     public DialogOperator(WindowOperator owner, String title, int index) {
 	this(waitDialog(owner,
-			 new DialogByTitleChooser(title,
-						  owner.getComparator()), 
+			 new DialogByTitleFinder(title,
+                                                 owner.getComparator()), 
 			 index));
 	copyEnvironment(owner);
     }
@@ -95,8 +122,7 @@ public class DialogOperator extends WindowOperator {
     public DialogOperator(WindowOperator owner, int index) {
 	this((Dialog)
 	     waitDialog(owner, 
-			new DialogSubChooser(ComponentSearcher.
-					     getTrueChooser("Any Dialog")),
+			new DialogFinder(),
 			index));
 	copyEnvironment(owner);
     }
@@ -124,12 +150,10 @@ public class DialogOperator extends WindowOperator {
      * @throws TimeoutExpiredException
      */
     public DialogOperator(String title, int index, Operator env) {
-	this(waitDialog(new DialogByTitleChooser(title, 
-						 env.getComparator()),
-			index,
-			env.getTimeouts(),
-			env.getOutput()));
-	copyEnvironment(env);
+	this(new DialogByTitleFinder(title, 
+                                     env.getComparator()),
+             index,
+             env);
     }
 
     /**
@@ -171,8 +195,7 @@ public class DialogOperator extends WindowOperator {
      */
     public DialogOperator(int index) {
 	this((Dialog)
-	     waitDialog(new DialogSubChooser(ComponentSearcher.
-					     getTrueChooser("Any Dialog")),
+	     waitDialog(new DialogFinder(),
 			index,
 			ComponentOperator.getEnvironmentOperator().getTimeouts(),
 			ComponentOperator.getEnvironmentOperator().getOutput()));
@@ -197,7 +220,7 @@ public class DialogOperator extends WindowOperator {
 	getOutput().printLine("Wait \"" + title + "\" title of dialog \n    : "+
 			      getSource().toString());
 	getOutput().printGolden("Wait \"" + title + "\" title");
-	waitState(new DialogByTitleChooser(title, getComparator()));
+	waitState(new DialogByTitleFinder(title, getComparator()));
     }
 
     /**
@@ -266,7 +289,7 @@ public class DialogOperator extends WindowOperator {
 	    waiter.setTimeouts(timeouts);
 	    waiter.setOutput(output);
 	    return((Dialog)waiter.
-		   waitDialog(new DialogSubChooser(chooser), index));
+		   waitDialog(new DialogFinder(chooser), index));
 	} catch(InterruptedException e) {
 	    output.printStackTrace(e);
 	    return(null);
@@ -286,7 +309,7 @@ public class DialogOperator extends WindowOperator {
 	    waiter.setTimeouts(timeouts);
 	    waiter.setOutput(output);
 	    return((Dialog)waiter.
-		   waitDialog(owner, new DialogSubChooser(chooser), index));
+		   waitDialog(owner, new DialogFinder(chooser), index));
 	} catch(InterruptedException e) {
 	    JemmyProperties.getCurrentOutput().printStackTrace(e);
 	    return(null);
@@ -294,31 +317,24 @@ public class DialogOperator extends WindowOperator {
     }
 
 
-    private static class DialogSubChooser implements ComponentChooser {
-	private ComponentChooser chooser;
-	public DialogSubChooser(ComponentChooser c) {
-	    super();
-	    chooser = c;
+    public static class DialogFinder extends Finder {
+	public DialogFinder(ComponentChooser sf) {
+            super(Dialog.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof Dialog) {
-		return(chooser.checkComponent(comp));
-	    } else {
-		return(false);
-	    }
-	}
-	public String getDescription() {
-	    return(chooser.getDescription());
+	public DialogFinder() {
+            super(Dialog.class);
 	}
     }
 
-    protected static class DialogByTitleChooser implements ComponentChooser {
+    public static class DialogByTitleFinder implements ComponentChooser {
 	String title;
 	StringComparator comparator;
-	public DialogByTitleChooser(String t, StringComparator comparator) {
-	    super();
+	public DialogByTitleFinder(String t, StringComparator comparator) {
 	    title = t;
 	    this.comparator = comparator;
+	}
+	public DialogByTitleFinder(String t) {
+            this(t, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof Dialog) {

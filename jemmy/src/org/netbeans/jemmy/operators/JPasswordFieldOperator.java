@@ -54,6 +54,17 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
 	super(b);
     }
 
+    public JPasswordFieldOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JPasswordField)cont.
+             waitSubComponent(new JPasswordFieldFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JPasswordFieldOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -67,8 +78,8 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
 	this((JPasswordField)
 	     waitComponent(cont, 
 			   new JPasswordFieldFinder(new JTextComponentOperator.
-						JTextComponentByTextFinder(text, 
-									   cont.getComparator())),
+                                                    JTextComponentByTextFinder(text, 
+                                                                               cont.getComparator())),
 			   index));
 	copyEnvironment(cont);
     }
@@ -95,8 +106,7 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
     public JPasswordFieldOperator(ContainerOperator cont, int index) {
 	this((JPasswordField)
 	     waitComponent(cont, 
-			   new JPasswordFieldFinder(ComponentSearcher.
-						getTrueChooser("Any JPasswordField")),
+			   new JPasswordFieldFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -145,8 +155,8 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
     public static JPasswordField findJPasswordField(Container cont, String text, boolean ce, boolean ccs, int index) {
 	return(findJPasswordField(cont, 
 			      new JPasswordFieldFinder(new JTextComponentOperator.
-						   JTextComponentByTextFinder(text, 
-									      new DefaultStringComparator(ce, ccs))), 
+                                                       JTextComponentByTextFinder(text, 
+                                                                                  new DefaultStringComparator(ce, ccs))), 
 			      index));
     }
 
@@ -200,8 +210,8 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
     public static JPasswordField waitJPasswordField(Container cont, String text, boolean ce, boolean ccs, int index) {
 	return(waitJPasswordField(cont,  
 			      new JPasswordFieldFinder(new JTextComponentOperator.
-						   JTextComponentByTextFinder(text, 
-									      new DefaultStringComparator(ce, ccs))), 
+                                                       JTextComponentByTextFinder(text, 
+                                                                                  new DefaultStringComparator(ce, ccs))), 
 			      index));
     }
 
@@ -263,19 +273,12 @@ public class JPasswordFieldOperator extends JTextFieldOperator{
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    private static class JPasswordFieldFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JPasswordFieldFinder extends Finder {
 	public JPasswordFieldFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JPasswordField.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JPasswordField) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JPasswordFieldFinder() {
+            super(JPasswordField.class);
 	}
     }
 }

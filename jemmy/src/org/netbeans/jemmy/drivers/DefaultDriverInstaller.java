@@ -24,6 +24,7 @@ import org.netbeans.jemmy.drivers.focus.MouseFocusDriver;
 
 import org.netbeans.jemmy.drivers.lists.ChoiceDriver;
 import org.netbeans.jemmy.drivers.lists.JComboMouseDriver;
+import org.netbeans.jemmy.drivers.lists.JTableHeaderDriver;
 import org.netbeans.jemmy.drivers.lists.JTabMouseDriver;
 import org.netbeans.jemmy.drivers.lists.JListMouseDriver;
 import org.netbeans.jemmy.drivers.lists.ListKeyboardDriver;
@@ -73,7 +74,8 @@ public class DefaultDriverInstaller extends ArrayDriverInstaller {
 	      DriverManager.WINDOW_DRIVER_ID,
 	      DriverManager.FOCUS_DRIVER_ID,
 	      DriverManager.FOCUS_DRIVER_ID,
-	      DriverManager.MENU_DRIVER_ID},
+	      DriverManager.MENU_DRIVER_ID,
+	      DriverManager.ORDEREDLIST_DRIVER_ID},
 	      new Driver[] {
 	      new JTreeMouseDriver(),
 	      new JTreeMouseDriver(),
@@ -99,6 +101,7 @@ public class DefaultDriverInstaller extends ArrayDriverInstaller {
 	      new DefaultInternalFrameDriver(),
 	      new APIFocusDriver(),
 	      new MouseFocusDriver(),
-	      new DefaultJMenuDriver()});
+	      new DefaultJMenuDriver(),
+	      new JTableHeaderDriver()});
     }
 }

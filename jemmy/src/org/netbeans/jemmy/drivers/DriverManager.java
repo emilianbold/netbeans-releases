@@ -35,6 +35,7 @@ public class DriverManager {
     public static final String BUTTON_DRIVER_ID = DRIVER_ID + "button";
     public static final String LIST_DRIVER_ID = DRIVER_ID + "list";
     public static final String MULTISELLIST_DRIVER_ID = DRIVER_ID + "multisellist";
+    public static final String ORDEREDLIST_DRIVER_ID = DRIVER_ID + "orderedlist";
     public static final String TABLE_DRIVER_ID = DRIVER_ID + "table";
     public static final String WINDOW_DRIVER_ID = DRIVER_ID + "window";
     public static final String FRAME_DRIVER_ID = DRIVER_ID + "frame";
@@ -171,6 +172,15 @@ public class DriverManager {
     }
     public static void setMultiSelListDriver(MultiSelListDriver driver) {
 	setDriver(MULTISELLIST_DRIVER_ID, driver);
+    }
+    public static OrderedListDriver getOrderedListDriver(Class operatorClass) {
+	return((OrderedListDriver)getDriver(ORDEREDLIST_DRIVER_ID, operatorClass));
+    }
+    public static OrderedListDriver getOrderedListDriver(ComponentOperator operator) {
+	return((OrderedListDriver)getDriver(ORDEREDLIST_DRIVER_ID, operator.getClass()));
+    }
+    public static void setOrderedListDriver(OrderedListDriver driver) {
+	setDriver(ORDEREDLIST_DRIVER_ID, driver);
     }
     public static TableDriver getTableDriver(Class operatorClass) {
 	return((TableDriver)getDriver(TABLE_DRIVER_ID, operatorClass));

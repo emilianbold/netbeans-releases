@@ -48,6 +48,17 @@ public class JToggleButtonOperator extends AbstractButtonOperator{
 	super(b);
     }
 
+    public JToggleButtonOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((JToggleButton)cont.
+             waitSubComponent(new JToggleButtonFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public JToggleButtonOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits component in container first.
@@ -90,8 +101,7 @@ public class JToggleButtonOperator extends AbstractButtonOperator{
     public JToggleButtonOperator(ContainerOperator cont, int index) {
 	this((JToggleButton)
 	     waitComponent(cont, 
-			   new JToggleButtonFinder(ComponentSearcher.
-						   getTrueChooser("Any JToggleButton")),
+			   new JToggleButtonFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -218,19 +228,12 @@ public class JToggleButtonOperator extends AbstractButtonOperator{
 	makeComponentVisible();
     }
 
-    private static class JToggleButtonFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class JToggleButtonFinder extends Finder {
 	public JToggleButtonFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(JToggleButton.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof JToggleButton) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public JToggleButtonFinder() {
+            super(JToggleButton.class);
 	}
     }
 }

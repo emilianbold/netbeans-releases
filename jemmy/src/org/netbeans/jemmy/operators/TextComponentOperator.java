@@ -71,6 +71,17 @@ public class TextComponentOperator extends ComponentOperator
 	driver = DriverManager.getTextDriver(getClass());
     }
 
+    public TextComponentOperator(ContainerOperator cont, ComponentChooser chooser, int index) {
+	this((TextComponent)cont.
+             waitSubComponent(new TextComponentFinder(chooser),
+                              index));
+	copyEnvironment(cont);
+    }
+
+    public TextComponentOperator(ContainerOperator cont, ComponentChooser chooser) {
+	this(cont, chooser, 0);
+    }
+
     /**
      * Constructor.
      * Waits for a component in a container to show. The component is
@@ -122,8 +133,7 @@ public class TextComponentOperator extends ComponentOperator
     public TextComponentOperator(ContainerOperator cont, int index) {
 	this((TextComponent)
 	     waitComponent(cont, 
-			   new TextComponentFinder(ComponentSearcher.
-						    getTrueChooser("Any TextComponent")),
+			   new TextComponentFinder(),
 			   index));
 	copyEnvironment(cont);
     }
@@ -522,12 +532,15 @@ public class TextComponentOperator extends ComponentOperator
 	return(driver);
     }
 
-    protected static class TextComponentByTextFinder implements ComponentChooser {
+    public static class TextComponentByTextFinder implements ComponentChooser {
 	String label;
 	StringComparator comparator;
 	public TextComponentByTextFinder(String lb, StringComparator comparator) {
 	    label = lb;
 	    this.comparator = comparator;
+	}
+	public TextComponentByTextFinder(String lb) {
+            this(lb, Operator.getDefaultStringComparator());
 	}
 	public boolean checkComponent(Component comp) {
 	    if(comp instanceof TextComponent) {
@@ -543,19 +556,12 @@ public class TextComponentOperator extends ComponentOperator
 	}
     }
 
-    static class TextComponentFinder implements ComponentChooser {
-	ComponentChooser subFinder;
+    public static class TextComponentFinder extends Finder {
 	public TextComponentFinder(ComponentChooser sf) {
-	    subFinder = sf;
+            super(TextComponent.class, sf);
 	}
-	public boolean checkComponent(Component comp) {
-	    if(comp instanceof TextComponent) {
-		return(subFinder.checkComponent(comp));
-	    }
-	    return(false);
-	}
-	public String getDescription() {
-	    return(subFinder.getDescription());
+	public TextComponentFinder() {
+            super(TextComponent.class);
 	}
     }
 }

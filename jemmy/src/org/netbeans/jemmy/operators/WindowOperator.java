@@ -22,11 +22,14 @@ import java.lang.reflect.InvocationTargetException;
 import org.netbeans.jemmy.ClassReference;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Outputable;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.WindowWaiter;
 
 import org.netbeans.jemmy.drivers.WindowDriver;
@@ -63,6 +66,17 @@ implements Outputable{
     public WindowOperator(Window w) {
 	super(w);
 	driver = DriverManager.getWindowDriver(getClass());
+    }
+
+    public WindowOperator(WindowOperator owner, ComponentChooser chooser, int index) {
+	this((Window)owner.
+             waitSubWindow(chooser,
+                           index));
+	copyEnvironment(owner);
+    }
+
+    public WindowOperator(WindowOperator owner, ComponentChooser chooser) {
+	this(owner, chooser, 0);
     }
 
     /**
@@ -254,6 +268,46 @@ implements Outputable{
  	output.printLine("Resizing frame\n    " + getSource().toString());
  	output.printGolden("Resizing frame");
 	driver.resize(this, width, height);
+    }
+
+    /**
+     * Searches an index'th window between windows owned by this window.
+     */
+    public Window findSubWindow(ComponentChooser chooser, int index) {
+        getOutput().printLine("Looking for \"" + chooser.getDescription() +
+                              "\" subwindow");
+	return(findWindow((Window)getSource(), chooser, index));
+    }
+
+    /**
+     * Searches a window between windows owned by this window.
+     */
+    public Window findSubWindow(ComponentChooser chooser) {
+	return(findSubWindow(chooser, 0));
+    }
+
+    /**
+     * Waits an index'th window between windows owned by this window.
+     */
+    public Window waitSubWindow(ComponentChooser chooser, int index) {
+        getOutput().printLine("Waiting for \"" + chooser.getDescription() +
+                              "\" subwindow");
+        WindowWaiter ww = new WindowWaiter();
+        ww.setOutput(getOutput());
+        ww.setTimeouts(getTimeouts());
+	try {
+	    return(ww.waitWindow((Window)getSource(), chooser, index));
+	} catch (InterruptedException e) {
+	    throw(new JemmyException("Waiting for \"" + chooser.getDescription() +
+				     "\" window has been interrupted", e));
+	}
+    }
+
+    /**
+     * Waits a window between windows owned by this window.
+     */
+    public Window waitSubWindow(ComponentChooser chooser) {
+	return(waitSubWindow(chooser, 0));
     }
 
     public void waitClosed() {
