@@ -18,9 +18,15 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URI;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.text.MessageFormat;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -28,12 +34,15 @@ import org.openide.util.WeakListeners;
 import org.openide.util.Mutex;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Document;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.api.project.SourceGroup;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.java.project.JavaProjectConstants;
 
 /**
  * This class represents a project source roots. It is used to obtain roots as Ant properties, FileObject's
@@ -45,15 +54,18 @@ public final class SourceRoots {
     public static final String PROP_ROOT_PROPERTIES = "rootProperties";    //NOI18N
     public static final String PROP_ROOTS = "roots";   //NOI18N
 
-    private AntProjectHelper helper;
-    private PropertyEvaluator evaluator;
-    private String elementName;
+    private final AntProjectHelper helper;
+    private final PropertyEvaluator evaluator;
+    private final ReferenceHelper refHelper;
+    private final String elementName;
+    private final String newRootNameTemplate;
     private List sourceRootProperties;
     private List sourceRootNames;
     private List sourceRoots;
     private List sourceRootURLs;
-    private PropertyChangeSupport support;
-    private ProjectMetadataListener listener;
+    private final PropertyChangeSupport support;
+    private final ProjectMetadataListener listener;
+    private int rootIndex = 2;
 
     /**
      * Creates new SourceRoots
@@ -61,11 +73,13 @@ public final class SourceRoots {
      * @param evaluator
      * @param elementName the name of XML element under which are declared the roots
      */
-    SourceRoots (AntProjectHelper helper, PropertyEvaluator evaluator, String elementName) {
-        assert helper != null && evaluator != null && elementName != null;
+    SourceRoots (AntProjectHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, String elementName, String newRootNameTemplate) {
+        assert helper != null && evaluator != null && refHelper != null && elementName != null && newRootNameTemplate != null;
         this.helper = helper;
         this.evaluator = evaluator;
+        this.refHelper = refHelper;
         this.elementName = elementName;
+        this.newRootNameTemplate = newRootNameTemplate;
         this.support = new PropertyChangeSupport(this);
         this.listener = new ProjectMetadataListener();
         this.evaluator.addPropertyChangeListener (WeakListeners.propertyChange(this.listener,this.evaluator));
@@ -193,6 +207,88 @@ public final class SourceRoots {
      */
     public void removePropertyChangeListener (PropertyChangeListener listener) {
         this.support.removePropertyChangeListener (listener);
+    }
+
+
+    /**
+     * Replaces the current roots by the new ones
+     * @param roots the URLs of new roots
+     * @param labels the names of roots
+     */
+    public void putRoots (final URL[] roots, final String[] labels) {
+        ProjectManager.mutex().writeAccess(
+                new Mutex.Action () {
+                    public Object run() {
+                        String[] originalProps = getRootProperties();
+                        URL[] originalRoots = getRootURLs();
+                        Map oldRoots2props = new HashMap ();
+                        for (int i=0; i<originalProps.length;i++) {
+                            oldRoots2props.put (originalRoots[i],originalProps[i]);
+                        }
+                        Map newRoots2lab = new HashMap();
+                        for (int i=0; i<roots.length;i++) {
+                            newRoots2lab.put (roots[i],labels[i]);
+                        }
+                        Element cfgEl = helper.getPrimaryConfigurationData(true);
+                        NodeList nl = cfgEl.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, elementName);
+                        assert nl.getLength() == 1 : "Illegal project.xml"; //NOI18N
+                        Element ownerElement = (Element) nl.item(0);
+                        //Remove all old roots
+                        NodeList rootsNodes = ownerElement.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root");    //NOI18N
+                        while (rootsNodes.getLength()>0) {
+                            Element root = (Element) rootsNodes.item(0);
+                            ownerElement.removeChild(root);
+                        }
+                        //Remove all unused root properties
+                        List newRoots = Arrays.asList(roots);
+                        Map propsToRemove = new HashMap (oldRoots2props);
+                        propsToRemove.keySet().removeAll(newRoots);
+                        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        for (Iterator it = propsToRemove.values().iterator(); it.hasNext();) {
+                            String propName = (String) it.next ();
+                            props.remove(propName);
+                        }
+                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,props);
+                        //Add the new roots
+                        Document doc = ownerElement.getOwnerDocument();
+                        oldRoots2props.keySet().retainAll(newRoots);
+                        for (Iterator it = newRoots.iterator(); it.hasNext();) {
+                            URL newRoot = (URL) it.next ();
+                            String rootName = (String) oldRoots2props.get (newRoot);
+                            if (rootName == null) {
+                                //Root is new generate property for it
+                                props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                rootName = MessageFormat.format(newRootNameTemplate, new Object[]{new Integer(rootIndex)});
+                                while (props.containsKey(rootName)) {
+                                    rootIndex++;
+                                    rootName = MessageFormat.format(newRootNameTemplate, new Object[]{new Integer(rootIndex)});
+                                }
+                                File f = FileUtil.normalizeFile(new File(URI.create(newRoot.toExternalForm())));
+                                File projDir = FileUtil.toFile(helper.getProjectDirectory());
+                                String path = f.getAbsolutePath();
+                                String prjPath = projDir.getAbsolutePath()+File.separatorChar;
+                                if (path.startsWith(prjPath)) {
+                                    path = path.substring(prjPath.length());
+                                }
+                                else {
+                                    path = refHelper.createForeignFileReference(f, JavaProjectConstants.SOURCES_TYPE_JAVA);
+                                }
+                                props.put(rootName,path);
+                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,props);
+                            }
+                            Element newRootNode = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "root"); //NOI18N
+                            newRootNode.setAttribute("id",rootName);    //NOI18N
+                            String label = (String) newRoots2lab.get (newRoot);
+                            if (label != null && label.length()>0) {
+                                newRootNode.setAttribute("name",label); //NOI18N
+                            }
+                            ownerElement.appendChild (newRootNode);
+                        }
+                        helper.putPrimaryConfigurationData(cfgEl,true);
+                        return null;
+                    }
+                }
+        );
     }
 
     private void resetCache (boolean isXMLChange, String propName) {

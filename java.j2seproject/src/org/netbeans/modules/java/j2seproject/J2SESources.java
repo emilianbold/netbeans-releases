@@ -105,7 +105,7 @@ public class J2SESources implements Sources, PropertyChangeListener  {
                 File sourceRoot = helper.resolveFile(evaluator.evaluate(prop));
                 if (sourceRoot != null) {
                     String srPath = sourceRoot.getAbsolutePath();
-                    String pdPath = projectDir.getAbsolutePath() + + File.separatorChar;
+                    String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
                     if (srPath.startsWith(pdPath)) {
                         displayName = srPath.substring(pdPath.length());
                     }

@@ -35,6 +35,8 @@ public class FoldersListSettings extends SystemOption {
 
     private static final String LAST_USED_ARTIFACT_FOLDER = "lastUsedArtifactFolder"; //NOI18N
 
+    private static final String LAST_USED_SOURCE_ROOT_FOLDER = "lastUsedSourceRootFolder";   //NOI18N
+
     public static FoldersListSettings getDefault () {
         return (FoldersListSettings) SystemOption.findObject (FoldersListSettings.class, true);
     }
@@ -96,6 +98,20 @@ public class FoldersListSettings extends SystemOption {
         assert folder != null : "Folder can not be null";
         String path = folder.getAbsolutePath();
         this.putProperty (LAST_USED_ARTIFACT_FOLDER, path, true);
+    }
+
+    public File getLastUsedSourceRootFolder () {
+        String folder = (String) this.getProperty (LAST_USED_SOURCE_ROOT_FOLDER);
+        if (folder == null) {
+            folder = System.getProperty("user.home");    //NOI18N
+        }
+        return new File (folder);
+    }
+
+    public void setLastUsedSourceRootFolder (File folder) {
+        assert folder != null : "Folder can not be null";
+        String path = folder.getAbsolutePath();
+        this.putProperty (LAST_USED_SOURCE_ROOT_FOLDER, path, true);
     }
 
 }

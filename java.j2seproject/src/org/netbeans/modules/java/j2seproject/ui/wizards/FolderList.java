@@ -23,6 +23,7 @@ import javax.swing.JList;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 
 
 /**
@@ -31,10 +32,8 @@ import org.openide.filesystems.FileUtil;
  */
 public final class FolderList extends javax.swing.JPanel {
 
-    public static final String PROP_LAST_CUR_DIR = "lastCurrentDirectory";   //NOI18N
     public static final String PROP_FILES = "files";    //NOI18N
 
-    private File lastCurrentDir;
     private String fcMessage;
 
     /** Creates new form FolderList */
@@ -60,16 +59,6 @@ public final class FolderList extends javax.swing.JPanel {
         this.removeButton.getAccessibleContext().setAccessibleDescription(removeButtonAccessibleDesc);
         this.removeButton.setMnemonic (removeButtonMnemonic);
         this.removeButton.setEnabled(false);
-    }
-
-    public File getLastCurrentDirectory () {
-        return this.lastCurrentDir;
-    }
-
-    public void setLastCurrentDirectory (File dir) {
-        File oldValue = this.lastCurrentDir;
-        this.lastCurrentDir = dir;
-        this.firePropertyChange(PROP_LAST_CUR_DIR, oldValue,this.lastCurrentDir);
     }
 
     public File[] getFiles () {
@@ -171,7 +160,7 @@ public final class FolderList extends javax.swing.JPanel {
         chooser.setDialogTitle(this.fcMessage);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(true);
-        File cd = getLastCurrentDirectory();
+        File cd = FoldersListSettings.getDefault().getLastUsedSourceRootFolder();
         if (cd != null && cd.isDirectory()) {
             chooser.setCurrentDirectory(cd);
         }
@@ -185,7 +174,10 @@ public final class FolderList extends javax.swing.JPanel {
             }
             this.roots.setSelectedIndices(indecesToSelect);
             this.firePropertyChange(PROP_FILES, null, null);
-            this.setLastCurrentDirectory(chooser.getCurrentDirectory());
+            cd = chooser.getCurrentDirectory();
+            if (cd != null) {
+                FoldersListSettings.getDefault().setLastUsedSourceRootFolder(FileUtil.normalizeFile(cd));
+            }
         }
     }//GEN-LAST:event_addButtonActionPerformed
     

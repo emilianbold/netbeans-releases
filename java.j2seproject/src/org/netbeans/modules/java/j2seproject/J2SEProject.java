@@ -187,14 +187,14 @@ public final class J2SEProject implements Project, AntProjectListener {
      */
     public synchronized SourceRoots getSourceRoots() {        
         if (this.sourceRoots == null) { //Local caching, no project metadata access
-            this.sourceRoots = new SourceRoots(helper, evaluator(),"source-roots"); //NOI18N
+            this.sourceRoots = new SourceRoots(helper, evaluator(), getReferenceHelper(), "source-roots", "src.dir{0}"); //NOI18N
         }
         return this.sourceRoots;
     }
     
-    synchronized SourceRoots getTestSourceRoots() {
+    public synchronized SourceRoots getTestSourceRoots() {
         if (this.testRoots == null) { //Local caching, no project metadata access
-            this.testRoots = new SourceRoots(helper, evaluator(),"test-roots"); //NOI18N
+            this.testRoots = new SourceRoots(helper, evaluator(), getReferenceHelper(), "test-roots", "test.src.dir{0}"); //NOI18N
         }
         return this.testRoots;
     }

@@ -60,15 +60,6 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         if (FolderList.PROP_FILES.equals(evt.getPropertyName())) {
             this.dataChanged();
         }
-        if (FolderList.PROP_LAST_CUR_DIR.equals(evt.getPropertyName())) {
-            FolderList source = (FolderList) (evt.getSource() == this.sourcePanel ? sourcePanel : testsPanel);
-            FolderList target = (FolderList) (evt.getSource() == this.sourcePanel ? testsPanel : sourcePanel);
-            File sourceValue = source.getLastCurrentDirectory();
-            File targetValue = target.getLastCurrentDirectory();
-            if (!(sourceValue == null ? targetValue == null : sourceValue.equals(targetValue))) {
-                target.setLastCurrentDirectory (sourceValue);
-            }
-        }
     }
 
     private void dataChanged () {

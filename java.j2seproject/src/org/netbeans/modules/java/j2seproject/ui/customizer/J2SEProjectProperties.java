@@ -16,13 +16,10 @@ package org.netbeans.modules.java.j2seproject.ui.customizer;
 import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.net.URL;
+import java.net.URI;
+
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -34,6 +31,8 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.java.j2seproject.J2SEProjectType;
+import org.netbeans.modules.java.j2seproject.J2SEProject;
+import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -48,6 +47,8 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import javax.swing.table.DefaultTableModel;
 
 /** Helper class. Defines constants for properties. Knows the proper
  *  place where to store the properties.
@@ -104,9 +105,12 @@ public class J2SEProjectProperties {
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
-    
-    
-    // Shortcuts 
+
+    // SOURCE ROOTS
+    public static final String SOURCE_ROOTS = "__virtual_source_roots__";   //NOI18N
+    public static final String TEST_ROOTS = "__virtual_test_roots__";   //NOI18N
+
+    // Shortcuts
     private static final String PROJECT = AntProjectHelper.PROJECT_PROPERTIES_PATH;
     private static final String PRIVATE = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
     
@@ -118,7 +122,8 @@ public class J2SEProjectProperties {
     private static final InverseBooleanParser INVERSE_BOOLEAN_PARSER = new InverseBooleanParser();
     private static final PropertyParser PATH_PARSER = new PathParser();
     private static final PlatformParser PLATFORM_PARSER = new PlatformParser();
-    
+    private static final SourceRootsParser SOURCE_ROOTS_PARSER = new SourceRootsParser();
+
     // Info about the property destination
     private PropertyDescriptor PROPERTY_DESCRIPTORS[] = {
         new PropertyDescriptor( J2SE_PROJECT_NAME, null, STRING_PARSER ),
@@ -161,6 +166,9 @@ public class J2SEProjectProperties {
         new PropertyDescriptor( JAVADOC_WINDOW_TITLE, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVADOC_ENCODING, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVADOC_PREVIEW, PRIVATE, BOOLEAN_PARSER ),
+
+        new PropertyDescriptor( SOURCE_ROOTS, null, SOURCE_ROOTS_PARSER),
+        new PropertyDescriptor( TEST_ROOTS, null, SOURCE_ROOTS_PARSER),
     };
     
     
@@ -276,6 +284,9 @@ public class J2SEProjectProperties {
                     String projectName = ProjectUtils.getInformation(project).getDisplayName();
                     properties.put( pd.name, new PropertyInfo( pd, projectName, projectName ) );            
                 }
+                else if (SOURCE_ROOTS.equals(pd.name) || TEST_ROOTS.equals(pd.name)) {
+                    properties.put (pd.name, new PropertyInfo(pd, pd.name, null));
+                }
             }
             else {
                 // Standard properties
@@ -316,8 +327,27 @@ public class J2SEProjectProperties {
                                 String newName = newValueEncoded;
                                 assert false : "No support yet for changing name of J2SEProject; cf. J2SEProject.setName"; // NOI18N
                             }
-                            
-                        }   
+                            else if ( SOURCE_ROOTS.equals( pd.name ) || TEST_ROOTS.equals( pd.name )) {
+                                SourceRoots roots = null;
+                                if (SOURCE_ROOTS.equals(pi.rawValue)) {
+                                    roots = ((J2SEProject)project).getSourceRoots();
+                                }
+                                else if (TEST_ROOTS.equals(pi.rawValue)) {
+                                    roots = ((J2SEProject)project).getTestSourceRoots();
+                                }
+                                if (roots != null) {
+                                    Vector data = ((DefaultTableModel)pi.newValue).getDataVector();
+                                    URL[] rootURLs = new URL[data.size()];
+                                    String []rootLabels = new String[data.size()];
+                                    for (int i=0; i<data.size();i++) {
+                                        rootURLs[i] = ((File)((Vector)data.elementAt(i)).elementAt(0)).toURI().toURL();
+                                        rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
+                                    }
+                                    roots.putRoots(rootURLs,rootLabels);
+                                }
+                            }
+
+                        }
                         if ( JAVA_PLATFORM.equals( pd.name) && newValueEncoded != null ) {
                             defaultPlatform = Boolean.valueOf(pi.getNewValueEncoded().equals(
                                     JavaPlatformManager.getDefault().getDefaultPlatform().getProperties().get("platform.ant.name"))); // NOI18N
@@ -562,7 +592,7 @@ public class J2SEProjectProperties {
             this.propertyDesciptor = propertyDesciptor;
             this.rawValue = rawValue;
             this.evaluatedValue = evaluatedValue;
-            this.value = propertyDesciptor.parser.decode( rawValue, antProjectHelper, evaluator, refHelper );
+            this.value = propertyDesciptor.parser.decode( rawValue, project, antProjectHelper, evaluator, refHelper );
             this.newValue = null;
         }
         
@@ -572,7 +602,7 @@ public class J2SEProjectProperties {
         
         public void encode() {            
             if ( isModified() ) {
-                newValueEncoded = propertyDesciptor.parser.encode( newValue, antProjectHelper, refHelper);                
+                newValueEncoded = propertyDesciptor.parser.encode( newValue, project, antProjectHelper, refHelper);
             }
             else {
                 newValueEncoded = null;
@@ -617,19 +647,19 @@ public class J2SEProjectProperties {
     
     private static abstract class PropertyParser {
         
-        public abstract Object decode( String raw, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper );
+        public abstract Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper);
         
-        public abstract String encode( Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper );
+        public abstract String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper);
         
     }
     
     private static class StringParser extends PropertyParser {
         
-        public Object decode(String raw, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
+        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
             return raw;
         }        
         
-        public String encode(Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
             return (String)value;
         }
         
@@ -637,7 +667,7 @@ public class J2SEProjectProperties {
     
     private static class BooleanParser extends PropertyParser {
         
-        public Object decode(String raw, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
+        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
             
             if ( raw != null ) {
                String lowecaseRaw = raw.toLowerCase();
@@ -651,7 +681,7 @@ public class J2SEProjectProperties {
             return Boolean.FALSE;
         }
         
-        public String encode(Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
             return ((Boolean)value).booleanValue() ? "true" : "false"; // NOI18N
         }
         
@@ -659,12 +689,12 @@ public class J2SEProjectProperties {
     
     private static class InverseBooleanParser extends BooleanParser {
         
-        public Object decode(String raw, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {                    
-            return ((Boolean)super.decode(raw, antProjectHelper, evaluator, refHelper)).booleanValue() ? Boolean.FALSE : Boolean.TRUE;           
+        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
+            return ((Boolean)super.decode(raw, project, antProjectHelper, evaluator, refHelper)).booleanValue() ? Boolean.FALSE : Boolean.TRUE;
         }
         
-        public String encode(Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
-            return super.encode( ((Boolean)value).booleanValue() ? Boolean.FALSE : Boolean.TRUE, antProjectHelper, refHelper );
+        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
+            return super.encode( ((Boolean)value).booleanValue() ? Boolean.FALSE : Boolean.TRUE, project, antProjectHelper, refHelper );
         }
         
     }
@@ -687,7 +717,7 @@ public class J2SEProjectProperties {
         };
         
         
-        public Object decode(String raw, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {
+        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
             
             String pe[] = PropertyUtils.tokenizePath( raw == null ? "": raw ); // NOI18N
             List cpItems = new ArrayList( pe.length );
@@ -748,7 +778,7 @@ public class J2SEProjectProperties {
             return cpItems;
         }
         
-        public String encode( Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
             
             StringBuffer sb = new StringBuffer();
                         
@@ -811,7 +841,7 @@ public class J2SEProjectProperties {
     
     private static class PlatformParser extends PropertyParser {
         
-        public Object decode(String raw, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
+        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
             JavaPlatform platform = findPlatform(raw);
             if (platform != null) {
                 return platform.getDisplayName();
@@ -820,7 +850,7 @@ public class J2SEProjectProperties {
             return raw;
         }
         
-        public String encode(Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
+        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
             JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms ((String)value,
                     new Specification ("j2se",null)); // NOI18N
             if (platforms.length == 0) {
@@ -833,5 +863,36 @@ public class J2SEProjectProperties {
         }
         
     }
-    
+
+    private static class SourceRootsParser extends PropertyParser {
+
+        public SourceRootsParser () {
+        }
+
+        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
+            SourceRoots roots = null;
+            if (SOURCE_ROOTS.equals(raw)) {
+                roots = ((J2SEProject)project).getSourceRoots();
+            }
+            else if (TEST_ROOTS.equals(raw)) {
+                roots = ((J2SEProject)project).getTestSourceRoots();
+            }
+            else {
+                return null;
+            }
+            String[] rootLabels = roots.getRootNames();
+            URL[] rootURLs = roots.getRootURLs();
+            Object[][] data = new Object[rootURLs.length] [2];
+            for (int i=0; i< rootURLs.length; i++) {
+                data[i][0] = new File (URI.create (rootURLs[i].toExternalForm()));
+                data[i][1] = rootLabels[i] == null ? "" : rootLabels[i];    //NOI18N
+            }
+            return VisualSourceRootsSupport.createSourceModel(data);
+        }
+
+        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
+            return "true";   //NOI18N
+        }
+    }
+
 }
