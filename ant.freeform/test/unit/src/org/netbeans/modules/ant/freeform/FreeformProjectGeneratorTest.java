@@ -55,7 +55,7 @@ import org.w3c.dom.Element;
 
 // XXX: part of the testSourceFoldersAndSourceViews test is commented out
 // becasue implementation of Source interface does not refresh automatically.
-
+// XXX: add test for ContextMenuAction handling and CustomContextMenuAction
 /**
  * Tests for FreeformProjectGenerator.
  *
@@ -107,8 +107,10 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         sources.add(sf);
         ArrayList compUnits = new ArrayList();
         FreeformProjectGenerator.JavaCompilationUnit cu = new FreeformProjectGenerator.JavaCompilationUnit();
-        cu.classpath = lib1.getAbsolutePath();
-        cu.classpathMode = "compile";
+        FreeformProjectGenerator.JavaCompilationUnit.CP cp = new FreeformProjectGenerator.JavaCompilationUnit.CP();
+        cp.classpath = lib1.getAbsolutePath();
+        cp.mode = "compile";
+        cu.classpath = Collections.singletonList(cp);
         cu.sourceLevel = "1.4";
         cu.packageRoot = src.getAbsolutePath();
         compUnits.add(cu);
@@ -350,16 +352,37 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertEquals("There is no classpath for this file", null, cp);
         
         AuxiliaryConfiguration aux = FreeformProjectGenerator.getAuxiliaryConfiguration(helper);
-        List cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux, null);
+        List cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux);
         assertEquals("There must be one compilation unit", 1, cus.size());
-        FreeformProjectGenerator.JavaCompilationUnit cu = new FreeformProjectGenerator.JavaCompilationUnit();
+        FreeformProjectGenerator.JavaCompilationUnit cu = (FreeformProjectGenerator.JavaCompilationUnit)cus.get(0);
+        assertEquals("The compilation unit must have one classpath", 1, cu.classpath.size());
+        
+        FreeformProjectGenerator.JavaCompilationUnit.CP cucp = new FreeformProjectGenerator.JavaCompilationUnit.CP();
+        cucp.classpath = lib2.getAbsolutePath();
+        cucp.mode = "execute";
+        cu.classpath.add(cucp);
+        ArrayList outputs = new ArrayList();
+        outputs.add("output1.jar");
+        outputs.add("output2.jar");
+        outputs.add("output3.jar");
+        cu.output = outputs;
+        FreeformProjectGenerator.putJavaCompilationUnits(helper, aux, cus);
+        cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux);
+        assertEquals("There must be one compilation unit", 1, cus.size());
+        cu = (FreeformProjectGenerator.JavaCompilationUnit)cus.get(0);
+        assertEquals("The compilation unit must have one classpath", 2, cu.classpath.size());
+        assertEquals("The compilation unit must have one classpath", 3, cu.output.size());
+        
+        cu = new FreeformProjectGenerator.JavaCompilationUnit();
         cu.sourceLevel = "1.4";
-        cu.classpath = lib2.getAbsolutePath();
-        cu.classpathMode = "compile";
+        cucp = new FreeformProjectGenerator.JavaCompilationUnit.CP();
+        cucp.classpath = lib2.getAbsolutePath();
+        cucp.mode = "compile";
+        cu.classpath = Collections.singletonList(cucp);
         cu.packageRoot = test.getAbsolutePath();
         cus.add(cu);
-        FreeformProjectGenerator.putJavaCompilationUnits(helper, aux, cus, null);
-        cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux, null);
+        FreeformProjectGenerator.putJavaCompilationUnits(helper, aux, cus);
+        cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux);
         assertEquals("There must be two compilation units", 2, cus.size());
         cp = cpp.findClassPath(FileUtil.toFileObject(src), ClassPath.COMPILE);
         assertEquals("Project must have one classpath root", 1, cp.getRoots().length);
@@ -369,25 +392,6 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         cp = cpp.findClassPath(FileUtil.toFileObject(test), ClassPath.COMPILE);
         assertEquals("Project must have one classpath root", 1, cp.getRoots().length);
         assertEquals("Classpath root does not match", "jar:"+lib2.toURI().toURL()+"!/", (cp.getRoots()[0]).getURL().toExternalForm());
-        
-        cus = new ArrayList();
-        cu = new FreeformProjectGenerator.JavaCompilationUnit();
-        cu.sourceLevel = "1.4";
-        cu.classpath = lib2.getAbsolutePath();
-        cu.classpathMode = "execute";
-        cu.packageRoot = test.getAbsolutePath();
-        ArrayList outputs = new ArrayList();
-        outputs.add("output1.jar");
-        outputs.add("output2.jar");
-        cu.output = outputs;
-        cus.add(cu);
-        FreeformProjectGenerator.putJavaCompilationUnits(helper, aux, cus, "execute");
-        cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux, null);
-        assertEquals("There must be two compilation units", 3, cus.size());
-        cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux, "compile");
-        assertEquals("There must be two compilation units", 2, cus.size());
-        cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux, "execute");
-        assertEquals("There must be two compilation units", 1, cus.size());
         
         ProjectManager.getDefault().saveAllProjects();
     }

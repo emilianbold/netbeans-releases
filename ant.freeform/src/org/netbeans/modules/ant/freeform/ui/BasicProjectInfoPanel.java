@@ -24,6 +24,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
+import org.openide.util.NbBundle;
+
 /**
  * @author  David Konecny
  */
@@ -94,17 +96,17 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
                 return "Project location does not exist";
             }
             if (antScript.getText().length() == 0) {
-                return "Your existing Ant script must be specified";
+                return "Your existing build script must be specified";
             }
             if (!getAntScript().exists()) {
-                return "The Ant script does not exist";
+                return "The specified build script doesn't exist.";
             }
             if (!antScriptValidityChecked) {
                 FileObject fo = FileUtil.toFileObject(getAntScript());
                 if (fo != null && Util.getAntScriptTargetNames(fo) != null) {
                     antScriptValidityChecked = true;
                 } else {
-                    return "The choosen script is not valid Ant script";
+                    return "The choosen build script is not valid Ant script";
                 }
             }
             if (getProjectName().length() == 0) {
@@ -236,14 +238,14 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Select folder that contains existing J2SE project and locate the build script.");
+        jLabel1.setText("Select folder that contains existing project and locate the build script.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(jLabel1, gridBagConstraints);
 
-        jLabel2.setText("Ant Script:");
+        jLabel2.setText("Build Script:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -251,7 +253,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         add(jLabel2, gridBagConstraints);
 
-        jLabel3.setText("Specify a name and project folder for NetBeans project data.");
+        jLabel3.setText("Specify a name and location for the new project.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -280,24 +282,24 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         add(antScript, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(projectName, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         add(projectFolder, gridBagConstraints);
 
         browseAntScript.setText("Browse...");
@@ -330,8 +332,8 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(projectLocation, gridBagConstraints);
 
         jLabel6.setText("Location:");
@@ -380,6 +382,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         if (projectLocation.getText().length() > 0 && getProjectLocation().exists()) {
             chooser.setSelectedFile(getProjectLocation());
         }
+        chooser.setDialogTitle(NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_Browse_Location"));
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
             File projectLoc = FileUtil.normalizeFile(chooser.getSelectedFile());
             projectLocation.setText(projectLoc.getAbsolutePath());
@@ -394,6 +397,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         } else if (projectLocation.getText().length() > 0 && getProjectLocation().exists()) {
             chooser.setSelectedFile(getProjectLocation());
         }
+        chooser.setDialogTitle(NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_Browse_Project_Folder"));
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
             File projectDir = FileUtil.normalizeFile(chooser.getSelectedFile());
             projectFolder.setText(projectDir.getAbsolutePath());
@@ -408,6 +412,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         } else if (projectLocation.getText().length() > 0 && getProjectLocation().exists()) {
             chooser.setSelectedFile(getProjectLocation());
         }
+        chooser.setDialogTitle(NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_Browse_Build_Script"));
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
             File script = FileUtil.normalizeFile(chooser.getSelectedFile());
             antScript.setText(script.getAbsolutePath());

@@ -15,11 +15,17 @@ package org.netbeans.modules.ant.freeform.ui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.ComboBoxModel;
+import javax.swing.DefaultCellEditor;
+
 import javax.swing.JComboBox;
+import javax.swing.table.AbstractTableModel;
+
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.Util;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -42,6 +48,9 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     private List/*<String>*/ targetNames;
     private List/*<TargetMapping>*/ targetMappings;
     private String defaultScript = null;
+    private List/*<FreeformProjectGenerator.CustomTarget>*/ custTargets;
+    private CustomTargetsModel customTargetsModel;
+    private String antScript;
 
     private String projectType;
     
@@ -49,13 +58,44 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         initComponents();
         targetMappings = new ArrayList();
         projectType = type;
+
+        custTargets = new ArrayList();
+        customTargetsModel = new CustomTargetsModel();
+        customTargets.setModel(customTargetsModel);
         
         jLabel7.setVisible(projectType.equals("j2se")); // NOI18N
         testCombo.setVisible(projectType.equals("j2se")); // NOI18N
         jLabel3.setVisible(projectType.equals("webapps")); // NOI18N
         redeployCombo.setVisible(projectType.equals("webapps")); // NOI18N
+        showAdvancedPath(false);
     }
     
+    private void showAdvancedPath(boolean show) {
+        jLabel8.setVisible(show);
+        jLabel9.setVisible(show);
+        jLabel10.setVisible(show);
+        jScrollPane1.setVisible(show);
+        customTargets.setVisible(show);
+        add.setVisible(show);
+        remove.setVisible(show);
+        remainder.setVisible(!show);
+    }
+    
+    private void initAntTargetEditor(List targets) {
+        DefaultCellEditor antTargetsEditor;
+        JComboBox combo = new JComboBox();
+        Iterator it = targets.iterator();
+        while (it.hasNext()) {
+            String target = (String)it.next();
+            combo.addItem(target);
+        }
+        customTargets.setDefaultEditor(JComboBox.class, new DefaultCellEditor(combo));
+    }
+    
+    private FreeformProjectGenerator.CustomTarget getItem(int index) {
+        return (FreeformProjectGenerator.CustomTarget)custTargets.get(index);
+    }
+
     public void setTargetNames(List list) {
         targetNames = list;
         targetNames.add(0, ""); //NOI18N
@@ -103,33 +143,48 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         }
     }
 
-    private void initMappings(List/*<FreeformProjectGenerator.TargetMapping>*/ list) {
+    private void initMappings(List/*<FreeformProjectGenerator.TargetMapping>*/ list, String antScript) {
         Iterator it = list.iterator();
         while (it.hasNext()) {
             FreeformProjectGenerator.TargetMapping tm = (FreeformProjectGenerator.TargetMapping)it.next();
             if (tm.name.equals(BUILD_ACTION)) {
                 selectItem(buildCombo, getListAsString(tm.targets), true);
+                checkAntScript(buildCombo, antScript, tm.script);
             }
             if (tm.name.equals(CLEAN_ACTION)) {
                 selectItem(cleanCombo, getListAsString(tm.targets), true);
+                checkAntScript(cleanCombo, antScript, tm.script);
             }
             if (tm.name.equals(JAVADOC_ACTION)) {
                 selectItem(javadocCombo, getListAsString(tm.targets), true);
+                checkAntScript(javadocCombo, antScript, tm.script);
             }
             if (tm.name.equals(RUN_ACTION)) {
                 selectItem(runCombo, getListAsString(tm.targets), true);
+                checkAntScript(runCombo, antScript, tm.script);
             }
             if (tm.name.equals(TEST_ACTION)) {
                 selectItem(testCombo, getListAsString(tm.targets), true);
+                checkAntScript(testCombo, antScript, tm.script);
             }
             if (tm.name.equals(REDEPLOY_ACTION)) {
                 selectItem(redeployCombo, getListAsString(tm.targets), true);
+                checkAntScript(redeployCombo, antScript, tm.script);
             }
         }
         targetMappings = list;
     }
+    
+    private void checkAntScript(JComboBox combo, String antScript, String targetScript) {
+        if ((antScript == null && targetScript == null) ||
+            (antScript != null && antScript.equals(targetScript))) {
+            combo.setEnabled(true);
+        } else {
+            combo.setEnabled(false);
+        }
+    }
 
-    private String getListAsString(List list) {
+    static String getListAsString(List list) {
         StringBuffer sb = new StringBuffer();
         Iterator it = list.iterator();
         while (it.hasNext()) {
@@ -141,7 +196,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         return sb.toString();
     }
 
-    private List getStringAsList(String str) {
+    static List getStringAsList(String str) {
         ArrayList l = new ArrayList(2);
         StringTokenizer tok = new StringTokenizer(str, ",");
         while (tok.hasMoreTokens()) {
@@ -218,9 +273,19 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         testCombo = new javax.swing.JComboBox();
         jLabel3 = new javax.swing.JLabel();
         redeployCombo = new javax.swing.JComboBox();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        customTargets = new javax.swing.JTable();
+        add = new javax.swing.JButton();
+        remove = new javax.swing.JButton();
+        remainder = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
+        setPreferredSize(new java.awt.Dimension(335, 350));
         jLabel1.setText("Specify Ant targets executed by common menu items.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
@@ -228,7 +293,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jLabel1, gridBagConstraints);
 
-        jLabel2.setText("Build:");
+        jLabel2.setText("Build Project:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -236,7 +301,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLabel2, gridBagConstraints);
 
-        jLabel4.setText("Clean:");
+        jLabel4.setText("Clean Project:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -244,7 +309,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLabel4, gridBagConstraints);
 
-        jLabel5.setText("Run:");
+        jLabel5.setText("Run Project:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -260,25 +325,28 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(jLabel6, gridBagConstraints);
 
-        jLabel7.setText("Test:");
+        jLabel7.setText("Test Project:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(jLabel7, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(buildCombo, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
@@ -287,6 +355,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
@@ -295,6 +364,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
@@ -303,10 +373,9 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
         add(testCombo, gridBagConstraints);
 
         jLabel3.setText("Redeploy:");
@@ -314,30 +383,151 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 6);
         add(jLabel3, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        add(redeployCombo, gridBagConstraints);
+
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        jLabel9.setForeground(java.awt.Color.blue);
+        jLabel9.setText("<link-to-help>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(jLabel9, gridBagConstraints);
+
+        jLabel8.setText("Read how to write the debug target here:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel1.add(jLabel8, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
+        add(jPanel1, gridBagConstraints);
+
+        jLabel10.setText("Custom Menu Items:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(jLabel10, gridBagConstraints);
+
+        jScrollPane1.setViewportView(customTargets);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(redeployCombo, gridBagConstraints);
+        add(jScrollPane1, gridBagConstraints);
+
+        add.setText("Add");
+        add.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        add(add, gridBagConstraints);
+
+        remove.setText("Remove");
+        remove.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        add(remove, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(remainder, gridBagConstraints);
 
     }//GEN-END:initComponents
 
+    private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeActionPerformed
+        int index = customTargets.getSelectedRow();
+        if (index == -1) {
+            return;
+        }
+        custTargets.remove(index);
+        customTargetsModel.fireTableDataChanged();        
+        updateButtons();
+    }//GEN-LAST:event_removeActionPerformed
+
+    private void addActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addActionPerformed
+        FreeformProjectGenerator.CustomTarget ct = new FreeformProjectGenerator.CustomTarget();
+        ct.targets = new ArrayList();
+        ct.script = antScript;
+        custTargets.add(ct);
+        customTargetsModel.fireTableDataChanged();
+        updateButtons();
+    }//GEN-LAST:event_addActionPerformed
+
+    private void updateButtons() {
+        remove.setEnabled(custTargets.size() > 0);
+    }
+    
     public void initValues(AntProjectHelper helper, List panels) {
         if (!initialized) {
             FileObject as = FreeformProjectGenerator.getAntScript(helper);
             List l = Util.getAntScriptTargetNames(as);
             if (l != null) {
                 setTargetNames(l);
+                initAntTargetEditor(l);
             }
-            initMappings(FreeformProjectGenerator.getTargetMappings(helper));
             defaultScript = FreeformProjectGenerator.getProperties(helper).getProperty(FreeformProjectGenerator.PROP_ANT_SCRIPT);
+            antScript = (defaultScript == null ? null : "${"+FreeformProjectGenerator.PROP_ANT_SCRIPT+"}");
+            initMappings(FreeformProjectGenerator.getTargetMappings(helper), antScript);
+            
+            custTargets = FreeformProjectGenerator.getCustomContextMenuActions(helper);
+            customTargetsModel.fireTableDataChanged();
+            
+            jLabel1.setVisible(false);
+            showAdvancedPath(true);
+            
+            updateButtons();
             initialized = true;
+            
         }
     }
 
@@ -345,23 +535,107 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         if (!initialized) {
             return;
         }
-        FreeformProjectGenerator.putTargetMappings(helper, getMapping());
+        List mapping = getMapping();
+        FreeformProjectGenerator.putTargetMappings(helper, mapping);
+        FreeformProjectGenerator.putContextMenuAction(helper, mapping);
+        
+        ArrayList l = new ArrayList(custTargets);
+        Iterator it = l.iterator();
+        while (it.hasNext()) {
+            FreeformProjectGenerator.CustomTarget ct = (FreeformProjectGenerator.CustomTarget)it.next();
+            // XXX: for now just ignore all incomplete records
+            if (ct.label == null || ct.label.length() == 0 || ct.targets == null || ct.targets.size() == 0) {
+                it.remove();
+            }
+        }
+        FreeformProjectGenerator.putCustomContextMenuActions(helper, l);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton add;
     private javax.swing.JComboBox buildCombo;
     private javax.swing.JComboBox cleanCombo;
+    private javax.swing.JTable customTargets;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JComboBox javadocCombo;
     private javax.swing.JComboBox redeployCombo;
+    private javax.swing.JPanel remainder;
+    private javax.swing.JButton remove;
     private javax.swing.JComboBox runCombo;
     private javax.swing.JComboBox testCombo;
     // End of variables declaration//GEN-END:variables
 
+    private class CustomTargetsModel extends AbstractTableModel {
+        
+        public CustomTargetsModel() {
+        }
+        
+        public int getColumnCount() {
+            return 2;
+        }
+        
+        public String getColumnName(int column) {
+            switch (column) {
+                case 0: return "Ant Target";
+                default: return "Label";
+            }
+        }
+        
+        public int getRowCount() {
+            return custTargets.size();
+        }
+        
+        public boolean isCellEditable(int row, int column) {
+            if (column == 0) {
+                FreeformProjectGenerator.CustomTarget ct = getItem(row);
+                if (ct.targets.size() > 1) {
+                    return false;
+                }
+                if ((antScript == null && ct.script == null) ||
+                        (antScript != null && antScript.equals(ct.script))) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        public Class getColumnClass(int column) {
+            switch (column) {
+                case 0: return JComboBox.class;
+                default: return String.class;
+            }
+        }
+        
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            if (columnIndex == 0) {
+                return TargetMappingPanel.getListAsString(getItem(rowIndex).targets);
+            } else {
+                return getItem(rowIndex).label;
+            }
+        }
+        
+        public void setValueAt(Object val, int rowIndex, int columnIndex) {
+            FreeformProjectGenerator.CustomTarget ct = getItem(rowIndex);
+            if (columnIndex == 0) {
+                ct.targets = Collections.singletonList(val);
+            } else {
+                ct.label = (String)val;
+            }
+        }
+        
+    }
+    
 }

@@ -108,6 +108,9 @@ public class FreeformProjectGenerator {
         ArrayList list = new ArrayList();
         Element genldata = helper.getPrimaryConfigurationData(true);
         Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (actionsEl == null) {
+            return list;
+        }
         List/*<Element>*/ actions = Util.findSubElements(actionsEl);
         Iterator it = actions.iterator();
         while (it.hasNext()) {
@@ -115,7 +118,7 @@ public class FreeformProjectGenerator {
             TargetMapping tm = new TargetMapping();
             tm.name = actionEl.getAttribute("name"); // NOI18N
             List/*<Element>*/ subElems = Util.findSubElements(actionEl);
-            List/*<TargetMapping>*/ targetNames = new ArrayList(subElems.size());
+            List/*<String>*/ targetNames = new ArrayList(subElems.size());
             Iterator it2 = subElems.iterator();
             while (it2.hasNext()) {
                 Element subEl = (Element)it2.next();
@@ -172,6 +175,153 @@ public class FreeformProjectGenerator {
         data.appendChild(actions);
         helper.putPrimaryConfigurationData(data, true);
     }
+
+    /**
+     * Update context menu actions. Project is left modified and 
+     * you must save it explicitely.
+     * @param helper AntProjectHelper instance
+     * @param mappings list of <TargetMapping> instances for which the context
+     *     menu actions will be created
+     */
+    public static void putContextMenuAction(AntProjectHelper helper, List/*<TargetMapping>*/ mappings) {
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+        Element viewEl = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (viewEl == null) {
+            viewEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "view"); // NOI18N
+            data.appendChild(viewEl);
+        }
+        Element contextMenuEl = Util.findElement(viewEl, "context-menu", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (contextMenuEl == null) {
+            contextMenuEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "context-menu"); // NOI18N
+            viewEl.appendChild(contextMenuEl);
+        }
+        List/*<Element>*/ contextMenuElements = Util.findSubElements(contextMenuEl);
+        Iterator it = contextMenuElements.iterator();
+        while (it.hasNext()) {
+            Element ideActionEl = (Element)it.next();
+            if (!ideActionEl.getLocalName().equals("ide-action")) { // NOI18N
+                continue;
+            }
+            contextMenuEl.removeChild(ideActionEl);
+        }
+        it = mappings.iterator();
+        while (it.hasNext()) {
+            TargetMapping tm = (TargetMapping)it.next();
+            if (tm.targets.size() > 0) {
+                Element ideAction = doc.createElementNS(FreeformProjectType.NS_GENERAL, "ide-action"); //NOI18N
+                ideAction.setAttribute("name", tm.name);
+                contextMenuEl.appendChild(ideAction);
+            }
+        }
+        helper.putPrimaryConfigurationData(data, true);
+    }
+    
+    /**
+     * Read custom context menu actions from project.
+     * @param helper AntProjectHelper instance
+     * @return list of CustomTarget instances
+     */
+    public static List/*<CustomTarget>*/ getCustomContextMenuActions(AntProjectHelper helper) {
+        ArrayList list = new ArrayList();
+        Element genldata = helper.getPrimaryConfigurationData(true);
+        Element viewEl = Util.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (viewEl == null) {
+            return list;
+        }
+        Element contextMenuEl = Util.findElement(viewEl, "context-menu", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (contextMenuEl == null) {
+            return list;
+        }
+        List/*<Element>*/ actions = Util.findSubElements(contextMenuEl);
+        Iterator it = actions.iterator();
+        while (it.hasNext()) {
+            Element actionEl = (Element)it.next();
+            if (!actionEl.getLocalName().equals("action")) { // NOI18N
+                continue;
+            }
+            CustomTarget ct = new CustomTarget();
+            List/*<Element>*/ subElems = Util.findSubElements(actionEl);
+            List/*<String>*/ targetNames = new ArrayList(subElems.size());
+            Iterator it2 = subElems.iterator();
+            while (it2.hasNext()) {
+                Element subEl = (Element)it2.next();
+                if (subEl.getLocalName().equals("target")) { // NOI18N
+                    targetNames.add(Util.findText(subEl));
+                    continue;
+                }
+                if (subEl.getLocalName().equals("script")) { // NOI18N
+                    ct.script = Util.findText(subEl);
+                    continue;
+                }
+                if (subEl.getLocalName().equals("label")) { // NOI18N
+                    ct.label = Util.findText(subEl);
+                    continue;
+                }
+            }
+            ct.targets = targetNames;
+            list.add(ct);
+        }
+        return list;
+    }
+    
+    /**
+     * Update custom context menu actions of the project. Project is left modified and 
+     * you must save it explicitely.
+     * @param helper AntProjectHelper instance
+     * @param list of <CustomTarget> instances to store
+     */
+    public static void putCustomContextMenuActions(AntProjectHelper helper, List/*<CustomTarget>*/ customTargets) {
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+        Element viewEl = Util.findElement(data, "view", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (viewEl == null) {
+            viewEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "view"); // NOI18N
+            data.appendChild(viewEl);
+        }
+        Element contextMenuEl = Util.findElement(viewEl, "context-menu", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (contextMenuEl == null) {
+            contextMenuEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "context-menu"); // NOI18N
+            viewEl.appendChild(contextMenuEl);
+        }
+        List/*<Element>*/ contextMenuElements = Util.findSubElements(contextMenuEl);
+        Iterator it = contextMenuElements.iterator();
+        while (it.hasNext()) {
+            Element actionEl = (Element)it.next();
+            if (!actionEl.getLocalName().equals("action")) { // NOI18N
+                continue;
+            }
+            contextMenuEl.removeChild(actionEl);
+        }
+        it = customTargets.iterator();
+        while (it.hasNext()) {
+            CustomTarget ct = (CustomTarget)it.next();
+            Element action = doc.createElementNS(FreeformProjectType.NS_GENERAL, "action"); //NOI18N
+            if (ct.script != null) {
+                Element script = doc.createElementNS(FreeformProjectType.NS_GENERAL, "script"); //NOI18N
+                script.appendChild(doc.createTextNode(ct.script)); // NOI18N
+                action.appendChild(script);
+            }
+            Element label = doc.createElementNS(FreeformProjectType.NS_GENERAL, "label"); //NOI18N
+            label.appendChild(doc.createTextNode(ct.label)); // NOI18N
+            action.appendChild(label);
+            Iterator it2 = ct.targets.iterator();
+            while (it2.hasNext()) {
+                String targetName = (String)it2.next();
+                Element target = doc.createElementNS(FreeformProjectType.NS_GENERAL, "target"); //NOI18N
+                target.appendChild(doc.createTextNode(targetName)); // NOI18N
+                action.appendChild(target);
+            }
+            contextMenuEl.appendChild(action);
+        }
+        helper.putPrimaryConfigurationData(data, true);
+    }
+    
+    public static final class CustomTarget {
+        public List/*<String>*/ targets;
+        public String label;
+        public String script;
+    }
     
     /**
      * Structure describing target mapping.
@@ -216,23 +366,29 @@ public class FreeformProjectGenerator {
                     h[0].putPrimaryConfigurationData(data, true);
 
                     putTargetMappings(h[0], mappings);
-                    putSourceFolders(h[0], sources, null);
-                    List sourceViews = new ArrayList(sources);
+                    
+                    List sourceFolders = new ArrayList(sources);
                     if (!locationFO.equals(dirFO)) {
                         SourceFolder gen = new SourceFolder();
-                        gen.type = Sources.TYPE_GENERIC;
                         gen.location = FileUtil.toFile(locationFO).getAbsolutePath();
                         // XXX: uniquefy label
                         gen.label = locationFO.getName();
-                        gen.style = "tree";
-                        sourceViews.add(gen);
+                        sourceFolders.add(gen);
                     }
-                    putSourceViews(h[0], sourceViews, null);
-                    putJavaCompilationUnits(h[0], aux, compUnits, "compile");
+                    if (sourceFolders.size() > 0) {
+                        putSourceFolders(h[0], sourceFolders, null);
+                    }
+                    if (sources.size() > 0) {
+                        putSourceViews(h[0], sources, null);
+                    }
+                    if (compUnits != null) {
+                        putJavaCompilationUnits(h[0], aux, compUnits);
+                    }
                     if (webModules != null) {
                         putWebModules (h[0], aux, webModules);
                     }
                     putBuildXMLSourceFile(h[0]);
+                    putContextMenuAction(h[0], mappings);
                 }
             }
         );
@@ -282,6 +438,9 @@ public class FreeformProjectGenerator {
         ArrayList list = new ArrayList();
         Element data = helper.getPrimaryConfigurationData(true);
         Element foldersEl = Util.findElement(data, "folders", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (foldersEl == null) {
+            return list;
+        }
         List/*<Element>*/ sourceFolders = Util.findSubElements(foldersEl);
         Iterator it = sourceFolders.iterator();
         while (it.hasNext()) {
@@ -500,20 +659,22 @@ public class FreeformProjectGenerator {
      * Read Java compilation units from the project.
      * @param helper AntProjectHelper instance
      * @param aux AuxiliaryConfiguration instance
-     * @param mode classpath mode to read. Can be null in which case all 
-     *    classpath of all modes are read.
      * @return list of JavaCompilationUnit instances
      */
     public static List/*<JavaCompilationUnit>*/ getJavaCompilationUnits(
-            AntProjectHelper helper, AuxiliaryConfiguration aux, String mode) {
+            AntProjectHelper helper, AuxiliaryConfiguration aux) {
         ArrayList list = new ArrayList();
         Element data = aux.getConfigurationFragment("java-data", FreeformProjectType.NS_JAVA, true);
+        if (data == null) {
+            return list;
+        }
         List/*<Element>*/ cus = Util.findSubElements(data);
         Iterator it = cus.iterator();
         while (it.hasNext()) {
             Element cuEl = (Element)it.next();
             JavaCompilationUnit cu = new JavaCompilationUnit();
             List outputs = new ArrayList();
+            List cps = new ArrayList();
             Iterator it2 = Util.findSubElements(cuEl).iterator();
             while (it2.hasNext()) {
                 Element el = (Element)it2.next();
@@ -522,8 +683,12 @@ public class FreeformProjectGenerator {
                     continue;
                 }
                 if (el.getLocalName().equals("classpath")) { // NOI18N
-                    cu.classpath = Util.findText(el);
-                    cu.classpathMode = el.getAttribute("mode");
+                    JavaCompilationUnit.CP cp = new JavaCompilationUnit.CP();
+                    cp.classpath = Util.findText(el);
+                    cp.mode = el.getAttribute("mode");
+                    if (cp.mode != null && cp.classpath != null) {
+                        cps.add(cp);
+                    }
                     continue;
                 }
                 if (el.getLocalName().equals("built-to")) { // NOI18N
@@ -535,9 +700,8 @@ public class FreeformProjectGenerator {
                 }
             }
             cu.output = outputs.size() > 0 ? outputs : null;
-            if (mode == null || mode.equals(cu.classpathMode)) {
-                list.add(cu);
-            }
+            cu.classpath = cps.size() > 0 ? cps: null;
+            list.add(cu);
         }
         return list;
     }
@@ -548,11 +712,9 @@ public class FreeformProjectGenerator {
      * @param helper AntProjectHelper instance
      * @param aux AuxiliaryConfiguration instance
      * @param compUnits list of JavaCompilationUnit instances
-     * @param mode classpath mode to update. Can be null in which case all 
-     *    classpath of all modes will be updated.
      */
     public static void putJavaCompilationUnits(AntProjectHelper helper, 
-            AuxiliaryConfiguration aux, List/*<JavaCompilationUnit>*/ compUnits, String mode) {
+            AuxiliaryConfiguration aux, List/*<JavaCompilationUnit>*/ compUnits) {
         ArrayList list = new ArrayList();
         Element data = aux.getConfigurationFragment("java-data", FreeformProjectType.NS_JAVA, true);
         if (data == null) {
@@ -564,14 +726,7 @@ public class FreeformProjectGenerator {
         Iterator it = cus.iterator();
         while (it.hasNext()) {
             Element cuEl = (Element)it.next();
-            String cuMode = null;
-            Element classpathEl = Util.findElement(cuEl, "classpath", FreeformProjectType.NS_JAVA);
-            if (classpathEl != null) {
-                cuMode = classpathEl.getAttribute("mode");
-            }
-            if (mode == null || mode.equals(cuMode)) {
-                data.removeChild(cuEl);
-            }
+            data.removeChild(cuEl);
         }
         Iterator it2 = compUnits.iterator();
         while (it2.hasNext()) {
@@ -585,11 +740,14 @@ public class FreeformProjectGenerator {
                 cuEl.appendChild(el);
             }
             if (cu.classpath != null) {
-                el = doc.createElementNS(FreeformProjectType.NS_JAVA, "classpath"); // NOI18N
-                el.appendChild(doc.createTextNode(cu.classpath));
-                assert cu.classpathMode != null : cu.classpath;
-                el.setAttribute("mode", cu.classpathMode);
-                cuEl.appendChild(el);
+                Iterator it3 = cu.classpath.iterator();
+                while (it3.hasNext()) {
+                    JavaCompilationUnit.CP cp = (JavaCompilationUnit.CP)it3.next();
+                    el = doc.createElementNS(FreeformProjectType.NS_JAVA, "classpath"); // NOI18N
+                    el.appendChild(doc.createTextNode(cp.classpath));
+                    el.setAttribute("mode", cp.mode);
+                    cuEl.appendChild(el);
+                }
             }
             if (cu.output != null) {
                 Iterator it3 = cu.output.iterator();
@@ -730,10 +888,15 @@ public class FreeformProjectGenerator {
      */
     public static final class JavaCompilationUnit {
         public String packageRoot;
-        public String classpath;
-        public String classpathMode;
+        public List/*<CP>*/ classpath;
         public List/*<String>*/ output;
         public String sourceLevel;
+        
+        public static final class CP {
+            public String classpath;
+            public String mode;
+        }
+        
     }
     
     /**
