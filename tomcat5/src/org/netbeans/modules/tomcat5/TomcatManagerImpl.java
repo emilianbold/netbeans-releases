@@ -150,7 +150,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
     
     public void initialDeploy (Target t, String path, File dir) {
         this.tmId = new TomcatModule (t, path);
-        command = "deploy?path=" + tmId.getPath () + "&war=" + dir.getName (); // NOI18N
+        command = "deploy?path=" + tmId.getPath () + "&war=" + dir.getAbsoluteFile().toURI().toASCIIString(); // NOI18N
         cmdType = CommandType.DISTRIBUTE;
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
         rp ().post (this, 0, Thread.NORM_PRIORITY);
@@ -182,6 +182,12 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
     
+    /** Restarts web module. */
+    public void restart (TomcatModule tmId) {
+        stop(tmId);
+        start(tmId);
+    }
+
     /** Reloads web module. */
     public void reload (TomcatModule tmId) {
         this.tmId = tmId;
@@ -311,6 +317,11 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 uri = uri.substring (uri.indexOf ("http:")); // NOI18N
             }
             urlToConnectTo = new URL(uri + command);
+            if (Boolean.getBoolean("org.netbeans.modules.tomcat5.LogManagerCommands")) { // NOI18N
+                String message = "Tomcat 5 sending manager command: " + urlToConnectTo;
+                System.out.println(message);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(message));
+            }
             
             URLWait.waitForStartup(tm, 30000);
             

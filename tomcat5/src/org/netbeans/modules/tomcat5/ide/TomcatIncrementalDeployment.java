@@ -47,23 +47,25 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
     }
     
     public File getDirectoryForModule (TargetModuleID module) {
-        TomcatModule tModule = (TomcatModule) module;
+        return null;
+        /*TomcatModule tModule = (TomcatModule) module;
         String moduleFolder = tm.getCatalinaBaseDir ().getAbsolutePath ()
         + System.getProperty("file.separator") + "webapps"   //NOI18N
         + System.getProperty("file.separator") + tModule.getPath ().substring (1); //NOI18N
         File f = new File (moduleFolder);
-        return f;
+        return f;*/
     }
     
     public File getDirectoryForNewApplication (Target target, DeployableObject module, DeploymentConfiguration configuration) {
         if (module.getType ().equals (ModuleType.WAR)) {
-            if (configuration instanceof WebappConfiguration) {
+            return null;
+            /*if (configuration instanceof WebappConfiguration) {
                 String moduleFolder = tm.getCatalinaBaseDir ().getAbsolutePath ()
                 + System.getProperty("file.separator") + "webapps"   //NOI18N
                 + System.getProperty("file.separator") + ((WebappConfiguration)configuration).getPath ().substring (1);  //NOI18N
                 File f = new File (moduleFolder);
                 return f;
-            }
+            }*/
         }
         throw new IllegalArgumentException ("ModuleType:" + module == null ? null : module.getType () + " Configuration:"+configuration); //NOI18N
     }
@@ -75,7 +77,10 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
     public ProgressObject incrementalDeploy (final TargetModuleID module, org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor changes) {
         if (changes.descriptorChanged () || changes.classesChanged ()) {
             TomcatManagerImpl tmi = new TomcatManagerImpl (tm);
-            tmi.reload ((TomcatModule)module);
+            if (changes.descriptorChanged())
+                tmi.restart((TomcatModule) module);
+            else
+                tmi.reload ((TomcatModule)module);
             return tmi;
         } else {
             final P p = new P (module);
