@@ -63,9 +63,6 @@ Microsystems, Inc. All Rights Reserved.
   <!-- These are the secondary targets. -->
 
   <target name="release">
-    <copy todir="netbeans">
-      <fileset dir="release" excludesfile="${nbext}/standard-jar-excludes.txt"/>
-    </copy>
     <copy todir="netbeans/modules/autoload/ext">
       <fileset dir="external">
          <include name="*.jar"/>
