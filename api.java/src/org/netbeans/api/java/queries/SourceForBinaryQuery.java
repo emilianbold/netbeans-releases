@@ -51,7 +51,7 @@ public class SourceForBinaryQuery {
         }
         for (Iterator it = implementations.allInstances().iterator(); it.hasNext();) {
             FileObject[] result = ((SourceForBinaryQueryImplementation)it.next()).findSourceRoot (binaryRoot);
-            if (result != null) {
+            if (result != null && result.length>0) {
                 return result;
             }
         }
