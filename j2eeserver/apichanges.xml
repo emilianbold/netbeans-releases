@@ -80,6 +80,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="StartServer-stopDontWait">
+            <api name="j2eeserver"/>
+            <summary>Added stopDontWait and canStopDontWait methods into StartServer.</summary>
+            <version major="1" minor="6"/>
+            <date day="10" month="3" year="2005"/>
+            <author login="pbuzek"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    These methods allow plugins to stop the server silently when the IDE is being
+                    shutdown. This addresses the problem filed as 52978 - Shutdown of appserver at 
+                    IDE shutdown is unresponsive.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="StartServer"/>
+        </change>
         <change id="Deployment-addInstanceListener">
             <api name="j2eeserver"/>
             <summary>Added addInstanceListener and removeInstanceListener methods to Deployment class.</summary>
