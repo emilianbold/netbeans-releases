@@ -93,6 +93,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjar.html"/>
 
+                <attr name="importBlueprintEar.xml/emptyEjbJar.xml" boolvalue="true"/>
                 <attr name="emptyEjbJar.xml/importEjbJar.xml" boolvalue="true"/>
 
                 <!-- Add template for the J2SE project -->
