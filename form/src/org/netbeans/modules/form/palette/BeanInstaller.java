@@ -80,8 +80,12 @@ public final class BeanInstaller extends Object {
       else {
         LinkedList list = findJavaBeans(jar);
         
-        if (list.size() == 0)
+        if (list.size() == 0) {
+          TopManager.getDefault().notify(new NotifyDescriptor.Message(
+            bundle.getString("MSG_noBeansInJar"), NotifyDescriptor.INFORMATION_MESSAGE)
+          );
           return;
+        }
 
         BeanSelector sel = new BeanSelector(list);
         DialogDescriptor desc = new DialogDescriptor (
@@ -91,7 +95,7 @@ public final class BeanInstaller extends Object {
           null
         );
         desc.setHelpCtx (new HelpCtx (BeanInstaller.class.getName () + ".installBean"));
-        ; // ???
+
         TopManager.getDefault ().createDialog (desc).show ();
         if (desc.getValue () == NotifyDescriptor.OK_OPTION) {
         
@@ -623,6 +627,8 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  17   Gandalf   1.16        9/23/99  Ian Formanek    Better notification in 
+ *       case that the JAR Archive does not contain any JavaBeans.
  *  16   Gandalf   1.15        9/9/99   Ian Formanek    Exceptions notification
  *  15   Gandalf   1.14        8/10/99  Ian Formanek    Generated Serial Version
  *       UID
