@@ -37,9 +37,9 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src">
       <exclude name="**/org/openide/util/WeakListener13.java" unless="jdk13proxies"/>
       <classpath>
-        <pathelement location="../core/release/lib/ext/regexp.jar"/>
-        <pathelement location="../core/release/lib/ext/jaxp.jar"/>
-        <pathelement location="../core/release/lib/ext/parser.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/parser.jar"/>
       </classpath>
     </javac>
   </target>
