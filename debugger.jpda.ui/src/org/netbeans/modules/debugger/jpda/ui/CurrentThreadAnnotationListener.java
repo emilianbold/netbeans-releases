@@ -62,6 +62,10 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             updateCurrentThread ();
             annotate ();
         } else
+        if (e.getPropertyName () == JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME) {
+            updateCurrentThread ();
+            annotate ();
+        } else
         if (e.getPropertyName () == JPDADebugger.PROP_STATE) {
             annotate ();
         }
