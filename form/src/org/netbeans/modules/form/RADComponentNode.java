@@ -623,7 +623,7 @@ static final long serialVersionUID =3851021533468196849L;
 
         // for some components, we initialize their properties with some non-default values
         // e.g. a label on buttons, checkboxes
-//        FormEditor.defaultComponentInit (newRADVisualComponent);
+        FormEditor.defaultComponentInit (newRADVisualComponent);
         component.getFormManager ().selectComponent (newRADVisualComponent, false);
         component.getFormManager ().getFormTopComponent ().validate();
         component.getFormManager ().fireFormChange ();
@@ -677,6 +677,9 @@ static final long serialVersionUID =3851021533468196849L;
 
 /*
  * Log
+ *  35   Gandalf   1.34        9/6/99   Ian Formanek    Fixed bug 2629 - If you 
+ *       copy and paste some component in Component Inspector the text property 
+ *       of new component is empty. 
  *  34   Gandalf   1.33        8/10/99  Ian Formanek    Generated Serial Version
  *       UID
  *  33   Gandalf   1.32        8/6/99   Ian Formanek    Pasting InstanceCookie
