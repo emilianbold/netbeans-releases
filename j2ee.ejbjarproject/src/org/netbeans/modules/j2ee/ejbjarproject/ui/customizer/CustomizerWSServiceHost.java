@@ -46,7 +46,7 @@ import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
  *
  * @author Peter Williams
  */
-public class CustomizerWSServiceHost extends javax.swing.JPanel implements PropertyChangeListener {
+public class CustomizerWSServiceHost extends javax.swing.JPanel implements PropertyChangeListener, HelpCtx.Provider {
     
     private EjbJarProjectProperties ejbJarProperties;
     private WsCompileEditorSupport.Panel wsCompileEditor;
@@ -54,15 +54,14 @@ public class CustomizerWSServiceHost extends javax.swing.JPanel implements Prope
     private List serviceSettings;
     
     public CustomizerWSServiceHost(EjbJarProjectProperties ejbJarProperties, List serviceSettings) {
-        assert serviceSettings != null;
+        assert serviceSettings != null && serviceSettings.size() > 0;
         initComponents();
 
         this.ejbJarProperties = ejbJarProperties;
         this.wsCompileEditor = null;
         this.serviceSettings = serviceSettings;
         
-        if (serviceSettings.size() > 0)
-            initValues();
+        initValues();
     }
     
     /** This method is called from within the constructor to
@@ -83,7 +82,7 @@ public class CustomizerWSServiceHost extends javax.swing.JPanel implements Prope
     public void addNotify() {
         super.addNotify();
 
-        JPanel component = wsCompileEditor.getComponent();
+        JPanel component = getComponent();
 
         removeAll(); // !PW is this necessary?
         add(component);
@@ -117,5 +116,17 @@ public class CustomizerWSServiceHost extends javax.swing.JPanel implements Prope
         WsCompileEditorSupport.FeatureDescriptor newFeatureDesc = (WsCompileEditorSupport.FeatureDescriptor) evt.getNewValue();
         String propertyName = "wscompile.service." + newFeatureDesc.getServiceName() + ".features";
         ejbJarProperties.putAdditionalProperty(propertyName, newFeatureDesc.getFeatures());
+    }
+    
+    public HelpCtx getHelpCtx() {
+        if (getComponent() instanceof HelpCtx.Provider) {
+            return ((HelpCtx.Provider)getComponent()).getHelpCtx();
+        } else {
+            return HelpCtx.DEFAULT_HELP;
+        }
+    }
+    
+    private JPanel getComponent() {
+        return wsCompileEditor.getComponent();
     }
 }

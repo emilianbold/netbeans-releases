@@ -13,13 +13,14 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Andrei Badea
  */
-public class CustomizerRun extends javax.swing.JPanel {
+public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provider {
     private Object initialJ2eeSpecVersion;
     
     /** Creates new form CustomizerRun */
@@ -46,6 +47,10 @@ public class CustomizerRun extends javax.swing.JPanel {
     private void checkJ2eeSpecVersionChanged() {
         boolean changed = !jComboBoxJ2eeSpecVersion.getSelectedItem().equals(initialJ2eeSpecVersion);
         jLabelWarnDdChange.setText(changed ? NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_WardDdChange_JLabel") : "");
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CustomizerRun.class);
     }
     
     /** This method is called from within the constructor to
