@@ -54,6 +54,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.api.project.ant</package>
                 <package>org.netbeans.spi.project.ant</package>
                 <package>org.netbeans.spi.project.support.ant</package>
+                <package>org.netbeans.spi.project.support.ant.ui</package>
             </public-packages>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>

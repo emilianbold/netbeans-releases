@@ -94,9 +94,43 @@
    are necessary to create a certain build product, for use in inter-project
    dependencies.
   </p>
+  
+  <b>Ant project support faq:</b>
+    
+  <usecase id="support-for-storing-project-properties" name="How to use support for storing project properties?">
+  
+    <em><b>Q:</b>
+    I'm creating a customizer (properties dialog) for my project type. I wan't to use the support
+    for simple data types. What do I need to do?</em>
+    <p>
+    You basicaly need to do two things. First create the representation of the project properties which
+    can be used in the GUI. Second at some time convert the objects back to the ANT properties form and
+    store them into the project.
+    </p>
+    <ul>
+        <li><b>Creating the object representation.</b>
+            <ol>
+                <li>Create new instance of StoreGroup for each group of properties you want to store later
+                    e.g. project and prvate. Sometimes it might be useful to create temporary source group
+                    which will only be used for creating the models without being used for storing. E.g.
+                    for properties which need special handling.</li>
+                <li>Call the factory methods e.g. createBooleanButtonModel, createStringDocument, etc. which
+                    will create the swing models for you.</li>
+                <li>Use the models in your Swing controls by calling setModel() or setDocument()</li>
+            </ol>                                 
+        </li>
+        <li><b>Storing the models back to the proprties of project.</b>
+            <ol>
+                <li>Get the EditableProperties you want to store the model in e.g. private or project 
+                    properties</li>
+                <li>Call the store method on given SourceGroup with the EditableProperties as parameter</li>
+                <li>Manually store models which need some special handling.</li>
+            </ol>
+        </li>
+    </ul>    
+  </usecase>
+  
  </answer>
-
-
 
 <!--
         <question id="arch-what" when="init">
