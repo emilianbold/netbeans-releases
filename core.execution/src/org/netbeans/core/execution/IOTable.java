@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,7 +28,6 @@ import org.openide.windows.TopComponent;
 * Some tasks don't require io operations. For such tasks NullTaskIO is
 * created (at ExecutionEngine.RunClass.run()); NullTaskIOs left reusing TaskIOs
 *
-*
 * @author Ales Novak
 */
 final class IOTable extends Hashtable {
@@ -43,9 +42,6 @@ final class IOTable extends Hashtable {
 
     /** hashtable of free TaskIOs - name:TaskIO */
     private HashMap freeTaskIOs;
-
-    /** our options */
-    private ExecutionSettings options;
 
     /**
     * @param base is a base ThreadGroup for tasks
@@ -150,14 +146,14 @@ final class IOTable extends Hashtable {
     * @return true iff TaskIO are to be reused
     */
     private boolean reuseTaskIO() {
-        return (getOptions().getTabHandler() > getOptions().NONE);
+        return true;
     }
 
     /**
     * @return true iff reused TaskIO should be reseted
     */
     private boolean clearTaskIO() {
-        return ((getOptions().getTabHandler() & getOptions().REUSE_AND_CLEAR) != 0);
+        return true;
     }
 
     /**
@@ -236,11 +232,4 @@ final class IOTable extends Hashtable {
         return io.err;
     }
     
-    /** @return ExecutionSettings */
-    private ExecutionSettings getOptions() {
-        if (options == null) {
-            options = (ExecutionSettings) ExecutionSettings.findObject(ExecutionSettings.class, true);
-        }
-        return options;
-    }
 }

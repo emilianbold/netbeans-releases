@@ -57,8 +57,6 @@ public class Install extends ModuleInstall {
     
     public void restored() {
         TopSecurityManager.register(SecMan.DEFAULT);
-        // load neccessary SystemOptions because of ExecuteAction setup
-        SharedClassObject.findObject (ExecutionSettings.class, true);
 
         // Add beaninfo search path.
         String[] sp = Introspector.getBeanInfoSearchPath();
