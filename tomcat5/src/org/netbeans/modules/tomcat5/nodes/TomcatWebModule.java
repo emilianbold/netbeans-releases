@@ -19,6 +19,8 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import javax.enterprise.deploy.shared.StateType;
+import javax.enterprise.deploy.shared.CommandType;
 import org.netbeans.modules.tomcat5.TomcatModule;
 import org.netbeans.modules.tomcat5.nodes.actions.TomcatWebModuleCookie;
 import org.openide.awt.StatusDisplayer;
@@ -26,6 +28,10 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
+import javax.enterprise.deploy.spi.status.ProgressEvent;
+import javax.enterprise.deploy.spi.status.DeploymentStatus;
 
 /**
  *
@@ -81,20 +87,17 @@ public class TomcatWebModule implements TomcatWebModuleCookie{
                     new Object []{getTomcatModule ().getPath()}));
                 ProgressObject po = manager.start(target);
                 po.addProgressListener(new TomcatProgressListener());
-                isRunning = true;
             }
         }, 0);
     }
 
     public void stop() {
         RequestProcessor.getDefault().post(new Runnable() {
-            public void run () {
-                
+            public void run () {                
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TomcatWebModule.class, "MSG_START_STOPPING",  // NOI18N
                     new Object []{getTomcatModule ().getPath()}));
                 ProgressObject po = manager.stop(target);
                 po.addProgressListener(new TomcatProgressListener());
-                isRunning = false;
             }
         }, 0);
     }
@@ -113,24 +116,27 @@ public class TomcatWebModule implements TomcatWebModuleCookie{
     }
     
     private class TomcatProgressListener implements ProgressListener {
-        
-        public void handleProgressEvent(javax.enterprise.deploy.spi.status.ProgressEvent progressEvent) {
-            if (progressEvent.getDeploymentStatus().getState() == javax.enterprise.deploy.shared.StateType.COMPLETED){
-                javax.enterprise.deploy.shared.CommandType command = progressEvent.getDeploymentStatus().getCommand();
-                if (command == javax.enterprise.deploy.shared.CommandType.START
-                    || command == javax.enterprise.deploy.shared.CommandType.STOP){
-                        StatusDisplayer.getDefault().setStatusText(progressEvent.getDeploymentStatus().getMessage());
-                        node.setDisplayName(constructDisplayName());
-                }
-                else {
-                    if (command == javax.enterprise.deploy.shared.CommandType.UNDEPLOY){
+        public void handleProgressEvent(ProgressEvent progressEvent) {
+            DeploymentStatus deployStatus = progressEvent.getDeploymentStatus();
+            if (deployStatus.getState() == StateType.COMPLETED) {
+                CommandType command = deployStatus.getCommand();
+                if (command == CommandType.START || command == CommandType.STOP) {
+                        StatusDisplayer.getDefault().setStatusText(deployStatus.getMessage());
+                        if (command == CommandType.START) isRunning = true; else isRunning = false;
+                        node.setDisplayName(constructDisplayName());                        
+                } else if (command == CommandType.UNDEPLOY) {
                         Children children = node.getParentNode().getChildren();
                         if (children instanceof TomcatWebModuleChildren){
                             ((TomcatWebModuleChildren)children).updateKeys();
-                            StatusDisplayer.getDefault().setStatusText(progressEvent.getDeploymentStatus().getMessage());
-                        }
-                    }
+                            StatusDisplayer.getDefault().setStatusText(deployStatus.getMessage());
+                        }                    
                 }
+            } else if (deployStatus.getState() == StateType.FAILED) {
+                NotifyDescriptor notDesc = new NotifyDescriptor.Message(
+                        deployStatus.getMessage(), 
+                        NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(notDesc);
+                StatusDisplayer.getDefault().setStatusText(deployStatus.getMessage());                
             }
         }
     }

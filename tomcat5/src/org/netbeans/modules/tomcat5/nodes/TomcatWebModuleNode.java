@@ -60,9 +60,9 @@ public class TomcatWebModuleNode extends AbstractNode {
         if (module.isRunning())
             return module.getTomcatModule ().getPath();
         else
-            return module.getTomcatModule ().getPath() + " (" +
+            return module.getTomcatModule ().getPath() + " [" +
                 NbBundle.getMessage(TomcatWebModuleNode.class, "LBL_Stopped")  // NOI18N
-                + ")";
+                + "]";
     }
       
 }

@@ -284,6 +284,17 @@ public class TomcatManager implements DeploymentManager {
         }
         return baseDir;
     }
+    
+    /**
+     * Returns catalina directory.
+     * @return catalinaBase directory, if it does not exist return catalinaHome directory,
+     * <CODE>null</CODE> otherwise.
+     */
+    public File getCatalinaDir() {
+        File catalinaDir = getCatalinaBaseDir();
+        if (catalinaDir == null) catalinaDir = getCatalinaHomeDir();
+        return catalinaDir;        
+    }
 
     public FileObject getCatalinaBaseFileObject() {
         if (catalinaBaseDir!=null) return catalinaBaseDir;
@@ -972,28 +983,15 @@ public class TomcatManager implements DeploymentManager {
     }
 
     public Server getRoot() {
-        
-        if (this.root != null) {
-            return root;
-        }
-        
+        // do we really need to cache this? shouldn't we at least return a
+        // defensive copy, otherwise we may get easily out of sync with server.xml
+        // if (this.root != null) {
+        //    return root;
+        // }        
         try {
-            FileInputStream inputStream;
-            if (catalinaBase != null) {
-                try {
-                    inputStream = new FileInputStream(new File(catalinaBase + "/conf/server.xml"));
-                } catch (FileNotFoundException fnfe) {
-                    return null;
-                }
-            } else {
-                try {
-                    inputStream = new FileInputStream(new File(catalinaHome + "/conf/server.xml"));
-                } catch (FileNotFoundException fnfe) {
-                    return null;
-                }
-            }
-
-            Document doc = XMLUtil.parse(new InputSource(inputStream), false, false, null,org.openide.xml.EntityCatalog.getDefault());
+            File f = new File(getCatalinaDir().getAbsolutePath() + SERVERXML_PATH);
+            InputStream in = new BufferedInputStream(new FileInputStream(f));            
+            Document doc = XMLUtil.parse(new InputSource(in), false, false, null,org.openide.xml.EntityCatalog.getDefault());
             root = Server.createGraph(doc);
             return root;
         } catch (Exception e) {
@@ -1003,6 +1001,7 @@ public class TomcatManager implements DeploymentManager {
             return null;
         }
     }
+    
     /** Initializes base dir for use with Tomcat 5.0.x. 
      *  @param baseDir directory for base dir.
      *  @param homeDir directory to copy config files from.
@@ -1071,8 +1070,9 @@ public class TomcatManager implements DeploymentManager {
                 null, 
                 null, 
                 "<Context path=\"\" docBase=\""+new File (homeDir, "webapps/ROOT").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
-                "<Context path=\"/jsp-examples\" docBase=\""+new File (homeDir, "webapps/jsp-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
-                "<Context path=\"/servlets-examples\" docBase=\""+new File (homeDir, "webapps/servlets-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
+                // jsp/servlet examples can be created as sample projects now, so this doesn't need to be here anymore
+                //"<Context path=\"/jsp-examples\" docBase=\""+new File (homeDir, "webapps/jsp-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
+                //"<Context path=\"/servlets-examples\" docBase=\""+new File (homeDir, "webapps/servlets-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
                 "</Host>",   // NOI18N
                 "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager\"/>\n</tomcat-users>",   // NOI18N
                 null, 

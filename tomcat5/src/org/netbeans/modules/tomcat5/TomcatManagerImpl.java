@@ -39,6 +39,17 @@ import org.netbeans.modules.tomcat5.progress.Status;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 
+import org.openide.awt.StatusDisplayer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
+import org.openide.xml.EntityCatalog;
+import org.w3c.dom.Document;
+import org.xml.sax.*;
+import org.netbeans.modules.tomcat5.config.*;
+import java.io.*;
+
 /** Implemtation of management task that provides info about progress
  *
  * @author  Radim Kubacki
@@ -171,12 +182,55 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
 
-    public void remove (TomcatModule tmId) {
+    public void remove(TomcatModule tmId) {
+        // remove context from server.xml
+        Server server = tm.getRoot();
+        if (server != null && removeContextFromServer(server, tmId.getPath())) {
+            File f = null;
+            try {                
+                f = new File(tm.getCatalinaDir().getAbsolutePath() + TomcatManager.SERVERXML_PATH);
+                server.write(f);
+            } catch (Exception e) {
+                // cannot save changes
+                pes.fireHandleProgressEvent(tmId, new Status (ActionType.EXECUTE, 
+                        CommandType.UNDEPLOY, 
+                        NbBundle.getMessage(TomcatManagerImpl.class, "MSG_ServerXml_RO", f.getAbsolutePath()),
+                        StateType.FAILED));                
+                return;
+            }
+        }
         this.tmId = tmId;
         command = "undeploy?path="+tmId.getPath (); // NOI18N
         cmdType = CommandType.UNDEPLOY;
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
-        rp ().post (this, 0, Thread.NORM_PRIORITY);
+        rp ().post (this, 0, Thread.NORM_PRIORITY);        
+    }
+    
+    /**
+     * Remove context with the specified path from the Server tree.
+     * Look for the first appearance of the service and host element.
+     * (ide currently does not support multiple service and host elements).
+     */
+    private boolean removeContextFromServer(Server server, String path) {
+        // root web application is specified as an empty string
+        if (path.equals("/")) path = ""; // NOI18N
+        Service[] service = server.getService();
+        if (service.length > 0) {
+            Engine engine = service[0].getEngine();
+            if (engine != null) {
+                Host[] host = engine.getHost();
+                if (host.length > 0) {                    
+                    SContext[] sContext = host[0].getSContext();
+                    for (int i = 0; i < sContext.length; i++) {
+                        if (sContext[i].getAttributeValue("path").equals(path)) { // NOI18N
+                            host[0].removeSContext(sContext[i]);
+                            return true;
+                        }                        
+                    }
+                }
+            }
+        }
+        return false;
     }
     
     /** Starts web module. */
@@ -345,7 +399,8 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         InputStreamReader reader = null;
         
         URL urlToConnectTo = null;
-
+        
+        boolean failed = false;
         String msg = null;
         while (retries >= 0) {
             retries = retries - 1;
@@ -453,6 +508,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     TomcatFactory.getEM().log("TomcatManagerImpl connecting to: " + urlToConnectTo); // NOI18N
                     TomcatFactory.getEM ().log (error);
                     pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, error, StateType.FAILED));
+                    failed = true;
                 }
 
             } catch (Exception e) {
@@ -460,6 +516,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     TomcatFactory.getEM().log("TomcatManagerImpl connecting to: " + urlToConnectTo); // NOI18N
                     TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, e);
                     pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, e.getLocalizedMessage (), StateType.FAILED));
+                    failed = true;
                 }
                 // throw t;
             } finally {
@@ -484,8 +541,9 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 } catch (InterruptedException e) {}
             }
         } // while
-        pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, msg, StateType.COMPLETED));
-
+        if (!failed) {
+            pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, msg, StateType.COMPLETED));
+        }
     }
 
 }
