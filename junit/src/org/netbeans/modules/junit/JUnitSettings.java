@@ -51,6 +51,7 @@ public class JUnitSettings extends SystemOption {
     public static final String PROP_CFGEXEC_ENABLED     = "cfgexec_enabled";
     public static final String PROP_EXECUTOR_TYPE       = "executor_type";
     public static final String PROP_GENERATE_EXCEPTION_CLASSES = "generate_exceptions";
+    public static final String PROP_GENERATE_ABSTRACT_IMPL = "gemerate_abstract_impl";
     public static final String PROP_TEST_RUNNER         = "test_runner";
     public static final String PROP_PROPERTIES          = "properties";
 
@@ -81,6 +82,7 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_CFGCREATE_ENABLED, new Boolean(true), true);
         putProperty(PROP_CFGEXEC_ENABLED, new Boolean(true), true);
         putProperty(PROP_EXECUTOR_TYPE, new Integer(EXECUTOR_EXTERNAL), true);
+        putProperty(PROP_GENERATE_ABSTRACT_IMPL, new Boolean(true), true);
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, new Boolean(false), true);
         putProperty(PROP_TEST_RUNNER, "org.netbeans.modules.junit.TestRunner", true);
         putProperty(PROP_PROPERTIES, NbBundle.getMessage(JUnitSettings.class, "PROP_properties_default_value"), true);
@@ -99,6 +101,7 @@ public class JUnitSettings extends SystemOption {
         out.writeObject(getProperty(PROP_CFGCREATE_ENABLED));
         out.writeObject(getProperty(PROP_CFGEXEC_ENABLED));
         out.writeObject(getProperty(PROP_EXECUTOR_TYPE));
+        out.writeObject(getProperty(PROP_GENERATE_ABSTRACT_IMPL));
         out.writeObject(getProperty(PROP_GENERATE_EXCEPTION_CLASSES));
         out.writeObject(getProperty(PROP_TEST_RUNNER));
         out.writeObject(getProperty(PROP_PROPERTIES));
@@ -117,6 +120,7 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_CFGCREATE_ENABLED, in.readObject(), true);
         putProperty(PROP_CFGEXEC_ENABLED, in.readObject(), true);
         putProperty(PROP_EXECUTOR_TYPE, in.readObject(), true);
+        putProperty(PROP_GENERATE_ABSTRACT_IMPL, in.readObject(), true);
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, in.readObject(), true);
         putProperty(PROP_TEST_RUNNER, in.readObject(), true);
         putProperty(PROP_PROPERTIES, in.readObject(), true);
@@ -237,6 +241,15 @@ public class JUnitSettings extends SystemOption {
 
     public void setGenerateExceptionClasses(boolean newVal) {
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, new Boolean(newVal), true);
+    }
+    
+   
+    public boolean isGenerateAbstractImpl() {
+     return ((Boolean) getProperty(PROP_GENERATE_ABSTRACT_IMPL)).booleanValue();
+    }
+
+    public void setGenerateAbstractImpl(boolean newVal) {
+     putProperty(PROP_GENERATE_ABSTRACT_IMPL, new Boolean(newVal), true);
     }
 
     public String getTestRunner() {

@@ -102,6 +102,11 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             propGenerateExceptionClasses.setPropertyEditorClass(BoolPropEd.class);
             propGenerateExceptionClasses.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_exception_classes"));
             propGenerateExceptionClasses.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_exception_classes"));
+            
+            PropertyDescriptor propGenerateAbstractImpl = new PropertyDescriptor ("GenerateAbstractImpl", JUnitSettings.class);
+            propGenerateAbstractImpl.setPropertyEditorClass(BoolPropEd.class);
+            propGenerateAbstractImpl.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_abstract_impl"));
+            propGenerateAbstractImpl.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_abstract_impl"));
 
             PropertyDescriptor propTestRunner = new PropertyDescriptor ("TestRunner", JUnitSettings.class);
             propTestRunner.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_test_runner"));
@@ -114,7 +119,7 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             return new PropertyDescriptor[] { propFileSystem, propSuiteTemplate, propClassTemplate,
               propMembersPublic, propMembersProtected, propMembersPackage, propBodyComments, propBodyContent, 
               propJavaDoc, propCfgConfigEnabled, propCfgExecEnabled, propInternalExecutor, 
-              propGenerateExceptionClasses, propTestRunner, propProperties };
+              propGenerateExceptionClasses, propGenerateAbstractImpl, propTestRunner, propProperties };
         }
         catch (IntrospectionException ie) {
             if (Boolean.getBoolean ("netbeans.debug.exceptions"))

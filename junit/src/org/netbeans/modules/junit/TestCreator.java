@@ -22,9 +22,14 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 
+import javax.swing.text.Element;
+import javax.swing.text.BadLocationException;
+
 import org.openide.TopManager;
 import org.openide.src.*;
 import org.openide.filesystems.*;
+import org.openide.cookies.SourceCookie;
+import org.openide.cookies.SourceCookie.Editor;
 
 /**
  *
@@ -91,8 +96,10 @@ public class TestCreator extends java.lang.Object {
         return (null != ce && 
                 ce.isClass() && 
                 (0 != (ce.getModifiers() & Modifier.PUBLIC)) &&
-                (JUnitSettings.getDefault().isGenerateExceptionClasses() || !isException(ce)));
+                (JUnitSettings.getDefault().isGenerateExceptionClasses() || !isException(ce)) &&
+                (JUnitSettings.getDefault().isGenerateAbstractImpl() || (0 == (ce.getModifiers() & Modifier.ABSTRACT))));
     }
+
     
     /* private methods */
     static private boolean         cfg_MethodsFilterPackage = true;
@@ -234,6 +241,38 @@ public class TestCreator extends java.lang.Object {
         }
         return false;
     }
+    
+    static private boolean existsMethod(List methodList, MethodElement method) {
+         Iterator    li;
+         MethodElement   m;
+
+         li = methodList.iterator();
+         while(li.hasNext()) {
+             m = (MethodElement) li.next();
+             if (m.getName().equals(method.getName()) &&
+                 m.getReturn().equals(method.getReturn()) &&
+                 (Arrays.equals(getParameterTypes(m.getParameters()), getParameterTypes(method.getParameters())))) {
+
+                 return true;
+             }
+         }
+         return false;
+     }
+     
+     static private Type[] getParameterTypes(MethodParameter[] params) {
+         Type[] types = new Type[params.length];
+         for (int i = 0; i < params.length; i++) {
+             types[i] = params[i].getType();
+         }
+         
+         return types;
+     }
+     
+     static private boolean isSameParameterTypeArray(Type[] base, Type[] revision) {
+         return Arrays.equals(base, revision);
+     }
+
+
 
     static private void fillGeneral(ClassElement classTest) throws SourceException {
         ConstructorElement  constr;
@@ -409,4 +448,163 @@ public class TestCreator extends java.lang.Object {
         } catch (Exception e) {}
         return false;
     }
+    
+     static public void createAbstractImpl(ClassElement sourceClass, ClassElement targetClass) throws SourceException {
+         ClassElement innerClass;
+         Identifier implClassName = Identifier.create(sourceClass.getName().getName() + "Impl");
+         innerClass = targetClass.getClass(implClassName);
+         
+         if (innerClass == null) {
+             innerClass = new ClassElement();
+             innerClass.setName(implClassName);
+             innerClass.setModifiers(Modifier.PRIVATE);
+             innerClass.setSuperclass(sourceClass.getName());
+             createImpleConstructors(sourceClass, innerClass);
+         }
+         
+         List methods =  getAllUnimplementedMethods(sourceClass);
+         MethodElement nextMethod = null;
+         Iterator iterator = methods.iterator();
+         while (iterator.hasNext()) {
+             try {
+                 nextMethod = (MethodElement)iterator.next();
+                 createImplMethods(nextMethod);
+                 innerClass.addMethod(nextMethod);
+             } catch (SourceException e) {
+                 //ignore as the method already exists
+             }
+         }
+         try {
+             targetClass.addClass(innerClass);
+         } catch (Exception e) {
+             //ignore as the inner class already exists
+         }
+         
+     }
+     
+     static private void createImplMethods(MethodElement method) throws SourceException {
+         String body = null;
+         method.setModifiers(method.getModifiers() - Modifier.ABSTRACT);
+         
+         if (method.getReturn().equals(Type.VOID)) {
+             body = "";
+         } else if (method.getReturn().isClass()) {
+             body = "\nreturn null;\n";
+         } else {
+             if (method.getReturn().equals(Type.BOOLEAN)) {
+                 body = "\nreturn false;\n";
+             } else {
+                 body = "\nreturn 0;\n";
+             }
+         }
+         method.setBody(body);
+         
+         MethodParameter[] params = method.getParameters();
+         for (int i = 0; i < params.length; i++) {
+             params[i].setName("param" + String.valueOf(i));
+         }
+     }
+     
+     static private void createImpleConstructors(ClassElement sourceClass, ClassElement implInnerClass) throws SourceException {
+         ConstructorElement[] constructors = sourceClass.getConstructors();
+         ConstructorElement nextConstructor = null;
+         for (int i = 0; i < constructors.length; i++) {
+             nextConstructor = (ConstructorElement)constructors[i].clone();
+             if (0 == (nextConstructor.getModifiers() & Modifier.PRIVATE)) {
+                 nextConstructor.setBody("\nsuper(" + getParameterString(nextConstructor.getParameters()) + ");\n");
+                 nextConstructor.getJavaDoc().clearJavaDoc();
+                 implInnerClass.addConstructor(nextConstructor);
+             }
+         }
+     }
+     
+     static private String getParameterString(MethodParameter[] params) {
+         StringBuffer paramString = new StringBuffer();
+         
+         for (int i = 0; i < params.length; i++) {
+             if (paramString.length() > 0) {
+                 paramString.append(", ");
+             }
+             paramString.append(params[i].getName());
+         }
+         
+         return paramString.toString();
+     }
+     
+     static private List getInterfaceMethods(ClassElement interfaceClass) {
+         
+         List interfaceMethods = new LinkedList();
+         
+         do {
+             MethodElement[] methods = interfaceClass.getMethods();
+             for (int i = 0; i < methods.length; i++) {
+                 if (0 == (methods[i].getModifiers() & Modifier.PRIVATE)) {
+                     interfaceMethods.add((MethodElement)methods[i].clone());
+                 }
+             }
+             try {
+                 Identifier[] interfaces = interfaceClass.getInterfaces();
+                 String interfaceName = interfaces[0].getFullName();
+                 interfaceClass = ClassElement.forName(interfaceName);
+             } catch (ArrayIndexOutOfBoundsException e) {
+                 interfaceClass = null;
+             }
+         } while (null != interfaceClass);         
+         return interfaceMethods;
+     }
+     
+     static private List getAbstractClassMethods(ClassElement sourceClass) {
+         
+         List abstractMethods = new LinkedList();
+         MethodElement[] methods = sourceClass.getMethods();
+         for (int i = 0; i < methods.length; i++) {
+             if (0 != (methods[i].getModifiers() & Modifier.ABSTRACT)) { 
+                 abstractMethods.add((MethodElement)methods[i].clone());
+             }
+         }
+         
+         return abstractMethods; 
+     }
+     
+     static private void addMethodsToList(MethodElement[] methods, List methodList) {
+         for (int i = 0; i < methods.length; i++) {
+             if ((0 == (methods[i].getModifiers() & Modifier.ABSTRACT)) &&
+                 (0 == (methods[i].getModifiers() & Modifier.PRIVATE))) {
+                 
+                     methodList.add(methods[i]);
+             }
+         }
+         
+     }
+     
+    static private List getAllUnimplementedMethods(ClassElement sourceClass) {
+     ClassElement currentClass = (ClassElement)sourceClass.clone();
+     List allMethods = new LinkedList();
+     List abstractMethods = new LinkedList();
+     List allSuspectMethods = new LinkedList();
+
+     do {
+         addMethodsToList(currentClass.getMethods(), allMethods);
+
+         Identifier[] interfaces = currentClass.getInterfaces();
+         for (int i = 0; i < interfaces.length; i++) {
+             allSuspectMethods.addAll(getInterfaceMethods(ClassElement.forName(interfaces[i].getFullName())));
+         }
+         allSuspectMethods.addAll(getAbstractClassMethods(currentClass));
+
+         Iterator iterator = allSuspectMethods.iterator();
+
+         while (iterator.hasNext()) {
+             MethodElement currentMethod = (MethodElement)iterator.next();
+             if (!existsMethod(allMethods, currentMethod)) {
+                 abstractMethods.add(currentMethod);
+             }
+         }
+
+         currentClass = ClassElement.forName(currentClass.getSuperclass().getFullName());
+     } while ((null != currentClass) && (0 != (currentClass.getModifiers() & Modifier.ABSTRACT)));
+
+     return abstractMethods;
+    }
+
 }

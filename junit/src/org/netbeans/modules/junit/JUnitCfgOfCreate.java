@@ -177,6 +177,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         cfg.chkProtected.setSelected(JUnitSettings.getDefault().isMembersProtected());
         cfg.chkPackage.setSelected(JUnitSettings.getDefault().isMembersPackage());
         cfg.chkExceptions.setSelected(JUnitSettings.getDefault().isGenerateExceptionClasses());
+	  cfg.chkAbstractImpl.setSelected(JUnitSettings.getDefault().isGenerateAbstractImpl());
         cfg.chkComments.setSelected(JUnitSettings.getDefault().isBodyComments());
         cfg.chkContent.setSelected(JUnitSettings.getDefault().isBodyContent());
         cfg.chkJavaDoc.setSelected(JUnitSettings.getDefault().isJavaDoc());
@@ -221,6 +222,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
             JUnitSettings.getDefault().setMembersProtected(cfg.chkProtected.isSelected());
             JUnitSettings.getDefault().setMembersPackage(cfg.chkPackage.isSelected());
             JUnitSettings.getDefault().setGenerateExceptionClasses(cfg.chkExceptions.isSelected());
+		JUnitSettings.getDefault().setGenerateAbstractImpl(cfg.chkAbstractImpl.isSelected());
             JUnitSettings.getDefault().setBodyComments(cfg.chkComments.isSelected());
             JUnitSettings.getDefault().setBodyContent(cfg.chkContent.isSelected());
             JUnitSettings.getDefault().setJavaDoc(cfg.chkJavaDoc.isSelected());
@@ -268,6 +270,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         chkContent = new javax.swing.JCheckBox();
         chkJavaDoc = new javax.swing.JCheckBox();
         chkExceptions = new javax.swing.JCheckBox();
+        chkAbstractImpl = new javax.swing.JCheckBox();
         chkEnabled = new javax.swing.JCheckBox();
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
@@ -407,7 +410,14 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints3.insets = new java.awt.Insets(0, 4, 0, 4);
         gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
         jpCodeGen.add(chkExceptions, gridBagConstraints3);
-        
+
+        chkAbstractImpl.setText(bundle.getString("JUnitCfgOfCreate.chkAbstractImpl.text"));
+        gridBagConstraints3 = new java.awt.GridBagConstraints();
+        gridBagConstraints3.gridx = 1;
+        gridBagConstraints3.gridy = 3;
+        gridBagConstraints3.insets = new java.awt.Insets(0, 4, 0, 4);
+        gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
+        jpCodeGen.add(chkAbstractImpl, gridBagConstraints3);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
@@ -449,6 +459,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
     private javax.swing.JCheckBox chkContent;
     private javax.swing.JCheckBox chkJavaDoc;
     private javax.swing.JCheckBox chkExceptions;
+    private javax.swing.JCheckBox chkAbstractImpl;
     private javax.swing.JCheckBox chkEnabled;
     // End of variables declaration//GEN-END:variables
 }

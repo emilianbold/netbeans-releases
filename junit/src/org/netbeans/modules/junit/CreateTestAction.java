@@ -220,6 +220,13 @@ public class CreateTestAction extends CookieAction {
                         progress.setMessage(msgCreating + classTarget.getName().getFullName() + " ...");
 
                         TestCreator.createTestClass(classSource, classTarget);
+                        
+                        if ((JUnitSettings.getDefault().isGenerateAbstractImpl()) &&
+                            (0 != (classSource.getModifiers() & Modifier.ABSTRACT))) {
+
+                         TestCreator.createAbstractImpl(classSource, classTarget);
+                        }
+                         
                         save(doTarget);
 
                         name = classTarget.getName().getFullName();
