@@ -18,9 +18,9 @@ a logical view of important runtime resources such as your servers, databases, a
   You can open the Runtime window by choosing Window <img src="../images/arrow.gif" width="5" height="11" alt="and choosing">&nbsp;Runtime 
   (Ctrl-5).
 
-<h3>Runtime Icons</h3>
-<p>The following table lists the runtime icons as they appear in the Runtime 
-window, their descriptions, and the purpose of the resource to which they apply. 
+<h3>Runtime Resources</h3>
+<p>The following table lists the runtime resources as they appear in the Runtime 
+window, with their icons and their descriptions. 
 <table border="1" cellpadding="5" cellspacing="0">
   <tr align="left"> 
     <th scope="col"><b>Icon</b></th>
@@ -32,7 +32,9 @@ window, their descriptions, and the purpose of the resource to which they apply.
 	    <br>Lists all servers currently registered with the IDE. Only
 	    the bundled Tomcat Web Server is registered by default. If your version
 	    of the IDE is bundled with the Sun Java System Application Server, this
-	    server is registered by default as well.</td>
+	    server is registered by default as well. Use the IDE to
+	    <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/server/server_register.html">register</a>
+	    all other servers.</td>
   </tr>
   <tr> 
     <td><img src="../images/runtime-window-processes.png" width="16" height="16"></td>
@@ -51,8 +53,7 @@ Window <img src="../images/arrow.gif" alt="and choosing">&nbsp;Execution.</td>
   <tr> 
     <td><img src="../images/runtime-window-httpserver.png" width="20" height="16"></td>
     <td><b>HTTP Server</b>
-	    <br>Choose commands to start or stop the IDE's internal HTTP server by 
-  right-clicking the HTTP Server node.</td>
+	    <br>When you right-click the node, you can choose commands to start or stop the IDE's internal HTTP server.</td>
   </tr>
   <tr> 
     <td><img src="../images/runtime-window-vcscommands.png" width="16" height="16"></td>
@@ -70,7 +71,8 @@ Window <img src="../images/arrow.gif" alt="and choosing">&nbsp;Execution.</td>
   <tr> 
     <td><img src="../images/runtime-window-xmlentitycatalogs.png" width="16" height="16"></td>
     <td><b>XML Entity Catalogs</b>
-	    <br>Lists all your currently mounted <a href="../xml/catalog/xmlcatalog_about.html">XML Catalogs</a>.</td>
+	    <br>Lists all your currently mounted <a href="../xml/catalog/xmlcatalog_about.html">XML Catalogs</a>.
+	    When you right-click the node, you can <a href="../xml/catalog/xmlcatalog_mount.html">mount and unmount</a> XML catalogs.</td>
   </tr>
 </table>
 <p>Other nodes may appear, depending on the modules that are installed in the
