@@ -49,11 +49,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private boolean modelUpdated;
 
     private static final int PARSING_INIT_DELAY = 100;
-    private RequestProcessor.Task synchronizeModelTask = RequestProcessor.getDefault().create(new Runnable() {
-                public void run() {
-                    sync();
-                }
-            });
+    private RequestProcessor.Task synchronizeModelTask = null;
     private boolean updateFromModel = false;
     private boolean updatingFromModel = false;
     private boolean updatingModel = false;
@@ -334,7 +330,18 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
 
     private void synchronizeModel(boolean updateFromModel) {
         this.updateFromModel = updateFromModel;
-        synchronizeModelTask.schedule(PARSING_INIT_DELAY);
+        getSynchronizeModelTask().schedule(PARSING_INIT_DELAY);
+    }
+
+    private RequestProcessor.Task getSynchronizeModelTask() {
+        if (synchronizeModelTask == null) {
+            synchronizeModelTask = RequestProcessor.getDefault().create(new Runnable() {
+                public void run() {
+                    sync();
+                }
+            });
+        }
+        return synchronizeModelTask;
     }
 
     public boolean canClose() {
@@ -346,13 +353,15 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 return true;
             }
         }
-        synchronizeModelTask.schedule(PARSING_INIT_DELAY);
+        getSynchronizeModelTask().schedule(PARSING_INIT_DELAY);
         waitForSync();
         return !isModified();
     }
 
     protected void waitForSync() {
-        synchronizeModelTask.waitFinished();
+        if (synchronizeModelTask != null) {
+            synchronizeModelTask.waitFinished();
+        }
     }
     
     public org.netbeans.core.api.multiview.MultiViewPerspective getSelectedPerspective() {
