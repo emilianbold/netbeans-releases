@@ -94,7 +94,6 @@ public class EditorOperator extends TopComponentOperator {
     private JLabelOperator _lblRowColumn;
     private JLabelOperator _lblInputMode;
     private JLabelOperator _lblStatusBar;
-    private JComboBoxOperator _cboQuickBrowse;
     
     /** Waits for the first opened editor with given name. 
      * If not active, it is activated.
@@ -238,24 +237,6 @@ public class EditorOperator extends TopComponentOperator {
             _lblStatusBar = new JLabelOperator(this, 2);
         }
         return _lblStatusBar;
-    }
-    
-    /** Returns operator of combo box showing members of the class. It
-     * is applicable only for Java objects.
-     * @return JComboBoxOperator instance of members combo box
-     */
-    public JComboBoxOperator cboQuickBrowse() {
-        if (_cboQuickBrowse == null) {
-            _cboQuickBrowse = new JComboBoxOperator(this);
-        }
-        return _cboQuickBrowse;
-    }
-    
-    /** Selects item in quick browse combo box.
-     * @param item itme to be selected
-     */
-    public void setQuickBrowse(String item) {
-        cboQuickBrowse().selectItem(item);
     }
     
     /************** Get, select, delete, insert text ************************/
@@ -784,7 +765,6 @@ public class EditorOperator extends TopComponentOperator {
     /** Performs verification by accessing all sub-components */    
     public void verify() {
         txtEditorPane();
-        cboQuickBrowse();
         lblInputMode();
         lblRowColumn();
         lblStatusBar();
