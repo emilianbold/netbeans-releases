@@ -1417,8 +1417,6 @@
    <mapID target="org.netbeans.core.NbNodeOperation.customize" url="pending.html" />
    <mapID target="org.netbeans.core.windows.nodes.ModeContext" url="workspace/workspace.html" />
    <mapID target="org.openide.explorer.propertysheet.PropertySheet$BeanPasteType" url="pending.html" />
-   <mapID target="org.openide.text.DefaultPrintable.cancelDialog" url="pending.html" />
-<!--TODO-delete help button for this cancel print dialog?; pending IZ40111-->
 
    <mapID target="org.openide.actions.StartDebuggerAction" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.ExLocalFileSystemBeanInfo$RootEd" url="filesystems/filesystems_classpath.html" />
