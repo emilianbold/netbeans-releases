@@ -17,7 +17,8 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collections;
+import java.util.HashSet;
+
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -27,20 +28,20 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 
 import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+
 import org.openide.util.NbBundle;
 
 /**
  * Wizard to create a new Web project.
  * @author Jesse Glick
  */
-public class NewWebProjectWizardIterator implements TemplateWizard.Iterator {
+public class NewWebProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
     
@@ -59,26 +60,39 @@ public class NewWebProjectWizardIterator implements TemplateWizard.Iterator {
         };
     }
     
-    
-    public Set/*<DataObject>*/ instantiate(TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
+    public Set instantiate() throws IOException {
+        Set resultSet = new HashSet();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String codename = (String) wiz.getProperty(WizardProperties.CODE_NAME);
         String displayName = (String) wiz.getProperty(WizardProperties.DISPLAY_NAME);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
-        WebProjectGenerator.createProject(dirF, codename, displayName, j2eeLevel, contextPath);
-        FileObject dir = FileUtil.toFileObject (dirF);
+        
+        AntProjectHelper h = WebProjectGenerator.createProject(dirF, codename, displayName, j2eeLevel, contextPath);
+        try {
+            FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
+            FileObject indexJSPFo = getIndexJSPFO(webRoot, "index"); //NOI18N
+            assert indexJSPFo != null : "webRoot: " + webRoot + ", defaultJSP: index";//NOI18N
+            // Returning FileObject of main class, will be called its preferred action
+            resultSet.add (indexJSPFo);
+        } catch (Exception x) {
+            //PENDING
+        }
+        
+        FileObject dir = FileUtil.toFileObject(dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
-        // Returning set of DataObject of project diretory. 
+        resultSet.add(dir);
+        
+        // Returning set of FileObject of project diretory. 
         // Project will be open and set as main
-        return Collections.singleton(DataObject.find(dir));
+        return resultSet;
     }
     
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
-    private transient TemplateWizard wiz;
+    private transient WizardDescriptor wiz;
     
-    public void initialize(TemplateWizard wiz) {
+    public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
         panels = createPanels();
@@ -101,7 +115,7 @@ public class NewWebProjectWizardIterator implements TemplateWizard.Iterator {
             }
         }
     }
-    public void uninitialize(TemplateWizard wiz) {
+    public void uninitialize(WizardDescriptor wiz) {
         this.wiz = null;
         panels = null;
     }
@@ -131,36 +145,14 @@ public class NewWebProjectWizardIterator implements TemplateWizard.Iterator {
     // If nothing unusual changes in the middle of the wizard, simply:
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
-    // If something changes dynamically (besides moving between panels),
-    // e.g. the number of panels changes in response to user input, then
-    // uncomment the following and call when needed:
-    // fireChangeEvent();
-    /*
-    private transient Set listeners = new HashSet(1); // Set<ChangeListener>
-    public final void addChangeListener(ChangeListener l) {
-        synchronized(listeners) {
-            listeners.add(l);
-        }
-    }
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized(listeners) {
-            listeners.remove(l);
-        }
-    }
-    protected final void fireChangeEvent() {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
-        }
-    }
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        listeners = new HashSet(1);
-    }
-     */
     
+    // helper methods, finds indexJSP's FileObject
+    private FileObject getIndexJSPFO(FileObject webRoot, String indexJSP) {
+        // replace '.' with '/'
+        indexJSP = indexJSP.replace ('.', '/'); // NOI18N
+        
+        // ignore unvalid mainClass ???
+        
+        return webRoot.getFileObject (indexJSP, "jsp"); // NOI18N
+    }
 }
