@@ -467,7 +467,7 @@ Microsystems, Inc. All Rights Reserved.
               
      <folder name="Wizards">
         <folder name="Setup">
-            <file name="org-netbeans-core-ui-IDESettingsPanel.instance">
+            <file name="org-netbeans-core-ui-IDESettingsWizardPanel.instance">
                 <attr name="basic" boolvalue="true" />
             </file>
             <file name="org-netbeans-core-ui-ModuleSelectionPanel.instance" />
