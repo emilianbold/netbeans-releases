@@ -61,7 +61,7 @@ public class Repeat extends Task {
     public void setValues (String s) {
         log ("SET values = " + s, Project.MSG_DEBUG);
 
-        StringTokenizer tok = new StringTokenizer (s, ",");
+        StringTokenizer tok = new StringTokenizer (s, ", ");
         values = new Vector ();
         while ( tok.hasMoreTokens() ) {
             values.add (tok.nextToken().trim());
