@@ -29,6 +29,7 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.project.PackageDisplayUtils;
@@ -831,12 +832,17 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     }
     
     private static final class NoFoldersContainer 
-    implements DataObject.Container, java.beans.PropertyChangeListener {
+    implements DataObject.Container, java.beans.PropertyChangeListener,
+               NonRecursiveFolder {
         private DataFolder folder;
         private PropertyChangeSupport prop = new PropertyChangeSupport (this);
         
         public NoFoldersContainer (DataFolder folder) {
             this.folder = folder;
+        }
+        
+        public FileObject getFolder() {
+            return folder.getPrimaryFile();
         }
         
         public DataObject[] getChildren () {
