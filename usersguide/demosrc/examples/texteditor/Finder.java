@@ -13,6 +13,8 @@
 
 package examples.texteditor;
 
+/** Finder dialog is used to allow the user to search for given string.
+ */
 public class Finder extends javax.swing.JDialog {
 
     /** Finder constructor.

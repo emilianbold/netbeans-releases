@@ -13,6 +13,8 @@
 
 package examples.texteditor;
 
+/** About dialog is used to show information about this application.
+ */
 public class About extends javax.swing.JDialog {
 
     /** About constructor.

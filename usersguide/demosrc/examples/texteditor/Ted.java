@@ -16,7 +16,7 @@ package examples.texteditor;
 import java.awt.FileDialog;
 import java.io.*;
 
-/** This class is en entry point of the simple text editor.
+/** This class is an entry point of the simple text editor.
  * It creates and shows the main application frame.
  */
 public class Ted extends javax.swing.JFrame {
