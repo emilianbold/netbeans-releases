@@ -120,7 +120,10 @@ public class FormDesigner extends TopComponent
 
         setLayout(new BorderLayout());
         add(formToolBar, BorderLayout.NORTH);
-        add(new JScrollPane(layeredPane), BorderLayout.CENTER);
+        // disable border, winsys will handle borders itself
+        JScrollPane scrollPane = new JScrollPane(layeredPane);
+        scrollPane.setBorder(null);
+        add(scrollPane, BorderLayout.CENTER);
 
         setModel(formModel);
         
