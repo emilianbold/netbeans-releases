@@ -24,6 +24,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ButtonUI;
 import javax.swing.plaf.basic.BasicButtonListener;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 /** A finder-style aqua toolbar button UI
  *
@@ -46,7 +47,6 @@ class AquaToolBarButtonUI extends ButtonUI implements ChangeListener {
         b.setFocusable(false);
         b.setBorderPainted(false);
         b.setBorder (BorderFactory.createEmptyBorder());
-        b.putClientProperty("hideActionText", Boolean.TRUE); //NOI18N
    }
     
     public void uninstallUI(JComponent c) {
@@ -70,6 +70,8 @@ class AquaToolBarButtonUI extends ButtonUI implements ChangeListener {
         ((Graphics2D) g).setPaint(temp);
     }
     
+    
+    private FontMetrics fm = null; //We are not setting any custom fonts, can use one
     private void paintText (Graphics g, AbstractButton b, Rectangle r) {
         String s = b.getText();
         if (s == null || s.length() == 0) {
@@ -82,6 +84,9 @@ class AquaToolBarButtonUI extends ButtonUI implements ChangeListener {
         }
         g.setFont (f);
         FontMetrics fm = g.getFontMetrics();
+        if (this.fm == null) {
+            this.fm = fm;
+        }        
         int x = 0;
         Icon ic = b.getIcon();
         if (ic != null) {
@@ -133,13 +138,14 @@ class AquaToolBarButtonUI extends ButtonUI implements ChangeListener {
     
     private void paintIcon (Graphics g, AbstractButton b, Rectangle r) {
         Icon ic = getIconForState (b);
+        boolean noText = b.getText() == null || b.getText().length() == 0;
         if (ic != null) {
             int iconX = 0;
             int iconY = 0;
             int iconW = ic.getIconWidth();
             int iconH = ic.getIconHeight();
             
-            if (iconW <= r.width) {
+            if (iconW <= r.width && noText) {
                 iconX = (r.width / 2) - (iconW / 2);
             }
             if (iconH <= r.height) {
@@ -181,26 +187,31 @@ class AquaToolBarButtonUI extends ButtonUI implements ChangeListener {
     
     private static final int minButtonSize = 32;
     public Dimension getPreferredSize(JComponent c) {
-        boolean isButton = c instanceof AbstractButton;
-        boolean noText = !isButton ? true : 
-            ((AbstractButton) c).getText() == null || 
-            ((AbstractButton) c).getText().length() == 0;
-        if (isButton && noText) {
-            Icon ic = getIconForState((AbstractButton) c);
-            Dimension result;
-            int minSize = isFirst((AbstractButton)c) ? 0 : minButtonSize;
-            if (ic != null) {
-                result = new Dimension(Math.max(minSize, ic.getIconWidth()+1), 
-                    Math.max(minButtonSize,ic.getIconHeight() + 1));
-            } else {
-                result = new Dimension (minButtonSize, minButtonSize);
+        AbstractButton b = (AbstractButton) c;
+        
+        boolean noText = 
+            b.getText() == null || 
+            b.getText().length() == 0;
+            
+        Icon ic = getIconForState((AbstractButton) c);
+        int w = isFirst(b) ? 0 : minButtonSize;
+        Dimension result = ic == null ? new Dimension (noText ? 32 : 0, minButtonSize) :
+                new Dimension(Math.max(w, ic.getIconWidth()+1), 
+                Math.max(minButtonSize,ic.getIconHeight() + 1));
+        
+        if (!noText) {
+            FontMetrics fm = this.fm;
+            if (fm == null && c.getGraphicsConfiguration() != null) {
+                fm = c.getGraphicsConfiguration().createCompatibleImage(1,1)
+                     .getGraphics().getFontMetrics(c.getFont());
             }
-            return result;
-        } else {
-            if (c.getLayout() != null) {
-                return c.getLayout().preferredLayoutSize(c);
+            if (fm == null) {
+                //init
+                fm = new BufferedImage(1, 1, 
+                BufferedImage.TYPE_INT_RGB).getGraphics().getFontMetrics(c.getFont());
             }
+            result.width += fm.stringWidth(b.getText());
         }
-        return null;
+        return result;
     }    
 }
