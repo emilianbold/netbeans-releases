@@ -276,7 +276,7 @@ public class PropertiesStructure extends Element {
                            else
                                nextElem = null;
                        }
-                       while (nextElem == null && innerIt.hasNext()); // key can be an empty string
+                       while (nextElem != null && nextElem.key == null); // key can be an empty string
                    }
 
                    public boolean hasNext() {

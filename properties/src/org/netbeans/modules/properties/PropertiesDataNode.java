@@ -138,12 +138,16 @@ public class PropertiesDataNode extends DataNode {
                                                                 newFile.getOutputStream(lock), fe.getPropertiesEditor().newLineType), "8859_1"));
                                                             for (Iterator it = str.allItems(); it.hasNext(); ) {
                                                                 Element.ItemElem item1 = (Element.ItemElem)it.next();
-                                                                Element.ItemElem item2 = new Element.ItemElem(null,
-                                                                    new Element.KeyElem(null, item1.getKey()),
-                                                                    new Element.ValueElem(null, item1.getValue()),
-                                                                    new Element.CommentElem(null, item1.getComment()));
-                                                               String ps = item2.printString();
-                                                               bw.write(ps, 0, ps.length());
+//                                                                Element.ItemElem item2 = new Element.ItemElem(null,
+//                                                                    new Element.KeyElem(null, item1.getKey()),
+//                                                                    new Element.ValueElem(null, item1.getValue()),
+//                                                                    new Element.CommentElem(null, item1.getComment()));
+//                                                               String ps = item2.printString();
+//                                                               bw.write(ps, 0, ps.length());
+                                                                if(item1 != null) {
+                                                                    String ps = item1.printString();
+                                                                    bw.write(ps, 0, ps.length());
+                                                                }
                                                             }
                                                     } finally {
                                                         if (bw != null) {

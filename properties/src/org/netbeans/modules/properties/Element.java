@@ -340,7 +340,7 @@ public abstract class Element extends Object
 
         /** Get a key by which to identify this record */
         public String getKey() {
-            return (key == null) ? "" : key.getValue();
+            return (key == null) ? null : key.getValue();
         }
 
         /** Set the key for this item
@@ -357,7 +357,7 @@ public abstract class Element extends Object
 
         /** Get the value of this item */
         public String getValue() {
-            return (value == null) ? "" : value.getValue();
+            return (value == null) ? null : value.getValue();
         }
 
         /** Set the value of this item
@@ -374,7 +374,7 @@ public abstract class Element extends Object
 
         /** Get the comment for this item */
         public String getComment() {
-            return (comment == null) ? "" : comment.getValue();
+            return (comment == null) ? null : comment.getValue();
         }
 
         /** Set the comment for this item
@@ -394,9 +394,9 @@ public abstract class Element extends Object
             if (item == null)
                 return false;
             ItemElem ie = (ItemElem)item;
-            if (getKey()    .equals(ie.getKey()    ) &&
-                    getValue()  .equals(ie.getValue()  ) &&
-                    getComment().equals(ie.getComment()))
+            if ( ((key==null && ie.getKeyElem()==null) || (key!=null && ie.getKeyElem()!=null && getKey().equals(ie.getKey())) ) &&
+                 ((value==null && ie.getValueElem()==null) || (value!=null && ie.getValueElem()!=null && getValue().equals(ie.getValue())) ) &&
+                 ((comment==null && ie.getCommentElem()==null) || (comment!=null && ie.getCommentElem()!=null && getComment().equals(ie.getComment())) ) )
                 return true;
             return false;
         }
