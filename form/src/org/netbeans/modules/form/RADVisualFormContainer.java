@@ -158,7 +158,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     public void setFormSizePolicy(int value) {
         int old = formSizePolicy;
         formSizePolicy = value;
-        if (value == GEN_BOUNDS)
+        if (value == GEN_BOUNDS && formSize == null)
             setFormSize(getDesignerSize());
         getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE_POLICY,
                                         new Integer(old), new Integer(value));
