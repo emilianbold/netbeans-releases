@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : api-questions.xml
+    Created on : November 4, 2002, 10:28 AM
+    Author     : Jaroslav Tulach
+    Description: Questions that should be answered in order to make better API
+        
+-->
+
+
+<api-questions version="$Revision$" date="$date" >
+    <category id="dep" name="Project and platform dependencies">
+        <question id="dep-nb">
+            What other NetBeans projects this one depends on?
+        </question>
+        
+        <question id="dep-non-nb">
+            What other non-NetBeans projects this one depends on?
+            
+            <hint>
+            Some non-NetBeans projects are packaged as NetBeans modules
+            (see <a href="http://libs.netbeans.org">libraries</a>) and
+            it is prefered to use this approach when more modules may
+            depend on such third-party library.
+            </hint>
+        </question>
+        
+        <question id="dep-platform">
+            On which platforms your module run? Any? Does it run in the same
+            way?
+        </question>
+        
+        <question id="dep-jre">
+            Which version of JRE you need (1.2, 1.3, 1.4, etc.)?
+        </question>
+
+        <question id="dep-jrejdk">
+            Do you require JDK or is JRE enough?
+        </question>
+                
+    </category>
+
+    <category id="deploy" name="Deployment">
+        <question id="deploy-jar">
+            Do you deploy just module JAR file(s) or some other files?
+        </question>
+    
+        <question id="deploy-nbm">
+            Can you deploy NBM via AutoUpdate center?
+        </question>
+        
+        <question id="deploy-shared">
+            Do you need to be installed in shared location or only in user directory?
+        </question>
+        
+        
+        <question id="deploy-packages">
+            Are packages of your module made inaccessible by not declaring them
+            public?
+            
+            <hint>
+            NetBeans module system allows restriction of access rights to
+            public classes of your module from other modules. This prevents
+            unwanted dependencies of others on your code and should be used
+            whenever possible (<a href="http://www.netbeans.org/download/apis/org/openide/doc-files/upgrade.html#3.4-public-packages">
+            public packages
+            </a>). 
+            </hint>
+        </question>
+        
+        
+    </category>
+    
+    <category id="compat" name="Compatiblity with environment">
+        <question id="compat-i18n">
+            Is your module correctly internationalized?
+        </question>
+        <question id="compat-standards">
+            Does the module implements or defines any standards? Is the 
+            implementation exact or it deviates somehow?
+        </question>
+        <question id="compat-version">
+            Does your module properly coexists with earlier and future
+            versions? Can you correctly read settings? Will future
+            versions be able to read settings?
+            
+            <hint>
+            Very helpful for reading settings is to store version number
+            there, so future versions can decide whether how to read/convert
+            the settings and older versions can ignore the new ones.
+            </hint>
+        </question>
+    </category>
+    
+    <category id="resources" name="Access to resources">
+        <question id="resources-file">
+            Does your module use <code>java.io.File</code> directly?
+            
+            <hint>
+            NetBeans provide a logical wrapper over plain files called 
+            <code>org.openide.filesystems.FileObject</code> that
+            provides uniform access to such resources and is the prefered
+            way that should be used. But of course there can be situations when
+            this is not suitable.
+            </hint>
+        </question>
+        <question id="resources-layer">
+            Does your module provide own layer? Does it create some files or
+            folders on it? What it is trying to communicate by that and with which 
+            component?
+            
+            <hint>
+            NetBeans allows automatic and declarative installation of resources 
+            by module layers. Module register files into appropriate places
+            and other components use that information to perform their task
+            (build menu, toolbar, window layout, list of templates, set of
+            options, etc.). 
+            </hint>
+        </question>
+        
+        <question id="resources-mask">
+            Does your module read any resource provided by another one in
+            module layer? Why?
+        </question>
+        
+        <question id="resources-read">
+            Does your module read any resources from layers? For what purpose?
+        </question>
+    </category>
+
+    
+    <category id="lookup" name="Lookup of components">
+        <question id="lookup-lookup">
+            Does your module used <code>org.openide.util.Lookup</code>
+            to find any components to communicate to? Which ones?
+        </question>
+        <question id="lookup-register">
+            Do you register anything into the lookup for other to find? Who are 
+            the others?
+        </question>
+        <question id="lookup-remove">
+            Are removing entries of other modules from the lookup? Why?
+        </question>
+    </category>
+
+    
+    <!-- clasification of interfaces -->
+    
+    <!-- package names -->
+    
+    
+    <category id="exec" name="Execution Environment">
+        <question id="exec-property">
+            Is execution of your code influenced by any environment of
+            system (<code>System.getProperty</code>) property?
+        </question>
+        
+        <question id="exec-component">
+            Is execution of your code influenced by (string) property
+            of any of your components?
+        </question>
+
+        <question id="exec-classloader">
+            Does your code uses own classloader?
+        </question>
+                
+    </category>
+    
+    <category id="format" name="Format of files and protocols">
+        <question id="format-types">
+            Which file formats your code reads or writes on disk?
+        </question>
+        
+        <question id="format-dnd">
+            Which protocols your code understands during drag-n-drop?
+        </question>
+        
+        <question id="format-clipboard">
+            Which protocols your code reads/inserts when communicating with
+            clipboard?
+        </question>
+        
+    </category>
+
+    
+    <category id="performance" name="Performance and Scalability">
+        <question id="perf-startup">
+            Does your module executes anything on startup?
+        </question>
+        <question id="perf-exit">
+            Does your module executes anything on exit?
+        </question>
+        <question id="perf-scale">
+            Which external criteria influence the performance of your
+            program (size of file in editor, number of files in menu, 
+            in source directory, etc.) and how well your code scales?
+            Please include some estimates.
+        </question>
+        <question id="perf-limit">
+            Are there any limits in number/size of elements your code
+            can handle?
+        </question>
+        <!-- multithreading -->
+    
+        <question id="perf-mem">
+            What is the amount of memory your component occupies? Estimate
+            with a relaction to the number of windows, etc.
+        </question>
+        
+        <question id="perf-wakeup">
+            Is any piece of your code waking up periodically?
+        </question>
+
+        <question id="perf-progress">
+            Does your module executes some long running task?
+            <hint>Typically they are tasks like connecting over
+            network, computing huge amount of data, compilation.
+            Such communication should be done asynchronously (for example
+            using <code>RequestProcessor</code>), definitively it should 
+            not block AWT thread.
+            </hint>
+        </question>
+
+        <question id="perf-huge_dialogs">
+            Does your module contain any dialogs or wizards with huge
+            amount of GUI controls like combo boxes, lists, trees, text
+            areas?
+        </question>
+
+        <question id="perf-menus">
+            Does your module use dynamically changing context menus or
+            context sensitive actions with complicated logic for enable/disable?
+        </question>
+        
+    </category>
+    
+    
+    <!-- security -->
+    <!-- recovery -->
+    
+</api-questions>
