@@ -134,7 +134,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     }
     
     private URL fileToUrl(File file) throws MalformedURLException {
-        URL url = file.toURL();
+        URL url = file.toURI().toURL();
         if (FileUtil.isArchiveFile(url)) {
             url = FileUtil.getArchiveRoot(url);
         }
