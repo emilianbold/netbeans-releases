@@ -65,7 +65,7 @@ public class TestEditorFrame extends javax.swing.JFrame {
         oldpath="";
         oldpackage="";
         //        currentDirectory=new File(System.getProperty("user.dir"));
-        currentDirectory=new File("/mnt/data/Sources/repository/editortest2/org/netbeans/test/editor/app");
+        currentDirectory=new File("/nbcvs/nball/editor/test/qa-functional/src/org/netbeans/test/editor/app");
     }
     
     public EventLoggingEditorPane getEditor() {
@@ -94,6 +94,7 @@ public class TestEditorFrame extends javax.swing.JFrame {
                 public void componentResized(ComponentEvent e) {
                     if (tree != null) {
                         tree.setSize(tree.getWidth(),getHeight());
+                        tree.setLocation(getX()-tree.getWidth(), getY());
                     }
                 }
             });
@@ -155,7 +156,7 @@ public class TestEditorFrame extends javax.swing.JFrame {
         setTitle("Editor Test Application");
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
-                exitForm(evt);
+                TestEditorFrame.this.exitForm(evt);
             }
         });
 
@@ -203,7 +204,7 @@ public class TestEditorFrame extends javax.swing.JFrame {
         jMenuItem1.setText("New");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newTest(evt);
+                TestEditorFrame.this.newTest(evt);
             }
         });
 
@@ -212,7 +213,7 @@ public class TestEditorFrame extends javax.swing.JFrame {
         jMenuItem2.setText("Open");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openTest(evt);
+                TestEditorFrame.this.openTest(evt);
             }
         });
 
@@ -221,7 +222,7 @@ public class TestEditorFrame extends javax.swing.JFrame {
         jMenuItem3.setText("Save");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveTest(evt);
+                TestEditorFrame.this.saveTest(evt);
             }
         });
 
@@ -230,7 +231,7 @@ public class TestEditorFrame extends javax.swing.JFrame {
         jMenuItem4.setText("Save as ...");
         jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveAsTest(evt);
+                TestEditorFrame.this.saveAsTest(evt);
             }
         });
 
@@ -241,7 +242,7 @@ public class TestEditorFrame extends javax.swing.JFrame {
         jMenuItem5.setText("Exit");
         jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exitTest(evt);
+                TestEditorFrame.this.exitTest(evt);
             }
         });
 
@@ -253,7 +254,7 @@ public class TestEditorFrame extends javax.swing.JFrame {
         jMenuItem6.setText("Generate Test");
         jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                generateTest(evt);
+                TestEditorFrame.this.generateTest(evt);
             }
         });
 
@@ -261,10 +262,10 @@ public class TestEditorFrame extends javax.swing.JFrame {
 
         jMenu3.add(jSeparator2);
 
-        jMenuItem7.setText("Test Threads");
+        jMenuItem7.setText("Actions");
         jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                testThreads(evt);
+                TestEditorFrame.this.testThreads(evt);
             }
         });
 
@@ -276,7 +277,7 @@ public class TestEditorFrame extends javax.swing.JFrame {
         viewExplorerM.setText("Explorer");
         viewExplorerM.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                viewExplorer(evt);
+                TestEditorFrame.this.viewExplorer(evt);
             }
         });
 
@@ -290,6 +291,18 @@ public class TestEditorFrame extends javax.swing.JFrame {
     
     private void testThreads(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testThreads
         // Add your handling code here:
+        try {
+            java.io.PrintWriter pw=new java.io.PrintWriter(new java.io.FileWriter("/tmp/actions.lst"));
+            TestLogAction tl=new TestLogAction(1);
+            String[] keymap=tl.getKeyMaps();
+            for (int i=0;i < keymap.length;i++) {
+                pw.println("        <TestLogAction Name=\""+keymap[i]+"\" Command=\"\" />");
+            }
+            pw.close();
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }//GEN-LAST:event_testThreads
     
     private void generateTest(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateTest
@@ -465,20 +478,21 @@ public class TestEditorFrame extends javax.swing.JFrame {
     
     public void appendHistory(String text) {
         history.append(text);
+        history.repaint();
         JScrollBar bar=historyScrollPane.getVerticalScrollBar();
         if (bar != null) {
             bar.setValue(bar.getMaximum());
         }
     }
-    
+/*
     private int horizontalScrollBarPolicy() {
-        return ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS/*AS_NEEDED;*/;
+        return ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS/;
     }
-    
+ 
     private int verticalScrollBarPolicy() {
-        return ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS/*AS_NEEDED;*/;
+        return ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
     }
-    
+ */
     /** Getter for property tree.
      * @return Value of property tree.
      *

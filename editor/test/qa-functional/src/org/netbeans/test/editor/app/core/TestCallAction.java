@@ -245,17 +245,21 @@ public class TestCallAction extends TestAction {
         });
     }
     
+    long time=0;
+    long memory=0;
+    
     public void perform() {
         if (!enable) return;
         System.err.println("Call action: "+name+" starts performing.");
         System.err.println(">>>>>Comment: "+comment);
         isPerforming=true;
-        Scheduler.getDefault().addTask(new Thread() {
+        
+        //Scheduler.getDefault().addTask(new Thread() {
+        new Thread() {
             public void run() {
                 if (!enable) return;
                 TestStep call;
                 TestStep set;
-                
                 Main.frame.getEditor().grabFocus();
                 Main.frame.getEditor().requestFocus();
                 call=readStepToCall(toCall);
@@ -265,17 +269,19 @@ public class TestCallAction extends TestAction {
                 }
                 if (call != null) {
                     getLogger().setDelay(getLoggerDelay());
-                    
+                    time=System.currentTimeMillis();
+                    memory=Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
                     for(int i=0;i < repeat;i++) {
                         getLogger().clear();
                         getLogger().loadActions(call);
                         Main.frame.getEditor().setText(input);
-                        
                         if (i == repeat-1) {
                             getLogger().addPropertyChangeListener(new PropertyChangeListener() {
                                 public void propertyChange(final java.beans.PropertyChangeEvent p1) {
                                     if (p1.getPropertyName().compareTo(Logger.PERFORMING) == 0) {
                                         if (!((Boolean)(p1.getNewValue())).booleanValue()) {
+                                            time=System.currentTimeMillis()-time;
+                                            memory=Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory()-memory;
                                             String content=Main.frame.getEditor().getText();
                                             System.err.println("Call action: "+name+" finished performing");
                                             if (!Test.isTesting()) {
@@ -284,6 +290,19 @@ public class TestCallAction extends TestAction {
                                             } else {
                                                 System.out.print(content);
                                             }
+                                            System.err.println("Test time="+(time/1000.0)+" (s).");
+                                            System.err.println("Test memory="+(memory/1024.0)+" (KB).");
+                                            getLogger().removePropertyChangeListener(this);
+                                            isPerforming=false;
+                                        }
+                                    }
+                                }
+                            });
+                        } else {
+                            getLogger().addPropertyChangeListener(new PropertyChangeListener() {
+                                public void propertyChange(final java.beans.PropertyChangeEvent p1) {
+                                    if (p1.getPropertyName().compareTo(Logger.PERFORMING) == 0) {
+                                        if (!((Boolean)(p1.getNewValue())).booleanValue()) {
                                             getLogger().removePropertyChangeListener(this);
                                             isPerforming=false;
                                         }
@@ -291,13 +310,25 @@ public class TestCallAction extends TestAction {
                                 }
                             });
                         }
+                        isPerforming=true;
+                        
                         getLogger().startPerforming();
+                        long sleeps=0;
+                        while (isPerforming && sleeps < 600000) {  //max 10 minutes waits
+                            try {
+                                Thread.currentThread().sleep(250);
+                                sleeps+=250;
+                            } catch (Exception ex) {
+                            }
+                        }
+                        System.err.println("Sleeps="+sleeps);
                     }
                 } else {
                     isPerforming = false;
                 }
             }
-        });
+            //});
+        }.start();
     }
     
     private static final long TIMEOUT = 60 * 1000;
