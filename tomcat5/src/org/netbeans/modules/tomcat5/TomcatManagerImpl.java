@@ -204,7 +204,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 }
             }
         }
-        return (TargetModuleID [])modules.toArray ();
+        return (TargetModuleID []) modules.toArray (new TargetModuleID[modules.size ()]);
     }
     
     /** Queries Tomcat server to get JMX beans containing management information

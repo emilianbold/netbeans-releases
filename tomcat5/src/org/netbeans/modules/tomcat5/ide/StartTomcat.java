@@ -129,7 +129,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
          * Currently it  checks the status every time, but a check
          * at first time may be enough (?)
          */
-        return  URLWait.waitForStartup (tm, 600);
+        return  URLWait.waitForStartup (tm, 80);
 //        return running;
     }
 
