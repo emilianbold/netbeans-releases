@@ -30,6 +30,9 @@ import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.*;
 import org.openide.util.WeakListener;
+import org.openide.ErrorManager;
+
+import org.netbeans.core.modules.ManifestSection;
 
 
 /** Holds list of all actions added by modules.
@@ -44,7 +47,7 @@ public class ModuleActions extends ActionManager
     
     /** array of all actions added by modules */
     private static SystemAction[] array;
-    /** of (ModuleItem, List (SystemAction)) */
+    /** of (ModuleItem, List (ManifestSection.ActionSection)) */
     private static HashMap map = new HashMap (7);
     /** current module */
     private static Object module;
@@ -233,10 +236,10 @@ public class ModuleActions extends ActionManager
 
     /** Adds new action to the list.
     */
-    public synchronized static void add (SystemAction a) {
+    public synchronized static void add (ManifestSection.ActionSection a) {
         List list = (List)map.get (module);
         if (list == null) {
-            list = new LinkedList ();
+            list = new ArrayList ();
             map.put (module, list);
         }
         list.add (a);
@@ -248,7 +251,7 @@ public class ModuleActions extends ActionManager
 
     /** Removes new action from the list.
     */
-    public synchronized static void remove (SystemAction a) {
+    public synchronized static void remove (ManifestSection.ActionSection a) {
         List list = (List)map.get (module);
         if (list == null) {
             return;
@@ -269,13 +272,23 @@ public class ModuleActions extends ActionManager
     private synchronized static SystemAction[] createActions () {
         Iterator it = map.values ().iterator ();
 
-        LinkedList arr = new LinkedList ();
+        ArrayList arr = new ArrayList (map.size () * 5);
 
         while (it.hasNext ()) {
             List l = (List)it.next ();
 
-            arr.addAll (l);
-
+            Iterator actions = l.iterator ();
+            while (actions.hasNext()) {
+                ManifestSection.ActionSection s = (ManifestSection.ActionSection)actions.next();
+                
+                try {
+                    arr.add (s.getInstance ());
+                } catch (Exception ex) {
+                    ErrorManager.getDefault().notify (ErrorManager.INFORMATIONAL, ex);
+                }
+            }
+            
+            
             if (it.hasNext ()) {
                 // add separator between modules
                 arr.add (null);
