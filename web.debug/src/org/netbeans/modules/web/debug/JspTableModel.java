@@ -29,7 +29,7 @@ public class JspTableModel implements TableModel, Constants {
     public Object getValueAt (Object row, String columnID) throws UnknownTypeException {
         if (row instanceof JspLineBreakpoint) {
             if (columnID.equals (BREAKPOINT_ENABLED_COLUMN_ID))
-                return new Boolean (((JspLineBreakpoint) row).isEnabled ());
+                return Boolean.valueOf (((JspLineBreakpoint) row).isEnabled ());
         }
         throw new UnknownTypeException (row);
     }

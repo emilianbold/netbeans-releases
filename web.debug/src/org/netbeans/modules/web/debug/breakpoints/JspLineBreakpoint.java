@@ -18,7 +18,6 @@ import org.netbeans.api.debugger.jpda.*;
 
 import org.netbeans.modules.web.debug.util.Utils;
 import java.util.*;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 
@@ -143,7 +142,7 @@ public class JspLineBreakpoint extends Breakpoint {
         if (h == hidden) return;
         boolean old = hidden;
         hidden = h;
-        firePropertyChange(PROP_HIDDEN, new Boolean(old), new Boolean(h));
+        firePropertyChange(PROP_HIDDEN, Boolean.valueOf(old), Boolean.valueOf(h));
     }
     
     /**
