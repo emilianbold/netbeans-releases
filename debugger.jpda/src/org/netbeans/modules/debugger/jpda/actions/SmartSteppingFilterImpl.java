@@ -25,7 +25,7 @@ import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
  *
  * @author  Jan Jancura
  */
-class SmartSteppingFilterImpl implements SmartSteppingFilter {
+public class SmartSteppingFilterImpl implements SmartSteppingFilter {
 
     private HashSet filter = new HashSet ();
     private ArrayList exact = new ArrayList ();
@@ -51,9 +51,7 @@ class SmartSteppingFilterImpl implements SmartSteppingFilter {
         filter.addAll (reallyNew);
         refreshFilters (reallyNew);
 
-        pcs.firePropertyChange (PROP_EXCLUSION_PATTERNS, null, null);
-//        if (ssManager != null)
-//            ssManager.addPatterns (reallyNew);
+        pcs.firePropertyChange (PROP_EXCLUSION_PATTERNS, reallyNew, null);
     }
 
     /**
@@ -68,9 +66,7 @@ class SmartSteppingFilterImpl implements SmartSteppingFilter {
         end = new ArrayList ();
         refreshFilters (filter);
 
-        pcs.firePropertyChange (PROP_EXCLUSION_PATTERNS, null, null);
-//        if (ssManager != null)
-//            ssManager.initPatterns ();
+        pcs.firePropertyChange (PROP_EXCLUSION_PATTERNS, null, patterns);
     }
     
     /**
@@ -79,27 +75,6 @@ class SmartSteppingFilterImpl implements SmartSteppingFilter {
     public String[] getExclusionPatterns () {
         String[] ef = new String [filter.size ()];
         return (String[]) filter.toArray (ef);
-    }
-
-    Set getPatterns () {
-        return filter;
-    }
-
-    /**
-     * Updates exact, start and end filter lists.
-     */
-    private void refreshFilters (Set newFilters) {
-        Iterator i = filter.iterator ();
-        while (i.hasNext ()) {
-            String p = (String) i.next ();
-            if (p.startsWith ("*"))
-                end.add (p.substring (1));
-            else
-            if (p.endsWith ("*"))
-                start.add (p.substring (0, p.length () - 1));
-            else
-                exact.add (p);
-        }
     }
 
     public boolean stopHere (String className) {
@@ -136,5 +111,22 @@ class SmartSteppingFilterImpl implements SmartSteppingFilter {
         PropertyChangeListener l
     ) {
         pcs.removePropertyChangeListener (l);
+    }
+
+    /**
+     * Updates exact, start and end filter lists.
+     */
+    private void refreshFilters (Set newFilters) {
+        Iterator i = filter.iterator ();
+        while (i.hasNext ()) {
+            String p = (String) i.next ();
+            if (p.startsWith ("*"))
+                end.add (p.substring (1));
+            else
+            if (p.endsWith ("*"))
+                start.add (p.substring (0, p.length () - 1));
+            else
+                exact.add (p);
+        }
     }
 }

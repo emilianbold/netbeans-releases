@@ -13,17 +13,26 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
+import org.netbeans.spi.debugger.jpda.EngineContextProvider;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.jpda.SmartSteppingListener;
 
 
-public class SmartSteppingImpl extends SmartSteppingListener {
+public class SmartSteppingImpl extends SmartSteppingListener implements 
+PropertyChangeListener {
+    
+    
+    private Set exclusionPatterns = new HashSet (); 
+    private SmartSteppingFilter smartSteppingFilter;
     
     
     /**
@@ -33,6 +42,7 @@ public class SmartSteppingImpl extends SmartSteppingListener {
      * @param f a filter to be initialized
      */
     public void initFilter (SmartSteppingFilter f) {
+        smartSteppingFilter = f;
     }
     
     /**
@@ -53,8 +63,7 @@ public class SmartSteppingImpl extends SmartSteppingListener {
         String className = thread.getClassName ();
         if (className == null) return false;
 
-        EngineContext ectx = (EngineContext) lookupProvider.lookupFirst 
-            (EngineContext.class);
+        EngineContext ectx = getEngineContext (lookupProvider);
         boolean b = ectx.sourceAvailable (thread, null);
         if (b) return true;
         
@@ -68,7 +77,36 @@ public class SmartSteppingImpl extends SmartSteppingListener {
         } while (!ectx.sourceAvailable (n1));
         HashSet s = new HashSet ();
         s.add (name.replace ('/', '.') + ".*");
-        f.addExclusionPatterns (s);
+        addExclusionPatterns (s);
         return false;
+    }
+    
+    private void addExclusionPatterns (
+        Set ep
+    ) {
+        smartSteppingFilter.addExclusionPatterns (ep);
+        exclusionPatterns.addAll (ep);
+    }
+    
+    private void removeExclusionPatterns () {
+        smartSteppingFilter.removeExclusionPatterns (exclusionPatterns);
+        exclusionPatterns = new HashSet ();
+    }
+    
+    private EngineContext engineContext;
+    
+    private EngineContext getEngineContext (LookupProvider lookupProvider) {
+        if (engineContext == null) {
+            engineContext = (EngineContext) lookupProvider.lookupFirst 
+                (EngineContext.class);
+            engineContext.addPropertyChangeListener (this);
+        }
+        return engineContext;
+    }
+    
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (evt.getPropertyName () == EngineContextProvider.PROP_SOURCE_ROOTS) {
+            removeExclusionPatterns ();
+        }
     }
 }

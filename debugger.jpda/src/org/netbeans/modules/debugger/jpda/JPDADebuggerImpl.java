@@ -270,20 +270,19 @@ public class JPDADebuggerImpl extends JPDADebugger {
             setState (STATE_STOPPED);
         }
     }
-    
+
+    private SmartSteppingFilter smartSteppingFilter;
+
     /** 
      * Returns instance of SmartSteppingFilter.
      *
      * @return instance of SmartSteppingFilter
      */
     public SmartSteppingFilter getSmartSteppingFilter () {
-        Iterator i = lookupProvider.lookup (ActionsProvider.class).iterator ();
-        while (i.hasNext ()) {
-            ActionsProvider sap = (ActionsProvider) i.next ();
-            if (sap instanceof StepActionProvider)
-                return ((StepActionProvider) sap).getSmartSteppingFilter ();
-        }
-        return null;
+        if (smartSteppingFilter == null)
+            smartSteppingFilter = (SmartSteppingFilter) lookupProvider.
+                lookupFirst (SmartSteppingFilter.class);
+        return smartSteppingFilter;
     }
 
     /**

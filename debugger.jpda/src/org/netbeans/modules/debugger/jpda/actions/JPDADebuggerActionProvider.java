@@ -13,8 +13,16 @@
 
 package org.netbeans.modules.debugger.jpda.actions;
 
+import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.request.EventRequest;
+import com.sun.jdi.request.EventRequestManager;
+import com.sun.jdi.request.InvalidRequestStateException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 
@@ -43,5 +51,28 @@ implements PropertyChangeListener {
     
     JPDADebuggerImpl getDebuggerImpl () {
         return debugger;
+    }
+
+    /**
+    * Removes last step request.
+    */
+    void removeStepRequests () {
+        try {
+            VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
+            if (vm == null) return;
+            EventRequestManager erm = vm.eventRequestManager ();
+            Iterator i = new ArrayList (erm.stepRequests ()).
+                iterator ();
+            while (i.hasNext ()) {
+                EventRequest er = (EventRequest) i.next ();
+                erm.deleteEventRequest (er);
+                getDebuggerImpl ().getOperator ().unregister (er);
+            }
+        } catch (VMDisconnectedException e) {
+        } catch (IllegalThreadStateException e) {
+            e.printStackTrace();
+        } catch (InvalidRequestStateException e) {
+            e.printStackTrace();
+        }
     }
 }

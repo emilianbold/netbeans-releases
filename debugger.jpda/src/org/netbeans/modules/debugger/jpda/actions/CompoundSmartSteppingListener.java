@@ -38,8 +38,11 @@ public class CompoundSmartSteppingListener extends SmartSteppingListener {
         System.getProperty ("netbeans.debugger.smartstepping") != null;
 
     
-    CompoundSmartSteppingListener (LookupProvider lookupProvider) {
+    public CompoundSmartSteppingListener (LookupProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
+        SmartSteppingFilter smartSteppingFilter = (SmartSteppingFilter) lookupProvider.
+            lookupFirst (SmartSteppingFilter.class);
+        initFilter (smartSteppingFilter);
     }
     
     public void initFilter (SmartSteppingFilter filter) {
@@ -56,7 +59,11 @@ public class CompoundSmartSteppingListener extends SmartSteppingListener {
      * Asks all SmartSteppingListener listeners if executiong should stop on the 
      * current place represented by JPDAThread.
      */
-    public boolean stopHere (LookupProvider lookupProvider, JPDAThread t, SmartSteppingFilter filter) {
+    public boolean stopHere (
+        LookupProvider lookupProvider, 
+        JPDAThread t, 
+        SmartSteppingFilter smartSteppingFilter
+    ) {
         if (ssverbose)
             System.out.println("\nSS  CompoundSmartSteppingListener.stopHere? : " + 
                 t.getClassName () + '.' +
@@ -68,7 +75,7 @@ public class CompoundSmartSteppingListener extends SmartSteppingListener {
         boolean stop = true;
         while (i.hasNext ()) {
             SmartSteppingListener ss = (SmartSteppingListener) i.next ();
-            boolean sh = ss.stopHere (lookupProvider, t, filter);
+            boolean sh = ss.stopHere (lookupProvider, t, smartSteppingFilter);
             stop = stop && sh;
             if (ssverbose)
                 System.out.println("SS    " + ss.getClass () + 

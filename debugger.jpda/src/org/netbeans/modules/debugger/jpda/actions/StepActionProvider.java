@@ -64,11 +64,7 @@ import org.netbeans.modules.debugger.jpda.util.Executor;
 public class StepActionProvider extends JPDADebuggerActionProvider 
 implements Executor {
     
-    
-    private SmartSteppingListener   ssListener;
-    private SSManager               ssManager;
     private StepRequest             stepRequest;
-    private String                  position;
     private LookupProvider          lookupProvider;
 
     
@@ -77,8 +73,6 @@ implements Executor {
 
 
     private static int getJDIAction (Object action) {
-        if (action == DebuggerManager.ACTION_STEP_INTO) 
-            return StepRequest.STEP_INTO;
         if (action == DebuggerManager.ACTION_STEP_OUT) 
             return StepRequest.STEP_OUT;
         if (action == DebuggerManager.ACTION_STEP_OVER) 
@@ -93,11 +87,6 @@ implements Executor {
                 (JPDADebugger.class)
         );
         this.lookupProvider = lookupProvider;
-        
-        // init smart stepping filter
-        ssManager = new SSManager ();
-        ssListener = new CompoundSmartSteppingListener (lookupProvider);
-        ssListener.initFilter (ssManager);
     }
 
 
@@ -105,7 +94,6 @@ implements Executor {
     
     public Set getActions () {
         return new HashSet (Arrays.asList (new Object[] {
-            DebuggerManager.ACTION_STEP_INTO,
             DebuggerManager.ACTION_STEP_OUT,
             DebuggerManager.ACTION_STEP_OVER
         }));
@@ -113,20 +101,18 @@ implements Executor {
     
     public void doAction (Object action) {
         synchronized (getDebuggerImpl ().LOCK) {
-            //S ystem.err.println("StepAction.doAction");
-            if (stepRequest != null) {
-                removeRequest (stepRequest);
-                stepRequest = null;
-            }
+            
+            // 1) remove old request
+            removeStepRequests ();
+            
             try {
+                // 2) init info about current state
                 ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
                     getCurrentThread ()).getThreadReference ();
                 StackFrame sf = tr.frame (0);
                 Location l = sf.location ();
-                position = l.declaringType ().name () + ":" + 
-                           l.lineNumber (null);
                 
-                // 1) create step request
+                // 3) create new step request
                 stepRequest = getDebuggerImpl ().getVirtualMachine ().
                     eventRequestManager ().createStepRequest (
                         tr,
@@ -138,13 +124,12 @@ implements Executor {
                 stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
                 stepRequest.enable ();
                 
-                // 2) resume JVM
+                // 4) resume JVM
                 getDebuggerImpl ().resume ();
             } catch (IncompatibleThreadStateException e) {
                 e.printStackTrace ();
             } catch (VMDisconnectedException e) {
             }
-            //S ystem.err.println("StepAction.doAction end");
         }
     }
     
@@ -156,11 +141,6 @@ implements Executor {
                 debuggerState == getDebuggerImpl ().STATE_STOPPED
             );
     }
-
-    public SmartSteppingFilter getSmartSteppingFilter () {
-        return ssManager;
-    }
-    
     
     // Executor ................................................................
     
@@ -172,26 +152,25 @@ implements Executor {
     public boolean exec (Event ev) {
         // TODO: fetch current engine from the Event
         synchronized (getDebuggerImpl ().LOCK) {
-            // 1) remove old request
-            if (stepRequest != null) {
-                removeRequest (stepRequest);
-                stepRequest = null;
-            }
+
+            // 1) remove step request
+            removeStepRequests ();
             
             // 2) init info about current state
             LocatableEvent event = (LocatableEvent) ev;
             String className = event.location ().declaringType ().name ();
             ThreadReference tr = event.thread ();
-            JPDAThread t = getThread (tr);
+            JPDAThread t = getDebuggerImpl ().getThread (tr);
             
             // 3) stop execution here?
-            boolean fsh = ssManager.stopHere (className);
+            boolean fsh = getSmartSteppingFilterImpl ().stopHere (className);
             if (ssverbose)
                 System.out.println("SS  SmartSteppingFilter.stopHere (" + 
                     className + ") ? " + fsh
                 );
             if ( fsh &&
-                 ssListener.stopHere (lookupProvider, t, ssManager)
+                 getCompoundSmartSteppingListener ().stopHere 
+                     (lookupProvider, t, getSmartSteppingFilterImpl ())
             ) {
                 // YES!
                 getDebuggerImpl ().setStoppedState (tr);
@@ -203,138 +182,37 @@ implements Executor {
                 System.out.println("\nSS:  SMART STEPPING START! ********** ");
             boolean stepInto = ((StepRequest) ev.request ()).depth () == 
                             StepRequest.STEP_INTO;
-            ssManager.start (tr, stepInto, position);
+            getStepIntoActionProvider ().doAction 
+                (DebuggerManager.ACTION_STEP_INTO);
             return true; // resume
 
         }
     }
+
+    private StepIntoActionProvider stepIntoActionProvider;
     
-    
-    // helper private methods ..................................................
-   
-    /**
-    * Removes last step request.
-    */
-    private void removeRequest (EventRequest request) {
-        try {
-            getDebuggerImpl ().getVirtualMachine ().
-                eventRequestManager ().deleteEventRequest (request);
-            getDebuggerImpl ().getOperator ().unregister (request);
-        } catch (VMDisconnectedException e) {
-        } catch (IllegalThreadStateException e) {
-            e.printStackTrace();
-        } catch (InvalidRequestStateException e) {
-            e.printStackTrace();
-        }
+    private StepIntoActionProvider getStepIntoActionProvider () {
+        if (stepIntoActionProvider == null)
+            stepIntoActionProvider = (StepIntoActionProvider) lookupProvider.
+                lookupFirst (StepIntoActionProvider.class);
+        return stepIntoActionProvider;
     }
 
-    private ThreadsTreeModel threadsTreeModel;
-
-    ThreadsTreeModel getThreadsTreeModel () {
-        if (threadsTreeModel == null)
-            threadsTreeModel = (ThreadsTreeModel) lookupProvider.lookupFirst 
-                ("ThreadsView", TreeModel.class);
-        return threadsTreeModel;
+    private SmartSteppingFilterImpl smartSteppingFilterImpl;
+    
+    private SmartSteppingFilterImpl getSmartSteppingFilterImpl () {
+        if (smartSteppingFilterImpl == null)
+            smartSteppingFilterImpl = (SmartSteppingFilterImpl) lookupProvider.
+                lookupFirst (SmartSteppingFilter.class);
+        return smartSteppingFilterImpl;
     }
-    
-    private JPDAThread getThread (ThreadReference tr) {
-        try {
-            return (JPDAThread) getThreadsTreeModel ().translate (tr);
-        } catch (UnknownTypeException e) {
-            e.printStackTrace ();
-            return null;
-        }
-    }
-    
-    
-    // innerclasses ............................................................
-    
-    private class SSManager extends SmartSteppingFilterImpl implements Executor {
-        
-        private StepRequest stepRequest;
-        private ThreadReference tr;
-        private String position;
-        
-        void start (ThreadReference tr, boolean stepInto, String position) {
-            this.tr = tr;
-            this.position = position;
-            refreshRequest ();
-        }
-        
-        private void stop () {
-            if (stepRequest != null)
-                removeRequest (stepRequest);
-            stepRequest = null;
-        }
-        
-        public boolean exec (Event event) {
-            stepRequest.disable ();
-            LocatableEvent le = (LocatableEvent) event;
-            String np = le.location ().declaringType ().name () + ":" + 
-                        le.location ().lineNumber (null);
-            
-            ThreadReference tr = le.thread ();
-            JPDAThread t = getThread (tr);
-            boolean stop = (!np.equals (position)) && 
-                           ssListener.stopHere (lookupProvider, t, this);
-            if (stop) {
-                stop ();
-                getDebuggerImpl ().setStoppedState (tr);
-            } else {
-                stepRequest.enable ();
-            }
-            
-            if (ssverbose)
-                if (stop) {
-                    System.out.println("SS  FINISH IN CLASS " +  
-                        t.getClassName () + " ********\n"
-                    );
-                }
-            return !stop;
-        }
-        
-        public void addExclusionPatterns (Set patterns) {
-            if (ssverbose)
-                System.out.println("SS      add exclusion patterns: " + patterns);
-            Set reallyNew = new HashSet (patterns);
-            reallyNew.removeAll (getPatterns ());
-            
-            super.addExclusionPatterns (patterns);
-            if (stepRequest != null)
-                addPatternsToRequest (reallyNew);
-        }
 
-        public void removeExclusionPatterns (Set patterns) {
-            if (ssverbose)
-                System.out.println("SS      remove exclusion patterns: " + patterns);
-            super.removeExclusionPatterns (patterns);
-            if (stepRequest != null) {
-                removeRequest (stepRequest);
-                stepRequest = null;
-            }
-        }
-        
-        private void refreshRequest () {
-            stepRequest = getDebuggerImpl ().getVirtualMachine ().
-                eventRequestManager ().createStepRequest (
-                    tr,
-                    StepRequest.STEP_LINE,
-                    StepRequest.STEP_INTO
-                );
-            getDebuggerImpl ().getOperator ().register (stepRequest, this);
-            stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
-            
-            addPatternsToRequest (getPatterns ());
-            stepRequest.enable ();
-        }
-            
-        private void addPatternsToRequest (Set patterns) {
-            Iterator i = patterns.iterator ();
-            while (i.hasNext ()) {
-                String p = (String) i.next ();
-                stepRequest.addClassExclusionFilter (p);
-                //methodExitRequest.addClassExclusionFilter (p);
-            }
-        }
+    private CompoundSmartSteppingListener compoundSmartSteppingListener;
+    
+    private CompoundSmartSteppingListener getCompoundSmartSteppingListener () {
+        if (compoundSmartSteppingListener == null)
+            compoundSmartSteppingListener = (CompoundSmartSteppingListener) lookupProvider.
+                lookupFirst (CompoundSmartSteppingListener.class);
+        return compoundSmartSteppingListener;
     }
 }
