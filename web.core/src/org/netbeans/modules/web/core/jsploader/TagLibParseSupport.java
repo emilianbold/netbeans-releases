@@ -50,10 +50,11 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
     // request processing stuff
     private boolean documentDirty;
     private RequestProcessor.Task parsingTask = null;
-    private RequestProcessor requestProcessor;
+    private static RequestProcessor requestProcessor;
 
     private Object openedLock = new Object(); //lock for parsing thread
     private boolean opened; //is an editor pane opened?
+    private static final int WAIT_FOR_EDITOR_TIMEOUT = 15 * 1000; //15 seconds
 
     /** Holds a reference to the JSP coloring data. */
     private WeakReference jspColoringDataRef;
@@ -85,13 +86,16 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
     //before editor support is initialized - causing #49300
     private boolean wasAnEditorPaneChangeEvent = false;
     
+    private boolean parsingTaskCancelled = false;
+    
     /** Creates new TagLibParseSupport 
      * @param jspFile the resource to parse
      */
     public TagLibParseSupport(FileObject jspFile) {
         this.jspFile = jspFile;
-        //requestProcessor = new RequestProcessor("background jsp parsing"); // NOI18N
-        requestProcessor = RequestProcessor.getDefault();
+        //allow max 10 requests to run in parallel & have one RP for all taglib parsings
+        if(requestProcessor == null) requestProcessor = new RequestProcessor("background jsp parsing", 10); // NOI18N
+        //requestProcessor = RequestProcessor.getDefault();
     }
 
     /** Gets the tag library data relevant for the editor. */
@@ -155,6 +159,9 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
     }
 
     private Task parseObject(int priority) {
+        //reset the state so the next parsing will run normally
+        parsingTaskCancelled = false;
+        
         //debug #49300: print out current stacktrace when the editor support is not initialized yet
         if(!wasAnEditorPaneChangeEvent) 
             ErrorManager.getDefault().annotate(new IllegalStateException(), 
@@ -168,7 +175,6 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                 return t;
             }
 
-//System.out.println("[Parsing] Got parse request");
             setDocumentDirty(false);
             t = requestProcessor.post(new ParsingRunnable(), 0, priority);
             parsingTask = t;
@@ -182,17 +188,33 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
         //mark that the an editor pane open event was fired
         wasAnEditorPaneChangeEvent = true;
         
-        opened = state;
-        if(opened) {
-            synchronized (openedLock) {
+        synchronized (openedLock) {
+            opened = state;
+            if(opened) {
                 openedLock.notifyAll();
+            } else {
+                //clean the stronref to the parsing data when the editor is closed
+                parseResultSuccessfulRefStrongReference = null;
             }
-        } else {
-            //clean the stronref to the parsing data when the editor is closed
-            parseResultSuccessfulRefStrongReference = null;
         }
+        
     }
   
+    void cancelParsingTask() {
+        if(parsingTask !=  null) {
+            //there is schedulled or running parsing task -> cancel it!
+            boolean removed = parsingTask.cancel();
+            parsingTask = null;
+            jspColoringDataRef = null;
+        }
+        
+        //resume tha parsing thread if waiting on openedLock
+        parsingTaskCancelled = true;
+        synchronized (openedLock) {
+            openedLock.notifyAll();
+        }
+    }
+    
     public JspParserAPI.JspOpenInfo getCachedOpenInfo(boolean preferCurrent, boolean useEditor) {
         synchronized (openInfoLock) {
             if (preferCurrent)
@@ -270,59 +292,65 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
         }
         
         public void run() {
-            //System.out.println("TaglibPaseSupport - parsing");
             //wait with the parsing until an editor pane is opened
-            try {
+            synchronized(TagLibParseSupport.this.openedLock) {
                 if(!opened) {
-                    synchronized(TagLibParseSupport.this.openedLock) {
-                        TagLibParseSupport.this.openedLock.wait();
-                        
-                        //since the EditorCookie.Observable fires the event for changed(opened) view panes 
-                        //before the document is really rendered, we need to slow down the current parsing task,
-                        //so the thread doesn't affect the document showing speed significantly.
-                        Thread.currentThread().setPriority(Thread.NORM_PRIORITY - 1);
-                    }
+                    try {
+                        //wait max 15 seconds - then start parsing
+                        TagLibParseSupport.this.openedLock.wait(WAIT_FOR_EDITOR_TIMEOUT);
+                    }catch(InterruptedException e) { }
+
+                    //since the EditorCookie.Observable fires the event for changed(opened) view panes 
+                    //before the document is really rendered, we need to slow down the current parsing task,
+                    //so the thread doesn't affect the document showing speed significantly.
+                    Thread.currentThread().setPriority(Thread.NORM_PRIORITY - 1);
                 }
-            }catch(InterruptedException e) { }
+            }
             
-            JspParserAPI parser = JspParserFactory.getJspParser();
-            // assert parser != null;
-            if (parser == null) {
-                throw new InternalError();
-            }
-            locResult = parser.analyzePage(jspFile, JspParserAccess.getJspParserWM (getWebModule (jspFile)), JspParserAPI.ERROR_IGNORE);
-            assert locResult != null;
-            synchronized (TagLibParseSupport.this.parseResultLock) {
-                parseResultRef = new SoftReference(locResult);
-                if (locResult.isParsingSuccess()) {
-                    parseResultSuccessfulRef = new SoftReference(locResult);
-                    //hold a reference to the parsing data until last editor pane is closed
-                    //motivation: the editor doesn't always hold a strogref to this object
-                    //so the SoftRef is sometime cleaned even if there is an editor pane opened.
-                    parseResultSuccessfulRefStrongReference = locResult;
+            //test whether the parsing task has been cancelled -
+            //someone called EditorCookie.close() during the parsing was waiting
+            //on openedLock
+            if(!parsingTaskCancelled) {
+                JspParserAPI parser = JspParserFactory.getJspParser();
+                // assert parser != null;
+                if (parser == null) {
+                    throw new InternalError();
                 }
-                PageInfo pageInfo = locResult.getPageInfo();
-                if (pageInfo == null) return;
-                //Map prefixMapper = (pageInfo.getXMLPrefixMapper().size() > 0) ?
-                //    pageInfo.getApproxXmlPrefixMapper() : pageInfo.getJspPrefixMapper();
-                //Map prefixMapper = pageInfo.getJspPrefixMapper();
-                Map prefixMapper = null;
-                if (pageInfo.getXMLPrefixMapper().size() > 0) {
-                    prefixMapper = pageInfo.getApproxXmlPrefixMapper();
-                    if (prefixMapper.size() == 0){
-                        prefixMapper = pageInfo.getXMLPrefixMapper();
+                locResult = parser.analyzePage(jspFile, JspParserAccess.getJspParserWM (getWebModule (jspFile)), JspParserAPI.ERROR_IGNORE);
+                assert locResult != null;
+                synchronized (TagLibParseSupport.this.parseResultLock) {
+                    parseResultRef = new SoftReference(locResult);
+                    if (locResult.isParsingSuccess()) {
+                        parseResultSuccessfulRef = new SoftReference(locResult);
+                        //hold a reference to the parsing data until last editor pane is closed
+                        //motivation: the editor doesn't always hold a strogref to this object
+                        //so the SoftRef is sometime cleaned even if there is an editor pane opened.
+                        parseResultSuccessfulRefStrongReference = locResult;
                     }
-                    prefixMapper.putAll(pageInfo.getJspPrefixMapper());
+                    PageInfo pageInfo = locResult.getPageInfo();
+                    if (pageInfo == null) return;
+                    //Map prefixMapper = (pageInfo.getXMLPrefixMapper().size() > 0) ?
+                    //    pageInfo.getApproxXmlPrefixMapper() : pageInfo.getJspPrefixMapper();
+                    //Map prefixMapper = pageInfo.getJspPrefixMapper();
+                    Map prefixMapper = null;
+                    if (pageInfo.getXMLPrefixMapper().size() > 0) {
+                        prefixMapper = pageInfo.getApproxXmlPrefixMapper();
+                        if (prefixMapper.size() == 0){
+                            prefixMapper = pageInfo.getXMLPrefixMapper();
+                        }
+                        prefixMapper.putAll(pageInfo.getJspPrefixMapper());
+                    }
+                    else {
+                        prefixMapper = pageInfo.getJspPrefixMapper();
+                    }
+                    getJSPColoringData(false).applyParsedData(pageInfo.getTagLibraries(), prefixMapper, 
+                                                              pageInfo.isELIgnored(), getCachedOpenInfo(false, false).isXmlSyntax(), 
+                                                              locResult.isParsingSuccess());
+                    // if failure do nothing
+                    parsingTask = null;
+                    
                 }
-                else {
-                    prefixMapper = pageInfo.getJspPrefixMapper();
-                }
-                getJSPColoringData(false).applyParsedData(pageInfo.getTagLibraries(), prefixMapper, 
-                                                          pageInfo.isELIgnored(), getCachedOpenInfo(false, false).isXmlSyntax(), 
-                                                          locResult.isParsingSuccess());
-                // if failure do nothing
-                parsingTask = null;
-            }
+            } 
         }
     }
 

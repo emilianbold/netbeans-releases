@@ -98,6 +98,17 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         initialize();
     }
     
+    public boolean close() {
+        //cancel waiting parsing task if there is any
+        //this is largely a workaround for issue #50926
+        TagLibParseSupport sup = (TagLibParseSupport)getDataObject().getCookie(TagLibParseSupport.class);
+        if(sup != null) {
+            sup.cancelParsingTask();
+        }
+        
+        return super.close();
+    }
+    
     private void initialize() {
         // initialize timer
         timer = new Timer(0, new java.awt.event.ActionListener() {
