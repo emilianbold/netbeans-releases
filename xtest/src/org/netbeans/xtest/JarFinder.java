@@ -25,7 +25,19 @@ import org.apache.tools.ant.types.*;
 import java.util.StringTokenizer;
 import java.io.File;
 
-/**
+/** This task finds files from attribute 'files' in directories from attribute
+ * 'dirs' and creates path which writes to property which name is in attribute 'property'.
+ *
+ * Example:
+ *
+ * Suppose directory c:\\jemmy contains files jemmy.jar and jelly.jar and
+ * directory c:\\jdbcdrivers contains file driver.zip
+ *
+ * <jar-finder dirs="c:\\jemmy;c:\\jdbcdrivers" files="driver.zip;jemmy.jar;jelly.jar" 
+ *             property="myclasspath"/>
+ *
+ * property myclasspath will contain "c:\\jdbcdrivers\\driver.zip;c:\\jemmy\\jemmy.jar;c:\\jemmy\\jelly.jar"
+ *
  * @author lm97939
  */
 public class JarFinder extends Task {
@@ -47,6 +59,7 @@ public class JarFinder extends Task {
     public void execute() throws BuildException {
         if (dirlist == null) throw new BuildException("Attribute dirs is empty.");
         if (filelist == null) throw new BuildException("Attribute files is empty.");
+        if (property == null) throw new BuildException("Attribute property is empty.");
         
         StringBuffer buffer = new StringBuffer();
         StringTokenizer filetokens = new StringTokenizer(filelist,",;"+File.pathSeparator);
@@ -66,7 +79,7 @@ public class JarFinder extends Task {
                 String dir = dirtokens.nextToken();
                 File fdir = new File(dir);
                 if (!fdir.exists() || !fdir.isDirectory()) 
-                    throw new BuildException("Directory " + fdir.getAbsolutePath() + "not found.");
+                    throw new BuildException("Directory " + fdir.getAbsolutePath() + " not found.");
                 ffile = new File(fdir,file);
                 if (ffile.exists()) {
                     found = true;

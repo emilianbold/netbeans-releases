@@ -30,7 +30,21 @@ import java.util.Iterator;
 import java.io.File;
 import org.apache.tools.ant.taskdefs.CallTarget;
 
-/**
+/** Task which behave as for command. Task has two required attributes (list,property) 
+ * and one optional (delimiters) and have nested elements ant and antcall.
+ * 'For' task divides value of list attribute by delimiters and for every part
+ * calls all nested elements with property set to the devided part of the list. 
+ * Name of this property is specified by property attribute of for task.
+ *
+ * Example:
+ *
+ *  <for list="first,second,third" delimiters=",;" property="selected.part">
+ *      <antcall target="{selected.part}_target"/>
+ *      <ant target="sometarget">
+ *        <property name="some.property" value="somevalue"/>
+ *      </ant>
+ *  </for>
+ *
  * @author lm97939
  */
 public class ForTask extends Task {
@@ -107,8 +121,8 @@ public class ForTask extends Task {
     }
 
     public void execute() throws BuildException {
-        // What the task actually does:
-        // WRITEME
+        if (list == null) throw new BuildException("Attribute 'list' is empty.");
+        if (property == null) throw new BuildException("Attribute 'property' is empty.");
         
         StringTokenizer tokens = new StringTokenizer(list,delim);
         while (tokens.hasMoreTokens()) {
@@ -169,25 +183,6 @@ public class ForTask extends Task {
                 }
             }
         }
-        // To log something:
-        // log("Some message");
-        // log("Serious message", Project.MSG_WARN);
-        // log("Minor message", Project.MSG_VERBOSE);
-
-        // To signal an error:
-        // throw new BuildException("Problem", location);
-        // throw new BuildException(someThrowable, location);
-        // throw new BuildException("Problem", someThrowable, location);
-
-        // You can call other tasks too:
-        // Zip zip = (Zip)project.createTask("zip");
-        // zip.setZipfile(zipFile);
-        // FileSet fs = new FileSet();
-        // fs.setDir(baseDir);
-        // zip.addFileset(fs);
-        // zip.init();
-        // zip.setLocation(location);
-        // zip.execute();
     }
 
 }

@@ -29,9 +29,15 @@ public class CheckoutNeeded extends Task {
     String action = "checkout";             //NOI18N
     boolean quiet = true;
 
+    /** List of modules to checkout devided by comma (,) */
     public void setModules( String modules ) {
         this.modules = modules;
     }
+    
+    /** List of CVS Repositories with assigned local directory. Repo and dir is
+     * separated by '-'.
+     * example: "cvs.netbeans.org:/cvs-c:\\src\\nb_all,othercvs:/cvs-c:\\src\\xy_all"
+     */
     public void setRepos( String repos ) {
         this.repos = repos;
     }

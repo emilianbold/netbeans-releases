@@ -16,7 +16,24 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 
-/**
+/** This task writes all properties which correspond to criteria described below
+ * to file which name is in property 'file'. Properties which is writen has to have 
+ * prefix specified in attribute 'propertyPrefix' and after the prefix they has to 
+ * have character '|'. After prefix and before '|' property may have word in parenthesis
+ * and this word has to be one of the words in attribute 'attribs'. Only part 
+ * after '|' of the property is written to file.
+ * 
+ * Example: 
+ *
+ * <property name="xtest.userdata|property1 value="value1"/>
+ * <property name="xtest.userdata(oracle)|property2 value="value2"/>
+ * <property name="xtest.userdata(pointbase)|property3 value="value3"/>
+ * <write-property propertyPrefix="xtest.userdata" attribs="pointbase,mssql" file="propertyfile.txt"/>
+ *
+ * Result will be propertyfile.txt with content:
+ * property1=value1
+ * property3=value3
+ *
  * @author lm97939
  */
 public class UserPropertyWriter extends Task {
