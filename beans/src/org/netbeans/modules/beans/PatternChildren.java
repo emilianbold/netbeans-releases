@@ -40,6 +40,9 @@ public class PatternChildren extends ClassChildren {
       PatternFilter.IDXPROPERTY | PatternFilter.EVENT_SET
     );
     propToFilter.put (ElementProperties.PROP_METHODS, i);
+    i = new Integer (PatternFilter.FIELD | PatternFilter.PROPERTY |
+      PatternFilter.IDXPROPERTY | PatternFilter.EVENT_SET
+    );
     propToFilter.put (ElementProperties.PROP_FIELDS, i);
   }
   
@@ -193,6 +196,7 @@ public class PatternChildren extends ClassChildren {
 
 /* 
  * Log
+ *  5    Gandalf   1.4         7/21/99  Petr Hamernik   some filter bugfix
  *  4    Gandalf   1.3         7/20/99  Petr Hrebejk    
  *  3    Gandalf   1.2         7/3/99   Ian Formanek    Overriden method 
  *       refreshKeys to provide access to classes in thes package and make it 
