@@ -19,6 +19,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import org.openide.DialogDescriptor;
+import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
 
@@ -30,8 +31,7 @@ public class AddDriverDialog {
     String drv = null, name = null, prefix = null;
     JTextField namefield, drvfield, prefixfield;
 
-    public AddDriverDialog()
-    {
+    public AddDriverDialog() {
         try {
             JLabel label;
             JPanel pane = new JPanel();
@@ -39,7 +39,7 @@ public class AddDriverDialog {
             GridBagLayout layout = new GridBagLayout();
             GridBagConstraints con = new GridBagConstraints ();
             pane.setLayout (layout);
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+            final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
             // Driver name
 
@@ -135,25 +135,30 @@ public class AddDriverDialog {
             pane.add(notes);
 
             ActionListener listener = new ActionListener() {
-                                          public void actionPerformed(ActionEvent event) {
-                                              boolean dispcond = true;
-                                              if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                                                  result = true;
-                                                  name = namefield.getText();
-                                                  drv = drvfield.getText();
-                                                  prefix = prefixfield.getText();
-                                                  if (prefix == null) prefix = ""; //NOI18N
-                                                  dispcond = (drv != null && drv.length() > 0 && name != null && name.length() > 0);
-                                              } else result = false;
+                public void actionPerformed(ActionEvent event) {
+                    boolean dispcond = true;
+                    if (event.getSource() == DialogDescriptor.OK_OPTION) {
+                        result = true;
+                        name = namefield.getText();
+                        drv = drvfield.getText();
+                        prefix = prefixfield.getText();
+                        if (prefix == null)
+                            prefix = ""; //NOI18N
+                        dispcond = (drv != null && drv.trim().length() > 0 && name != null && name.trim().length() > 0);
+                    } else
+                        result = false;
 
-                                              if (dispcond) {
-                                                  dialog.setVisible(false);
-                                                  dialog.dispose();
-                                              } else Toolkit.getDefaultToolkit().beep();
-                                          }
-                                      };
+                    if (dispcond) {
+                        dialog.setVisible(false);
+                        dialog.dispose();
+                    } else
+                        TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("AddDriverErrorMessage"), NotifyDescriptor.ERROR_MESSAGE));
+                }
+            };
 
             DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddDriverDialogTitle"), true, listener); //NOI18N
+            Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
+            descriptor.setClosingOptions(closingOptions);
             dialog = TopManager.getDefault().createDialog(descriptor);
             dialog.setResizable(false);
         } catch (MissingResourceException e) {
@@ -161,14 +166,12 @@ public class AddDriverDialog {
         }
     }
 
-    public boolean run()
-    {
+    public boolean run() {
         if (dialog != null) dialog.setVisible(true);
         return result;
     }
 
-    public DatabaseDriver getDriver()
-    {
+    public DatabaseDriver getDriver() {
         return new DatabaseDriver(name, drv, prefix);
     }
 }
