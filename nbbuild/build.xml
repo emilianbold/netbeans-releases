@@ -2780,12 +2780,12 @@ Tag:
 -->
     <!-- package the zip file -->
     <zip destfile="NetBeans-${buildnum}.zip" update="true" duplicate="preserve">
-      <zipfileset file="${netbeans.dest}/bin/netbeans" filemode="755" prefix="${netbeans.dest}/bin"/>
-      <zipfileset file="${netbeans.dest}/${nb.cluster.platform.dir}/${nb.bin.dir}/nbexec" filemode="755" prefix="${netbeans.dest}/${nb.cluster.platform.dir}/${nb.bin.dir}"/>
-      <zipfileset dir="${netbeans.dest}" filemode="755" prefix="${netbeans.dest}">
+      <zipfileset file="${netbeans.dest.dir}/bin/netbeans" filemode="755" prefix="${netbeans.dest}/bin"/>
+      <zipfileset file="${netbeans.dest.dir}/${nb.cluster.platform.dir}/${nb.bin.dir}/nbexec" filemode="755" prefix="${netbeans.dest}/${nb.cluster.platform.dir}/${nb.bin.dir}"/>
+      <zipfileset dir="${netbeans.dest.dir}" filemode="755" prefix="${netbeans.dest}">
         <include name="**/*.sh"/>
       </zipfileset>
-      <zipfileset dir="${netbeans.dest}" prefix="${netbeans.dest}" excludes="${nb-extra-files}"/>
+      <zipfileset dir="${netbeans.dest.dir}" prefix="${netbeans.dest}" excludes="${nb-extra-files}"/>
 <!--
         <patternset excludes="${nb-extra-files}"/>
         <exclude name="*.built"/>
@@ -2797,7 +2797,7 @@ Tag:
     
     <!-- package the zip file with extra files not to be included in regular product package-->
     <zip destfile="NetBeans-${buildnum}-build-extra-data.zip" update="true" duplicate="preserve">
-        <zipfileset dir="${netbeans.dest}" prefix="${netbeans.dest}" includes="${nb-extra-files}"/>
+        <zipfileset dir="${netbeans.dest.dir}" prefix="${netbeans.dest}" includes="${nb-extra-files}"/>
     </zip>
 
     <echo>Build created; see NetBeans-${buildnum}.zip (in nbbuild/).
