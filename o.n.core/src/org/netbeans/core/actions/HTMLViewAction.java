@@ -30,13 +30,11 @@ public class HTMLViewAction extends CallableSystemAction {
   /** URL of icon for this action */
   private static java.net.URL urlIcon = null;
 
-  /** URL to this action.
-  * @return URL to the action icon
+  /** Icon resource.
+  * @return name of resource for icon
   */
-  public java.net.URL getDefaultIcon() {
-    if (urlIcon == null)
-      urlIcon = getClass().getResource("/com/netbeans/developer/impl/resources/actions/htmlView.gif");
-    return urlIcon;
+  protected String iconResource () {
+    return "/com/netbeans/developer/impl/resources/actions/htmlView.gif";
   }
 
   public void performAction() {
@@ -59,6 +57,7 @@ public class HTMLViewAction extends CallableSystemAction {
 
 /*
  * Log
+ *  5    Gandalf   1.4         3/2/99   David Simonek   icons repair
  *  4    Gandalf   1.3         3/1/99   David Simonek   icons etc..
  *  3    Gandalf   1.2         1/21/99  David Simonek   Removed references to 
  *       "Actions" class
