@@ -53,6 +53,9 @@ import org.openide.util.Utilities;
  */
 public class ResultModel implements TaskListener {
 
+    /** maximum number of found objects */
+    private static final int COUNT_LIMIT = 500;
+
     /** For debug purposes. */
     private static final ErrorManager em = ErrorManager.getDefault()
             .getInstance("org.netbeans.modules.search");                //NOI18N
@@ -72,6 +75,13 @@ public class ResultModel implements TaskListener {
 
     /** Search state field. */
     private boolean done = false;
+    
+    /**
+     * flag - did number of found objects reach the limit?
+     *
+     * @see  #COUNT_LIMIT
+     */
+    private boolean limitReached;
 
     /** Set of listeners. */
     private HashSet listeners = new HashSet();
@@ -147,8 +157,11 @@ public class ResultModel implements TaskListener {
      * @return  <code>true</code> if this result model can accept more objects,
      *          <code>false</code> if number of found objects reached the limit
      */
-    synchronized void objectFound(Object object) {
+    synchronized boolean objectFound(Object object) {
+        assert limitReached == false;
         root.addFoundObject(object);
+        limitReached = getFound() >= COUNT_LIMIT;
+        return !limitReached;
     }
 
     /** Getter for search group property. */
@@ -190,6 +203,7 @@ public class ResultModel implements TaskListener {
 
     /** Sets search task. */
     public void setTask(SearchTask searchTask) {
+        limitReached = false;
         this.searchTask = searchTask;
         this.searchTask.addTaskListener(this);
     }
@@ -275,25 +289,34 @@ public class ResultModel implements TaskListener {
 
         int found = getFound();
 
-        return getRootDisplayNameHelp(found, finishMessage);
+        return getRootDisplayNameHelp(found, limitReached, finishMessage);
     }
     
     /** Gets display name based on number of found nodes.
      * @param found number of found nodes. */
-    private static String getRootDisplayNameHelp(int found, String finishMessage) {
+    private static String getRootDisplayNameHelp(int found,
+                                                 boolean limitReached,
+                                                 String finishMessage) {
         String orig;
-        if (found == 1) {
-            orig = MessageFormat.format(NbBundle.getBundle(ResultModel.class).getString("TEXT_MSG_FOUND_A_NODE"), // NOI18N
-                    new Object[] { new Integer(found) } );
-        } else if (found > 1) {
-            orig = MessageFormat.format(NbBundle.getBundle(ResultModel.class).getString("TEXT_MSG_FOUND_X_NODES"),
-                    new Object[] { new Integer(found) } );
-        } else { // <1
-            orig = NbBundle.getBundle(ResultModel.class).getString("TEXT_MSG_NO_NODE_FOUND");
+        if (found == 0) {
+            orig = NbBundle.getMessage(ResultModel.class,
+                                       "TEXT_MSG_NO_NODE_FOUND");       //NOI18N
+        } else if (found == 1) {
+            orig = NbBundle.getMessage(ResultModel.class,
+                                       "TEXT_MSG_FOUND_A_NODE");        //NOI18N
+        } else if (limitReached) {
+            assert found == COUNT_LIMIT;
+            orig = NbBundle.getMessage(ResultModel.class,
+                                       "TEXT_MSG_FOUND_X_NODES_LIMIT",  //NOI18N
+                                       new Integer(COUNT_LIMIT));
+        } else {
+            orig = NbBundle.getMessage(ResultModel.class,
+                                       "TEXT_MSG_FOUND_X_NODES",        //NOI18N
+                                       new Integer(found));
         }
 
         if (finishMessage != null) {
-            return orig + " (" + finishMessage + ")";
+            return orig + " (" + finishMessage + ")";                   //NOI18N
         }
 
         return orig;

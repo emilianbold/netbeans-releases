@@ -69,7 +69,7 @@ public class SearchTask extends Task {
                 propListener = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (SearchGroup.PROP_FOUND.equals(evt.getPropertyName())) {
-                            resultModel.objectFound(evt.getNewValue());
+                            matchingObjectFound(evt.getNewValue());
                         }
                     }
                 }, searchGroup)
@@ -84,6 +84,15 @@ public class SearchTask extends Task {
         } finally {
             // Notifies search task has finished.
             notifyFinished();
+        }
+    }
+    
+    /**
+     */
+    private void matchingObjectFound(Object object) {
+        boolean canContinue = resultModel.objectFound(object);
+        if (!canContinue) {
+            searchGroup.stopSearch();
         }
     }
     
