@@ -95,11 +95,11 @@ workspaceswitcher
       <config name="superslim" modules="clazz,editor,html,icebrowser,image,java,openidex,projects,text,utilities"/>
       <config name="slim" modules="autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,icebrowser,image,java,objectbrowser,openidex,projects,text,utilities"/>
       <!-- [PENDING] A poor name; 'standard' would be more in line with the CVS pseudomodule. -->
-      <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javacvs,javadoc,jndi,objectbrowser,openidex,projects,properties,rmi,scripting,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
-      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javacvs,javadoc,jndi,objectbrowser,openidex,projects,properties,rmi,scripting,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
-      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
+      <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,objectbrowser,openidex,projects,properties,rmi,scripting,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
+      <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,objectbrowser,openidex,projects,properties,rmi,scripting,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
+      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
       <!-- You are on your own for getting the binaries for some of these: -->
-      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
+      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
     </configmods>
   </target>
 
@@ -209,6 +209,10 @@ workspaceswitcher
     <echo message="Building module innertesters..."/>
     <ant dir="../innertesters" target="netbeans"/>
   </target>
+  <target name="all-j2eeserver" depends="all-openide">
+    <echo message="Building module j2eeserver..."/>
+    <ant dir="../j2eeserver" target="netbeans"/>
+  </target>
   <target name="all-jarpackager" depends="all-openide">
     <echo message="Building module jarpackager..."/>
     <ant dir="../jarpackager" target="netbeans"/>
@@ -310,7 +314,7 @@ workspaceswitcher
     <ant dir="../javacvs" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-web" depends="all-openide,all-java,all-core,all-editor">
+  <target name="all-web" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver,all-html">
     <echo message="Building module web..."/>
     <ant dir="../web" target="netbeans"/>
   </target>
