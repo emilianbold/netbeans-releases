@@ -40,6 +40,8 @@ public class SwingBrowserBeanInfo extends SimpleBeanInfo {
         BeanDescriptor beanDescriptor = new BeanDescriptor  (SwingBrowser.class);
         beanDescriptor.setDisplayName (NbBundle.getMessage (SwingBrowserBeanInfo.class, "CTL_SwingBrowser"));
         beanDescriptor.setShortDescription (NbBundle.getMessage (SwingBrowserBeanInfo.class, "HINT_SwingBrowser"));
+
+        beanDescriptor.setValue ("helpID", "org.openide.awt.SwingBrowser");  // NOI18N
         return beanDescriptor;
     }
 

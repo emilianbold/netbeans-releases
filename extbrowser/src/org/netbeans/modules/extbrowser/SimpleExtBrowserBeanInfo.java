@@ -26,6 +26,8 @@ public class SimpleExtBrowserBeanInfo extends SimpleBeanInfo {
         descr = new BeanDescriptor (SimpleExtBrowser.class);
         descr.setDisplayName (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "CTL_SimpleExtBrowser"));
         descr.setShortDescription (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "HINT_SimpleExtBrowser"));
+
+        descr.setValue ("helpID", "org.netbeans.modules.extbrowser.SimpleExtBrowser");  // NOI18N
     }
     
     private static PropertyDescriptor[] properties = null; 
