@@ -73,9 +73,11 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
             if (jspDoc == null || !jspDoc.exists()) {
                 jspDoc = InstalledFileLocator.getDefault().locate("docs/jsp20-docs.zip", null, false); // NOI18N
             }
-            l = new ArrayList();
-            l.add(fileToUrl(jspDoc));
-            lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, l);
+            if (jspDoc != null) {
+                l = new ArrayList();
+                l.add(fileToUrl(jspDoc));
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, l);
+            }
             
             libraries.add(lib);
 
@@ -91,9 +93,11 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
             if (servletDoc == null || !servletDoc.exists()) {
                 servletDoc = InstalledFileLocator.getDefault().locate("docs/servlet24-docs.zip", null, false); // NOI18N
             }
-            l = new ArrayList();
-            l.add(fileToUrl(servletDoc));
-            lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, l);
+            if (servletDoc != null) {
+                l = new ArrayList();
+                l.add(fileToUrl(servletDoc));
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, l);
+            }
             
             libraries.add(lib);
         } catch(Exception e) {
