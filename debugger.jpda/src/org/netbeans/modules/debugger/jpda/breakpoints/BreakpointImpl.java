@@ -14,19 +14,19 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.IncompatibleThreadStateException;
-import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.event.Event;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
@@ -43,7 +43,7 @@ import org.netbeans.modules.debugger.jpda.util.Executor;
  *
  * @author   Jan Jancura
  */
-public abstract class BreakpointImpl implements Executor {
+public abstract class BreakpointImpl implements Executor, PropertyChangeListener {
 
     private JPDADebuggerImpl    debugger;
     private JPDABreakpoint      breakpoint;
@@ -55,19 +55,27 @@ public abstract class BreakpointImpl implements Executor {
         this.debugger = debugger;
         breakpoint = p;
     }
-    
+
     final void set () {
-        if ( (getVirtualMachine () == null) || 
+        breakpoint.addPropertyChangeListener(this);
+        if ( (getVirtualMachine () == null) ||
              (getDebugger ().getState () == JPDADebugger.STATE_DISCONNECTED)
         ) return;
         removeAllEventRequests ();
-        setRequests ();
+        if (breakpoint.isEnabled()) {
+            setRequests ();
+        }
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        set();
     }
 
     protected abstract void setRequests ();
     
     protected final void remove () {
         removeAllEventRequests ();
+        breakpoint.removePropertyChangeListener(this);
     }
 
     protected JPDABreakpoint getBreakpoint () {
@@ -138,7 +146,7 @@ public abstract class BreakpointImpl implements Executor {
             if (!result) return true; // resume
         }
         
-        if (breakpoint.getSuspend () == breakpoint.SUSPEND_NONE) 
+        if (breakpoint.getSuspend () == JPDABreakpoint.SUSPEND_NONE)
             return true; // resume
 
         getDebugger ().setStoppedState (thread);
