@@ -342,6 +342,11 @@ public class J2SEProjectProperties {
                                         updateSourceLevel(defaultPlatform.booleanValue(), newValueEncoded, ep);
                                     }
                                     
+                                    if (NO_DEPENDENCIES.equals(pd.name) && newValueEncoded.equals("false")) {
+                                        ep.remove(pd.name);
+                                        continue;
+                                    }
+                                    
                                     ep.setProperty( pd.name, newValueEncoded );
                                 }
                             }

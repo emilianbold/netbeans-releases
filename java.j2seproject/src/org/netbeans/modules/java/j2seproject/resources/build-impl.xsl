@@ -16,6 +16,7 @@ Microsystems, Inc. All Rights Reserved.
                 xmlns:p="http://www.netbeans.org/ns/project/1"
                 xmlns:xalan="http://xml.apache.org/xslt"
                 xmlns:j2se="http://www.netbeans.org/ns/j2se-project/1"
+                xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 exclude-result-prefixes="xalan p j2se projdeps">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
@@ -67,33 +68,28 @@ is divided into following sections:
                 <property file="nbproject/private/private.properties"/>
             </target>
 
-            <target name="init-userdir">
-                <xsl:attribute name="depends">pre-init,init-private</xsl:attribute>
-                <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
-            </target>
-
             <target name="init-user">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private</xsl:attribute>
                 <property file="${{user.properties.file}}"/>
             </target>
 
             <target name="init-project">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private,init-user</xsl:attribute>
                 <property file="nbproject/project.properties"/>
             </target>
 
             <target name="do-init">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,init-macrodef-property</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private,init-user,init-project,init-macrodef-property</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                    <j2seproject:property xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" name="platform.home" value="platforms.${{platform.active}}.home"/>
-                    <j2seproject:property xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
-                    <j2seproject:property xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" name="platform.compiler" value="platforms.${{platform.active}}.compile"/>
-                    <j2seproject:property xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" name="platform.javac.tmp" value="platforms.${{platform.active}}.javac"/>
+                    <j2seproject:property name="platform.home" value="platforms.${{platform.active}}.home"/>
+                    <j2seproject:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
+                    <j2seproject:property name="platform.compiler" value="platforms.${{platform.active}}.compile"/>
+                    <j2seproject:property name="platform.javac.tmp" value="platforms.${{platform.active}}.javac"/>
                     <condition property="platform.javac" value="${{platform.home}}/bin/javac">
                         <equals arg1="${{platform.javac.tmp}}" arg2="$${{platforms.${{platform.active}}.javac}}"/>
                     </condition>
                     <property name="platform.javac" value="${{platform.javac.tmp}}"/>
-                    <j2seproject:property xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" name="platform.java.tmp" value="platforms.${{platform.active}}.java"/>
+                    <j2seproject:property name="platform.java.tmp" value="platforms.${{platform.active}}.java"/>
                     <condition property="platform.java" value="${{platform.home}}/bin/java">
                         <equals arg1="${{platform.java.tmp}}" arg2="$${{platforms.${{platform.active}}.java}}"/>
                     </condition>
@@ -128,7 +124,7 @@ is divided into following sections:
             </target>
 
             <target name="init-check">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private,init-user,init-project,do-init</xsl:attribute>
                 <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
                 <!-- Note that if the properties were defined in project.xml that would be easy -->
                 <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
@@ -348,7 +344,7 @@ is divided into following sections:
             </target>
 
             <target name="init">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-macrodef-property,init-macrodef-javac,init-macrodef-junit,init-macrodef-nbjpda,init-macrodef-debug,init-macrodef-java</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private,init-user,init-project,do-init,post-init,init-check,init-macrodef-property,init-macrodef-javac,init-macrodef-junit,init-macrodef-nbjpda,init-macrodef-debug,init-macrodef-java</xsl:attribute>
             </target>
 
             <xsl:comment>
@@ -374,7 +370,7 @@ is divided into following sections:
 
             <target name="do-compile">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
-                <j2seproject:javac xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
+                <j2seproject:javac/>
                 <copy todir="${{build.classes.dir}}">
                     <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
                 </copy>
@@ -398,7 +394,7 @@ is divided into following sections:
             <target name="do-compile-single">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-                <j2seproject:javac xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1">
+                <j2seproject:javac>
                     <customize>
                         <include name="${{javac.includes}}"/>
                     </customize>
@@ -461,7 +457,7 @@ is divided into following sections:
             <target name="run">
                 <xsl:attribute name="depends">init,compile</xsl:attribute>
                 <xsl:attribute name="description">Run a main class.</xsl:attribute>
-                <j2seproject:java xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1">
+                <j2seproject:java>
                     <customize>
                         <arg line="${{application.args}}"/>
                     </customize>
@@ -471,7 +467,7 @@ is divided into following sections:
             <target name="run-single">
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
-                <j2seproject:java xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" classname="${{run.class}}"/>
+                <j2seproject:java classname="${{run.class}}"/>
             </target>
 
             <xsl:comment>
@@ -483,12 +479,12 @@ is divided into following sections:
             <target name="debug-start-debugger">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
-                <j2seproject:nbjpdastart xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
+                <j2seproject:nbjpdastart/>
             </target>
 
             <target name="debug-start-debuggee">
                 <xsl:attribute name="depends">init,compile</xsl:attribute>
-                <j2seproject:debug xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
+                <j2seproject:debug/>
             </target>
 
             <target name="debug">
@@ -500,7 +496,7 @@ is divided into following sections:
             <target name="debug-start-debugger-stepinto">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init</xsl:attribute>
-                <j2seproject:nbjpdastart xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" stopclassname="${{main.class}}"/>
+                <j2seproject:nbjpdastart stopclassname="${{main.class}}"/>
             </target>
 
             <target name="debug-stepinto">
@@ -512,7 +508,7 @@ is divided into following sections:
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="debug.class">Must select one file in the IDE or set debug.class</fail>
-                <j2seproject:debug xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" classname="${{debug.class}}"/>
+                <j2seproject:debug classname="${{debug.class}}"/>
             </target>
 
             <target name="debug-single">
@@ -529,7 +525,7 @@ is divided into following sections:
             <target name="do-debug-fix">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,pre-debug-fix,compile-single</xsl:attribute>
-                <j2seproject:nbjpdareload xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
+                <j2seproject:nbjpdareload/>
             </target>
 
             <target name="debug-fix">
@@ -605,7 +601,7 @@ is divided into following sections:
             <target name="do-compile-test">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,pre-pre-compile-test,pre-compile-test</xsl:attribute>
-                <j2seproject:javac xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" srcdir="${{test.src.dir}}" destdir="${{build.test.classes.dir}}" debug="true" classpath="${{javac.test.classpath}}"/>
+                <j2seproject:javac srcdir="${{test.src.dir}}" destdir="${{build.test.classes.dir}}" debug="true" classpath="${{javac.test.classpath}}"/>
                 <copy todir="${{build.test.classes.dir}}">
                     <fileset dir="${{test.src.dir}}">
                         <exclude name="**/*.java"/>
@@ -631,7 +627,7 @@ is divided into following sections:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,pre-pre-compile-test,pre-compile-test-single</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-                <j2seproject:javac xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" srcdir="${{test.src.dir}}" destdir="${{build.test.classes.dir}}" debug="true" classpath="${{javac.test.classpath}}">
+                <j2seproject:javac srcdir="${{test.src.dir}}" destdir="${{build.test.classes.dir}}" debug="true" classpath="${{javac.test.classpath}}">
                     <customize>
                         <include name="${{javac.includes}}"/>
                     </customize>
@@ -662,7 +658,7 @@ is divided into following sections:
             <target name="do-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test,pre-test-run</xsl:attribute>
-                <j2seproject:junit xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
+                <j2seproject:junit/>
             </target>
 
             <target name="post-test-run">
@@ -707,7 +703,7 @@ is divided into following sections:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test-single,pre-test-run-single</xsl:attribute>
                 <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
-                <j2seproject:junit xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" includes="${{test.includes}}"/>
+                <j2seproject:junit includes="${{test.includes}}"/>
             </target>
 
             <target name="post-test-run-single">
@@ -731,13 +727,13 @@ is divided into following sections:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-                <j2seproject:debug xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" classname="junit.textui.TestRunner" classpath="${{debug.test.classpath}}" args="${{test.class}}"/>
+                <j2seproject:debug classname="junit.textui.TestRunner" classpath="${{debug.test.classpath}}" args="${{test.class}}"/>
             </target>
 
             <target name="debug-start-debugger-test">
                 <xsl:attribute name="if">netbeans.home+have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test</xsl:attribute>
-                <j2seproject:nbjpdastart xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" name="${{test.class}}" classpath="${{debug.test.classpath}}"/>
+                <j2seproject:nbjpdastart name="${{test.class}}" classpath="${{debug.test.classpath}}"/>
             </target>
 
             <target name="debug-test">
@@ -747,7 +743,7 @@ is divided into following sections:
             <target name="do-debug-fix-test">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,pre-debug-fix,compile-test-single</xsl:attribute>
-                <j2seproject:nbjpdareload xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" dir="${{build.test.classes.dir}}"/>
+                <j2seproject:nbjpdareload dir="${{build.test.classes.dir}}"/>
             </target>
 
             <target name="debug-fix-test">
@@ -816,7 +812,7 @@ is divided into following sections:
         <xsl:param name="type"/>
         <target name="{$targetname}">
             <xsl:attribute name="depends">init</xsl:attribute>
-            <xsl:attribute name="unless">${no.dependencies}</xsl:attribute>
+            <xsl:attribute name="unless">no.dependencies</xsl:attribute>
             <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
             <xsl:for-each select="$references/projdeps:reference[not($type) or projdeps:artifact-type = $type]">
                 <xsl:variable name="subproj" select="projdeps:foreign-project"/>

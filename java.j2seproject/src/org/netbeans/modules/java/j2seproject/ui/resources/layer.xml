@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Desktop">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/desktop.html"/>
+                <attr name="emptyJ2SE.xml/emptyJ2SElibrary.xml" boolvalue="true"/>
                 <!-- Add template for the J2SE project -->
                 <file name="emptyJ2SE.xml">
                     <attr name="template" boolvalue="true"/>

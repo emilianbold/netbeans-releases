@@ -353,7 +353,7 @@ final class J2SEProject implements Project, AntProjectListener {
             ProjectManager.mutex().writeAccess(new Mutex.Action() {
                 public Object run() {
                     EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
+                    ep.setProperty("user.properties.file", System.getProperty("netbeans.user")+File.separatorChar+"build.properties"); //NOI18N
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                     try {
                         ProjectManager.getDefault().saveProject(J2SEProject.this);

@@ -71,9 +71,11 @@ public abstract class ProjectOpenedHook {
      * </p></li>
      * <li><p>Call <a href="@JAVA/API@/org/netbeans/api/java/classpath/GlobalPathRegistry.html#register"><code>GlobalPathRegistry.register(...)</code></a>
      * with source, compile, and boot paths known to the project.</p></li>
-     * <li><p>Store a property <code>netbeans.user</code> in <code>private.properties</code>
-     * according to the value of that property in the IDE's VM - i.e. the user
-     * directory. This makes it easier for the user to run headless builds in some cases.</p></li>
+     * <li><p>Write property <code>user.properties.file</code> to <code>private.properties</code>
+     * with absolute file path of the <code>build.properties</code> from 
+     * the IDE's user directory. This makes it easier for the user to run headless 
+     * builds in some cases. The IDE's user directory is defined in 
+     * <code>netbeans.user</code> property of IDE's VM.</p></li>
      * </ul>
      * </div>
      */

@@ -18,6 +18,7 @@ import org.openide.nodes.FilterNode;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.CharConversionException;
 import java.text.Collator;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -50,6 +51,7 @@ import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.xml.XMLUtil;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SimpleSearchInfo;
 
@@ -267,8 +269,14 @@ public class ProjectsRootNode extends AbstractNode {
         }
 
         public String getHtmlDisplayName() {
-            String dispName = getOriginal().getHtmlDisplayName();
-            return isMain() ? "<b>" + (dispName == null ? super.getDisplayName() : dispName) + "</b>" : dispName; //NOI18N
+            String htmlName = getOriginal().getHtmlDisplayName();
+            String dispName = super.getDisplayName();
+            try {
+                dispName = XMLUtil.toElementContent(dispName);
+            } catch (CharConversionException ex) {
+                // ignore
+            }
+            return isMain() ? "<b>" + (htmlName == null ? dispName : htmlName) + "</b>" : htmlName; //NOI18N
         }
 
         public Image getIcon( int type ) {
