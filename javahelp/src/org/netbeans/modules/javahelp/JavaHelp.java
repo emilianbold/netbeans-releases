@@ -597,7 +597,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
     private static RequestProcessor helpLoader = null;
     private static RequestProcessor getHelpLoader() {
         if (helpLoader == null) {
-            helpLoader = new RequestProcessor("org.netbeans.core.JavaHelp"); // NOI18N
+            helpLoader = new RequestProcessor("org.netbeans.modules.javahelp.JavaHelp"); // NOI18N
         }
         return helpLoader;
     }
