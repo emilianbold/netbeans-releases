@@ -55,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
      	<taskdef name="instances" classname="org.netbeans.xtest.driver.InstancePropertiesParser"/>
      	<taskdef name="setproperty" classname="org.netbeans.xtest.driver.PropertySetter"/>
         <taskdef name="reportinfo" classname="org.netbeans.xtest.pe.XTestResultsReportTask"/>
-        <taskdef name="buildinfo" classname="org.netbeans.xtest.pe.ParseBuildInfo"/>
+        <taskdef name="buildinfo" classname="org.netbeans.xtest.driver.ParseBuildInfo"/>
         <taskdef name="unzip2" classname="org.netbeans.xtest.driver.UnzipExt"/>
         <taskdef name="getfilename" classname="org.netbeans.xtest.driver.FileName"/>
         <taskdef name="lookForTimestamp" classname="org.netbeans.xtest.driver.LookForTimestamp"/>

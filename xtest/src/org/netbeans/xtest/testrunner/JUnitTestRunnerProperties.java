@@ -45,7 +45,7 @@ public class JUnitTestRunnerProperties {
     // each test class (testsuite) is run in a single VM instance
     public static final String TESTRUN_TYPE_TESTSUITE="testsuite";
     // all tests are run internally (in the same VM as the class which starts the test run)
-    public static final String TESTRUN_TYPE_IDE="ide";
+    public static final String TESTRUN_TYPE_CURRENT_VM="vm";
     
     // dir property where xml results should be places
     public static final String RESULTS_DIRECTORY="xtest.junit-test-runner.result-dir";    

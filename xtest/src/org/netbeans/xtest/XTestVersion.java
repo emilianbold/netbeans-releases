@@ -25,9 +25,9 @@ public class XTestVersion  extends Task {
 
     private String xtestHomeProperty;
     
-    private Manifest getManifest() {             
+    public static Manifest getManifest(String xtestHome) {             
         try {
-            File xtestHome = new File(xtestHomeProperty);
+            File xtestHomeFile = new File(xtestHome);
             File xtestJar = new File(xtestHome,"lib/xtest.jar");
             JarFile xtestJarFile = new JarFile(xtestJar);
             Manifest man = xtestJarFile.getManifest();
@@ -42,6 +42,10 @@ public class XTestVersion  extends Task {
         } 
     }
     
+    private Manifest getManifest() {
+        return getManifest(xtestHomeProperty);
+    }
+    
     private void printoutAttributes(Attributes atts) {
         Iterator keys = atts.keySet().iterator();
         while (keys.hasNext()) {
@@ -50,16 +54,30 @@ public class XTestVersion  extends Task {
         }
     }
     
+    
+    public static String getMajorVersion(Manifest man) {
+            return man.getMainAttributes().getValue("XTest-MajorVersion");
+    }
+    
+    public static String getMinorVersion(Manifest man) {
+        return man.getMainAttributes().getValue("XTest-MinorVersion");
+    }    
+    
+    public static String getBranch(Manifest man) {
+        return man.getMainAttributes().getValue("XTest-Branch");
+    }        
+        
+    
     public String getMajorVersion() {
-        return getManifest().getMainAttributes().getValue("XTest-MajorVersion");
+        return getMajorVersion(getManifest());
     }
     
     public String getMinorVersion() {
-        return getManifest().getMainAttributes().getValue("XTest-MinorVersion");
+        return getMinorVersion(getManifest());
     }
 
     public String getBranch() {
-        return getManifest().getMainAttributes().getValue("XTest-Branch");
+        return getBranch(getManifest());
     }    
     
     public void execute() throws BuildException {
@@ -76,5 +94,6 @@ public class XTestVersion  extends Task {
         }
         log("XTest version: "+version);        
     }
+    
     
 }

@@ -20,7 +20,10 @@
 
 package org.netbeans.xtest.testrunner;
 
-import org.netbeans.xtest.ide.XTestErrorManager;
+// Error manager temporarily disabled -> code needs to be reorganized, so it can
+// be used from IDE plugins
+
+//import org.netbeans.xtest.ide.XTestErrorManager;
 import org.netbeans.xtest.testrunner.*;
 import org.netbeans.xtest.pe.xmlbeans.*;
 import org.netbeans.xtest.pe.*;
@@ -31,7 +34,7 @@ import junit.framework.*;
 import org.netbeans.junit.*;
 import java.io.*;
 
-import org.openide.ErrorManager;
+//import org.openide.ErrorManager;
 
 /**
  *
@@ -151,6 +154,7 @@ public class XMLReporter implements JUnitTestListener {
             }
         }
         
+        /*
         if (JUnitTestRunner.usingXTestErrorManager()) {
             // check for the status of XTestErrorManager
             // there were some problems with the TEST
@@ -181,6 +185,7 @@ public class XMLReporter implements JUnitTestListener {
                 }
             }
         }
+         **/
         
         //add data to the current suite
         if (test instanceof NbPerformanceTest) {
@@ -319,14 +324,18 @@ public class XMLReporter implements JUnitTestListener {
     
     
     // reset results log in XTest error manager
+    
     private void resetErrorManagerResultsLog() {
+        /*
         if (JUnitTestRunner.usingXTestErrorManager()) {
             XTestErrorManager xtem = XTestErrorManager.get();
             if (xtem != null) {
                 xtem.resetResultsLog();
             }
         }
+         */
     }
+     
     
     private boolean saveCurrentSuite() {
         try {
@@ -388,13 +397,18 @@ public class XMLReporter implements JUnitTestListener {
         return result;
     }
     
+    
    private void logToIDE(String message) {
        // if running using custom error manager and running inside IDE
        // log to EM              
+       
+     /*
         if (JUnitTestRunner.usingXTestErrorManager()) {                        
             ErrorManager.getDefault().log(ErrorManager.USER,message);
         }
+     */
    }
+     
     
     
 }

@@ -20,7 +20,6 @@
 
 package org.netbeans.xtest.testrunner;
 
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 
@@ -36,8 +35,6 @@ import org.netbeans.xtest.pe.*;
 
 import java.io.*;
 
-// nbloader imports
-import org.openide.execution.NbClassLoader;
 
 
 /**
@@ -89,48 +86,41 @@ public class JUnitTestRunner {
     // tests are loaded via Class.forName();
     private ClassLoader testLoader;
     
-    // is the test runner running in NetBeans IDE ?
-    private boolean runInIDE;
     
     
     /** Creates a new instance of JUnitTestRunner */
-    public JUnitTestRunner(JUnitTestRunnerProperties runnerProperties, ClassLoader testLoader, boolean runInIDE) 
+    public JUnitTestRunner(JUnitTestRunnerProperties runnerProperties, ClassLoader testLoader) 
                 throws IllegalArgumentException {
         
-        //System.out.println("JUnitTestRunner: runnerProperties = "+runnerProperties);
-        
+        //System.out.println("JUnitTestRunner: runnerProperties = "+runnerProperties);        
         this.runnerProperties = runnerProperties;
         this.testLoader = testLoader;
-        this.runInIDE = runInIDE;
         // this should be placed elsewhere, just a hack for now
-        checkRunnerPropertiesValidity();
-        // this should be done in a bit different way - IDE classloader should
-        // be passed to this constructor as an argument ...
-        if (runInIDE) {
-            ClassLoader ideLoader = getIDEClassLoader();            
-            if (ideLoader != null) {
-                this.testLoader = ideLoader;
-            }
-        }
-        
+        checkRunnerPropertiesValidity();        
     }
     
-    /** run the junit tests */
-    public void runTests() {
-        // check whether all requierd properties are properly defined
+    protected JUnitTestListener[] getJUnitTestListeners() {
+        JUnitTestListener[] listeners;
         if ( getResultsDirectory() != null ) {
             // create the result processors
-            resultProcessors = new JUnitTestListener[] {
+            listeners = new JUnitTestListener[] {
                 new ConsoleSummaryReporter(out),
                 new XMLReporter(getResultsDirectory())
             };
         } else {
             out.println("! Results Directory is not available - not storing results to xml files");
-            resultProcessors = new JUnitTestListener[] {
+            listeners = new JUnitTestListener[] {
                 new ConsoleSummaryReporter(out)
             };            
-        }
+        }        
+        return listeners;
+    }
+    
+    /** run the junit tests */
+    public void runTests() {
 
+        // get result processors
+       resultProcessors = getJUnitTestListeners();
         
         TestSuite[] suites = getTestSuites();
         if (suites == null) {
@@ -168,12 +158,6 @@ public class JUnitTestRunner {
          */
     }
     
-    // return true if XTestErrorManager is installed in IDE
-    public static boolean usingXTestErrorManager() {                
-        // the implementation needs to be double checked
-        // TBD !!!!!!
-        return System.getProperty("xtest.error.manager","false").equals("loaded");
-    }
     
     
     // main is called only when running tests in their own VM (in XTest 'code' mode)
@@ -213,7 +197,7 @@ public class JUnitTestRunner {
             // everything looks ok, construct the runner object and run tests
             // we don't use any special classloader and we never run the main method from IDE
             try {
-                JUnitTestRunner runner = new JUnitTestRunner(runnerProperties, null, false);
+                JUnitTestRunner runner = new JUnitTestRunner(runnerProperties, null);
                 runner.runTests();
             } catch (IllegalArgumentException iae) {
                 System.err.println("Supplied properties are not correct: "+iae.getMessage());
@@ -473,62 +457,7 @@ public class JUnitTestRunner {
         }        
     }
     
-    // get IDE classloader if available (null if not)
-    private ClassLoader getIDEClassLoader() {
-        try {
-            Class topmgr = null;
-            boolean runInIDE = false;
-            try {
-                topmgr = Class.forName("org.netbeans.core.NbTopManager", true, Thread.currentThread().getContextClassLoader());
-                System.out.println("-----> TopManager found.");
-                // so we're running inside IDE
-                runInIDE = true;
-            } catch ( ClassNotFoundException cnfe ) {
-                System.out.println("-----> TopManager not found.");
-                return null;
-            }
-            
-            Class [] params = new Class [] {};
-            Object [] args = new Object [] {};
-            
-            Method defaultMgrGetter = topmgr.getMethod( "get", params );
-            Object topmgr_instance = defaultMgrGetter.invoke( null, args );
-            
-            try {
-                // See warning in that class.                
-                Class nbcl = Class.forName("org.netbeans.xtest.testrunner.JUnitTestRunner$NbLoader");
-                return (ClassLoader)nbcl.newInstance();
-            } catch (ClassNotFoundException cnfe) {
-                System.out.println("-----> NbClassLoader not found, using system classloader:");
-                cnfe.printStackTrace();
-            } catch (LinkageError le) {
-                System.out.println("-----> NbClassLoader not found, using system classloader:");
-                le.printStackTrace();
-            }
-        } catch (Throwable t) {
-            System.out.println("Caught throwable.");
-            t.printStackTrace();
-        }
-        return null;
-    }
-    
-    
-    /** Adaptation of old org.netbeans.core.ClassLoaderSupport (= currentClassLoader).
-     * @deprecated this will be broken by Projects, Classpath API
-     */
-    public static class NbLoader extends NbClassLoader {
-        public NbLoader() {
-            setDefaultPermissions(getAllPermissions());
-        }
-        private static java.security.PermissionCollection allPermission;
-        static synchronized java.security.PermissionCollection getAllPermissions() {
-            if (allPermission == null) {
-                allPermission = new java.security.Permissions();
-                allPermission.add(new java.security.AllPermission());
-            }
-            return allPermission;
-        }
-    }
+
     
         
 }
