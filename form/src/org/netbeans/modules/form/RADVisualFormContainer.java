@@ -134,6 +134,12 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
       }
     } else {
       menu = null;
+      // set the real menu
+      if (formInfo instanceof JMenuBarContainer) {
+        ((JMenuBarContainer)formInfo).setJMenuBar (null);
+      } else if (formInfo instanceof MenuBarContainer) {
+        ((MenuBarContainer)formInfo).setMenuBar (null);
+      }
     }
     getFormManager ().fireFormChange ();
   }
@@ -421,6 +427,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  8    Gandalf   1.7         7/9/99   Ian Formanek    Fixed setting "No Menu"
  *  7    Gandalf   1.6         7/9/99   Ian Formanek    menu editor improvements
  *  6    Gandalf   1.5         7/5/99   Ian Formanek    menu bar property, 
  *       constants for properties
