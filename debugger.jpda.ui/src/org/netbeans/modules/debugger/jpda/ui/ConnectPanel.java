@@ -143,6 +143,9 @@ Controller, ActionListener {
                 lblConnectors.setDisplayedMnemonic (
                     NbBundle.getMessage (ConnectPanel.class, "MN_CTL_Connector").charAt (0) // NOI18N
                 );
+                lblConnectors.getAccessibleContext ().setAccessibleDescription (
+                    NbBundle.getMessage (ConnectPanel.class, "ACSD_CTL_Connector")
+                );
                 lblConnectors.setLabelFor (cbConnectors);
                 layout.setConstraints (lblConnectors, c);
             add (lblConnectors);
@@ -164,6 +167,9 @@ Controller, ActionListener {
             lblTransport.setDisplayedMnemonic (
                 NbBundle.getMessage (ConnectPanel.class, 
                 "CTL_Transport_Mnemonic").charAt(0)
+            );
+            lblTransport.getAccessibleContext ().setAccessibleDescription (
+                NbBundle.getMessage (ConnectPanel.class, "ACSD_CTL_Transport")
             );
             layout.setConstraints (lblTransport, c);
         add (lblTransport);

@@ -37,7 +37,7 @@ public class BreakpointResumeTest  extends DebuggerJPDAApiTestBase {
         super.setUp();
         dm = DebuggerManager.getDebuggerManager();
         ClassLoader cl = this.getClass().getClassLoader();
-        URL url = cl.getResource("basic/LineBreakpointApp.class");
+        URL url = cl.getResource("org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.class");
         urlString = url.toString();
     }
 
@@ -48,7 +48,7 @@ public class BreakpointResumeTest  extends DebuggerJPDAApiTestBase {
             lb.addJPDABreakpointListener(tbl);
             dm.addBreakpoint(lb);
 
-            support = JPDASupport.listen("basic.LineBreakpointApp", false);
+            support = JPDASupport.listen("org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp", false);
             debugger = support.getDebugger();
 
             support.waitDisconnected(5000);

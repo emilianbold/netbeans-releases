@@ -25,7 +25,7 @@ public class MethodBreakpointTest extends DebuggerJPDAApiTestBase {
     private JPDASupport     support;
     private JPDADebugger    debugger;
 
-    private static final String CLASS_NAME = "basic.MethodBreakpointApp";
+    private static final String CLASS_NAME = "org.netbeans.api.debugger.jpda.testapps.MethodBreakpointApp";
 
     public MethodBreakpointTest(String s) {
         super(s);

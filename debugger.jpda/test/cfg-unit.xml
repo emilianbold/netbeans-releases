@@ -17,15 +17,14 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="unstable" executor="unit-executor" name="Debugger JPDA API">
         <testset dir="unit/src">
             <patternset>
-<!--                <include name="org/netbeans/api/debugger/jpda/Test.class"/>-->
-                <include name="org/netbeans/api/debugger/jpda/*Test.class"/>
-            </patternset>
+                 <include name="**/*Test.class"/>
+           </patternset>
         </testset>
     </testbag>
 
     <compiler name="default-compiler" antfile="build-unit.xml"
         target="default-compiler" default="true"/>
 
-    <executor name="unit-executor" antfile="build-unit.xml" target="rununittest"/>
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
 
 </mconfig>

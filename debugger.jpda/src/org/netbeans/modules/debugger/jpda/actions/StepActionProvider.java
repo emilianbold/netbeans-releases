@@ -134,7 +134,6 @@ implements Executor {
                 // 4) resume JVM
                 getDebuggerImpl ().resume ();
             } catch (IncompatibleThreadStateException e) {
-                e.printStackTrace ();
             } catch (VMDisconnectedException e) {
             }
         }

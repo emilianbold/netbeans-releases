@@ -23,7 +23,7 @@ public class ThreadBreakpointTest extends DebuggerJPDAApiTestBase {
     private JPDASupport     support;
     private JPDADebugger    debugger;
 
-    private static final String CLASS_NAME = "basic.ThreadBreakpointApp";
+    private static final String CLASS_NAME = "org.netbeans.api.debugger.jpda.testapps.ThreadBreakpointApp";
 
     public ThreadBreakpointTest(String s) {
         super(s);

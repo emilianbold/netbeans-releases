@@ -23,7 +23,7 @@ public class ExceptionBreakpointTest extends DebuggerJPDAApiTestBase {
     private JPDASupport     support;
     private JPDADebugger    debugger;
 
-    private static final String CLASS_NAME = "basic.ExceptionBreakpointApp";
+    private static final String CLASS_NAME = "org.netbeans.api.debugger.jpda.testapps.ExceptionBreakpointApp";
 
     public ExceptionBreakpointTest(String s) {
         super(s);
@@ -35,8 +35,8 @@ public class ExceptionBreakpointTest extends DebuggerJPDAApiTestBase {
 
     public void testMethodBreakpoints() throws Exception {
         try {
-            ExceptionBreakpoint eb1 = ExceptionBreakpoint.create("basic.ExceptionTestException", ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED);
-            TestBreakpointListener tbl = new TestBreakpointListener("basic.ExceptionTestException", eb1, 1);
+            ExceptionBreakpoint eb1 = ExceptionBreakpoint.create("org.netbeans.api.debugger.jpda.testapps.ExceptionTestException", ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED);
+            TestBreakpointListener tbl = new TestBreakpointListener("org.netbeans.api.debugger.jpda.testapps.ExceptionTestException", eb1, 1);
             eb1.addJPDABreakpointListener(tbl);
             dm.addBreakpoint(eb1);
 
@@ -81,7 +81,8 @@ public class ExceptionBreakpointTest extends DebuggerJPDAApiTestBase {
         }
 
         private void checkEvent(JPDABreakpointEvent event) {
-            assertEquals("Breakpoint event: Bad exception thrown", exceptionClass, event.getReferenceType().name());
+            assertEquals("Breakpoint event: Bad exception location", CLASS_NAME, event.getReferenceType().name());
+            assertEquals("Breakpoint event: Bad exception thrown", exceptionClass, event.getVariable ().getType ());
             assertSame("Breakpoint event: Bad event source", bpt, event.getSource());
             assertEquals("Breakpoint event: Condition evaluation failed", DebuggerConstants.CONDITION_NONE, event.getConditionResult());
             assertNotNull("Breakpoint event: Context thread is null", event.getThread());

@@ -14,6 +14,11 @@
 package org.netbeans.api.debugger.jpda;
 
 import java.util.*;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.debugger.jpda.SourcePath;
+import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+
 
 /**
  * Tests information about stack call stacks.
@@ -31,7 +36,7 @@ public class CallStackTest extends DebuggerJPDAApiTestBase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        support = JPDASupport.listen("basic.CallStackApp");
+        support = JPDASupport.listen("org.netbeans.api.debugger.jpda.testapps.CallStackApp");
         debugger = support.getDebugger();
     }
 
@@ -50,7 +55,7 @@ public class CallStackTest extends DebuggerJPDAApiTestBase {
             assertEquals("Java stratum is not available", "Java", strata.get(0));
             assertEquals("Java stratum is not default", "Java", sf.getDefaultStratum());
 
-            assertEquals("Wrong class name", "basic.CallStackApp", sf.getClassName());
+            assertEquals("Wrong class name", "org.netbeans.api.debugger.jpda.testapps.CallStackApp", sf.getClassName());
             assertEquals("Wrong line number", 43, sf.getLineNumber(null));
 
             LocalVariable [] vars = sf.getLocalVariables();
@@ -81,7 +86,7 @@ public class CallStackTest extends DebuggerJPDAApiTestBase {
             assertEquals("Java stratum is not available", "Java", strata.get(0));
             assertEquals("Java stratum is not default", "Java", sf.getDefaultStratum());
 
-            assertEquals("Wrong class name", "basic.CallStackApp", sf.getClassName());
+            assertEquals("Wrong class name", "org.netbeans.api.debugger.jpda.testapps.CallStackApp", sf.getClassName());
             assertEquals("Wrong line number", 24, sf.getLineNumber(null));
 
             LocalVariable [] vars = sf.getLocalVariables();

@@ -163,8 +163,9 @@ public class CallStackFrameImpl implements CallStackFrame {
     throws NoInformationException {
         try {
             LocalsTreeModel ltm = ctm.getLocalsTreeModel ();
+            int count = getStackFrame ().visibleVariables ().size ();
             AbstractVariable vs[] = ltm.getLocalVariables 
-                (this, getStackFrame (), 0, 0);
+                (this, getStackFrame (), 0, count);
             org.netbeans.api.debugger.jpda.LocalVariable[] var = new
                 org.netbeans.api.debugger.jpda.LocalVariable [vs.length];
             System.arraycopy (vs, 0, var, 0, vs.length);

@@ -29,7 +29,7 @@ public class EvaluationTest  extends DebuggerJPDAApiTestBase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        support = JPDASupport.listen("basic.EvalApp");
+        support = JPDASupport.listen("org.netbeans.api.debugger.jpda.testapps.EvalApp");
         debugger = support.getDebugger();
     }
 

@@ -25,7 +25,7 @@ public class FieldBreakpointTest extends DebuggerJPDAApiTestBase {
     private JPDASupport     support;
     private JPDADebugger    debugger;
 
-    private static final String CLASS_NAME = "basic.FieldBreakpointApp";
+    private static final String CLASS_NAME = "org.netbeans.api.debugger.jpda.testapps.FieldBreakpointApp";
 
     public FieldBreakpointTest(String s) {
         super(s);

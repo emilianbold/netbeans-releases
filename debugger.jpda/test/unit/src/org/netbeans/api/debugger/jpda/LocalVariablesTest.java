@@ -26,7 +26,7 @@ public class LocalVariablesTest extends DebuggerJPDAApiTestBase {
     private JPDASupport     support;
     private JPDADebugger    debugger;
 
-    private static final String CLASS_NAME = "basic.LocalVariablesApp";
+    private static final String CLASS_NAME = "org.netbeans.api.debugger.jpda.testapps.LocalVariablesApp";
 
     public LocalVariablesTest(String s) {
         super(s);

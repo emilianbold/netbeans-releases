@@ -36,7 +36,7 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         ClassLoader cl = this.getClass().getClassLoader();
-        URL url = cl.getResource("basic/LineBreakpointApp.class");
+        URL url = cl.getResource("org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.class");
         urlString = url.toString();
     }
 
@@ -70,7 +70,7 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
             TestBreakpointListener tb5 = new TestBreakpointListener(lb5);
             lb5.addJPDABreakpointListener(tb5);
 
-            support = JPDASupport.listen("basic.LineBreakpointApp", false);
+            support = JPDASupport.listen("org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp", false);
             debugger = support.getDebugger();
 
             support.waitState(DebuggerConstants.STATE_STOPPED, 10000);  // 1st breakpoint hit
@@ -162,7 +162,7 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
         lb.addJPDABreakpointListener(tbl);
         dm.addBreakpoint(lb);
 
-        support = JPDASupport.listen("basic.LineBreakpointApp", false);
+        support = JPDASupport.listen("org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp", false);
         debugger = support.getDebugger();
 
         if (condition == null || conditionResult == DebuggerConstants.CONDITION_TRUE) {

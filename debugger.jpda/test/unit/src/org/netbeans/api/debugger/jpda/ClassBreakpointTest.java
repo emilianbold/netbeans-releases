@@ -23,7 +23,7 @@ public class ClassBreakpointTest extends DebuggerJPDAApiTestBase {
     private JPDASupport     support;
     private JPDADebugger    debugger;
 
-    private static final String CLASS_NAME = "basic.ClassBreakpointApp";
+    private static final String CLASS_NAME = "org.netbeans.api.debugger.jpda.testapps.ClassBreakpointApp";
 
     public ClassBreakpointTest(String s) {
         super(s);
@@ -35,8 +35,8 @@ public class ClassBreakpointTest extends DebuggerJPDAApiTestBase {
 
     public void testMethodBreakpoints() throws Exception {
         try {
-            ClassLoadUnloadBreakpoint cb1 = ClassLoadUnloadBreakpoint.create("basic.ClassBreakpointTest1", false, ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
-            TestBreakpointListener tbl = new TestBreakpointListener("basic.ClassBreakpointTest1", 1);
+            ClassLoadUnloadBreakpoint cb1 = ClassLoadUnloadBreakpoint.create("org.netbeans.api.debugger.jpda.testapps.ClassBreakpointTest1", false, ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
+            TestBreakpointListener tbl = new TestBreakpointListener("org.netbeans.api.debugger.jpda.testapps.ClassBreakpointTest1", 1);
             cb1.addJPDABreakpointListener(tbl);
             dm.addBreakpoint(cb1);
 

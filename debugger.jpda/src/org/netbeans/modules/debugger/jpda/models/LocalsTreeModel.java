@@ -188,7 +188,7 @@ public class LocalsTreeModel implements TreeModel {
     
     // private methods .........................................................
     
-    Object[] getLocalVariables (
+    private Object[] getLocalVariables (
         int from, 
         int to
     ) throws NoInformationException {
