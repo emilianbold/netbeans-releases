@@ -67,7 +67,7 @@ public final class DefaultSplitContainer extends AbstractModeContainer {
     
     protected Tabbed createTabbed() {
         Tabbed tabbed;
-        if(kind == Constants.MODE_KIND_EDITOR) {
+        if(getKind() == Constants.MODE_KIND_EDITOR) {
             tabbed = new TabbedAdapter(Constants.MODE_KIND_EDITOR);
         } else {
             tabbed = new TabbedAdapter(Constants.MODE_KIND_VIEW);

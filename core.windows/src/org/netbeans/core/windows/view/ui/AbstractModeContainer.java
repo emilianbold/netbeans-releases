@@ -45,7 +45,7 @@ public abstract class AbstractModeContainer implements ModeContainer {
     // PENDING
     protected final WindowDnDManager windowDnDManager;
     // XXX
-    protected final int kind;
+    private final int kind;
     
 
     /** Creates a DefaultSeparateContainer. */
