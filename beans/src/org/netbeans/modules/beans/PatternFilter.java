@@ -13,37 +13,30 @@
 
 package com.netbeans.developer.modules.beans;
 
+import org.openide.src.nodes.ClassElementFilter;
 
 /** Orders and filters members in a pattern node.
 *
 * @author Petr Hrebejk
 */
-public class PatternFilter extends Object {
+public class PatternFilter extends ClassElementFilter {
 
   /** Specifies a child representing a property. */
-  public static final int     PROPERTY = 1;
+  public static final int     PROPERTY = 256;
   /** Specifies a child representing a indexed property */
-  public static final int     IDXPROPERTY = 2;
+  public static final int     IDXPROPERTY = 512;
   /** Specifies a child representing a event listener. */
-  public static final int     EVENT_SET = 4;
+  public static final int     EVENT_SET = 1024;
   /** Specifies a child representing a method. */
   
   /** Does not specify a child type. */
-  public static final int     ALL = PROPERTY | IDXPROPERTY | EVENT_SET;
+  public static final int     ALL = ClassElementFilter.ALL | PROPERTY | IDXPROPERTY | EVENT_SET;
 
   /** Default order and filtering.
   * Places all fields, constructors, methods, and inner classes (interfaces) together
   * in one block.
   */
-  public static final int[]   DEFAULT_ORDER = {PROPERTY +  IDXPROPERTY + EVENT_SET};
-
-
-  /** Gets the order of children - temporary implementation
-  * @return allways <CODE>DEFAULT_ORDER</CODE>.
-  */
-  public int[] getOrder() {
-    return DEFAULT_ORDER;
-  }
+  public static final int[]   DEFAULT_ORDER = {PROPERTY | IDXPROPERTY | EVENT_SET};
 
 }
 
