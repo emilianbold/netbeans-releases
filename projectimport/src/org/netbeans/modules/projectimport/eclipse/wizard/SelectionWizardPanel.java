@@ -16,6 +16,11 @@ package org.netbeans.modules.projectimport.eclipse.wizard;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.modules.projectimport.eclipse.EclipseUtils;
+import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 
 /**
  * Selection wizard panel for Eclipse Wizard importer.
@@ -23,7 +28,7 @@ import java.beans.PropertyChangeListener;
  * @author mkrauskopf
  */
 final class SelectionWizardPanel extends ImporterWizardPanel implements
-        PropertyChangeListener {
+        PropertyChangeListener, WizardDescriptor.ValidatingPanel {
     
     private SelectionPanel panel;
     
@@ -56,8 +61,20 @@ final class SelectionWizardPanel extends ImporterWizardPanel implements
     public String getProjectDestinationDir() {
         return panel.getProjectDestinationDir();
     }
-
+    
     public String getWorkspaceDir() {
         return panel.getWorkspaceDir();
+    }
+    
+    public void validate() throws WizardValidationException {
+        if (!panel.isWorkspaceChosen()) {
+            String dest = panel.getProjectDestinationDir();
+            if ((!new File(dest).isAbsolute()) || !EclipseUtils.isWritable(dest)) {
+                String message = ProjectImporterWizard.getMessage(
+                        "MSG_CannotCreateProjectInFolder", dest); // NOI18N
+                setErrorMessage(message);
+                throw new WizardValidationException(panel, message, null);
+            }
+        }
     }
 }

@@ -61,4 +61,18 @@ public class EclipseUtils {
                 new File(workspaceDir, Workspace.LAUNCHING_PREFERENCES).isFile() &&
                 new File(workspaceDir, Workspace.RESOURCE_PROJECTS_DIR).isDirectory();
     }
+
+    
+    private static final String TMP_NAME =
+            "NB___TMP___ENOUGH___UNIQUE___CONSTANT___"; // NOI18N
+    
+    public static boolean isWritable(String projectDestination) {
+        File tmpDir = new File(projectDestination,
+                (TMP_NAME + System.currentTimeMillis()));
+        if (tmpDir.mkdirs()) {
+            tmpDir.delete();
+            return true;
+        }
+        return false;
+    }
 }
