@@ -41,7 +41,7 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
     /** class to work on */
     private Class clazz;
 
-    /** message to be used in custom editor */
+    /** message key to be used in custom editor */
     private String message;
 
     /** type which will be used to indicate "none", i.e. a no-op */ // NOI18N
@@ -70,7 +70,7 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
      */
     public ServiceTypeEditor(Class clazz, String message, ServiceType none) {
         this.clazz = clazz;
-        this.message = getString (message);
+        this.message = message;
         this.none = none;
     }
 
@@ -168,7 +168,7 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
     }
 
     public java.awt.Component getCustomEditor () {
-        final ServiceTypePanel s = new ServiceTypePanel (clazz, message, none, createNewInstance);
+        final ServiceTypePanel s = new ServiceTypePanel (clazz, getString(message), none, createNewInstance);
 
         s.setServiceType ((ServiceType)getValue ());
         // [PENDING] why is this here? Cancel does not work correctly because of this, I think:
