@@ -17,6 +17,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.*;
+import java.util.Collections;
 import java.util.Vector;
 import java.util.Enumeration;
 import java.util.ResourceBundle;
@@ -27,7 +28,6 @@ import javax.swing.event.*;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.colorchooser.ColorSelectionModel;
 
-import com.netbeans.ide.util.QuickSorter;
 import com.netbeans.ide.util.NbBundle;
 
 /** A property editor for Color class.
@@ -302,10 +302,11 @@ public final class ColorEditor implements PropertyEditor {
         continue;
       names.addElement ((String)k);
     }
+    Collections.sort (names);
 
     swingColorNames = new String [names.size ()];
     names.copyInto (swingColorNames);
-    QuickSorter.STRING.sort (swingColorNames);
+//    QuickSorter.STRING.sort (swingColorNames);
     swingColors = new Color [swingColorNames.length];
     int i, k = swingColorNames.length;
     for (i = 0; i < k; i++)
@@ -535,6 +536,7 @@ public final class ColorEditor implements PropertyEditor {
 
 /*
  * Log
+ *  8    Gandalf   1.7         3/4/99   Jan Jancura     QuickSorter removed
  *  7    Gandalf   1.6         3/4/99   Jan Jancura     bundle moved
  *  6    Gandalf   1.5         2/5/99   David Simonek   
  *  5    Gandalf   1.4         2/5/99   Petr Hamernik   bugfix
