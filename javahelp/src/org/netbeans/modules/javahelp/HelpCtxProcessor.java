@@ -157,6 +157,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
             this.obj = obj;
             this.helpID = helpID;
             this.showmaster = showmaster;
+            Installer.err.log("new ShortcutAction: " + obj + " " + helpID + " showmaster=" + showmaster);
             updateText();
             updateIcon();
             updateEnabled();
@@ -174,6 +175,7 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
         public void actionPerformed(ActionEvent actionEvent) {
             Help h = findHelp();
             if (h != null) {
+                Installer.err.log("ShortcutAction.actionPerformed: " + helpID + " showmaster=" + showmaster);
                 h.showHelp(new HelpCtx(helpID), showmaster);
             } else {
                 Toolkit.getDefaultToolkit().beep();
