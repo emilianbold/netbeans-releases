@@ -62,15 +62,16 @@
                     <b> WARNING: No imported or exported interfaces! </b>
                 </xsl:if>
              
-                <table border="1" >   
+                <table border="1" width="100%" >   
                     <thead>
-                        <td>Name</td>
-                        <td>Imported/Exported</td>
-                        <td>Stability category</td>
-                        <td>Reference URL</td>
+                        <th valign="bottom" width="25%"><b>Interface Name</b></th>
+                        <th valign="bottom" width="10%"><b>In/Out</b></th>
+                        <th valign="bottom" width="10%"><b>Stability</b></th>
+                        <th valign="bottom" ><b>Specified in What Document?</b></th>
                     </thead>
                 
                     <xsl:for-each select="$all_interfaces">
+                        <tr/>
                         <xsl:call-template name="api" />
                     </xsl:for-each>
                 </table>
@@ -82,14 +83,15 @@
                 
                     <h2>Properties table</h2>
                 
-                    <table border="1" >   
+                    <table border="1" width="100%" >   
                         <thead>
-                            <td>Name</td>
-                            <td>Stability category</td>
-                            <td>Description</td>
+                            <th valign="bottom" width="25%"><b>Name</b></th>
+                            <th valign="bottom" width="10%"><b>Stability</b></th>
+                            <th valign="bottom" ><b>Specified in What Document?</b></th>
                         </thead>
 
                         <xsl:for-each select="$all_properties">
+                            <tr/>
                             <xsl:call-template name="property" />
                         </xsl:for-each>
                     </table>
@@ -156,49 +158,14 @@
     </xsl:template>
 
     <xsl:template name="api">
-        <xsl:variable name="name" select="@name" />
-        <xsl:variable name="type" select="@type" />
-        <xsl:variable name="category" select="@category" />
-        <xsl:variable name="url" select="@url" />
-
-        <tbody>
-            <td>
-                <a>
-                    <xsl:attribute name="name" >
-                        <xsl:text>api-</xsl:text><xsl:value-of select="$name" />
-                    </xsl:attribute>
-                    <xsl:value-of select="$name" />
-                </a>
-            </td>
-            <td> <!-- imported/exported -->
-                <xsl:choose>
-                    <xsl:when test="$type='import'">Imported</xsl:when>
-                    <xsl:when test="$type='export'">Exported</xsl:when>
-                    <xsl:otherwise>WARNING: <xsl:value-of select="$type" /></xsl:otherwise>
-                </xsl:choose>
-            </td>
-            <td> <!-- stability category -->
-                <xsl:choose>
-                    <xsl:when test="$category='official'">Official</xsl:when>
-                    <xsl:when test="$category='stable'">Stable</xsl:when>
-                    <xsl:when test="$category='devel'">Under Development</xsl:when>
-                    <xsl:when test="$category='third'">Third party</xsl:when>
-                    <xsl:when test="$category='standard'">Standard</xsl:when>
-                    <xsl:when test="$category='friend'">Friend private</xsl:when>
-                    <xsl:when test="$category='private'">Private</xsl:when>
-                    <xsl:when test="$category='deprecated'">Deprecated</xsl:when>
-                    <xsl:otherwise>WARNING: <xsl:value-of select="$category" /></xsl:otherwise>
-                </xsl:choose>
-            </td>
-            
-            <td> <!-- url -->
-                <xsl:call-template name="describe">
-                  <xsl:with-param name="describe.url" select="$url" />
-                  <xsl:with-param name="describe.node" select="./node()" />
-                </xsl:call-template>
-            </td>
-        </tbody>
-            
+        <xsl:call-template name="api-line" >
+            <xsl:with-param name="name" select="@name" />
+            <xsl:with-param name="type" select="@type" />
+            <xsl:with-param name="group">api</xsl:with-param>
+            <xsl:with-param name="category" select="@category" />
+            <xsl:with-param name="describe.url" select="@url" />
+            <xsl:with-param name="describe.node" select="./node()" />
+        </xsl:call-template>
     </xsl:template>
     
     <xsl:template match="property">
@@ -215,19 +182,61 @@
     </xsl:template>
 
     <xsl:template name="property">
-        <xsl:variable name="name" select="@name" />
-        <xsl:variable name="category" select="@category" />
-        <xsl:variable name="url" select="@url" />
+        <xsl:call-template name="api-line" >
+            <xsl:with-param name="group">property</xsl:with-param>
+            <xsl:with-param name="name" select="@name" />
+            <xsl:with-param name="category" select="@category" />
+            <xsl:with-param name="describe.url" select="@url" />
+            <xsl:with-param name="describe.node" select="./node()" />
+        </xsl:call-template>
+    </xsl:template>
+    
+    <!-- Format random HTML elements as is: -->
+    <xsl:template match="@*|node()">
+        <xsl:copy>
+            <xsl:apply-templates select="@*|node()"/>
+        </xsl:copy>
+    </xsl:template>
+  
+  
+    <xsl:template match="answer">
+        <!-- ignore direct answers -->
+    </xsl:template>
+    <xsl:template match="hint">
+        <!-- ignore direct answers -->
+    </xsl:template>
+    
+    
+    <!-- the template to convert an instances of API into an HTML line in a table 
+      describing the API -->
+
+    <xsl:template name="api-line" >
+       <xsl:param name="name" />
+       <xsl:param name="group" />
+       <xsl:param name="category" />
+       <xsl:param name="type" /> <!-- can be left empty -->
+       
+       <xsl:param name="describe.url" />
+       <xsl:param name="describe.node" />
 
         <tbody>
             <td>
                 <a>
                     <xsl:attribute name="name" >
-                        <xsl:text>property-</xsl:text><xsl:value-of select="$name" />
+                        <xsl:value-of select="$group" /><xsl:text>-</xsl:text><xsl:value-of select="$name" />
                     </xsl:attribute>
                     <xsl:value-of select="$name" />
                 </a>
             </td>
+            <xsl:if test="$type" > 
+                <td> <!-- imported/exported -->
+                    <xsl:choose>
+                        <xsl:when test="$type='import'">Imported</xsl:when>
+                        <xsl:when test="$type='export'">Exported</xsl:when>
+                        <xsl:otherwise>WARNING: <xsl:value-of select="$type" /></xsl:otherwise>
+                    </xsl:choose>
+                </td>
+            </xsl:if>
             <td> <!-- stability category -->
                 <xsl:choose>
                     <xsl:when test="$category='official'">Official</xsl:when>
@@ -244,15 +253,12 @@
             
             <td> <!-- description -->
                 <xsl:call-template name="describe">
-                  <xsl:with-param name="describe.url" select="$url" />
-                  <xsl:with-param name="describe.node" select="./node()" />
+                  <xsl:with-param name="describe.url" select="$describe.url" />
+                  <xsl:with-param name="describe.node" select="$describe.node" />
                 </xsl:call-template>
             </td>
         </tbody>
-            
-    </xsl:template>
-    
-    <!-- template to display URL &| description -->
+    </xsl:template>  
     <xsl:template name="describe">
        <xsl:param name="describe.url" />
        <xsl:param name="describe.node" />
@@ -274,21 +280,6 @@
        <xsl:if test="$describe.node" >
            <xsl:apply-templates select="$describe.node" />
        </xsl:if>
-    </xsl:template>
-
-    <!-- Format random HTML elements as is: -->
-    <xsl:template match="@*|node()">
-        <xsl:copy>
-            <xsl:apply-templates select="@*|node()"/>
-        </xsl:copy>
-    </xsl:template>
-  
-  
-    <xsl:template match="answer">
-        <!-- ignore direct answers -->
-    </xsl:template>
-    <xsl:template match="hint">
-        <!-- ignore direct answers -->
     </xsl:template>
         
 </xsl:stylesheet> 
