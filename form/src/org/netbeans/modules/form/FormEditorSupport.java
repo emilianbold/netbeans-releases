@@ -287,11 +287,11 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
         return formLoaded;
     }
 
-    protected Task reloadDocument() {
+    protected Task reloadDocumentTask() {
         closeForm();
         openForm();
 
-        Task docLoadTask = super.reloadDocument();
+        Task docLoadTask = super.reloadDocumentTask();
         FormManager2 fm = getFormManager();
         fm.getCodeGenerator().initialize(fm);
 //        fm.fireFormLoaded();
