@@ -17,6 +17,7 @@ package org.apache.tools.ant.module.nodes;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Toolkit;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.File;
@@ -25,6 +26,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
+import javax.xml.parsers.*;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
@@ -32,15 +36,21 @@ import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.run.TargetExecutor;
 import org.apache.tools.ant.module.wizards.shortcut.ShortcutWizard;
+import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.openide.*;
 import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.cookies.*;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Line;
 import org.openide.util.*;
 import org.openide.util.datatransfer.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
-import org.w3c.dom.*;
+import org.xml.sax.*;
+import org.xml.sax.helpers.DefaultHandler;
 
 /** A node representing an Ant build target.
  */
@@ -75,6 +85,7 @@ final class AntTargetNode extends AbstractNode implements ChangeListener, NodeLi
         } else {
             setIconBase ("org/apache/tools/ant/module/resources/TargetIcon");
         }
+        getCookieSet().add(new TargetOpenCookie(target));
     }
     
     private static String internalTargetColor = null;
@@ -157,26 +168,24 @@ final class AntTargetNode extends AbstractNode implements ChangeListener, NodeLi
     public Action[] getActions(boolean context) {
         if (!target.isInternal()) {
             return new Action[] {
+                SystemAction.get(OpenAction.class),
+                null,
                 EXECUTE,
                 CREATE_SHORTCUT,
                 null,
-                SystemAction.get (ToolsAction.class),
-                SystemAction.get (PropertiesAction.class),
+                SystemAction.get(PropertiesAction.class),
             };
         } else {
             return new Action[] {
-                SystemAction.get (ToolsAction.class),
-                SystemAction.get (PropertiesAction.class),
+                SystemAction.get(OpenAction.class),
+                null,
+                SystemAction.get(PropertiesAction.class),
             };
         }
     }
 
     public Action getPreferredAction() {
-        if (!target.isInternal()) {
-            return EXECUTE;
-        } else {
-            return null;
-        }
+        return SystemAction.get(OpenAction.class);
     }
     
     private final class ExecuteAction extends AbstractAction {
@@ -249,9 +258,6 @@ final class AntTargetNode extends AbstractNode implements ChangeListener, NodeLi
         return sheet;
     }
     
-    protected void addProperties (Sheet.Set props) {
-    }
-
     /**
      * Node displaying the sequence of all called targets when executing.
      */
@@ -368,4 +374,65 @@ final class AntTargetNode extends AbstractNode implements ChangeListener, NodeLi
             return "XXX BuildSequenceProperty currently unimplemented";
         }
     }
+    
+    private static final class TargetOpenCookie implements OpenCookie {
+        
+        private final TargetLister.Target target;
+        
+        public TargetOpenCookie(TargetLister.Target target) {
+            this.target = target;
+        }
+        
+        public void open() {
+            if (target.getScript().getParseException() != null) {
+                Toolkit.getDefaultToolkit().beep();
+                return;
+            }
+            FileObject script = target.getScript().getFileObject();
+            assert script != null : "No build script for " + target;
+            EditorCookie editor;
+            LineCookie lines;
+            try {
+                DataObject d = DataObject.find(script);
+                editor = (EditorCookie) d.getCookie(EditorCookie.class);
+                lines = (LineCookie) d.getCookie(LineCookie.class);
+                assert editor != null;
+                assert lines != null;
+            } catch (DataObjectNotFoundException e) {
+                throw new AssertionError(e);
+            }
+            try {
+                StyledDocument doc = editor.openDocument();
+                InputSource in = AntProjectSupport.createInputSource(script, editor, doc);
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                SAXParser parser = factory.newSAXParser();
+                final int[] line = new int[1];
+                final String name = target.getName();
+                class Handler extends DefaultHandler {
+                    private Locator locator;
+                    public void setDocumentLocator(Locator l) {
+                        locator = l;
+                    }
+                    public void startElement(String uri, String localname, String qname, Attributes attr) throws SAXException {
+                        if (line[0] == 0) {
+                            if (qname.equals("target") && name.equals(attr.getValue("name"))) { // NOI18N
+                                line[0] = locator.getLineNumber();
+                            }
+                        }
+                    }
+                }
+                parser.parse(in, new Handler());
+                if (line[0] < 1) {
+                    Toolkit.getDefaultToolkit().beep();
+                    return;
+                }
+                lines.getLineSet().getCurrent(line[0] - 1).show(Line.SHOW_GOTO);
+            } catch (Exception e) {
+                AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+                return;
+            }
+        }
+        
+    }
+    
 }

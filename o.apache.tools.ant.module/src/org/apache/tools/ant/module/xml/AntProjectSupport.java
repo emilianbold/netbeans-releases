@@ -212,6 +212,46 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.sw
         return kit;
     }
     
+    /**
+     * Utility method to get a properly configured XML input source for a script.
+     */
+    public static InputSource createInputSource(FileObject fo, EditorCookie editor, final StyledDocument document) throws IOException, BadLocationException {
+        final StringWriter w = new StringWriter(document.getLength());
+        final EditorKit kit = findKit(editor.getOpenedPanes());
+        final IOException[] ioe = new IOException[1];
+        final BadLocationException[] ble = new BadLocationException[1];
+        document.render(new Runnable() {
+            public void run() {
+                try {
+                    kit.write(w, document, 0, document.getLength());
+                } catch (IOException e) {
+                    ioe[0] = e;
+                } catch (BadLocationException e) {
+                    ble[0] = e;
+                }
+            }
+        });
+        if (ioe[0] != null) {
+            throw ioe[0];
+        } else if (ble[0] != null) {
+            throw ble[0];
+        }
+        InputSource in = new InputSource(new StringReader(w.toString()));
+        if (fo != null) { // #10348
+            try {
+                in.setSystemId(fo.getURL().toExternalForm());
+            } catch (FileStateInvalidException e) {
+                assert false : e;
+            }
+            // [PENDING] Ant's ProjectHelper has an elaborate set of work-
+            // arounds for inconsistent parser behavior, e.g. file:foo.xml
+            // works in Ant but not with Xerces parser. You must use just foo.xml
+            // as the system ID. If necessary, Ant's algorithm could be copied
+            // here to make the behavior match perfectly, but it ought not be necessary.
+        }
+        return in;
+    }
+    
     private void parseDocument () {
         assert Thread.holdsLock(parseLock); // so it is OK to use documentBuilder
         FileObject fo = getFileObject ();
@@ -224,39 +264,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.sw
             Document doc;
             if (editor != null) {
                 final StyledDocument document = editor.openDocument();
-                final StringWriter w = new StringWriter(document.getLength());
-                final EditorKit kit = findKit(editor.getOpenedPanes());
-                final IOException[] ioe = new IOException[1];
-                final BadLocationException[] ble = new BadLocationException[1];
-                document.render(new Runnable() {
-                    public void run() {
-                        try {
-                            kit.write(w, document, 0, document.getLength());
-                        } catch (IOException e) {
-                            ioe[0] = e;
-                        } catch (BadLocationException e) {
-                            ble[0] = e;
-                        }
-                    }
-                });
-                if (ioe[0] != null) {
-                    throw ioe[0];
-                } else if (ble[0] != null) {
-                    throw ble[0];
-                }
-                InputSource in = new InputSource(new StringReader(w.toString()));
-                if (fo != null) { // #10348
-                    try {
-                        in.setSystemId(fo.getURL().toExternalForm());
-                    } catch (FileStateInvalidException e) {
-                        assert false : e;
-                    }
-                    // [PENDING] Ant's ProjectHelper has an elaborate set of work-
-                    // arounds for inconsistent parser behavior, e.g. file:foo.xml
-                    // works in Ant but not with Xerces parser. You must use just foo.xml
-                    // as the system ID. If necessary, Ant's algorithm could be copied
-                    // here to make the behavior match perfectly, but it ought not be necessary.
-                }
+                InputSource in = createInputSource(fo, editor, document);
                 doc = documentBuilder.parse(in);
                 // add only one Listener (listeners for doc are hold in a List!)
                 if ((styledDocRef != null && styledDocRef.get () != document) || styledDocRef == null) {
