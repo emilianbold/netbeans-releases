@@ -64,6 +64,21 @@ class SharedXMLSupport {
     // error counter
     private int errors;
     
+    /**
+     * Xerces parser tries to search for every namespace declaration
+     * related Schema. It causes trouble it DTD like XHTML defines
+     * default xmlns attribute. It is then inherited by all descendants
+     * and grammar is loaded again and again. Entity resolver set this
+     * flag once it spots (null, null) resolution request that is typical
+     * for bogus Schema location resolution requests.
+     */
+    private boolean bogusSchemaRequest;
+    
+    // If true then the first bogust schema grammar request is reported
+    // all subsequent ones are supressed.
+    private boolean reportBogusSchemaRequest = 
+        Boolean.getBoolean("netbeans.xml.reportBogusSchemaLocation");           // NOI18N
+    
     /** 
      * Create new CheckXMLSupport for given InputSource in DOCUMENT_MODE.
      * @param inputSource Supported InputSource.
@@ -291,8 +306,23 @@ class SharedXMLSupport {
     private class Handler extends DefaultHandler {
     
         public void warning (SAXParseException ex) {
+            
+            // heuristics to detect bogus schema loading requests
+            
+            String msg = ex.getLocalizedMessage();
+            if (bogusSchemaRequest) {
+                bogusSchemaRequest = false;
+                if (msg != null && msg.indexOf("schema_reference.4") != -1) {   // NOI18N
+                    if (reportBogusSchemaRequest) {
+                        reportBogusSchemaRequest = false;
+                    } else {                    
+                        return;                    
+                    }
+                }
+            }
+            
             CookieMessage message = new CookieMessage(
-                ex.getLocalizedMessage(), 
+                msg, 
                 CookieMessage.WARNING_LEVEL,
                 new DefaultXMLProcessorDetail(ex)
             );
@@ -353,12 +383,15 @@ class SharedXMLSupport {
         }
         
         public InputSource resolveEntity(String pid, String sid) throws SAXException, IOException {
+                                    
             InputSource result = peer.resolveEntity(pid, sid);
             
             // null result may be suspicious, may be no Schema location found etc.
             
             if (result == null) {
-                                
+                bogusSchemaRequest = pid == null && sid == null;
+                if (bogusSchemaRequest) return null;
+                
                 String warning;
                 String pidLabel = pid != null ? pid : Util.THIS.getString("MSG_no_pid");
                 try {
