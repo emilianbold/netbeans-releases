@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -55,8 +55,14 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
      */
     public LibrariesStorage() {
         this.initStorage();   //Create folder, in future we will allow to create libraries
-        this.loadFromStorage();
-        this.storage.addFileChangeListener (this);
+        if (storage != null) {
+            this.loadFromStorage();
+            this.storage.addFileChangeListener (this);
+        } else {
+            // Storage broken. May happen e.g. inside unit tests.
+            libraries = Collections.EMPTY_MAP;
+            librariesByFileNames = Collections.EMPTY_MAP;
+        }
         this.support = new PropertyChangeSupport(this);
     }
 

@@ -34,7 +34,8 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
     public DefaultJavaPlatformProvider () {
         storage = Repository.getDefault().getDefaultFileSystem().findResource(PLATFORM_STORAGE);
         if (storage == null) {
-            assert false : "Can not find platforms storage.";
+            // Turn this off since it can confuse unit tests running w/o layer merging.
+            //assert false : "Cannot find platforms storage";
         }
         else {
             storage.addFileChangeListener (this);
