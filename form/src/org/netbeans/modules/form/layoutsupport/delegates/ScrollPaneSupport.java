@@ -111,7 +111,23 @@ public class ScrollPaneSupport extends AbstractLayoutSupport {
             Component removedComp = null;
             if (scroll.getComponentCount() > 0)
                 removedComp = scroll.getComponent(0);
-            scroll.add(components[0]);
+            try {
+                scroll.add(components[0]);
+            } catch (NullPointerException npex) {
+                // Issue 36629 - ScrollPane attempts to place
+                // components with a lightweight peer into a Panel
+                // This collides with our fake peers and can result
+                // in a NPE on JDK1.5. The correct peer for this
+                // Panel is set below.
+            }
+            if (System.getProperty("java.version").startsWith("1.5") // NOI18N
+                && (scroll.getPeer() != null)) {
+                Component comp = scroll.getComponent(0);
+                comp.removeNotify();
+                ensureFakePeerAttached(comp);
+                comp.addNotify();
+                scroll.validate();
+            }
             // hack for AWT components - we must attach the fake peer again
             // to the component that was removed by adding new component
             ensureFakePeerAttached(removedComp);

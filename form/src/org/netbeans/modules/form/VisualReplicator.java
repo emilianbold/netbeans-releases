@@ -472,8 +472,23 @@ public class VisualReplicator {
                   && !(metacomp.getBeanInstance() instanceof RootPaneContainer))
                 compClone = // the cloned component was put to the content pane
                     ((RootPaneContainer)clone).getContentPane().getComponent(0);
-        }
-        else // just clone the bean
+        } else if ("java.awt.ScrollPane".equals(metacomp.getBeanClass().getName())
+            && ((getDesignRestrictions() & ATTACH_FAKE_PEERS) != 0)
+            && (System.getProperty("java.version").startsWith("1.4"))) { // NOI18N
+            // Issue 36629 - ScrollPane attempts to place
+            // components with a lightweight peer into a Panel
+            clone = new java.awt.ScrollPane() {
+                        public void addNotify() {
+                            if (getComponentCount()>0) {
+                                Component comp = getComponent(0);
+                                remove(0);
+                                super.addNotify();
+                                FakePeerSupport.attachFakePeer(comp);
+                                add(comp);
+                            }
+                        }
+                    };
+        } else // just clone the bean
             clone = metacomp.cloneBeanInstance(relativeProperties);
 
         if (compClone == null)
