@@ -97,8 +97,6 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     /** The name "Component Inspector" */
     private static String INSPECTOR_TITLE;
 
-    static final long serialVersionUID =4248268998485315927L;
-
     private static ComponentInspector instance;
 
     // ------------
