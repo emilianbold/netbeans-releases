@@ -83,7 +83,7 @@ public class HtmlLoader extends UniFileLoader {
       protected com.netbeans.ide.nodes.Node createNodeDelegate () {
         DataNode n = new DataNode (Obj.this, Children.LEAF);
         n.setIconBase ("/com/netbeans/developer/modules/loaders/html/htmlObject");
-        n.setDefaultAction (SystemAction.get (OpenAction.class));
+        n.setDefaultAction (SystemAction.get (ViewAction.class));
         return n;
       }
     };
@@ -106,6 +106,8 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  14   Gandalf   1.13        5/13/99  Jan Jancura     What action is default? 
+*       It's a question.
 *  13   Gandalf   1.12        5/12/99  Jan Jancura     Edit in txt editor & use 
 *       common Html view window
 *  12   Gandalf   1.11        4/1/99   Jaroslav Tulach Does not recognize .txt 
