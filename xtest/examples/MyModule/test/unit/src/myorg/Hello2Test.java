@@ -40,6 +40,17 @@ public class Hello2Test extends NbTestCase {
         assertEquals(greeting, "Hello Joe!");
     }
     
+    /** even though this test fails, it is expected failue - feature of XTest */
+    public void testExpectedFailure() {
+        System.out.print("testExpectedFailure: I will fail, but only when running in IDE -- ");
+        if (System.getProperty("netbeans.home") != null ) {
+            System.out.println("I'm failing");            
+            fail("I failed, since I'm running in IDE");
+        }
+        System.out.println("I'm ok");
+    }
+    
+    
     protected Hello2 testObject;
     
     protected void setUp() {

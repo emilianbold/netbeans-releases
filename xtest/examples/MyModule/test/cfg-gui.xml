@@ -23,9 +23,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-    
-   <resultsprocessor name="gui" antfile="build.xml" target="test_report" default="true"/>
-    
+ 
     <executor name="ide" antfile="build-gui.xml" target="runidetest"/>
 
     <compiler name="gui-compiler" default="true" antfile="build-gui.xml" target="gui-compiler"/>

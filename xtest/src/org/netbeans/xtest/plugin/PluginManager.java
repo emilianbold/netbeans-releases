@@ -223,7 +223,7 @@ public class PluginManager implements java.io.Serializable {
             String requiredPluginVersion = pluginDependency.getVersion();            
             // check whether required plugin exists in installed Plugin            
             boolean dependencyOK = false;
-            for (int j = 0; j < installedPlugins.length; i++) {
+            for (int j = 0; j < installedPlugins.length; j++) {
                 if (installedPlugins[j].isPlugin(requiredPluginName)) {
                     // check the version
                     if (requiredPluginVersion.compareTo(installedPlugins[j].getVersion()) > 0)  {

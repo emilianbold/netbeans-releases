@@ -14,8 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <!-- 
-  These classes are excluded by default (defined in build.xml):
-    "**/*Suite.class"
+  These classes are excluded by default (defined by XTest):
     "**/*$$*.class"
     "**/data/**"
     "**/hidden/**"
@@ -27,11 +26,10 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- testbag with all MyModule tests running in code mode (i.e. in standard JVM)
          use ant runtests -Dxtest.attribs=stable,code to run this testbag  -->
-    <testbag testattribs="all and code" executor="code" name="all tests (no ide)" >
+    <testbag testattribs="all and code" executor="code" name="all tests (no ide)">
         <testset dir="unit/src">
             <patternset>
-		<include name="HelloWorldTest.class"/>
-		<include name="myorg/*.class"/>
+	        <include name="myorg/MyorgSuite.class"/>
            </patternset>
         </testset>
     </testbag>
@@ -40,18 +38,18 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable and code" executor="code" name="stable tests (no ide)">
         <testset dir="unit/src">
             <patternset>
-		<include name="myorg/*.class"/>
-		<include name="HelloWorldTest.class"/>
-		<exclude name="HelloWorldTest.class/testGreeting2"/>
+		<include name="myorg/HelloWorldTest.class"/>
+		<exclude name="myorg/HelloWorldTest.class/testGreeting2"/>
+		<include name="myorg/Hello2.class"/>
             </patternset>
         </testset>
     </testbag>
     
     <!-- testbag with failing test (just one method)  -->
-    <testbag testattribs="failing" executor="code" name="failing tests (no ide)" resultsprocessor="unit">
+    <testbag testattribs="failing" executor="code" name="failing tests (no ide)">
         <testset dir="unit/src">
             <patternset>
-                <include name="HelloWorldTest.class/testGreeting2"/>
+                <include name="myorg/HelloWorldTest.class/testGreeting2"/>
             </patternset>
         </testset>
     </testbag>
@@ -59,33 +57,44 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- testbag with all MyModule tests running in ide mode (i.e. inside NetBeans IDE)
          use ant runtests -Dxtest.attribs=stable,ide to run this testbag  -->
-    <testbag testattribs="all and ide" executor="ide" name="all tests (in ide)" resultsprocessor="unit">
+    <testbag testattribs="all and ide" executor="ide" name="all tests (in ide)">
+        <!--
+        <testsetup dir="unit/src">
+            <setup class="myorg/MySetup" method="setup"/>
+            <teardown class="myorg/MySetup" method="teardown"/>
+        </testsetup>
+	-->
         <testset dir="unit/src">
             <patternset>
-		<include name="HelloWorldTest.class"/>
-		<include name="myorg/*.class"/>
+                <include name="myorg/Hello2Test.class/testExpectedFailure" expectedFail="I'm expected to fail in IDE"/>
+		<include name="myorg/*.class"/>		
+		<exclude name="myorg/*Suite.class"/>
             </patternset>
         </testset>
     </testbag>
 
 
     <!-- testbag with tests which does not fail and run in IDE, use ant runtests -Dxtest.attribs=stable,ide -->
-    <testbag testattribs="stable and ide" executor="ide" name="stable tests (in ide)" resultsprocessor="unit">
+    <testbag testattribs="stable and ide" executor="ide" name="stable tests (in ide)">
         <testset dir="unit/src">
             <patternset>
-		<include name="myorg/*.class"/>
-		<include name="HelloWorldTest.class"/>
-		<exclude name="HelloWorldTest.class/testGreeting2"/>
+		<include name="myorg/HelloWorldTest.class"/>
+		<exclude name="myorg/HelloWorldTest.class/testGreeting2"/>
+		<include name="myorg/Hello2Test.class"/>
+                <include name="myorg/Hello2Test.class/testExpectedFailure" expectedFail="I'm expected to fail in IDE"/>
             </patternset>
         </testset>
     </testbag>
 
-    
+    <!-- empty testbag - for use with xtest.includes and xtest.excludes properties -->
     <testbag testattribs="empty" executor="code" name="empty">
         <testset dir="unit/src">
             <patternset/>
         </testset>
     </testbag>
+
+    <!-- xxxxx -->
+
     <!-- code excecutor - use this one if you plan to run your tests in standard 
                           JVM. You can also write your own executor, which will 
                           then call this one. It is handy when some servers (e.g. rmi registry)
@@ -98,11 +107,8 @@ Microsystems, Inc. All Rights Reserved.
                         prepare some neccessary stuff before running tests. -->
     <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
     
-
+    <!-- compiler   - this target will compile tests -->
     <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
 
-    <!-- standard results processor - currently there is only one results processor
-                                      in XTest -->    
-    <resultsprocessor name="unit" antfile="build.xml" target="test_report" default="true"/>
     
 </mconfig>

@@ -40,7 +40,6 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="compile" depends="init,prepare-nbjunit">
-    <echo message="Using ant jar ${ant.jar}"/>
     <path id="basecp">	
 	<pathelement location="src"/>
         <pathelement location="${ant.jar}"/>
@@ -92,11 +91,11 @@ Microsystems, Inc. All Rights Reserved.
   <!-- builds XTest's plugins -->
   <target name="build-plugins">
     <mkdir dir="${plugins.install.dir}"/>
+
     <ant dir="plugins_src/deprecated" target="deploy"/>
-    <!--
-    <ant dir="plugins_src/jvm" target="deploy"/>
+    <ant dir="plugins_src/base" target="deploy"/>
+    <ant dir="plugins_src/jvm" target="deploy"/>    
     <ant dir="plugins_src/ide" target="deploy"/>
-    -->
   </target>
   
   <target name="build-all" depends="build-xtest, build-plugins"/>
@@ -148,10 +147,9 @@ Microsystems, Inc. All Rights Reserved.
    <target name="clean-plugins">
     <!-- plugins -->
     <ant dir="plugins_src/deprecated" target="clean"/>
-    <!--
+    <ant dir="plugins_src/base" target="clean"/>
     <ant dir="plugins_src/jvm" target="clean"/>
     <ant dir="plugins_src/ide" target="clean"/>  
-    -->
   </target>
   
   

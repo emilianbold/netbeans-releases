@@ -11,7 +11,9 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
- * NbExecutor.java
+ * MTestExecutor
+ * Class running tests by executing chosen testbags with appropriate
+ * executor (result processor). 
  *
  * Created on March 28, 2001, 6:57 PM
  */
@@ -27,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.junit.Filter;
 import org.netbeans.xtest.testrunner.*;
+import org.netbeans.xtest.plugin.PluginExecuteTask;
 
 /**
  *
@@ -41,6 +44,12 @@ public class MTestExecutor extends Task {
     String targetParamNameProp = null;
     String targetParamExecutorProp = "tbag.executor";
     String targetParamTimeoutProp = "xtest.timeout";
+    
+    /*
+    protected boolean enableAssertions = true;
+    protected int debugPort = 0;
+    protected boolean debugSuspend = false;
+    */
     
     File resultDir;
     File workDir;
@@ -76,6 +85,20 @@ public class MTestExecutor extends Task {
     public void setWorkDir(File s) {
         workDir = s;
     }
+    
+    /*
+    public void setDebugPort(int debugPort) {
+        this.debugPort = debugPort;
+    }
+    
+    public void setDebugSuspend(boolean suspend) {
+        this.debugSuspend = suspend;
+    }
+    
+    public void setEnableAssertions(boolean enableAssertions) {
+        this.enableAssertions = enableAssertions;
+    }
+     */
 
     public void execute() throws BuildException {
         
@@ -193,27 +216,7 @@ public class MTestExecutor extends Task {
                 ant_new.execute();
                 
                 // run results processor
-                MTestConfig.AntExecType proc = testbag.getResultsprocessor();
-                Ant ant_proc = (Ant) getProject().createTask( "ant" );
-                ant_proc.setOwningTarget( target );
-                ant_proc.setAntfile( proc.getAntFile() );
-                ant_proc.setTarget( proc.getTarget() );
-                if (proc.getDir() != null) ant_new.setDir( project.resolveFile ( proc.getDir()));
-                ant_proc.init();
-                
-                // set name of executed test config
-                Property cttprop1 = ant_proc.createProperty();
-                cttprop1.setName( targetParamTestConfigProp );
-                cttprop1.setValue( MTestConfigTask.getMTestConfig().getTesttype() );
-                
-                // set name of executor for executed testbags
-                Property execprop1 = ant_proc.createProperty();
-                execprop1.setName( targetParamExecutorProp );
-                execprop1.setValue( testbag.getExecutor().getName() );
-                
-                // execute results processing
-                ant_proc.execute();
-
+                PluginExecuteTask.executeCorrespondingResultProcessor(this);
             }
         
     }
@@ -284,7 +287,7 @@ public class MTestExecutor extends Task {
         }
         // save it to workdir
         try {
-            File testRunnerPropertyFile = new File(workDir, JUnitTestRunner.TESTRUNNER_PROPERTY_FILENAME);
+            File testRunnerPropertyFile = new File(workDir, TestRunnerHarness.TESTLIST_FILENAME);
             log("Saving test runner property to "+testRunnerPropertyFile,Project.MSG_DEBUG);
             props.save(testRunnerPropertyFile);
         } catch (IOException ioe) {
@@ -322,6 +325,5 @@ public class MTestExecutor extends Task {
         String   testName;
         Filter.IncludeExclude[] includeFilter;
         Filter.IncludeExclude[] excludeFilter;
-    }
-    
+    }            
 }

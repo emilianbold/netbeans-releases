@@ -32,7 +32,7 @@ import org.apache.tools.ant.types.*;
 import org.apache.tools.ant.taskdefs.Ant;
 import org.apache.tools.ant.taskdefs.Property;
 import java.io.File;
-
+import java.util.*;
 
 /**
  * @author mb115822
@@ -41,6 +41,7 @@ public class PluginExecuteTask extends Task {
     
     /* execution types */
     public static final String EXECUTE_COMPILER="compiler";
+    public static final String EXECUTE_PACKAGER="packager";
     public static final String EXECUTE_EXECUTOR="executor";
     public static final String EXECUTE_RESULT_PROCESSOR="result_processor";
     
@@ -48,10 +49,18 @@ public class PluginExecuteTask extends Task {
     public static final String XTEST_PLUGIN_HOME_PROPERTY_NAME="xtest.plugin.home";
     public static final String XTEST_PLUGIN_NAME_PROPERTY_NAME="xtest.plugin.name";
     public static final String XTEST_PLUGIN_VERSION_PROPERTY_NAME="xtest.plugin.version";
+    public static final String XTEST_DEPENDING_PLUGIN_HOME_PROPERTY_NAME_PREFIX="xtest.";
+    public static final String XTEST_DEPENDING_PLUGIN_HOME_PROPERTY_NAME_SUFFIX=".plugin.home";
+    
+    // system property name used to store name of the plugin used for test execution
+    // required when running result_processor (by default base plugin will be used?)
+    private static final String PLUGIN_USED_FOR_EXECUTION = "_xtest.plugin.used.for.test.execution";
     
     private String pluginName;
     private String executeType;
     private String actionID;
+    
+    private Vector properties = new Vector();
     
     public void setPluginName(String pluginName) {
         this.pluginName = pluginName;
@@ -63,20 +72,66 @@ public class PluginExecuteTask extends Task {
     
     public void setExecuteAction(String actionID) {
         this.actionID = actionID;
-    }    
+    }
+    
+    public void addProperty(Property property) {
+        if (property != null) {
+            properties.addElement(property);
+        }
+    }
 
-    // backward compatibility methods
-    public static void pluginExecute(PluginDescriptor pluginDescriptor, PluginDescriptor.Action pluginAction, Task issuingTask) throws BuildException { 
-        pluginExecute(pluginDescriptor, pluginAction,issuingTask, null);
+    // backw
+    /*ard compatibility methods
+    public static void pluginExecute(PluginDescriptor pluginDescriptor, 
+                PluginDescriptor.Action pluginAction, Task issuingTask) throws BuildException { 
+        pluginExecute(pluginDescriptor, pluginAction,issuingTask, null, null);
+    }
+     **/
+    
+    // set depending plugins home dir ...
+    private static void setPluginDependencyProperties(PluginDescriptor pluginDescriptor, Ant ant) throws BuildException {
+        
+        PluginDescriptor.PluginDependency dependencies[] = pluginDescriptor.getDependencies();
+        for (int i=0; i < dependencies.length; i++) {
+            PluginDescriptor.PluginDependency dependency = dependencies[i];
+            // set home dir of this dependency
+            File dependencyHome = dependency.getPluginDescriptor().getPluginHomeDirectory();
+            Property dependencyHomeProperty = ant.createProperty();
+            dependencyHomeProperty.setName(XTEST_DEPENDING_PLUGIN_HOME_PROPERTY_NAME_PREFIX
+                                            +dependency.getName()
+                                            +XTEST_DEPENDING_PLUGIN_HOME_PROPERTY_NAME_SUFFIX);
+            dependencyHomeProperty.setValue(dependencyHome.getAbsolutePath());
+        }
+    }
+    
+    // method used to execute appropriate result processor (based on executor used to run tests)
+    public static void executeCorrespondingResultProcessor(Task issuingTask) throws BuildException {
+        // get the plugin name
+        String pluginName = System.getProperty(PLUGIN_USED_FOR_EXECUTION);
+        if (pluginName == null) {
+            throw new BuildException("No tests were executed, cannot run result processor");
+        }
+        // find the plugin
+        PluginManager pluginManager = getPluginManager();
+        // find the plugin
+        try {
+            PluginDescriptor requiredPlugin = pluginManager.getPreferredPluginDescriptor(pluginName);
+            PluginDescriptor.Action pluginAction = requiredPlugin.getDefaultResultProcessor();
+            pluginExecute(requiredPlugin, pluginAction, issuingTask, null, null);
+        } catch (PluginResourceNotFoundException prnfe) {
+            // bad thing happened
+            throw new BuildException("Fatal error - Cannot find plugin "+pluginName);
+        }
+        
     }
     
     public static void pluginExecute(PluginDescriptor pluginDescriptor, PluginDescriptor.Action pluginAction,
-                                        Task issuingTask, Ant newAnt) throws BuildException {
+                                        Task issuingTask, Ant newAnt, Vector properties) throws BuildException {
         
-        File pluginHomeDirectory = pluginDescriptor.getPluginHomeDirectory();
+        File pluginHomeDirectory = pluginDescriptor.getActionOwner(pluginAction).getPluginHomeDirectory();
         String antTarget = pluginAction.getTarget();
         
-        File antFile = new File(pluginHomeDirectory, pluginAction.getAntFile());        
+        File antFile = new File(pluginHomeDirectory, pluginAction.getAntFile());
         
         Ant ant = newAnt;
         if (ant == null) {
@@ -84,8 +139,13 @@ public class PluginExecuteTask extends Task {
         }
         if (issuingTask != null) {
             ant.setProject(issuingTask.getProject());
-            ant.setOwningTarget(issuingTask.getOwningTarget());
-            issuingTask.log("Plugin will execute target '"+antTarget+"' in file '"+antFile+"'.");
+            ant.setOwningTarget(issuingTask.getOwningTarget());            
+        }
+        
+        // set plugin used for execution system property, so result processor know which plugin was used
+        // if applicable 
+        if (pluginAction instanceof PluginDescriptor.Executor) {
+            System.setProperty(PLUGIN_USED_FOR_EXECUTION, pluginDescriptor.getName());
         }
         
         ant.setAntfile(antFile.getAbsolutePath());
@@ -101,18 +161,38 @@ public class PluginExecuteTask extends Task {
         
         Property xtestPluginVersion = ant.createProperty();
         xtestPluginVersion.setName(XTEST_PLUGIN_VERSION_PROPERTY_NAME);
-        xtestPluginVersion.setValue(pluginDescriptor.getVersion());
+        xtestPluginVersion.setValue(pluginDescriptor.getVersion());                
+        
+        // now set properties for depending plugins ....
+        setPluginDependencyProperties(pluginDescriptor, ant);
+        
+        // finally set user supplied properties
+        if (properties != null) {
+            Enumeration enum = properties.elements();
+            while (enum.hasMoreElements()) {
+                Property variable = (Property)enum.nextElement();
+                Property newProperty = ant.createProperty();
+                newProperty.setName(variable.getName());
+                newProperty.setValue(variable.getValue());
+            }
+        }
         
         // now execute the target
         ant.execute();      
     }
     
-    public void execute() throws BuildException {
+    /// helper to get PluginManager (just throws BuildException if there is any problem)
+    private static PluginManager getPluginManager() {
         PluginManager pluginManager = PluginManagerStorageSupport.retrievePluginManager();
         if (pluginManager == null) {
             // something went wrong !!!!
             throw new BuildException("Fatal error - cannot find plugin manager");
         }
+        return pluginManager;
+    }
+    
+    public void execute() throws BuildException {
+        PluginManager pluginManager = getPluginManager();
         // check for supplied properties
         if (pluginName == null) {
             throw new BuildException("pluginName attribute not specified");
@@ -130,6 +210,8 @@ public class PluginExecuteTask extends Task {
             // depending on execute type get appropriate action
             if (executeType.equalsIgnoreCase(EXECUTE_COMPILER)) {
                 pluginAction=pluginDescriptor.getCompiler(actionID);
+            } else if (executeType.equalsIgnoreCase(EXECUTE_PACKAGER)) {
+                pluginAction=pluginDescriptor.getPackager(actionID); 
             } else if (executeType.equalsIgnoreCase(EXECUTE_EXECUTOR)) {
                 pluginAction=pluginDescriptor.getExecutor(actionID); 
             } else if (executeType.equalsIgnoreCase(EXECUTE_RESULT_PROCESSOR)) {
@@ -137,8 +219,8 @@ public class PluginExecuteTask extends Task {
             } else {
                 throw new BuildException("executeType "+executeType+" is not supported");
             }
-            
-            PluginExecuteTask.pluginExecute(pluginDescriptor, pluginAction, this);
+            log("Executing plugin '"+pluginName+"', action '"+actionID+"' (execution type = '"+executeType+"').");
+            PluginExecuteTask.pluginExecute(pluginDescriptor, pluginAction, this, null, properties);
             
             
         } catch (PluginResourceNotFoundException prnfe) {

@@ -20,10 +20,11 @@ Microsystems, Inc. All Rights Reserved.
         Purpose of the document follows.
 -->
 
-<XTestPlugin name="jvm" version="0.1">
-    <Dependencies requiredXTestVersion="1.3">
+<XTestPlugin name="jvm" version="1.0" extends="base">
+    <Dependencies requiredXTestVersion="1.5">
+        <UsePlugin name="base" version="1.0"/>
     </Dependencies>
     <AvailableExecutors>
-        <Executor id="jvm_execution" antfile="lib/jvm_plugin_targets.xml" target="jvm_execution" default="true"/>
+        <Executor id="jvm_execution" antfile="lib/jvm_execution_targets.xml" target="jvm_execution" default="true"/>
     </AvailableExecutors>
 </XTestPlugin>

@@ -63,9 +63,10 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Init target -->
     <!-- =========== -->
     
-    <target name="init" depends="prepare-xtest">
+    <target name="init" depends="prepare-xtest">        
+    
         <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" 
-                 classpath="${xtest.home}/lib/xtest.jar"/>
+                 classpath="${xtest.home}/lib/xtest.jar"/>                 
                  
         <nbtaskdef classpath="${xtest.home}/lib/xtest.jar">
             <taskdef name="nbpath" classname="org.netbeans.xtest.NbPath"/>
@@ -76,7 +77,10 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="jar-finder" classname="org.netbeans.xtest.JarFinder"/>
         </nbtaskdef>
         
-        <nbpath xtesthome="${xtest.home}"/>
+        <!-- set jdkhome to a real valid value -->
+        <nbpath jdkHomePropertyName="jdkhome"/>        
+        <!-- set junit.classpath to contain also nbjunit -->
+        <property name="junit.classpath" value="${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar"/>        
 
 	<!-- publishing tasks -->
         <nbtaskdef classpath="${xtest.home}/lib/xtest.jar">
@@ -85,27 +89,30 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="regenerateXML" classname="org.netbeans.xtest.pe.RegenerateXMLTask"/>
             <taskdef name="transformXML" classname="org.netbeans.xtest.pe.TransformXMLTask"/>
             <taskdef name="printSummary" classname="org.netbeans.xtest.pe.PrintSummary"/>
-            <taskdef name="getResultsDirs" classname="org.netbeans.xtest.pe.GetResultsDirsTask"/>
+            <taskdef name="getResultsDirs" classname="org.netbeans.xtest.pe.GetResultsDirsTask"/>            
         </nbtaskdef>
         
         <!-- plugin and user tasks -->
         <nbtaskdef classpath="${xtest.home}/lib/xtest.jar">
+            <!-- plugin tasks - for plugin writers -->
             <taskdef name="pluginsInit" classname="org.netbeans.xtest.plugin.PluginsInitTask"/>
             <taskdef name="pluginExecute" classname="org.netbeans.xtest.plugin.PluginExecuteTask"/>
-            <!-- user tasks -->
+            <!-- user tasks - for XTest users -->
             <taskdef name="compileTests" classname="org.netbeans.xtest.usertasks.CompileTestsTask"/>
+            <taskdef name="packageTests" classname="org.netbeans.xtest.usertasks.PackageTestsTask"/>
+            <taskdef name="buildTests" classname="org.netbeans.xtest.usertasks.BuildTestsTask"/>
             <taskdef name="executeTests" classname="org.netbeans.xtest.usertasks.ExecuteTestsTask"/>
+            <taskdef name="xtest" classname="org.netbeans.xtest.usertasks.XTestActionTask"/>
         </nbtaskdef>
 
-
         <!-- Executors/Compilers-->
-         <nbtaskdef classpath="${junit.path};${xtest.path}">
+        <nbtaskdef classpath="${junit.classpath}:${xtest.home}/lib/xtest.jar:${xtest.home}/lib/xtest-junit-testrunner.jar">
             <taskdef name="test-executor" classname="org.netbeans.xtest.harness.MTestExecutor"/>            
             <taskdef name="test-configurator" classname="org.netbeans.xtest.harness.MTestConfigTask"/>
             <taskdef name="test-compiler" classname="org.netbeans.xtest.harness.MTestCompiler"/>            
-         </nbtaskdef>    
+        </nbtaskdef>    
 
-
+       
         <nbpatternset useid="xtest.pattern">
             <patternset includes="${xtest.includes}" excludes="${xtest.excludes}">
                 <!--
@@ -130,7 +137,12 @@ Microsystems, Inc. All Rights Reserved.
         
         <!-- initialize plugins -->
         <property name="xtest.preferred.plugins" value=""/>
-        <pluginsInit pluginsHome="${xtest.home}/plugins" preferredPlugins="${xtest.preferred.plugins}"/>                      
+        <pluginsInit pluginsHome="${xtest.home}/plugins" preferredPlugins="${xtest.preferred.plugins}"/>
+        
+        <!-- deprecated stuff - required only for deprecated plugin -->
+        <!-- for some reason junit.path was used as a property for junit.classpath (which should be a better name) -->
+        <property name="junit.path" value="${junit.classpath}"/>
+        
     </target>
     
     <target name="prepare-xtest">
@@ -177,12 +189,17 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${xtest.workdir}/tmpdir"/>
         <mkdir dir="${xtest.workdir}/sys"/>
         
+        <property name="xtest.debug.port" value="0"/>
+        <property name="xtest.debug.suspend" value="true"/>
+        <property name="xtest.enable.assertions" value="true"/>
+        
         <test-executor paramClasspathProp="tbag.classpath"
                        paramTestConfigProp="tbag.testtype"
                        paramNameProp="tbag.name"
                        paramExecutorProp="tbag.executor"
                        resultDir="${xtest.workdir}/xmlresults/suites"
-                       workDir="${xtest.workdir}/sys"/>
+                       workDir="${xtest.workdir}/sys"
+                       />
                        
         <ant antfile="${xtest.home}/lib/harness.xml" target="mail-results"/>
 
@@ -192,19 +209,6 @@ Microsystems, Inc. All Rights Reserved.
     
     
     <target name="test" depends="deprecated_executors">
-        <!-- prepare workdir structure -->
-        <mkdir dir="${xtest.workdir}/xmlresults"/>
-        <mkdir dir="${xtest.workdir}/xmlresults/suites"/>
-        <mkdir dir="${xtest.workdir}/sys/tests"/>        
-        <mkdir dir="${xtest.workdir}/user"/>
-
-        <property name="test.propertyfile" location="${xtest.workdir}/sys/userdata.properties"/>
-   	<write-property propertyPrefix="xtest.userdata" attribs="${xtest.attribs}" file="${test.propertyfile}"/>
-
-        <!-- create testbag info for report -->
-        <testbaginfo name="${tbag.name}" testType="${tbag.testtype}" testAttribs="${xtest.attribs}"
-                      executor="${tbag.executor}" module="${xtest.module}"
-                      outfile="${xtest.workdir}/xmlresults/testbag.xml"/>  
         
         <antcall target="prepare-tests"/>
         
@@ -246,8 +250,26 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="**********"/>
         -->
     </target>
-            
-    <target name="prepare-tests" depends="test-unjared" unless="unjared">
+
+
+    <target name="prepare-tests-init">
+        <!-- prepare workdir structure -->
+        <mkdir dir="${xtest.workdir}/xmlresults"/>
+        <mkdir dir="${xtest.workdir}/xmlresults/suites"/>
+        <mkdir dir="${xtest.workdir}/sys/tests"/>        
+        <mkdir dir="${xtest.workdir}/user"/>
+
+        <property name="test.propertyfile" location="${xtest.workdir}/sys/userdata.properties"/>
+   	<write-property propertyPrefix="xtest.userdata" attribs="${xtest.attribs}" file="${test.propertyfile}"/>
+
+        <!-- create testbag info for report -->
+        <testbaginfo name="${tbag.name}" testType="${tbag.testtype}" testAttribs="${xtest.attribs}"
+                      executor="${tbag.executor}" module="${xtest.module}"
+                      outfile="${xtest.workdir}/xmlresults/testbag.xml"/>      
+    </target>    
+                
+    <target name="prepare-tests" depends="prepare-tests-init,test-unjared" unless="unjared">
+    
         <unjar dest="${xtest.workdir}/sys/tests" 
                src="${xtest.build}/${xtest.file.location}/${xtest.file.name}"/>
     </target>
@@ -299,30 +321,19 @@ Microsystems, Inc. All Rights Reserved.
        <!-- deprecated again -->
        <property name="plugin.name" value="deprecated"/>
        <property name="plugin.compiler" value="deprecated_compilation"/>
-       <pluginExecute pluginName="${plugin.name}" executeType="compiler" executeAction="${plugin.compiler}"/>       
+       <pluginExecute pluginName="${plugin.name}" executeType="compiler" executeAction="${plugin.compiler}"/>              
     </target>
         
     <!-- Creates lib/tests.xar with all tests for this module,       -->
-    <!-- maybe there should be more includes here, not just classes -->
     <target name="buildtests" depends="compiletests" unless="xtest.distexec">
-        <antcall target="jartests"/>
+       <!-- deprecated again -->
+       <property name="plugin.name" value="deprecated"/>
+       <property name="plugin.packager" value="deprecated_packaging"/>    
+       <pluginExecute pluginName="${plugin.name}" executeType="packager" executeAction="${plugin.packager}"/>
     </target>
     
-    <!-- Creates lib/test.jar with all tests for this module,       -->
-    <!-- maybe there should be more includes here, not just classes -->
-    <target name="jartests" unless="xtest.distexec">
-        <mkdir dir="${xtest.build}/${xtest.file.location}"/>
-        <property name="jartests.includes" value=""/>
-        <property name="jartests.excludes" value=""/>
-        <jar basedir="." 
-             jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}"
-             includesfile="${xtest.home}/standard-test-includes.txt"
-             includes="${jartests.includes}"
-             excludesfile="${xtest.home}/standard-test-excludes.txt"
-             excludes="${jartests.excludes}">
-        </jar>
-    </target>
-    
+
+    <!-- this might be moved elsewhere - I have no opinion about this -->
     <target name="cleantests">
         <delete>
             <fileset dir=".">

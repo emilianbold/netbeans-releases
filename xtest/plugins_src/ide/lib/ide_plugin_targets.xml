@@ -21,7 +21,12 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ============= -->
     <!-- IDE test part -->
     <!-- ============= -->
-    <target name="internal_execution" depends="init,extra-classpath">
+    <target name="ide_execution" depends="init,extra-classpath">
+        
+    <xtest executeAction="prepare-tests"/>
+        <!-- BEGIN this has to be here, though it should be rather only in module_harness !!! -->
+        <property name="_ideplugin.test.propertyfile" location="${xtest.workdir}/sys/userdata.properties"/>
+        <!-- END -->    
     
         <!-- prepare workdir structure for ide executor -->
         <mkdir dir="${xtest.workdir}/sys/ide"/>
@@ -32,18 +37,24 @@ Microsystems, Inc. All Rights Reserved.
         
         <!-- by default use XTestErrorManager to keep eye on errors notified via ErrorManager -->
         <property name="xtest.error.manager" value="true"/>
-        <pathdef useid="test.classpath">
+        <pathdef useid="_old.test.classpath">
             <!-- this path is mounted to repo in IDE -->
             <!-- <path refid="test.basepath"/> -->
             <path path="${tbag.classpath}"/>
             <path path="${test.extra.classpath}"/>
             <path path="${xtest.extra.ide.mounts}"/>
         </pathdef>
-
+        
+        
+        <echo message="tbag.classpath = ${tbag.classpath}"/>
+        <echo message="test.extra.classpath = ${test.extra.classpath}"/>
+        <echo message="xtest.extra.ide.mounts = ${xtest.extra.ide.mounts}"/>
+        
+        
         <!-- there should be some better userdir than this -->
         <property name="xtest.userdir" location="${xtest.workdir}/sys/ide"/>
         <property name="test.class" value="org.netbeans.xtest.testrunner.IdeJUnitTestRunnerExecutor"/>
-        <property name="test.classpath" refid="test.classpath"/>
+        
         
         <property name="xtest.ide.commandline.suffix" value=""/>
         <property name="xtest.jvmargs" value=""/>
@@ -80,12 +91,12 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${xtest.userdir}/xtest/lib/ext"/>
         
         <copy file="${xtest.home}/lib/xtest.jar" todir="${xtest.userdir}/xtest/lib"/>
-        <copy file="${xtest.plugin.home}/lib/xtest-ide-plugin.jar" todir="${xtest.userdir}/xtest/lib"/>
+        <copy file="${xtest.plugin.home}/lib/xtest-ide-main.jar" todir="${xtest.userdir}/xtest/lib"/>
         <copy file="${xtest.home}/lib/junit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>
         <copy file="${xtest.home}/lib/nbjunit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>        
                 
         <copy file="${xtest.home}/lib/xtest-junit-testrunner.jar" todir="${xtest.workdir.idejars}"/> 
-        <copy file="${xtest.plugin.home}/lib/ide-junit-testrunner.jar" todir="${xtest.workdir.idejars}"/> 
+        <copy file="${xtest.plugin.home}/lib/xtest-ide-testexec.jar" todir="${xtest.workdir.idejars}"/> 
 
         <antcall target="copy-user-jars"/>    
     </target>    
@@ -97,7 +108,7 @@ Microsystems, Inc. All Rights Reserved.
             <classpath id="xtest.netbeans.classpath">
                 <fileset dir="${xtest.userdir}/xtest/lib">
                     <include name="xtest.jar"/>
-                    <include name="xtest-ide-plugin.jar"/>
+                    <include name="xtest-ide-main.jar"/>
                 </fileset>
             </classpath>        
         </property>        
@@ -112,7 +123,7 @@ Microsystems, Inc. All Rights Reserved.
             <classpath id="xtest.netbeans.classpath">
                 <fileset dir="${xtest.userdir}/xtest/lib">
                     <include name="xtest.jar"/>
-                    <include name="xtest-ide-plugin.jar"/>         
+                    <include name="xtest-ide-main.jar"/>         
                 </fileset>
             </classpath>        
         </property>
@@ -140,7 +151,10 @@ Microsystems, Inc. All Rights Reserved.
             <classpath id="xtest.netbeans.systemclassloader.path">
                 <fileset dir="${xtest.workdir.idejars}">
                     <include name="*.jar"/>
-                </fileset>
+                </fileset>       
+                <!-- this needs to be fixed, because of openide/core tests ... -->
+                <pathelement path="${tbag.classpath}"/>
+                <pathelement path="${test.classpath}"/>
             </classpath>
         </property>
         
@@ -160,16 +174,17 @@ Microsystems, Inc. All Rights Reserved.
         -->
         <property name="xtest.ide.security" value=""/>
         
+        <!-- to  be removed -->
+        <property name="test.propertyfile" value=""/>
+        
         <property name="args" value="-jdkhome &quot;${jdkhome}&quot; -userdir &quot;${xtest.userdir}&quot; -nosplash 
 -cp:p &quot;${xtest.ide.path}&quot; 
 -J-Dnetbeans.classpath=&quot;${xtest.netbeans.classpath}&quot; 
--J-Dnetbeans.mainclass=org.netbeans.xtest.ide.Main 
+-J-Dnetbeans.mainclass=org.netbeans.xtest.plugin.ide.Main 
 -J-Dnetbeans.full.hack=true 
 -J-Dnetbeans.windows=${xtest.ide.winsys} 
 -J-Dnetbeans.systemclassloader.patches=${xtest.netbeans.systemclassloader.patches} 
-
 -J-Dtest.class=${test.class} 
--J-Dtest.classpath=&quot;${test.classpath}&quot; 
 -J-Dtest.exit=${xtest.ide.exit} 
 -J-Dtest.reuse.ide=${xtest.reuse.ide} 
 -J-Dtest.output.redirect=true 
@@ -180,7 +195,8 @@ Microsystems, Inc. All Rights Reserved.
 -J-Dnbjunit.home=&quot;${nbjunit.home}&quot;
 -J-Dtestrunner.workdir=&quot;${xtest.workdir}/sys&quot;
 -J-Dtestrunner.timeout=${xtest.timeout} 
--J-Dtestrunner.propertyfiles=&quot;${test.propertyfile}&quot;
+
+-J-Dtestrunner.propertyfiles=&quot;${_ideplugin.test.propertyfile}&quot;
 
 -J-Dwork.dir=&quot;${xtest.workdir}/sys&quot;
 -J-Dxtest.workdir=&quot;${xtest.workdir}&quot;
@@ -190,39 +206,31 @@ Microsystems, Inc. All Rights Reserved.
 -J-Djunit.properties.file=&quot;${junit.properties.file}&quot;
 -J-Dxtest.timeout=${xtest.timeout}         
 ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
-        
-        <!--  Removed properties. No longer needed.
-        
-                -J-Dxtest.results=&quot;${xtest.results}&quot; 
-	        -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; 
-	        -J-Dxtest.includes=&quot;${xtest.includes}&quot; 
-	        -J-Dxtest.excludes=&quot;${xtest.excludes}&quot; 
-	        -J-Dtbag.patternset.include=${tbag.patternset.include} 
-	        -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} 
-	        -J-Dtbag.testtype=${tbag.testtype} 
-	        -J-Dtbag.formater=${tbag.formater} 
-	        -J-Dtbag.name=&quot;${tbag.name}&quot; 
-	        -J-Dtbag.executor=${tbag.executor} 
-	        -J-Dxtest.module=&quot;${xtest.module}&quot; 
-	        -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; 
-	        -J-Dxtest.distexec=true 
-	        -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot;        
-	-->   
-        
-        <echo message="ARGUMENTS = ${args}"/>        
-        
-        <ideexec dir="${netbeans.home}/bin" executable="${netbeans.home}/bin/runide.exe" 
-              os="Windows 95 Windows 98 Windows Me Windows NT Windows 2000 Windows XP"
-              failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}">
-	    	  <arg line="${args}"/>
-        </ideexec>
-        
-        <ideexec dir="${netbeans.home}/bin" executable="sh"  
-              os="Linux SunOS Solaris Mac OS X"
-              failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}">
-            <arg line="runide.sh ${args}"/>
-        </ideexec>
 
+<!--
+removed !!!!
+
+
+-J-Dtest.classpath=&quot;${test.classpath}&quot; 
+
+-->                   
+        
+        <echo message="enableAssertions=${xtest.enable.assertions} debugPort=${xtest.debug.port} debugSuspend=${xtest.debug.suspend}"/>
+        
+        <ideTestRunner dir="${netbeans.home}/bin" executable="${netbeans.home}/bin/runide.exe" workdir="${xtest.workdir}/sys"
+              os="Windows 95 Windows 98 Windows Me Windows NT Windows 2000 Windows XP"
+              failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
+              enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">
+	    	  <arg line="${args}"/>
+        </ideTestRunner>            
+        
+        <ideTestRunner dir="${netbeans.home}/bin" executable="sh"  workdir="${xtest.workdir}/sys"
+              os="Linux SunOS Solaris Mac OS X" 
+              failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
+              enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">
+            <arg line="runide.sh ${args}"/>
+        </ideTestRunner>    
+        
         
         <delete dir="${xtest.userdir}/xtest"/>
                                 
@@ -236,6 +244,7 @@ ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.s
         <antcall target="testbag-failure"/>
         
     </target>
+    
 
     <target name="check-userdir" if="xtest.reuse.and.noexist">
         <testbaginfo unexpectedFailure="This testbag wants to reuse old userdir, but it doesn't exists. Testbag wasn't executed." outfile="${xtest.workdir}/xmlresults/testbag.xml"/> 
@@ -348,14 +357,10 @@ ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.s
              
         <echo message="${xtest.plugin.home}/lib/xtest-ide-plugin.jar"/>
                  
-        <nbtaskdef classpath="${xtest.plugin.home}/lib/xtest-ide-plugin.jar">
-        <!--
-            <taskdef name="pathdef" classname="org.netbeans.xtest.PathDef"/>
-            <taskdef name="for" classname="org.netbeans.xtest.driver.ForTask"/>
-            <taskdef name="jar-finder" classname="org.netbeans.xtest.JarFinder"/>
-        -->
-            <taskdef name="ide-jvmargs" classname="org.netbeans.xtest.ide.IdeJvmArgs"/>
-            <taskdef name="ideexec" classname="org.netbeans.xtest.ide.IdeExecTask"/>
+        <!-- the junit in the task is required, because it is used to prepare testlist -->
+        <nbtaskdef classpath="${xtest.plugin.home}/lib/xtest-ide-plugin.jar:${xtest.home}/lib/xtest-junit-testrunner.jar:${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar">
+            <taskdef name="ide-jvmargs" classname="org.netbeans.xtest.plugin.ide.IdeJvmArgs"/>
+            <taskdef name="ideTestRunner" classname="org.netbeans.xtest.plugin.ide.IdeTestRunnerTask"/>
         </nbtaskdef>
     </target>
     

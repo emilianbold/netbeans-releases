@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project default="forbidden" name="packaging_targets">
+
+
+    
+    <target name="package" unless="xtest.distexec">
+        <mkdir dir="${xtest.build}/${xtest.file.location}"/>
+        <property name="package.tests.includes" value=""/>
+        <property name="package.tests.excludes" value=""/>
+        <jar basedir="." 
+             jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}"
+             includesfile="${xtest.home}/standard-test-includes.txt"
+             includes="package.tests.includes"
+             excludesfile="${xtest.home}/standard-test-excludes.txt"
+             excludes="package.tests.excludes">
+        </jar>
+    </target>
+    
+        
+        
+    <!-- forbidden main target -->
+    <target name="forbidden">
+       <fail message="This script is not intended to be directly executed. This in only library."/>
+    </target>  
+    
+</project>

@@ -23,27 +23,26 @@ to use xtest.attribs.
     <!-- Testbag with all test of site-specific testtype. Use for example
          ant -Dxtest.testtype=site-specific -Dxtest.userdata.propertyfile=databases.properties -Dxtest.attribs=oracle,all
     -->
-    <testbag testattribs="all,stable" executor="code" name="Test database connections">
+    <testbag testattribs="all,stable" executor="jvm" name="Test database connections">
         <testset dir="site-specific/src">
             <patternset>
                 <include name="**/*"/>
-                <exclude name="TestViews.class"/>
+                <exclude name="sitespecific/TestViews.class"/>
             </patternset>
         </testset>
     </testbag>
     
     <!-- Execute test of views for all databases except PointBase. -->
-    <testbag testattribs="(all OR stable) AND NOT pointbase" executor="code" name="Test views">
+    <testbag testattribs="(all OR stable) AND NOT pointbase" executor="jvm" name="Test views">
         <testset dir="site-specific/src">
             <patternset>
-                <include name="TestViews.class"/>
+                <include name="sitespecific/TestViews.class"/>
             </patternset>
         </testset>
     </testbag>
 
-    <resultsprocessor name="site-specific" antfile="build.xml" target="test_report" default="true"/>
     
-    <executor name="code" antfile="build-site-specific.xml" target="runcodetest"/>
+    <executor name="jvm" antfile="build-site-specific.xml" target="runtests"/>
 
     <compiler name="site-specific-compiler" default="true" antfile="build-site-specific.xml" target="site-specific-compiler"/> -->
     

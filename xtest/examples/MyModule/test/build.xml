@@ -31,13 +31,8 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="all,code,ide"/>
     
-    <!-- Points to antfile with module's harness. 
-         Targets from that antfile is called from this build.xml -->
-    <property name="xtest.module_harness.antfile" location="${xtest.home}/lib/module_harness.xml"/>
-
-    <!-- Says how to create classpath for compilation and for execution code tests by default.
-         Can have values src, jar, ide -->
-    <property name="xtest.source.location" value="src"/>
+    <taskdef name="xtest" classname="org.netbeans.xtest.usertasks.XTestActionTask" 
+                 classpath="${xtest.home}/lib/xtest.jar"/>  
 
     
  
@@ -50,40 +45,35 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This calls target which will call compilers according to cfg file.
          You should not change this target unless you realy know what you are doing -->
     <target name="buildtests">
-       <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="compiler-launcher"/>
+       <xtest executeAction="buildTests"/>
     </target>
     
     <!-- This calls common clean process. -->
     <!-- You can write your own if you need something special -->
     <target name="cleantests">
-       <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="cleantests"/>
+       <xtest executeAction="cleanTests"/>
     </target> 
 
     <!-- This target runs tests. You should not change this --> 
     <!-- target unless you realy know what you are doing -->
     <target name="runtests" depends="buildtests">
         <echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="runtests"/>
+        <xtest executeAction="runTests"/>
     </target>
    
     <!-- This target is executed from test-executor in newly created Project -->
-    <!-- Name of this task is defined in cfg-xxx.xml -->
-    <target name="test_report">
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
+    <!-- deprecated !!! - to be removed !!! -->
+    <target name="test_report">       
+        <ant dir="." antfile="${xtest.home}/lib/module_harness.xml"
              target="test_report"/>
     </target>
     
     <target name="cleanresults">
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="cleanresults"/>
+        <xtest executeAction="cleanResults"/>
     </target>
     
-    <target name="realclean" depends="cleantests,cleanresults">
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="realclean"/>
+    <target name="realclean">
+        <xtest executeAction="cleanAll"/>
     </target>
     
     <target name="printconfig">

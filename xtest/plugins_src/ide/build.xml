@@ -36,8 +36,8 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="../../lib/xtest.jar"/>
             <pathelement location="../../lib/xtest-junit-testrunner.jar"/>
             <pathelement location="../../lib/nbjunit.jar"/>
+            <pathelement location="${ant.home}/lib/ant.jar"/>
             <fileset dir="../../external">
-                <include name="ant-1.*.jar"/>
                 <include name="junit*.jar"/>
             </fileset>            
         </path>
@@ -54,21 +54,22 @@ Microsystems, Inc. All Rights Reserved.
             basedir="src"
             excludesfile="${nball.cvs.root}/nbbuild/standard-jar-excludes.txt"
             compress="false">
-            <include name="org/netbeans/xtest/ide/**"/>
-            <!-- XTestErrorManager has problems - temporarily disabling it
-            <include name="META-INF/services/org.openide.ErrorManager"/>
-            -->
+            <include name="org/netbeans/xtest/plugin/ide/Ide*.class"/>
         </jar>
-        <!-- junit test runner customizations for ide mode -->
-        <jar jarfile="lib/ide-junit-testrunner.jar"            
+        
+        <jar jarfile="lib/xtest-ide-testexec.jar"            
             basedir="src"
             excludesfile="${nball.cvs.root}/nbbuild/standard-jar-excludes.txt"
             compress="false">
-            <include name="org/netbeans/xtest/testrunner/**"/>
-            <!-- XTestErrorManager has problems - temporarily disabling it
-            <include name="META-INF/services/org.openide.ErrorManager"/>
-            -->
-        </jar>               
+            <include name="org/netbeans/xtest/plugin/ide/Main*.class"/>
+        </jar>
+        <jar jarfile="lib/xtest-ide-main.jar"
+            basedir="src"
+            excludesfile="${nball.cvs.root}/nbbuild/standard-jar-excludes.txt"
+            compress="false">
+            <include name="org/netbeans/xtest/plugin/ide/Main*.class"/>
+            <include name="org/netbeans/xtest/plugin/ide/MainWithExec*.class"/>
+        </jar>        
     </target>
     
     
@@ -82,7 +83,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="clean">
-        <delete file="lib/ide-junit-testrunner.jar"/>
+        <delete file="lib/xtest-ide-main.jar"/>
+        <delete file="lib/xtest-ide-testexec.jar"/>
         <delete file="lib/xtest-ide-plugin.jar"/>
         <delete>
             <fileset dir="src">

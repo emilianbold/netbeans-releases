@@ -44,12 +44,7 @@ public class JUnitTestRunnerProperties {
     
     // testrun type stuff
     static final String TESTRUN_TYPE="xtest.junit-test-runner.testrun-type";
-    // whole testbag is run in a single VM instance
-    public static final String TESTRUN_TYPE_TESTBAG="testbag";
-    // each test class (testsuite) is run in a single VM instance
-    public static final String TESTRUN_TYPE_TESTSUITE="testsuite";
-    // all tests are run internally (in the same VM as the class which starts the test run)
-    public static final String TESTRUN_TYPE_CURRENT_VM="vm";
+
     
     // dir property where xml results should be places
     public static final String RESULTS_DIRECTORY="xtest.junit-test-runner.result-dir";    
@@ -70,18 +65,20 @@ public class JUnitTestRunnerProperties {
     }
     
     
-    
     public static JUnitTestRunnerProperties load(String filename) throws IOException {
+        return load(new File(filename));
+    }
+    
+    public static JUnitTestRunnerProperties load(File file) throws IOException {
         JUnitTestRunnerProperties jutrProperties = new JUnitTestRunnerProperties();
         jutrProperties.runnerProperties =  new Properties();
-        InputStream is = new FileInputStream(filename);
+        InputStream is = new FileInputStream(file);
         jutrProperties.runnerProperties.load(is);
         // parse the properties
         jutrProperties.parseRunnerProperties();
         is.close();
-        return jutrProperties;        
+        return jutrProperties;             
     }
-    
     
     public void save(File propFile, boolean overwrite) throws IOException {
 
@@ -167,7 +164,9 @@ public class JUnitTestRunnerProperties {
     }
     
     public void setTestRunType(String value) {
-        runnerProperties.setProperty(TESTRUN_TYPE,value);
+        if (value != null) {
+            runnerProperties.setProperty(TESTRUN_TYPE,value);
+        }
     }
     
     public String getTestbagSetupClassName() {
@@ -213,22 +212,39 @@ public class JUnitTestRunnerProperties {
     }
     
     public void setResultsDirName(String value) {
-        runnerProperties.setProperty(RESULTS_DIRECTORY,value);
+        if (value != null) {
+            runnerProperties.setProperty(RESULTS_DIRECTORY,value);
+        }
     }
     
     public JUnitTestRunnerProperties[] divideByTests() {
         Vector properties = new Vector();
         parseRunnerProperties();
+        // testbag setup
+        if (getTestbagSetupClassName() != null) {
+            JUnitTestRunnerProperties prop = new JUnitTestRunnerProperties();
+            prop.setTestbagSetup(getTestbagSetupClassName(), getTestbagSetupMethodName());
+            prop.setResultsDirName(getResultsDirName());
+            properties.add(prop);
+        }
+        // testbag tests
         for (int i=0; i<testNames.length; i++) {
             JUnitTestRunnerProperties prop = new JUnitTestRunnerProperties();
-            if (getResultsDirName() != null)
-                prop.setResultsDirName(getResultsDirName());
-            if (getTestRunType() != null)
-                prop.setTestRunType(getTestRunType());
+            prop.setResultsDirName(getResultsDirName());            
+            prop.setTestRunType(getTestRunType());
             prop.addTestNameWithFilter(testNames[i], testFilterIncludes[i], testFilterExcludes[i]);
+            // is parsing really necessary ????
             prop.parseRunnerProperties();
             properties.add(prop);
         }
+        // testbag teardown
+        if (getTestbagTeardownClassName() != null) {
+            JUnitTestRunnerProperties prop = new JUnitTestRunnerProperties();
+            prop.setTestbagTeardown(getTestbagTeardownClassName(),getTestbagTeardownMethodName());
+            prop.setResultsDirName(getResultsDirName());
+            properties.add(prop);
+        }
+        
         return (JUnitTestRunnerProperties[])properties.toArray(new JUnitTestRunnerProperties[0]);
     }
     

@@ -45,7 +45,7 @@ import java.io.*;
 public class JUnitTestRunner {
     
     // debug method for testing purposes - DEBUG should be set to false in production code
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     private static void debugInfo(final String message) {
         if (DEBUG) {
             System.out.println("JUnitTestRunner:"+message);
@@ -56,11 +56,8 @@ public class JUnitTestRunner {
     // we take it directly from this place ?
     public static final String SUITE_METHODNAME= "suite";
         
-    public static final String RUNNER_PROPERTIES_KEY = "runnerProperties";
-    
-    // test runner property file name
-    public static final String TESTRUNNER_PROPERTY_FILENAME = "testrunner.properties";
-    
+    public static final String TESTRUNNER_PROPERTIES_FILENAME_KEY = "testlist";
+        
     
     // exit states
     public static final int OK = 0;
@@ -69,7 +66,7 @@ public class JUnitTestRunner {
     
     // our printwriter to which all messages are printed out
     // currently this is just stdout;
-    private PrintWriter out = new PrintWriter(System.out,true);
+    private PrintWriter out;
     //private PrintStream out = System.out;
     
     // test runner properties - it is better to use
@@ -88,14 +85,23 @@ public class JUnitTestRunner {
     private ClassLoader testLoader;
     
     
+    public JUnitTestRunner(ClassLoader testLoader, PrintStream out) throws IllegalArgumentException, IOException {
+        this(loadJUnitTestRunnerProperties(),testLoader, out);
+    }
+    
     
     /** Creates a new instance of JUnitTestRunner */
-    public JUnitTestRunner(JUnitTestRunnerProperties runnerProperties, ClassLoader testLoader) 
+    public JUnitTestRunner(JUnitTestRunnerProperties runnerProperties, ClassLoader testLoader, PrintStream out) 
                 throws IllegalArgumentException {
         
         //System.out.println("JUnitTestRunner: runnerProperties = "+runnerProperties);        
         this.runnerProperties = runnerProperties;
         this.testLoader = testLoader;
+        if (out != null) {
+            this.out = new PrintWriter(out,true);
+        } else {
+            this.out = new PrintWriter(System.out,true);
+        }
         // this should be placed elsewhere, just a hack for now
         checkRunnerPropertiesValidity();        
     }
@@ -117,13 +123,14 @@ public class JUnitTestRunner {
         return listeners;
     }
     
-    // compability method;
+    
+    // runtests - now always run setup/teardown methods (when available)
     public void runTests() {
-        runTests(false);
+        runTests(true);
     }
     
     /** run the junit tests */
-    public void runTests(boolean doSetup) {
+    protected void runTests(boolean doSetup) {
 
         // get result processors
        resultProcessors = getJUnitTestListeners();
@@ -184,57 +191,16 @@ public class JUnitTestRunner {
         }
     }
     
-    
-    // main is called only when running tests in their own VM (in XTest 'code' mode)
-    public static void main(String[] args) {
-        try {
-            System.out.println("Running JUnit tests");
-            final String runnerPropertiesString = RUNNER_PROPERTIES_KEY+"=";
-            if (args.length == 0) {
-                System.err.println("JUnitTestRunner expects runnerProperties='path/to/property/file' parameter");
-                System.exit(ERROR);
-            }
-            JUnitTestRunnerProperties runnerProperties = null;
-            String propertiesFilename = null;
-            for (int i=0; i<args.length; i++) {
-                //System.out.println("Args["+i+"] is "+args[i]);
-                if (args[i].startsWith(runnerPropertiesString)) {
-                    propertiesFilename = args[i].substring(runnerPropertiesString.length());
-                    // now try to load the properties
-                    try {
-                        //System.out.println("Main: propertiesFilename = "+propertiesFilename);
-                        runnerProperties = JUnitTestRunnerProperties.load(propertiesFilename);
-                    } catch (IOException ioe) {
-                        System.err.println("Cannot load property file "+propertiesFilename);
-                        System.exit(ERROR);
-                    }
-                }
-            }
-            
-            if (runnerProperties == null) {
-                // bad thing
-                System.err.println("Could not find property file or the file is not a valid propertie file:"
-                + propertiesFilename);
-                System.exit(ERROR);
-            }
-            
-            
-            // everything looks ok, construct the runner object and run tests
-            // we don't use any special classloader and we never run the main method from IDE
-            try {
-                JUnitTestRunner runner = new JUnitTestRunner(runnerProperties, null);
-                runner.runTests();
-            } catch (IllegalArgumentException iae) {
-                System.err.println("Supplied properties are not correct: "+iae.getMessage());
-            }
-        } catch (Throwable t) {
-            // something strange happened
-            System.err.println("Throwable caught in JUnitTestRunner.main():"+t.getMessage());
-            t.printStackTrace(System.err);
+    public static JUnitTestRunnerProperties loadJUnitTestRunnerProperties() throws IOException {
+        // get from the system properties
+        String propertiesFilename = System.getProperty(TESTRUNNER_PROPERTIES_FILENAME_KEY);
+        if (propertiesFilename == null) {
+            throw new IOException("Cannot load testrunner properties file, because system property "
+                            +TESTRUNNER_PROPERTIES_FILENAME_KEY+" is not specified");
         }
-        System.out.println("JUnit tests finished");
-        System.exit(OK);
+        return JUnitTestRunnerProperties.load(propertiesFilename);        
     }
+    
     
     //
     // private methods
@@ -269,6 +235,8 @@ public class JUnitTestRunner {
                 // Houston we have the problem - test class is not found !!!!
                 out.println("! Cannot find test class "+testName
                 + " ignoring this test");
+            } catch (ClassCastException cce) {
+                out.println("Class "+testName+" does not implement a Test interface - cannot run it as a test");            
             } catch (Throwable t) {
                 // Houston we have the problem - something even weirder happened
                 out.println("! Cannot define test class "+testName
@@ -284,7 +252,7 @@ public class JUnitTestRunner {
     // get testsuite for the supplied classname
     TestSuite getTestSuiteForName(String className) throws ClassNotFoundException {
         // load test class via appropritate classloader
-        Class testClass = getTestClassForName(className);
+        Class testClass = getClassForName(className);
         // try to extract suite method
         Method suiteMethod = null;
         try {
@@ -370,10 +338,13 @@ public class JUnitTestRunner {
     }
     
     // load test class via appropriate class loader
-    private Class getTestClassForName(String className) throws ClassNotFoundException {
+    private Class getClassForName(String className) throws ClassNotFoundException {
+        debugInfo("Loading class "+className);
         if (testLoader == null) {
+            debugInfo("Using default classloader");
             return Class.forName(className);
         } else {
+            debugInfo("Using supplied classloader:"+testLoader.toString());
             return testLoader.loadClass(className);
         }
     }
@@ -381,7 +352,7 @@ public class JUnitTestRunner {
     // call setup/teardown method in a setup object
     private  void callMethod(String className, String methodName) throws InvocationTargetException {
         try {
-            Class setupClass = getTestClassForName(className);
+            Class setupClass = getClassForName(className);
             // try to find the method
             Method setupMethod = setupClass.getMethod(methodName, null);
             // instintiate the object

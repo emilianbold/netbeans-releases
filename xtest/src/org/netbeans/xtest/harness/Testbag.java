@@ -232,6 +232,12 @@ public class Testbag implements XMLSerializable {
         if (testSetup != null) {
             testSetup.validate();
         }
+        // deprecate resultprocessor
+        /*
+        if (getResultsprocessorName() != null) {
+            System.out.println("!!! Attribute resultprocessor is no longer in use. Please don't use it.");
+        }
+         */
     }
 
     

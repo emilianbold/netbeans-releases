@@ -14,26 +14,25 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="Logging examples config">
     
-    <testbag testattribs="all" executor="code" name="testbag_1">
+    <testbag testattribs="all" executor="jvm" name="testbag_1">
         <testset dir="logging/src">
             <patternset>
-                <include name="golden/*"/>
-                <include name="UseWorkdir.class"/>
+                <include name="**"/>
             </patternset>
         </testset>
     </testbag>
     
-    <testbag testattribs="stable" executor="code" name="testbag_2">
+    <testbag testattribs="stable" executor="jvm" name="testbag_2">
         <testset dir="logging/src">
             <patternset>
                 <include name="golden/*"/>
                 <exclude name="golden/GoldenTest1.class/testPart2"/>
-                <include name="UseWorkdir.class"/>
+                <include name="workdir/*"/>
             </patternset>
         </testset>
     </testbag>
 
-    <testbag testattribs="failing" executor="code" name="testbag_3">
+    <testbag testattribs="failing" executor="jvm" name="testbag_3">
         <testset dir="logging/src">
             <patternset>
                 <include name="golden/GoldenTest1.class/testPart2"/>
@@ -41,9 +40,8 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <resultsprocessor name="logging" antfile="build.xml" target="test_report" default="true"/>
     
-    <executor name="code" antfile="build-logging.xml" target="runloggingcodetest"/>
+    <executor name="jvm" antfile="build-logging.xml" target="logging-executor"/>
     
     <compiler name="logging-compiler" default="true" antfile="build-logging.xml" target="logging-compiler"/>
     
