@@ -339,12 +339,12 @@ public final class ParseProjectXml extends Task {
         StringBuffer cp = new StringBuffer();
         Iterator it = deps.iterator();
         while (it.hasNext()) {
-            if (cp.length() > 0) {
-                cp.append(':');
-            }
             Element dep = (Element)it.next();
             if (XMLUtil.findElement(dep, "compile-dependency", NBM_NS) == null) {
                 continue;
+            }
+            if (cp.length() > 0) {
+                cp.append(':');
             }
             Element cnbEl = XMLUtil.findElement(dep, "code-name-base", NBM_NS);
             String cnb = XMLUtil.findText(cnbEl);
