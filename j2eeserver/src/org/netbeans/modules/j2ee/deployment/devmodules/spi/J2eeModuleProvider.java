@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
+import javax.enterprise.deploy.model.DDBean;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.config.*;
@@ -114,6 +115,13 @@ public abstract class J2eeModuleProvider {
          * This call is typically used by CMP mapping wizard.
          */
         public void setCMPMappingInfo(String ejbname, OriginalCMPMapping mapping);
+        /**
+         * Ensure needed resources are automatically defined for the entity
+         * represented by given DDBean.
+         * @param ejbname the ejb name
+         * @param ejbtype dtd name for type of ejb: 'message-drive', 'entity', 'session'.
+         */
+        public void ensureResourceDefinedForEjb(String ejbname, String ejbtype);
     }
     
     /**
@@ -139,13 +147,16 @@ public abstract class J2eeModuleProvider {
      * Returns directory containing definition for enterprise resources needed for
      * the module execution; return null if not supported
      */
-    public FileObject getEnterpriseResourceDirectory() {
+    public File getEnterpriseResourceDirectory() {
         return null;
     }
     
     /**
-     * Returns list of root directories for source files including configuration files.
-     * Examples: file objects for src/java, src/conf.
+     *  Returns list of root directories for source files including configuration files.
+     *  Examples: file objects for src/java, src/conf.  
+     *  Note: 
+     *  If there is a standard configuration root, it should be the first one in
+     *  the returned list.
      */
     public FileObject[] getSourceRoots() {
         return new FileObject[0];
@@ -157,7 +168,7 @@ public abstract class J2eeModuleProvider {
      * directory to distribution directory.
      */
     public SourceFileMap getSourceFileMap() {
-        return new DefaultSourceMap(getDeploymentName(), getSourceRoots());
+        return new DefaultSourceMap(getDeploymentName(), getSourceRoots(), getEnterpriseResourceDirectory());
     }
     
     /** If the module wants to specify a target server instance for deployment 

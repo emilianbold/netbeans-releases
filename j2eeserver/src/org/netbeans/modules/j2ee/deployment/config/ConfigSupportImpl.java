@@ -515,4 +515,33 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         ConfigurationSupport serverConfig = this.getServer().geConfigurationSupport();
         serverConfig.setMappingInfo(config, ejbName, mapping);
     }
+    
+    public void ensureResourceDefinedForEjb(String ejbname, String ejbtype) {
+        DConfigBean ejb = null;
+        DDRoot ddroot = getStorage().getEjbJarRoot();
+        StandardDDImpl[] ddbeans = (StandardDDImpl[]) ddroot.getChildBean("/enterprise-beans/"+ejbtype); //NOI18N
+        for (int i=0; i<ddbeans.length; i++) {
+            String ejbName = (String) ddbeans[i].proxy.bean.getValue("EjbName"); //NOI18N
+            if (ejbname.equals(ejbName)) {
+                ConfigBeanStorage[] cbss = ddbeans[i].getConfigBeans();
+                if (cbss != null && cbss.length > 0) {
+                    ejb = cbss[0].getConfigBean();
+                    break;
+                }
+            }
+        }
+        if (ejb == null) {
+            if (ddbeans != null) {
+                for (int i=0; i<ddbeans.length; i++) {
+                    String msg = ddbeans[i].proxy.bean.dumpBeanNode();
+                    ErrorManager.getDefault().log(ErrorManager.ERROR, msg);
+                }
+            }
+            Exception e = new Exception("Failed to lookup: "+ejbname+" type "+ejbtype);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        DeploymentConfiguration config = getStorage().getDeploymentConfiguration();
+        ConfigurationSupport serverConfig = this.getServer().geConfigurationSupport();
+        serverConfig.ensureResourceDefined(config, ejb, provider.getEnterpriseResourceDirectory());
+    }
 }

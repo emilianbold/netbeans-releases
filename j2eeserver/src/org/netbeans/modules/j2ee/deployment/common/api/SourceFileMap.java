@@ -53,6 +53,13 @@ public abstract class SourceFileMap {
     public abstract String getContextName();
     
     /**
+     * Returns directory path to repository of enterprise resource definition files.
+     * If the directory pointed to by the returned path does not exists writing user
+     * of the method call could attempt to create it.
+     */
+    public abstract File getEnterpriseResourceDir();
+    
+    /**
      * Add new mapping or update existing mapping of the given distribution path.
      * Provider of the mapping needs to extract and persist the relative path to
      * ensure the mapping is in project sharable data.  The mapping would be

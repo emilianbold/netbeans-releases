@@ -31,12 +31,15 @@ public class DefaultSourceMap extends SourceFileMap {
      */
     private String contextName;
     private FileObject[] roots;
+    private FileObject configDir;
+    private File resourceDir;
     private HashSet rootFiles = new HashSet();
     
     /** Creates a new instance of DefaultFileMapping */
-    public DefaultSourceMap(String name, FileObject[] roots) {
+    public DefaultSourceMap(String name, FileObject[] roots, File resourceDir) {
         this.contextName = name;
         this.roots = roots;
+        this.resourceDir = resourceDir;
         for (int i=0; i<roots.length; i++) {
             rootFiles.add(FileUtil.toFile(roots[i]));
         }
@@ -50,6 +53,10 @@ public class DefaultSourceMap extends SourceFileMap {
         return roots;
     }
     
+    public File getEnterpriseResourceDir() {
+        return resourceDir;
+    }
+   
     public boolean add(String distributionPath, FileObject sourceFile) {
         for (int i=0; i<roots.length; i++) {
             if (sourceFile.getPath().startsWith(roots[i].getPath()))
