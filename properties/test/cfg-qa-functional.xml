@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="all,suite2" name="properties_editing">
+    <testbag testattribs="all,validation,suite2" name="properties_editing">
         <testset dir="qa-fuctional/src">
             <patternset>
                 <include name="org/netbeans/properties/jelly2tests/suites/EditingPropertiesFile.class"/>
