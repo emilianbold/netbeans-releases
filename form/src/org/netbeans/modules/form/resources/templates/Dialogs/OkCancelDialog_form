@@ -4,9 +4,8 @@
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
   </SyntheticProperties>
-
   <Events>
-    <EventHandler event="windowClosing" handler="closeDialog"/>
+    <EventHandler event="windowClosing" listener="java.awt.event.WindowListener" parameters="java.awt.event.WindowEvent" handler="closeDialog"/>
   </Events>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
@@ -24,27 +23,19 @@
       <SubComponents>
         <Component class="javax.swing.JButton" name="okButton">
           <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.beaninfo.editors.StringEditor" value="OK"/>
+            <Property name="text" type="java.lang.String" value="OK"/>
           </Properties>
-
           <Events>
-            <EventHandler event="actionPerformed" handler="okButtonActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="okButtonActionPerformed"/>
           </Events>
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout" value="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout$FlowConstraintsDescription"/>
-          </Constraints>
         </Component>
         <Component class="javax.swing.JButton" name="cancelButton">
           <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.beaninfo.editors.StringEditor" value="Cancel"/>
+            <Property name="text" type="java.lang.String" value="Cancel"/>
           </Properties>
-
           <Events>
-            <EventHandler event="actionPerformed" handler="cancelButtonActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelButtonActionPerformed"/>
           </Events>
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout" value="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout$FlowConstraintsDescription"/>
-          </Constraints>
         </Component>
       </SubComponents>
     </Container>
