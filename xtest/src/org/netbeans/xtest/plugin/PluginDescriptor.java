@@ -23,6 +23,8 @@ package org.netbeans.xtest.plugin;
 
 import org.netbeans.xtest.xmlserializer.*;
 import java.io.File;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 /**
  *
@@ -38,6 +40,7 @@ public class PluginDescriptor implements XMLSerializable, java.io.Serializable {
             // register this class
             classMappingRegistry.registerSimpleField("name",ClassMappingRegistry.ATTRIBUTE,"name");
             classMappingRegistry.registerSimpleField("version",ClassMappingRegistry.ATTRIBUTE,"version");
+            classMappingRegistry.registerSimpleField("parentPluginName",ClassMappingRegistry.ATTRIBUTE,"extends");
             classMappingRegistry.registerSimpleField("dependencies",ClassMappingRegistry.ELEMENT,"Dependencies");
             classMappingRegistry.registerContainerField("availableExecutors", "AvailableExecutors", ClassMappingRegistry.SUBELEMENT);
             classMappingRegistry.registerContainerSubtype("availableExecutors", Executor.class,"Executor");
@@ -56,9 +59,15 @@ public class PluginDescriptor implements XMLSerializable, java.io.Serializable {
     
     // xmlized fields
     private String name;
-    private String version;
+    private String version;    
     private Executor[] availableExecutors;
     private Dependencies dependencies;
+    private String parentPluginName;
+    // dynamic variables - to be initialized later
+    private PluginDescriptor parentPlugin;
+    /* currently not requried 
+    private PluginDescriptor[] childrenPlugins;
+    */
     
     // nonxmlized field
     private File pluginHome;
@@ -78,6 +87,11 @@ public class PluginDescriptor implements XMLSerializable, java.io.Serializable {
         return name;
     }
     
+    // return true if plugin is this plugin
+    public boolean isPlugin(String pluginName) {
+         return this.name.equalsIgnoreCase(pluginName);
+    }
+    
     // get plugin version
     public String getVersion() {
         return version;
@@ -88,31 +102,85 @@ public class PluginDescriptor implements XMLSerializable, java.io.Serializable {
         return dependencies.requiredXTestVersion;
     }
     
+    // get plugin name which is being extended - naming analogy with superclass
+    public String getParentPluginName() {
+        return parentPluginName;
+    }
+    
+    public PluginDescriptor getParentPlugin() {
+        return parentPlugin;
+    }
+    
+    public boolean hasParentPlugin() {
+        return ( getParentPlugin() == null)? false : true;
+    }
+    
+    /* currently not required 
+    public PluginDescriptor[] getChildrenPlugins() {
+        return childrenPlugins;
+    }
+     **/
+       
+    
+    // is the supplied plugin descendant of this plugin?
+    public boolean isAscendant(PluginDescriptor plugin) {
+        if (plugin == null) {
+            return false;
+        }
+        if (this == plugin.getParentPlugin()) {
+            return true;
+        } else {
+            return isAscendant(plugin.getParentPlugin());
+        }
+    }
+    
+    // get all executors
+    public Executor[] getExecutors() {
+        return availableExecutors;
+    }
     
     // get executor for defined plugin with defined ID
-    public Executor getPluginExecutor(String executorID) throws PluginResourceNotFoundException {
+    public Executor getExecutor(String executorID) throws PluginResourceNotFoundException {
         for (int i=0; i < availableExecutors.length; i++) {
             if (executorID.equals(availableExecutors[i].executorID)) {
                 return availableExecutors[i];
             }
         }
+        if (hasParentPlugin()) {
+            return getParentPlugin().getExecutor(executorID);
+        }        
         throw new PluginResourceNotFoundException("Cannot find executor "+executorID+" for plugin "+getName());
     }
     
     // get default plugin executor
-    public Executor getPluginDefaultExecutor() throws PluginResourceNotFoundException {
+    public Executor getDefaultExecutor() throws PluginResourceNotFoundException {
         for (int i=0; i < availableExecutors.length; i++) {
             if (availableExecutors[i].isDefault()) {
                 return availableExecutors[i];
             }
         }
+        if (hasParentPlugin()) {
+            return getParentPlugin().getDefaultExecutor();
+        }
         throw new PluginResourceNotFoundException("Cannot find default executor for plugin "+getName());        
+    }
+    
+    public boolean hasDefaultExecutor() {
+        for (int i=0; i < availableExecutors.length; i++) {
+            if (availableExecutors[i].isDefault()) {
+                return true;
+            }
+        }
+        if (hasParentPlugin()) {
+            return getParentPlugin().hasDefaultExecutor();
+        }
+        return false;
     }
     
     
     
     // get plugin dependency
-    public PluginDependency[] getPluginDependencies() {
+    public PluginDependency[] getDependencies() {
         if (dependencies != null) {
             if (dependencies.pluginDependencies != null) {
                 return dependencies.pluginDependencies;
@@ -121,6 +189,47 @@ public class PluginDescriptor implements XMLSerializable, java.io.Serializable {
         return new PluginDependency[0];
     }
     
+    
+    // static method for postInitialization things
+    public static void performPostInitialization(PluginDescriptor[] descriptors) throws PluginConfigurationException {
+        HashMap globalHashMap = new HashMap(descriptors.length);
+        for (int i=0; i < descriptors.length; i++) {
+            globalHashMap.put(descriptors[i].getName(), descriptors[i]);
+        }
+        // now set parent relationship
+        for (int i=0; i < descriptors.length; i++) {
+            PluginDescriptor descriptor = descriptors[i];
+            if (descriptor.getParentPluginName() != null) {
+                PluginDescriptor parentPlugin = (PluginDescriptor)globalHashMap.get(descriptor.getParentPluginName());
+                if (parentPlugin != null) {
+                    descriptor.parentPlugin = parentPlugin;
+                } else {
+                    // houston, we have a problem - plugin cannot extend a plugin, which is not installed
+                    throw new PluginConfigurationException("Plugin "+descriptor.getName()+"cannot extend plugin "
+                                    +descriptor.getParentPluginName()+", which is not installed");
+                }
+            }
+        }
+        // set children relationship -> this will be more tricky !!!
+        
+        // currently not required !!!
+        /*
+        for (int i=0; i < descriptors.length; i++) {
+            PluginDescriptor currentDescriptor = descriptors[i];
+            ArrayList childrenPlugins = new ArrayList();
+            // find all children for this descriptor
+            for (int j=0; j < descriptors.length; j++) {
+                PluginDescriptor parentPlugin = descriptors[j].getParentPlugin();
+                if (currentDescriptor == parentPlugin) {
+                   childrenPlugins.add(parentPlugin);                                            
+                }
+            }
+            // create array representation of this
+            currentDescriptor.childrenPlugins = (PluginDescriptor[])childrenPlugins.toArray();            
+        }
+         **/
+        // done !!!
+    }
     
     
     // public inner classes
@@ -216,6 +325,11 @@ public class PluginDescriptor implements XMLSerializable, java.io.Serializable {
         // is this Executor defalt?
         public boolean isDefault() {
             return defaultExecutor;
+        }
+        
+        // returns executorID - package private, used only by PluginManager
+        String getExecutorID() {
+            return executorID;
         }
     }
     

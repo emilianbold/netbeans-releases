@@ -124,7 +124,8 @@ Microsystems, Inc. All Rights Reserved.
        	<property file="${xtest.userdata.propertyfile}"/>       
         
         <!-- initialize plugins -->
-        <pluginsInit pluginsHome="${xtest.home}/plugins"/>
+        <property name="xtest.preferred.plugins" value=""/>
+        <pluginsInit pluginsHome="${xtest.home}/plugins" preferredPlugins="${xtest.preferred.plugins}"/>
         
         
         <!-- check whether XTest ide-plugin is available  !!! TO BE REMOVED -->

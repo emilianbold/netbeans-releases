@@ -25,6 +25,7 @@
 package org.netbeans.xtest.plugin;
 
 import java.io.*;
+import java.util.*;
 import org.netbeans.xtest.util.FileUtils;
 import org.netbeans.xtest.util.SerializeDOM;
 import org.netbeans.xtest.xmlserializer.*;
@@ -47,7 +48,7 @@ public class PluginManager implements java.io.Serializable {
         try {
             Class.forName("org.netbeans.xtest.plugin.PluginDescriptor");
         } catch (ClassNotFoundException cnfe) {
-            System.out.println("TLAMA !!!! "+cnfe);
+            System.out.println("Cannot load  org.netbeans.xtest.plugin.PluginDescriptor class, Reason = "+cnfe);
         }
     }
     
@@ -62,6 +63,9 @@ public class PluginManager implements java.io.Serializable {
     
     private File pluginsHome;    
     private PluginDescriptor[] pluginDescriptors;
+    private PluginDescriptor[] preferredPlugins = new PluginDescriptor[0];
+    private HashMap pluginsHashMap;
+    
     
     // registers plugins
     public void registerPlugins(File xtestHome, File pluginsHome) throws IOException, PluginConfigurationException {
@@ -76,32 +80,81 @@ public class PluginManager implements java.io.Serializable {
         
         // now get the descriptors and 
         pluginDescriptors = getPluginDescriptors();
+        
 
         // get XTest's version
         Manifest mf = XTestVersion.getManifest(xtestHome.getAbsolutePath());
         String xtestVersion = XTestVersion.getMajorVersion(mf)+"."+XTestVersion.getMinorVersion(mf);     
         
-        // and check them for compatibility/dependency        
+        // check them for compatibility/dependency        
         checkForPluginCompatibility(pluginDescriptors, xtestVersion);
+        
+        // performPostInitialization
+        PluginDescriptor.performPostInitialization(pluginDescriptors);
+        
+        // create quick access hashamp
+        pluginsHashMap = createQuickAccessHashMap(pluginDescriptors);        
     }
+    
+    // register preferred plugins
+    public void registerPreferredPlugins(String[] preferredPluginNames) throws PluginConfigurationException {
+        
+        if (preferredPluginNames != null) {
+            PluginDescriptor[] preferredPluginDescriptors = new PluginDescriptor[preferredPluginNames.length];
+            for (int i=0; i < preferredPluginNames.length; i++) {
+                try {
+                    preferredPluginDescriptors[i] = findPluginDescriptor(preferredPluginNames[i]);
+                } catch (PluginResourceNotFoundException prnfe) {
+                    throw new PluginConfigurationException("Cannot register preferred plugin "+preferredPluginNames[i]
+                        +", because:"+prnfe.getMessage(),prnfe);
+                }
+            }
+            // everything is done 
+            this.preferredPlugins = preferredPluginDescriptors;
+        }
+    }
+    
+    private static HashMap createQuickAccessHashMap(PluginDescriptor[] descriptors) {
+        // create hashmap for quick access by plugin name
+        HashMap pluginsHashMap = new HashMap(descriptors.length);
+        for (int i=0; i < descriptors.length; i++) {
+            // it is in lower case !!!!
+            pluginsHashMap.put(descriptors[i].getName().toLowerCase(), descriptors[i]);
+        }
+        return pluginsHashMap;
+    }
+    
     
     
     // check whether plugins are registered
     private void checkForPluginRegistration() throws PluginResourceNotFoundException {
-        if (pluginDescriptors == null) {
+        if ((pluginDescriptors == null)|(pluginsHashMap == null)) {
             throw new PluginResourceNotFoundException("Plugins were not registered");
         }
     }
     
-    // find the pluginDescriptor
+    // find the pluginDescriptor - uses pluginsHashMap for faster access
     private PluginDescriptor findPluginDescriptor(String pluginName) throws PluginResourceNotFoundException {
         checkForPluginRegistration();
-        for (int i=0; i < pluginDescriptors.length; i++) {
-            if (pluginName.equalsIgnoreCase(pluginDescriptors[i].getName())) {
-                return pluginDescriptors[i];
-            }
+        PluginDescriptor descriptor = (PluginDescriptor)pluginsHashMap.get(pluginName.toLowerCase());
+        if (descriptor != null) {
+            return descriptor;
+        } else {
+            throw new PluginResourceNotFoundException("Plugin '"+pluginName+"' not found. Please install it.");
         }
-        throw new PluginResourceNotFoundException("Plugin '"+pluginName+"' not found. Please install it.");
+    }
+    
+    
+    // get preferred plugin for the base plugin (if available)
+    public PluginDescriptor getPreferredPluginDescriptor(String basePluginName) throws PluginResourceNotFoundException {
+        PluginDescriptor basePlugin = findPluginDescriptor(basePluginName);
+        // now for each preferred plugin check whether is descendant
+        for (int i=0; i < preferredPlugins.length; i++) {
+            if (basePlugin.isAscendant(preferredPlugins[i])) {
+                return preferredPlugins[i];
+            }
+        }        
+        return basePlugin;
     }
     
     // get plugin version
@@ -115,9 +168,11 @@ public class PluginManager implements java.io.Serializable {
     }
     
     // get plugin executor - describes ant file ant target to be executed
+    /* not required !!!
     public PluginDescriptor.Executor getPluginExecutor(String pluginName, String executorID) throws PluginResourceNotFoundException {
         return findPluginDescriptor(pluginName).getPluginExecutor(executorID);
     }
+     **/
     
     protected PluginDescriptor[] getPluginDescriptors() throws PluginConfigurationException {
         // in each subdirectory of pluginsHome get plugin_descriptor.xml
@@ -144,7 +199,7 @@ public class PluginManager implements java.io.Serializable {
     }
     
     
-    private static void checkForPluginCompatibility(PluginDescriptor[] descriptors, String xtestVersion) throws PluginConfigurationException {
+    private static void checkForPluginCompatibility(PluginDescriptor[] descriptors,  String xtestVersion) throws PluginConfigurationException {
         for (int i=0; i < descriptors.length; i++) {
             PluginDescriptor descriptor = descriptors[i];
             // check whether it is compatible with this XTest
@@ -160,14 +215,16 @@ public class PluginManager implements java.io.Serializable {
     
     private static void checkPluginDependency(PluginDescriptor checkedPlugin, PluginDescriptor[] installedPlugins) throws PluginConfigurationException {
         // for each dependency whether the plugin is intalled
-        for (int i=0; i < checkedPlugin.getPluginDependencies().length; i++) {
-            PluginDescriptor.PluginDependency pluginDependency = checkedPlugin.getPluginDependencies()[i];
+        // check also if the plugin extends another plugin if it depends on it
+
+        for (int i=0; i < checkedPlugin.getDependencies().length; i++) {
+            PluginDescriptor.PluginDependency pluginDependency = checkedPlugin.getDependencies()[i];
             String requiredPluginName = pluginDependency.getName();
-            String requiredPluginVersion = pluginDependency.getVersion();
-            // now check whether required plugin exists in installed Plugin
+            String requiredPluginVersion = pluginDependency.getVersion();            
+            // check whether required plugin exists in installed Plugin            
             boolean dependencyOK = false;
             for (int j = 0; j < installedPlugins.length; i++) {
-                if (requiredPluginName.equalsIgnoreCase(installedPlugins[j].getName())) {
+                if (installedPlugins[j].isPlugin(requiredPluginName)) {
                     // check the version
                     if (requiredPluginVersion.compareTo(installedPlugins[j].getVersion()) > 0)  {
                         // not compatible
@@ -187,6 +244,38 @@ public class PluginManager implements java.io.Serializable {
                             +", which is not installed");
             }
         }
+        // extension have to be checked more thoroughly
+        //  - executors supplied by the extension have to be superset of its parent
+        /* should not be required - postInitialization should perform it bu itself 
+        if (checkedPlugin.getParentPlugin() != null) {
+            boolean extensionOK = false;
+            PluginDescriptor parentPlugin = checkedPlugin.getParentPlugin();
+            PluginDescriptor.Executor[] parentExecutors = parentPlugin.getPluginExecutors();
+            for (int i = 0; i < parentExecutors.length; i++) {
+                String parentExecutorID = parentExecutors[i].getExecutorID();
+                try {
+                    checkedPlugin.getPluginExecutor(parentExecutorID);
+                } catch (PluginResourceNotFoundException prnfe) {
+                    //  we have a problem
+                    throw new PluginConfigurationException("Plugin "+checkedPlugin.getName()
+                        +" extends "+parentPlugin.getClass()+", but does not implement executor "
+                        +parentExecutorID);
+                }
+            }
+            // also check the default executor - they have to be equal !!!
+            if (!checkedPlugin.getPluginDefaultExecutor().equals(parentPlugin.getPluginDefaultExecutor())) {
+                throw new PluginConfigurationException("Plugin "+checkedPlugin.getName()
+                        +" extends "+parentPlugin.getClass()+", but does have the same default executor as parent");
+            }
+        }
+        */
+        /*
+        if (!extensionOK) {
+            // plugin to extend not found
+            throw new PluginConfigurationException("Plugin "+checkedPlugin.getName()+" version "+checkedPlugin.getVersion()
+                +" extends plugin "+checkedPlugin.getParentPluginName()+", which is not included in dependecies!!!");
+        }
+         */
     }
     
 }

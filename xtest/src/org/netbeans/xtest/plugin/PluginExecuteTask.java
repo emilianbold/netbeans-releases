@@ -79,7 +79,7 @@ public class PluginExecuteTask extends Task {
         }
         try {
             // plugin manager found - let's execute the stuff
-            PluginDescriptor.Executor pluginExecutor = pluginManager.getPluginExecutor(pluginName,executeTarget);
+            PluginDescriptor.Executor pluginExecutor = pluginManager.getPreferredPluginDescriptor(pluginName).getExecutor(executeTarget);
             
             String antTarget = pluginExecutor.getTarget();
             
