@@ -93,12 +93,14 @@ public class JspI18nSupport extends JavaI18nSupport {
         /** Constructor. */
         public JspI18nFinder(StyledDocument document) {
             super(document);
+            
+            state = STATE_JSP;
         }
 
         
-        /** Initializes finder. Overrides superclass method. */
-        protected void initialize() {
-            super.initialize();
+        /** Resets finder. Overrides superclass method. */
+        protected void reset() {
+            super.reset();
             
             state = STATE_JSP;
         }

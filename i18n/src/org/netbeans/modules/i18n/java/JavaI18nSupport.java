@@ -342,22 +342,27 @@ public class JavaI18nSupport extends I18nSupport {
         public JavaI18nFinder(StyledDocument document) {
             this.document = document;
 
-            initialize();
+            init();
         }
 
         /** Initializes finder. */
-        protected void initialize() {
+        private void init() {
             state = STATE_JAVA;
             initJavaStringBuffer();
 
             lastPosition = null;
+        }
+        
+        /** Resets finder. */
+        protected void reset() {
+            init();
         }
 
         /**
          * Implements <code>I18nFinder</code> interface method.
          * Finds all non-internationalized hard coded strings in source document. */
         public HardCodedString[] findAllHardCodedStrings() {
-            initialize();
+            reset();
             i18nSearch = false;
             
             return findAllStrings();
@@ -378,7 +383,7 @@ public class JavaI18nSupport extends I18nSupport {
          * Implements <code>I18nFinder</code> interface method.
          * Finds all internationalized hard coded strings in source document. It's used in text tool. */
         public HardCodedString[] findAllI18nStrings() {
-            initialize();
+            reset();
             i18nSearch = true;
             
             return findAllStrings();
