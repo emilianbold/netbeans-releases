@@ -13,6 +13,8 @@
 
 package com.netbeans.developer.modules.beans.beaninfo;
 
+import java.lang.reflect.Modifier;
+
 import org.openide.src.ClassElement;
 import org.openide.src.MethodElement;
 import org.openide.src.MethodParameter;
@@ -46,7 +48,11 @@ class BiSuperClass extends Object {
     while ( ce != null ) {
       MethodElement[] methods = ce.getMethods();
 
-      for( int i = 0; i < methods.length; i++ ) 
+      for( int i = 0; i < methods.length; i++ )  {
+    
+        if ( ( methods[i].getModifiers() & Modifier.PUBLIC ) == 0 ) 
+          continue;
+
         if ( methodsAdded == 0 || result.getMethod( methods[i].getName(), getParameterTypes( methods[i] ) ) == null ) {
           try {
             result.addMethod( methods[i] );
@@ -56,7 +62,7 @@ class BiSuperClass extends Object {
             TopManager.getDefault().notifyException( e );
           }
         }
-
+      }
      
       ce = ce.getSuperclass() == null ? null : ClassElement.forName( ce.getSuperclass().getFullName() );      
     }
@@ -86,6 +92,8 @@ class BiSuperClass extends Object {
 
 /* 
  * Log
+ *  4    Gandalf   1.3         7/29/99  Petr Hrebejk    Patterns in BeanInfo 
+ *       show correctly only public fields and methods
  *  3    Gandalf   1.2         7/28/99  Petr Hrebejk    Property Mode change fix
  *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
  *       generation fix

@@ -98,8 +98,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
     it = col.iterator();
     while( it.hasNext() ) {
       PropertyPattern pp = (PropertyPattern)it.next();
-      if ( pp.isPublic() )  
-        properties.add( new BiFeature.Property( pp ) );
+      //if ( pp.isPublic() )  
+      properties.add( new BiFeature.Property( pp ) );
     }
 
     // Fill indexed properties list
@@ -109,8 +109,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
     it = col.iterator();
     while( it.hasNext() ) {
       IdxPropertyPattern ipp = (IdxPropertyPattern)it.next();
-      if ( ipp.isPublic() )
-        idxProperties.add( new BiFeature.IdxProperty( ipp ) );
+      //if ( ipp.isPublic() )
+      idxProperties.add( new BiFeature.IdxProperty( ipp ) );
     }
 
     // Fill event sets list
@@ -120,8 +120,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
     it = col.iterator();
     while( it.hasNext() ) {
       EventSetPattern esp = (EventSetPattern)it.next();
-      if ( esp.isPublic() )
-        eventSets.add( new BiFeature.EventSet( esp ) );
+      //if ( esp.isPublic() )
+      eventSets.add( new BiFeature.EventSet( esp ) );
     }
     
     // Try to find and analyse existing bean info
@@ -608,6 +608,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
 }
 /* 
  * Log
+ *  4    Gandalf   1.3         7/29/99  Petr Hrebejk    Patterns in BeanInfo 
+ *       show correctly only public fields and methods
  *  3    Gandalf   1.2         7/28/99  Petr Hrebejk    Property Mode change fix
  *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
  *       generation fix
