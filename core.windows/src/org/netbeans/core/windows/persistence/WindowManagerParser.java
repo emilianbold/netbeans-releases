@@ -1616,12 +1616,23 @@ public class WindowManagerParser {
             if (prefIconSize != null) {
                 try {
                     winMgrConfig.preferredToolbarIconSize = Integer.parseInt(prefIconSize);
+                    if ((winMgrConfig.preferredToolbarIconSize != 16) &&
+                        (winMgrConfig.preferredToolbarIconSize != 24)) {
+                        ErrorManager em = ErrorManager.getDefault();
+                        em.log(ErrorManager.WARNING,
+                        "[WinSys.WindowManagerParser.handleToolbar]" // NOI18N
+                        + " Warning: Invalid value of attribute \"preferred-icon-size\"" //NOI18N
+                        + " of element \"toolbar\": " + winMgrConfig.preferredToolbarIconSize  //NOI18N
+                        + ". Fixed to default value 24."); // NOI18N
+                        winMgrConfig.preferredToolbarIconSize = 24;
+                    }
                 } catch (NumberFormatException exc) {
                     ErrorManager em = ErrorManager.getDefault();
                     em.log(ErrorManager.WARNING,
                     "[WinSys.WindowManagerParser.handleToolbar]" // NOI18N
                     + " Warning: Cannot read attribute \"preferred-icon-size\"" //NOI18N
-                    + " of element \"relative-bounds\"."); // NOI18N
+                    + " of element \"toolbar\"." // NOI18N
+                    + " Fixed to default value 24."); // NOI18N
                     em.notify(ErrorManager.INFORMATIONAL,exc);
                     winMgrConfig.preferredToolbarIconSize = 24;
                 }
