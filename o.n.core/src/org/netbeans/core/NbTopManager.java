@@ -289,7 +289,7 @@ public abstract class NbTopManager extends TopManager {
             lookup = new org.netbeans.core.lookup.ProxyLookup (new org.openide.util.Lookup[] {
                 new org.netbeans.core.lookup.TMLookup (),
                 getInstanceLookup (),
-                new org.netbeans.core.lookup.FolderLookup ("Services") // NOI18N
+                new org.netbeans.core.lookup.FolderLookup ("Services").getLookup () // NOI18N
             });
             return lookup;
         }
