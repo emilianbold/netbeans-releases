@@ -141,7 +141,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${netbeans.home}/modules/ext/nb-editor.jar"/>
         <pathelement location="${nbextra.repository}/jemmy/jemmy.jar"/>                    
         <pathelement location="${nbextra.repository}/jellytools/jelly-nb.jar"/>                    
-        <pathelement location="${nb.repository}/xtest/lib/junit.jar"/>                    
+        <pathelement location="${nbextra.repository}/xtest/lib/junit.jar"/>                    
         <pathelement location="${nb.repository}/xtest/lib/junit-ext.jar"/>                    
         <pathelement location="${nb.repository}/xtest/lib/xtest.jar"/>                    
     </path>
