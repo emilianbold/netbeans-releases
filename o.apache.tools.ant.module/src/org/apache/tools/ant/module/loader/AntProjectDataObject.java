@@ -33,8 +33,6 @@ import org.apache.tools.ant.module.xml.AntProjectSupport;
  */
 public class AntProjectDataObject extends MultiDataObject implements PropertyChangeListener {
 
-    private static final long serialVersionUID = -5884496744835713660L;
-
     public AntProjectDataObject(FileObject pf, AntProjectDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         CookieSet cookies = getCookieSet();
@@ -50,6 +48,7 @@ public class AntProjectDataObject extends MultiDataObject implements PropertyCha
             cookies.add (new AntExecSupport (pe));
             cookies.add (new AntActionInstance (proj));
         }
+        cookies.add(AntTemplateIterator.DEFAULT);
         addPropertyChangeListener (this);
     }
     
