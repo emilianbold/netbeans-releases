@@ -15,22 +15,22 @@
 package org.netbeans.modules.properties;
 
 
-import java.io.*;
+import java.io.IOException;
 import java.util.Iterator;
 import javax.swing.text.BadLocationException;
 
 import org.openide.text.PositionBounds;
 
 
-/** General abstract structure for properties files, in its use similar to source hierarchy.
-*   Interoperates with Document, PropertiesTableModel, Nodes and other display-specific models
-*   Implementations of the model interfaces generally reference this structure.
-*
-* @author Petr Jiricka
-*/
+/** General structure for properties files, in its use similar to source hierarchy.
+ * Interoperates with Document, PropertiesTableModel, Nodes and other display-specific models.
+ * Implementations of the model interfaces generally reference this structure.
+ *
+ * @author Petr Jiricka
+ */
 public class PropertiesStructure extends Element {
 
-    /** Holds individual items - Element.ItemElem */
+    /** Holds individual items - <code>Element.ItemElem</code>'s. */
     private ArrayMapList items;
 
     /** If active, contains link to its handler (parent) */
@@ -51,8 +51,8 @@ public class PropertiesStructure extends Element {
 
     
     /** Updates the current structure by the new structure obtained by reparsing the document.
-    * Looks for changes between the structures and according to them calls update methods.
-    */
+     * Looks for changes between the structures and according to them calls update methods.
+     */
     public void update(PropertiesStructure struct) {
         synchronized(getParent()) {
             boolean structChanged = false;
@@ -114,8 +114,8 @@ public class PropertiesStructure extends Element {
     }
 
     /** Get a string representation of the element for printing.
-    * @return the string
-    */
+     * @return the string
+     */
     public String printString() {
         StringBuffer sb = new StringBuffer();
         Element.ItemElem item;
@@ -127,8 +127,8 @@ public class PropertiesStructure extends Element {
     }
 
     /** Get a value string of the element.
-    * @return the string
-    */
+     * @return the string
+     */
     public String toString() {
         StringBuffer sb = new StringBuffer();
         Element.ItemElem item;
@@ -141,8 +141,8 @@ public class PropertiesStructure extends Element {
     }
 
     /** Adds an item to the end, should be only used by the parser (no notification)
-    *  Used by the update actions.
-    */
+     *  Used by the update actions.
+     */
     public void parserAddItem(Element.ItemElem item) {
         item.setParent(this);
         items.add(item.getKey(), item);
@@ -154,8 +154,8 @@ public class PropertiesStructure extends Element {
     }
 
     /** Renames an item.
-    * @return true if the item has been renamed successfully, false if another item with the same name exists.
-    */                         
+     * @return true if the item has been renamed successfully, false if another item with the same name exists.
+     */                         
     public boolean renameItem(String oldKey, String newKey) {
         synchronized(getParent()) {
             Element.ItemElem item = getItem(newKey);
@@ -172,8 +172,8 @@ public class PropertiesStructure extends Element {
     }
 
     /** Deletes an item from the structure, if exists.
-    * @return true if the item has been deleted successfully, false if it didn't exist.
-    */                         
+     * @return true if the item has been deleted successfully, false if it didn't exist.
+     */                         
     public boolean deleteItem(String key) {
         synchronized(getParent()) {
             Element.ItemElem item = getItem(key);
@@ -194,8 +194,8 @@ public class PropertiesStructure extends Element {
     }
 
     /** Adds an item to the end of the file, or before the terminating comment, if exists.
-    * @return true if the item has been added successfully, false if another item with the same name exists.
-    */                         
+     * @return true if the item has been added successfully, false if another item with the same name exists.
+     */                         
     public boolean addItem(String key, String value, String comment) {
         Element.ItemElem item = getItem(key);
         if (item != null)
@@ -228,20 +228,21 @@ public class PropertiesStructure extends Element {
      * @see org.openide.text.PositionBounds#insertAfter */
     private PositionBounds getSuitablePositionBoundsForInsert() {
         Element.ItemElem e = null;
+        
         for (Iterator nonEmpty = nonEmptyItems(); nonEmpty.hasNext();)
             e = (Element.ItemElem)nonEmpty.next();
+        
         if (e == null)
             return getBounds();
-        else {
-            e.print();
+        else
             return e.getBounds();
-        }
     }
 
-    /** Returns an iterator iterating through items which have non-null key.
-    * The method was changed since its creation and now should be named
-    * nonNullItems to better fit the functionality.
-    */
+    /** 
+     * The method was changed since its creation and now should be named
+     * nonNullItems to better fit the functionality.
+     * @return iterator iterating through items which have non-null key
+     */
     public Iterator nonEmptyItems() {
         return new Iterator() {
             /** Iterator which relies on the list's iterator. */
@@ -306,14 +307,14 @@ public class PropertiesStructure extends Element {
     }
 
     /** Notification that the structure has changed (items have been added or deleted,
-    * also includes changing an item's key). */
+     * also includes changing an item's key). */
     void structureChanged(ArrayMapList changed, ArrayMapList inserted, ArrayMapList deleted) {
         getParentBundleStructure().oneFileChanged(getParent(), changed, inserted, deleted);
     }
 
     /** Notification that an item's key has changed. Subcase of structureChanged().
-    * Think twice when using this - don't I need to reparse all files ?
-    */
+     * Think twice when using this - don't I need to reparse all files ?
+     */
     void itemKeyChanged(String oldKey, Element.ItemElem newElem) {
         // structural change information - watch: there may be two properties of the same name !
         // maybe this is unnecessary
