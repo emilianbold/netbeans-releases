@@ -259,7 +259,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 String urlStr = url.toString();
                 
                 boolean triedStart = false;
-                int MAX_URL_LENGTH = 399;
+                int MAX_URL_LENGTH = 199;
                 
                 if ((urlStr != null) && (urlStr.length() > MAX_URL_LENGTH)) {
                      urlStr = getFileUrl(urlStr);
@@ -275,15 +275,6 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                         }
                         triedStart = true;
                         startBrowser(task.browser.extBrowserFactory.getBrowserExecutable(), urlStr);
-//                        try {
-//                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage (NbDdeBrowserImpl.class, "MSG_activatingBrowser"));
-//                            task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_ACTIVATE,"-1,0x0",task.browser.getActivateTimeout()); // NOI18N
-//                        } catch (NbBrowserException nbe) {
-//                            // Browser activation failed - nevermind, life goes on, it's not fully supported in browsers anyway
-//                            if (ExtWebBrowser.getEM().isLoggable (ErrorManager.INFORMATIONAL)) {
-//                                ExtWebBrowser.getEM().log(ErrorManager.INFORMATIONAL, "Browser activation failed: " + nbe); // NOI18N
-//                            }
-//                        }
                     }  
                 }
 
@@ -294,16 +285,10 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     try {
                         task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_OPEN_URL,args1,task.browser.getOpenUrlTimeout());
                     } catch (NbBrowserException ex) {
-//                        if (!triedStart) {
-                            if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
-                                ExtWebBrowser.getEM().log("Restarting browser.");    // NOI18N
-                            }
-                            startBrowser(task.browser.extBrowserFactory.getBrowserExecutable(), urlStr);
-    //                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_openingURLInBrowser"));
-    //                        task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_OPEN_URL,args1,task.browser.getOpenUrlTimeout());
-//                        } else {
-//                            throw new NbBrowserException(ex.toString());
-//                        }
+                        if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
+                            ExtWebBrowser.getEM().log("Restarting browser.");    // NOI18N
+                        }
+                        startBrowser(task.browser.extBrowserFactory.getBrowserExecutable(), urlStr);
                     }
                 }
 
@@ -311,9 +296,6 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 task.browser.url = url;
                 task.browser.pcs.firePropertyChange(PROP_URL, oldUrl, url);
 
-                // wait for cleaning status text and processing of URL
-                //Thread.currentThread().sleep(2000);
-                
             } catch (InterruptedException ex) {
                 // this can be timer interrupt
                 if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {                
