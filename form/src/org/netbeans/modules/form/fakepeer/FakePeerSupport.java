@@ -122,6 +122,14 @@ public class FakePeerSupport
     }
     
     public static Font getDefaultAWTFont() {
-        return new Font("Dialog", Font.PLAIN, 12); // NOI18N
+        if (defaultFont == null) {
+            defaultFont = org.openide.windows.WindowManager.getDefault()
+                                               .getMainWindow().getFont();
+            if (defaultFont == null)
+                defaultFont = new Font("Dialog", Font.PLAIN, 12); // NOI18N
+        }
+        return defaultFont;
     }
+
+    private static Font defaultFont;
 }

@@ -309,7 +309,7 @@ public class BeanSupport
             else if ("foreground".equals(propertyName)) // NOI18N
                 return SystemColor.windowText;
             else if ("font".equals(propertyName)) // NOI18N
-                return new Font("Dialog", Font.PLAIN, 12); // NOI18N
+                return FakePeerSupport.getDefaultAWTFont();
         }
 
         if ((beanObject instanceof Label) ||
@@ -327,7 +327,7 @@ public class BeanSupport
             else if ("foreground".equals(propertyName)) // NOI18N
                 return SystemColor.controlText;
             else if ("font".equals(propertyName)) // NOI18N
-                return new Font("Dialog", Font.PLAIN, 12); // NOI18N
+                return FakePeerSupport.getDefaultAWTFont();
         }
 
         return null;
