@@ -430,7 +430,8 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             String stBound = new String( this.getName() + "]." + TEXT_BOUND ); // NOI18N
             String stConstrained = new String( this.getName() + "]." + TEXT_CONSTRAINED ); // NOI18N
             String stPropertyEditor = new String( this.getName() + "]." + TEXT_PROPERTY_EDITOR ); // NOI18N
-
+            int peIndex;
+            
             if ( statement.indexOf( stBound ) != -1 ) {
                 setBound( true );
                 return;
@@ -441,8 +442,10 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
                 return;
             }
 
-            if ( statement.indexOf( stPropertyEditor ) != -1 ) {
-                String[] params = BiAnalyser.getParameters( statement );
+            peIndex = statement.indexOf( stPropertyEditor );
+            if ( peIndex != -1 ) {
+                String paramString = statement.substring(peIndex + stPropertyEditor.length());
+                String[] params = BiAnalyser.getParameters( paramString );
                 if ( params.length > 0 )
                     setPropertyEditorClass( params[0] );
                 return;
