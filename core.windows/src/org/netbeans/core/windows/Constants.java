@@ -109,8 +109,9 @@ public abstract class Constants {
     //Issue 39166, OS-X will display a strange gray rectangle while dragging - they
     //really require an image to be suppled.  Leaving this off for other platforms pending
     //HIE approval and performance impact evaluation - probably safe for Windows, probably
-    //a big performance hit on Linux
-    public static final boolean SWITCH_USE_DRAG_IMAGES = Boolean.getBoolean("useDragImages") || Utilities.getOperatingSystem() == Utilities.OS_MAC;
+    //a big performance hit on Linux.  Appears that XP L&F will not display images even if
+    //supplied.
+    public static final boolean SWITCH_USE_DRAG_IMAGES = Boolean.getBoolean("netbeans.windows.useDragImages") || Utilities.getOperatingSystem() == Utilities.OS_MAC;
     
     private Constants() {}
 }
