@@ -213,15 +213,22 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     }
     
     public void settingsChange(SettingsChangeEvent evt) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                boolean visible = isToolBarVisible();
-                if (visible) {
-                    checkPresentersAdded();
-                }
-                setVisible(visible);
+        final boolean visible = isToolBarVisible();        
+        if (SwingUtilities.isEventDispatchThread()){
+            if (visible) {
+                checkPresentersAdded();
             }
-        });
+            setVisible(visible);
+        }else{
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (visible) {
+                        checkPresentersAdded();
+                    }
+                    setVisible(visible);
+                }
+            });
+        }
     }
     
     private void checkPresentersAdded() {
