@@ -6,52 +6,60 @@
 
 <html>
 <head>
-<meta name="lastupdated" content="4Feb04">
-<!-- p1 -->
+    <meta name="lastupdated" content="4Feb04">
+    <!-- p1 -->
 
-<title>Removing an Application from a Server</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
+    <title>Removing an Application from a Server</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="StyleSheet" href="../../../../usersguide/ide.css" type="text/css">
 </head>
 <body>
 
 <h2>Removing an Application from a Server</h2>
 <p><small> 
-<a href="#seealso">See Also</a> 
+    <a href="#seealso">See Also</a> 
 </small></p> 
 <p>When you no longer need to run an application that was added to the server using 
   the IDE, you can use the Runtime window to remove the application's context from 
-  the server. The IDE recreates the context if the application is subsequently 
-  executed from the IDE.</p>
+  the server. </p>
+  <p>By default, applications and modules are automatically registered, deployed and made available on the
+    server when you run a project, and are automatically redeployed when they have been modified in the IDE.
+    Once deployed, applications remain on the server until they are removed. </p>
+    <p>Deployed applications are visible in the Runtime window in the server instance node under
+    Enterprise Applications or Web Applications.
+    When you undeploy an application, the archive file (<tt>ear</tt>, <tt>war</tt>, <tt>jar</tt>) 
+    is removed from the server and is no longer visible in the Runtime window.</p>
 <p><b>To remove an application from a server:</b></p>
 <ol>
-  <li>In the Runtime window, expand the Servers node.</li>
-  <li>Expand the server's instance node.</li>
-  <li>If the server is not running, start the server by right-clicking the server, 
-    choosing Start/Stop Server from the contextual menu, and clicking Start Server.</li>
-  <li>Expand the server node and expand the Web Applications node. Note that the 
-    Web Applications node does not appear if the server is not running.</li>
-  <li>Right-click the web application's context node and choose Undeploy from the contextual 
-    menu.</li>
+    <li>Ensure the server is running.
+    <ul class="note"><li>If the server is not running, start the server by right-clicking the server, 
+        choosing Start/Stop Server from the contextual menu, and clicking Start Server.</li>
+    </ul></li>
+    <li>In the Runtime window, expand the Servers node.</li>
+    <li>Expand the server's instance node. Note that no nodes are visible if the server is not running.</li>
+    <li>Expand the node containing the application to remove.</li>
+    <li>Right-click the application's context node and choose Undeploy from the contextual menu.</li>
 </ol>
 <table>
-<tr>
-<th colspan=2 align=left><a name="seealso">See Also</a></th>
-</tr>
-<tr>
-<td width="23"></td>
-<td><a href="about_server.html">About Servers</a><br>
-<a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/aboutplugin.html">About the SJS Application Server</a><br>
-      <a href="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_plugintro.html">About 
-      the Tomcat Web Server</a></td>
-</tr>
+    <tr>
+        <th colspan=2 align=left><a name="seealso">See Also</a></th>
+    </tr>
+    <tr>
+        <td width="23"></td>
+        <td><a href="about_server.html">About Servers</a><br>
+        <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/enterprise/general/deploy_ejb.html">Deploying an Enterprise Application</a><br>
+        <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/deploy/deploy_ejb.html">Deploying and Undeploying an EJB Module</a><br>
+        <a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/general/aboutplugin.html">About the SJS Application Server</a><br>
+        <a href="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_plugintro.html">About 
+        the Tomcat Web Server</a></td>
+    </tr>
 </table>
 <hr>
 <small><a href="../credits.html">Legal Notices</a> 
-<table cellpadding="20" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
-</table> 
+    <table cellpadding="20" border="0"> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+        <tr><td>&nbsp;</td></tr> 
+    </table> 
 
 </small></body></html>
