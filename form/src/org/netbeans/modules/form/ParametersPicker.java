@@ -17,8 +17,7 @@ package org.netbeans.modules.form;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.*;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -75,21 +74,24 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         codeButton.setMnemonic(FormEditor.getFormBundle().getString("CTL_CW_UserCode_Mnemonic").charAt(0));
 
         beansList = new ArrayList();
-        DefaultComboBoxModel beanComboModel = new DefaultComboBoxModel();
-        beanComboModel.addElement(FormEditor.getFormBundle().getString("CTL_CW_SelectBean"));
-        for (Iterator it = formModel.getMetaComponents().iterator(); it.hasNext();) {
-            RADComponent radComp =(RADComponent)it.next();
-            if (requiredType.isAssignableFrom(radComp.getBeanClass())) {
+        for (Iterator it = formModel.getMetaComponents().iterator(); it.hasNext(); ) {
+            RADComponent radComp = (RADComponent) it.next();
+            if (requiredType.isAssignableFrom(radComp.getBeanClass()))
                 beansList.add(radComp);
-                if (radComp == formModel.getTopRADComponent()) {
-                    beanComboModel.addElement(FormEditor.getFormBundle().getString("CTL_FormTopContainerName"));
-                } else {
-                    beanComboModel.addElement(radComp.getName());
-                }
-            }
         }
         if (beansList.size() > 0) {
-            beanCombo.setModel(beanComboModel);
+            Collections.sort(beansList, new ComponentComparator());
+
+            beanCombo.addItem(FormUtils.getBundleString("CTL_CW_SelectBean")); // NOI18N
+            for (Iterator it = beansList.iterator(); it.hasNext(); ) {
+                RADComponent radComp = (RADComponent) it.next();
+                if (radComp == formModel.getTopRADComponent())
+                    beanCombo.addItem(
+                        FormUtils.getBundleString("CTL_FormTopContainerName")); // NOI18N
+                else
+                    beanCombo.addItem(radComp.getName());
+            }
+
             beanCombo.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent evt) {
                     int index = beanCombo.getSelectedIndex();
@@ -102,9 +104,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
                 }
             }
                                       );
-        } else {
-            beanButton.setEnabled(false);    // no beans on the form are of the required type
         }
+        else beanButton.setEnabled(false);    // no beans on the form are of the required type
 
         codeArea.setContentType("text/x-java");    // allow syntax coloring // NOI18N
 
@@ -652,6 +653,25 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     private PropertyDescriptor selectedProperty;
     private MethodDescriptor selectedMethod;
 
-    private ArrayList beansList;
+    private java.util.List beansList;
     private DefaultComboBoxModel beanComboModel;
+
+    // -------
+
+    static class ComponentComparator implements Comparator {
+        public int compare(Object o1, Object o2) {
+            RADComponent comp1 = (RADComponent) o1;
+            RADComponent comp2 = (RADComponent) o2;
+            if (comp1 == comp2)
+                return 0;
+
+            RADComponent topComp = comp1.getFormModel().getTopRADComponent();
+            if (comp1 == topComp)
+                return -1;
+            if (comp2 == topComp)
+                return 1;
+
+            return comp1.getName().compareTo(comp2.getName());
+        }
+    }
 }

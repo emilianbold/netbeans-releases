@@ -38,19 +38,24 @@ public class MethodPicker extends javax.swing.JPanel {
         this.requiredType = requiredType;
         initComponents();
 
-        Collection allComponents = formModel.getMetaComponents();
-        components =(RADComponent[])allComponents.toArray(new RADComponent [allComponents.size()]);
-        int selIndex = -1;
-        for (int i = 0; i < components.length; i++) {
-            componentsCombo.addItem(components[i].getName());
-            if ((componentToSelect != null) &&(componentToSelect.equals(components[i])))
-                selIndex = i;
-        }
+        java.util.List componentsList = formModel.getMetaComponents();
+        Collections.sort(componentsList, new ParametersPicker.ComponentComparator());
+        components = new RADComponent[componentsList.size()];
+        componentsList.toArray(components);
 
-        if (selIndex != -1) {
-            selectedComponent = components[selIndex];
-            componentsCombo.setSelectedIndex(selIndex);
+        int selIndex = -1;
+        for (Iterator it = componentsList.iterator(); it.hasNext(); ) {
+            RADComponent radComp = (RADComponent) it.next();
+            if (componentToSelect != null && componentToSelect == radComp)
+                selIndex = componentsCombo.getItemCount();
+            if (radComp == formModel.getTopRADComponent())
+                componentsCombo.addItem(
+                    FormUtils.getBundleString("CTL_FormTopContainerName")); // NOI18N
+            else
+                componentsCombo.addItem(radComp.getName());
         }
+        if (selIndex >= 0)
+            componentsCombo.setSelectedIndex(selIndex);
 
         updateMethodList();
 
