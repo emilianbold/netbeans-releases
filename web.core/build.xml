@@ -80,9 +80,6 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="release">
-    <copy todir="netbeans">
-      <fileset dir="${binroot}/web/core/release" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
-    </copy>
   </target>
 
   <target name="netbeans" depends="jars,release">
