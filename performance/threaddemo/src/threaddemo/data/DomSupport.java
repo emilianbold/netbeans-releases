@@ -36,8 +36,7 @@ import org.xml.sax.*;
 import threaddemo.model.*;
 import threaddemo.util.*;
 
-// XXX after Broken, edits do not recreate doc
-// XXX should maybe show stale value during delays    
+// XXX should maybe show stale value during delays
 
 /**
  * Support class for DOM provider interface.
@@ -252,8 +251,8 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     
     public void invalidated(TwoWayEvent.Invalidated evt) {
         System.err.println("Received: " + evt);//XXX
-        // XXX right?
-        fireChange();
+        // just wait...
+        initiate();
     }
     
     public void recreated(TwoWayEvent.Recreated evt) {
