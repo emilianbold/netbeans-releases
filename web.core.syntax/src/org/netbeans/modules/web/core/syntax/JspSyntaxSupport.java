@@ -47,6 +47,10 @@ import org.netbeans.modules.editor.NbEditorUtilities;
  */
 public class JspSyntaxSupport extends ExtSyntaxSupport {
 
+    /** ErrorManager shared by whole module (package) for logging */
+    static final ErrorManager err = 
+        ErrorManager.getDefault().getInstance("org.netbeans.modules.web.jspsyntax"); // NOI18N
+
     /* Constants for various contexts in the text from the point of
     view of JSP completion.*/
     
@@ -159,27 +163,27 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         switch (elem.getCompletionContext()) {
                 // TAG COMPLETION
                 case JspSyntaxSupport.TAG_COMPLETION_CONTEXT :
-// System.err.println("TAG_COMPLETION_CONTEXT");
+                    if (err.isLoggable (ErrorManager.UNKNOWN)) err.log ("TAG_COMPLETION_CONTEXT");   // NOI18N
                     if( !visible && first == ' ' || first == ':' ) return COMPLETION_POPUP;
                     if( visible && first == '>' ) return COMPLETION_HIDE;
                     return visible ? COMPLETION_POST_REFRESH : COMPLETION_CANCEL;
 
                 // ENDTAG COMPLETION
                 case JspSyntaxSupport.ENDTAG_COMPLETION_CONTEXT :
-// System.err.println("ENDTAG_COMPLETION_CONTEXT" );
+                    if (err.isLoggable (ErrorManager.UNKNOWN)) err.log ("ENDTAG_COMPLETION_CONTEXT" );   // NOI18N
                     if( visible && first == '>' ) return COMPLETION_HIDE;
                     return visible ? COMPLETION_POST_REFRESH : COMPLETION_CANCEL;
 
                 // DIRECTIVE COMPLETION
                 case JspSyntaxSupport.DIRECTIVE_COMPLETION_CONTEXT :
-// System.err.println("DIRECTIVE_COMPLETION_CONTEXT");
+                    if (err.isLoggable (ErrorManager.UNKNOWN)) err.log ("DIRECTIVE_COMPLETION_CONTEXT");   // NOI18N
                     if( !visible && first == '@' || first == ' ' ) return COMPLETION_POPUP;
                     if( visible && first == '=' || first == '>' ) return COMPLETION_HIDE;
                     return visible ? COMPLETION_POST_REFRESH : COMPLETION_CANCEL;
 
                 // CONTENT LANGUAGE
                 case JspSyntaxSupport.CONTENTL_COMPLETION_CONTEXT :
-// System.err.println("CONTENTL_COMPLETION_CONTEXT");
+                    if (err.isLoggable (ErrorManager.UNKNOWN)) err.log ("CONTENTL_COMPLETION_CONTEXT");   // NOI18N
                     ExtSyntaxSupport support = getContentLanguageSyntaxSupport();
                     if (support != null) {
                         return support.checkCompletion( target, typedText, visible );
@@ -189,7 +193,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
 //                    return new CompletionQuery.DefaultResult( jspList, "JSP completion4" );
                                         
                 case JspSyntaxSupport.SCRIPTINGL_COMPLETION_CONTEXT :
-// System.err.println("SCRIPTINGL_COMPLETION_CONTEXT" );
+                    if (err.isLoggable (ErrorManager.UNKNOWN)) err.log ("SCRIPTINGL_COMPLETION_CONTEXT" );   // NOI18N
                     jspdo = (dobj instanceof JspDataObject) ? (JspDataObject)dobj : null;
                     if (jspdo != null && jspdo.getScriptingLanguage().equals ("text/x-java")) { // NOI18N
                         return ((ExtSyntaxSupport)get( org.netbeans.editor.ext.java.JavaSyntaxSupport.class )).checkCompletion( target, typedText, visible );
