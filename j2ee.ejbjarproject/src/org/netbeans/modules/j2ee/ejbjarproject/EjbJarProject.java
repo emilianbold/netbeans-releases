@@ -94,19 +94,19 @@ final class EjbJarProject implements Project, AntProjectListener {
         this.helper = helper;
         eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
-        refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator ());
+        refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator());
         genFilesHelper = new GeneratedFilesHelper(helper);
         ejbModule = new EjbJarProvider(this, helper);
-        ejbJarWebServicesSupport = new EjbJarWebServicesSupport(this, helper); 
-        apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport (ejbJarWebServicesSupport);
+        ejbJarWebServicesSupport = new EjbJarWebServicesSupport(this, helper, refHelper);
+        apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport(ejbJarWebServicesSupport);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
     }
-
+    
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
-
+    
     public String toString() {
         return "EjbJarProject[" + getProjectDirectory() + "]"; // NOI18N
     }
@@ -123,10 +123,10 @@ final class EjbJarProject implements Project, AntProjectListener {
     public Lookup getLookup() {
         return lookup;
     }
-
+    
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(helper.getStandardPropertyEvaluator (), new String[] {
+        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(helper.getStandardPropertyEvaluator(), new String[] {
             "${src.dir}/*.java" // NOI18N
         }, new String[] {
             "${build.classes.dir}/*.class" // NOI18N
@@ -156,7 +156,7 @@ final class EjbJarProject implements Project, AntProjectListener {
             new EnterpriseReferenceContainerImpl(this),
             ejbModule, //implements J2eeModuleProvider
             new EjbJarActionProvider( this, helper, refHelper ),
-            new EjbJarLogicalViewProvider(this, helper, evaluator (), spp, refHelper),
+            new EjbJarLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
             new EjbJarCustomizerProvider( this, helper, refHelper ),
             new ClassPathProviderImpl(helper),
             new CompiledSourceForBinaryQuery(helper),
@@ -168,15 +168,15 @@ final class EjbJarProject implements Project, AntProjectListener {
             new RecommendedTemplatesImpl(),
             refHelper,
             sourcesHelper.createSources(),
-            helper.createSharabilityQuery(evaluator(), 
-                new String[] {"${"+EjbJarProjectProperties.SOURCE_ROOT+"}"},
-                new String[] {
-                    "${"+EjbJarProjectProperties.BUILD_DIR+"}",
-                    "${"+EjbJarProjectProperties.DIST_DIR+"}"}
+            helper.createSharabilityQuery(evaluator(),
+            new String[] {"${"+EjbJarProjectProperties.SOURCE_ROOT+"}"},
+            new String[] {
+                "${"+EjbJarProjectProperties.BUILD_DIR+"}",
+                "${"+EjbJarProjectProperties.DIST_DIR+"}"}
             )
         });
     }
-
+    
     public void configurationXmlChanged(AntProjectEvent ev) {
         if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
             // Could be various kinds of changes, but name & displayName might have changed.
@@ -185,78 +185,78 @@ final class EjbJarProject implements Project, AntProjectListener {
             info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
         }
     }
-
+    
     public void propertiesChanged(AntProjectEvent ev) {
         // currently ignored
         //TODO: should not be ignored!
     }
     
-    String getBuildXmlName () {
-        String storedName = helper.getStandardPropertyEvaluator ().getProperty (EjbJarProjectProperties.BUILD_FILE);
+    String getBuildXmlName() {
+        String storedName = helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.BUILD_FILE);
         return storedName == null ? GeneratedFilesHelper.BUILD_XML_PATH : storedName;
     }
     
     // Package private methods -------------------------------------------------
     
     FileObject getSourceDirectory() {
-        String srcDir = helper.getStandardPropertyEvaluator ().getProperty ("src.dir"); // NOI18N
+        String srcDir = helper.getStandardPropertyEvaluator().getProperty("src.dir"); // NOI18N
         return helper.resolveFileObject(srcDir);
     }
     
-    WebServicesSupport getAPIWebServicesSupport () {
-		return apiWebServicesSupport;
+    WebServicesSupport getAPIWebServicesSupport() {
+        return apiWebServicesSupport;
     }
     /*
     WebServicesClientSupport getAPIWebServicesClientSupport () {
-		return apiWebServicesClientSupport;
+                return apiWebServicesClientSupport;
     }
-    */
+     */
     
-     public EjbJarProvider getEjbModule () {
-         return ejbModule;
-     }
+    public EjbJarProvider getEjbModule() {
+        return ejbModule;
+    }
     
     /** Last time in ms when the Broken References alert was shown. */
     private static long brokenAlertLastTime = 0;
     
     /** Is Broken References alert shown now? */
     private static boolean brokenAlertShown = false;
-
+    
     /** Timeout within which request to show alert will be ignored. */
     private static int BROKEN_ALERT_TIMEOUT = 1000;
     
     private static synchronized void showBrokenReferencesAlert() {
         // Do not show alert if it is already shown or if it was shown
         // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
-        if (brokenAlertShown || 
-            brokenAlertLastTime+BROKEN_ALERT_TIMEOUT > System.currentTimeMillis() ||
-            !FoldersListSettings.getDefault().isShowAgainBrokenRefAlert()) {
-                return;
+        if (brokenAlertShown ||
+        brokenAlertLastTime+BROKEN_ALERT_TIMEOUT > System.currentTimeMillis() ||
+        !FoldersListSettings.getDefault().isShowAgainBrokenRefAlert()) {
+            return;
         }
         brokenAlertShown = true;
         SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
+            public void run() {
+                try {
+                    Object ok = NbBundle.getMessage(BrokenReferencesAlertPanel.class,"MSG_Broken_References_OK");
+                    DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(),
+                    NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
+                    true, new Object[] {ok}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                    Dialog dlg = null;
                     try {
-                        Object ok = NbBundle.getMessage(BrokenReferencesAlertPanel.class,"MSG_Broken_References_OK");
-                        DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(), 
-                            NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
-                            true, new Object[] {ok}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
-                        Dialog dlg = null;
-                        try {
-                            dlg = DialogDisplayer.getDefault().createDialog(dd);
-                            dlg.setVisible(true);
-                        } finally {
-                            if (dlg != null)
-                                dlg.dispose();
-                        }
+                        dlg = DialogDisplayer.getDefault().createDialog(dd);
+                        dlg.setVisible(true);
                     } finally {
-                        synchronized (EjbJarProject.class) {
-                            brokenAlertLastTime = System.currentTimeMillis();
-                            brokenAlertShown = false;
-                        }
+                        if (dlg != null)
+                            dlg.dispose();
+                    }
+                } finally {
+                    synchronized (EjbJarProject.class) {
+                        brokenAlertLastTime = System.currentTimeMillis();
+                        brokenAlertShown = false;
                     }
                 }
-            });
+            }
+        });
     }
     
     /** Return configured project name. */
@@ -321,13 +321,13 @@ final class EjbJarProject implements Project, AntProjectListener {
         
         protected void projectXmlSaved() throws IOException {
             genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                EjbJarProject.class.getResource("resources/build-impl.xsl"),
-                false);
+            GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+            EjbJarProject.class.getResource("resources/build-impl.xsl"),
+            false);
             genFilesHelper.refreshBuildScript(
-                getBuildXmlName (),
-                EjbJarProject.class.getResource("resources/build.xsl"),
-                false);
+            getBuildXmlName(),
+            EjbJarProject.class.getResource("resources/build.xsl"),
+            false);
         }
         
     }
@@ -345,16 +345,16 @@ final class EjbJarProject implements Project, AntProjectListener {
                         DataObject.find(ddFO);
                     }
                 } catch (org.openide.loaders.DataObjectNotFoundException ex) {}
-
+                
                 // Check up on build scripts.
                 genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    EjbJarProject.class.getResource("resources/build-impl.xsl"),
-                    true);
+                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                EjbJarProject.class.getResource("resources/build-impl.xsl"),
+                true);
                 genFilesHelper.refreshBuildScript(
-                    getBuildXmlName (),
-                    EjbJarProject.class.getResource("resources/build.xsl"),
-                    true);
+                getBuildXmlName(),
+                EjbJarProject.class.getResource("resources/build.xsl"),
+                true);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -406,21 +406,21 @@ final class EjbJarProject implements Project, AntProjectListener {
      * The type of the artifact will be {@link AntArtifact#TYPE_JAR}.
      */
     private final class AntArtifactProviderImpl implements AntArtifactProvider {
-
+        
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
                 helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", helper.getStandardPropertyEvaluator(), "dist", "clean"), // NOI18N
                 helper.createSimpleAntArtifact(EjbProjectConstants.ARTIFACT_TYPE_EJBJAR, "dist.jar", helper.getStandardPropertyEvaluator(), "dist", "clean"), // NOI18N
             };
         }
-
+        
     }
     
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
         
         // List of primarily supported templates
         
-        private static final String[] TYPES = new String[] { 
+        private static final String[] TYPES = new String[] {
             "java-classes",         // NOI18N
             "ejb-types",            // NOI18N
             "java-beans",           // NOI18N

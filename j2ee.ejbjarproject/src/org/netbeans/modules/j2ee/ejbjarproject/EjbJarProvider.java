@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -34,6 +34,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
+import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 
 
 /** A ejb module implementation on top of project.
@@ -41,7 +43,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
  * @author  Pavel Buzek
  */
 public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarImplementation, J2eeModule, ModuleChangeReporter, EjbChangeDescriptor, PropertyChangeListener {
-      
+    
     public static final String FILE_DD        = "ejb-jar.xml";//NOI18N
     
     private EjbJarProject project;
@@ -57,23 +59,23 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
         FileObject metaInfFo = getMetaInf();
         if (metaInfFo==null) {
             DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarProject.class,"MSG_WebInfCorrupted"),
-                                             NotifyDescriptor.ERROR_MESSAGE));
+            new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarProject.class,"MSG_WebInfCorrupted"),
+            NotifyDescriptor.ERROR_MESSAGE));
             return null;
         }
-        return metaInfFo.getFileObject (FILE_DD);
+        return metaInfFo.getFileObject(FILE_DD);
     }
-
-    public ClassPath getJavaSources () {
-        ClassPathProvider cpp = (ClassPathProvider) project.getLookup ().lookup (ClassPathProvider.class);
+    
+    public ClassPath getJavaSources() {
+        ClassPathProvider cpp = (ClassPathProvider) project.getLookup().lookup(ClassPathProvider.class);
         if (cpp != null) {
-            return cpp.findClassPath (getFileObject (EjbJarProjectProperties.SRC_DIR), ClassPath.SOURCE);
+            return cpp.findClassPath(getFileObject(EjbJarProjectProperties.SRC_DIR), ClassPath.SOURCE);
         }
         return null;
     }
     
-    public FileObject getMetaInf () {
-        return getFileObject (EjbJarProjectProperties.META_INF);
+    public FileObject getMetaInf() {
+        return getFileObject(EjbJarProjectProperties.META_INF);
     }
     
     public FileObject findDeploymentConfigurationFile(String name) {
@@ -86,19 +88,19 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
         return new File(configFolder, name);
     }
     
-    public ClassPathProvider getClassPathProvider () {
-        return (ClassPathProvider) project.getLookup ().lookup (ClassPathProvider.class);
+    public ClassPathProvider getClassPathProvider() {
+        return (ClassPathProvider) project.getLookup().lookup(ClassPathProvider.class);
     }
     
-    public FileObject getArchive () {
-        return getFileObject (EjbJarProjectProperties.DIST_JAR); //NOI18N
+    public FileObject getArchive() {
+        return getFileObject(EjbJarProjectProperties.DIST_JAR); //NOI18N
     }
     
     private FileObject getFileObject(String propname) {
         String prop = helper.getStandardPropertyEvaluator().getProperty(propname);
         if (prop != null) {
             return helper.resolveFileObject(prop);
-        } 
+        }
         
         return null;
     }
@@ -107,80 +109,111 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
         String prop = helper.getStandardPropertyEvaluator().getProperty(propname);
         if (prop != null) {
             return helper.resolveFile(prop);
-        } 
+        }
         return null;
     }
     
-    public org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule getJ2eeModule () {
+    public org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule getJ2eeModule() {
         return this;
     }
     
-    public org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter getModuleChangeReporter () {
+    public org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter getModuleChangeReporter() {
         return this;
     }
     
-    public boolean useDefaultServer () {
+    public boolean useDefaultServer() {
         return true;
     }
     
-    public String getServerID () {
-        return helper.getStandardPropertyEvaluator ().getProperty (EjbJarProjectProperties.J2EE_SERVER_TYPE);
+    public String getServerID() {
+        return helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_TYPE);
     }
-
-    public String getServerInstanceID () {
-        return helper.getStandardPropertyEvaluator ().getProperty (EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
+    
+    public String getServerInstanceID() {
+        return helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
     }
-        
-    public Iterator getArchiveContents () throws java.io.IOException {
-        return new IT (getContentDirectory ());
+    
+    public Iterator getArchiveContents() throws java.io.IOException {
+        return new IT(getContentDirectory());
     }
-
+    
     public FileObject getContentDirectory() {
-        return getFileObject (EjbJarProjectProperties.BUILD_CLASSES_DIR); //NOI18N
+        return getFileObject(EjbJarProjectProperties.BUILD_CLASSES_DIR); //NOI18N
     }
-
+    
     public FileObject getBuildDirectory() {
-        return getFileObject (EjbJarProjectProperties.BUILD_DIR); //NOI18N
+        return getFileObject(EjbJarProjectProperties.BUILD_DIR); //NOI18N
     }
-
+    
     public File getContentDirectoryAsFile() {
-        return getFile (EjbJarProjectProperties.BUILD_CLASSES_DIR); //NOI18N
+        return getFile(EjbJarProjectProperties.BUILD_CLASSES_DIR); //NOI18N
     }
-
-    public org.netbeans.modules.schema2beans.BaseBean getDeploymentDescriptor (String location) {
+    
+    public org.netbeans.modules.schema2beans.BaseBean getDeploymentDescriptor(String location) {
         if (! J2eeModule.EJBJAR_XML.equals(location))
             return null;
         
         EjbJar webApp = getEjbJar();
         if (webApp != null) {
             //PENDING find a better way to get the BB from WApp and remove the HACK from DDProvider!!
-            return DDProvider.getDefault ().getBaseBean (webApp);
+            return DDProvider.getDefault().getBaseBean(webApp);
         }
-        return null;
-    }
-
-    private EjbJar getEjbJar () {
-        try {
-            return DDProvider.getDefault ().getDDRoot (getDeploymentDescriptor ());
-        } catch (java.io.IOException e) {
-            org.openide.ErrorManager.getDefault ().log (e.getLocalizedMessage ());
+        else if(J2eeModule.WEBSERVICES_XML.equals(location)){
+            Webservices webServices = getWebservices();
+            if(webServices != null){
+                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getBaseBean(webServices);
+            }
         }
         return null;
     }
     
-    public org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor getEjbChanges (long timestamp) {
+    private EjbJar getEjbJar() {
+        try {
+            return DDProvider.getDefault().getDDRoot(getDeploymentDescriptor());
+        } catch (java.io.IOException e) {
+            org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
+        }
+        return null;
+    }
+    
+    private Webservices getWebservices() {
+        FileObject wsdd = getDD();
+        if(wsdd != null) {
+            try {
+                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault()
+                .getDDRoot(getDD());
+            } catch (java.io.IOException e) {
+                org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
+            }
+        }
+        
+        return null;
+    }
+    
+    public FileObject getDD() {
+        FileObject metaInfFo = getMetaInf();
+        if (metaInfFo==null) {
+            DialogDisplayer.getDefault().notify(
+            new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarProvider.class,"MSG_WebInfCorrupted"),
+            NotifyDescriptor.ERROR_MESSAGE));
+            return null;
+        }
+        return getMetaInf().getFileObject(WebServicesConstants.WEBSERVICES_DD, "xml");
+    }
+    
+    public org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor getEjbChanges(long timestamp) {
         return this;
     }
-
-    public Object getModuleType () {
+    
+    public Object getModuleType() {
         return J2eeModule.EJB;
     }
-
-    public String getModuleVersion () {
-        EjbJar ejbJar = getEjbJar ();
-        return ejbJar.getVersion ().toString();
+    
+    public String getModuleVersion() {
+        EjbJar ejbJar = getEjbJar();
+        return ejbJar.getVersion().toString();
     }
-
+    
     private Set versionListeners() {
         if (versionListeners == null) {
             versionListeners = new HashSet();
@@ -192,11 +225,11 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
         }
         return versionListeners;
     }
-
+    
     public void addVersionListener(J2eeModule.VersionListener vl) {
         versionListeners().add(vl);
     }
-
+    
     public void removeVersionListener(J2eeModule.VersionListener vl) {
         if (versionListeners != null)
             versionListeners.remove(vl);
@@ -212,75 +245,75 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
             }
         }
     }
-        
-    public String getUrl () {
+    
+    public String getUrl() {
         EditableProperties ep =  helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String name = ep.getProperty(EjbJarProjectProperties.JAR_NAME);
         return name == null ? "" : ("/"+name); //NOI18N
     }
-
-    public boolean isManifestChanged (long timestamp) {
+    
+    public boolean isManifestChanged(long timestamp) {
         return false;
     }
-
-    public void setUrl (String url) {
-        throw new UnsupportedOperationException ("Cannot customize URL of web module");
+    
+    public void setUrl(String url) {
+        throw new UnsupportedOperationException("Cannot customize URL of web module");
     }
-
-    public boolean ejbsChanged () {
+    
+    public boolean ejbsChanged() {
         return false;
     }
-
-    public String[] getChangedEjbs () {
+    
+    public String[] getChangedEjbs() {
         return new String[] {};
     }
-
-    public String getJ2eePlatformVersion () {
-        return helper.getStandardPropertyEvaluator ().getProperty (EjbJarProjectProperties.J2EE_PLATFORM);
+    
+    public String getJ2eePlatformVersion() {
+        return helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM);
     }
     
     private static class IT implements Iterator {
         java.util.Enumeration ch;
         FileObject root;
         
-        private IT (FileObject f) {
-            this.ch = f.getChildren (true);
+        private IT(FileObject f) {
+            this.ch = f.getChildren(true);
             this.root = f;
         }
         
-        public boolean hasNext () {
-            return ch.hasMoreElements ();
+        public boolean hasNext() {
+            return ch.hasMoreElements();
         }
         
-        public Object next () {
-            FileObject f = (FileObject) ch.nextElement ();
-            return new FSRootRE (root, f);
+        public Object next() {
+            FileObject f = (FileObject) ch.nextElement();
+            return new FSRootRE(root, f);
         }
         
-        public void remove () {
-            throw new UnsupportedOperationException ();
+        public void remove() {
+            throw new UnsupportedOperationException();
         }
         
     }
-
+    
     private static final class FSRootRE implements J2eeModule.RootedEntry {
         FileObject f;
         FileObject root;
         
-        FSRootRE (FileObject root, FileObject f) {
+        FSRootRE(FileObject root, FileObject f) {
             this.f = f;
             this.root = root;
         }
         
-        public FileObject getFileObject () {
+        public FileObject getFileObject() {
             return f;
         }
         
-        public String getRelativePath () {
-            return FileUtil.getRelativePath (root, f);
+        public String getRelativePath() {
+            return FileUtil.getRelativePath(root, f);
         }
     }
     
     
-
+    
 }

@@ -21,6 +21,7 @@ import org.openide.util.Lookup;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /** WebServicesSupport should be used to manipulate a projects representation
  *  of a web service implementation.
@@ -103,14 +104,17 @@ public final class WebServicesSupport {
         return impl.getAntProjectHelper();
     }
     
-    public String  generateImplementationBean(String name, FileObject pkg, Project project) throws java.io.IOException {
-        return impl.generateImplementationBean(name, pkg, project);
+    public String  generateImplementationBean(String name, FileObject pkg, Project project, String delegateData) throws java.io.IOException {
+        return impl.generateImplementationBean(name, pkg, project, delegateData);
     }
     
     public void addServiceImplLinkEntry(ServiceImplBean serviceImplBean, String wsName) {
         impl.addServiceImplLinkEntry(serviceImplBean, wsName);
     }
-    
+  
+    public ReferenceHelper getReferenceHelper(){
+        return impl.getReferenceHelper();
+    }
     
 /* !! What to put here?
  *

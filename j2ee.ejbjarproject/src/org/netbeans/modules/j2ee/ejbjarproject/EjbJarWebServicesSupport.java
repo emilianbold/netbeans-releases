@@ -36,6 +36,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /**
  *
@@ -46,18 +47,19 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     
     private EjbJarProject project;
     private AntProjectHelper helper;
-    
+    private ReferenceHelper referenceHelper;
     
     /** Creates a new instance of EjbJarWebServicesSupport */
-    public EjbJarWebServicesSupport(EjbJarProject project, AntProjectHelper helper) {
+    public EjbJarWebServicesSupport(EjbJarProject project, AntProjectHelper helper, ReferenceHelper referenceHelper) {
         this.project = project;
         this.helper = helper;
+        this.referenceHelper = referenceHelper;
     }
     
     //implementation of WebServicesSupportImpl
-    public String generateImplementationBean(String wsName, FileObject pkg, Project project)throws java.io.IOException {
+    public String generateImplementationBean(String wsName, FileObject pkg, Project project, String delegateData)throws java.io.IOException {
         SessionGenerator sessionGenerator = new SessionGenerator();
-        return sessionGenerator.generateWebServiceImplBean(wsName, pkg, project);
+        return sessionGenerator.generateWebServiceImplBean(wsName, pkg, project, delegateData);
     }
     
     public void addServiceImpl(String serviceName, String serviceEndpointInterface, String servantClassName, FileObject configFile) {
@@ -299,6 +301,10 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     
     public AntProjectHelper getAntProjectHelper() {
         return helper;
+    }
+    
+    public ReferenceHelper getReferenceHelper(){
+        return referenceHelper;
     }
     
     private boolean updateWsCompileProperties(String serviceName) {

@@ -17,6 +17,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /**
  *
@@ -65,11 +66,16 @@ public interface WebServicesSupportImpl {
     /**
      * Generate the implementation bean class and return the class name
      */
-    public String generateImplementationBean(String wsName, FileObject pkg, Project project)throws java.io.IOException;
+    public String generateImplementationBean(String wsName, FileObject pkg, Project project, String delegateData)throws java.io.IOException;
 
     /**
      *  Add the servlet link or ejb link in the webservices.xml entry
     */
     public void addServiceImplLinkEntry(ServiceImplBean serviceImplBean, String wsName);
-	
+    
+    /**
+     * Get the ReferenceHelper from the project
+     */
+    public ReferenceHelper getReferenceHelper();
+
 }
