@@ -324,7 +324,7 @@ public class StructHandler extends Element /*implements TaskListener*/ {
     /** Informs the SourceElementImpl about the releasing
     * of this class from the memory.
     */
-    public void finalize() {     
+    public void finalize() throws Throwable {     
       if (pfe != null) {
         pfe.getHandler().dataRefReleased(this);
       }
