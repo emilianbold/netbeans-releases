@@ -7,14 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.spi.project.libraries;
 
-import java.util.*;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 
 /**
  * Base SPI interface for library. This SPI class is used as a model by the libraries framework.
@@ -63,15 +63,15 @@ public interface LibraryImplementation {
      * the given volume use setContent method.
      * @param volumeType the type of volume for which the content should be returned.
      * @return List &lt;URL&gt; never returns null
-     * @throws IllegalArgumentException if the library does not support given typev of volume
+     * @throws IllegalArgumentException if the library does not support given type of volume
      */
-    public List getContent (String volumeType) throws IllegalArgumentException;
+    public List/*<URL>*/ getContent(String volumeType) throws IllegalArgumentException;
 
     /**
      * Sets the name of the library, called by LibrariesStorage while reading the library
      * @param name -  the unique name of the library, can't be null.
      */
-    public void setName(final String name);
+    public void setName(String name);
 
     /**
      * Sets the description of the library, called by LibrariesStorage while reading the library
@@ -107,6 +107,6 @@ public interface LibraryImplementation {
      * @param path the List&lt;URL&gt; the list of resoruces
      * @throws IllegalArgumentException if the library does not support given volumeType
      */
-    public void setContent (String volumeType, List path) throws IllegalArgumentException;
+    public void setContent(String volumeType, List/*<URL>*/ path) throws IllegalArgumentException;
 
 } // end LibraryImplementation
