@@ -13,7 +13,7 @@
 
 package gui.propertyeditors;
 
-import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.ServicesCustomizer;
+import org.netbeans.jellytools.properties.editors.ServiceTypeCustomEditorOperator;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -38,8 +38,7 @@ public class PropertyType_IndentEngine extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_indentEngine";
-        useForm = false;
+        propertyName_L = "Indent Engine";
         super.setUp();
     }
     
@@ -52,7 +51,7 @@ public class PropertyType_IndentEngine extends PropertyEditorsTest {
     }
     
     public void testByCombo(){
-        propertyValue_L = "Simple Indentation Engine";
+        propertyValue_L = "No Indentation";
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCombo(propertyName_L, propertyValue_L, true);
@@ -66,16 +65,29 @@ public class PropertyType_IndentEngine extends PropertyEditorsTest {
     }
     
     public void testCustomizerCancel(){
+        propertyValue_L = "Simple Indentation Engine";
+        propertyValueExpectation_L = propertyValue_L;
+        waitDialog = false;                                     
+        setByCustomizerCancel(propertyName_L, false);
+    }
+    
+    public void testCustomizerOk_platform(){
         propertyValue_L = "No Indentation";
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
-        lastTest = true;
+        setByCustomizerOk(propertyName_L, true);
+    }
+    
+    public void testCustomizerCancel_platform(){
+        propertyValue_L = "No Indentation";
+        propertyValueExpectation_L = propertyValue_L;
+        waitDialog = false;                                     
         setByCustomizerCancel(propertyName_L, false);
     }
     
     public void setCustomizerValue() {
-        ServicesCustomizer customizer = new ServicesCustomizer(propertyCustomizer);
-        customizer.selectItem(propertyValue_L);
+        ServiceTypeCustomEditorOperator customizer = new ServiceTypeCustomEditorOperator(propertyCustomizer);
+        customizer.setServiceTypeValue(propertyValue_L);
     }
     
     public void verifyPropertyValue(boolean expectation) {
@@ -91,5 +103,7 @@ public class PropertyType_IndentEngine extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
 }

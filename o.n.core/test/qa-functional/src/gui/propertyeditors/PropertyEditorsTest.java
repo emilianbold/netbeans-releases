@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -13,57 +13,49 @@
 
 package gui.propertyeditors;
 
-import gui.propertyeditors.utilities.PropertyEditorsSupport;
-import org.netbeans.test.oo.gui.jelly.BeanCustomizer;
-import org.netbeans.test.oo.gui.jelly.propertyEditors.PropertyCustomizer;
-import org.netbeans.test.oo.gui.jelly.propertyEditors.FormPropertyCustomizer;
+import gui.propertyeditors.data.PropertiesTest;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-import org.netbeans.test.oo.gui.jelly.JellyProperties;
-import org.netbeans.test.oo.gui.jelly.ExplorerNode;
-import org.netbeans.test.oo.gui.jelly.Explorer;
-import org.netbeans.test.oo.gui.jelly.FileSystem;
-import org.netbeans.test.oo.gui.jelly.FileSystems;
-import org.netbeans.test.oo.gui.jelly.Editor;
-import org.netbeans.test.oo.gui.jelly.FormEditorWindow;
-import org.netbeans.test.oo.gui.jelly.form.ComponentInspector;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NbFrameOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 
-import org.netbeans.test.oo.gui.jello.JelloOKOnlyDialog;
+import org.netbeans.jellytools.properties.ComboBoxProperty;
+import org.netbeans.jellytools.properties.Property;
+import org.netbeans.jellytools.properties.PropertySheetOperator;
+import org.netbeans.jellytools.properties.PropertySheetTabOperator;
+import org.netbeans.jellytools.properties.TextFieldProperty;
 
-import org.netbeans.test.oo.gui.jam.JamPropertyButton;
-import org.netbeans.test.oo.gui.jam.JamUtilities;
-
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TestOut;
+
+import org.netbeans.jemmy.operators.FrameOperator;
+import org.netbeans.jemmy.operators.Operator;
 
 
 /**
  *
  * @author  Marian.Mirilovic@Sun.Com
  */
-public abstract class PropertyEditorsTest extends NbTestCase {
+public abstract class PropertyEditorsTest extends JellyTestCase {
     
     protected PrintStream err;
     protected PrintStream log;
     
-    protected String beanName;
-    protected String packageName;
-    protected String errorCaption;
-    
-    protected boolean useForm;
-    
     public String propertyInitialValue;
-    public String propertyName;
+//    public String propertyName;
     public String propertyValue;
     
-    protected PropertyCustomizer propertyCustomizer;
+    protected NbDialogOperator propertyCustomizer;
     
-    protected static BeanCustomizer beanCustomizer = null;
-    protected static ComponentInspector componentInspector = null;
-    protected static boolean lastTest = false;
+    //protected static NbDialogOperator beanCustomizer = null;
+    protected static FrameOperator propertiesWindow = null;
     
+    private static final String CAPTION = "\n===========================";
     
     /** Creates a new instance of PropertyEditorsTest */
     public PropertyEditorsTest(String testName) {
@@ -76,19 +68,9 @@ public abstract class PropertyEditorsTest extends NbTestCase {
         err = getLog();
         log = getRef();
         
-        beanName = PropertyEditorsSupport.beanName;
-        packageName = PropertyEditorsSupport.Resources;
-        errorCaption = PropertyEditorsSupport.errorCaption;
-        
         try {
-            
-            // set defaults
-            JellyProperties.setDefaults();
-            JellyProperties.setJemmyOutput(new PrintWriter(err, true), new PrintWriter(err, true), null);
-            //JellyProperties.setJemmyDebugTimeouts();
-            
+            JemmyProperties.getProperties().setOutput(new TestOut(null, new PrintWriter(err, true), new PrintWriter(err, true), null));
             initializeWorkplace();
-            
         }catch(Exception exc) {
             failTest(exc, "SetUp failed. It seems like initializeWorkplace cause exception:"+exc.getMessage());
         }
@@ -98,16 +80,15 @@ public abstract class PropertyEditorsTest extends NbTestCase {
     
     public void setByCustomizerOk(String propertyName, boolean expectance){
         try {
-            err.println("\n=========================== Trying to set value by customizer-ok {name="+propertyName+" / value="+propertyValue+"} .");
+            err.println(CAPTION + " Trying to set value by customizer-ok {name="+propertyName+" / value="+propertyValue+"} .");
             propertyInitialValue = getValue(propertyName);
             openAndGetPropertyCustomizer(propertyName);
             setCustomizerValue();
-            //JamUtilities.waitEventQueueEmpty(500);
             
             if(propertyCustomizer.isShowing())
                 propertyCustomizer.ok();
             
-            err.println("=========================== Trying to set value by customizer-ok {name="+propertyName+" / value="+propertyValue+"} - finished.");
+            err.println(CAPTION + " Trying to set value by customizer-ok {name="+propertyName+" / value="+propertyValue+"} - finished.");
             verifyPropertyValue(expectance);
             
         }catch(Exception exc) {
@@ -119,12 +100,15 @@ public abstract class PropertyEditorsTest extends NbTestCase {
     
     public void setByCustomizerCancel(String propertyName, boolean expectance) {
         try {
-            err.println("\n=========================== Trying to set value by customizer-cancel {name="+propertyName+" / value="+propertyValue+"} .");
+            err.println(CAPTION + " Trying to set value by customizer-cancel {name="+propertyName+" / value="+propertyValue+"} .");
             propertyInitialValue = getValue(propertyName);
             openAndGetPropertyCustomizer(propertyName);
             setCustomizerValue();
-            propertyCustomizer.cancel();
-            err.println("=========================== Trying to set value by customizer-cancel {name="+propertyName+" / value="+propertyValue+"} - finished.");
+
+            if(propertyCustomizer.isShowing())
+                propertyCustomizer.cancel();
+            
+            err.println(CAPTION + " Trying to set value by customizer-cancel {name="+propertyName+" / value="+propertyValue+"} - finished.");
             verifyPropertyValue(expectance);
             
         }catch(Exception exc) {
@@ -136,18 +120,14 @@ public abstract class PropertyEditorsTest extends NbTestCase {
     
     public void setByInPlace(String propertyName, String propertyValue, boolean expectance) {
         try {
-            err.println("\n=========================== Trying to set value by in-place {name="+propertyName+" / value="+propertyValue+"} .");
+            err.println(CAPTION + " Trying to set value by in-place {name="+propertyName+" / value="+propertyValue+"} .");
             propertyInitialValue = getValue(propertyName);
             
-            if(!useForm) {
-                //beanCustomizer = openBeanCustomizer(propertyName);
-                beanCustomizer.setText(propertyName, propertyValue);
-            }else {
-                //componentInspector = openComponentInspector(propertyName);
-                componentInspector.setText(propertyName, propertyValue);
-            }
+            //H1 PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
+            //H1 new TextFieldProperty(propertiesTab, propertyName).setValue(propertyValue);
+            ((TextFieldProperty) findProperty(propertyName, "TextFieldProperty")).setValue(propertyValue);
             
-            err.println("=========================== Trying to set value by in-place {name="+propertyName+" / value="+propertyValue+"}  - finished.");
+            err.println(CAPTION + " Trying to set value by in-place {name="+propertyName+" / value="+propertyValue+"}  - finished.");
             verifyPropertyValue(expectance);
             
         }catch(Exception exc) {
@@ -159,18 +139,14 @@ public abstract class PropertyEditorsTest extends NbTestCase {
     
     public void setByCombo(String propertyName, String propertyValue, boolean expectance) {
         try {
-            err.println("\n=========================== Trying to set value by combo box {name="+propertyName+" / value="+propertyValue+"} .");
+            err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValue+"} .");
             propertyInitialValue = getValue(propertyName);
             
-            if(!useForm) {
-                //beanCustomizer = openBeanCustomizer(propertyName);
-                beanCustomizer.setSelectedItem(propertyName, propertyValue);
-            }else {
-                //componentInspector = openComponentInspector(propertyName);
-                componentInspector.setSelectedItem(propertyName, propertyValue);
-            }
+            //H1 PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
+            //H1 new ComboBoxProperty(propertiesTab, propertyName).setValue(propertyValue);
+            ((ComboBoxProperty) findProperty(propertyName,"ComboBoxProperty")).setValue(propertyValue);
             
-            err.println("=========================== Trying to set value by combo box {name="+propertyName+" / value="+propertyValue+"}  - finished.");
+            err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValue+"}  - finished.");
             verifyPropertyValue(expectance);
             
         }catch(Exception exc) {
@@ -182,18 +158,14 @@ public abstract class PropertyEditorsTest extends NbTestCase {
     
     public void setByCombo(String propertyName, int propertyValueIndex, boolean expectance) {
         try {
-            err.println("\n=========================== Trying to set value by combo box {name="+propertyName+" / value="+propertyValueIndex+"} .");
+            err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValueIndex+"} .");
             propertyInitialValue = getValue(propertyName);
             
-            if(!useForm) {
-                //beanCustomizer = openBeanCustomizer(propertyName);
-                beanCustomizer.setSelectedItem(propertyName, propertyValueIndex);
-            }else {
-                //componentInspector = openComponentInspector(propertyName);
-                componentInspector.setSelectedItem(propertyName, propertyValueIndex);
-            }
+            //H1 PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
+            //H1 new ComboBoxProperty(propertiesTab, propertyName).setValue(propertyValueIndex);
+            ((ComboBoxProperty) findProperty(propertyName, "ComboBoxProperty")).setValue(propertyValueIndex);
             
-            err.println("=========================== Trying to set value by combo box {name="+propertyName+" / value="+propertyValueIndex+"}  - finished.");
+            err.println(CAPTION + " Trying to set value by combo box {name="+propertyName+" / value="+propertyValueIndex+"}  - finished.");
             verifyPropertyValue(expectance);
             
         }catch(Exception exc) {
@@ -201,135 +173,83 @@ public abstract class PropertyEditorsTest extends NbTestCase {
         }
     }
     
-    
-    private PropertyCustomizer openAndGetPropertyCustomizer(String propertyName) {
-        
-        if(!useForm) {
-            //openPropertyCustomizer_from_BeanCustomizer(propertyName);
-                    // open Property Editor
-                    err.println("=========================== Trying to open Property Customizer{"+JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout")+"}.");
-                    beanCustomizer.openEditDialog(propertyName);
-                    err.println("=========================== Trying to open Property Customizer - finished.");
+    private void verifyCustomizer(String propertyName){
+        try {
+            err.println(CAPTION + " Trying to verify customizer {name="+propertyName+"} .");
+            openAndGetPropertyCustomizer(propertyName);
+            verifyCustomizerLayout();
 
-            propertyCustomizer = findPropertyCustomizer(propertyName);
-        }else{
-            //openPropertyCustomizer_from_ComponentInspector(propertyName);
-                    // open Property Editor
-                    err.println("=========================== Trying to open Property Customizer{"+JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout")+"}.");
-                    componentInspector.openEditDialog(propertyName);
-                    err.println("=========================== Trying to open Property Customizer - finished.");
-
-            propertyCustomizer = findFormPropertyCustomizer(propertyName);
+            if(propertyCustomizer.isShowing())
+                propertyCustomizer.cancel();
+            
+            err.println(CAPTION + " Trying to verify customizer {name="+propertyName+"}  - finished.");
+            
+        }catch(Exception exc) {
+            failTest(exc, "EXCEPTION: Verification of Property Customizer Layout for property("+propertyName+") failed and cause exception:"+exc.getMessage());
         }
+    }
+    
+    private NbDialogOperator openAndGetPropertyCustomizer(String propertyName) {
+        // open Property Editor
+        err.println(CAPTION + " Trying to open Property Customizer{"+JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout")+"}.");
+
+        //H1 PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
+        //H1 new Property(propertiesTab, propertyName).openEditor();
+        findProperty(propertyName, "").openEditor();
+        
+        err.println(CAPTION + " Trying to open Property Customizer - finished.");
+        propertyCustomizer = findPropertyCustomizer(propertyName);
         
         return propertyCustomizer;
     }
     
-    
-    public PropertyCustomizer getPropertyCustomizer() {
+    public NbDialogOperator getPropertyCustomizer() {
         return propertyCustomizer;
     }
     
-    public JelloOKOnlyDialog getInformationDialog() {
+    public NbDialogOperator getInformationDialog() {
         String title = "Information";
-        err.println("=========================== Waiting dialog {"+title+"} .");
-        JelloOKOnlyDialog dialog = new JelloOKOnlyDialog(title);
-        err.println("=========================== Waiting dialog {"+title+"} - finished.");
+        err.println(CAPTION + " Waiting dialog {"+title+"} .");
+        NbDialogOperator dialog = new NbDialogOperator(title);
+        err.println(CAPTION + " Waiting dialog {"+title+"} - finished.");
         return dialog;
     }
     
     
     public String getValue(String propertyName) {
-        if(!useForm) {
-            return beanCustomizer.getValue(propertyName);
-        }else{
-            return componentInspector.getValue(propertyName);
-        }
+        String returnValue;
+        
+        //H1 PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
+        //H1 returnValue = new Property(propertiesTab, propertyName).getValue();
+        returnValue = findProperty(propertyName, "").getValue();
+        
+        err.println("GET VALUE = [" + returnValue + "].");
+        
+        return returnValue;
     }
     
     
-    
-    private void openBeanCustomizer() {
-
-        if(beanCustomizer==null){
-            // open Customize Bean
-            err.println("=========================== Trying to Customize Bean");
-            beanCustomizer = PropertyEditorsSupport.openForTestCustomizeBean(packageName, beanName, err);
-            err.println("=========================== Trying to Customize Bean - finished.");
-        }
-        
-        // find Bean Customizer
-        err.println("=========================== Trying to find dialog Customize Bean.");
-        //TEMP beanCustomizer = new BeanCustomizer(packageName+"."+beanName);
-        //TEMP beanCustomizer.switchToPropertiesTab();
-        beanCustomizer.verify();
-        beanCustomizer.switchToPropertiesTab();
-        err.println("=========================== Trying to find dialog Customize Bean - finished.");
-        
-        //propertyInitialValue = getValue(propertyName);
-        
-        //return beanCustomizer;
-    }
-    
-    
-    private void openComponentInspector() {
-        
-        if(componentInspector==null) {
-            // open Form file
-            err.println("=========================== Trying to open form file.");
-            FormEditorWindow formWindow = PropertyEditorsSupport.openForTestPropertyEditors(err);
-            err.println("=========================== Trying to open form file - finished.");
-            
-            // find Component Inspector
-            err.println("=========================== Trying to find Component Inspector.");
-            componentInspector = formWindow.getComponentInspector();
-            err.println("=========================== Trying to find Component Inspector - finished.");
-        }
-        
-        
-        // select Other Components | PropertyEditorsBean
-        err.println("=========================== Trying to find Other Components | " +beanName+".");
-        componentInspector.selectNode("Other Components"+componentInspector.delim+beanName,false);
-        JamUtilities.waitEventQueueEmpty(500);  // must wait, because sometimes properties tab isn't updated immediately after selection node 
-        componentInspector.switchToPropertiesTab();
-        err.println("=========================== Trying to find Other Components | " +beanName+" - finished.");
-        
-        //return componentInspector;
-    }
-    
-    
-    /* find Property Customizer - CUSTOMIZE BEAN
+    /* find Property Customizer 
      */
-    private PropertyCustomizer findPropertyCustomizer(String propertyName){
-        err.println("=========================== Trying to find Property Customizer.");
-        PropertyCustomizer propertyCustomizer = new PropertyCustomizer(propertyName);
-        err.println("=========================== Trying to find Property Customizer - finished.");
-        
+    private NbDialogOperator findPropertyCustomizer(String propertyName){
+        err.println(CAPTION + " Trying to find Property Customizer.");
+        NbDialogOperator propertyCustomizer = new NbDialogOperator(propertyName);
+        err.println(CAPTION + " Trying to find Property Customizer - finished.");
         return propertyCustomizer;
     }
     
-    
-    /* find Property Customizer - Form Editor Customizer
-     */
-    private FormPropertyCustomizer findFormPropertyCustomizer(String propertyName){
-        err.println("=========================== Trying to find Property Customizer.");
-        FormPropertyCustomizer propertyCustomizer = new FormPropertyCustomizer(propertyName);
-        err.println("=========================== Trying to find Property Customizer - finished.");
-        
-        return propertyCustomizer;
-    }
     
     public void verifyExpectationValue(String propertyName, boolean expectation, String propertyValueExpectation, String propertyValue, boolean waitDialog){
         
         // Dialog isn't used for informing user about Invalid new value: Class,
         if(waitDialog) {
             getInformationDialog().ok();
-            err.println("=========================== Dialog closed by [Ok].");
+            err.println(CAPTION + " Dialog closed by [Ok].");
             
             if(propertyCustomizer!=null && propertyCustomizer.isShowing()){
-                err.println("=========================== Property Customizer is still showing.");
+                err.println(CAPTION + " Property Customizer is still showing.");
                 propertyCustomizer.cancel();
-                err.println("=========================== Property Customizer closed by [Cancel].");
+                err.println(CAPTION + " Property Customizer closed by [Cancel].");
             }
             
         }
@@ -337,7 +257,7 @@ public abstract class PropertyEditorsTest extends NbTestCase {
         String newValue = getValue(propertyName);
         String log = "Actual value is {"+newValue+"} and initial is{"+propertyInitialValue+"} - set value is {"+propertyValue+"} / expectation value is {"+propertyValueExpectation+"}";
         
-        err.println("=========================== Trying to verify value ["+log+"].");
+        err.println(CAPTION + " Trying to verify value ["+log+"].");
         
         if(expectation){
             if(newValue.equals(propertyValueExpectation) ) {
@@ -357,41 +277,74 @@ public abstract class PropertyEditorsTest extends NbTestCase {
     
     
     public void initializeWorkplace() {
-        
-        if(!useForm) {
-            openBeanCustomizer();
-            //beanCustomizer.setText(propertyName, propertyValue);
-        }else {
-            openComponentInspector();
-            //componentInspector.setText(propertyName, propertyValue);
-        }
+        openPropertySheet();
     }
     
     
-/*    
+    private void openPropertySheet() {
+        err.println(CAPTION + " Trying to run PropertiesTest");
+        
+        if(propertiesWindow==null){
+            new PropertiesTest();
+            // beanCustomizer = new TopComponentOperator(Bundle.getString("org.openide.nodes.Bundle", "Properties"));
+            //beanCustomizer = new TopComponentOperator(Bundle.getString("org.netbeans.core.Bundle","CTL_FMT_LocalProperties",new Object[] {new Integer(1), "TestN"}));
+            propertiesWindow = new FrameOperator("Properties of Tes");
+            
+            // Next code doesn't work because seDefaultStringComparator sets comparator for all Operators
+            // PropertySheetOperator.setDefaultStringComparator(new Operator.DefaultStringComparator(true, true));
+        }
+        err.println(CAPTION + " Trying to run PropertiesTest - finished.");
+    }
+    
+    
+    /* 
+     * Find Property in Property Sheet and return them. 
+     * This is first hack for new Jelly2, because it isn't possible to set String Comparator only for one operator.
+     * H1
+     */
+    private Property findProperty(String propertyName, String type) {
+        Operator.StringComparator oldComparator = Operator.getDefaultStringComparator();
+        Operator.setDefaultStringComparator(new Operator.DefaultStringComparator(true, true));
+        
+        PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
+        Property property;
+        
+        if(type.indexOf("TextFieldProperty")!=-1)
+            property = new TextFieldProperty(propertiesTab, propertyName);
+        else if(type.indexOf("ComboBoxProperty")!=-1)
+            property = new ComboBoxProperty(propertiesTab, propertyName);
+        else
+            property = new Property(propertiesTab, propertyName);
+        
+        Operator.setDefaultStringComparator(oldComparator);
+        
+        return property;
+    }
+    
+/*
     public String hackForJamPropertyButtonGetValue(String value) {
         // line 246 in JamPropertyButton , call getValue return not right value but some truncated value
         // this is the same code as for getValue, means excpectation value must be the same as this one
         return value.substring(value.lastIndexOf(':') + 2); // extra ++ for space
     }
- */   
+ */
     
     public void tearDown() {
-        PropertyEditorsSupport.closeAllModal();
+        closeAllModal();
         
         /*
         FileSystem fs = new FileSystems().getFileSystem(PropertyEditorsSupport.getFS("data", "ClearJFrameWithPropertyEditorTestBean", "java"));
         if(useForm)
             ExplorerNode.find(fs, "data, ClearJFrameWithPropertyEditorTestBean").getActions().save();
-       */ 
+         */
         
-        /*        
+        /*
         if(lastTest) {
             Editor e = Editor.find();
             e.switchToTab(PropertyEditorsSupport.beanName);
             e.pushPopupMenu("Save");
         }
-        */
+         */
         
         /*
         if(useForm && lastTest) {
@@ -401,9 +354,8 @@ public abstract class PropertyEditorsTest extends NbTestCase {
         }
          */
     }
-
+    
     private void failTest(Exception exc, String message) {
-        PropertyEditorsSupport.makeIDEScreenshot(this);
         err.println("################################");
         exc.printStackTrace(err);
         err.println("################################");
@@ -412,6 +364,8 @@ public abstract class PropertyEditorsTest extends NbTestCase {
     
     
     public abstract void setCustomizerValue();
+    
+    public abstract void verifyCustomizerLayout();
     
     public abstract void verifyPropertyValue(boolean expectation);
     

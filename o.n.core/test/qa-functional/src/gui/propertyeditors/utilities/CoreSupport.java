@@ -15,15 +15,17 @@ package gui.propertyeditors.utilities;
 
 import java.io.PrintStream;
 import java.awt.Component;
+import java.io.IOException;
 import javax.swing.JDialog;
 
 import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.JDialogOperator;
 
 
-import org.netbeans.test.oo.gui.jelly.JellyException;
-import org.netbeans.test.oo.gui.jelly.FormEditorWindow;
-import org.netbeans.test.oo.gui.jello.JelloBundle;
+//J2 import org.netbeans.test.oo.gui.jelly.JellyException;
+//J2 import org.netbeans.test.oo.gui.jelly.FormEditorWindow;
+//J2 import org.netbeans.test.oo.gui.jello.JelloBundle;
 
 import org.netbeans.junit.NbTestCase;
 
@@ -66,13 +68,13 @@ public class CoreSupport {
         FileObject f = findFileObject(_package, fileName, fileExtension);
         
         if(f==null)
-            throw new JellyException("Unable find file " + fileName + "." + fileExtension + " in package " + _package);
+            throw new JemmyException("Unable find file " + fileName + "." + fileExtension + " in package " + _package);
         
         String fs;
         try{
             fs = f.getFileSystem().getSystemName();
         }catch(FileStateInvalidException exc){
-            throw new JellyException("FileStateInvalidException during attempt get filesystem name for " + fileName + "." + fileExtension + " in package " + _package);
+            throw new JemmyException("FileStateInvalidException during attempt get filesystem name for " + fileName + "." + fileExtension + " in package " + _package);
         }
         
         // hack for Win NT/2K , where in FileObject is bad file separator !!!

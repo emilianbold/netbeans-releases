@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
              execution ide tests (it means this classpath will be mounted in repository).
              You can also write only name of jar or zip file, not in which directory it is and 
              this file will be searched in directories specified by property xtest.extra.jars.path 
-                 example: <property name="xtest.extra.jars" value="jemmy.jar;jelly.jar"/>
+                 example: <property name="xtest.extra.jars" value="jemmy.jar;jelly2-nb.jar"/>
           -->
         <property name="xtest.extra.jars"     value=""/>
    
@@ -43,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
              this file will be searched in directories specified by property xtest.extra.jars.path 
                  example: <property name="xtest.extra.jars.ide" value="jdbc_driver1.zip;jdbcd_river2.jar"/>
           -->
-        <property name="xtest.extra.jars.ide" value="jemmy.jar;jelly-nb.jar"/>
+        <property name="xtest.extra.jars.ide" value="jemmy.jar;jelly2-nb.jar;jelly-nb.jar"/>
 
 
         <!-- Arguments which will be added into commandline of starting IDE. 
@@ -157,6 +157,19 @@ Microsystems, Inc. All Rights Reserved.
         </ant>
     </target>
 
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
+    <!-- This target executes tests inside IDE -->
+    <target name="runplatformtest" depends="set_classpath">
+        <mkdir dir="${netbeans.home}/modules/ext"/>
+        <copy todir="${netbeans.home}/modules/ext" >
+             <fileset dir="${nbextra.dir}/ant/release/modules/ext/">
+                <include name="*.jar"/>
+             </fileset>
+        </copy>        
+        <antcall target="runidetest"/>
+    </target>
+    
     <!-- =============================================================
         Following targets are for "advanced" users who needs more 
         compilacated classpathes, which depends on way of execution.

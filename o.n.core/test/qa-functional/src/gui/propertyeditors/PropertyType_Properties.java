@@ -13,7 +13,8 @@
 
 package gui.propertyeditors;
 
-import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.PropertiesCustomizer;
+import org.netbeans.jellytools.properties.editors.StringCustomEditorOperator;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -39,8 +40,7 @@ public class PropertyType_Properties extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_properties";
-        useForm = false;
+        propertyName_L = "Properties";
         super.setUp();
     }
     
@@ -68,14 +68,15 @@ public class PropertyType_Properties extends PropertyEditorsTest {
         propertyValue_L = "propertyName=propertyValue";
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
-        lastTest = true;
         setByInPlace(propertyName_L, propertyValue_L, true);
     }
     
     
     public void setCustomizerValue() {
-        PropertiesCustomizer customizer = new PropertiesCustomizer(propertyCustomizer);
-        customizer.setValue(propertyValue_L);
+        StringCustomEditorOperator customizer = new StringCustomEditorOperator(propertyCustomizer);
+        //new EventTool().waitNoEvent(3000);
+        //customizer.setStringValue(propertyValue_L);
+        new JEditorPaneOperator(customizer).setText(propertyValue_L);
     }
     
     public void verifyPropertyValue(boolean expectation) {
@@ -91,5 +92,7 @@ public class PropertyType_Properties extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
 }

@@ -13,10 +13,12 @@
 
 package gui.propertyeditors;
 
-import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.FilesystemCustomizer;
+import org.netbeans.jellytools.properties.editors.FilesystemCustomEditorOperator;
 
 import org.netbeans.junit.NbTestSuite;
 import gui.propertyeditors.utilities.PropertyEditorsSupport;
+import org.netbeans.jellytools.properties.editors.FileCustomEditorOperator;
+import org.netbeans.jemmy.EventTool;
 
 
 
@@ -46,8 +48,7 @@ public class PropertyType_Filesystem extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_filesystem";
-        useForm = false;
+        propertyName_L = "Filesystem";
         super.setUp();
     }
     
@@ -86,14 +87,27 @@ public class PropertyType_Filesystem extends PropertyEditorsTest {
     }
     
     public void setCustomizerValue() {
-        FilesystemCustomizer customizer = new FilesystemCustomizer(propertyCustomizer);
+        FilesystemCustomEditorOperator customizer = new FilesystemCustomEditorOperator(propertyCustomizer);
+
         
         if(propertyValue_L.startsWith(ADDDIRECTORY)){
-            customizer.addDirectory(getPath(propertyValue_L, ADDDIRECTORY),true);
+            customizer.addLocalDirectory();
+            customizer.btBrowse().pushNoBlock();
+            FileCustomEditorOperator dialog = new FileCustomEditorOperator("Add Local Directory");
+            dialog.setFileValue(getPath(propertyValue_L, ADDDIRECTORY));
+            new EventTool().waitNoEvent(1000);
+            dialog.ok();
+            //customizer.setDirectory(getPath(propertyValue_L, ADDDIRECTORY));
         }
         
         if(propertyValue_L.startsWith(ADDJAR)){
-            customizer.addJar(getPath(propertyValue_L, ADDJAR), true);
+            customizer.addJARFile();
+            customizer.btBrowse2().pushNoBlock();
+            FileCustomEditorOperator dialog = new FileCustomEditorOperator("Add JAR File");
+            dialog.setFileValue(getPath(propertyValue_L, ADDJAR));
+            new EventTool().waitNoEvent(1000);
+            dialog.ok();
+            //customizer.setJARFile(getPath(propertyValue_L, ADDJAR));
         }
         
         
@@ -148,5 +162,7 @@ public class PropertyType_Filesystem extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
 }

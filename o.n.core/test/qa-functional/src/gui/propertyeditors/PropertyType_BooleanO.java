@@ -15,7 +15,6 @@ package gui.propertyeditors;
 
 import org.netbeans.junit.NbTestSuite;
 
-
 /**
  * Test of Boolean Property Editor.
  * 
@@ -33,8 +32,7 @@ public class PropertyType_BooleanO extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_Boolean";
-        useForm = true;
+        propertyName_L = "Boolean";
         super.setUp();
     }
     
@@ -48,7 +46,6 @@ public class PropertyType_BooleanO extends PropertyEditorsTest {
     public void testByComboFalse(){
         //propertyValue_L = new Boolean(false).toString();
         propertyValue_L = "False";
-        lastTest = true;
         setByCombo(propertyName_L, propertyValue_L, true);
     }
     
@@ -58,13 +55,12 @@ public class PropertyType_BooleanO extends PropertyEditorsTest {
         setByCombo(propertyName_L, propertyValue_L, true);
     }
     
-    public void setCustomizerValue() {
-    }
-    
     public void verifyPropertyValue(boolean expectation) {
         verifyExpectationValue(propertyName_L,expectation, propertyValue_L, propertyValue_L, false);
     }
     
+    public void setCustomizerValue(){}
+    public void verifyCustomizerLayout(){}
     
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
@@ -73,6 +69,4 @@ public class PropertyType_BooleanO extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_BooleanO.class));
         junit.textui.TestRunner.run(suite());
     }
-    
-    
 }

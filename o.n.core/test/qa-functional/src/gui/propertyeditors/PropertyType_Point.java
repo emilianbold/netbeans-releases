@@ -13,7 +13,10 @@
 
 package gui.propertyeditors;
 
-import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.DimensionPointCustomizer;
+import java.util.StringTokenizer;
+import org.netbeans.jemmy.JemmyException;
+
+import org.netbeans.jellytools.properties.editors.DimensionCustomEditorOperator;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -39,8 +42,7 @@ public class PropertyType_Point extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_point";
-        useForm = true;
+        propertyName_L = "Point";
         super.setUp();
     }
     
@@ -73,7 +75,6 @@ public class PropertyType_Point extends PropertyEditorsTest {
         propertyValue_L = "xx, 20";
         propertyValueExpectation_L = "["+propertyValue_L+"]";
         waitDialog = true;                                     
-        lastTest = true;
         setByCustomizerOk(propertyName_L, false);
     }
     
@@ -99,8 +100,17 @@ public class PropertyType_Point extends PropertyEditorsTest {
     }
     
     public void setCustomizerValue() {
-        DimensionPointCustomizer customizer = new DimensionPointCustomizer(propertyCustomizer);
-        customizer.setValue(propertyValue_L);
+        
+        DimensionCustomEditorOperator customizer = new DimensionCustomEditorOperator(propertyCustomizer);
+
+        StringTokenizer st = new StringTokenizer(propertyValue_L, ", ");
+        int x = st.countTokens();
+        
+        if(x>2)
+            throw new JemmyException("ERROR: DimensionPointCustomizer.setValue(\""+propertyValue_L+"\") - {number values="+x+"}.");
+        
+        customizer.setDimensionValue(st.nextToken(), st.nextToken());
+        
     }
     
     public void verifyPropertyValue(boolean expectation) {
@@ -116,5 +126,7 @@ public class PropertyType_Point extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
 }

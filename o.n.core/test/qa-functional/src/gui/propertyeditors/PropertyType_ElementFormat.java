@@ -38,8 +38,7 @@ public class PropertyType_ElementFormat extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_elementFormat";
-        useForm = false;
+        propertyName_L = "Element Format";
         super.setUp();
     }
     
@@ -52,7 +51,6 @@ public class PropertyType_ElementFormat extends PropertyEditorsTest {
     public void testByInPlace(){
         propertyValue_L = "element";
         propertyValueExpectation_L = propertyValue_L;
-        lastTest = true;
         waitDialog = false;
         setByInPlace(propertyName_L, propertyValue_L, true);
     }
@@ -74,5 +72,7 @@ public class PropertyType_ElementFormat extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
 }

@@ -13,10 +13,12 @@
 
 package gui.propertyeditors;
 
-import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.ColorCustomizer;
+import org.netbeans.jellytools.properties.Property;
+import org.netbeans.jellytools.properties.PropertySheetOperator;
+import org.netbeans.jellytools.properties.PropertySheetTabOperator;
+import org.netbeans.jellytools.properties.editors.ColorCustomEditorOperator;
 
 import org.netbeans.junit.NbTestSuite;
-
 
 /**
  * Tests of Color Property Editor.
@@ -38,8 +40,7 @@ public class PropertyType_Color extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_color";
-        useForm = true;
+        propertyName_L = "Color";
         super.setUp();
     }
     
@@ -77,26 +78,42 @@ public class PropertyType_Color extends PropertyEditorsTest {
         propertyValue_L = "xx color";
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = true;
-        lastTest = true;
         setByInPlace(propertyName_L, propertyValue_L, false);
     }
     
     public void setCustomizerValue() {
-        ColorCustomizer customizer = new ColorCustomizer(propertyCustomizer);
+        ColorCustomEditorOperator customizer = new ColorCustomEditorOperator(propertyCustomizer);
         
         int first_comma = propertyValue_L.indexOf(',');
         int second_comma = propertyValue_L.indexOf(',',first_comma+1);
-        String red = propertyValue_L.substring(0,first_comma);
-        String green = propertyValue_L.substring(first_comma+1, second_comma);
-        String blue = propertyValue_L.substring(second_comma+1);
         
-        customizer.setValue(red,green,blue);
+        int r = new Integer(propertyValue_L.substring(0,first_comma)).intValue();
+        int g = new Integer(propertyValue_L.substring(first_comma+1, second_comma)).intValue();
+        int b = new Integer(propertyValue_L.substring(second_comma+1)).intValue();
+        
+        customizer.setRGBValue(r,g,b);
     }
     
     public void verifyPropertyValue(boolean expectation) {
         verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, waitDialog);
     }
     
+    public String getValue(String propertyName) {
+        String returnValue;
+        PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
+        
+        returnValue = new Property(propertiesTab, propertyName_L).getValue();
+        err.println("GET VALUE = [" + returnValue + "].");
+        
+        // hack for color poperty, this action expects, that right value is displayed as tooltip
+        returnValue = new Property(propertiesTab, propertyName_L).valueButtonOperator().getToolTipText();
+        err.println("GET VALUE TOOLTIP = [" + returnValue + "].");
+        
+        return returnValue;
+    }
+    
+    public void verifyCustomizerLayout() {
+    }    
     
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
@@ -105,6 +122,4 @@ public class PropertyType_Color extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_Color.class));
         junit.textui.TestRunner.run(suite());
     }
-    
-    
 }

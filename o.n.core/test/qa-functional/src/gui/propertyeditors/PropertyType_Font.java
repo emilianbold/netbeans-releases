@@ -13,7 +13,9 @@
 
 package gui.propertyeditors;
 
-import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.FontCustomizer;
+import java.util.StringTokenizer;
+import org.netbeans.jellytools.properties.editors.FontCustomEditorOperator;
+import org.netbeans.jemmy.JemmyException;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -38,8 +40,7 @@ public class PropertyType_Font extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_font";
-        useForm = true;
+        propertyName_L = "Font";
         super.setUp();
     }
     
@@ -77,13 +78,29 @@ public class PropertyType_Font extends PropertyEditorsTest {
         propertyValue_L = "Monospaced, xx, Bold Italic";
         propertyValueExpectation_L = "["+propertyValue_L+"]";
         waitDialog = false;
-        lastTest = true;
         setByCustomizerOk(propertyName_L, false);
     }
     
     public void setCustomizerValue() {
-        FontCustomizer customizer = new FontCustomizer(propertyCustomizer);
-        customizer.setValue(propertyValue_L);
+        FontCustomEditorOperator customizer = new FontCustomEditorOperator(propertyCustomizer);
+        
+        int index1,index2,index3;
+        index1 = propertyValue_L.indexOf(", ");
+        
+        if(index1>0){
+            customizer.setFontName(propertyValue_L.substring(0,index1).trim());
+            index2 = propertyValue_L.indexOf(", ", index1+1);
+            
+            if(index2>0){
+                index3 = propertyValue_L.indexOf(", ", index2+1);
+                customizer.setFontSize(propertyValue_L.substring(index1+1,index2).trim());
+                
+                if(index3>0){
+                    customizer.setFontStyle(propertyValue_L.substring(index2+1,index3).trim());
+                }
+            }
+        }
+        
     }
     
     public void verifyPropertyValue(boolean expectation) {
@@ -102,5 +119,7 @@ public class PropertyType_Font extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
 }

@@ -36,8 +36,7 @@ public class PropertyType_URL extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_url";
-        useForm = true;
+        propertyName_L = "URL";
         super.setUp();
     }
     
@@ -59,7 +58,6 @@ public class PropertyType_URL extends PropertyEditorsTest {
         propertyValue_L = "xxx";
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
-        lastTest = true;
         setByInPlace(propertyName_L, propertyValue_L, false);
     }
     
@@ -79,5 +77,7 @@ public class PropertyType_URL extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
 }

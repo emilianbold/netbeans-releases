@@ -36,8 +36,7 @@ public class PropertyType_Type extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_type";
-        useForm = true;
+        propertyName_L = "property Type";
         super.setUp();
     }
     
@@ -67,7 +66,6 @@ public class PropertyType_Type extends PropertyEditorsTest {
         propertyValue_L = "Integer.class";
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = true;
-        lastTest = true;
         setByInPlace(propertyName_L, propertyValue_L, false);
     }
     
@@ -88,5 +86,7 @@ public class PropertyType_Type extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
 }

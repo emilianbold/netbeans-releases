@@ -13,17 +13,9 @@
 
 package gui.propertyeditors;
 
-//import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.StringArrayCustomizer;
-
-//import org.netbeans.test.oo.gui.jam.JamButton;
-import org.netbeans.test.oo.gui.jam.JamTextField;
-import org.netbeans.test.oo.gui.jam.JamList;
+import org.netbeans.jellytools.properties.editors.StringArrayCustomEditorOperator;
 
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.test.oo.gui.jello.JelloBundle;
-import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.CustomizerContainer;
-
-
 
 /**
  * Tests of Extension List Property Editor.
@@ -53,8 +45,7 @@ public class PropertyType_ExtensionList extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_extensionList";
-        useForm = false;
+        propertyName_L = "Extension List";
         super.setUp();
     }
     
@@ -105,18 +96,20 @@ public class PropertyType_ExtensionList extends PropertyEditorsTest {
     }
     
     public void setCustomizerValue() {
-        ExtensionCustomizer customizer = new ExtensionCustomizer(propertyCustomizer);
+        StringArrayCustomEditorOperator customizer = new StringArrayCustomEditorOperator(propertyCustomizer);
         
         if(propertyValue_L.startsWith(ADD)){
-            customizer.addItem(getItem(propertyValue_L,ADD));
+            customizer.add(getItem(propertyValue_L,ADD));
         }
         
         if(propertyValue_L.startsWith(REMOVE)){
-            customizer.removeItem(getItem(propertyValue_L,REMOVE));
+            customizer.remove(getItem(propertyValue_L,REMOVE));
         }
         
         if(propertyValue_L.startsWith(EDIT)){
-            customizer.editItem(getItem(propertyValue_L,EDIT), getItem(propertyValue_L,EE));
+            customizer.lstItemList().selectItem(getItem(propertyValue_L,EDIT));
+            customizer.setItemText(getItem(propertyValue_L,EE));
+            customizer.edit();
         }
         
     }
@@ -145,52 +138,7 @@ public class PropertyType_ExtensionList extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
-}
-
-
-class ExtensionCustomizer extends CustomizerContainer {
-    
-    public JamTextField textField;
-    public JamList itemList;
-    
-    public ExtensionCustomizer(org.netbeans.test.oo.gui.jelly.propertyEditors.PropertyCustomizer propertyCustomizer) {
-        super(propertyCustomizer);
-    }
-
-    /** Verify constitution of this customizer - container. */
-    public void verify(){
-        textField = getJamTextField(0);
-        itemList = getJamList(0);
+    public void verifyCustomizerLayout() {
     }
     
-    /** Add string.                                                                                                                                                    
-     * @param item string to be added */                                                                                                                               
-    public void addItem(String item){                                                                                                                                  
-        textField.setText(item);                                                                                                                                       
-        getJamButton(JelloBundle.getString(propertySheetEditorsBundle, "CTL_Add_StringArrayCustomEditor")).doClick();
-    }                                                                                                                                                                  
-                                                                                                                                                                       
-    /** Remove string.                                                                                                                                                 
-     * @param item string to be removed */                                                                                                                             
-    public void removeItem(String item) {                                                                                                                              
-        selectItem(item);                                                                                                                                              
-        getJamButton(JelloBundle.getString(propertySheetEditorsBundle, "CTL_Remove")).doClick();                                                                                                                                        
-    }                                                                                                                                                                  
-                                                                                                                                                                       
-    /** Edit string.                                                                                                                                                   
-     * @param item string to be edite                                                                                                                                  
-     * @param newValue new value of string */                                                                                                                          
-    public void editItem(String item, String newValue) {                                                                                                               
-        selectItem(item);                                                                                                                                              
-        textField.setText(newValue);                                                                                                                                   
-        getJamButton(JelloBundle.getString(propertySheetEditorsBundle, "CTL_Change_StringArrayCustomEditor")).doClick();                                                                                                                                          
-    }                                                                                                                                                                  
-
-   /** Select string.                                                                                                                                                 
-     * @param item string to be selected */                                                                                                                            
-    public void selectItem(String item) {                                                                                                                              
-        itemList.selectItem(item);                                                                                                                                     
-        org.netbeans.test.oo.gui.jam.JamUtilities.waitEventQueueEmpty(100);                                                                                            
-    }                                                                                                                                                                  
-     
 }

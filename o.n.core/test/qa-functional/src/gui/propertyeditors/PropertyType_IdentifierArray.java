@@ -13,7 +13,9 @@
 
 package gui.propertyeditors;
 
-import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.IdentifierCustomizer;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.properties.editors.StringArrayCustomEditorOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -47,8 +49,7 @@ public class PropertyType_IdentifierArray extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_identifierArray";
-        useForm = false;
+        propertyName_L = "Identifier []";
         super.setUp();
     }
     
@@ -72,16 +73,16 @@ public class PropertyType_IdentifierArray extends PropertyEditorsTest {
         setByCustomizerOk(propertyName_L, true);
     }
     
-    public void testCustomizerEdit() {
-        propertyValue_L = EDIT + "edit" + EE + "newEdit";
-        propertyValueExpectation_L = "down, up, newEdit, add";
+    public void testCustomizerRemove() {
+        propertyValue_L = REMOVE + "remove";
+        propertyValueExpectation_L = "down, up, edit, add";
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
     
-    public void testCustomizerRemove() {
-        propertyValue_L = REMOVE + "remove";
-        propertyValueExpectation_L = "down, up, edit, add";
+    public void testCustomizerEdit() {
+        propertyValue_L = EDIT + "edit" + EE + "newEdit";
+        propertyValueExpectation_L = "down, up, newEdit, add";
         waitDialog = false;
         setByCustomizerOk(propertyName_L, true);
     }
@@ -90,7 +91,6 @@ public class PropertyType_IdentifierArray extends PropertyEditorsTest {
         propertyValue_L = UP + "up";
         propertyValueExpectation_L = "up, down, newEdit, add";
         waitDialog = false;
-        lastTest = true;
         setByCustomizerOk(propertyName_L, true);
     }
     
@@ -116,26 +116,36 @@ public class PropertyType_IdentifierArray extends PropertyEditorsTest {
     }
     
     public void setCustomizerValue() {
-        IdentifierCustomizer customizer = new IdentifierCustomizer(propertyCustomizer);
+        StringArrayCustomEditorOperator customizer = new StringArrayCustomEditorOperator(propertyCustomizer);
         
         if(propertyValue_L.startsWith(ADD)){
-            customizer.addItem(getItem(propertyValue_L,ADD));
+            customizer.btAdd().pushNoBlock();
+            NbDialogOperator dialog = new NbDialogOperator("Enter");
+            new JTextFieldOperator(dialog).setText(getItem(propertyValue_L,ADD));
+            dialog.ok();
         }
         
         if(propertyValue_L.startsWith(REMOVE)){
-            customizer.removeItem(getItem(propertyValue_L,REMOVE));
+            customizer.lstItemList().selectItem(getItem(propertyValue_L,REMOVE));
+            customizer.remove();
         }
         
         if(propertyValue_L.startsWith(EDIT)){
-            customizer.editItem(getItem(propertyValue_L,EDIT), getItem(propertyValue_L,EE));
+            customizer.lstItemList().selectItem(getItem(propertyValue_L,EDIT));
+            customizer.btEdit().pushNoBlock();
+            NbDialogOperator dialog = new NbDialogOperator("Enter");
+            new JTextFieldOperator(dialog).setText(getItem(propertyValue_L,EE));
+            dialog.ok();
         }
         
         if(propertyValue_L.startsWith(UP)){
-            customizer.moveUpItem(getItem(propertyValue_L,UP));
+            customizer.lstItemList().selectItem(getItem(propertyValue_L,UP));
+            customizer.up();
         }
         
         if(propertyValue_L.startsWith(DOWN)){
-            customizer.moveDownItem(getItem(propertyValue_L,DOWN));
+            customizer.lstItemList().selectItem(getItem(propertyValue_L,DOWN));
+            customizer.down();
         }
         
     }
@@ -164,5 +174,7 @@ public class PropertyType_IdentifierArray extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
 }

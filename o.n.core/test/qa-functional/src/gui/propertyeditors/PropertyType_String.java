@@ -13,7 +13,7 @@
 
 package gui.propertyeditors;
 
-import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.StringCustomizer;
+import org.netbeans.jellytools.properties.editors.StringCustomEditorOperator;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -35,8 +35,7 @@ public class PropertyType_String extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_string";
-        useForm = true;
+        propertyName_L = "String";
         super.setUp();
     }
     
@@ -60,14 +59,13 @@ public class PropertyType_String extends PropertyEditorsTest {
     
     public void testByInPlace(){
         propertyValue_L = "My String - in-place";
-        lastTest = true;
         setByInPlace(propertyName_L, propertyValue_L, true);
     }
     
     
     public void setCustomizerValue() {
-        StringCustomizer customizer = new StringCustomizer(propertyCustomizer);
-        customizer.setValue(propertyValue_L);
+        StringCustomEditorOperator customizer = new StringCustomEditorOperator(propertyCustomizer);
+        customizer.setStringValue(propertyValue_L);
     }
     
     public void verifyPropertyValue(boolean expectation) {
@@ -91,5 +89,7 @@ public class PropertyType_String extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
 }

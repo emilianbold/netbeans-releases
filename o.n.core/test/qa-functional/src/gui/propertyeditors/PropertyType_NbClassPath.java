@@ -13,10 +13,11 @@
 
 package gui.propertyeditors;
 
-import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.NbClassPathCustomizer;
 
 import org.netbeans.junit.NbTestSuite;
 import gui.propertyeditors.utilities.PropertyEditorsSupport;
+
+import org.netbeans.jellytools.properties.editors.ClasspathCustomEditorOperator;
 
 
 
@@ -51,8 +52,7 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_NbClassPath";
-        useForm = false;
+        propertyName_L = "NbClassPath";
         super.setUp();
     }
     
@@ -112,7 +112,6 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
         //propertyValueExpectation_L = "two.zip:one.jar:" + FS_Data_path_data_jar;
         propertyValueExpectation_L = "two.zip"+delim+"one.jar";
         waitDialog = false;
-        lastTest = true;
         setByCustomizerOk(propertyName_L, true);
     }
     
@@ -138,26 +137,28 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
     }
     
     public void setCustomizerValue() {
-        NbClassPathCustomizer customizer = new NbClassPathCustomizer(propertyCustomizer);
+        ClasspathCustomEditorOperator customizer = new ClasspathCustomEditorOperator(propertyCustomizer);
         
         if(propertyValue_L.startsWith(ADDDIRECTORY)){
             customizer.addDirectory(getPath(propertyValue_L, ADDDIRECTORY));
         }
         
         if(propertyValue_L.startsWith(ADDJAR)){
-            customizer.addJar(getPath(propertyValue_L, ADDJAR));
+            customizer.addJARZIP(getPath(propertyValue_L, ADDJAR));
         }
         
         if(propertyValue_L.startsWith(REMOVE)){
-            customizer.removeItem(getPath(propertyValue_L,REMOVE));
+            customizer.remove(getPath(propertyValue_L,REMOVE));
         }
         
         if(propertyValue_L.startsWith(UP)){
-            customizer.moveUpItem(getPath(propertyValue_L,UP));
+            customizer.lstClasspath().selectItem(getPath(propertyValue_L,UP));
+            customizer.moveUp();
         }
         
         if(propertyValue_L.startsWith(DOWN)){
-            customizer.moveDownItem(getPath(propertyValue_L,DOWN));
+            customizer.lstClasspath().selectItem(getPath(propertyValue_L,DOWN));
+            customizer.moveDown();
         }
         
     }
@@ -184,5 +185,7 @@ public class PropertyType_NbClassPath extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
 }

@@ -13,10 +13,9 @@
 
 package gui.propertyeditors;
 
-import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.ServicesCustomizer;
+import org.netbeans.jellytools.properties.editors.ServiceTypeCustomEditorOperator;
 
 import org.netbeans.junit.NbTestSuite;
-
 
 /**
  * Tests of Service Type Property Editor.
@@ -38,8 +37,7 @@ public class PropertyType_ServiceType extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_serviceType";
-        useForm = false;
+        propertyName_L = "Service Type";
         super.setUp();
     }
     
@@ -59,7 +57,7 @@ public class PropertyType_ServiceType extends PropertyEditorsTest {
     }
     
     public void testCustomizerOk(){
-        propertyValue_L = "Date";
+        propertyValue_L = "Status";
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCustomizerOk(propertyName_L, true);
@@ -69,13 +67,26 @@ public class PropertyType_ServiceType extends PropertyEditorsTest {
         propertyValue_L = "Type";
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
-        lastTest = true;
+        setByCustomizerCancel(propertyName_L, false);
+    }
+    
+    public void testCustomizerOk_platform(){
+        propertyValue_L = "NetBeans Update Center Beta";
+        propertyValueExpectation_L = propertyValue_L;
+        waitDialog = false;                                     
+        setByCustomizerOk(propertyName_L, true);
+    }
+    
+    public void testCustomizerCancel_platform(){
+        propertyValue_L = "NetBeans Update Center";
+        propertyValueExpectation_L = propertyValue_L;
+        waitDialog = false;                                     
         setByCustomizerCancel(propertyName_L, false);
     }
     
     public void setCustomizerValue() {
-        ServicesCustomizer customizer = new ServicesCustomizer(propertyCustomizer);
-        customizer.selectItem(propertyValue_L);
+        ServiceTypeCustomEditorOperator customizer = new ServiceTypeCustomEditorOperator(propertyCustomizer);
+        customizer.setServiceTypeValue(propertyValue_L);
     }
     
     public void verifyPropertyValue(boolean expectation) {
@@ -91,5 +102,7 @@ public class PropertyType_ServiceType extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
 }

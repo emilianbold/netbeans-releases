@@ -15,7 +15,6 @@ package gui.propertyeditors;
 
 import org.netbeans.junit.NbTestSuite;
 
-
 /**
  * Tests of short Property Editor.
  *
@@ -36,8 +35,7 @@ public class PropertyType_short extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_short";
-        useForm = true;
+        propertyName_L = "short";
         super.setUp();
     }
     
@@ -59,17 +57,15 @@ public class PropertyType_short extends PropertyEditorsTest {
         propertyValue_L = "0x";
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = true;
-        lastTest = true;
         setByInPlace(propertyName_L, propertyValue_L, false);
-    }
-    
-    public void setCustomizerValue() {
     }
     
     public void verifyPropertyValue(boolean expectation) {
         verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, waitDialog);
     }
     
+    public void setCustomizerValue(){}
+    public void verifyCustomizerLayout(){}
     
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
@@ -78,6 +74,4 @@ public class PropertyType_short extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_short.class));
         junit.textui.TestRunner.run(suite());
     }
-    
-    
 }

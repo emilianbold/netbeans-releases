@@ -15,7 +15,6 @@ package gui.propertyeditors;
 
 import org.netbeans.junit.NbTestSuite;
 
-
 /**
  * Tests of Class Property Editor.
  *
@@ -34,8 +33,7 @@ public class PropertyType_Class extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_class";
-        useForm = true;
+        propertyName_L = "Class";
         super.setUp();
     }
     
@@ -55,17 +53,15 @@ public class PropertyType_Class extends PropertyEditorsTest {
     public void testByInPlaceInvalid(){
         propertyValue_L = "java.lang.Stringxx";
         propertyValueExpectation_L = propertyValue_L;
-        lastTest = true;
         setByInPlace(propertyName_L, propertyValue_L, false);
-    }
-    
-    public void setCustomizerValue() {
     }
     
     public void verifyPropertyValue(boolean expectation) {
         verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, false);
     }
     
+    public void setCustomizerValue(){}
+    public void verifyCustomizerLayout(){}
     
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
@@ -74,6 +70,4 @@ public class PropertyType_Class extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_Class.class));
         junit.textui.TestRunner.run(suite());
     }
-    
-    
 }

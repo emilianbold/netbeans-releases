@@ -34,8 +34,7 @@ public class PropertyType_Character extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_Character";
-        useForm = true;
+        propertyName_L = "Character";
         super.setUp();
     }
     
@@ -55,17 +54,15 @@ public class PropertyType_Character extends PropertyEditorsTest {
     public void testByInPlaceInvalid(){
         propertyValue_L = "invalid";
         propertyValueExpectation_L = propertyValue_L.substring(0,1);
-        lastTest = true;
         setByInPlace(propertyName_L, propertyValue_L, true);
-    }
-    
-    public void setCustomizerValue() {
     }
     
     public void verifyPropertyValue(boolean expectation) {
         verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, false);
     }
     
+    public void setCustomizerValue(){}
+    public void verifyCustomizerLayout(){}
     
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line

@@ -13,7 +13,11 @@
 
 package gui.propertyeditors;
 
-import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.RectangleInsetsCustomizer;
+import java.util.StringTokenizer;
+
+import org.netbeans.jellytools.properties.editors.RectangleCustomEditorOperator;
+
+import org.netbeans.jemmy.JemmyException;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -39,8 +43,7 @@ public class PropertyType_Insets extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_insets";
-        useForm = true;
+        propertyName_L = "Insets";
         super.setUp();
     }
     
@@ -73,7 +76,6 @@ public class PropertyType_Insets extends PropertyEditorsTest {
         propertyValue_L = "xx, 20, 30, 50";
         propertyValueExpectation_L = "["+propertyValue_L+"]";
         waitDialog = true;
-        lastTest = true;
         setByCustomizerOk(propertyName_L, false);
     }
     
@@ -99,8 +101,14 @@ public class PropertyType_Insets extends PropertyEditorsTest {
     }
     
     public void setCustomizerValue() {
-        RectangleInsetsCustomizer customizer = new RectangleInsetsCustomizer(propertyCustomizer);
-        customizer.setValue(propertyValue_L);
+        RectangleCustomEditorOperator customizer = new RectangleCustomEditorOperator(propertyCustomizer);
+        StringTokenizer st = new StringTokenizer(propertyValue_L, ", ");
+        int x = st.countTokens();
+        
+        if(x>4)
+            throw new JemmyException("ERROR: InsetsCustomizer.setValue(\""+propertyValue_L+"\") - {number values="+x+"}.");
+        
+        customizer.setRectangleValue(st.nextToken(), st.nextToken(), st.nextToken(), st.nextToken());
     }
     
     public void verifyPropertyValue(boolean expectation) {
@@ -116,5 +124,7 @@ public class PropertyType_Insets extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
 }

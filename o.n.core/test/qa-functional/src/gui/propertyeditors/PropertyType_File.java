@@ -15,7 +15,8 @@ package gui.propertyeditors;
 
 import gui.propertyeditors.utilities.PropertyEditorsSupport;
 
-import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.FileCustomizer;
+import org.netbeans.jellytools.properties.editors.FileCustomEditorOperator;
+import org.netbeans.jemmy.EventTool;
 
 import org.netbeans.junit.NbTestSuite;
 
@@ -40,8 +41,7 @@ public class PropertyType_File extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_file";
-        useForm = true;
+        propertyName_L = "File";
         super.setUp();
     }
     
@@ -57,7 +57,6 @@ public class PropertyType_File extends PropertyEditorsTest {
         propertyValue_L = PropertyEditorsSupport.getSystemPath(PropertyEditorsSupport.Resources, "clear_JFrame", "java");
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;
-        lastTest = true;
         setByCustomizerOk(propertyName_L, true);
     }
     
@@ -77,14 +76,17 @@ public class PropertyType_File extends PropertyEditorsTest {
     
     
     public void setCustomizerValue() {
-        FileCustomizer customizer = new FileCustomizer(propertyCustomizer);
-        customizer.setValue(propertyValue_L);
+        FileCustomEditorOperator customizer = new FileCustomEditorOperator(propertyCustomizer);
+        new EventTool().waitNoEvent(1000);
+        customizer.setFileValue(propertyValue_L); 
     }
     
     public void verifyPropertyValue(boolean expectation) {
         verifyExpectationValue(propertyName_L,expectation, propertyValueExpectation_L, propertyValue_L, false);
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
     /** Test could be executed internaly in Forte without XTest
      * @param args arguments from command line
@@ -93,6 +95,4 @@ public class PropertyType_File extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_File.class));
         junit.textui.TestRunner.run(suite());
     }
-    
-    
 }

@@ -13,11 +13,9 @@
 
 package gui.propertyeditors;
 
-import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.StringArrayCustomizer;
+import org.netbeans.jellytools.properties.editors.StringArrayCustomEditorOperator;
 
 import org.netbeans.junit.NbTestSuite;
-
-
 
 /**
  * Tests of StringArray Property Editor.
@@ -47,8 +45,7 @@ public class PropertyType_StringArray extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_stringArray";
-        useForm = true;
+        propertyName_L = "String []";
         super.setUp();
     }
     
@@ -60,7 +57,7 @@ public class PropertyType_StringArray extends PropertyEditorsTest {
         suite.addTest(new PropertyType_StringArray("testCustomizerRemove"));
         suite.addTest(new PropertyType_StringArray("testCustomizerEdit"));
         suite.addTest(new PropertyType_StringArray("testCustomizerUp"));
-//        suite.addTest(new PropertyType_StringArray("testCustomizerDown"));
+        suite.addTest(new PropertyType_StringArray("testCustomizerDown"));
         return suite;
     }
     
@@ -90,7 +87,6 @@ public class PropertyType_StringArray extends PropertyEditorsTest {
         propertyValue_L = UP + "up";
         propertyValueExpectation_L = "up, down, newEdit, add";
         waitDialog = false;
-        lastTest = true;
         setByCustomizerOk(propertyName_L, true);
     }
     
@@ -116,26 +112,30 @@ public class PropertyType_StringArray extends PropertyEditorsTest {
     }
     
     public void setCustomizerValue() {
-        StringArrayCustomizer customizer = new StringArrayCustomizer(propertyCustomizer);
+        StringArrayCustomEditorOperator customizer = new StringArrayCustomEditorOperator(propertyCustomizer);
         
         if(propertyValue_L.startsWith(ADD)){
-            customizer.addItem(getItem(propertyValue_L,ADD));
+            customizer.add(getItem(propertyValue_L,ADD));
         }
         
         if(propertyValue_L.startsWith(REMOVE)){
-            customizer.removeItem(getItem(propertyValue_L,REMOVE));
+            customizer.remove(getItem(propertyValue_L,REMOVE));
         }
         
         if(propertyValue_L.startsWith(EDIT)){
-            customizer.editItem(getItem(propertyValue_L,EDIT), getItem(propertyValue_L,EE));
+            customizer.lstItemList().selectItem(getItem(propertyValue_L,EDIT));
+            customizer.setItemText(getItem(propertyValue_L,EE));
+            customizer.edit();
         }
         
         if(propertyValue_L.startsWith(UP)){
-            customizer.moveUpItem(getItem(propertyValue_L,UP));
+            customizer.lstItemList().selectItem(getItem(propertyValue_L,UP));
+            customizer.up();
         }
         
         if(propertyValue_L.startsWith(DOWN)){
-            customizer.moveDownItem(getItem(propertyValue_L,DOWN));
+            customizer.lstItemList().selectItem(getItem(propertyValue_L,DOWN));
+            customizer.down();
         }
         
     }
@@ -164,5 +164,7 @@ public class PropertyType_StringArray extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
 }

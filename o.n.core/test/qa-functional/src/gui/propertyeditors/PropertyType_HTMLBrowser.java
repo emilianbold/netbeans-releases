@@ -37,8 +37,7 @@ public class PropertyType_HTMLBrowser extends PropertyEditorsTest {
     
     
     public void setUp(){
-        propertyName_L = "p_htmlBrowser";
-        useForm = false;
+        propertyName_L = "Html Browser";
         super.setUp();
     }
     
@@ -60,7 +59,6 @@ public class PropertyType_HTMLBrowser extends PropertyEditorsTest {
         propertyValue_L = "Swing HTML Browser";
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;
-        lastTest = true;
         setByCombo(propertyName_L, propertyValue_L, true);
     }
     
@@ -80,5 +78,7 @@ public class PropertyType_HTMLBrowser extends PropertyEditorsTest {
         junit.textui.TestRunner.run(suite());
     }
     
+    public void verifyCustomizerLayout() {
+    }    
     
 }
