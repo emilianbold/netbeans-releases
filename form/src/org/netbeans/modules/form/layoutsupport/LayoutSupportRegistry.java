@@ -48,12 +48,12 @@ public class LayoutSupportRegistry {
                            getContainersMap().get(containerClass.getName());
         if (className == null) {
             className = findSuperClass(getContainersMap(), containerClass);
-            if (className == null && needPaletteRescan) {
-                className = scanPalette(containerClass.getName());
-                if (className == null) // try container superclass again
-                    className = findSuperClass(getContainersMap(),
-                                               containerClass);
-            }
+//            if (className == null && needPaletteRescan) {
+//                className = scanPalette(containerClass.getName());
+//                if (className == null) // try container superclass again
+//                    className = findSuperClass(getContainersMap(),
+//                                               containerClass);
+//            }
         }
 
         if (className != null) {
@@ -81,12 +81,12 @@ public class LayoutSupportRegistry {
             }
 
             className = findSuperClass(getContainersMap(), containerClass);
-            if (className == null && needPaletteRescan) {
-                className = scanPalette(containerClassName);
-                if (className == null) // try container superclass again
-                    className = findSuperClass(getContainersMap(),
-                                               containerClass);
-            }
+//            if (className == null && needPaletteRescan) {
+//                className = scanPalette(containerClassName);
+//                if (className == null) // try container superclass again
+//                    className = findSuperClass(getContainersMap(),
+//                                               containerClass);
+//            }
         }
 
         return className;
@@ -338,7 +338,7 @@ public class LayoutSupportRegistry {
     private static DataFolder getPaletteFolder() {
         if (paletteFolder == null) {
             FileObject fo = TopManager.getDefault().getRepository()
-                              .getDefaultFileSystem().findResource("Palette");
+                              .getDefaultFileSystem().findResource("Palette"); // NOI18N
             if (fo != null)
                 paletteFolder = DataFolder.findFolder(fo);
         }
