@@ -191,13 +191,17 @@ public class FormUtils extends Object {
     if (component instanceof FormContainer) {
       componentName = "form";
     }
-    StringBuffer sb = new StringBuffer (componentName);
+    return getDefaultEventName (componentName, listenerMethod);
+  } 
+
+  static String getDefaultEventName (String name, Method listenerMethod) {
+    StringBuffer sb = new StringBuffer (name);
     String lm = listenerMethod.getName ();
     sb.append (lm.substring (0, 1).toUpperCase ());
     sb.append (lm.substring (1));
     return sb.toString ();
-  } 
-
+  }
+  
   /** @return a formatted name of specified method
   */
   public static String getMethodName (MethodDescriptor desc) {
@@ -443,6 +447,7 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  23   Gandalf   1.22        12/13/99 Pavel Buzek     
  *  22   Gandalf   1.21        12/9/99  Pavel Buzek     utils for XML properties
  *       - readProperty, writeProperty
  *  21   Gandalf   1.20        11/25/99 Ian Formanek    Uses Utilities module

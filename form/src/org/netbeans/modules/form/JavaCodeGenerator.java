@@ -121,7 +121,9 @@ public class JavaCodeGenerator extends CodeGenerator {
         if (!(value instanceof String)) {
           throw new IllegalArgumentException ();
         }
+        String oldValue = component.getName ();
         component.setName ((String)value);
+        component.getNodeReference ().firePropertyChangeHelper ("variableName", oldValue, value);
       }
 
       public Object getValue () {
@@ -1420,6 +1422,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  60   Gandalf   1.59        12/13/99 Pavel Buzek     
  *  59   Gandalf   1.58        11/25/99 Pavel Buzek     support for multiple 
  *       handlers for one event
  *  58   Gandalf   1.57        11/24/99 Pavel Buzek     2882 (AWT hierarchy) 
