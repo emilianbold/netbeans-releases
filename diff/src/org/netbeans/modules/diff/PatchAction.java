@@ -24,6 +24,8 @@ import java.io.IOException;
 import javax.swing.JFileChooser;
 
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.TopManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -76,6 +78,11 @@ public class PatchAction extends NodeAction {
                     NbBundle.getMessage(PatchAction.class, "EXC_PatchParsingFailed", ioex.getLocalizedMessage())));
                 return ;
             }
+            if (diffs.length == 0) {
+                TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(PatchAction.class, "MSG_NoDifferences", patch.getName())));
+                return ;
+            }
             /*
             System.out.println("Have diffs = "+diffs+", length = "+diffs.length);
             for (int i = 0; i < diffs.length; i++) {
@@ -89,7 +96,7 @@ public class PatchAction extends NodeAction {
     private File getPatchFor(FileObject fo) {
         JFileChooser chooser = new JFileChooser(System.getProperty("user.home"));
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setDialogTitle(NbBundle.getMessage(PatchAction.class, "TITLE_SelectPatch"));
+        chooser.setDialogTitle(NbBundle.getMessage(PatchAction.class, "TITLE_SelectPatch", fo.getNameExt()));
         chooser.setApproveButtonText(NbBundle.getMessage(PatchAction.class, "BTN_Patch"));
         chooser.setApproveButtonMnemonic(NbBundle.getMessage(PatchAction.class, "BTN_Patch_mnc").charAt(0));
         chooser.setApproveButtonToolTipText(NbBundle.getMessage(PatchAction.class, "BTN_Patch_tooltip"));
@@ -128,6 +135,8 @@ public class PatchAction extends NodeAction {
             return ;
         }
         tmp.delete();
+        TopManager.getDefault().notify(new NotifyDescriptor.Message(
+            NbBundle.getMessage(PatchAction.class, "MSG_PatchAppliedSuccessfully")));
     }
 
     public HelpCtx getHelpCtx() {
