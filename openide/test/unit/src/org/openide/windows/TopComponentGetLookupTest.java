@@ -119,6 +119,8 @@ public class TopComponentGetLookupTest extends NbTestCase {
         l.check ("Nothing fired before first query", 0);
         res.allInstances ();
         l.check ("Nothing is fired on first query", 0);
+        lookup.lookup (new Lookup.Template (org.openide.nodes.Node.class)).allInstances ();
+        l.check ("And additional query does not change anything either", 0);
     }
    
     public void testNodesAreThereEvenIfTheyAreNotContainedInTheirOwnLookup () {
