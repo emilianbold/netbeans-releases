@@ -45,7 +45,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.netbeans.api.debugger.DebuggerInfo;
 
 /** Extension to JSR88 that enables starting of Tomcat.
  *
@@ -164,7 +163,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
      */
     public ProgressObject startDebugging(Target target){ return null; }//PENDING
 
-    public DebuggerInfo getDebugInfo(Target target) { return null; }//PENDING
+    public org.openide.debugger.DebuggerInfo getDebugInfo(Target target) { return null; }//PENDING
     
     public synchronized void run () {
         // PENDING check whether is runs or not
