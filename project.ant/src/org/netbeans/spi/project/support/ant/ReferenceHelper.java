@@ -206,10 +206,11 @@ public final class ReferenceHelper {
                     storeReferences(references);
                 }
                 // Set up ${project.whatever}.
-                File myProjDir = FileUtil.toFile(AntBasedProjectFactorySingleton.getProjectFor(h).getProjectDirectory());
+                FileObject myProjDirFO = AntBasedProjectFactorySingleton.getProjectFor(h).getProjectDirectory();
+                File myProjDir = FileUtil.toFile(myProjDirFO);
                 String forProjPath;
                 String propertiesFile;
-                if (CollocationQuery.areCollocated(myProjDir, forProjDir)) {
+                if (CollocationQuery.areCollocated(myProjDir, forProjDir) || FileUtil.isParentOf(myProjDirFO, forProj.getProjectDirectory())) {
                     // Fine, using a relative path to subproject.
                     forProjPath = PropertyUtils.relativizeFile(myProjDir, forProjDir);
                     assert forProjPath != null : "These dirs are not really collocated: " + myProjDir + " & " + forProjDir;
@@ -615,7 +616,9 @@ public final class ReferenceHelper {
                     String propertiesFile;
                     String path;
                     File myProjDir = FileUtil.toFile(AntBasedProjectFactorySingleton.getProjectFor(h).getProjectDirectory());
-                    if (CollocationQuery.areCollocated(myProjDir, file)) {
+                    String relPath = PropertyUtils.relativizeFile(myProjDir, file);
+                    boolean relative = relPath != null && !relPath.startsWith("..");
+                    if (CollocationQuery.areCollocated(myProjDir, file) || relative) {
                         propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
                         path = PropertyUtils.relativizeFile(myProjDir, file);
                         assert path != null : "expected relative path from " + myProjDir + " to " + file;
