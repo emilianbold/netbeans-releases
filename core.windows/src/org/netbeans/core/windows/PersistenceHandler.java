@@ -193,7 +193,9 @@ final class PersistenceHandler implements PersistenceObserver {
                 WindowManagerImpl.getInstance().specialPersistenceCompShow(active);
             }
         }
-        
+        // active mode can be null, Active mode info is stored in winsys config (system layer) and modes in 
+        // project layer, that can cause out of synch state when switching projects... 
+        // setting null is however considered a valid state.
         wm.setActiveMode(activeMode);
         wm.setMaximizedMode(maximizedMode);
 

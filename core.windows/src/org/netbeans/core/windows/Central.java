@@ -155,8 +155,15 @@ final class Central implements ControllerHandler {
             WindowManagerImpl.PROP_ACTIVE_MODE, old, activeMode);
         
         // Notify registry.
-        WindowManagerImpl.notifyRegistryTopComponentActivated(
-            activeMode.getSelectedTopComponent());
+        // active mode can be null, Active mode info is stored in winsys config (system layer) and modes in 
+        // project layer, that can cause out of synch state when switching projects.
+        // all subsequent calls should handle the null value correctly.
+        if (activeMode != null) {
+            WindowManagerImpl.notifyRegistryTopComponentActivated(
+                activeMode.getSelectedTopComponent());
+        } else {
+            WindowManagerImpl.notifyRegistryTopComponentActivated(null);
+        }
     }
 
     /** Sets editor area bounds into model and requests view (if needed). */
