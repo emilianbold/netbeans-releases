@@ -21,8 +21,6 @@ import java.awt.event.ActionEvent;
 import java.io.*;
 import javax.swing.*;
 import javax.swing.text.Document;
-import org.netbeans.core.spi.multiview.*;
-import org.netbeans.core.api.multiview.*;
 
 import org.openide.*;
 import org.openide.nodes.Node;
@@ -32,9 +30,10 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.Mutex;
 import org.openide.windows.*;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.NbDocument;
+import org.openide.text.*;
 import org.openide.util.Utilities;
+import org.netbeans.core.spi.multiview.*;
+import org.netbeans.core.api.multiview.*;
 
 import org.netbeans.modules.java.JavaEditor;
 import org.netbeans.modules.form.palette.CPManager;
@@ -123,6 +122,17 @@ public class FormEditorSupport extends JavaEditor
 
         multiviewTC.open();
         multiviewTC.requestActive();
+    }
+
+    /** Overriden from JavaEditor - opens editor at give position, ebsures
+     * multiview TopComponent is created and opened.
+     */
+    protected EditorSupport.Editor openAt(PositionRef pos) {
+        openCloneableTopComponent();
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
+        handler.requestActive(handler.getPerspectives()[0]);
+
+        return super.openAt(pos);
     }
 
     /** Public method for loading form data from file. Does not open the
@@ -337,13 +347,6 @@ public class FormEditorSupport extends JavaEditor
     public void unregisterFloatingWindow(java.awt.Window window) {
         if (floatingWindows != null)
             floatingWindows.remove(window);
-    }
-
-    public void gotoEditor() {
-        assert java.awt.EventQueue.isDispatchThread();
-
-        MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
-        handler.requestActive(handler.getPerspectives()[0]);
     }
 
     /** @return the FormDesigner for this form */
@@ -1055,16 +1058,6 @@ public class FormEditorSupport extends JavaEditor
         return MultiViewFactory.createCloneableMultiView(
             descs, descs[formDefault ? 1:0], new CloseHandler(formDataObject));
     }
-
-   /* Calls superclass.
-    * @param pos Where to place the caret.
-    * @return always non null editor
-    */
-//    protected EditorSupport.Editor openAt(PositionRef pos) {
-//        EditorSupport.Editor ed = super.openAt(pos);
-//        ed.requestActive();
-//        return ed;
-//    }    
 
     /** Overriden from JavaEditor. Gets called if java editor is opened first
      * via EditCookie. */

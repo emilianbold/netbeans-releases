@@ -2094,10 +2094,8 @@ class JavaCodeGenerator extends CodeGenerator {
     /** Focuses the specified event handler in the editor. */
     private void gotoEventHandler(String handlerName) {
         JavaEditor.InteriorSection sec = getEventHandlerSection(handlerName);
-        if (sec != null && initialized) {
-            formEditorSupport.gotoEditor();
+        if (sec != null && initialized)
             sec.openAt();
-        }
     }
 
     /** Gets the body (text) of event handler of given name. */
