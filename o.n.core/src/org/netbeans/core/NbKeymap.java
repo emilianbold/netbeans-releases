@@ -32,8 +32,6 @@ final class NbKeymap implements Keymap {
   Map bindings;
   /** Default action */
   Action defaultAction;
-  /** Listeners set */
-  HashSet listeners;
   /** hash table to map (Action -> ArrayList of KeyStrokes) */
   Map actions;
 
@@ -195,6 +193,7 @@ final class NbKeymap implements Keymap {
 
 /*
 * Log
+*  9    src-jtulach1.8         1/5/00   Ian Formanek    Removed obsoleted field
 *  8    src-jtulach1.7         12/21/99 Ian Formanek    Optimized adding multiple
 *       <action, shortcut> pairs into Keymap
 *  7    src-jtulach1.6         12/1/99  Ian Formanek    Fixed multiple KeyStrokes
