@@ -99,7 +99,7 @@ public class Actions implements ActionsFactory {
     public static Action javadocProject() {
         return new ProjectAction (
             "javadoc", // XXX Define standard
-            NbBundle.getMessage(Actions.class, "LBL_JavadocProjectAction_Name" ), // NI18N
+            NbBundle.getMessage(Actions.class, "LBL_JavadocProjectAction_Name" ), // NOI18N
             new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/javadocProject.gif" ) ), //NOI18N
             null ); 
     }
@@ -107,7 +107,7 @@ public class Actions implements ActionsFactory {
     public static Action testProject() {        
         return new ProjectAction (
             "test", // XXX Define standard
-            NbBundle.getMessage(Actions.class, "LBL_TestProjectAction_Name" ), // NI18N
+            NbBundle.getMessage(Actions.class, "LBL_TestProjectAction_Name" ), // NOI18N
             new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/testProject.gif" ) ), //NOI18N
             null ); 
     }
@@ -116,32 +116,40 @@ public class Actions implements ActionsFactory {
     
     public static Action compileSingle() {
         return new FileCommandAction (
-            "compile.single", 
-            NbBundle.getMessage(Actions.class, "LBL_CompileSingleAction_Name" ),// NI18N
-            "org/netbeans/modules/project/ui/resources/compileSingle.gif",
+            "compile.single", // XXX Define standard
+            NbBundle.getMessage(Actions.class, "LBL_CompileSingleAction_Name" ),// NOI18N
+            "org/netbeans/modules/project/ui/resources/compileSingle.gif", // NOI18N
             null ); //NOI18N
+    }
+    
+    public static Action runSingle() {
+        return new FileCommandAction (
+            "run.single", // XXX Define standard
+            NbBundle.getMessage(Actions.class, "LBL_RunSingleAction_Name"), // NOI18N
+            "org/netbeans/modules/project/ui/resources/runSingle.gif", // NOI18N
+            null);
     }
     
     public static Action testSingle() {
         return new FileCommandAction (
-            "test.single", 
-            NbBundle.getMessage(Actions.class, "LBL_TestSingleAction_Name" ),// NI18N
+            "test.single", // XXX Define standard
+            NbBundle.getMessage(Actions.class, "LBL_TestSingleAction_Name" ),// NOI18N
             "org/netbeans/modules/project/ui/resources/testSingle.gif",
             null ); //NOI18N
     }
     
     public static Action debugTestSingle()  {
         return new FileCommandAction (
-            "debug.test.single", 
-            NbBundle.getMessage(Actions.class, "LBL_DebugTestSingleAction_Name" ),// NI18N
+            "debug.test.single", // XXX Define standard
+            NbBundle.getMessage(Actions.class, "LBL_DebugTestSingleAction_Name" ),// NOI18N
             "org/netbeans/modules/project/ui/resources/testDebugSingle.gif",
             null ); //NOI18N
     }
     
     public static Action debugFix() {
         return new FileCommandAction (
-            "debug.fix",
-            NbBundle.getMessage(Actions.class, "LBL_DebugFixAction_Name" ), // NI18N
+            "debug.fix", // XXX Define standard
+            NbBundle.getMessage(Actions.class, "LBL_DebugFixAction_Name" ), // NOI18N
             "org/netbeans/modules/project/ui/resources/debugFix.gif",
             null ); //NOI18N
     }
@@ -159,7 +167,7 @@ public class Actions implements ActionsFactory {
     public static Action rebuildMainProject() {
         return new MainProjectAction(
             ActionProvider.COMMAND_REBUILD,
-            NbBundle.getMessage(Actions.class, "LBL_RebuildMainProjectAction_Name"),  // NI18N 
+            NbBundle.getMessage(Actions.class, "LBL_RebuildMainProjectAction_Name"),  // NOI18N
             new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/rebuildProject.gif" ) ) ); //NOI18N                
     }
         
@@ -173,7 +181,7 @@ public class Actions implements ActionsFactory {
     public static Action debugMainProject() {
         return new MainProjectAction(
             "debug", // XXX Define standard
-            NbBundle.getMessage(Actions.class, "LBL_DebugMainProjectAction_Name" ), // NI18N
+            NbBundle.getMessage(Actions.class, "LBL_DebugMainProjectAction_Name" ), // NOI18N
             new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/debugProject.gif" ) ) ); //NOI18N
     }
         
@@ -183,21 +191,14 @@ public class Actions implements ActionsFactory {
     
     public static Action stopBuilding() {
         return new UnimplementedAction (        
-            NbBundle.getMessage(Actions.class, "LBL_StopBuildingAction_Name"), // NI18N
+            NbBundle.getMessage(Actions.class, "LBL_StopBuildingAction_Name"), // NOI18N
             new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/stopBuild.gif" ) ) ); // NOI18N
-    }
-    
-    public static Action runSingle() {
-        return new UnimplementedAction (        
-            NbBundle.getMessage(Actions.class, "LBL_RunSingleAction_Name"), // NI18N
-            new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/runSingle.gif" ) ) ); // NOI18N
-        
     }
     
     public static Action importProject() {
         
         return new UnimplementedAction (
-            NbBundle.getMessage(Actions.class, "LBL_ImportProjectAction_Name"), // NI18N
+            NbBundle.getMessage(Actions.class, "LBL_ImportProjectAction_Name"), // NOI18N
             new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/openProject.gif" ) ) ); // NOI18N
     }
     
@@ -212,7 +213,7 @@ public class Actions implements ActionsFactory {
         public SystemNewFile() {}
             
         public String getName() {
-            return NbBundle.getMessage( Actions.class, "LBL_NewFileAction_Name"); // NI18N
+            return NbBundle.getMessage( Actions.class, "LBL_NewFileAction_Name"); // NOI18N
         }
 
 
