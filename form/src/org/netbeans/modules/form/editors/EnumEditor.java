@@ -88,7 +88,7 @@ public class EnumEditor extends PropertyEditorSupport
         "ListSelectionModel",   // NOI18N
         "JScrollBar",           // NOI18N
         "JScrollPane",          // NOI18N
-        "Slider",               // NOI18N
+        "JSlider",              // NOI18N
         "JSplitPane",           // NOI18N
         "JTabbedPane",          // NOI18N
         "JTable",               // NOI18N
