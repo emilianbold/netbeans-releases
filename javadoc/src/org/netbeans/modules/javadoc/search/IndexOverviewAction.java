@@ -130,6 +130,7 @@ public class IndexOverviewAction extends SystemAction implements Presenter.Menu,
         }
         
         void addNotify() {
+            /*
             displayNames = new ArrayList();
             associatedInfo = new ArrayList();
             Enumeration e = FileSystemCapability.DOC.fileSystems();
@@ -220,8 +221,20 @@ public class IndexOverviewAction extends SystemAction implements Presenter.Menu,
                     associatedInfo.add(index);
                 }
             }
+            */
+            IndexBuilder index = IndexBuilder.getDefault();
+            List[] overviews = index.getIndices();
+            if (overviews[0].isEmpty()) {
+                displayNames = Collections.EMPTY_LIST;
+                associatedInfo = Collections.EMPTY_LIST;
+            } else {
+                overviews[0].add(0, null);
+                overviews[1].add(0, null);
+                displayNames = overviews[0];
+                associatedInfo = overviews[1];
+            }
         }
-        
+
     }
-    
+
 }

@@ -60,6 +60,16 @@ public class JavadocModule extends ModuleInstall {
     
     private static Collection floatingTopComponents;
 
+    public void installed() {
+        super.installed();
+        org.netbeans.modules.javadoc.search.IndexBuilder.initialize();
+    }
+
+    public void restored() {
+        super.restored();
+        org.netbeans.modules.javadoc.search.IndexBuilder.initialize();
+    }
+
     protected Object writeReplace(){
         return null;
     }
