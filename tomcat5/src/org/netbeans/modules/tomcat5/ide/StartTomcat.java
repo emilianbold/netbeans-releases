@@ -132,7 +132,7 @@ public final class StartTomcat extends StartServer implements Runnable, Progress
      * Returns true if the admin server should be started before asking for
      * target list.
      */
-    public boolean needsStartForTargetList() { return true; }
+    public boolean needsStartForTargetList() { return false; }
 
     /**
      * Returns true if the admin server should be started before admininistrative configuration.
