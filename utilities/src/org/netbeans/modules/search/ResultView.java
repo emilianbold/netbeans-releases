@@ -72,7 +72,7 @@ import org.openidex.search.SearchType;
  * Panel which displays search results in explorer like manner.
  * This panel is a singleton.
  *
- * @see  #getInstance
+ * @see  <a href="doc-files/results-class-diagram.png">Class diagram</a>
  * @author Petr Kuzel, Jiri Mzourek, Peter Zavadsky
  * @author  Marian Petras
  */
