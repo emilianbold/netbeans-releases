@@ -336,12 +336,8 @@ class CmpRelationshipsDialogHelper {
         private String validateFieldName() {
             if(isCreateCmrField()) {
                 String fieldName = getFieldName();
-                if (fieldName.length() == 0) {
-                    return Utils.getBundleMessage("MSG_FieldNameCannotBeEmpty");
-                } else {
-                    if (!Utils.isJavaIdentifier(fieldName)) {
-                        return Utils.getBundleMessage("MSG_InvalidFieldName", fieldName);
-                    }
+                if (!Utils.isJavaIdentifier(fieldName)) {
+                    return Utils.getBundleMessage("MSG_InvalidFieldName");
                 }
             }
             return null;

@@ -31,7 +31,8 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
     public CmpRelationshipsForm() {
         initComponents();
         errorLabel.setForeground(Utils.getErrorColor());
-        descriptionTextArea.setBorder(relationshipNameTextField.getBorder());
+        org.netbeans.modules.xml.multiview.Utils.makeTextAreaLikeTextField(descriptionTextArea,
+                relationshipNameTextField);
     }
     
     public FocusTraversalPolicy createFocusTraversalPolicy(
