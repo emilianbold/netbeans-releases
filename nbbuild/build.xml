@@ -1080,12 +1080,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module ide/branding..."/>
     <ant dir="../ide/branding" target="netbeans"/>
   </target>
-  <target name="all-ide/branding/core" depends="init,all-ide/branding">
-    <echo message="Building module ide/branding/core..."/>
-  </target>
-  <target name="all-ide/branding/core/windows" depends="init,all-ide/branding">
-    <echo message="Building module ide/branding/core/windows..."/>
-  </target>
 
   
   <target name="build-platform" depends="init" unless="platform-is-built">
