@@ -24,7 +24,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="hidden" boolvalue="true"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.openidex.search.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openidex/search/res/find.gif"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
        </folder>
    </folder>
 

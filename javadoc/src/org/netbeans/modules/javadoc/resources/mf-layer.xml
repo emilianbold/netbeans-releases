@@ -74,7 +74,6 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-modules-javadoc-settings-DocumentationSettings.settings" url="DocumentationSettings.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.settings.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavadocSettings.gif"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
         </file>
 
         <file name="org-netbeans-modules-javadoc-httpfs-HTTPURLMapper.instance">
@@ -91,14 +90,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-javadoc-search-Jdk12SearchType.settings" url="javadoc_search.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
-                <attr name="SystemFileSystem.layer" stringvalue="project"/>
             </file>
             <file name="org-netbeans-modules-javadoc-search-Jdk12SearchType_japan.settings" url="javadoc_japan_search.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
-                <attr name="SystemFileSystem.layer" stringvalue="project"/>
             </file>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
         </folder>  
     </folder>
 
