@@ -148,7 +148,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     }
                     desc_ent = new File(ent_name);               
                     desc_ent.delete();
-                    pw.println ("<!DOCTYPE module_updates [");
+                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 1.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-1_0.dtd\" [");
                     // Would be better to follow order of groups and includes
                     pw.println ("    <!ENTITY entity SYSTEM \"" + desc_ent.getName() + "\">");
                     int inc_num=0;
@@ -171,6 +171,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw = new java.io.PrintWriter (new java.io.OutputStreamWriter (os));
                     
                 } else {
+                    pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 1.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-1_0.dtd\">");
                     pw.println ("<module_updates timestamp=\"" + date + "\">");
                     pw.println ();
                 }
