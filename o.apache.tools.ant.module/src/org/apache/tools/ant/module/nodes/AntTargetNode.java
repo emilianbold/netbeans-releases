@@ -13,41 +13,50 @@
 
 package org.apache.tools.ant.module.nodes;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Toolkit;
-import java.awt.event.*;
-import java.beans.*;
-import java.io.File;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.BadLocationException;
+import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.StyledDocument;
-import javax.xml.parsers.*;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import org.apache.tools.ant.module.AntModule;
-import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.apache.tools.ant.module.api.IntrospectedInfo;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.run.TargetExecutor;
 import org.apache.tools.ant.module.wizards.shortcut.ShortcutWizard;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
-import org.openide.*;
-import org.openide.actions.*;
-import org.openide.nodes.*;
-import org.openide.cookies.*;
+import org.openide.ErrorManager;
+import org.openide.actions.OpenAction;
+import org.openide.actions.PropertiesAction;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeOp;
+import org.openide.nodes.NodeReorderEvent;
+import org.openide.nodes.Sheet;
 import org.openide.text.Line;
-import org.openide.util.*;
-import org.openide.util.datatransfer.*;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.HelpCtx;
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 final class AntTargetNode extends AbstractNode implements ChangeListener, NodeListener {
@@ -229,10 +238,6 @@ final class AntTargetNode extends AbstractNode implements ChangeListener, NodeLi
         
     }
 
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx ("org.apache.tools.ant.module.identifying-project");
-    }
-
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet ();
         Sheet.Set props = sheet.get (Sheet.PROPERTIES);
@@ -240,7 +245,6 @@ final class AntTargetNode extends AbstractNode implements ChangeListener, NodeLi
             props = Sheet.createPropertiesSet();
             sheet.put(props);
         }
-        props.setValue("helpID", "org.apache.tools.ant.module.nodes.AntTargetNode.Properties");
         String[] attrs = new String[] {"name", "description", "depends"}; // NOI18N
         for (int i = 0; i < attrs.length; i++) {
             org.openide.nodes.Node.Property prop = new AntProperty(target.getElement(), attrs[i], project);

@@ -128,7 +128,7 @@ final class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements Ke
         }
 
         public HelpCtx getHelp () {
-            return new HelpCtx("ant.wizard.shortcut");
+            return HelpCtx.DEFAULT_HELP;
         }
 
         public boolean isValid () {

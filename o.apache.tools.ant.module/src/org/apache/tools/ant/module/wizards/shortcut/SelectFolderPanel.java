@@ -263,7 +263,7 @@ final class SelectFolderPanel extends JPanel implements DocumentListener {
         }
 
         public HelpCtx getHelp () {
-            return new HelpCtx("ant.wizard.shortcut");
+            return HelpCtx.DEFAULT_HELP;
         }
 
         public boolean isValid () {

@@ -20,10 +20,11 @@ import org.apache.tools.ant.module.nodes.AntProjectNode;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 
 public class AntProjectDataObject extends MultiDataObject implements PropertyChangeListener {
 
@@ -41,10 +42,6 @@ public class AntProjectDataObject extends MultiDataObject implements PropertyCha
         addPropertyChangeListener (this);
     }
     
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx ("org.apache.tools.ant.module.identifying-project");
-    }
-
     protected Node createNodeDelegate () {
         return new AntProjectNode (this);
     }

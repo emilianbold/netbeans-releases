@@ -174,7 +174,7 @@ final class IntroPanel extends javax.swing.JPanel {
         }
 
         public HelpCtx getHelp () {
-            return new HelpCtx("ant.wizard.shortcut");
+            return HelpCtx.DEFAULT_HELP;
         }
 
         public boolean isValid () {

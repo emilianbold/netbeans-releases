@@ -13,29 +13,23 @@
 
 package org.apache.tools.ant.module.nodes;
 
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.beans.*;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.List; // override java.awt.List
-import javax.swing.event.*;
-import org.w3c.dom.*;
-import org.openide.*;
-import org.openide.util.datatransfer.*;
-import org.openide.filesystems.*;
-import org.openide.actions.*;
-import org.openide.nodes.*;
-import org.openide.nodes.Node; // override org.w3c.dom.Node
-import org.openide.loaders.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
+import java.awt.Image;
+import java.util.ResourceBundle;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.AntModule;
-import org.apache.tools.ant.module.AntSettings;
-import org.apache.tools.ant.module.api.*;
+import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.nodes.Sheet;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
+import org.w3c.dom.Element;
 
 public final class AntProjectNode extends DataNode implements ChangeListener {
     
@@ -45,7 +39,6 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
     private AntProjectNode(DataObject obj, AntProjectCookie cookie) {
         super(obj, new AntProjectChildren(cookie));
         cookie.addChangeListener(WeakListeners.change(this, cookie));
-        setValue("propertiesHelpID", "org.apache.tools.ant.module.nodes.AntProjectNode.propertysheet"); // NOI18N
     }
     
     public Image getIcon(int type) {
@@ -121,7 +114,6 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
         props.setName("project"); // NOI18N
         props.setDisplayName(NbBundle.getMessage(AntProjectNode.class, "LBL_proj_sheet"));
         props.setShortDescription(NbBundle.getMessage(AntProjectNode.class, "HINT_proj_sheet"));
-        props.setValue("helpID", "org.apache.tools.ant.module.nodes.AntProjectNode.Properties");
         add2Sheet (props);
         sheet.put(props);
 
@@ -173,10 +165,6 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
                 firePropertyChange(null, null, null);
             }
         });
-    }
-
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx ("org.apache.tools.ant.module.identifying-project");
     }
 
 }
