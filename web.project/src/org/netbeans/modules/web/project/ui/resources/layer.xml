@@ -52,4 +52,58 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Services">
         <file name="org-netbeans-modules-web-project-ui-FoldersList.settings" url="foldersList.settings"/>
     </folder>
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-jsp">
+                <folder name="Actions">
+                  <attr boolvalue="true" name="OpenAction.instance/web-project-separator-1.instance" />
+                  <file name="web-project-separator-1.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                  </file>
+                  <attr boolvalue="true" name="web-project-separator-1.instance/CompileFile.instance" />
+                  <file name="CompileFile.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$CompileWrapper" />
+                  </file>
+                  <attr boolvalue="true" name="CompileFile.instance/web-project-separator-2.instance" />
+                  <file name="web-project-separator-2.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                  </file>
+                  <attr boolvalue="true" name="web-project-separator-2.instance/RunFile.instance" />
+                  <file name="RunFile.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$RunWrapper" />
+                  </file>
+                  <attr boolvalue="true" name="RunFile.instance/DebugFile.instance" />
+                  <file name="DebugFile.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$DebugWrapper" />
+                  </file>
+                  <attr boolvalue="true" name="DebugFile.instance/web-project-separator-3.instance" />
+                  <file name="web-project-separator-3.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                  </file>
+                  <attr boolvalue="true" name="web-project-separator-3.instance/FileSystemAction.instance" />
+              </folder>
+            </folder>
+            <folder name="html">
+                <folder name="Actions">
+                  <attr boolvalue="true" name="OpenAction.instance/web-project-separator-2.instance" />
+                  <file name="web-project-separator-2.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                  </file>
+                  <attr boolvalue="true" name="web-project-separator-2.instance/RunFile.instance" />
+                  <file name="RunFile.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$HtmlRunWrapper" />
+                  </file>
+                  <attr boolvalue="true" name="RunFile.instance/DebugFile.instance" />
+                  <file name="DebugFile.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.project.WebProjectModule$HtmlDebugWrapper" />
+                  </file>
+                  <attr boolvalue="true" name="DebugFile.instance/web-project-separator-3.instance" />
+                  <file name="web-project-separator-3.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                  </file>
+                  <attr boolvalue="true" name="web-project-separator-3.instance/FileSystemAction.instance" />
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
