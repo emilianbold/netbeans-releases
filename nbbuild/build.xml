@@ -170,6 +170,10 @@ ToDo:
     <echo message="Building module core/ide..."/>
     <ant dir="../core/ide" target="netbeans"/>
   </target>
+  <target name="all-core/settings" depends="all-openide">
+    <echo message="Building module core/settings..."/>
+    <ant dir="../core/settings" target="netbeans"/>
+  </target>
 
   <!-- And the modules: -->
   <target name="all-ant" depends="all-openide,all-core/javahelp">
