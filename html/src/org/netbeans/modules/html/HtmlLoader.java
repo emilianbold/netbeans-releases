@@ -76,26 +76,8 @@ public class HtmlLoader extends UniFileLoader {
   protected MultiDataObject createMultiObject (final FileObject primaryFile)
   throws DataObjectExistsException, IOException {
 
-    class Obj extends MultiDataObject {
-      public Obj (FileObject pf, UniFileLoader l) throws DataObjectExistsException {
-        super (pf, l);
-      }
-      
-      protected org.openide.nodes.Node createNodeDelegate () {
-        DataNode n = new DataNode (Obj.this, Children.LEAF);
-        n.setIconBase ("/com/netbeans/developer/modules/loaders/html/htmlObject");
-        n.setDefaultAction (SystemAction.get (ViewAction.class));
-        return n;
-      }
-
-      public HelpCtx getHelpCtx () {
-        return new HelpCtx (HtmlLoader.class.getName () + ".Obj");
-      }
-    };
-
-    MultiDataObject obj = new Obj (primaryFile, this);
+    HtmlDataObject obj = new HtmlDataObject (primaryFile, this);
     EditorSupport es = new EditorSupport (obj.getPrimaryEntry ());
-//    es.setMIMEType ("text/plain");
     obj.getCookieSet ().add (es);
     obj.getCookieSet ().add (new ViewCookie () {
       public void view () {
@@ -111,6 +93,8 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  21   Gandalf   1.20        8/9/99   Ian Formanek    HtmlDataObject is a 
+*       standalone class
 *  20   Gandalf   1.19        8/8/99   Ian Formanek    
 *  19   Gandalf   1.18        7/8/99   Jesse Glick     Context help.
 *  18   Gandalf   1.17        7/8/99   Michal Fadljevic FileSystemAction added  
