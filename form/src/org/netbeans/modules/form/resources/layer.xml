@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <folder name="Editing">
-            <file name="formsettings.shadow" url="formsettings.settings">
+            <file name="formsettings.shadow">
 <![CDATA[Services/formsettings.settings
 SystemFileSystem
 ]]>
