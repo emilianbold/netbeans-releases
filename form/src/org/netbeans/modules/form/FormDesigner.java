@@ -619,13 +619,11 @@ public class FormDesigner extends TopComponent
 
 //        layeredPane.remove(handleLayer);
 //        layeredPane.add(textEditLayer, new Integer(2001));
-        handleLayer.setVisible(false);
+        textEditLayer.requestFocus();
         textEditLayer.setVisible(true);
+        handleLayer.setVisible(false);
         layeredPane.revalidate();
         layeredPane.repaint();
-
-        requestFocus();
-        componentActivated();
     }
 
     private void finishInPlaceEditing(boolean applyChanges) {
@@ -754,8 +752,6 @@ public class FormDesigner extends TopComponent
         ci.attachActions();
         if (textEditLayer == null || !textEditLayer.isVisible())
             handleLayer.requestFocus();
-        else
-            textEditLayer.requestFocus();
     }
 
     protected void componentDeactivated() {
