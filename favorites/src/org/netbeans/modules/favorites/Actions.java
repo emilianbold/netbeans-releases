@@ -331,6 +331,8 @@ public final class Actions extends Object {
             File chooserSelection = null;
             JFileChooser chooser = new JFileChooser ();
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
+            chooser.setDialogTitle(NbBundle.getBundle(Actions.class).getString ("CTL_DialogTitle"));
+            chooser.setApproveButtonText(NbBundle.getBundle(Actions.class).getString ("CTL_ApproveButtonText"));
             int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() ); // Sow the chooser
             if ( option == JFileChooser.APPROVE_OPTION ) {                    
                 chooserSelection = chooser.getSelectedFile();
