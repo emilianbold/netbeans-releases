@@ -14,7 +14,7 @@
 
 package org.netbeans.modules.i18n.wizard;
 
-
+import org.openide.util.NbBundle;
 import javax.swing.JPanel;
 
 
@@ -29,7 +29,8 @@ public class ProgressWizardPanel extends JPanel {
 
     /** Creates new form ProgressPanel */
     public ProgressWizardPanel(boolean withSubProgress) {
-        initComponents();
+        initComponents();        
+	this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdditionalWizardPanel.class).getString("ACS_ProgressWizardPanel"));                
         
         if(!withSubProgress) {
             remove(subLabel);
@@ -120,3 +121,4 @@ public class ProgressWizardPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
 
 }
+

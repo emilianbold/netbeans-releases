@@ -67,8 +67,9 @@ public class AdditionalWizardPanel extends JPanel {
     /** Creates new form HardCodedStringsPanel */
     private AdditionalWizardPanel() {
         initComponents();
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdditionalWizardPanel.class).getString("ACS_AdditionalWizardPanel"));        
         
-        postInitComponents();
+        postInitComponents();        
 
         addAdditionalComponent();
 

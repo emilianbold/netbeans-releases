@@ -68,6 +68,7 @@ public class SourceWizardPanel extends JPanel {
         this.descPanel = descPanel;
         
         initComponents();
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(getClass()).getString("ACS_SourceWizardPanel"));
 
         postInitComponents();
         

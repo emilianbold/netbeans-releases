@@ -88,6 +88,7 @@ public class TestStringWizardPanel extends JPanel {
     /** Creates new form HardCodedStringsPanel */
     private TestStringWizardPanel() {
         initComponents();
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(getClass()).getString("ACS_TestStringWizardPanel"));                
         
         postInitComponents();
         

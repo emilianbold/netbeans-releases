@@ -81,6 +81,7 @@ public class ResourceWizardPanel extends JPanel {
         this.descPanel = descPanel;
         
         initComponents();
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdditionalWizardPanel.class).getString("ACS_ResourceWizardPanel"));     
         
         postInitComponents();
 
