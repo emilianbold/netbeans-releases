@@ -17,8 +17,10 @@ import java.lang.reflect.InvocationTargetException;
 
 import com.netbeans.ide.*;
 import com.netbeans.ide.filesystems.*;
-import com.netbeans.ide.util.HelpCtx;
+import com.netbeans.ide.loaders.DataNode;
 import com.netbeans.ide.nodes.*;
+import com.netbeans.ide.src.nodes.SourceChildren;
+import com.netbeans.ide.util.HelpCtx;
 import com.netbeans.developer.modules.loaders.form.formeditor.*;
 import com.netbeans.developer.modules.loaders.java.*;
 
@@ -27,7 +29,7 @@ import com.netbeans.developer.modules.loaders.java.*;
 * @author Ian Formanek
 * @version 1.00, Jul 21, 1998
 */
-public class FormDataNode extends JavaNode {
+public class FormDataNode extends DataNode {
   /** generated Serialized Version UID */
 //  static final long serialVersionUID = 1795549004166402392L;
   
@@ -37,10 +39,17 @@ public class FormDataNode extends JavaNode {
   private static final String ICON_CLASS_MAIN = "formMain";
   private static final String ICON_CLASS_ERROR = "formError";
 
+  transient private String currentIcon;
+
   /** Constructs a new FormDataObject for specified primary file */
   public FormDataNode (FormDataObject fdo) {
-    super (fdo);
+    super (fdo, new SourceChildren(fdo.getSource()));
+    initialize ();
+  }
+
+  private void initialize () {
     setIconBase(ICON_BASE + ICON_CLASS);
+    currentIcon = ICON_CLASS;
   }
 
 //  void updateFormNode () {
@@ -63,46 +72,32 @@ public class FormDataNode extends JavaNode {
   } */
 
 
-  /** @return The FormDataObject represented by this FormDataNode */
-/*  public FormDataObject getFormDataObject() {
-    return (FormDataObject) getDataObject();
-  }
-
-  protected java.awt.Image getDefaultIcon (int type) {
-    if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
-      return icon;
-    else
-      return icon32;
-  }
-    
   protected void resolveIcons () {
     FormDataObject fdo = (FormDataObject) getDataObject ();
-    if (errorWhileParsing || 
-        !fdo.hasValidPackage ()
+    if (false /*errorWhileParsing || 
+        !fdo.hasValidPackage () */
     ) {
-      if (currentIcon == iconError) return;
-      currentIcon = iconError;
-      currentIcon32 = iconError32;
+      if (currentIcon == ICON_CLASS_ERROR) return;
+      currentIcon = ICON_CLASS_ERROR;
     } else {
-      if (fdo.getHasMainMethod ()) {
-        if (currentIcon == iconMain) return;
-        currentIcon = iconMain;
-        currentIcon32 = iconMain32;
+      if (false /*fdo.getHasMainMethod ()*/) {
+        if (currentIcon == ICON_CLASS_MAIN) return;
+        currentIcon = ICON_CLASS_MAIN;
       } else {
-        if (currentIcon == icon) return;
-        currentIcon = icon;
-        currentIcon32 = icon32;
+        if (currentIcon == ICON_CLASS) return;
+        currentIcon = ICON_CLASS;
       }
     }
-    fireIconChange (null, currentIcon);
+    setIconBase (ICON_BASE + currentIcon);
   }
-*/
+
   /** True, if the subnode for the AWT hierarchy has been added to the children list */
 //  transient private boolean initializedWithForm = false;
 }
 
 /*
  * Log
+ *  4    Gandalf   1.3         3/14/99  Ian Formanek    
  *  3    Gandalf   1.2         3/10/99  Ian Formanek    Gandalf updated
  *  2    Gandalf   1.1         1/7/99   Ian Formanek    
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
