@@ -296,10 +296,7 @@ public final class DebuggerManager {
             )
         );
         Session sessionToStart = null;
-        int i, k = sessionProviders.size (); System.out.println("DM: found: " + k + "session");
-        if (k == 0) {
-            info.getLookup();
-        }
+        int i, k = sessionProviders.size ();
         for (i = 0; i < k; i++) {
             Session s = null;
             if (sessionProviders.get (i) instanceof DelegatingSessionProvider) {
@@ -368,7 +365,7 @@ public final class DebuggerManager {
             }
         }
         
-        k = engines.size (); System.out.println("DM: found: " + k + "engines");
+        k = engines.size ();
         for (i = 0; i < k; i++) {
             ((DebuggerEngine) engines.get (i)).getActionsManager ().doAction 
                 (ACTION_START);
