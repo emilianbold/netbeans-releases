@@ -30,7 +30,7 @@ import org.openide.windows.CloneableOpenSupport;
 
 
 /** 
- * Editor support for text data objects.
+ * Editor support for HTML data objects.
  *
  * @author Radim Kubacki
  * @see org.openide.text.DataEditorSupport
@@ -104,6 +104,8 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
     private static class Environment extends DataEditorSupport.Env {
 
+        private static final long serialVersionUID = 3035543168452715818L;
+        
         /** Constructor. */
         public Environment(HtmlDataObject obj) {
             super(obj);
