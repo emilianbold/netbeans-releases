@@ -56,6 +56,6 @@ public class ZoomInAction extends CallableSystemAction {
     
     /** Gets icon resource. Overrides superclass method. */
     protected String iconResource() {
-        return "/org/netbeans/modules/image/zoomIn.gif"; // NOI18N
+        return "org/netbeans/modules/image/zoomIn.gif"; // NOI18N
     }
 }

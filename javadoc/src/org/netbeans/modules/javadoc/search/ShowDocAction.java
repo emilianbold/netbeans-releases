@@ -96,7 +96,7 @@ public class ShowDocAction extends CookieAction {
     }
 
     protected String iconResource(){
-        return "/org/netbeans/modules/javadoc/resources/showjavadoc.gif"; //NOI18N
+        return "org/netbeans/modules/javadoc/resources/showjavadoc.gif"; //NOI18N
     }
     
     /**

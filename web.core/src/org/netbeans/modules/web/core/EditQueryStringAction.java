@@ -115,7 +115,7 @@ public class EditQueryStringAction extends CookieAction {
     * @return the action's icon location
     */
     protected String iconResource () {
-        return "/org/netbeans/modules/web/core/resources/EditQueryString.gif"; // NOI18N
+        return "org/netbeans/modules/web/core/resources/EditQueryString.gif"; // NOI18N
     }
 }
 

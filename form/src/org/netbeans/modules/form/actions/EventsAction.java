@@ -90,7 +90,7 @@ public class EventsAction extends CookieAction {
      * @return name of resource for icon
      */
     protected String iconResource() {
-        return "/org/netbeans/modules/form/resources/events.gif"; // NOI18N
+        return "org/netbeans/modules/form/resources/events.gif"; // NOI18N
     }
 
     /**

@@ -104,6 +104,6 @@ public class I18nAction extends CookieAction {
      * @return the action's icon location
      */
     protected String iconResource () {
-        return "/org/netbeans/modules/i18n/i18nAction.gif"; // NOI18N
+        return "org/netbeans/modules/i18n/i18nAction.gif"; // NOI18N
     }
 }

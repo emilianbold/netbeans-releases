@@ -62,7 +62,7 @@ public abstract class I18nGroupAction extends SystemAction {
 
     /** Gets icon resource. Overrides suprclass method. */
     protected String iconResource () {
-        return "/org/netbeans/modules/i18n/i18nAction.gif"; // NOI18N
+        return "org/netbeans/modules/i18n/i18nAction.gif"; // NOI18N
     }
 
     /** Gets help context. Implements abstract superclass method. */

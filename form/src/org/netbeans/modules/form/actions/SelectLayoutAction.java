@@ -56,7 +56,7 @@ public class SelectLayoutAction extends NodeAction
      * @return name of resource for icon
      */
     protected String iconResource() {
-        return "/org/netbeans/modules/form/resources/selectLayout.gif"; // NOI18N
+        return "org/netbeans/modules/form/resources/selectLayout.gif"; // NOI18N
     }
 
     /**

@@ -61,7 +61,7 @@ public class CustomizeLayoutAction extends CookieAction {
      * @return name of resource for icon
      */
     protected String iconResource() {
-        return "/org/openide/resources/actions/empty.gif"; // NOI18N
+        return "org/openide/resources/actions/empty.gif"; // NOI18N
     }
 
     /**

@@ -37,7 +37,7 @@ public class SearchDocAction extends CallableSystemAction {
      * @return the action's icon location
      */
     protected String iconResource () {
-        return "/org/netbeans/modules/javadoc/resources/searchDoc.gif"; // NOI18N
+        return "org/netbeans/modules/javadoc/resources/searchDoc.gif"; // NOI18N
     }
 
     /** Help context where to find more about the action.

@@ -57,6 +57,6 @@ public class ZoomOutAction extends CallableSystemAction {
     
     /** Gets icon resource. Overrides superclass method. */
     protected String iconResource() {
-        return "/org/netbeans/modules/image/zoomOut.gif"; // NOI18N
+        return "org/netbeans/modules/image/zoomOut.gif"; // NOI18N
     }
 }

@@ -51,7 +51,7 @@ public class TestAction extends CallableSystemAction {
 
     /** @return resource for the action icon */
     protected String iconResource() {
-        return "/org/netbeans/modules/form/resources/testMode.gif"; // NOI18N
+        return "org/netbeans/modules/form/resources/testMode.gif"; // NOI18N
     }
 
     public void performAction() {

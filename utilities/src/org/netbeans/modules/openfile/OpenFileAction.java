@@ -53,7 +53,7 @@ public class OpenFileAction extends CallableSystemAction {
 
     /** Gets action icon resource. Overrides superclass method. */
     protected String iconResource () {
-        return "/org/netbeans/modules/openfile/openFile.gif"; // NOI18N
+        return "org/netbeans/modules/openfile/openFile.gif"; // NOI18N
     }
 
     /** Actually perfoms action. Implements superclass abstract method. */
