@@ -284,6 +284,10 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="format"/>                    
                     <attr name="SeparatorAfterGoToHelp.instance/format" boolvalue="true"/>                                        
 
+                    <file name="fix-imports"/>
+                    <attr name="format/fix-imports" boolvalue="true"/>
+                    <attr name="fix-imports/SeparatorAfterFormat.instance" boolvalue="true"/>
+                    
                     <file name="SeparatorBeforeCut.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
