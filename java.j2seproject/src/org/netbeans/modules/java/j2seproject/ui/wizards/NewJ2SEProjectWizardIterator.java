@@ -122,7 +122,17 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
         
         // Returning FileObject of project diretory. 
         // Project will be open and set as main
-        FoldersListSettings.getDefault().setNewProjectCount(FoldersListSettings.getDefault().getNewProjectCount() + 1);
+        switch (this.type) {
+            case TYPE_APP:
+                FoldersListSettings.getDefault().setNewApplicationCount(FoldersListSettings.getDefault().getNewApplicationCount() + 1);
+                break;
+            case TYPE_LIB:
+                FoldersListSettings.getDefault().setNewLibraryCount(FoldersListSettings.getDefault().getNewLibraryCount() + 1);
+                break;
+            case TYPE_EXT:
+                FoldersListSettings.getDefault().setNewProjectCount(FoldersListSettings.getDefault().getNewProjectCount() + 1);
+                break;
+        }        
         resultSet.add (dir);
         return resultSet;
 

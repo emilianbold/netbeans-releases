@@ -48,12 +48,12 @@ public class PanelConfigureProjectVisual extends JPanel {
 
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NameAndLoc"));
         if (type == NewJ2SEProjectWizardIterator.TYPE_APP) {
-            projectLocationPanel = new PanelProjectLocationVisual( panel );
+            projectLocationPanel = new PanelProjectLocationVisual( panel, type );
             putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaApp"));
             jSeparator1.setVisible(true);
         }                       
         else if (type == NewJ2SEProjectWizardIterator.TYPE_LIB) {
-            projectLocationPanel = new PanelProjectLocationVisual( panel );
+            projectLocationPanel = new PanelProjectLocationVisual( panel, type );
             jSeparator1.setVisible (false);
             putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NewJavaLib"));
         }

@@ -25,6 +25,10 @@ public class FoldersListSettings extends SystemOption {
     private static final String LAST_EXTERNAL_SOURCE_ROOT = "srcRoot";  //NOI18N
 
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
+    
+    private static final String NEW_APP_COUNT = "newApplicationCount";  //NOI18N
+    
+    private static final String NEW_LIB_COUNT = "newLibraryCount"; //NOI18N
 
     public String displayName() {
         return NbBundle.getMessage (FoldersListSettings.class,"TXT_J2SEProjectFolderList");
@@ -54,6 +58,24 @@ public class FoldersListSettings extends SystemOption {
 
     public void setNewProjectCount (int count) {
         this.putProperty(NEW_PROJECT_COUNT, new Integer(count),true);
+    }
+    
+    public int getNewApplicationCount () {
+        Integer value = (Integer) getProperty (NEW_APP_COUNT);
+        return value == null ? 0 : value.intValue();
+    }
+    
+    public void setNewApplicationCount (int count) {
+        this.putProperty(NEW_APP_COUNT, new Integer(count),true);
+    }
+    
+    public int getNewLibraryCount () {
+        Integer value = (Integer) getProperty (NEW_LIB_COUNT);
+        return value == null ? 0 : value.intValue();
+    }
+    
+    public void setNewLibraryCount (int count) {
+        this.putProperty(NEW_LIB_COUNT, new Integer(count),true);
     }
 
     public static FoldersListSettings getDefault () {

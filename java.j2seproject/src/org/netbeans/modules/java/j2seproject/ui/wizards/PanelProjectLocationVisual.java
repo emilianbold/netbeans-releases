@@ -34,11 +34,13 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     public static final String PROP_PROJECT_NAME = "projectName";      //NOI18N
     
     private PanelConfigureProject panel;
+    private int type;
         
     /** Creates new form PanelProjectLocationVisual */
-    public PanelProjectLocationVisual( PanelConfigureProject panel ) {
+    public PanelProjectLocationVisual( PanelConfigureProject panel, int type ) {
         initComponents();
         this.panel = panel;
+        this.type = type;
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener( this );
         projectLocationTextField.getDocument().addDocumentListener( this );        
@@ -200,9 +202,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     void read (WizardDescriptor settings) {
         String projectName = (String) settings.getProperty ("displayName"); //NOI18N
         if (projectName == null) {
-            projectName = MessageFormat.format (NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaProject"), new Object[]{
-                new Integer (FoldersListSettings.getDefault().getNewProjectCount()+1)
-            });
+            if (this.type == NewJ2SEProjectWizardIterator.TYPE_APP) {
+                projectName = MessageFormat.format (NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaApplication"), new Object[]{
+                    new Integer (FoldersListSettings.getDefault().getNewApplicationCount()+1)});
+            }
+            else {
+                projectName = MessageFormat.format (NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaLibrary"), new Object[]{
+                    new Integer (FoldersListSettings.getDefault().getNewLibraryCount()+1)});                
+            }            
         }
         this.projectNameTextField.setText (projectName);
         
