@@ -41,7 +41,6 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-<!--TODO temporary disabled    
     <testbag testattribs="measure_ide or measure_memory" prio="2" executor="measure_ide_memory_consumption" name="Measure baseline memory footprint">
 	<testset dir="unit/src">
 	    <patternset>
@@ -49,7 +48,6 @@ Microsystems, Inc. All Rights Reserved.
 	    </patternset>
 	</testset>
     </testbag>
--->    
     
 <!-- END Property Editors testbag -->
     
