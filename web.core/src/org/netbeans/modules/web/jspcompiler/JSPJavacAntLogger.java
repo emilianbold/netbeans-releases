@@ -137,6 +137,7 @@ public final class JSPJavacAntLogger extends AntLogger {
      * Possibly hyperlink a message logged event.
      */
     private static OutputListener findHyperlink(AntSession session, String line) {
+        if (LOGGABLE) ERR.log("line: " + line);
         // #29246: handle new (Ant 1.5.1) URLifications:
         // [PENDING] Under JDK 1.4, could use new File(URI)... if Ant uses URI too (Jakarta BZ #8031)
         // XXX so tweak that for Ant 1.6 support!
@@ -216,11 +217,12 @@ public final class JSPJavacAntLogger extends AntLogger {
         if (LOGGABLE) ERR.log("Hyperlink: [" + file + "," + line1 + "," + col1 + "," + line2 + "," + col2 + "," + message + "]");
 
         File smapFile = getSMAPFileForFile(file);
+        if (LOGGABLE) ERR.log("smapfile: [" + smapFile + "]");
         if (smapFile != null) {
             try {
                 SmapResolver resolver = new SmapResolver(new SmapFileReader(smapFile));
                 String jspName = resolver.getJspFileName(line1, col1);
-//debug ("translate '" + line1 + ":" + col1 + "'");
+                if (LOGGABLE) ERR.log("translate: [" + line1 + ", " + col1 + "]");
                 int newRow = resolver.unmangle(line1, col1);
 //debug ("translated to '" + jspName + ":" + newRow + "'");
                 // some mappings may not exist, so try next or previous lines, too
@@ -234,6 +236,9 @@ public final class JSPJavacAntLogger extends AntLogger {
                 }
                 try {
                     WebModule wm = WebModule.getWebModule(FileUtil.toFileObject(file));
+                    if (wm == null) {
+                        return null;
+                    }
                     FileObject jspFO = wm.getDocumentBase().getFileObject(jspName);
 //debug ("jsp '" + jspFO + "'");
                     if (jspFO != null) {
@@ -277,7 +282,6 @@ public final class JSPJavacAntLogger extends AntLogger {
         }
         name = name.substring(0, name.length() - JAVA_SUFFIX.length());
         File newFile = new File(dir, name + SMAP_SUFFIX);
-//debug ("returning SMAP file " + newFile);
         return newFile;
     }
     
