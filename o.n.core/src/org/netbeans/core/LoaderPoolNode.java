@@ -155,14 +155,18 @@ public final class LoaderPoolNode extends AbstractNode {
             err.log("add: " + l + " repclass: " + l.getRepresentationClass().getName() + " before: " + before + " after: " + after);
         }
         Iterator it = loaders.iterator ();
-        while (it.hasNext ())
-            if (it.next ().getClass ().equals (l.getClass ()))
+        Class c = l.getClass();
+        while (it.hasNext ()) {
+            if (it.next ().getClass () == c) {
                 it.remove ();
+                break;
+            }
+        }
         loaders.add (l);
         l.removePropertyChangeListener (getNbLoaderPool ());
         l.addPropertyChangeListener (getNbLoaderPool ());
         
-        String cname = l.getClass().getName();
+        String cname = c.getName();
         names2Loaders.put(cname, l);
         repNames2Loaders.put(l.getRepresentationClassName(), l);
         String[] ib = s.getInstallBefore();
@@ -649,9 +653,13 @@ public final class LoaderPoolNode extends AbstractNode {
     * loader pool is singleton too.
     * @return loader pool instance
     */
-    public static NbLoaderPool getNbLoaderPool () {
-        return (NbLoaderPool)Lookup.getDefault ().lookup (DataLoaderPool.class);
+    public static synchronized NbLoaderPool getNbLoaderPool () {
+        if (nbLoaderPool == null) {
+            nbLoaderPool = (NbLoaderPool)Lookup.getDefault ().lookup (DataLoaderPool.class);
+        }
+        return nbLoaderPool;
     }
+    private static NbLoaderPool nbLoaderPool = null;
 
 
     /***** Inner classes **************/
