@@ -5,14 +5,15 @@
 -->
 
 <!DOCTYPE map
-  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
-         "http://java.sun.com/products/javahelp/map_1_0.dtd">
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
+         "http://java.sun.com/products/javahelp/map_2_0.dtd">
 
-<map version="1.0">
+<map version="2.0">
 
 <mapID target="ide.credits" url="credits.html" />
 <mapID target="ide.welcome" url="workspace/welcome.html" />
 <mapID target="pending" url="pending.html" />
+<mapID target="tbd" url="tbd.html" />
 
 <mapID target="gs.ide" url="getstart/ide.html" />
 <mapID target="gs.tour" url="getstart/idetour.html" />
@@ -26,15 +27,19 @@
 <mapID target="update.prompt" url="modules/updateprompt.html" />
 <mapID target="update.globally" url="modules/updateglobally.html" />
 
-<mapID target="project" url="project/project.html" />
-<mapID target="project.adding-existing" url="project/project_adding-existing.html" />
-<mapID target="project.adding-new" url="project/project_adding-new.html" />
-<mapID target="project.comp-run-debug" url="project/project_comp-run-debug.html" />
-<mapID target="project.creating" url="project/project_creating.html" />
-<mapID target="project.delete-file" url="project/project_delete-file.html" />
-<mapID target="project.importing" url="project/project_importing.html" />
-<mapID target="project.switching" url="project/project_switching.html" />
-<mapID target="project.deleting" url="project/project_deleting.html" />
+<!--<mapID target="project" url="project/project.html" />-->
+<!--<mapID target="project.adding-existing" url="project/project_adding-existing.html" />-->
+<!--<mapID target="project.adding-new" url="project/project_adding-new.html" />-->
+<!--<mapID target="project.comp-run-debug" url="project/project_comp-run-debug.html" />-->
+<!--<mapID target="project.creating" url="project/project_creating.html" />-->
+<!--<mapID target="project.delete-file" url="project/project_delete-file.html" />-->
+<!--<mapID target="project.importing" url="project/project_importing.html" />-->
+<!--<mapID target="project.switching" url="project/project_switching.html" />-->
+<!--<mapID target="project.deleting" url="project/project_deleting.html" />-->
+
+<mapID target="proj_add_src" url="project/proj_add_src.html" />
+<mapID target="proj_creating" url="project/proj_creating.html" />
+<mapID target="proj_main" url="project/proj_main.html" />
 
 <mapID target="explorer" url="objects/explorer.html" />
 
@@ -259,26 +264,32 @@
 <mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
 
 
-<mapID target="compile.program" url="compile/compile.html" />
-<mapID target="compile.error" url="compile/error.html" />
-<mapID target="compile.stop" url="compile/stop.html" />
-<mapID target="compile.output" url="compile/output.html" />
-<mapID target="compile.messages" url="compile/messages.html" />
-<mapID target="compile.memory.error" url="compile/out_of_memory.html" />
-<mapID target="compile.disable" url="compile/disable.html" />
-<mapID target="compile.delete" url="compile/delete.html" />
-<mapID target="compile.options.jump" url="compile/options_jump.html" />
-<mapID target="compile.default" url="compile/default.html" />
-<mapID target="compile.external" url="compile/external.html" />
-<mapID target="compile.internal" url="compile/internal.html" />
-<mapID target="compile.jikes" url="compile/jikes.html" />
-<mapID target="compile.new" url="compile/new.html" />
-<mapID target="compile.remove" url="compile/remove.html" />
-<mapID target="compile.template" url="compile/template.html" />
-<mapID target="compile.crosscompile" url="compile/cross-compile.html" />
-<mapID target="compile.parse_error" url="compile/parse_error.html" />
-<mapID target="compile.classpath" url="compile/paths.html" />
-<mapID target="compile.javamake" url="compile/javamake.html" />
+<!--<mapID target="compile.program" url="compile/compile.html" />-->
+<!--<mapID target="compile.error" url="compile/error.html" />-->
+<!--<mapID target="compile.stop" url="compile/stop.html" />-->
+<!--<mapID target="compile.output" url="compile/output.html" />-->
+<!--<mapID target="compile.messages" url="compile/messages.html" />-->
+<!--<mapID target="compile.memory.error" url="compile/out_of_memory.html" />-->
+<!--<mapID target="compile.disable" url="compile/disable.html" />-->
+<!--<mapID target="compile.delete" url="compile/delete.html" />-->
+<!--<mapID target="compile.options.jump" url="compile/options_jump.html" />-->
+<!--<mapID target="compile.default" url="compile/default.html" />-->
+<!--<mapID target="compile.external" url="compile/external.html" />-->
+<!--<mapID target="compile.internal" url="compile/internal.html" />-->
+<!--<mapID target="compile.jikes" url="compile/jikes.html" />-->
+<!--<mapID target="compile.new" url="compile/new.html" />-->
+<!--<mapID target="compile.remove" url="compile/remove.html" />-->
+<!--<mapID target="compile.template" url="compile/template.html" />-->
+<!--<mapID target="compile.crosscompile" url="compile/cross-compile.html" />-->
+<!--<mapID target="compile.parse_error" url="compile/parse_error.html" />-->
+<!--<mapID target="compile.classpath" url="compile/paths.html" />-->
+<!--<mapID target="compile.javamake" url="compile/javamake.html" />-->
+
+<mapID target="comp_classpath" url="compile/comp_classpath.html" />
+<mapID target="comp_dependencies" url="compile/comp_dependencies.html" />
+<mapID target="comp_file" url="compile/comp_file.html" />
+<mapID target="comp_jar" url="compile/comp_jar.html" />
+<mapID target="comp_project" url="compile/comp_project.html" />
 
 
 <mapID target="run.run" url="run/run.html" />
@@ -608,30 +619,41 @@
 <mapID target="internation.runlocale" url="run/locale.html" />
 
 
-<mapID target="ant.building" url="ant/building.html" />
-<mapID target="ant.ident" url="ant/ident.html" />
-<mapID target="ant.project" url="ant/exec-proj.html" />
-<mapID target="ant.target" url="ant/exec-targ.html" />
-<mapID target="ant.shortcut" url="ant/shortcut.html" />
-<mapID target="ant.editing" url="ant/editing.html" />
-<mapID target="ant.props" url="ant/ant-props.html" />
-<mapID target="ant.compproject" url="ant/comp-project.html" />
-<mapID target="ant.running" url="ant/running.html" />
-<mapID target="ant.settings" url="ant/settings.html" />
-<mapID target="ant.tasks-classpath" url="ant/tasks-classpath.html" />
-<mapID target="ant.createtask" url="ant/createtask.html" />
-<mapID target="ant.sampleclasscode" url="ant/exp-classpath.html" />
-<mapID target="ant.execution" url="ant/ant_exec.html" />
-<mapID target="ant.antscriptcomp" url="ant/ant_script_comp.html" />
-<mapID target="ant.indantcomp" url="ant/ind_ant_comp.html" />
-<mapID target="ant.optional-tasks" url="ant/optional-tasks.html" />
-<mapID target="ant.install-docs" url="ant/install-docs.html" />
-<mapID target="ant.ant-docs" url="ant/ant-docs.html" />
-<mapID target="ant.add-task" url="ant/add-task.html" />
-<mapID target="ant.input-handler" url="ant/input_handler.html" />
-<mapID target="ant.target-jdk" url="ant/target-jdk.html" />
-<mapID target="ant.version" url="ant/version.html" />
-<mapID target="ant.find" url="ant/comp-project.html#find" />
+<!--<mapID target="ant.building" url="ant/building.html" />-->
+<!--<mapID target="ant.ident" url="ant/ident.html" />-->
+<!--<mapID target="ant.project" url="ant/exec-proj.html" />-->
+<!--<mapID target="ant.target" url="ant/exec-targ.html" />-->
+<!--<mapID target="ant.shortcut" url="ant/shortcut.html" />-->
+<!--<mapID target="ant.editing" url="ant/editing.html" />-->
+<!--<mapID target="ant.props" url="ant/ant-props.html" />-->
+<!--<mapID target="ant.compproject" url="ant/comp-project.html" />-->
+<!--<mapID target="ant.running" url="ant/running.html" />-->
+<!--<mapID target="ant.settings" url="ant/settings.html" />-->
+<!--<mapID target="ant.tasks-classpath" url="ant/tasks-classpath.html" />-->
+<!--<mapID target="ant.createtask" url="ant/createtask.html" />-->
+<!--<mapID target="ant.sampleclasscode" url="ant/exp-classpath.html" />-->
+<!--<mapID target="ant.execution" url="ant/ant_exec.html" />-->
+<!--<mapID target="ant.antscriptcomp" url="ant/ant_script_comp.html" />-->
+<!--<mapID target="ant.indantcomp" url="ant/ind_ant_comp.html" />-->
+<!--<mapID target="ant.optional-tasks" url="ant/optional-tasks.html" />-->
+<!--<mapID target="ant.install-docs" url="ant/install-docs.html" />-->
+<!--<mapID target="ant.ant-docs" url="ant/ant-docs.html" />-->
+<!--<mapID target="ant.add-task" url="ant/add-task.html" />-->
+<!--<mapID target="ant.input-handler" url="ant/input_handler.html" />-->
+<!--<mapID target="ant.target-jdk" url="ant/target-jdk.html" />-->
+<!--<mapID target="ant.version" url="ant/version.html" />-->
+<!--<mapID target="ant.find" url="ant/comp-project.html#find" />-->
+
+<mapID target="ant_docs" url="ant/ant_docs.html" />
+<mapID target="ant_editing" url="ant/ant_editing.html" />
+<mapID target="ant_intro" url="ant/ant_intro.html" />
+<mapID target="ant_optional-tasks" url="ant/ant_optional-tasks.html" />
+<mapID target="ant_running" url="ant/ant_running.html" />
+<mapID target="ant_settings" url="ant/ant_settings.html" />
+<mapID target="ant_shortcut" url="ant/ant_shortcut.html" />
+<mapID target="ant_target-jdk" url="ant/ant_target-jdk.html" />
+<mapID target="ant_tasks-classpath" url="ant/ant_tasks-classpath.html" />
+<mapID target="ant_version" url="ant/ant_version.html" />
 
 <mapID target="configure.options" url="configure/configure_options.html" />
 <mapID target="configure.startup-switches" url="configure/configure_startup-switches.html" />
@@ -957,6 +979,7 @@
   
     
     
+
    <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
    <mapID target="org.netbeans.core.NbMainExplorer" url="objects/explorer.html" /> 
    <mapID target="org.netbeans.core.NbPlaces$SessionNode" url="pending.html" /> 

@@ -5,12 +5,12 @@
 -->
 
 <!DOCTYPE toc
-  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
-         "http://java.sun.com/products/javahelp/toc_1_0.dtd">
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
+         "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
-<toc version="1.0">
+<toc version="2.0">
 
-<tocitem text="Core IDE Help"  >
+<tocitem text="Core IDE Help" >
   <tocitem text="Legal Notices" target="ide.credits" />
 
   <tocitem text="Getting Started" >
@@ -18,7 +18,7 @@
     <tocitem text="Key Concepts" target="gs.key" />
     <tocitem text="Starting With the Basic IDE Tasks" target="gs.howto" />
   </tocitem>
-
+<!--
   <tocitem text="Filesystems and Application Development" >
     <tocitem text="About" target="filesystems.classpath" />
     <tocitem text="Mounting a Filesystem" target="filesystems.mount" />
@@ -80,6 +80,25 @@
     <tocitem text="Removing a File from the Project Window" target="project.delete-file" />
     <tocitem text="Switching to a Different Project" target="project.switching" />
     <tocitem text="Deleting a Project" target="project.deleting" />  
+  </tocitem> -->
+  
+  <tocitem text="Creating Java Applications" >
+    <tocitem text="About Projects" target="tbd" />
+    <tocitem text="Creating a J2SE Project" target="proj_creating" />
+    <tocitem text="Adding Source Directories to a Project" target="proj_add_src" />
+    <tocitem text="Setting the Main Project" target="proj_main" />
+<!--    <tocitem text="Creating a Java Package" />-->
+<!--    <tocitem text="Creating a Java File" />-->
+  </tocitem>
+  
+  <tocitem text="Working with Files" >
+    <tocitem text="Viewing the Physical Layout of Project Files" target="tbd" />
+    <tocitem text="J2SE Project Directory Structure" target="tbd" />
+    <tocitem text="Searching Files" target="search" />
+    <tocitem text="Specifying an Extension for a Text File" target="objects.specify-extension" />
+    <tocitem text="Adding a File Extension to an Object Type" target="objects.file-extensions" />
+    <tocitem text="Displaying File Extensions" target="objects.show-extensions" />
+    <tocitem text="Treating a File as a Text File" target="objects.treat-as-text" />
   </tocitem>
 
   <tocitem text="Editing Source Files" >
@@ -191,7 +210,7 @@
     </tocitem>
   </tocitem>
 
-
+<!--
   <tocitem text="Compiling Java Programs" >
     <tocitem text="Compiling a Java Program" target="compile.program" />
     <tocitem text="Correcting Errors in Source Code" target="compile.error" />
@@ -219,7 +238,17 @@
       <tocitem text="Setting a Compiler Type in a Template" target="compile.template" />
       <tocitem text="Removing a Compiler Type" target="compile.remove"/>
     </tocitem>
+  </tocitem> -->
+  <tocitem text="Compiling Java Applications" >
+    <tocitem text="About the IDE Build System" target="tbd" />
+    <tocitem text="Building a Project" target="comp_project" />
+    <tocitem text="Compiling a Single File" target="comp_file" />
+    <tocitem text="Setting the Compilation Classpath" target="comp_classpath" />
+    <tocitem text="Creating Build Dependencies Between Projects" target="comp_dependencies" />
+    <tocitem text="Building a JAR File" target="comp_jar" />
+    <tocitem text="Output Window" target="output.window"/>
   </tocitem>
+<!--  
   <tocitem text="Running Java Programs" >
       <tocitem text="Running a Java Program" target="run.run" />
       <tocitem text="Running a Program in Debug Mode" target="run.debugmode" />
@@ -247,8 +276,16 @@
          <tocitem text="Removing an Execution Type" target="run.remove" />
       </tocitem>
     </tocitem>
-  </tocitem>
+  </tocitem> -->
 
+  
+  <tocitem text="Running Java Applications" >
+      <tocitem text="Running an Application" target="tbd" />
+      <tocitem text="Running a Single File" target="tbd" />
+      <tocitem text="Setting the Runtime Classpath" target="tbd" />
+      <tocitem text="Setting the Main Class and Arguments" target="tbd" />
+  </tocitem>
+<!-- 
   <tocitem text="Debugging Java Programs">
     <tocitem text="Starting a Debugging Session" target="debug.sessions.jump"/>
     <tocitem text="Attaching to a Java VM" target="debug.attach" />
@@ -328,6 +365,23 @@
       </tocitem>
     </tocitem>
   </tocitem>
+-->
+  <tocitem text="Debugging Java Applications">
+    <tocitem text="Starting a Debugging Session" target="debug.sessions.jump"/>
+    <tocitem text="Attaching to a Java VM" target="debug.attach" />
+    <tocitem text="Debugging on a 64-Bit Java VM" target="debug.sessions.64bit" />
+    <tocitem text="Stepping Through Your Program" target="debug.step" />
+    <tocitem text="Fixing and Continuing" target="debug.fix"></tocitem>
+    <tocitem text="Finishing a Session" target="debug.sessions.finishsession" />
+    <tocitem text="Debug Output" target="debug.output.window"></tocitem>
+    <tocitem text="Source Editor Debugging Features" target="debug.source.editor"></tocitem>
+    <tocitem text="Current Context in the Debugger" target="debug.current-context"></tocitem>
+    <tocitem text="Setting Breakpoints" />
+    <tocitem text="Debugging Threads in the IDE" target="debug.threads.jump"/>
+    <tocitem text="Using the Call Stack" />
+    <tocitem text="Variables and Expressions in the IDE" target="debug.variables.jump" />
+    <tocitem text="Creating a Watch" target="debug.watch" />
+  </tocitem>
 
   <tocitem text="Designing Java GUIs">
     <tocitem text="About" target="gui.intro"/>
@@ -400,6 +454,7 @@
     <tocitem text="Making a Form Accessible" target="gui.accessibleform" />
   </tocitem>
 
+  <!--
   <tocitem text="Building With Ant">
     <tocitem text="About" target="ant.building" />
     <tocitem text="Creating an Ant Script" target="ant.project" />
@@ -419,7 +474,21 @@
     <tocitem text="Viewing Ant Documentation" target="ant.ant-docs" />
     <tocitem text="Installing Ant Documentation" target="ant.install-docs" />
   </tocitem>
-
+-->
+  
+  <tocitem text="Working With Ant">
+    <tocitem text="About" target="tbd" />
+    <tocitem text="Editing an Ant Script" target="ant_editing" />
+    <tocitem text="Running an Ant Script" target="ant_running" />
+    <tocitem text="Creating a Shortcut to a Target" target="ant_shortcut" />
+    <tocitem text="Setting the JDK for an Ant Script" target="ant_target-jdk" />
+    <tocitem text="Configuring Ant Settings" target="ant_settings" />
+    <tocitem text="Switching Ant Versions" target="ant_version" />
+    <tocitem text="Ant Classpath and Custom Tasks" target="ant_tasks-classpath" />     
+    <tocitem text="Installing Ant Documentation" target="ant_docs" />
+  </tocitem>
+  
+  <!--
   <tocitem text="Using the JAR Packager">
     <tocitem text="About" target="jarpackager"/>
     <tocitem text="Creating a JAR File" target="jarpackager.creating" />
@@ -431,7 +500,7 @@
     <tocitem text="Creating a JAR Manifest" target="jarpackager.manifest" />
     <tocitem text="Setting the Default JAR Compression Level" target="jarpackager.options" />
   </tocitem>
-
+-->
   <tocitem text="Using Version Control in the IDE" >
     <tocitem text="About" target="vcs.overview" />
     <tocitem text="Mounting a VCS Working Directory" target="vcsgeneric.mounting" />
@@ -479,6 +548,7 @@
     </tocitem>
   </tocitem>
 
+<!--  
   <tocitem text="Working With Javadoc Documentation">
     <tocitem text="About" target="javadoc.jump"/>
     <tocitem text="Adding a Javadoc Library to a Project" target="javadoc.search.path" />
@@ -498,6 +568,15 @@
       <tocitem text="Configuring the Javadoc Executor" target="javadoc.externaljavadoc">
       </tocitem>
     </tocitem>
+  </tocitem>  
+-->  
+  
+  <tocitem text="Working With Javadoc Documentation">
+    <tocitem text="Adding a Javadoc Library to a Project" target="tbd" />
+    <tocitem text="Adding the JDK Javadoc to the IDE" target="tbd"/>
+    <tocitem text="Viewing Javadoc Documentation" target="javadoc.source_editor"/>
+    <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
+    <tocitem text="Entering Javadoc Comments in Source Code" target="javadoc.accuracy"/>
   </tocitem>
 
   <tocitem text="Web Server Integration">
