@@ -73,7 +73,7 @@
 	  <tocitem text="Creating a JSP File" target="jsp_create" />
 	  <tocitem text="Creating an HTML File" target="html_create" />
 	  <tocitem text="Editing a JSP or HTML File" target="jsp_edit" />
-	  <tocitem text="Defining a Tag Library in a JSP File" target="jsp_usetaglib"/>
+	  <tocitem text="Defining a Custom Tag in a JSP File" target="jsp_usetaglib"/>
           <tocitem text="Defining an Applet in a JSP File" target="jsp_useapplet"/>
 	  <tocitem text="Defining a Tomcat Database Connection Pool in a JSP File" target="jsp_connectionpool_tomcat"/>
           <tocitem text="Compiling a JSP File" target="jsp_compile" />
@@ -88,8 +88,7 @@
       <tocitem text="Tag Libraries" >
           <tocitem text="Managing Libraries" target="taglib_manage"/>
           <tocitem text="Creating a Separate Tag Library"  target="taglib_create_separate"/>
-          <tocitem text="Adding a Tag Library to a WAR File" target="taglib_addtowar" />        
-          <tocitem text="Using a Tag Library in a JSP File" target="jsp_usetaglib"/>
+          <tocitem text="Adding a Tag Library to a WAR File" target="taglib_addtowar" />         
       </tocitem>
       <tocitem text="Tag Library Descriptors" >
           <tocitem text="About Tag Library Descriptors" target="about_tld"  />        
