@@ -22,8 +22,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Iterator;
+import java.util.Map;
 import javax.swing.Action;
-import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -39,19 +40,11 @@ import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.windows.TopComponent;
-import org.openide.text.CloneableEditor;
-import javax.swing.event.ChangeEvent;
-import org.netbeans.editor.GuardedDocument;
-import javax.swing.SwingUtilities;
-import org.netbeans.editor.BaseDocument;
-import javax.swing.text.Caret;
-import javax.swing.JEditorPane;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
-import javax.swing.event.ChangeListener;
-import org.netbeans.editor.GlyphGutter;
+import org.netbeans.modules.editor.CustomizableSideBar.SideBarPosition;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -156,23 +149,37 @@ public class NbEditorUI extends ExtEditorUI {
 
         // Add the scroll-pane with the component to the center
         JScrollPane scroller = new JScrollPane(component);
+        
         scroller.getViewport().setMinimumSize(new Dimension(4,4));
 
         // remove default scroll-pane border, winsys will handle borders itself           
         scroller.setBorder(BorderFactory.createEmptyBorder());
-        scroller.setViewportBorder(BorderFactory.createEmptyBorder());
         
-        CustomizableSideBar bar = new CustomizableSideBar(component);
-
-        scroller.setRowHeaderView(bar);
+        Map/*<SideBarPosition, JComponent>*/ sideBars = CustomizableSideBar.createSideBars(component);
+        
+        for (Iterator entries = sideBars.entrySet().iterator(); entries.hasNext(); ) {
+            Map.Entry entry = (Map.Entry) entries.next();
+            SideBarPosition position = (SideBarPosition) entry.getKey();
+            JComponent sideBar = (JComponent) entry.getValue();
+            
+            if (position.isScrollable()) {
+                if (position.getPosition() == SideBarPosition.WEST) {
+                    scroller.setRowHeaderView(sideBar);
+                } else {
+                    if (position.getPosition() == SideBarPosition.NORTH) {
+                        scroller.setColumnHeaderView(sideBar);
+                    } else {
+                        throw new IllegalArgumentException("Unsupported side bar position, scrollable = true, position=" + position.getBorderLayoutPosition());
+                    }
+                }
+            } else {
+                ec.add(sideBar, position.getBorderLayoutPosition());
+            }
+        }
         
         initGlyphCorner(scroller);
 
         ec.add(scroller);
-
-        // Install the status-bar panel to the bottom
-        ec.add(getStatusBar().getPanel(), BorderLayout.SOUTH);
-        
         return ec;
     }
     
