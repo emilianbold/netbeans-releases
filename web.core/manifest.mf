@@ -49,10 +49,6 @@ OpenIDE-Module-Class: Loader
 
 Name: org/netbeans/modules/web/context/WebLibJarContentLoader.class
 OpenIDE-Module-Class: Loader
-Install-Before: org.netbeans.modules.web.context.LibJarObject
-
-Name: org/netbeans/modules/web/context/WebLibLoader.class
-OpenIDE-Module-Class: Loader
 Install-Before: org.netbeans.modules.jarpackager.JarDataObject
 
 Name: org/netbeans/modules/web/context/WebInfLoader.class
