@@ -271,6 +271,9 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
         if (e instanceof TabActionEvent) {
             TabActionEvent tae = (TabActionEvent) e;
             String cmd = tae.getActionCommand();
+            if (TabbedContainer.COMMAND_SELECT.equals(cmd)) {
+                return;
+            }
             tae.consume();
             if (TabbedContainer.COMMAND_CLOSE == cmd) { //== test is safe here
                 TopComponent tc = (TopComponent) tabbed.getTopComponentAt(tae.getTabIndex());
