@@ -262,10 +262,12 @@ public class EventsAction extends CookieAction {
                     });
                 }
             }
-            if (eventSetHasHandlers && !readOnly)
-                setBoldFontForMenuText(m);
-            if (eventSetHasHandlers || !readOnly)
-                menu.add(m);
+            if (m != null) {
+                if (eventSetHasHandlers && !readOnly)
+                    setBoldFontForMenuText(m);
+                if (eventSetHasHandlers || !readOnly)
+                    menu.add(m);
+            }
         }
     }
 
