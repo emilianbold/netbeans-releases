@@ -28,9 +28,11 @@ import java.util.jar.Manifest;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.GlobFileBuiltQuery;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -57,6 +59,24 @@ final class NbModuleProject implements Project {
     NbModuleProject(AntProjectHelper helper) {
         this.helper = helper;
         genFilesHelper = new GeneratedFilesHelper(helper);
+        FileBuiltQueryImplementation fileBuilt;
+        if (supportsUnitTests()) {
+            fileBuilt = new GlobFileBuiltQuery(helper, new String[] {
+                // Can't currently include the ${props} directly in the string,
+                // since APH does not yet grok optional properties.
+                evaluate("src.dir") + "/*.java", // NOI18N
+                evaluate("test.src.dir") + "/*.java", // NOI18N
+            }, new String[] {
+                evaluate("build.classes.dir") + "/*.class", // NOI18N
+                evaluate("build.test.classes.dir") + "/*.class", // NOI18N
+            });
+        } else {
+            fileBuilt = new GlobFileBuiltQuery(helper, new String[] {
+                evaluate("src.dir") + "/*.java", // NOI18N
+            }, new String[] {
+                evaluate("build.classes.dir") + "/*.class", // NOI18N
+            });
+        }
         lookup = Lookups.fixed(new Object[] {
             helper.createExtensibleMetadataProvider(),
             new SavedHook(),
@@ -66,6 +86,7 @@ final class NbModuleProject implements Project {
             new SourceForBinaryImpl(this),
             new LogicalView(this),
             new SubprojectProviderImpl(this),
+            fileBuilt,
             // XXX need, in rough descending order of importance:
             // AntArtifactProvider - should it run netbeans target, or all-foo/bar?
             // CustomizerProvider - ???
