@@ -17,17 +17,11 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
-import java.net.URL;
 import java.security.*;
 import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.lang.reflect.Method;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
 
 import org.openide.*;
 import org.openide.awt.StatusDisplayer;
@@ -39,7 +33,6 @@ import org.openide.explorer.*;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
-import org.openide.util.Utilities;
 import org.openide.util.io.*;
 import org.openide.nodes.*;
 
