@@ -110,6 +110,13 @@ public final class ToolbarPool extends JComponent implements Accessible {
 
         getAccessibleContext().setAccessibleName(instance.instanceName());
         getAccessibleContext().setAccessibleDescription(instance.instanceName());
+
+        // XXX(-ttran) special quick hack for XP LookAndFeel, otherwise the
+        // line under the menubar is missing
+        
+        if (UIManager.getLookAndFeel() instanceof com.sun.java.swing.plaf.windows.WindowsLookAndFeel) {
+            setBorder(BorderFactory.createEtchedBorder (EtchedBorder.LOWERED));
+        }
     }
 
     /** Allows to wait till the content of the pool is initialized. */
