@@ -84,23 +84,6 @@ public class FormUtils extends Object {
 // -----------------------------------------------------------------------------
 // Utility methods
   
-  /** Moves specified window to the center of the screen
-  */
-  public static void centerWindow (Window w) {
-    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    Dimension dialogSize = w.getSize();
-    w.setLocation((screenSize.width-dialogSize.width)/2,(screenSize.height-dialogSize.height)/2);
-  }
-  
-  /** Finds a top-level window containing given component.
-  * @return the window found or null if the component has not been added to any window.
-  */
-  public static Window findWindow (Component comp) {
-    while ((comp != null) && (!(comp instanceof Window))) comp = comp.getParent ();
-    if (comp instanceof Window) return (Window)comp;
-    return null;
-  }
-
   public static void notifyPropertyException (Class beanClass, String propertyName, String displayName, Throwable t, boolean reading) {
     boolean dontPrint = false;
     // if it is a subclass of Applet, we ignore InvocationTargetException
@@ -388,6 +371,7 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  21   Gandalf   1.20        11/25/99 Ian Formanek    Uses Utilities module
  *  20   Gandalf   1.19        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  19   Gandalf   1.18        10/5/99  Ian Formanek    cloneObject added

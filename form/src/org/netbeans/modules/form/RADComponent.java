@@ -1365,7 +1365,7 @@ public class RADComponent {
       
       public java.awt.Component getCustomEditor () {        
         EventCustomEditor ed = new EventCustomEditor (new javax.swing.JFrame (), true, EventProperty.this);
-        FormUtils.centerWindow (ed);
+        org.openidex.util.Utilities2.centerWindow (ed);
         return ed;
       }
       
@@ -1383,6 +1383,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  59   Gandalf   1.58        11/25/99 Ian Formanek    Uses Utilities module
  *  58   Gandalf   1.57        11/25/99 Pavel Buzek     support for multiple 
  *       handlers for one event
  *  57   Gandalf   1.56        11/15/99 Ian Formanek    Fixed bug 4717 - On JDK 

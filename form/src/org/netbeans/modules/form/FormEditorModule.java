@@ -22,6 +22,8 @@ import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.modules.ModuleInstall;
+
+import org.openidex.util.Utilities2;
 import com.netbeans.developer.modules.loaders.form.actions.*;
 import com.netbeans.developer.modules.loaders.form.palette.*;
 
@@ -43,15 +45,15 @@ public class FormEditorModule extends ModuleInstall {
   public void installed () {
 //    System.out.println("FormEditorModule: installed");
 
-  // -----------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // 1. create FormEditor actions
     installActions ();
 
-  // -----------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // 2. copy FormEditor templates
     copyTemplates ();
 
-  // -----------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // 3. create Component Palette under system
     createComponentPalette ();
 
@@ -69,7 +71,7 @@ public class FormEditorModule extends ModuleInstall {
 
   /** Module was uninstalled. */
   public void uninstalled () {
-  // -----------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // 1. remove FormEditor actions
     uninstallActions ();
 
@@ -83,12 +85,12 @@ public class FormEditorModule extends ModuleInstall {
   private void installActions () {
     try {
       // install actions into menu
-      createAction (InstallBeanAction.class, 
+      Utilities2.createAction (InstallBeanAction.class, 
         DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Tools"), 
         "UnmountFSAction", true, true, false, false
       );
 
-      createAction (ComponentInspectorAction.class, 
+      Utilities2.createAction (ComponentInspectorAction.class, 
         DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "View"), 
         "HTMLViewAction", true, false, false, false
       );
@@ -133,8 +135,8 @@ public class FormEditorModule extends ModuleInstall {
   private void uninstallActions () {
     try {
       // remove actions from menu
-      removeAction (InstallBeanAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Tools"));
-      removeAction (ComponentInspectorAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "View"));
+      Utilities2.removeAction (InstallBeanAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Tools"));
+      Utilities2.removeAction (ComponentInspectorAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "View"));
 
       // remove actions from toolbar
       DataFolder formFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Form");
@@ -151,18 +153,18 @@ public class FormEditorModule extends ModuleInstall {
 
       // remove actions from action pool
       DataFolder formActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Form");
-      removeAction (ComponentInspectorAction.class, formActions);
-      removeAction (InstallBeanAction.class, formActions);
-      removeAction (PaletteAction.class, formActions);
-      removeAction (CustomizeLayoutAction.class, formActions);
-      removeAction (DesignModeAction.class, formActions);
-      removeAction (EventsAction.class, formActions);
-      removeAction (GotoEditorAction.class, formActions);
-      removeAction (GotoFormAction.class, formActions);
-      removeAction (GotoInspectorAction.class, formActions);
-      removeAction (SelectLayoutAction.class, formActions);
-      removeAction (ShowGridAction.class, formActions);
-      removeAction (TestModeAction.class, formActions);
+      Utilities2.removeAction (ComponentInspectorAction.class, formActions);
+      Utilities2.removeAction (InstallBeanAction.class, formActions);
+      Utilities2.removeAction (PaletteAction.class, formActions);
+      Utilities2.removeAction (CustomizeLayoutAction.class, formActions);
+      Utilities2.removeAction (DesignModeAction.class, formActions);
+      Utilities2.removeAction (EventsAction.class, formActions);
+      Utilities2.removeAction (GotoEditorAction.class, formActions);
+      Utilities2.removeAction (GotoFormAction.class, formActions);
+      Utilities2.removeAction (GotoInspectorAction.class, formActions);
+      Utilities2.removeAction (SelectLayoutAction.class, formActions);
+      Utilities2.removeAction (ShowGridAction.class, formActions);
+      Utilities2.removeAction (TestModeAction.class, formActions);
 
       if (formActions.getChildren ().length == 0) formActions.delete ();
 
@@ -171,70 +173,6 @@ public class FormEditorModule extends ModuleInstall {
         e.printStackTrace ();
       }
       // ignore failure to uninstall
-    }
-  }
-
-  private void createAction (Class actionClass, DataFolder folder, String relativeTo, boolean after, boolean skipSeparator, boolean separatorBefore, boolean separatorAfter) 
-  throws java.io.IOException {
-    String actionShortName = Utilities.getShortClassName (actionClass);
-    String actionName = actionClass.getName ();
-
-    if (InstanceDataObject.find (folder, actionShortName, actionName) != null) return;
-
-    DataObject[] children = folder.getChildren ();
-    int indexToUse = -1;
-    for (int i = 0; i < children.length; i++) {
-      if (children[i] instanceof InstanceDataObject && children[i].getPrimaryFile ().getName ().indexOf (relativeTo) != -1) {
-        indexToUse = i;
-        break;
-      }
-    }
-    InstanceDataObject actionInstance = InstanceDataObject.create (folder, actionShortName, actionName);
-
-    if (indexToUse != -1) {
-      if (after) {
-        indexToUse += 1;
-        if (skipSeparator) {
-          if ((indexToUse < children.length) && (children[indexToUse].getPrimaryFile ().getName ().indexOf ("JSeparator") != -1)) {
-            indexToUse += 1;
-          }
-        }
-      } else {
-        if (skipSeparator) {
-          if ((indexToUse > 0) && (children[indexToUse - 1].getPrimaryFile ().getName ().indexOf ("JSeparator") != -1)) {
-            indexToUse -= 1;
-          }
-        }
-      }
-
-      InstanceDataObject beforeSeparator = separatorBefore ? InstanceDataObject.create (folder, "Separator1-"+actionShortName, "javax.swing.JSeparator") : null;
-      InstanceDataObject afterSeparator = separatorAfter ? InstanceDataObject.create (folder, "Separator2-"+actionShortName, "javax.swing.JSeparator") : null;
-
-      int itemsAdded = 0;
-      if (separatorBefore) itemsAdded ++;
-      if (separatorAfter) itemsAdded ++;
-      int currentIndex = indexToUse;
-
-      DataObject[] newOrder = new DataObject [children.length + 1 + itemsAdded];
-      System.arraycopy (children, 0, newOrder, 0, indexToUse);
-
-      if (separatorBefore) newOrder[currentIndex++] = beforeSeparator;
-      newOrder[currentIndex++] = actionInstance;
-      if (separatorAfter) newOrder[currentIndex++] = afterSeparator;
-
-      System.arraycopy (children, indexToUse, newOrder, indexToUse + 1 + itemsAdded, children.length - indexToUse);
-      folder.setOrder (newOrder);
-    }
-  }
-
-  private void removeAction (Class actionClass, DataFolder folder) throws java.io.IOException {
-    String actionShortName = Utilities.getShortClassName (actionClass);
-    InstanceDataObject.remove (folder, actionShortName, actionClass.getName ());
-    try {
-      InstanceDataObject.remove (folder, "Separator1-"+actionShortName, "javax.swing.JSeparator");
-      InstanceDataObject.remove (folder, "Separator2-"+actionShortName, "javax.swing.JSeparator");
-    } catch (Exception e) {
-      // these do not have to exist, wo we will catch the exception silently
     }
   }
 
@@ -510,6 +448,7 @@ public class FormEditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  36   Gandalf   1.35        11/25/99 Ian Formanek    Uses Utilities module
  *  35   Gandalf   1.34        10/27/99 Ian Formanek    Fixed bug 4596 - There 
  *       should be no separator in View menu between Component Inspector and 
  *       other windows.

@@ -92,7 +92,7 @@ public class PropertyPicker extends javax.swing.JDialog {
     updateButtons ();
 
     pack ();
-    FormUtils.centerWindow (this);
+    org.openidex.util.Utilities2.centerWindow (this);
     
     HelpCtx.setHelpIDString (getRootPane (), PropertyPicker.class.getName ());
   }
@@ -312,6 +312,7 @@ public class PropertyPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  14   Gandalf   1.13        11/25/99 Ian Formanek    Uses Utilities module
  *  13   Gandalf   1.12        11/5/99  Jesse Glick     Context help jumbo 
  *       patch.
  *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

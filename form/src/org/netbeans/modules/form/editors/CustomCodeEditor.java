@@ -30,7 +30,7 @@ public class CustomCodeEditor extends javax.swing.JDialog {
     this.propertySupport = propertySupport;
     initComponents ();
     pack ();
-    com.netbeans.developer.modules.loaders.form.FormUtils.centerWindow (this);
+    org.openidex.util.Utilities2.centerWindow (this);
   }
 
   /** This method is called from within the constructor to
@@ -142,6 +142,7 @@ private void cancelButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN
 
 /*
  * Log
+ *  2    Gandalf   1.1         11/25/99 Ian Formanek    Uses Utilities module
  *  1    Gandalf   1.0         11/15/99 Pavel Buzek     
  * $
  */

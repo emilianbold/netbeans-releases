@@ -92,7 +92,7 @@ public class MethodPicker extends javax.swing.JDialog {
     updateButtons ();
 
     pack ();
-    FormUtils.centerWindow (this);
+    org.openidex.util.Utilities2.centerWindow (this);
   }
 
   public java.awt.Dimension getPreferredSize () {
@@ -335,6 +335,7 @@ public class MethodPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  13   Gandalf   1.12        11/25/99 Ian Formanek    Uses Utilities module
  *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  11   Gandalf   1.10        10/9/99  Ian Formanek    Fixed bug 4151 - Menus, 
