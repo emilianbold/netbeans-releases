@@ -101,6 +101,7 @@ public class EditorsAction extends AbstractAction
             if (mode != null) {
                 TopComponent tc = mode.getSelectedTopComponent();
                 if (tc != null) {
+                    menu.setEnabled(true);
                     MultiViewHandler handler = MultiViews.findMultiViewHandler(tc);
                     if (handler != null) {
                         ButtonGroup group = new ButtonGroup();
@@ -119,7 +120,7 @@ public class EditorsAction extends AbstractAction
                         menu.add(but);
                     }
                 } else {
-                    //TODO what to do when no document selected?
+                    menu.setEnabled(false);
                 }
             } 
         }
