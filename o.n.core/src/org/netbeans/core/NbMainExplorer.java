@@ -283,7 +283,7 @@ public final class NbMainExplorer extends CloneableTopComponent
     }
 
     //Temporary solution for bugfix #9352. There is currently
-    //no way how to select given tab other than focused in splitted container.
+    //no way how to select given tab other than focused in split container.
     //It requires better solution.
     //Method changed from private to public so it can be used in DefaultCreator.
     
@@ -368,7 +368,7 @@ public final class NbMainExplorer extends CloneableTopComponent
     }
 
     //Temporary solution for bugfix #9352. There is currently
-    //no way how to select given tab other than focused in splitted container.
+    //no way how to select given tab other than focused in split container.
     //It requires better solution.
     //Method changed from package to public so it can be used in DefaultCreator.
     
@@ -800,7 +800,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         static final long serialVersionUID =9087127908986061114L;
 
         /** Overrides superclass version - put tree view and property
-        * sheet to the splitted panel.
+        * sheet to the split panel.
         * @return Tree view that will serve as main view for this explorer.
         */
         protected TreeView initGui () {
