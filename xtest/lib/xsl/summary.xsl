@@ -27,6 +27,9 @@
 	</xsl:call-template>
 </xsl:template>
 
+
+
+
 <xsl:template match="XTestResultsReport">
 	<H1>XTest Results Report</H1>
 	<BLOCKQUOTE>
@@ -69,7 +72,7 @@
 			<TD><B>Errors</B></TD>
 			<TD><B>Success Rate</B></TD>
 			<TD><B>Run (when)</B></TD>
-			<TD><B>Time (s)</B></TD>
+			<TD><B>Time (h:mm:ss)</B></TD>
 		</TR>
 		<!-- summary over all test runs -->
 		<TR class="pass">
@@ -80,7 +83,11 @@
 			<TD><B><xsl:value-of select="@testsError"/></B></TD>				
 			<TD><B><xsl:value-of select="format-number(@testsPass div @testsTotal,'0.00%')"/></B></TD>
 			<TD><B><xsl:value-of select="@timeStamp"/></B></TD>
-			<TD><B><xsl:value-of select="(@time div 1000)"/></B></TD>
+			<TD><B>
+					<xsl:call-template name="timeFormatterHMS">
+						<xsl:with-param name="time"><xsl:value-of select="(@time div 1000)"/></xsl:with-param>
+					</xsl:call-template>
+			</B></TD>
 		</TR>
 		<TR></TR>
 		<!-- testrun details -->
@@ -105,7 +112,10 @@
 				<TD><xsl:value-of select="@testsError"/></TD>				
 				<TD><xsl:value-of select="format-number(@testsPass div @testsTotal,'0.00%')"/></TD>
 				<TD><xsl:value-of select="@timeStamp"/></TD>
-				<TD><xsl:value-of select="(@time div 1000)"/></TD>
+				<TD><xsl:call-template name="timeFormatterHMS">
+						<xsl:with-param name="time"><xsl:value-of select="(@time div 1000)"/></xsl:with-param>
+					</xsl:call-template>
+				</TD>
 			</TR>
 		</xsl:for-each>
 	</TABLE>
@@ -155,7 +165,7 @@
 			<!--
 			<TD><B>Run (when)</B></TD>
 			-->
-			<TD><B>Time (s)</B></TD>
+			<TD><B>Time (h:mm:ss)</B></TD>
 		</TR>
 		<!-- data -->
 		<TR class="pass">
@@ -168,7 +178,10 @@
 			<!--
 			<TD><xsl:value-of select="@timeStamp"/></TD>
 			-->
-			<TD><xsl:value-of select="(@time div 1000)"/></TD>
+			<TD><xsl:call-template name="timeFormatterHMS">
+						<xsl:with-param name="time"><xsl:value-of select="(@time div 1000)"/></xsl:with-param>
+					</xsl:call-template>
+			</TD>
 		</TR>
 		<TR></TR>
 		<xsl:for-each select="$uniqueModule">
@@ -183,7 +196,10 @@
 				<TD><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsFail)"/></TD>
 				<TD><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsError)"/></TD>
 				<TD><xsl:value-of select="format-number($testsPass div $testsTotal,'0.00%')"/></TD>
-				<TD><xsl:value-of select="(sum(parent::*/TestBag[@module=$currentModule]/@time) div 1000)"/></TD>
+				<TD><xsl:call-template name="timeFormatterHMS">
+						<xsl:with-param name="time"><xsl:value-of select="(sum(parent::*/TestBag[@module=$currentModule]/@time) div 1000)"/></xsl:with-param>
+					</xsl:call-template>
+				</TD>
 			</TR>
 		</xsl:for-each>
 	</TABLE>
@@ -219,7 +235,7 @@
 			<TD><B>Failures</B></TD>
 			<TD><B>Errors</B></TD>
 			<TD><B>Success Rate</B></TD>
-			<TD><B>Time (s)</B></TD>
+			<TD><B>Time (m:s)</B></TD>
 		</TR>
 		<TR class="pass">
 			<TD><B>Summary:</B></TD>
@@ -232,7 +248,11 @@
 			<TD><B><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsFail)"/></B></TD>
 			<TD><B><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsError)"/></B></TD>
 			<TD><B><xsl:value-of select="format-number($testsPass div $testsTotal,'0.00%')"/></B></TD>
-			<TD><B><xsl:value-of select="(sum(parent::*/TestBag[@module=$currentModule]/@time) div 1000)"/></B></TD>
+			<TD><B>
+					<xsl:call-template name="timeFormatterMS">
+						<xsl:with-param name="time"><xsl:value-of select="(sum(parent::*/TestBag[@module=$currentModule]/@time) div 1000)"/></xsl:with-param>
+					</xsl:call-template>
+			</B></TD>
 		</TR>
 
 		<xsl:for-each select = "parent::*/TestBag[@module=$currentModule]">

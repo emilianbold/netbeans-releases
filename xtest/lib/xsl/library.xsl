@@ -29,6 +29,24 @@
 </xsl:comment>
 </xsl:template>
 
+<xsl:template name="timeFormatterHMS">
+	<xsl:param name="time"/>
+	<xsl:if test="number($time) != 'NaN'">
+		<xsl:variable name="hours" select="floor($time div 3600)"/>
+		<xsl:variable name="minutes" select="floor(($time - ( $hours * 3600) ) div 60)"/>
+		<xsl:variable name="seconds" select="floor(($time - ($hours * 3600) - ($minutes * 60)))"/>
+		<xsl:value-of select="$hours"/>:<xsl:value-of select="format-number($minutes,'00')"/>:<xsl:value-of select="format-number($seconds,'00')"/>
+	</xsl:if>
+</xsl:template>
+
+<xsl:template name="timeFormatterMS">
+	<xsl:param name="time"/>
+	<xsl:if test="number($time) != 'NaN'">		
+		<xsl:variable name="minutes" select="floor($time  div 60)"/>
+		<xsl:variable name="seconds" select="($time - ($minutes * 60))"/>
+		<xsl:value-of select="format-number($minutes,'00')"/>:<xsl:value-of select="format-number($seconds,'00.00')"/>
+	</xsl:if>
+</xsl:template>
 
 <xsl:template name="html-page">
     <xsl:param name="html-title">XTest Report - unknown</xsl:param>
@@ -144,7 +162,7 @@
 		<TD><B>Error</B></TD>
 		<TD><B>Success Rate</B></TD>
 		<TD><B>Run (when)</B></TD>
-		<TD><B>Time (s)</B></TD>
+		<TD><B>Time (m:ss)</B></TD>
 	</TR>
 </xsl:template>
 
@@ -162,7 +180,14 @@
 			<TD><xsl:value-of select="$testsError"/></TD>				
 			<TD><xsl:value-of select="format-number($testsPass div $testsTotal,'0.00%')"/></TD>
 			<TD><xsl:value-of select="$timeStamp"/></TD>
+			<!--
 			<TD><xsl:value-of select="($time div 1000)"/></TD>
+			-->
+			<TD>
+   			<xsl:call-template name="timeFormatterMS">
+				<xsl:with-param name="time"><xsl:value-of select="(@time div 1000)"/></xsl:with-param>
+			</xsl:call-template>
+			</TD>
 	</TR>
 </xsl:template>
 
@@ -178,7 +203,7 @@
 		<TD><B>Error</B></TD>
 		<TD><B>Success Rate</B></TD>
 		<TD><B>Run (when)</B></TD>
-		<TD><B>Time (s)</B></TD>
+		<TD><B>Time (m:ss)</B></TD>
 	</TR>
 
 </xsl:template>
@@ -209,7 +234,14 @@
    		<!--
 	    <TD><xsl:value-of select="@timeStamp"/></TD>
 	    	-->
+	    <!--
    		<TD><xsl:value-of select="(@time div 1000)"/></TD>
+   		-->
+   		<TD>
+   			<xsl:call-template name="timeFormatterMS">
+				<xsl:with-param name="time"><xsl:value-of select="(@time div 1000)"/></xsl:with-param>
+			</xsl:call-template>
+		</TD>
    	</TR>
 </xsl:template>
 
