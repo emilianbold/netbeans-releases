@@ -160,7 +160,7 @@ Microsystems, Inc. All Rights Reserved.
 	<text>For the JUnit framework:</text>
 	<file location="external/ibm-public-license.txt"/>
       </license>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="nb_ide"/>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>
 
