@@ -404,9 +404,9 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                         if (icon == null) {
                             String resourceId = (String)a.getValue(BaseAction.ICON_RESOURCE_PROPERTY);
                             if (resourceId == null) { // use default icon
-                                resourceId = "org/netbeans/modules/editor/resources/default";
+                                resourceId = "org/netbeans/modules/editor/resources/default.gif";
                             }
-                            Image img = org.openide.util.Utilities.loadImage(resourceId + ".gif");
+                            Image img = org.openide.util.Utilities.loadImage(resourceId);
                             if (img != null) {
                                 a.putValue(Action.SMALL_ICON, new ImageIcon(img));
                             }
