@@ -73,6 +73,7 @@ public final class FreeformProject implements Project {
     private final PropertyEvaluator eval;
     private final Lookup lookup;
     private WebModules webModules;
+    private SourceForBinaryQueryImpl sourceForBinQuery;
     
     public FreeformProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -123,6 +124,7 @@ public final class FreeformProject implements Project {
     private Lookup initLookup() throws IOException {
         Classpaths cp = new Classpaths(this);
         webModules = new WebModules (this);
+        sourceForBinQuery = new SourceForBinaryQueryImpl (this);
         return Lookups.fixed(new Object[] {
             new Info(), // ProjectInformation
             new SourcesProxy(), // Sources
@@ -130,7 +132,7 @@ public final class FreeformProject implements Project {
             new View(this), // LogicalViewProvider
             cp, // ClassPathProvider
             new SourceLevelQueryImpl(this), // SourceLevelQueryImplementation
-            new SourceForBinaryQueryImpl(this), // SourceForBinaryQueryImplementation
+            sourceForBinQuery, // SourceForBinaryQueryImplementation
             webModules, // WebModuleProvider
             new ProjectCustomizerProvider(this, helper, eval), // CustomizerProvider
             new OpenHook(cp), // ProjectOpenedHook
@@ -282,6 +284,7 @@ public final class FreeformProject implements Project {
         public void configurationXmlChanged(AntProjectEvent ev) {
             fireChange();
             webModules.readAuxData ();
+            sourceForBinQuery.refresh();
         }
         
         public void propertiesChanged(AntProjectEvent ev) {

@@ -32,7 +32,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * @author  Jesse Glick, David Konecny
+ * @author  Jesse Glick, David Konecny, Pavel Buzek
  */
 public class FreeformProjectGenerator {
 
@@ -42,7 +42,7 @@ public class FreeformProjectGenerator {
     private FreeformProjectGenerator() {}
 
     /**
-     * Creates new Freeform project at the given folder with the given name,
+     * Creates new Freeform java project at the given folder with the given name,
      * target mappings, source folders, etc.
      * @param dir project folder; cannot be null
      * @param name name of new project; cannot be null
@@ -51,9 +51,28 @@ public class FreeformProjectGenerator {
      * @param sources list of SourceFolder instances
      * @param compUnits list of JavaCompilationUnit instances
      */
-    public static AntProjectHelper createProject(File dir, String name, File antScript, List mappings, List sources, List compUnits) throws IOException {
+    public static AntProjectHelper createJavaProject(File dir, String name, File antScript, List mappings, List sources, List compUnits) throws IOException {
         FileObject dirFO = createProjectDir (dir);
-        AntProjectHelper h = createProject(dirFO, PropertyUtils.getUsablePropertyName(name), antScript, mappings, sources, compUnits);
+        AntProjectHelper h = createProject(dirFO, PropertyUtils.getUsablePropertyName(name), antScript, mappings, sources, compUnits, null);
+        Project p = ProjectManager.getDefault().findProject(dirFO);
+        ProjectManager.getDefault().saveProject(p);
+        return h;
+    }
+    
+    /**
+     * Creates new Freeform web project at the given folder with the given name,
+     * target mappings, source folders, etc.
+     * @param dir project folder; cannot be null
+     * @param name name of new project; cannot be null
+     * @param antScript Ant script file; can be null what means default Ant script location
+     * @param mappings list of TargetMapping instances
+     * @param sources list of SourceFolder instances
+     * @param compUnits list of JavaCompilationUnit instances
+     * @param webModules list of WebModule instances
+     */
+    public static AntProjectHelper createWebProject(File dir, String name, File antScript, List mappings, List sources, List compUnits, List webModules) throws IOException {
+        FileObject dirFO = createProjectDir (dir);
+        AntProjectHelper h = createProject(dirFO, PropertyUtils.getUsablePropertyName(name), antScript, mappings, sources, compUnits, webModules);
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         return h;
@@ -158,7 +177,7 @@ public class FreeformProjectGenerator {
         //public String context;
     }
 
-    private static AntProjectHelper createProject(final FileObject dirFO, final String name, final File antScript, final List mappings, final List sources, final List compUnits) throws IOException {
+    private static AntProjectHelper createProject(final FileObject dirFO, final String name, final File antScript, final List mappings, final List sources, final List compUnits, final List webModules) throws IOException {
         final AntProjectHelper[] h = new AntProjectHelper[1];
         final IOException[] ioe = new IOException[1];
         ProjectManager.mutex().writeAccess(new Runnable() {
@@ -191,9 +210,12 @@ public class FreeformProjectGenerator {
                     h[0].putPrimaryConfigurationData(data, true);
 
                     putTargetMappings(h[0], mappings);
-                    putSourceFolders(h[0], sources, "java");
+                    putSourceFolders(h[0], sources, null);
                     putSourceViews(h[0], sources);
                     putJavaCompilationUnits(h[0], aux, compUnits, "compile");
+                    if (webModules != null) {
+                        putWebModules (h[0], aux, webModules);
+                    }
                     putBuildXMLSourceFile(h[0]);
                 }
             }
@@ -366,18 +388,23 @@ public class FreeformProjectGenerator {
                 continue;
             }
             String style = sourceViewEl.getAttribute("style");
-            if ("packages".equals(style)) {
+            if ("packages".equals(style) || "tree".equals(style)) {
                 itemsEl.removeChild(sourceViewEl);
             }
         }
         Iterator it2 = sources.iterator();
         while (it2.hasNext()) {
             SourceFolder sf = (SourceFolder)it2.next();
-            if (!"java".equals(sf.type)) {
+            String style = null;
+            if ("java".equals(sf.type)) {
+                style = "packages";
+            } if ("doc_root".equals(sf.type)) {
+                style = "tree";
+            } if (style == null) {
                 continue;
             }
             Element sourceFolderEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "source-folder"); // NOI18N
-            sourceFolderEl.setAttribute("style", "packages");
+            sourceFolderEl.setAttribute("style", style);
             Element el;
             if (sf.label != null) {
                 el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "label"); // NOI18N
@@ -529,6 +556,97 @@ public class FreeformProjectGenerator {
         aux.putConfigurationFragment(data, true);
     }
 
+    /**
+     * Read web modules from the project.
+     * @param helper AntProjectHelper instance
+     * @param aux AuxiliaryConfiguration instance
+     * @return list of WebModule instances
+     */
+    public static List/*<WebModule>*/ getWebmodules (
+            AntProjectHelper helper, AuxiliaryConfiguration aux) {
+        ArrayList list = new ArrayList();
+        Element data = aux.getConfigurationFragment("web-data", FreeformProjectType.NS_WEB, true);
+        List/*<Element>*/ wms = Util.findSubElements(data);
+        Iterator it = wms.iterator();
+        while (it.hasNext()) {
+            Element wmEl = (Element)it.next();
+            WebModule wm = new WebModule();
+            Iterator it2 = Util.findSubElements(wmEl).iterator();
+            while (it2.hasNext()) {
+                Element el = (Element)it2.next();
+                if (el.getLocalName().equals("doc-root")) { // NOI18N
+                    wm.docRoot = Util.findText(el);
+                    continue;
+                }
+                if (el.getLocalName().equals("classpath")) { // NOI18N
+                    wm.classpath = Util.findText(el);
+                    continue;
+                }
+                if (el.getLocalName().equals("context-path")) { // NOI18N
+                    wm.contextPath = Util.findText(el);
+                    continue;
+                }
+                if (el.getLocalName().equals("j2ee-spec-level")) { // NOI18N
+                    wm.j2eeSpecLevel = Util.findText(el);
+                }
+            }
+            list.add(wm);
+        }
+        return list;
+    }
+
+    /**
+     * Update web modules of the project. Project is left modified
+     * and you must save it explicitely.
+     * @param helper AntProjectHelper instance
+     * @param aux AuxiliaryConfiguration instance
+     * @param webModules list of WebModule instances
+     */
+    public static void putWebModules(AntProjectHelper helper, 
+            AuxiliaryConfiguration aux, List/*<WebModule>*/ webModules) {
+        ArrayList list = new ArrayList();
+        Element data = aux.getConfigurationFragment("web-data", FreeformProjectType.NS_WEB, true);
+        if (data == null) {
+            data = helper.getPrimaryConfigurationData(true).getOwnerDocument().
+                createElementNS(FreeformProjectType.NS_WEB, "web-data"); // NOI18N
+        }
+        Document doc = data.getOwnerDocument();
+        List wms = Util.findSubElements(data);
+        Iterator it = wms.iterator();
+        while (it.hasNext()) {
+            Element wmEl = (Element)it.next();
+            data.removeChild(wmEl);
+        }
+        Iterator it2 = webModules.iterator();
+        while (it2.hasNext()) {
+            Element wmEl = doc.createElementNS(FreeformProjectType.NS_WEB, "web-module"); // NOI18N
+            data.appendChild(wmEl);
+            WebModule wm = (WebModule)it2.next();
+            Element el;
+            if (wm.docRoot != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_WEB, "doc-root"); // NOI18N
+                el.appendChild(doc.createTextNode(wm.docRoot));
+                wmEl.appendChild(el);
+            }
+            if (wm.classpath != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_WEB, "classpath"); // NOI18N
+                el.appendChild(doc.createTextNode(wm.classpath));
+                wmEl.appendChild(el);
+            }
+            if (wm.contextPath != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_WEB, "context-path"); // NOI18N
+                el.appendChild(doc.createTextNode(wm.contextPath));
+                wmEl.appendChild(el);
+            }
+            if (wm.j2eeSpecLevel != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_WEB, "j2ee-spec-level"); // NOI18N
+                el.appendChild(doc.createTextNode(wm.j2eeSpecLevel));
+                wmEl.appendChild(el);
+            }
+        }
+        aux.putConfigurationFragment(data, true);
+    }
+    
     //XXX: The <property-file> elements are ignored at the moment.
     /**
      * Read all <property> elements and return them as Properties instance.
@@ -565,6 +683,15 @@ public class FreeformProjectGenerator {
         public String sourceLevel;
     }
     
+    /**
+     * Structure describing web module.
+     */
+    public static final class WebModule {
+        public String docRoot;
+        public String classpath;
+        public String contextPath;
+        public String j2eeSpecLevel;
+    }
 
     /**
      * Returns Ant script to which delegates the freeform project

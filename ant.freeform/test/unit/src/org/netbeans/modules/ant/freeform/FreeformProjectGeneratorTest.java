@@ -111,7 +111,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         cu.sourceLevel = "1.4";
         cu.packageRoot = src.getAbsolutePath();
         compUnits.add(cu);
-        AntProjectHelper helper = FreeformProjectGenerator.createProject(base, projectName, null, new ArrayList(), sources, compUnits);
+        AntProjectHelper helper = FreeformProjectGenerator.createJavaProject(base, projectName, null, new ArrayList(), sources, compUnits);
         return helper;
     }
     
