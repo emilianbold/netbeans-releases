@@ -259,7 +259,6 @@ public class AddTableColumnDialog
             con.gridy = 5;
 			con.insets = new java.awt.Insets (2, 2, 2, 2);
             idxcombo = new JComboBox(new Vector(ixmap.keySet()));
-            idxcombo.setEditable(true);
             layout.setConstraints(idxcombo, con);
             pane.add(idxcombo);
 
@@ -287,6 +286,12 @@ public class AddTableColumnDialog
             JScrollPane spane = new JScrollPane(checkfield);
             layout.setConstraints(spane, con);
             pane.add(spane);
+
+			if (ixmap.size() == 0) {
+				pkcheckbox.setEnabled(false);
+				ixcheckbox.setEnabled(false);
+				idxcombo.setEnabled(false);
+			}
 		
             item.addPropertyChangeListener(new PropertyChangeListener() {
 	      		public void propertyChange(PropertyChangeEvent evt) {
