@@ -91,8 +91,6 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 11);
         add(j2eeSpecLabel, gridBagConstraints);
 
-        j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 24));
-        j2eeSpecComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
