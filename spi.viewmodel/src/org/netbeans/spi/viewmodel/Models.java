@@ -25,6 +25,7 @@ import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.viewmodel.CompoundModel;
 import org.netbeans.modules.viewmodel.TreeModelNode;
@@ -113,7 +114,7 @@ public final class Models {
      * @param columnModels a list of ColumnModel instances
      */
     public static void setModelsToView (
-        JComponent view,
+        final JComponent view,
         TreeModel treeModel, 
         NodeModel nodeModel, 
         TableModel tableModel,
@@ -159,14 +160,18 @@ public final class Models {
             else
                 System.out.println ("    " + tableModel);
         }
-        CompoundModel cm = new CompoundModel (
+        final CompoundModel cm = new CompoundModel (
             treeModel,
             nodeModel,
             nodeActionsProvider,
             columnModels,
             tableModel
         );
-        ((TreeTable) view).setModel (cm);
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                ((TreeTable) view).setModel (cm);
+            }
+        });
     }
     
     /**
