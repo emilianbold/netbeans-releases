@@ -675,6 +675,16 @@ public abstract class NbTopManager extends TopManager {
                 if (getModuleSystem().shutDown()) {
                     // save project
                     NbProjectOperation.storeLastProject ();
+                    if (Boolean.getBoolean("netbeans.windows.layers")) {
+                        // temporary - save window manager
+                        // (will be removed when SessionManager support will be
+                        // completed)
+                        try {
+                            WindowManagerImpl.getDefault().writeXML();
+                        } catch (IOException exc) {
+                            exc.printStackTrace();
+                        }
+                    }
                     Runtime.getRuntime().exit ( 0 );
                 }
             }

@@ -592,6 +592,62 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="OpenIDE-Folder-Order" stringvalue="SystemFileSystem" />
   </folder>
 
+  <!-- default workspaces, frames and their layout defined by core-->
+  <folder name="windows">
+    <file name="windowmanager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
+    <folder name="windowmanager">
+      <attr name="Editing/Running" boolvalue="true" />
+      <file name="Editing.wswksp" url="windowmanager/Editing.wswksp" />
+      <folder name="Editing">
+        <file name="explorer.wsmode" url="windowmanager/Editing/explorer.wsmode" />
+        <folder name="explorer">
+          <attr name="filesystems.wstcref/runtime.wstcref" boolvalue="true" />
+          <file name="filesystems.wstcref" url="windowmanager/Editing/explorer/filesystems.wstcref" />
+          <file name="runtime.wstcref" url="windowmanager/Editing/explorer/runtime.wstcref" />
+        </folder>
+        <file name="properties.wsmode" url="windowmanager/Editing/properties.wsmode" />
+        <folder name="properties">
+          <file name="properties.wstcref" url="windowmanager/Editing/properties/properties.wstcref" />
+        </folder>
+        <file name="output.wsmode" url="windowmanager/Editing/output.wsmode" />
+        <folder name="output">
+          <file name="output.wstcref" url="windowmanager/Editing/output/output.wstcref" />
+        </folder>
+        <file name="execution.wsmode" url="windowmanager/Editing/execution.wsmode" />
+        <folder name="execution">
+          <file name="execution.wstcref" url="windowmanager/Editing/execution/execution.wstcref" />
+        </folder>
+      </folder>
+      <file name="Running.wswksp" url="windowmanager/Running.wswksp" />
+      <folder name="Running">
+        <file name="explorer.wsmode" url="windowmanager/Running/explorer.wsmode" />
+        <folder name="explorer">
+          <attr name="filesystems.wstcref/runtime.wstcref" boolvalue="true" />
+          <file name="filesystems.wstcref" url="windowmanager/Running/explorer/filesystems.wstcref" />
+          <file name="runtime.wstcref" url="windowmanager/Running/explorer/runtime.wstcref" />
+        </folder>
+        <file name="properties.wsmode" url="windowmanager/Running/properties.wsmode" />
+        <folder name="properties">
+          <file name="properties.wstcref" url="windowmanager/Running/properties/properties.wstcref" />
+        </folder>
+        <file name="output.wsmode" url="windowmanager/Running/output.wsmode" />
+        <folder name="output">
+          <file name="output.wstcref" url="windowmanager/Running/output/output.wstcref" />
+        </folder>
+        <file name="execution.wsmode" url="windowmanager/Running/execution.wsmode" />
+        <folder name="execution">
+          <file name="execution.wstcref" url="windowmanager/Running/execution/execution.wstcref" />
+        </folder>
+      </folder>
+    </folder>
+    <folder name="components">
+      <file name="filesystems.settings" url="components/filesystems.settings" />
+      <file name="runtime.settings" url="components/runtime.settings" />
+      <file name="output.settings" url="components/output.settings" />
+      <file name="execution.settings" url="components/execution.settings" />
+      <file name="properties.settings" url="components/properties.settings" />
+    </folder>
+  </folder>
 
   <!-- For debugging only, comment out if desired: -->
   <file name="debug-sfs-structure[org-netbeans-core-projects-SystemFileSystem$StructureNode].instance"/>
