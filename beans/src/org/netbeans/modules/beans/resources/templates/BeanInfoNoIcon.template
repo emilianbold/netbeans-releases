@@ -32,6 +32,12 @@ public class __NAME__ extends SimpleBeanInfo {
     private static int defaultEventIndex = -1; //GEN-END:Idx
 
 
+    //GEN-FIRST:Superclass
+
+    // Here you can add code for customizing the Superclass BeanInfo.
+
+    //GEN-LAST:Superclass
+
     /**
      * Gets the bean's <code>BeanDescriptor</code>s.
      * 
