@@ -314,7 +314,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         Places.Nodes ns = TopManager.getDefault().getPlaces().nodes();
         if (rc.equals(ns.project ())) {
             // workplace tab
-            panel = new WorkplaceTab();
+            panel = new ProjectsTab();
         } else if (rc.equals(ns.repository())) {
             panel = new RepositoryTab ();
         } else if (rc.equals(ns.environment())) {
@@ -479,7 +479,11 @@ public final class NbMainExplorer extends CloneableTopComponent
         * root context */
         public void readExternal (java.io.ObjectInput oi)
         throws java.io.IOException, ClassNotFoundException {
-            super.readExternal(oi);
+            try {
+                super.readExternal(oi);
+            } catch (Exception e) {
+                // ignore any exception, tab will be revalidated later
+            }
             // put a request for later validation
             // we must do this here, because of ExplorerManager's deserialization.
             // Root context of ExplorerManager is validated AFTER all other
@@ -759,7 +763,7 @@ public final class NbMainExplorer extends CloneableTopComponent
     }
 
     /** Special class for projects tab in main explorer */
-    public static class WorkplaceTab extends RepositoryTab {
+    public static class ProjectsTab extends RepositoryTab {
         static final long serialVersionUID =-8178367548546385799L;
 
         /** Exchanges deserialized root context to projects root context
@@ -795,7 +799,7 @@ public final class NbMainExplorer extends CloneableTopComponent
                 selectNode (obj, parent);
         }
 
-    } // end of WorkplaceTab inner class
+    } // end of ProjectsTab inner class
 
     /** Special class for tabs added by modules to the main explorer */
     public static class ModuleTab extends MainTab {
