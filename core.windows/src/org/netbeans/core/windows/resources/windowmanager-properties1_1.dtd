@@ -76,6 +76,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <!-- Element "ui-mode" gives type of ui.
      "ui" type of ui, possible values are "sdi","mdi"
+     This attribute should NOT be used for setting default mode. Use command line
+     switch -J-Dnetbeans.windows=sdi or -J-Dnetbeans.windows=mdi to set mode instead
+     of this attribute.
 -->
 <!ELEMENT ui-mode    EMPTY >
 <!ATTLIST ui-mode
