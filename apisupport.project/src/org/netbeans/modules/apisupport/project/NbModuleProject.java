@@ -287,6 +287,11 @@ final class NbModuleProject implements Project {
         return getDir("test.qa-functional.src.dir"); // NOI18N
     }
     
+    File getClassesDirectory() {
+        String classesDir = eval.getProperty("build.classes.dir"); // NOI18N
+        return helper.resolveFile(classesDir);
+    }
+    
     File getTestClassesDirectory() {
         String testClassesDir = eval.getProperty("build.test.unit.classes.dir"); // NOI18N
         return helper.resolveFile(testClassesDir);
