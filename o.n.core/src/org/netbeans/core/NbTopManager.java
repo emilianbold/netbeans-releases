@@ -513,9 +513,6 @@ public abstract class NbTopManager /*extends TopManager*/ {
                         // system is down; the IDE cannot be used further.
                         ErrorManager.getDefault().notify(t);
                     }
-                    PrintStream ps = TopLogging.getLogOutputStream();
-                    ps.flush(); // #31519
-                    ps.close();
                     TopSecurityManager.exit(0);
                 }
             }
