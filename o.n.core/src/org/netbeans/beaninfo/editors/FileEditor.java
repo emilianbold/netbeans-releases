@@ -89,7 +89,12 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
      */
     public void attachEnv(PropertyEnv env) {
         this.env = env;
-        
+
+        // clearing to defaults
+        directories = true;
+        files = true;
+        fileFilter = null;
+
         Object dirs = env.getFeatureDescriptor().getValue(PROPERTY_SHOW_DIRECTORIES);
         if (dirs instanceof Boolean) {
             directories = ((Boolean)dirs).booleanValue();
@@ -98,7 +103,6 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         if (fil instanceof Boolean) {
             files = ((Boolean)fil).booleanValue();
         } // XXX else if != null, warn
-        
         Object filter = env.getFeatureDescriptor().getValue(PROPERTY_FILTER);
         if (filter instanceof FilenameFilter) {
             fileFilter = new DelegatingFilenameFilter((FilenameFilter)filter);
@@ -126,7 +130,6 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
                 baseDirectory = null;
             }
         } // XXX else if != null, warn
-        
         if (files) {
             mode = directories ? JFileChooser.FILES_AND_DIRECTORIES : 
                 JFileChooser.FILES_ONLY;
@@ -200,12 +203,10 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
             } else if (lastCurrentDir != null) {
                 chooser.setCurrentDirectory(lastCurrentDir);
             }
-
             chooser.setFileSelectionMode(mode);
             if (fileFilter != null) {
                 chooser.setFileFilter(fileFilter);
             }
-
             switch (mode) {
                 case JFileChooser.FILES_AND_DIRECTORIES:
                     chooser.setDialogTitle (getString ("CTL_DialogTitleFilesAndDirs"));
