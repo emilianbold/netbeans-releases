@@ -689,9 +689,9 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                         if(currentFeatures == null) {
                             currentFeatures = "documentliteral, wsi, norpcstructures";
                         }
-                        
+                        StubDescriptor stubType = getStubDescriptor(clientNameElement.getParentNode());
                         WsCompileEditorSupport.ServiceSettings settings = new WsCompileEditorSupport.ServiceSettings(
-                        serviceName, currentFeatures, allClientFeatures, importantClientFeatures);
+                            serviceName, stubType, currentFeatures, allClientFeatures, importantClientFeatures);
                         serviceNames.add(settings);
                     } else {
                         // !PW FIXME node is wrong type?! - log message or trace?
@@ -704,7 +704,33 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         
         return serviceNames;
     }
-    
+            
+    private StubDescriptor getStubDescriptor(org.w3c.dom.Node parentNode) {
+        StubDescriptor result = null;
+        
+        if(parentNode instanceof Element) {
+            Element parentElement = (Element) parentNode;
+            NodeList clientNameList = parentElement.getElementsByTagNameNS(
+                WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_STUB_TYPE);
+            if(clientNameList.getLength() == 1) {
+                Element clientStubElement = (Element) clientNameList.item(0);
+                NodeList nl = clientStubElement.getChildNodes();
+                if(nl.getLength() == 1) {
+                    org.w3c.dom.Node n = nl.item(0);
+                    if(n.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+                        String stubName = n.getNodeValue();
+                        if(StubDescriptor.JSR109_CLIENT_STUB.equals(stubName)) {
+                            result = jsr109ClientStub;
+                        } else if(StubDescriptor.JAXRPC_CLIENT_STUB.equals(stubName)) {
+                            result = jaxrpcClientStub;
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     private static final JAXRPCStubDescriptor jsr109ClientStub = new JAXRPCStubDescriptor(
     StubDescriptor.JSR109_CLIENT_STUB,
     NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_JSR109ClientStub"),
