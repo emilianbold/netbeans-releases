@@ -64,7 +64,7 @@ public class GtkLFCustoms extends LFCustoms {
             PROPSHEET_DISABLED_FOREGROUND, new Color(161,161,146),
             "Table.selectionBackground", selBg, //NOI18N
             "Table.selectionForeground", selFg, //NOI18N
-            PROPSHEET_BACKGROUND, light,
+            PROPSHEET_BACKGROUND, Color.WHITE,
             "window", light,
             
             VIEW_TAB_OUTER_BORDER, BorderFactory.createEmptyBorder(),
