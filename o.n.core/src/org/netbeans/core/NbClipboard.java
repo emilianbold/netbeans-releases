@@ -32,7 +32,8 @@ public final class NbClipboard extends ExClipboard implements LookupListener, AW
     private Convertor[] convertors;
     private Lookup.Result result;
     private boolean slowSystemClipboard;
-    
+    private Transferable last;
+
     public NbClipboard() {
         super("NBClipboard");   // NOI18N
         systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -81,7 +82,10 @@ public final class NbClipboard extends ExClipboard implements LookupListener, AW
 
         if (slowSystemClipboard) {
             super.setContents(contents, owner);
-        }
+        } else {
+	    if (last != null) transferableOwnershipLost(last);
+	    last = contents;
+	}
         
         systemClipboard.setContents(contents, owner);
         fireClipboardChange();
