@@ -132,7 +132,7 @@ public class JspParserAccess {
         }
         
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(ClassPath.PROP_ENTRIES)){
+            if (ClassPath.PROP_ENTRIES.equals(evt.getPropertyName())){
                 fireLibraries();
             }
         }
