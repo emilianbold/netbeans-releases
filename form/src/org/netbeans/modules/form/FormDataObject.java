@@ -16,7 +16,7 @@ package com.netbeans.developer.modules.loaders.form;
 import java.io.IOException;
 import java.text.MessageFormat;
 
-import com.netbeans.ide.loaders.DataFolder;
+/*import com.netbeans.ide.loaders.DataFolder;
 import com.netbeans.ide.loaders.DataObject;
 import com.netbeans.ide.loaders.DataObjectExistsException;
 import com.netbeans.ide.NotifyDescriptor;
@@ -33,7 +33,7 @@ import com.netbeans.developer.modules.loaders.java.DocumentRef;
 import com.netbeans.developer.modules.loaders.java.JavaDataObject;
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
 import com.netbeans.developer.modules.loaders.java.src.*;
-
+*/
 /** The DataObject for forms.
 *
 * @author Ian Formanek, Petr Hamernik
@@ -41,7 +41,10 @@ import com.netbeans.developer.modules.loaders.java.src.*;
 */
 public class FormDataObject extends JavaDataObject implements FormCookie {
   /** generated Serialized Version UID */
-  static final long serialVersionUID = 7952143476761137063L;
+//  static final long serialVersionUID = 7952143476761137063L;
+
+  private static final String URL_ICON_BASE =
+    "com/netbeans/developer/modules/resources/formObject";
 
   /** lock for closing window */
   private static final Object OPEN_FORM_LOCK = new Object ();
@@ -55,7 +58,7 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
     addSecondaryEntry (formEntry = new MirroringEntry (ffo) {
         /** saves the DesignForm into the .form file */
         public void save (boolean modified) {
-          if (modified & !isModified())
+/*          if (modified & !isModified())
             return;
           if (!isLoaded ()) // cannot save to the .form file if there is nothing to save
             return;
@@ -89,8 +92,8 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
               }
               catch (IOException e) {
               }
-            }
-          }
+            } 
+          } */
         }
       }
     );
@@ -114,7 +117,7 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
 //    System.out.println("Loading form");
 //    Thread.dumpStack();
 
-    java.io.InputStream is = null;
+/*    java.io.InputStream is = null;
     try {
       is = formEntry.getFile().getInputStream();
     } catch (java.io.FileNotFoundException e) {
@@ -161,9 +164,9 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
         formLoaded = true;
         designForm.initialize (this);
         if (!modifiedInit)
-          setModified (false); // though we regenerated, it should not be different (AKA modified) */
+          setModified (false); // though we regenerated, it should not be different (AKA modified)
       } else {
-        String message = MessageFormat.format(FormLoaderSettings.formBundle.getString("FMT_ERR_LoadingForm"),
+        Stringring message = MessageFormat.format(FormLoaderSettings.formBundle.getString("FMT_ERR_LoadingForm"),
                                               new Object[] {getName(), e.getClass().getName()});
         TopManager.getDefault().notify(new NotifyDescriptor.Exception(e, message));
         return false;
@@ -181,7 +184,7 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
 
     // enforce recreation of children
     ((FormDataNode)nodeDelegate).updateFormNode ();
-
+*/
     return true;
   }
 
@@ -198,7 +201,7 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
 
   /** Method from OpenCookie */
   public void open() {
-    TopManager.getDefault ().setStatusText (
+/*    TopManager.getDefault ().setStatusText (
       java.text.MessageFormat.format (
         FormLoaderSettings.formBundle.getString ("FMT_OpeningForm"),
         new Object[] { getName () }
@@ -215,7 +218,7 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
 
     designForm.getRADWindow().show();
     super.open();
-    TopManager.getDefault ().setStatusText ("");
+    TopManager.getDefault ().setStatusText (""); */
   }
 
   /** returns an editor with the document */
@@ -457,6 +460,8 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
 
 /*
  * Log
+ *  3    Gandalf   1.2         2/11/99  Ian Formanek    getXXXPresenter -> 
+ *       createXXXPresenter (XXX={Menu, Toolbar})
  *  2    Gandalf   1.1         1/6/99   Ian Formanek    Reflecting change in 
  *       datasystem package
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
