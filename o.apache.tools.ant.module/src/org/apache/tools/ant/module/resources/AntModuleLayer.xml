@@ -30,7 +30,9 @@ Microsystems, Inc. All Rights Reserved.
       <file name="CustomTask.java" url="CustomTask_java">
         <attr name="template" boolvalue="true"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
-        <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/CustomTaskDescription.html"/>
+        <!-- XXX #44054: implies a runtime dep on java/project module: -->
+        <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+        <attr name="instantiatingIteratorURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/CustomTaskDescription.html"/>
         <attr name="templateCategory" stringvalue="ant-task"/>
       </file>
     </folder>
