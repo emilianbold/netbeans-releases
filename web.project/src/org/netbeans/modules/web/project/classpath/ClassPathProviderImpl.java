@@ -42,7 +42,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
-    private final ClassPath[] cache = new ClassPath[8];
+    private final ClassPath[] cache = new ClassPath[9];
 
     private final Map/*<String,FileObject>*/ dirCache = new HashMap();
 
