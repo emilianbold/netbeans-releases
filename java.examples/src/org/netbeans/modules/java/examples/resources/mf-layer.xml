@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="Templates">
+        <folder name="Project">
+            <folder name="Samples">
+                <folder name="Standard">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.examples.Bundle"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/examples/resources/descriptions/j2seSamplesCategory.html"/>
+                    <file name="anagrams.zip" url="anagrams.zip">
+                      <attr name="template" boolvalue="true"/>
+                      <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/examples/resources/descriptions/anagrams.html"/>
+                      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.examples.Bundle"/>
+                      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/examples/resources/j2seProject.gif"/>
+                      <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.examples.J2SESampleProjectIterator"/>
+                      <attr name="prjType" stringvalue="j2se"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

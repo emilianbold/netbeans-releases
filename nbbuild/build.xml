@@ -766,6 +766,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module usersguide..."/>
     <ant dir="../usersguide" target="netbeans"/>
   </target>
+  <target name="all-usersguide/j2seexamples" depends="build-platform,all-java/api,all-java/j2seproject">
+    <echo message="Building module usersguide/j2seexamples..."/>
+    <ant dir="../usersguide/j2seexamples" target="netbeans"/>
+  </target>
   <target name="all-utilities" depends="build-platform,all-openidex">
     <echo message="Building module utilities..."/>
     <ant dir="../utilities" target="netbeans"/>
