@@ -135,11 +135,11 @@ public class CustomizerWar extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         jPanel1.add(jTextFieldExContent, gridBagConstraints);
         jTextFieldExContent.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerWar.class, "ACS_CustomizeWAR_Content_A11YDesc"));
 
         excludeMessage.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizerWAR_ExcludeMessage"));
+        excludeMessage.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
