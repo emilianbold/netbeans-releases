@@ -41,7 +41,7 @@ import org.openide.actions.PropertiesAction;
 
 public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     
-    private static String  ICON_BASE = "org/netbeans/modules/tomcat5/resources/tomcat5"; // NOI18N
+    private static String  ICON_BASE = "org/netbeans/modules/tomcat5/resources/tomcat5instance"; // NOI18N
     
     protected static final String PROPERTY_TOMCAT_HOME = "tomcat_home"; //NOI18N
     protected static final String PROPERTY_TOMCAT_BASE = "tomcat_base"; //NOI18N
