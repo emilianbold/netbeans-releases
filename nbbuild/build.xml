@@ -882,15 +882,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../java" target="netbeans"/>
   </target>
-  <target name="all-java/fastjavac" depends="init,all-openide/compiler,all-java">
-    <echo message="Building module java/fastjavac..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../java/fastjavac" target="netbeans"/>
-  </target>
   <target name="all-java/api" depends="init">
     <!-- dependency on all-projects/queries is temporary -->
     <echo message="Building Java support APIs.."/>
@@ -2703,9 +2694,6 @@ the ${netbeans.dest}/bin/ directory.
       <fileset dir="${netbeans.dest.dir}">
         <include name="bin/netbeans"/>
         <include name="bin/**/*.pl"/>
-        <include name="bin/fastjavac/fastjavac.linux"/>
-        <include name="bin/fastjavac/fastjavac.sun"/>
-        <include name="bin/fastjavac/fastjavac.sun.intel"/>
         <include name="jakarta-tomcat-*/bin/*.sh"/>
       </fileset>
     </chmod>
