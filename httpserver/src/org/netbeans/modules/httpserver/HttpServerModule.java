@@ -48,7 +48,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
   * Add applet executor
   */
   public void restored() {            
-//System.out.println("restored - serialized : " + optionsSerialized);
+System.out.println("restored - serialized : " + optionsSerialized);
     if (!optionsSerialized) {
       // set the default value of the running property
       new HttpServerSettings();  // this fills the options variable,  bugfix #3595
@@ -83,13 +83,13 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
 	* @param in ObjectInputStream
 	*/
  	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException	{
-//System.out.println("readExternal");
+System.out.println("readExternal");
  	  Object obj = in.readObject();
  	  if (obj instanceof Boolean) {
  	    optionsSerialized = ((Boolean)obj).booleanValue();
-//System.out.println("boolean : " + optionsSerialized);
+System.out.println("boolean : " + optionsSerialized);
  	  }
-//System.out.println("class : " + ((obj == null) ? "null" : obj.getClass().getName()));
+System.out.println("class : " + ((obj == null) ? "null" : obj.getClass().getName()));
 	}	
 
   /** initiates HTTPServer so it runs */
@@ -119,12 +119,13 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                 server = buildServer();
                 server.start();
                 HttpServerSettings.OPTIONS.runSuccess();
+Thread.dumpStack();
                 // this is not a debug message, this is a server startup message
                 if (HttpServerSettings.OPTIONS.isStartStopMessages())
                   System.out.println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
                     getString("CTL_ServerStarted"), new Object[] {new Integer(HttpServerSettings.OPTIONS.getPort())}));
               } 
-              catch (Exception ex) {
+              catch (Throwable ex) {
                 // couldn't start
 ex.printStackTrace();                
                 serverThread = null;
@@ -223,6 +224,7 @@ e.printStackTrace();
 
 /*
  * Log
+ *  25   Gandalf   1.24        10/5/99  Petr Jiricka    
  *  24   Gandalf   1.23        10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
  *        changed to class + some methods added
  *  23   Gandalf   1.22        9/30/99  Petr Jiricka    Jetty -> JSWDK (TomCat)
