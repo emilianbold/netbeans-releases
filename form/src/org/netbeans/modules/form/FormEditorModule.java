@@ -55,9 +55,6 @@ public class FormEditorModule implements ModuleInstall {
   // 3. create Component Palette under system
     createComponentPalette ();
 
-  // 4. create FormEditor toolbars
-    installToolbarActions ();
-
     restored ();
   }
 
@@ -79,10 +76,6 @@ public class FormEditorModule implements ModuleInstall {
   // 1. remove FormEditor actions
     uninstallActions ();
 
-  // -----------------------------------------------------------------------------
-  // 2. remove FormEditor toolbars
-    uninstallToolbarActions ();
-
     // [PENDING - ask and delete ComponentPalette]
     // [PENDING - ask and delete Form templates]
   }
@@ -95,8 +88,20 @@ public class FormEditorModule implements ModuleInstall {
 // -----------------------------------------------------------------------------
 // Private methods
   
-  private void installToolbarActions () {
+  private void installActions () {
     try {
+      // install actions into menu
+      createAction (InstallBeanAction.class, 
+        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Tools"), 
+        "UnmountFSAction", true, true, false, false
+      );
+
+      createAction (ComponentInspectorAction.class, 
+        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "View"), 
+        "HTMLViewAction", true, false, true, false
+      );
+
+      // install actions into toolbar
       DataFolder formFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Form");
       DataFolder paletteFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Palette");
   
@@ -110,43 +115,20 @@ public class FormEditorModule implements ModuleInstall {
   
       InstanceDataObject.create (paletteFolder, Utilities.getShortClassName (PaletteAction.class), PaletteAction.class.getName ());
 
-    } catch (Exception e) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) {
-        e.printStackTrace ();
-      }
-      // ignore failure to install
-    }
-  }
-
-  private void uninstallToolbarActions () {
-    try {
-      DataFolder formFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Form");
-      DataFolder paletteFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Palette");
-  
-      InstanceDataObject.remove (formFolder, Utilities.getShortClassName (ComponentInspectorAction.class), ComponentInspectorAction.class.getName ());
-      InstanceDataObject.remove (formFolder, Utilities.getShortClassName (TestModeAction.class), TestModeAction.class.getName ());
-      InstanceDataObject.remove (formFolder, Utilities.getShortClassName (DesignModeAction.class), DesignModeAction.class.getName ());
-      InstanceDataObject.remove (formFolder, Utilities.getShortClassName (ShowGridAction.class), ShowGridAction.class.getName ());
-      InstanceDataObject.remove (paletteFolder, Utilities.getShortClassName (PaletteAction.class), PaletteAction.class.getName ());
-    } catch (Exception e) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) {
-        e.printStackTrace ();
-      }
-      // ignore failure to install
-    }
-  }
-
-  private void installActions () {
-    try {
-      createAction (InstallBeanAction.class, 
-        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Tools"), 
-        "UnmountFSAction", true, true, false, false
-      );
-
-      createAction (ComponentInspectorAction.class, 
-        DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "View"), 
-        "HTMLViewAction", true, false, true, false
-      );
+      // install actions into action pool
+      DataFolder formActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Form");
+      InstanceDataObject.create (formActions, "InstallBeanAction", InstallBeanAction.class.getName ());
+      InstanceDataObject.create (formActions, "ComponentInspectorAction", ComponentInspectorAction.class.getName ());
+      InstanceDataObject.create (formActions, "PaletteAction", PaletteAction.class.getName ());
+      InstanceDataObject.create (formActions, "CustomizeLayoutAction", CustomizeLayoutAction.class.getName ());
+      InstanceDataObject.create (formActions, "DesignModeAction", DesignModeAction.class.getName ());
+      InstanceDataObject.create (formActions, "EventsAction", EventsAction.class.getName ());
+      InstanceDataObject.create (formActions, "GotoEditorAction", GotoEditorAction.class.getName ());
+      InstanceDataObject.create (formActions, "GotoFormAction", GotoFormAction.class.getName ());
+      InstanceDataObject.create (formActions, "GotoInspectorAction", GotoInspectorAction.class.getName ());
+      InstanceDataObject.create (formActions, "SelectLayoutAction", SelectLayoutAction.class.getName ());
+      InstanceDataObject.create (formActions, "ShowGridAction", ShowGridAction.class.getName ());
+      InstanceDataObject.create (formActions, "TestModeAction", TestModeAction.class.getName ());
 
     } catch (Exception e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) {
@@ -158,8 +140,35 @@ public class FormEditorModule implements ModuleInstall {
 
   private void uninstallActions () {
     try {
+      // remove actions from menu
       removeAction (InstallBeanAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Tools"));
       removeAction (ComponentInspectorAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "View"));
+
+      // remove actions from toolbar
+      DataFolder formFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Form");
+      DataFolder paletteFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Palette");
+  
+      InstanceDataObject.remove (formFolder, Utilities.getShortClassName (ComponentInspectorAction.class), ComponentInspectorAction.class.getName ());
+      InstanceDataObject.remove (formFolder, Utilities.getShortClassName (TestModeAction.class), TestModeAction.class.getName ());
+      InstanceDataObject.remove (formFolder, Utilities.getShortClassName (DesignModeAction.class), DesignModeAction.class.getName ());
+      InstanceDataObject.remove (formFolder, Utilities.getShortClassName (ShowGridAction.class), ShowGridAction.class.getName ());
+      InstanceDataObject.remove (paletteFolder, Utilities.getShortClassName (PaletteAction.class), PaletteAction.class.getName ());
+
+      // remove actions from action pool
+      DataFolder formActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Form");
+      removeAction (ComponentInspectorAction.class, formActions);
+      removeAction (InstallBeanAction.class, formActions);
+      removeAction (PaletteAction.class, formActions);
+      removeAction (CustomizeLayoutAction.class, formActions);
+      removeAction (DesignModeAction.class, formActions);
+      removeAction (EventsAction.class, formActions);
+      removeAction (GotoEditorAction.class, formActions);
+      removeAction (GotoFormAction.class, formActions);
+      removeAction (GotoInspectorAction.class, formActions);
+      removeAction (SelectLayoutAction.class, formActions);
+      removeAction (ShowGridAction.class, formActions);
+      removeAction (TestModeAction.class, formActions);
+
     } catch (Exception e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) {
         e.printStackTrace ();
@@ -172,6 +181,8 @@ public class FormEditorModule implements ModuleInstall {
   throws java.io.IOException {
     String actionShortName = Utilities.getShortClassName (actionClass);
     String actionName = actionClass.getName ();
+
+    if (InstanceDataObject.find (folder, actionShortName, actionName) != null) return;
 
     DataObject[] children = folder.getChildren ();
     int indexToUse = -1;
@@ -502,6 +513,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  27   Gandalf   1.26        7/15/99  Ian Formanek    Installation of actions 
+ *       into action pool, works better if actions already exist
  *  26   Gandalf   1.25        7/15/99  Ian Formanek    Items in 
  *       ComponentPalette are ordered
  *  25   Gandalf   1.24        7/11/99  Ian Formanek    Persistence managers 
