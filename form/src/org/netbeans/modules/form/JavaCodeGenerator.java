@@ -13,7 +13,9 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
+import org.openide.explorer.propertysheet.editors.ConstrainedModifiersEditor;
 import org.openide.nodes.*;
+import org.openide.src.nodes.ConstrainedModifiers;
 import org.openide.text.IndentEngine;
 import org.openide.util.Utilities;
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
@@ -118,30 +120,42 @@ public class JavaCodeGenerator extends CodeGenerator {
           return component.getName ();
         }
       },
-      new PropertySupport.ReadWrite ("modifier", Integer.class, "Variable Modifier",  // [PENDING - localize]
-                                     "The modifiers of the global variable generated for this component") {
+      new PropertySupport.ReadWrite ("useDefaultModifiers", Boolean.TYPE, "Use Default Modifiers",  // [PENDING - localize]
+                                     "If true, the global modifiers from Control Panel | Form Settings are used") {
         public void setValue (Object value) {
-          if (!(value instanceof Integer)) {
+          if (!(value instanceof Boolean)) {
             throw new IllegalArgumentException ();
           }
-          if (((Integer)value).intValue () == FormLoaderSettings.DEFAULT_MODIFIER) {
-            component.setAuxiliaryValue (AUX_VARIABLE_MODIFIER, null);
+          boolean useDefaultModifiers = ((Boolean)value).booleanValue ();
+          if (useDefaultModifiers) {
+            component.setAuxValue (AUX_VARIABLE_MODIFIER, null);
           } else {
-            component.setAuxiliaryValue (AUX_VARIABLE_MODIFIER, value);
+            component.setAuxValue (AUX_VARIABLE_MODIFIER, FormEditor.getFormSettings ().getVariablesModifier ());
           }
           regenerateVariables ();
         }
 
         public Object getValue () {
-          Object modifier = component.getAuxiliaryValue (AUX_VARIABLE_MODIFIER);
-          if (modifier == null) {
-            modifier = new Integer (FormLoaderSettings.DEFAULT_MODIFIER);
+          return new Boolean (component.getAuxValue (AUX_VARIABLE_MODIFIER) == null);
+        }
+        
+      },
+      new PropertySupport.ReadWrite ("modifiers", ConstrainedModifiers.class, "Variable Modifiers",  // [PENDING - localize]
+                                     "The modifiers of the global variable generated for this component") {
+        public void setValue (Object value) {
+          if (!(value instanceof ConstrainedModifiers)) {
+            throw new IllegalArgumentException ();
           }
-          return modifier;
+          component.setAuxValue (AUX_VARIABLE_MODIFIER, value);
+          regenerateVariables ();
+        }
+
+        public Object getValue () {
+          return component.getAuxValue (AUX_VARIABLE_MODIFIER);
         }
         
         public PropertyEditor getPropertyEditor () {
-          return new ModifierPropertyEditor ();
+          return new ConstrainedModifiersEditor ();
         }
         
       },
@@ -544,16 +558,12 @@ public class JavaCodeGenerator extends CodeGenerator {
     RADComponent[] children = cont.getSubBeans ();
     
     for (int i = 0; i < children.length; i++) {
-      int modifier = FormEditor.getFormSettings ().getVariablesModifier ();
-      Object expliciteModifier = children[i].getAuxiliaryValue (AUX_VARIABLE_MODIFIER);
-      if (expliciteModifier != null) {
-        modifier = ((Integer)expliciteModifier).intValue ();
+      ConstrainedModifiers modifiers = (ConstrainedModifiers)children[i].getAuxValue (AUX_VARIABLE_MODIFIER);
+      if (modifiers == null) {
+        modifiers = FormEditor.getFormSettings ().getVariablesModifier ();
       }
-      switch (modifier) {
-        case FormLoaderSettings.PRIVATE: variablesWriter.write ("private "); break;
-        case FormLoaderSettings.PROTECTED: variablesWriter.write ("protected "); break;
-        case FormLoaderSettings.PUBLIC: variablesWriter.write ("public "); break;
-      }
+      variablesWriter.write (java.lang.reflect.Modifier.toString (modifiers.getModifiers ()));
+      variablesWriter.write (" ");
       variablesWriter.write (children[i].getComponentClass ().getName ());
       variablesWriter.write (" ");
       variablesWriter.write (children[i].getName ());
@@ -942,49 +952,12 @@ public class JavaCodeGenerator extends CodeGenerator {
 
   }
 
-  final public static class ModifierPropertyEditor extends java.beans.PropertyEditorSupport {
-    /** Display Names for alignment. */
-    private static final String[] names = {
-      FormEditor.getFormBundle ().getString ("VALUE_DEFAULT_MODIFIER"),
-      FormEditor.getFormBundle ().getString ("VALUE_PRIVATE"),
-      FormEditor.getFormBundle ().getString ("VALUE_PACKAGE_PRIVATE"),
-      FormEditor.getFormBundle ().getString ("VALUE_PROTECTED"),
-      FormEditor.getFormBundle ().getString ("VALUE_PUBLIC"),
-    };
-
-    /** @return names of the possible directions */
-    public String[] getTags () {
-      return names;
-    }
-
-    /** @return text for the current value */
-    public String getAsText () {
-      int value = ((Integer)getValue ()).intValue ();
-      
-      if ((value >= -1) && (value < 4)) {
-        return names [value+1];
-      }
-      else return null;
-    }
-
-    /** Setter.
-    * @param str string equal to one value from directions array
-    */
-    public void setAsText (String str) {
-      for (int i = 0; i < 5; i ++) {
-        if (names[i].equals (str)) {
-          setValue (new Integer (i-1));
-          return;
-        }
-      }
-    }
-
-  }
-
 }
 
 /*
  * Log
+ *  30   Gandalf   1.29        6/30/99  Ian Formanek    Code generation of 
+ *       variables modifiers improved
  *  29   Gandalf   1.28        6/29/99  Ian Formanek    Individual variable 
  *       modifiers for each component, tweaked code generation for multiple 
  *       property editors
