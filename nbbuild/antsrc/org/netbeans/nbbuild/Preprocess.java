@@ -19,13 +19,45 @@ import java.util.*;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 
+// In Javadoc below: &#42; == *
 /** Preprocesses content of file replacing all conditional blocks.
 * <PRE>
-* $if <name of property>$
-* $else$
-* $end$
+* /&#42;nbif someswitch
+* // PART A
+* nbelse&#42;/
+* // PART B
+* /&#42;nbend&#42;/
 * </PRE>
-* @author Jaroslav Tulach
+* If <code>someswitch</code> is off, nothing will be changed, so part A will be
+* commented-out and part B will be active. If <code>someswitch</code> is on,
+* the code will be changed to:
+* <PRE>
+* /&#42;nbif someswitch&#42;/
+* // PART A
+* /&#42;nbelse
+* // PART B
+* /&#42;nbend&#42;/
+* </PRE>
+* So that part A is active and part B is commented-out.
+* <p>You can also use a block without an else:
+* <PRE>
+* /&#42;nbif someswitch
+* // PART A
+* /&#42;nbend&#42;/
+* </PRE>
+* With the switch off, it will again be left as is, i.e. commented-out. With the switch
+* on, you will get:
+* <PRE>
+* /&#42;nbif someswitch&#42;/
+* // PART A
+* /&#42;nbend&#42;/
+* </PRE>
+* where the interior section is now active.
+* <p>Intent of this preprocessor is to permit incompatible API changes to made in source
+* code, while creating a variant binary compatibility kit without the changes or with
+* more conservative changes. It should <em>not</em> be used as a general-purpose Java
+* preprocessor, we are not C++ programmers here!
+* @author Jaroslav Tulach, Jesse Glick
 */
 public class Preprocess extends MatchingTask {
     /** the format of begining of substitution */
@@ -45,27 +77,49 @@ public class Preprocess extends MatchingTask {
     private File dest;
     /** copy all/copy modified */
     private boolean copyAll = false;
+    /** switches to check in conditionals */
+    private List switches = new LinkedList (); // List<Switch>
     
-    public Preprocess () {
-    }
-    
-    
-    /** Setter for the source directory to scan */
+    /** Setter for the source directory to scan. */
     public void setSrcDir (File f) {
         src = f;
     }
     
-    /** Setter for the target directory to create processed files in
+    /** Setter for the target directory to create processed files in.
     */
     public void setDestDir (File f) {
         dest = f;
     }
     
     /** Can be set to copy all files, if necessary.
-    * @ param copyAll true if all files (even unmodified) should be copied
+     * Default is not to copy a file unless it was actually modified.
+    * @param copyAll true if all files (even unmodified) should be copied
     */
     public void setCopyAll (boolean copyAll) {
         this.copyAll = copyAll;
+    }
+
+    /** A switch to use as the test in preprocessor conditionals.
+     * Only switches explicitly listed here will be recognized.
+     */
+    public class Switch {
+        String name;
+        boolean on;
+        /** Set the name of the switch, which will be used in <code>nbif</code> tests. */
+        public void setName (String name) {
+            this.name = name;
+        }
+        /** Set whether the switch should be on or not. */
+        public void setOn (boolean on) {
+            this.on = on;
+        }
+    }
+
+    /** Add a conditional switch to control preprocessing. */
+    public Switch createSwitch () {
+        Switch s = new Switch ();
+        switches.add (s);
+        return s;
     }
     
     /** Executes the task.
@@ -74,27 +128,41 @@ public class Preprocess extends MatchingTask {
         if (src == null || dest == null) {
             throw new BuildException ("src and dest must be specified");
         }
+        if (switches.isEmpty ()) {
+            throw new BuildException ("Useless to preprocess sources with no switches specified!");
+        }
         
-        DirectoryScanner scanner = getDirectoryScanner (this.src);
+        DirectoryScanner scanner = getDirectoryScanner (src);
         scanner.scan ();
         String[] files = scanner.getIncludedFiles ();
-
-        log (
-            "Processing " + files.length + 
-            " file(s) from directory " + this.src + " to " + this.dest
-        );
+        String message1 = "Processing " + files.length + 
+            " file(s) from directory " + src + " to " + dest;
         
-        // make sure the target directory exists
-        dest.mkdirs();
-        
-
-        java.util.Map map = new java.util.HashMap ();
-        map.putAll (getProject ().getUserProperties ());
-        map.putAll (getProject ().getProperties ());
+        StringBuffer message2 = new StringBuffer ("Switches:");
+        Set ss = new HashSet ();
+        Iterator it = switches.iterator ();
+        while (it.hasNext ()) {
+            Switch s = (Switch) it.next ();
+            if (s.on) {
+                ss.add (s.name);
+                message2.append (' ');
+                message2.append (s.name);
+            } else {
+                message2.append (" !");
+                message2.append (s.name);
+            }
+        }
         
         try {
+            boolean shownMessages = false;
             for (int i = 0; i < files.length; i++) {
                 File src = new File (this.src, files[i]);
+                File dest = new File (this.dest, files[i]);
+                // Up-to-date check (note that this ignores changes in
+                // switches; for that you must clean first!):
+                if (dest.exists () && dest.lastModified () >= src.lastModified ()) {
+                    continue;
+                }
 
                 int size = (int)src.length () + 500;
                 BufferedReader r = new BufferedReader (
@@ -102,17 +170,22 @@ public class Preprocess extends MatchingTask {
                 );
                 StringWriter w = new StringWriter (size);
 
-                boolean modified = replace (r, w, map);
+                boolean modified = replace (r, w, ss);
                 w.close ();
                 r.close ();
+
+                if ((modified || copyAll) && ! shownMessages) {
+                    shownMessages = true;
+                    log (message1);
+                    log (message2.toString ());
+                }
                 
                 if (modified) {
-                    log ("  Modified: " + files[i]);
+                    log ("Modified: " + files[i]);
                 }
 
                 if (modified || copyAll) {
                     // the file has been modified
-                    File dest = new File (this.dest, files[i]);
                     
                     // ensure the directories exists
                     File dir = dest.getParentFile ();
@@ -154,11 +227,11 @@ public class Preprocess extends MatchingTask {
      *
      * @param r reader to read from
      * @param w writer to write to
-     * @param props properties to check
+     * @param props properties to be considered on
      * @return true if the content of r has been modified
      */
     private static boolean replace (
-        BufferedReader r, Writer w, java.util.Map props
+        BufferedReader r, Writer w, Set props // Set<String>
     ) throws IOException {
         boolean modified = false;
         
@@ -172,9 +245,9 @@ public class Preprocess extends MatchingTask {
             
             switch (state) {
                 case 0: // regular text
-                    if (line.startsWith (F_BEGIN)) {
-                        String rest = line.substring(F_BEGIN.length ()).trim ();
-                        if (props.get (rest) != null) {
+                    if (line.trim ().startsWith (F_BEGIN)) {
+                        String rest = line.trim ().substring(F_BEGIN.length ()).trim ();
+                        if (props.contains (rest)) {
                             // successful test, the content of line should
                             // be included
                             line += "*/"; // NOI18N
@@ -183,15 +256,18 @@ public class Preprocess extends MatchingTask {
                         }
                     }
                     break;
-                case 1: // waiting for the $else$ statement
-                    if (line.startsWith (F_ELSE)) {
+                case 1: // waiting for the nbelse*/ statement
+                    if (line.trim ().equals (F_ELSE)) {
                         line = R_ELSE;
+                        modified = true; // redundant, for clarity
                         state = 2;
                     }
+                    // FALLTHROUGH: OK to have a if-end block with no else!
                 case 2: // inside the else, waiting for end
-                    if (line.startsWith (F_END)) {
+                    if (line.trim ().equals (F_END)) {
                         state = 0;
                     }
+                    break;
             }
             
             w.write (line);
@@ -199,8 +275,3 @@ public class Preprocess extends MatchingTask {
         }
     }
 }
-
-/*
-* Log
-* $
-*/

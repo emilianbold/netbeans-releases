@@ -46,13 +46,12 @@ Microsystems, Inc. All Rights Reserved.
     </javac>
   </target>
   
-  <target name="compile" depends="compile-regular, compile-preprocessed">
+  <target name="compile" depends="compile-regular,compile-preprocessed">
   </target>
   
   <target name="compile-preprocessed" depends="preprocess" >
-    <javac srcdir="tmp" destdir="src">
+    <javac srcdir="compatkit-work" destdir="compatkit-work">
       <classpath>
-        <pathelement location="tmp"/>
         <pathelement location="src"/>
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
@@ -62,16 +61,18 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="preprocess">
-    <mkdir dir="tmp"/>
-    <preprocess srcdir="src" destdir="tmp" >
-      <include name="**/*.java" />
+    <mkdir dir="compatkit-work"/>
+    <preprocess srcdir="src" destdir="compatkit-work">
+      <switch name="compat" on="true"/>
+      <!-- For efficiency and clarity and safety, we explicitly -->
+      <!-- list all files known to need preprocessing. -->
+      <include name="org/openide/loaders/DataLoaderPool.java"/>
+      <!-- Not possible yet: -->
+      <!-- <include name="org/openide/loaders/MultiDataObject.java"/> -->
+      <include name="org/openide/compiler/ExternalCompiler.java"/>
     </preprocess>
   </target>
   
-  <target name="clean-preprocess">
-    <delete dir="tmp" />
-  </target>
-
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/lib"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
@@ -101,6 +102,14 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/openide/util/Task*.class"/>
       <exclude name="org/openide/util/TaskListener*.class"/>
     </jar>
+    <!-- Create binary compatibility kit. NOBODY should compile against it unless they -->
+    <!-- are trying to make their code obsolete! -->
+    <mkdir dir="netbeans/lib/patches"/>
+    <!-- [PENDING] some sort of manifest? -->
+    <jar jarfile="netbeans/lib/patches/openide-compat.jar"
+         basedir="compatkit-work"
+	 excludesfile="../nbbuild/standard-jar-excludes.txt"
+	 compress="false"/>
   </target>
 
   <target name="netbeans" depends="jars"/>
@@ -317,7 +326,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
 	 compress="true"/>
   </target>
 
-  <target name="clean" depends="clean-preprocess">
+  <target name="clean">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
@@ -335,6 +344,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <delete file="OpenAPIs.zip"/>
     <delete dir="examplemodules"/>
     <delete file="api/examples/org/netbeans/examples/modules/minicomposer/templates.jar"/>
+    <delete dir="compatkit-work"/>
   </target>
 
 </project>
