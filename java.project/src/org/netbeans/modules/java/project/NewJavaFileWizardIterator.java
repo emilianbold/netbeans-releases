@@ -39,14 +39,14 @@ public class NewJavaFileWizardIterator implements InstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
     
-    private boolean isLibrary;
-    
     /** Create a new wizard iterator. */
     public NewJavaFileWizardIterator() {}
     
+    /*
     public static NewJavaFileWizardIterator singleton() {
         return new NewJavaFileWizardIterator();
     }
+     */
             
     private WizardDescriptor.Panel[] createPanels (WizardDescriptor wizardDescriptor) {
         

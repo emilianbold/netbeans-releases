@@ -22,6 +22,7 @@ import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeEvent;
@@ -47,6 +48,9 @@ import org.openide.util.NbBundle;
  */
 public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener {
   
+    /** prefered dimmension of the panel */
+    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (560, 350);
+    
     private static final ListCellRenderer CELL_RENDERER = new NodeCellRenderer();
     
     private Project project;
@@ -109,6 +113,11 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         String packageName = packageComboBox.getEditor().getItem().toString();        
         return  packageName.replace( '.', '/' ); // NOI18N        
     }
+    
+    public java.awt.Dimension getPreferredSize() {
+        return PREF_DIM;
+    }
+    
     
     /*
     public String getTargetFolder() {
@@ -402,25 +411,34 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         
     }
     
-    private static class NodeCellRenderer extends javax.swing.plaf.basic.BasicComboBoxRenderer implements ListCellRenderer {
-        
-        public Component getListCellRendererComponent(
-            JList list,
-            Object value,
-            int index,
-            boolean isSelected,
-            boolean cellHasFocus) {
-        
-            javax.swing.plaf.basic.BasicComboBoxRenderer cbr = (javax.swing.plaf.basic.BasicComboBoxRenderer)super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );   
-            
-            if ( value != null ) {
-                ModelItem item = (ModelItem)value;
-                cbr.setText( item.getDisplayName() );
-                cbr.setIcon( item.getIcon() );
-            }
-            return cbr;
+    private static class NodeCellRenderer extends JLabel implements ListCellRenderer {
+    
+        public NodeCellRenderer() {
+            setOpaque( true );
         }
         
+        public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
+            if (value instanceof ModelItem) {
+                ModelItem item = (ModelItem)value;
+                setText( item.getDisplayName() );
+                setIcon( item.getIcon() );
+            } 
+            else {
+                setText( value.toString () );
+                setIcon( null );
+            }
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());             
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+             
+            }
+            return this;        
+        }
+                
     }
     
 }
