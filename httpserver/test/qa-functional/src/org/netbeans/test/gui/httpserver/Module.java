@@ -963,7 +963,7 @@ public class Module extends JellyTestCase {
 */
 
 // 4.8.5
-    public void test_4_8_5() {
+    public void test_4_8_05() {
 
 	switchToHTTPServerNode();
         PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
@@ -995,7 +995,7 @@ public class Module extends JellyTestCase {
     }
 
 // 4.8.6
-    public void test_4_8_6() {
+    public void test_4_8_06() {
 
 	switchToHTTPServerNode();
         PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
@@ -1004,10 +1004,15 @@ public class Module extends JellyTestCase {
 	Property tf=new Property(psto,"Hosts with Granted Access");
 	old_value=tf.getValue();
 
+        
 	//JTextFieldOperator to=tf.textField();
         //to.typeText("Selected Hosts: localhost");
         tf.setValue("Selected Hosts: localhost");
 
+        pw.pushKey(java.awt.event.KeyEvent.VK_TAB);
+        pw.pushKey(java.awt.event.KeyEvent.VK_TAB);
+
+        /*
 	try {
 		Robot rb=new java.awt.Robot();
 		rb.keyPress(java.awt.event.KeyEvent.VK_TAB);
@@ -1015,6 +1020,7 @@ public class Module extends JellyTestCase {
 	} catch (Exception AWTException) {
 		System.out.println("AWTException in test_4_8_6");	// NOI18N
 	}
+        */
 
 	value=tf.getValue();
 	if (!value.equals("Selected Hosts: localhost")) {
@@ -1027,7 +1033,7 @@ public class Module extends JellyTestCase {
     }
 
 // 4.8.7
-    public void test_4_8_7() {
+    public void test_4_8_07() {
 
 	switchToHTTPServerNode();
         PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
@@ -1040,6 +1046,9 @@ public class Module extends JellyTestCase {
         //to.typeText("Selected Hosts: localhost, boo");
         tf.setValue("Selected Hosts: localhost, boo");
 
+        pw.pushKey(java.awt.event.KeyEvent.VK_TAB);
+        pw.pushKey(java.awt.event.KeyEvent.VK_TAB);
+        /*
 	try {
 		Robot rb=new java.awt.Robot();
 		rb.keyPress(java.awt.event.KeyEvent.VK_TAB);
@@ -1047,6 +1056,7 @@ public class Module extends JellyTestCase {
 	} catch (Exception AWTException) {
 		System.out.println("AWTException in test_4_8_7");	// NOI18N
 	}
+        */
 
 	value=tf.getValue();
 	if (!value.equals("Selected Hosts: localhost, boo")) {
@@ -1058,7 +1068,7 @@ public class Module extends JellyTestCase {
     }
 
 // 4.8.8
-    public void test_4_8_8() {
+    public void test_4_8_08() {
 
 	switchToHTTPServerNode();
         PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
@@ -1089,7 +1099,7 @@ public class Module extends JellyTestCase {
     }
 
 // 4.8.9
-    public void test_4_8_9() {
+    public void test_4_8_09() {
 
 	switchToHTTPServerNode();
         PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
@@ -1154,6 +1164,9 @@ public class Module extends JellyTestCase {
         //to.typeText("/testvalue_cp/");	// NOI18N
         tf.setValue("/testvalue_cp/");	// NOI18N
 
+        pw.pushKey(java.awt.event.KeyEvent.VK_TAB);
+        pw.pushKey(java.awt.event.KeyEvent.VK_TAB);
+        /*
 	try {
 		Robot rb=new java.awt.Robot();
 		rb.keyPress(java.awt.event.KeyEvent.VK_TAB);
@@ -1161,6 +1174,7 @@ public class Module extends JellyTestCase {
 	} catch (Exception AWTException) {
 		System.out.println("AWTException in test_4_8_12");	// NOI18N
 	}
+        */
 
 	value=tf.getValue();
 	if (!value.equals("/testvalue_cp/")) {	// NOI18N
@@ -1301,6 +1315,9 @@ public class Module extends JellyTestCase {
         //to.typeText("/testvalue_fs/");	// NOI18N
         tf.setValue("/testvalue_fs/");	// NOI18N
 
+        pw.pushKey(java.awt.event.KeyEvent.VK_TAB);
+        pw.pushKey(java.awt.event.KeyEvent.VK_TAB);
+        /*
 	try {
 		Robot rb=new java.awt.Robot();
 		rb.keyPress(java.awt.event.KeyEvent.VK_TAB);
@@ -1308,6 +1325,7 @@ public class Module extends JellyTestCase {
 	} catch (Exception AWTException) {
 		System.out.println("AWTException in test_4_8_17");	// NOI18N
 	}
+        */
 
 	value=tf.getValue();
 	if (!value.equals("/testvalue_fs/")) {	// NOI18N
@@ -1449,6 +1467,9 @@ public class Module extends JellyTestCase {
         //to.typeText("/testvalue_jd/");	// NOI18N
         tf.setValue("/testvalue_jd/");	// NOI18N
 
+        pw.pushKey(java.awt.event.KeyEvent.VK_TAB);
+        pw.pushKey(java.awt.event.KeyEvent.VK_TAB);
+        /*
 	try {
 		Robot rb=new java.awt.Robot();
 		rb.keyPress(java.awt.event.KeyEvent.VK_TAB);
@@ -1456,6 +1477,7 @@ public class Module extends JellyTestCase {
 	} catch (Exception AWTException) {
 		System.out.println("AWTException in test_4_8_22");	// NOI18N
 	}
+        */
 
 	value=tf.getValue();
 	if (!value.equals("/testvalue_jd/")) {	// NOI18N
