@@ -256,7 +256,7 @@ public class TransformPerformer {
                 fileObject.setAttribute(TransformHistory.TRANSFORM_HISTORY_ATTRIBUTE, history);
             } catch (IOException exc) {
                 // ... will not be persistent!
-                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, exc);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             }
         }
         
@@ -291,7 +291,7 @@ public class TransformPerformer {
                     showURL(resultFO.getURL());
                 }
             } catch (FileAlreadyLockedException exc) {
-                throw (FileAlreadyLockedException) TopManager.getDefault().getErrorManager().annotate(exc, Util.THIS.getString("ERR_FileAlreadyLockedException_output"));
+                throw (FileAlreadyLockedException) ErrorManager.getDefault().annotate(exc, Util.THIS.getString("ERR_FileAlreadyLockedException_output"));
             } finally {
                 if ( outputStream != null ) {
                     outputStream.close();
@@ -345,7 +345,7 @@ public class TransformPerformer {
                     //                     NotifyDescriptor nd = new NotifyDescriptor.Message (exc.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
                     //                     TopManager.getDefault().notify (nd);
                     
-                    TopManager.getDefault().getErrorManager().notify(ErrorManager.WARNING, exc);
+                    ErrorManager.getDefault().notify(ErrorManager.WARNING, exc);
                 }
             }
         }
