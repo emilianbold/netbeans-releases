@@ -227,6 +227,10 @@ public class MakeUpdateDesc extends MatchingTask {
                                                 String mn = line.substring (idx + dummyModuleName.length () - 1);
                                                 log (" Adding module   " + mn + " (" + n_file.getAbsolutePath() + ")");
                                             }
+                                            String docType = "<!DOCTYPE module";
+                                            idx = line.indexOf(docType);
+                                            if (idx != -1) 
+                                                ; //Do nothing, it shouldn't be included
                                             String licenseMarker = "<license name=\"";
                                             idx = line.indexOf (licenseMarker);
                                             if (idx != -1) {
