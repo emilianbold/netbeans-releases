@@ -67,6 +67,7 @@
           <ComponentRef name="sessionTypeButtonGroup"/>
         </Property>
         <Property name="text" type="java.lang.String" value="Stateless"/>
+        <Property name="opaque" type="boolean" value="false"/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -80,6 +81,7 @@
           <ComponentRef name="sessionTypeButtonGroup"/>
         </Property>
         <Property name="text" type="java.lang.String" value="Stateful"/>
+        <Property name="opaque" type="boolean" value="false"/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -93,6 +95,7 @@
           <ComponentRef name="transactionTypeButtonGroup"/>
         </Property>
         <Property name="text" type="java.lang.String" value="Bean"/>
+        <Property name="opaque" type="boolean" value="false"/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -106,6 +109,7 @@
           <ComponentRef name="transactionTypeButtonGroup"/>
         </Property>
         <Property name="text" type="java.lang.String" value="Container"/>
+        <Property name="opaque" type="boolean" value="false"/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

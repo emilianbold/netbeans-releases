@@ -111,8 +111,8 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
                 }
             };
 
-            final DurabilityComboBoxHelper durabilityComboBoxHelper = new DurabilityComboBoxHelper(
-                    durabilityComboBox, dataObject);
+            final DurabilityComboBoxHelper durabilityComboBoxHelper = new DurabilityComboBoxHelper(durabilityComboBox,
+                    dataObject);
 
             new ItemComboBoxHelper(destinationTypeComboBox, dataObject) {
 
@@ -184,7 +184,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
                 break;
             }
         }
-        return value == null? defaultValue : value;
+        return value == null ? defaultValue : value;
     }
 
     private void setConfigProperty(String propertyName, String propertyValue) {
@@ -192,7 +192,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
         for (int i = 0; i < properties.length; i++) {
             ActivationConfigProperty property = properties[i];
             if (propertyName.equalsIgnoreCase(property.getActivationConfigPropertyName())) {
-                if(propertyValue != null) {
+                if (propertyValue != null) {
                     property.setActivationConfigPropertyValue(propertyValue);
                 } else {
                     config.removeActivationConfigProperty(property);
@@ -200,7 +200,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
                 return;
             }
         }
-        if(propertyValue != null) {
+        if (propertyValue != null) {
             ActivationConfigProperty property = config.newActivationConfigProperty();
             property.setActivationConfigPropertyName(propertyName);
             property.setActivationConfigPropertyValue(propertyValue);

@@ -88,6 +88,7 @@ public class SessionOverviewForm extends SectionInnerPanel {
 
         sessionTypeButtonGroup.add(statelessRadioButton);
         statelessRadioButton.setText("Stateless");
+        statelessRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -97,6 +98,7 @@ public class SessionOverviewForm extends SectionInnerPanel {
 
         sessionTypeButtonGroup.add(statefulRadioButton);
         statefulRadioButton.setText("Stateful");
+        statefulRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -106,6 +108,7 @@ public class SessionOverviewForm extends SectionInnerPanel {
 
         transactionTypeButtonGroup.add(beanRadioButton);
         beanRadioButton.setText("Bean");
+        beanRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -115,6 +118,7 @@ public class SessionOverviewForm extends SectionInnerPanel {
 
         transactionTypeButtonGroup.add(containerRadioButton);
         containerRadioButton.setText("Container");
+        containerRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;

@@ -64,8 +64,8 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
         add(jLabel1, gridBagConstraints);
 
         jLabel2.setText("Local Interface");
@@ -73,7 +73,8 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
         add(jLabel2, gridBagConstraints);
 
         jLabel3.setText("Component:");
@@ -81,7 +82,8 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
         add(jLabel3, gridBagConstraints);
 
         jLabel4.setText("Home:");
@@ -89,7 +91,8 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
         add(jLabel4, gridBagConstraints);
 
         jLabel5.setText("Remote Interface");
@@ -97,7 +100,8 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
         add(jLabel5, gridBagConstraints);
 
         jLabel6.setText("Component:");
@@ -105,7 +109,8 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
         add(jLabel6, gridBagConstraints);
 
         jLabel7.setText("Home:");
@@ -113,18 +118,20 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 10);
         add(jLabel7, gridBagConstraints);
 
-        beanClassTextField.setColumns(30);
+        beanClassTextField.setColumns(35);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(beanClassTextField, gridBagConstraints);
 
+        localInterfaceCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -132,22 +139,25 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(localInterfaceCheckBox, gridBagConstraints);
 
-        localComponentTextField.setColumns(30);
+        localComponentTextField.setColumns(35);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(localComponentTextField, gridBagConstraints);
 
-        localHomeTextField.setColumns(30);
+        localHomeTextField.setColumns(35);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(localHomeTextField, gridBagConstraints);
 
+        remoteInterfaceCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -155,19 +165,21 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(remoteInterfaceCheckBox, gridBagConstraints);
 
-        remoteComponentTextField.setColumns(30);
+        remoteComponentTextField.setColumns(35);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(remoteComponentTextField, gridBagConstraints);
 
-        remoteHomeTextField.setColumns(30);
+        remoteHomeTextField.setColumns(35);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(remoteHomeTextField, gridBagConstraints);
 
@@ -175,7 +187,7 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(changeClassesButton, gridBagConstraints);
 

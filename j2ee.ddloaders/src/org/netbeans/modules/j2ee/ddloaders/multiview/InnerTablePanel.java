@@ -37,6 +37,7 @@ public class InnerTablePanel extends SectionInnerPanel {
 
     private final TablePanel tablePanel;
     private final XmlMultiViewDataObject dataObject;
+    private JTable table;
 
     private class TablePanel extends DefaultTablePanel {
 
@@ -47,28 +48,17 @@ public class InnerTablePanel extends SectionInnerPanel {
          */
         public TablePanel(final DefaultTableModel model) {
             super(model);
-            addButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    model.addRow((Object[]) null);
-                    modelUpdatedFromUI();
-                }
-            });
             final JTable table = getTable();
-            removeButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    model.removeRow(table.getSelectedRow());
-                    modelUpdatedFromUI();
-                }
-            });
             table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {
-                    removeButton.setEnabled(table.getSelectedRow() >= 0);
-                    modelUpdatedFromUI();
+                    int selectedRowCount = table.getSelectedRowCount();
+                    removeButton.setEnabled(selectedRowCount > 0);
+                    editButton.setEnabled(selectedRowCount == 1);
                 }
             });
         }
 
-        private void modelUpdatedFromUI() {
+        public void modelUpdatedFromUI() {
             if (dataObject != null) {
                 dataObject.modelUpdatedFromUI();
             }
@@ -98,7 +88,7 @@ public class InnerTablePanel extends SectionInnerPanel {
                 }
             }
         });
-        final JTable table = tablePanel.getTable();
+        table = tablePanel.getTable();
         if (tableCellEditor != null) {
             table.setCellEditor(tableCellEditor);
         }
@@ -106,6 +96,10 @@ public class InnerTablePanel extends SectionInnerPanel {
         table.setPreferredSize(table.getPreferredSize());
         setLayout(new BorderLayout());
         add(tablePanel, BorderLayout.WEST);
+    }
+
+    public JTable getTable() {
+        return table;
     }
 
     public JButton getAddButton() {
@@ -123,9 +117,15 @@ public class InnerTablePanel extends SectionInnerPanel {
     public void setColumnWidths(int[] widths) {
         final JTable table = tablePanel.getTable();
         TableColumnModel columnModel = table.getColumnModel();
+        int tableWidth = 0;
         for (int i = 0, n = widths.length; i < n; i++) {
-            columnModel.getColumn(i).setPreferredWidth(widths[i]);
+            int width = widths[i];
+            tableWidth += width;
+            columnModel.getColumn(i).setPreferredWidth(width);
         }
+        Dimension size = table.getPreferredSize();
+        size.width = tableWidth;
+        table.setPreferredSize(size);
     }
 
     public InnerTablePanel(SectionNodeView sectionNodeView, DefaultTableModel model) {

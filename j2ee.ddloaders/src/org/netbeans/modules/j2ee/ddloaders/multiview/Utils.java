@@ -15,6 +15,11 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.j2ee.ddloaders.multiview.ui.*;
+import org.netbeans.modules.j2ee.ddloaders.multiview.ui.BrowseFolders;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * @author pfiala
@@ -44,7 +49,7 @@ public class Utils {
     };
 
     public static String browseIcon(EjbJarMultiViewDataObject dataObject) {
-        FileObject fileObject = BrowseFolders.showDialog(dataObject.getSourceGroups(), imageFileFilter);
+        FileObject fileObject = org.netbeans.modules.j2ee.ddloaders.multiview.ui.BrowseFolders.showDialog(dataObject.getSourceGroups(), imageFileFilter);
         String relativePath;
         if (fileObject != null) {
             FileObject projectDirectory = dataObject.getProjectDirectory();
@@ -54,4 +59,11 @@ public class Utils {
         }
         return relativePath;
     }
+
+    public static Color getErrorColor() {
+        // inspired by org.openide.WizardDescriptor
+        Color c = UIManager.getColor("nb.errorForeground"); //NOI18N
+        return c == null ? new Color(89,79,191) : c;
+    }
+
 }
