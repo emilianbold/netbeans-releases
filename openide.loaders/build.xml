@@ -120,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </delete>
         <delete file="manifest-subst.mf"/>
-        <delete file="openide-compiler.nbm"/>
+        <delete file="openide-loaders.nbm"/>
         <delete dir="netbeans"/>
         <delete dir="Info"/>
         <delete dir="javadoc"/>
