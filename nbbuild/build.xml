@@ -219,6 +219,22 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building java/srcmodel..."/>
     <ant dir="../java/srcmodel" target="netbeans"/>
   </target>
+  <target name="all-java/javacore" depends="all-java/javamodel,all-classfile,all-java/api,all-java/parser">
+    <echo message="Building module javacore..."/>
+    <ant dir="../java/javacore" target="netbeans"/>
+  </target>
+  <target name="all-java/javamodel" depends="all-mdr">
+    <echo message="Building module javamodel..."/>
+    <ant dir="../java/javamodel" target="netbeans"/>
+  </target>
+  <target name="all-java/parser" depends="build-platform">
+    <echo message="Building module parser..."/>
+    <ant dir="../java/parser" target="jar"/>
+  </target>
+  <target name="all-refactoring" depends="all-java,all-java/project,all-projects/projectapi,all-projects/projectuiapi">
+    <echo message="Building module refactoring..."/>
+    <ant dir="../refactoring" target="netbeans"/>
+  </target>
   <target name="all-core/deprecated" depends="build-platform">
     <echo message="Building core/deprecated..."/>
     <ant dir="../core/deprecated" target="netbeans"/>
@@ -329,7 +345,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module classclosure..."/>
     <ant dir="../classclosure" target="netbeans"/>
   </target>
-  <target name="all-clazz" depends="build-platform,all-classfile,all-java/srcmodel,all-debuggercore/oldapi,all-java/api">
+  <target name="all-clazz" depends="build-platform,all-classfile,all-java/srcmodel,all-java/api">
     <echo message="Building module clazz..."/>
     <ant dir="../clazz" target="netbeans"/>
   </target>
@@ -369,7 +385,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module debuggerjpda/ant..."/>
     <ant dir="../debuggerjpda/ant" target="netbeans"/>
   </target>
-  <target name="all-editor" depends="build-platform,all-java/srcmodel,all-debuggercore/oldapi,all-java/api,all-projects/queries">
+  <target name="all-editor" depends="build-platform,all-java/srcmodel,all-debuggercore/oldapi,all-java/api,all-java/javacore">
     <echo message="Building module editor..."/>
     <ant dir="../editor" target="netbeans"/>
   </target>
@@ -448,7 +464,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-jarpackager">
   </target>
-  <target name="all-java" depends="build-platform,all-java/api,all-debuggercore/oldapi,all-java/srcmodel">
+  <target name="all-java" depends="build-platform,all-java/api,all-java/srcmodel,all-java/javacore">
     <echo message="Building module java..."/>
     <ant dir="../java" target="netbeans"/>
   </target>
@@ -1185,7 +1201,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       </eager>
     </createmodulexml>
   </target>
-  
+
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 

@@ -35,6 +35,9 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>
             <pathelement location="${java/j2seproject.dir}/${nb.modules.dir}/org-netbeans-modules-java-j2seproject.jar"/>
             <pathelement location="${ant/project.dir}/${nb.modules.dir}/org-netbeans-modules-project-ant.jar"/>
+            <!-- metadata repository support classpath -->
+            <pathelement location="${java/javacore.dir}/${nb.modules.dir}/org-netbeans-modules-javacore.jar"/>
+            <pathelement location="${mdr/nbjmiutils.dir}/${nb.modules.dir}/ext/jmiutils.jar"/>
             <!-- use junit with already compiled extensions -->        
             <pathelement location="../../lib/xtest.jar"/>
             <pathelement location="../../lib/xtest-junit-testrunner.jar"/>

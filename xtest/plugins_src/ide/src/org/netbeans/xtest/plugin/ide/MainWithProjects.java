@@ -18,6 +18,7 @@ import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
+import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -42,22 +43,13 @@ public class MainWithProjects implements Main.MainWithProjectsInterface {
      */
     public void openProject(File projectDir) {
         try {
-            /* not needed because there should always be something mounted
-            // mount project path to FS repository
-            Repository repo = Repository.getDefault();
-            LocalFileSystem lfs = new LocalFileSystem();
-            lfs.setRootDirectory(projectDir);
-            repo.addFileSystem(lfs);
-             */         
             // open project
-            FileObject[] fos = FileUtil.fromFile(projectDir);
-            if(fos.length == 0) {
-                throw new IllegalArgumentException("Invalid value of xtest.ide.open.project property: "+projectDir.getAbsolutePath());
-            }
-            Project project = ProjectManager.getDefault().findProject(fos[0]);
+            Project project = OpenProjectList.fileToProject(projectDir);
             OpenProjectList.getDefault().open(project);
             // Set main? Probably user should do this if he wants.
             // OpenProjectList.getDefault().setMainProject(project);
+            // wait until metadata scanning is finished
+            ((JMManager)JMManager.getManager()).waitScanFinished();
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
         }        

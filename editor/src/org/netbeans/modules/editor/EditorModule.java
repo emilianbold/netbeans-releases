@@ -15,9 +15,7 @@
 package org.netbeans.modules.editor;
 
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.io.IOException;
@@ -39,7 +37,6 @@ import org.netbeans.modules.editor.options.PlainPrintOptions;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.RepositoryListener;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -47,10 +44,8 @@ import org.openide.modules.ModuleInstall;
 import org.openide.nodes.Node;
 import org.openide.options.SystemOption;
 import org.openide.text.PrintSettings;
-import org.openide.util.RequestProcessor;
 import org.openide.util.SharedClassObject;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.editor.ImplementationProvider;
@@ -59,22 +54,8 @@ import java.util.Iterator;
 import org.openide.text.CloneableEditor;
 import java.util.HashSet;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.editor.java.JCStorage;
 import org.netbeans.modules.editor.options.BasePrintOptions;
-import org.openide.loaders.OperationEvent;
-import org.openide.loaders.OperationListener;
-import org.openide.loaders.OperationAdapter;
-import org.openide.cookies.SourceCookie;
-import org.netbeans.modules.editor.java.JCUpdater;
-import org.netbeans.modules.editor.java.JavaKit;
-import org.netbeans.modules.editor.java.ParserThread;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.RepositoryEvent;
-import org.openide.filesystems.RepositoryReorderedEvent;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataLoaderPool;
-import org.openide.util.Lookup;
 
 
 /**
@@ -86,9 +67,6 @@ import org.openide.util.Lookup;
 public class EditorModule extends ModuleInstall {
 
     private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.kits");
-    private RequestProcessor ccUpdateProcessor;
-    private RepositOperations operationListener;
-
 
     /** PrintOptions to be installed */
     static Class[] printOpts = new Class[] {
@@ -163,25 +141,7 @@ public class EditorModule extends ModuleInstall {
                 }
             } );
 
-        // Settings
-        //NbEditorSettingsInitializer.init(); moving to NbEditorKit in accordance with the bug #21976
 
-
-	// defer the rest of initialization, but enable a bit of paralelism
-//        org.openide.util.RequestProcessor.postRequest (this, 0, Thread.MIN_PRIORITY);
-
-        // Options
-            /*
-        PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
-
-        // Start listening on addition/removal of print options
-        BasePrintOptions bpo = (BasePrintOptions) BasePrintOptions.findObject(BasePrintOptions.class, true);
-        bpo.init();
-        
-        for (int i = 0; i < printOpts.length; i++) {
-            ps.addOption((SystemOption)SharedClassObject.findObject(printOpts[i], true));
-        }
-*/
         // Autoregistration
         try {
             Field keyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
@@ -202,18 +162,12 @@ public class EditorModule extends ModuleInstall {
 //            );
 //        }
 
-        operationListener = new RepositOperations();
-        ((DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class)).addOperationListener(operationListener);
-
     }
 
     /** Called when module is uninstalled. Overrides superclass method. */
     public void uninstalled() {
 
         AllOptionsFolder.unregisterModuleRegListener();
-        
-        ((DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class)).removeOperationListener(operationListener);
-        operationListener = null;
         
         // Options
         PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
@@ -274,18 +228,9 @@ public class EditorModule extends ModuleInstall {
             }
         });
 
-        // stop any queued updates of parser DB
-        ParserThread.getParserThread().stopParserThread();
-        
         inited = false; // moved here as part of fix of #27418
     }
 
-    private synchronized RequestProcessor getCCUpdateProcessor() {
-        if (ccUpdateProcessor == null) {
-            ccUpdateProcessor = new RequestProcessor("Code Completion Database Updater"); //NOI18N
-        }
-        return ccUpdateProcessor;
-    }
     
     private static class HackMap extends Hashtable {
         
@@ -440,70 +385,5 @@ public class EditorModule extends ModuleInstall {
         
     }
 
-    /** Listens to repository operations like move, delete and rename of the 
-        classes or packages and updates Code Completion DB */
-    private final class RepositOperations extends OperationAdapter {
-
-        // for DataFolder move you will receive move events
-        // for individual DataObjects in folder.
-        public void operationMove(OperationEvent.Move ev){
-            final DataObject dobj = ev.getObject();
-            if (dobj == null) {
-                return;
-            }
-            SourceCookie sc = (SourceCookie)dobj.getCookie(SourceCookie.class);
-            if (sc == null) {
-                return;
-            }
-            // Remove old class from parser DB. The moved file will
-            // be added into parser DB automatically because of package
-            // rename and consequent save operation.
-            JCStorage.getStorage().removeClass(ev.getOriginalPrimaryFile());
-        }
-        
-        // for DataFolder delete you will receive delete events
-        // for individual DataObjects in folder.
-        public void operationDelete(OperationEvent ev){
-            DataObject dobj = ev.getObject();
-            if (dobj == null) {
-                return;
-            }
-            SourceCookie sc = (SourceCookie)dobj.getCookie(SourceCookie.class);
-            if (sc == null) {
-                return;
-            }
-            // Remove old class from parser DB
-            JCStorage.getStorage().removeClass(dobj.getPrimaryFile());
-        }
-        
-        public void operationRename(OperationEvent.Rename ev){
-            DataObject dobj = ev.getObject();
-            if (dobj == null) {
-                return;  
-            }
-
-            // create path (including the file name) of the renamed file
-            String oldPath = dobj.getPrimaryFile().getParent().getPath();
-            if (oldPath.length() > 0) {
-                oldPath += '/';
-            }
-            oldPath += ev.getOriginalName();
-            
-            DataFolder df = (DataFolder)dobj.getCookie(DataFolder.class);
-            if (df != null) {
-                // DataFolder was renamed. It is necessary to remove all classes
-                // from renamed package from parser DB
-                JCStorage.getStorage().removePackage(oldPath);
-            } else {
-                SourceCookie sc = (SourceCookie)dobj.getCookie(SourceCookie.class);
-                if (sc == null) {
-                    return;
-                }
-                // Remove the renamed class from parser DB
-                JCStorage.getStorage().removeClass(oldPath);
-            }
-        }
-
-    }
     
 }

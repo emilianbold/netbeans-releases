@@ -33,7 +33,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.Registry;
 import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
-import org.netbeans.modules.editor.java.JCFinderFactory;
 import org.netbeans.modules.editor.java.JCStorage;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.plain.PlainKit;
@@ -98,10 +97,7 @@ public class EditorWarmUpTask implements Runnable{
         
         // initializing code completion database. Reading *.jcs files and creating memory map of available 
         // completin classes
-        JCStorage.getStorage();
-        // initialize also finder factory. It will start listening on 
-        // GlobalPathRegistry and project open will triggers its parserDB creation
-        JCFinderFactory.getDefault();
+        //JCStorage.getStorage();
         if (debug){
             System.out.println("Storage initialized:"+(System.currentTimeMillis()-startTime));
             startTime = System.currentTimeMillis();
