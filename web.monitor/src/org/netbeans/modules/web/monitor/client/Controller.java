@@ -18,6 +18,7 @@
 package  org.netbeans.modules.web.monitor.client;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -102,8 +103,10 @@ class Controller  {
     private boolean useBrowserCookie = true;
 
     private static Controller instance = null; 
+    private Date startDate;
     
     private Controller() {
+        startDate = new Date();
 	currBeans = new Hashtable();
 	saveBeans = new Hashtable();
 	createNodeStructure();
@@ -142,18 +145,6 @@ class Controller  {
 	root = new NavigateNode(children);
 
 	    
-    }
-
-    static void removeFiles() { 
-	if(instance == null) return; 
-	instance.cleanup(); 
-    }
-
-    void cleanup() {
-	deleteDirectory(currDirStr);
-        /*
-	removeBrowserListener();
-        */
     }
 
     /**
@@ -962,14 +953,32 @@ class Controller  {
 	while(e.hasMoreElements()) {
 
 	    fo = (FileObject)e.nextElement();
-	    id = fo.getName();
-	    if(debug) 
-		log("getting current transaction: " + id); //NOI18N 
-		    
-	    // Retrieve the monitordata
-	    md = retrieveMonitorData(id, currDir); 
-            if (md != null) {
-                nodes.add(createTransactionNode(md, true)); 
+	        // #43213 - avoiding ModuleInstall class, delaying deletion of old records until now
+            if (fo.lastModified().after(startDate)) {
+                id = fo.getName();
+                if(debug) 
+                    log("getting current transaction: " + id); //NOI18N 
+
+                // Retrieve the monitordata
+                md = retrieveMonitorData(id, currDir); 
+                if (md != null) {
+                    nodes.add(createTransactionNode(md, true)); 
+                }
+            }
+            else {
+                // delete it
+                final FileObject foToDelete = fo;
+                RequestProcessor.getDefault().post(new Runnable () {
+                    public void run() {
+                        Thread.yield();
+                        try {
+                            foToDelete.delete();
+                        }
+                        catch (IOException e) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        }
+                    }
+                });
             }
 	}
 	    
