@@ -127,5 +127,15 @@ public class URLUtil {
         
         return false;
     }
+    
+    /** Determines whether a given browser is capable of displaying URLs with the jar: protocol.
+     *  Currently, Mozilla and Firefox can do this.
+     *  @param browser browser id - one of the constants defined in ExtWebBrowser
+     *  @return true if the browser handles jar URLs
+     */
+    public static boolean browserHandlesJarURLs(String browser) {
+        return (ExtWebBrowser.MOZILLA.equals(browser) ||
+                ExtWebBrowser.FIREFOX.equals(browser));
+    }
 
 }

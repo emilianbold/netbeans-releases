@@ -273,7 +273,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 }
                 
                 // internal protocols cannot be displayed in external viewer
-                url = URLUtil.createExternalURL(url, task.browser.realDDEServer().equals(ExtWebBrowser.MOZILLA));   // XXX support Netscape too?
+                url = URLUtil.createExternalURL(url, URLUtil.browserHandlesJarURLs(task.browser.realDDEServer()));   // XXX support Netscape too?
                 
                 if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
                     ExtWebBrowser.getEM().log("" + System.currentTimeMillis() + " url: " + url);          // NOI18N
