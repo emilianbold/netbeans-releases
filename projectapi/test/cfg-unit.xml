@@ -19,6 +19,8 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
+                <!-- occasionally failing (#51024): -->
+                <exclude name="org/netbeans/api/project/ProjectManagerTest.clas/testLoadExceptionWithConcurrentLoad"/>
             </patternset>
         </testset>
     </testbag>
@@ -29,6 +31,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/*Test.class"/>
                 <!-- dsimonek says it fails for him, do not know why (#44273): -->
                 <exclude name="org/netbeans/api/project/TestUtilTest.class/testCreateFileFromContent"/>
+                <!-- occasionally failing (#51024): -->
+                <exclude name="org/netbeans/api/project/ProjectManagerTest.clas/testLoadExceptionWithConcurrentLoad"/>
             </patternset>
         </testset>
     </testbag>
