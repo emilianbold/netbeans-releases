@@ -129,26 +129,9 @@ public abstract class NbTopManager extends TopManager {
     /** status text */
     private String statusText;
 
-    /** the error level code for restarting windows */
-    private static final int RESTART_EXIT_CODE = 66;
-
     /** initializes properties about builds etc. */
     static {
         // Set up module-versioning properties, which logger prints.
-        /*
-        // IMPORTANT: must use an unlocalized resource here.
-        java.util.Properties versions = new java.util.Properties ();
-        try {
-            versions.load (Main.class.getClassLoader ().getResourceAsStream ("org/netbeans/core/Versioning.properties")); // NOI18N
-        } catch (java.io.IOException ioe) {
-            ioe.printStackTrace ();
-        }
-        System.setProperty ("org.openide.specification.version", versions.getProperty ("VERS_Specification_Version")); // NOI18N
-        System.setProperty ("org.openide.version", versions.getProperty ("VERS_Implementation_Version")); // NOI18N
-        System.setProperty ("org.openide.major.version", versions.getProperty ("VERS_Name")); // NOI18N
-        // For TopLogging and MainWindow only:
-        System.setProperty ("netbeans.buildnumber", versions.getProperty ("VERS_Build_Number")); // NOI18N
-        */
         Package p = Package.getPackage ("org.openide"); // NOI18N
         
         putSystemProperty ("org.openide.specification.version", p.getSpecificationVersion (), "1.1.6"); // NOI18N
@@ -666,33 +649,14 @@ public abstract class NbTopManager extends TopManager {
             NbBundle.getBundle (NbTopManager.class).getString ("MSG_AllSaved"));
     }
 
-    /** The ide is left after calling this method.
-    * The method return iff Runtim.getRuntime().exit() fails
-    */
-    public void restart () {
-        // save project
-        exit (RESTART_EXIT_CODE);
-    }
-
-    /** Has the same behavior like exit( 0 );
-    */
     public void exit ( ) {
-        exit( 0 );
-    }
-
-    /** The ide is left after calling this method. All unsaved files are
-    * saved. Modules are asked to exit
-    * The method return iff Runtim.getRuntime().exit() fails
-    * JVM ends with retValue code.
-    */
-    public void exit (int retValue) {
         // save all open files
         if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
             if (ModuleInstaller.exit ()) {
                 // save project
                 NbProjectOperation.storeLastProject ();
 
-                Runtime.getRuntime().exit ( retValue );
+                Runtime.getRuntime().exit ( 0 );
             }
         }
     }
