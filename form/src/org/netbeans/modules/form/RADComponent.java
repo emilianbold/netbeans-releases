@@ -291,6 +291,17 @@ public class RADComponent {
 // -----------------------------------------------------------------------------
 // Protected interface
 
+  protected boolean hasDefaultEvent () {
+    return (eventsList.getDefaultEvent () != null);
+  }
+
+  protected void attachDefaultEvent () {
+    EventsList.Event defaultEvt = eventsList.getDefaultEvent ();
+    if (defaultEvt.getHandler () == null)
+      defaultEvt.createDefaultEventHandler ();
+    defaultEvt.gotoEventHandler ();
+  }
+
   protected Node.Property[] createSyntheticProperties () {
     return getFormManager ().getCodeGenerator ().getSyntheticProperties (this);
   }
@@ -979,6 +990,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  31   Gandalf   1.30        7/16/99  Ian Formanek    default action
  *  30   Gandalf   1.29        7/11/99  Ian Formanek    FormPropertyEditor is 
  *       provided only if the current persistence manager 
  *       supportsAdvancedFeatures ()

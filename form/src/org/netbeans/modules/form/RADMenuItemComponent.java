@@ -164,14 +164,7 @@ public class RADMenuItemComponent extends RADComponent {
   private ActionListener getDefaultActionListener() {
     return new ActionListener() {
       public void actionPerformed(ActionEvent ev) {
-        // [PENDING]
-/*        if (RADMenuItemComponent.this.hasDefaultAction()) {
-          try {
-            RADMenuItemComponent.this.invokeDefaultAction();
-          }
-          catch (java.lang.reflect.InvocationTargetException e) {
-          }
-        } */
+        if (hasDefaultEvent ()) attachDefaultEvent ();
       }
     };
   }
@@ -190,6 +183,7 @@ public class RADMenuItemComponent extends RADComponent {
 
 /*
  * Log
+ *  2    Gandalf   1.1         7/16/99  Ian Formanek    default action
  *  1    Gandalf   1.0         7/5/99   Ian Formanek    
  * $
  */

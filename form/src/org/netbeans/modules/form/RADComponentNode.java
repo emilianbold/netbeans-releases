@@ -102,6 +102,20 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     return component.getNewTypes ();
   }
 
+  /** Get the default action for this node.
+  * This action can but need not be one from the list returned
+  * from {@link #getActions}. If so, the popup menu returned from {@link #getContextMenu}
+  * is encouraged to highlight the action.
+  *
+  * @return default action, or <code>null</code> if there should be none
+  */
+  public SystemAction getDefaultAction () {
+    if (component.getEventsList ().getDefaultEvent () != null)
+      return SystemAction.get (DefaultRADAction.class);
+    else
+      return null;
+  }
+
   /** Lazily initialize set of node's actions (overridable).
   * The default implementation returns <code>null</code>.
   * <p><em>Warning:</em> do not call {@link #getActions} within this method.
@@ -527,6 +541,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  24   Gandalf   1.23        7/16/99  Ian Formanek    default action
  *  23   Gandalf   1.22        7/14/99  Ian Formanek    Fixed bug 1830 - Layout 
  *       panel is not synchronized with Form Window
  *  22   Gandalf   1.21        7/5/99   Ian Formanek    provides NewTypes and 
