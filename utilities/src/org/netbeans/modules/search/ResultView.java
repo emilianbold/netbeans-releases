@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.lang.ref.WeakReference;
+import javax.accessibility.AccessibleContext;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -290,6 +291,22 @@ final class ResultView extends TopComponent
         getAccessibleContext ().setAccessibleName (bundle.getString ("ACSN_ResultViewTopComponent"));                   //NOI18N
         getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_ResultViewTopComponent"));            //NOI18N
 
+        AccessibleContext accessCtx;
+        
+        accessCtx = treeView.getHorizontalScrollBar().getAccessibleContext();
+        accessCtx.setAccessibleName(
+                bundle.getString("ACSN_HorizontalScrollbar"));          //NOI18N
+        
+        accessCtx = treeView.getVerticalScrollBar().getAccessibleContext();
+        accessCtx.setAccessibleName(
+                bundle.getString("ACSN_VerticalScrollbar"));            //NOI18N
+
+        accessCtx = treeView.getAccessibleContext();
+        accessCtx.setAccessibleName(
+                bundle.getString("ACSN_ResultTree"));                   //NOI18N
+        accessCtx.setAccessibleDescription(
+                bundle.getString("ACSD_ResultTree"));                   //NOI18N
+        
         sortButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_SORT"));           //NOI18N
         unsortButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_UNSORT"));       //NOI18N
         btnModifySearch.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_TEXT_BUTTON_CUSTOMIZE")); //NOI18N
