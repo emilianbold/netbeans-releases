@@ -3,11 +3,7 @@ OpenIDE-Module: org.netbeans.modules.diff/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/diff/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.8
 OpenIDE-Module-Implementation-Version: promotionD
-OpenIDE-Module-Build-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Public-Packages: org.netbeans.api.diff.*,org.netbeans.spi.diff.*
 OpenIDE-Module-Layer: org/netbeans/modules/diff/mf-layer.xml
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor/2 > 1.7, org.netbeans.modules.editor.lib/1
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.39
 
 Name: org/netbeans/modules/diff/DiffAction.class
 OpenIDE-Module-Class: Action
