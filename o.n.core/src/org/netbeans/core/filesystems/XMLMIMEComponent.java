@@ -305,14 +305,10 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             throw STOP;
         }
 
-        private RememberingReader memory = null;
-        
         protected void customizeInputSource(InputSource in) {
             try {
                 Reader r = new InputStreamReader(in.getByteStream(), "UTF8");
-                memory = new RememberingReader(r);
-                memory.startRemembering();
-                in.setCharacterStream(memory);                
+                in.setCharacterStream(r);
             } catch (Exception ex) {
                 ErrorManager emgr = (ErrorManager) Lookup.getDefault().lookup(ErrorManager.class);
                 emgr.notify(ex);
@@ -328,15 +324,6 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             emgr.log(NbBundle.getMessage(getClass(), "W-002"));
             emgr.notify(emgr.INFORMATIONAL, exception);  
 
-            if (memory != null) {
-                // show in all cases log()s above are hidden from output
-                System.err.println("Input content:[BOS]" + memory.stopRemembering() + "[EOS (auxiliary marks are not part of the stream)]");
-                try {
-                    memory.close();
-                } catch (IOException eX) {
-                }
-            }
-            
             this.state = ERROR;
             throw STOP;
         }
