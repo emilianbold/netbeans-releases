@@ -34,6 +34,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.TabbedPaneUI;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FileSystemAction;
@@ -238,8 +239,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
                     ioException = ioEx;
                 }
                 if (ioException != null) {
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(ioException.getLocalizedMessage()));
+                    ErrorManager.getDefault().notify(ioException);
                 }
             }
         }

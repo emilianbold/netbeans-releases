@@ -16,16 +16,24 @@ package org.netbeans.api.diff;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.IOException;
 
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
 import org.openide.util.io.ReaderInputStream;
+
+import org.netbeans.modules.diff.EncodedReaderFactory;
 
 /**
  * This class provides streams and information about them to be used by diff
@@ -99,6 +107,7 @@ public abstract class StreamSource extends Object {
         private File readerSource;
         private Writer w;
         private File file;
+        private String encoding;
         
         Impl(String name, String title, String MIMEType, Reader r) {
             this.name = name;
@@ -108,6 +117,9 @@ public abstract class StreamSource extends Object {
             this.readerSource = null;
             this.w = null;
             this.file = null;
+            if (r instanceof InputStreamReader) {
+                encoding = ((InputStreamReader) r).getEncoding();
+            }
         }
         
         Impl(String name, String title, String MIMEType, File file) {
@@ -117,17 +129,23 @@ public abstract class StreamSource extends Object {
             this.readerSource = null;
             this.w = null;
             this.file = file;
+            encoding = EncodedReaderFactory.getDefault().getEncoding(file);
         }
         
         private File createReaderSource(Reader r) throws IOException {
             File tmp = null;
-            tmp = File.createTempFile("ss", "tmp");
+            tmp = File.createTempFile("sss", "tmp");
             tmp.deleteOnExit();
             tmp.createNewFile();
             InputStream in = null;
             OutputStream out = null;
             try {
-                org.openide.filesystems.FileUtil.copy(in = new ReaderInputStream(r), out = new FileOutputStream(tmp));
+                if (encoding == null) {
+                    in = new ReaderInputStream(r);
+                } else {
+                    in = new ReaderInputStream(r, encoding);
+                }
+                org.openide.filesystems.FileUtil.copy(in, out = new FileOutputStream(tmp));
             } finally {
                 if (in != null) in.close();
                 if (out != null) out.close();
@@ -148,26 +166,33 @@ public abstract class StreamSource extends Object {
         }
         
         public Reader createReader() throws IOException {
-            if (file != null) return new BufferedReader(new FileReader(file));
-            else {
+            if (file != null) {
+                return new BufferedReader(EncodedReaderFactory.getDefault().getReader(file, MIMEType, encoding));
+            } else {
                 synchronized (this) {
                     if (r != null) {
                         readerSource = createReaderSource(r);
                         r = null;
                     }
                 }
-                return new BufferedReader(new FileReader(readerSource));
+                if (encoding == null) {
+                    return new BufferedReader(new FileReader(readerSource));
+                } else {
+                    return new BufferedReader(new InputStreamReader(new FileInputStream(readerSource), encoding));
+                }
             }
         }
         
         public Writer createWriter(Difference[] conflicts) throws IOException {
             if (conflicts != null && conflicts.length > 0) return null;
-            if (file != null) return new BufferedWriter(new FileWriter(file));
-            else return w;
+            if (file != null) {
+                if (encoding == null) {
+                    return new BufferedWriter(new FileWriter(file));
+                } else {
+                    return new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), encoding));
+                }
+            } else return w;
         }
         
-        public void notifyClosed() {
-        }
-    
     }
 }

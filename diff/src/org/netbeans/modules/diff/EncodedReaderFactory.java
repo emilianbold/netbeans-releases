@@ -16,12 +16,17 @@ package org.netbeans.modules.diff;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.lang.reflect.Method;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
@@ -31,6 +36,7 @@ import javax.swing.text.StyledDocument;
 
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
+import org.openide.filesystems.FileLock;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -78,6 +84,9 @@ public class EncodedReaderFactory {
         return getReader(file, mimeType, getEncoding(file));
     }
     
+    /**
+     * Get the reader from file of given MIME type, suggest the encoding, if known.
+     */
     public Reader getReader(File file, String mimeType, String encoding) throws FileNotFoundException {
         if (encoding != null) {
             try {
@@ -180,6 +189,50 @@ public class EncodedReaderFactory {
         }
     }
     
+    /** @return The writer or <code>null</code>. */
+    private Writer getWriterFromEditorSupport(final FileObject fo, FileLock lock) throws FileNotFoundException {
+        //System.out.println("getWriterFromEditorSupport("+fo+")");
+        DataObject dobj;
+        try {
+            dobj = DataObject.find(fo);
+        } catch (DataObjectNotFoundException donfex) {
+            return null;
+        }
+        if (!fo.equals(dobj.getPrimaryFile())) {
+            return null;
+        }
+        EditCookie edit = (EditCookie) dobj.getCookie(EditCookie.class);
+        final CloneableEditorSupport editorSupport;
+        if (edit instanceof CloneableEditorSupport) {
+            editorSupport = (CloneableEditorSupport) edit;
+        } else {
+            editorSupport = null;
+        }
+        //System.out.println("  editorSupport = "+editorSupport);
+        if (editorSupport == null) {
+            return null;
+        }
+        try {
+            Method createKitMethod = getDeclaredMethod(editorSupport.getClass(), "createEditorKit", new Class[] {});
+            createKitMethod.setAccessible(true);
+            final EditorKit kit = (EditorKit) createKitMethod.invoke(editorSupport, new Object[] {});
+            //System.out.println("  KIT from cloneable editor support = "+kit);
+            Method createStyledDocumentMethod = getDeclaredMethod(editorSupport.getClass(),
+                    "createStyledDocument", new Class[] { EditorKit.class });
+            createStyledDocumentMethod.setAccessible(true);
+            final StyledDocument doc = (StyledDocument) createStyledDocumentMethod.invoke(editorSupport, new Object[] { kit });
+            final Method saveFromKitToStreamMethod = getDeclaredMethod(editorSupport.getClass(),
+                    "saveFromKitToStream", new Class[] { StyledDocument.class, EditorKit.class, OutputStream.class });
+            saveFromKitToStreamMethod.setAccessible(true);
+            
+            return new DocWriter(doc, fo, lock, null, kit, editorSupport, saveFromKitToStreamMethod);
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+    
     private static Method getDeclaredMethod(Class objClass, String name, Class[] args) throws NoSuchMethodException, SecurityException {
         try {
             return objClass.getDeclaredMethod(name, args);
@@ -233,6 +286,99 @@ public class EncodedReaderFactory {
             }
         }
         return null;
+    }
+    
+    /** @return The writer or <code>null</code>. */
+    private Writer getWriterFromKit(File file, FileObject fo, FileLock lock, String mimeType) throws FileNotFoundException {
+        EditorKit kit = JEditorPane.createEditorKitForContentType(mimeType);
+        if (kit == null && "text/x-dtd".equalsIgnoreCase(mimeType)) {
+             // Use XML kit for DTDs if not defined otherwise
+            kit = JEditorPane.createEditorKitForContentType("text/xml");
+        }
+        //System.out.println("  KIT for "+mimeType+" = "+kit);
+        if (kit != null) {
+            Document doc = kit.createDefaultDocument();
+            return new DocWriter(doc, fo, lock, file, kit, null, null);
+        }
+        return null;
+    }
+    
+    /**
+     * Get the writer to file of given MIME type, it tries to find the best encoding itself.
+     */
+    public Writer getWriter(File file, String mimeType) throws FileNotFoundException {
+        return getWriter(file, mimeType, getEncoding(file));
+    }
+    
+    /**
+     * Get the writer to file of given MIME type, suggest the encoding, if known.
+     */
+    public Writer getWriter(File file, String mimeType, String encoding) throws FileNotFoundException {
+        if (encoding != null) {
+            try {
+                return new OutputStreamWriter(new FileOutputStream(file), encoding);
+            } catch (UnsupportedEncodingException ueex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ueex);
+            }
+        }
+        Writer w = null;
+        String name = file.getName();
+        int endingIndex = name.lastIndexOf('.');
+        String ext = (endingIndex >= 0 && endingIndex < (name.length() - 1)) ? name.substring(endingIndex + 1) : "";
+        if (!"java".equalsIgnoreCase(ext)) { // We read the encoding for Java files explicitely
+            try {                            // If it's not defined, read with default encoding from stream (because of guarded blocks)
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null) {
+                    FileLock lock;
+                    try {
+                        lock = fo.lock();
+                    } catch (IOException ioex) {
+                        FileNotFoundException fnfex = new FileNotFoundException(ioex.getLocalizedMessage());
+                        fnfex.initCause(ioex);
+                        throw fnfex;
+                    }
+                    w = getWriterFromEditorSupport(fo, lock);
+                }
+            } catch (IllegalArgumentException iaex) {}
+            if (w == null) {
+                w = getWriterFromKit(file, null, null, mimeType);
+            }
+        }
+        if (w == null) {
+            // Fallback, use current encoding
+            w = new OutputStreamWriter(new FileOutputStream(file));
+        }
+        return w;
+    }
+    
+    /**
+     * Get the writer to file, suggest the encoding, if known.
+     */
+    public Writer getWriter(FileObject fo, FileLock lock, String encoding) throws IOException {
+        if (lock == null) {
+            lock = fo.lock();
+        }
+        if (encoding != null) {
+            try {
+                return new OutputStreamWriter(fo.getOutputStream(lock), encoding);
+            } catch (UnsupportedEncodingException ueex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ueex);
+            }
+        }
+        Writer w = null;
+        String ext = fo.getExt();
+        if (!"java".equalsIgnoreCase(ext)) { // We read the encoding for Java files explicitely
+                                             // If it's not defined, read with default encoding from stream (because of guarded blocks)
+            w = getWriterFromEditorSupport(fo, lock);
+            if (w == null) {
+                w = getWriterFromKit(null, fo, lock, fo.getMIMEType());
+            }
+        }
+        if (w == null) {
+            // Fallback, use current encoding
+            w = new OutputStreamWriter(fo.getOutputStream(lock));
+        }
+        return w;
     }
     
     public String getEncoding(FileObject fo) {
@@ -308,4 +454,119 @@ public class EncodedReaderFactory {
         return "ISO-8859-1"; // NOI18N
     }
     
+    private static class DocWriter extends Writer {
+
+        private Document doc;
+        private FileObject fo;
+        private FileLock foLock;
+        private File file;
+        private EditorKit kit;
+        private CloneableEditorSupport editorSupport;
+        private Method saveFromKitToStreamMethod;
+        private boolean closed;
+
+        public DocWriter(Document doc, FileObject fo, FileLock foLock, File file,
+                         EditorKit kit, CloneableEditorSupport editorSupport,
+                         Method saveFromKitToStreamMethod) {
+            this.doc = doc;
+            this.fo = fo;
+            this.foLock = foLock;
+            this.file = file;
+            this.kit = kit;
+            this.editorSupport = editorSupport;
+            this.saveFromKitToStreamMethod = saveFromKitToStreamMethod;
+        }
+
+        /** Write a single character. */
+        public void write(int c) throws IOException {
+            try {
+                doc.insertString(doc.getLength(), Character.toString((char) c), null);
+            } catch (BadLocationException blex) {
+                IOException ioex = new IOException(blex.getLocalizedMessage());
+                ioex.initCause(blex);
+                throw ioex;
+            }
+        }
+
+        /**
+         * Write a portion of an array of characters.
+         *
+         * @param  cbuf  Array of characters
+         * @param  off   Offset from which to start writing characters
+         * @param  len   Number of characters to write
+         *
+         * @exception  IOException  If an I/O error occurs
+         */
+        public void write(char cbuf[], int off, int len) throws IOException {
+            if ((off < 0) || (off > cbuf.length) || (len < 0) ||
+                ((off + len) > cbuf.length) || ((off + len) < 0)) {
+                throw new IndexOutOfBoundsException();
+            } else if (len == 0) {
+                return;
+            }
+            try {
+                doc.insertString(doc.getLength(), new String(cbuf, off, len), null);
+            } catch (BadLocationException blex) {
+                IOException ioex = new IOException(blex.getLocalizedMessage());
+                ioex.initCause(blex);
+                throw ioex;
+            }
+        }
+
+        /**
+         * Write a string.
+         */
+        public void write(String str) throws IOException {
+            try {
+                doc.insertString(doc.getLength(), str, null);
+            } catch (BadLocationException blex) {
+                IOException ioex = new IOException(blex.getLocalizedMessage());
+                ioex.initCause(blex);
+                throw ioex;
+            }
+        }
+
+        public void flush() throws IOException {}
+
+        /**
+         * Close the stream, flushing it first.  Once a stream has been closed,
+         * further write() or flush() invocations will cause an IOException to be
+         * thrown.  Closing a previously-closed stream, however, has no effect.
+         *
+         * @exception  IOException  If an I/O error occurs
+         */
+        public void close() throws IOException {
+            if (closed) return ;
+            if (saveFromKitToStreamMethod != null) {
+                OutputStream out = fo.getOutputStream(foLock);
+                try {
+                    saveFromKitToStreamMethod.invoke(editorSupport, new Object[] { doc, kit, out });
+                } catch (Exception e) {
+                    IOException ioex = new IOException(e.getLocalizedMessage());
+                    ioex.initCause(e);
+                    throw ioex;
+                } finally {
+                    try { out.close(); } catch (IOException ioex) {}
+                    foLock.releaseLock();
+                }
+            } else {
+                OutputStream out;
+                if (file != null) {
+                    out = new FileOutputStream(file);
+                } else {
+                    out = fo.getOutputStream(foLock);
+                }
+                try {
+                    kit.write(out, doc, 0, doc.getLength());
+                } catch (BadLocationException blex) {
+                    IOException ioex = new IOException(blex.getLocalizedMessage());
+                    ioex.initCause(blex);
+                    throw ioex;
+                } finally {
+                    out.close();
+                }
+            }
+            closed = true;
+        }
+    }
 }
