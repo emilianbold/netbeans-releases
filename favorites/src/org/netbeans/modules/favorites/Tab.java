@@ -19,21 +19,19 @@ import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.IOException;
 import java.util.Stack;
 import javax.swing.ActionMap;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
 
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
@@ -441,6 +439,9 @@ implements Runnable, ExplorerManager.Provider {
         Node root = getExplorerManager ().getRootContext ();
         if (selectNode (obj, root)) {
             requestActive();
+            StatusDisplayer.getDefault().setStatusText(""); // NOI18N
+        } else {
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Tab.class,"MSG_NodeNotFound"));
         }
     }
 
