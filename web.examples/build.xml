@@ -21,6 +21,8 @@ Microsystems, Inc. All Rights Reserved.
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/web/examples"/>
         <mkdir dir="${examples}"/>
         <zip basedir="jstl" excludes="CVS" destfile="${examples}/jstl.zip"/>
+        <zip basedir="servlets" excludes="CVS" destfile="${examples}/servlets.zip"/>
+        <zip basedir="jsp" excludes="CVS" destfile="${examples}/jsp.zip"/>
     </target>    
     
 </project>
