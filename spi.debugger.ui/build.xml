@@ -38,7 +38,7 @@ Microsystems, Inc. All Rights Reserved.
              topdir="."
 	     manifest="manifest-subst.mf"
 	     homepage="http://debuggercore.netbeans.org/"
-	     distribution="http://www.netbeans.org/downloads/nbms/40/debuggercore.nbm">
+	     distribution="http://www.netbeans.org/download/nbms/40/debuggercore.nbm">
       <license file="../nbbuild/standard-nbm-license.txt"/>
       <description>
         Foundation for the IDE's debugger.

@@ -100,7 +100,7 @@
              topdir="."
 	     manifest="manifest-subst.mf"
 	     homepage="http://ant.netbeans.org/"
-	     distribution="http://www.netbeans.org/downloads/nbms/40/ant.nbm">
+	     distribution="http://www.netbeans.org/download/nbms/40/ant.nbm">
       <license name="ant-license.txt">
         For the Ant module itself:
         <file location="../nbbuild/standard-nbm-license.txt"/>

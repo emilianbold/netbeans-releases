@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
              topdir="."
 	     manifest="manifest-subst.mf"
 	     homepage="http://editor.netbeans.org/"
-	     distribution="http://www.netbeans.org/downloads/nbms/40/editor.nbm">
+	     distribution="http://www.netbeans.org/download/nbms/40/editor.nbm">
       <license file="../nbbuild/standard-nbm-license.txt"/>
       <description>
         IDE's standard source editor.
