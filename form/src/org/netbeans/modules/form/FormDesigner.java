@@ -20,6 +20,8 @@ import javax.swing.*;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataNode;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.openide.util.*;
@@ -512,13 +514,22 @@ public class FormDesigner extends TopComponent
     void updateName(String name) {
         setName(name);
 
+        if (DataNode.getShowFileExtensions())
+            name += ".form"; // NOI18N
+
         if (topDesignComponent != null
                 && topDesignComponent != formModel.getTopRADComponent())
             name += " / " + topDesignComponent.getName(); // NOI18N
-        String format = formModel.isReadOnly() ? "FMT_FormTitle_RO" : "FMT_FormTitle"; // NOI18N
+        String format = DataNode.getShowFileExtensions() ?
+            (formModel.isReadOnly() ? "FMT_FormTitle_RO_ext" : "FMT_FormTitle_ext") : // NOI18N
+            (formModel.isReadOnly() ? "FMT_FormTitle_RO" : "FMT_FormTitle"); // NOI18N
         name = FormUtils.getFormattedBundleString(format, new Object[] { name });
         setDisplayName(name);
-        setToolTipText(name);
+
+        FormDataObject fdo = formEditorSupport.getFormDataObject();
+        File formFile = FileUtil.toFile(fdo.getFormFile());
+        if (formFile != null)
+            setToolTipText(formFile.getAbsolutePath());
     }
 
     void updateVisualSettings() {
