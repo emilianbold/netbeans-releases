@@ -43,14 +43,19 @@ public class AntProjectDataLoader extends UniFileLoader {
         super (AntProjectDataObject.class);
     }
 
-    protected void initialize () {
-        setDisplayName (NbBundle.getMessage (AntProjectDataLoader.class, "LBL_loader_name"));
+    protected String defaultDisplayName () {
+        return NbBundle.getMessage (AntProjectDataLoader.class, "LBL_loader_name");
+    }
 
+    protected void initialize () {
+        super.initialize ();
         ExtensionList extensions = new ExtensionList ();
         extensions.addExtension (REQUIRED_EXTENSION);
         setExtensions (extensions);
+    }
 
-        setActions (new SystemAction[] {
+    protected SystemAction[] defaultActions () {
+        return new SystemAction[] {
             SystemAction.get (OpenAction.class),
             SystemAction.get (FileSystemAction.class),
             null,
@@ -71,8 +76,7 @@ public class AntProjectDataLoader extends UniFileLoader {
             null,
             SystemAction.get (ToolsAction.class),
             SystemAction.get (PropertiesAction.class),
-        });
-
+        };
     }
 
     // BuildProjectAction etc. were removed. Ignore SafeException.
@@ -80,7 +84,7 @@ public class AntProjectDataLoader extends UniFileLoader {
         try {
             super.readExternal (oi);
         } catch (SafeException se) {
-            AntModule.err.annotate (se, ErrorManager.INFORMATIONAL, "Reading AntProjectDataLoader: resetting action list to default", null, null, null);
+            AntModule.err.annotate (se, ErrorManager.INFORMATIONAL, "Reading AntProjectDataLoader: resetting action list to default", null, null, null); // NOI18N
             AntModule.err.notify (ErrorManager.INFORMATIONAL, se);
         }
     }
