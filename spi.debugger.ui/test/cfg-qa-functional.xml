@@ -21,6 +21,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="gui/debuggercore/Breakpoints.class"/>
                 <include name="gui/debuggercore/LocalVariables.class"/>
                 <include name="gui/debuggercore/Watches.class"/>
+                <include name="gui/debuggercore/Views.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -53,6 +54,14 @@ Microsystems, Inc. All Rights Reserved.
        <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/debuggercore/Watches.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="views" executor="ide" name="Views" resultsprocessor="qa-functional">
+       <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/debuggercore/Views.class"/>
             </patternset>
         </testset>
     </testbag>
