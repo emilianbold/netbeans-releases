@@ -38,185 +38,137 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.form.FormLoaderSettings;
 import org.netbeans.modules.clazz.ClassDataObject;
 
-/** Bean Installer
-*
-* @author Petr Hamernik
-*/
-public final class BeanInstaller extends Object {
-
+/**
+ * Bean Installer
+ * @author Petr Hamernik
+ */
+public final class BeanInstaller
+{
     /** Text resources */
-    static final ResourceBundle bundle = NbBundle.getBundle(BeanInstaller.class);
+    private static final ResourceBundle bundle = NbBundle.getBundle(BeanInstaller.class);
 
     /** Last opened directory */
     private static File lastDirectory;
 
-    /** Borders used in dialogs */
-    static final Border hasFocusBorder;
-    static final Border noFocusBorder;
-
-    /** Initialize static fields */
-    static {
-        hasFocusBorder = new LineBorder(UIManager.getColor("List.focusCellHighlight")); // NOI18N
-        noFocusBorder = new EmptyBorder(1, 1, 1, 1);
-        lastDirectory = null;
-    }
-
     /** Extension of jar archive where to find module */
+    
     static String JAR_EXT = ".jar"; // NOI18N
 
-    //==============================================================================
-    // Installing new beans - user action.
-    //==============================================================================
-
-    /** Open the FileOpenDialog for the selection of Jar file and
-     * install the selected module into the system.
+    /** 
+     * asks the user for a jar file, lets him choose available beans and
+     * install them into the component palette
      */
+    
     public static void installBean() {
         File jarFile = selectJarModule();
+        if (jarFile == null)
+            return;
 
-        if (jarFile != null) {
-            JarFileSystem jar = createJarForFile(jarFile);
-            if (jar == null) {
-                TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                        bundle.getString("MSG_ErrorInFile"), NotifyDescriptor.ERROR_MESSAGE)
-                                               );
-            }
-            else {
-                LinkedList list = findJavaBeans(jar);
+        JarFileSystem jar = createJarForFile(jarFile);
+        if (jar == null) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                    bundle.getString(
+                            "MSG_ErrorInFile"), NotifyDescriptor.ERROR_MESSAGE));
+            return;
+        }
 
-                if (list.size() == 0) {
-                    TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                            bundle.getString("MSG_noBeansInJar"), NotifyDescriptor.INFORMATION_MESSAGE)
-                                                   );
-                    return;
-                }
+        Collection beans = findJavaBeans(jar);
 
-                BeanSelector sel = new BeanSelector(list);
-                DialogDescriptor desc = new DialogDescriptor(
-                        sel,
-                        bundle.getString("CTL_SelectJB"),
-                        true,
-                        null
-                        );
-                desc.setHelpCtx(new HelpCtx(BeanInstaller.class.getName() + ".installBean")); // NOI18N
+        if (beans.size() == 0) {
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                    bundle.getString(
+                            "MSG_noBeansInJar"), NotifyDescriptor.INFORMATION_MESSAGE));
+            return;
+        }
 
-                TopManager.getDefault().createDialog(desc).show();
-                if (desc.getValue() == NotifyDescriptor.OK_OPTION) {
+        BeanSelector sel = new BeanSelector(beans);
+        DialogDescriptor desc = new DialogDescriptor(
+                sel,
+                bundle.getString("CTL_SelectJB"),
+                true,
+                null
+                );
+        desc.setHelpCtx(new HelpCtx(BeanInstaller.class.getName() + ".installBean")); // NOI18N
 
-                    String pal = selectPaletteCategory();
-                    if (pal != null) {
-                        finishInstall(jar, sel.getSelectedBeans(), pal);
-                    }
-                }
+        TopManager.getDefault().createDialog(desc).show();
+        if (desc.getValue() == NotifyDescriptor.OK_OPTION) {
+            String cat = selectPaletteCategory();
+            System.err.println("*** cat = " + cat); // XXX
+            if (cat != null) {
+                installBeans(jar, sel.getSelectedBeans(), cat);
             }
         }
     }
 
-    /** Open the palette category selector and if user confirms some category, installs specified beans into it.
-     */
-    /*
-      public static void installBeans(InstanceCookie[] cookies) {
-      String pal = selectPaletteCategory();
-
-      if (pal == null) return; // installation cancelled
-
-      ArrayList list = new ArrayList(cookies.length);
-      for (int i = 0; i < cookies.length; i++) {
-      list.add(cookies[i]);
-      }
-
-      if (pal != null) {
-      finishInstall(null, list, pal);
-      }
-      }
-    */
     public static void installBeans(Node[] nodes) {
-        String pal = selectPaletteCategory();
-        if (pal == null)
+        String cat = selectPaletteCategory();
+        if (cat == null)
             return;
 
         ArrayList list = new ArrayList(nodes.length);
         for (int i = 0; i < nodes.length; i++) {
-            DataObject dobj =(DataObject) nodes[i].getCookie(ClassDataObject.class);
+            DataObject dobj = (DataObject) nodes[i].getCookie(ClassDataObject.class);
             if (dobj != null)
                 list.add(dobj);
             else {
-                InstanceCookie ic =(InstanceCookie) nodes[i].getCookie(InstanceCookie.class);
+                InstanceCookie ic =
+                    (InstanceCookie) nodes[i].getCookie(InstanceCookie.class);
                 if (ic != null)
                     list.add(ic);
             }
         }
-        finishInstall(null, list, pal);
+        installBeans(null, list, cat);
     }
 
-    /** Scan all files with attributes in the given jar.
-     * @return LinkedList of founded beans.
+    /**
+     * searches the jar for beans
+     * @return Collection of founded beans represented as FileObjects
      */
-    private static LinkedList findJavaBeans(JarFileSystem jar) {
-        LinkedList foundJB = new LinkedList();
+    
+    private static Collection findJavaBeans(JarFileSystem jar) {
+        LinkedList beans = new LinkedList();
 
-        // Looking for the beans
         Manifest manifest = jar.getManifest();
         Map entries = manifest.getEntries();
 
         Iterator it = entries.keySet().iterator();
         while (it.hasNext()) {
-            String key =(String) it.next();
-            String value =((Attributes) entries.get(key)).getValue("Java-Bean"); // NOI18N
-            //System.out.println("Key: >"+key+"<"); // NOI18N
-            //System.out.println("Value: >"+value+"<"); // NOI18N
-            if ((value != null) && value.equalsIgnoreCase("True")) { // NOI18N
-                if (key.endsWith(".class")) { // NOI18N
-                    String wholeName = key.substring(0, key.length() - 6).replace('/', '.').replace('\\', '.');
-                    int lastDot = wholeName.lastIndexOf('.');
-                    String pack;
-                    String name;
-                    if (lastDot == -1) {
-                        pack = ""; // NOI18N
-                        name = wholeName;
-                    }
-                    else {
-                        pack = wholeName.substring(0, lastDot);
-                        name = wholeName.substring(lastDot + 1);
-                    }
-                    FileObject fo = jar.find(pack, name, "class"); // NOI18N
-                    if (fo != null) {
-                        foundJB.add(fo);
-                    }
-                } else if (key.endsWith(".ser")) { // NOI18N
-                    String wholeName = key.substring(0, key.length() - 4).replace('/', '.').replace('\\', '.');
-                    int lastDot = wholeName.lastIndexOf('.');
-                    String pack;
-                    String name;
-                    if (lastDot == -1) {
-                        pack = ""; // NOI18N
-                        name = wholeName;
-                    }
-                    else {
-                        pack = wholeName.substring(0, lastDot);
-                        name = wholeName.substring(lastDot + 1);
-                    }
-                    FileObject fo = jar.find(pack, name, "ser"); // NOI18N
-                    //System.out.println("Find fo: >"+fo+"<"+ ", : "+pack+", "+name); // NOI18N
-                    if (fo != null) {
-                        foundJB.add(fo);
-                    }
+            String key = (String) it.next();
+            if (!key.endsWith(".class") && !key.endsWith(".ser"))
+                continue;
+            
+            String value = ((Attributes) entries.get(key)).getValue("Java-Bean"); // NOI18N
+            if ((value == null) || ! value.equalsIgnoreCase("True")) // NOI18N
+                continue;
+
+            String exts[] = { ".class", ".ser" }; // NOI18N
+            for (int i = 0; i < exts.length; i++) {
+                String ext = exts[i];
+                if (!key.endsWith(ext))
+                    continue;
+                String resourcePath = key.replace('\\', '/');
+                FileObject fo = jar.findResource(resourcePath);
+                if (fo != null) {
+                    beans.add(fo);
                 }
             }
         }
-        return foundJB;
+        return beans;
     }
 
-    /** Finishing the instalation of the java beans.
-     * @param jar JarFileSystem - the source of JBs to be mounted, or null if not necessary
+    /**
+     * installs selected beans from a specified jar into a palette category
+     * @param jar JarFileSystem - the source of beans to be mounted, or null if
+     * not necessary
      * @param list Collection of FileObjects - selected JBs
-     * @param pal palettecategory where to place beans.
+     * @param cat palettecategory where to place beans.
      */
-    private static void finishInstall(JarFileSystem jar, final Collection list, String pal) {
+    
+    private static void installBeans(JarFileSystem jar, Collection beans, String cat) {
         if (jar != null) addJarFileSystem(jar);
 
-        if (pal == null) {
-            pal = "Beans"; // default palette category // NOI18N
+        if (cat == null) {
+            cat = "Beans"; // default palette category // NOI18N
         }
 
         FileObject root = TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot();
@@ -225,10 +177,10 @@ public final class BeanInstaller extends Object {
             return;
         }
 
-        FileObject category = paletteFolder.getFileObject(pal);
+        FileObject category = paletteFolder.getFileObject(cat);
         if (category == null) {
             try {
-                category = paletteFolder.createFolder(pal);
+                category = paletteFolder.createFolder(cat);
             } catch (IOException e) {
                 if (System.getProperty("netbeans.debug.exceptions") != null) e.printStackTrace();
                 /* ignore */
@@ -237,7 +189,7 @@ public final class BeanInstaller extends Object {
         }
 
         ClassLoader loader = TopManager.getDefault().currentClassLoader();
-        Iterator it = list.iterator();
+        Iterator it = beans.iterator();
         LinkedList paletteNodes = new LinkedList();
 
         while (it.hasNext()) {
@@ -371,10 +323,12 @@ public final class BeanInstaller extends Object {
         return ret;
     }
 
-    /** Opens dialog and lets user select category, where beans should be installed
+    /**
+     * Opens dialog and lets user select category, where beans should be installed
      */
+    
     private static String selectPaletteCategory() {
-        PaletteSelector sel = new PaletteSelector();
+        CategorySelector sel = new CategorySelector();
         DialogDescriptor desc = new DialogDescriptor(
                 sel,
                 bundle.getString("CTL_SelectPalette"),
@@ -391,11 +345,11 @@ public final class BeanInstaller extends Object {
         }
     }
 
-    /** This method open FileChooser and selects
-     * the jar file with the module.
-     *
+    /**
+     * prompts user for the jar file
      * @return filename or null if operation was cancelled.
      */
+    
     private static File selectJarModule() {
         JFileChooser chooser = new JFileChooser();
 
@@ -442,12 +396,13 @@ public final class BeanInstaller extends Object {
             return jar;
         }
         catch (PropertyVetoException e) {
-            if (System.getProperty("netbeans.debug.exceptions") != null) e.printStackTrace();
+            if (System.getProperty("netbeans.debug.exceptions") != null)
+                e.printStackTrace();
             return null;
         }
         catch (IOException e) {
-            if (System.getProperty("netbeans.debug.exceptions") != null) e.printStackTrace();
-            /* ignore */
+            if (System.getProperty("netbeans.debug.exceptions") != null)
+                e.printStackTrace();
             return null;
         }
     }
@@ -593,12 +548,16 @@ public final class BeanInstaller extends Object {
 
     }
 
-    /** Loaded beans from the jar.
+    /**
+     * Loaded beans from the jar.
      * @param jarFile the jar File
      * @param palette category where to place the beans
-     * @param selection the selection of beans which should be installed. If null, all beans are loaded.
+     * @param selection the selection of beans which should be installed. If
+     * null, all beans are loaded.
      */
-    private static boolean autoLoadJar(File jarFile, String paletteCategory, String selection) {
+    
+    private static boolean autoLoadJar(File jarFile,
+                                       String paletteCategory, String selection) {
         JarFileSystem jar = createJarForFile(jarFile);
         if (jar == null) {
             TopManager.getDefault().notify(
@@ -607,64 +566,56 @@ public final class BeanInstaller extends Object {
                     );
             return false;
         }
+        
+        JarFileSystem jar2 =(JarFileSystem) TopManager.getDefault().getRepository().findFileSystem(jar.getSystemName());
+        if (jar2 != null)
+            jar = jar2;
+
+        Collection beans = findJavaBeans(jar);
+        if (selection == null) {
+            installBeans(jar, beans, paletteCategory);
+        }
         else {
-            JarFileSystem jar2 =(JarFileSystem) TopManager.getDefault().getRepository().findFileSystem(jar.getSystemName());
-            if (jar2 != null)
-                jar = jar2;
+            Vector dest = new Vector();
+            StringTokenizer tok = new StringTokenizer(selection, ", ", false); // NOI18N
+            while (tok.hasMoreTokens()) {
+                String token = tok.nextToken();
+                String clName = token;
+                String clPack = ""; // NOI18N
 
-            LinkedList list = findJavaBeans(jar);
-            if (selection != null) {
-                Vector dest = new Vector();
-                StringTokenizer tok = new StringTokenizer(selection, ", ", false); // NOI18N
-                while (tok.hasMoreTokens()) {
-                    String token = tok.nextToken();
-                    String clName = token;
-                    String clPack = ""; // NOI18N
-
-                    int lastDot = token.lastIndexOf('.');
-                    if ((lastDot != -1) &&(!token.endsWith("."))) { // NOI18N
-                        clName = token.substring(lastDot + 1);
-                        clPack = token.substring(0, lastDot);
-                    }
-                    FileObject fo = jar.find(clPack, clName, "class"); // NOI18N
-                    if (fo == null) { // if not found, try ser
-                        fo = jar.find(clPack, clName, "ser"); // NOI18N
-                    }
-                    if (fo != null) {
-                        Iterator it = list.iterator();
-                        while (it.hasNext()) {
-                            FileObject fo2 =(FileObject) it.next();
-                            if (fo.equals(fo2)) {
-                                dest.addElement(fo);
-                            }
+                int lastDot = token.lastIndexOf('.');
+                if ((lastDot != -1) &&(!token.endsWith("."))) { // NOI18N
+                    clName = token.substring(lastDot + 1);
+                    clPack = token.substring(0, lastDot);
+                }
+                FileObject fo = jar.find(clPack, clName, "class"); // NOI18N
+                if (fo == null) { // if not found, try ser
+                    fo = jar.find(clPack, clName, "ser"); // NOI18N
+                }
+                if (fo != null) {
+                    for (Iterator iter = beans.iterator(); iter.hasNext();) {
+                        FileObject fo2 = (FileObject) iter.next();
+                        if (fo.equals(fo2)) {
+                            dest.addElement(fo);
                         }
                     }
                 }
-                finishInstall(jar, dest, paletteCategory);
-            } else {
-                finishInstall(jar, list, paletteCategory);
             }
-            return true;
+            installBeans(jar, dest, paletteCategory);
         }
+        return true;
     }
 
-
-    //==============================================================================
-    // Inner classes
-    //==============================================================================
-
-
-    static class PaletteSelector extends JPanel {
+    private static class CategorySelector extends JPanel {
         private JList list;
 
         static final long serialVersionUID =936459317386043582L;
-        /** Creates a new ExceptionBox for given exception descriptor. */
-        public PaletteSelector() {
-            super(null);
+        
+        public CategorySelector() {
             String[] categories = ComponentPalette.getDefault().getPaletteCategories();
 
             list = new JList(categories);
-            list.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
             /*      list.addListSelectionListener(new ListSelectionListener() {
                     public void valueChanged(ListSelectionEvent evt) {
@@ -681,12 +632,10 @@ public final class BeanInstaller extends Object {
                     });
                     [PENDING - doubleclick]
             */
-            BorderLayout layout = new BorderLayout();
-            layout.setVgap(5);
-            layout.setHgap(5);
-            setLayout(layout);
-            add(new JLabel(bundle.getString("CTL_PaletteCategories")), "North");
-            add(new JScrollPane(list), "Center"); // NOI18N
+            setLayout(new BorderLayout(5, 5));
+            add(new JLabel(bundle.getString("CTL_PaletteCategories")),
+                BorderLayout.NORTH);
+            add(new JScrollPane(list), BorderLayout.CENTER);
             setBorder(new EmptyBorder(5, 5, 5, 5));
         }
 
@@ -702,17 +651,18 @@ public final class BeanInstaller extends Object {
         }
     }
 
-    /** dialog which allows to select found beans */
-    public static class BeanSelector extends JPanel {
+    private static class BeanSelector extends JPanel
+    {
+        static final long serialVersionUID = -6038414545631774041L;
+        
         private JList list;
-        static final long serialVersionUID =-6038414545631774041L;
-        /** Creates a new ExceptionBox for given exception descriptor. */
-        public BeanSelector(LinkedList fileObjects) {
-            super(null);
-            Object[] arr = new Object[fileObjects.size()];
-            fileObjects.toArray(arr);
-
-            list = new JList(arr);
+        
+        /**
+         * creates a new ExceptionBox for given exception descriptor.
+         */
+        
+        public BeanSelector(Collection beans) {
+            list = new JList(beans.toArray());
             list.setCellRenderer(new FileObjectRenderer());
 
             /*      list.addMouseListener(new MouseAdapter() {
@@ -725,13 +675,11 @@ public final class BeanInstaller extends Object {
                     [PENDING - doubleclick]
             */
             // [PENDING - OK/Cancel enabled accorning to selection
-            BorderLayout layout = new BorderLayout();
-            layout.setVgap(5);
-            layout.setHgap(5);
-            setLayout(layout);
-            add(new JLabel(bundle.getString("CTL_SelectBeans")), "North");
-            add(new JScrollPane(list), "Center"); // NOI18N
+            
             setBorder(new EmptyBorder(5, 5, 5, 5));
+            setLayout(new BorderLayout(5, 5));
+            add(new JLabel(bundle.getString("CTL_SelectBeans")), BorderLayout.NORTH);
+            add(new JScrollPane(list), BorderLayout.CENTER); // NOI18N
         }
 
         Collection getSelectedBeans() {
@@ -751,8 +699,14 @@ public final class BeanInstaller extends Object {
         }
     }
 
-    static class FileObjectRenderer extends JLabel implements ListCellRenderer {
-        static final long serialVersionUID =832555965217675765L;
+    private static class FileObjectRenderer extends JLabel implements ListCellRenderer
+    {
+        static final long serialVersionUID = 832555965217675765L;
+
+        private static final Border hasFocusBorder =
+            new LineBorder(UIManager.getColor("List.focusCellHighlight")); // NOI18N
+        private static final Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
+        
         /** Creates a new NetbeansListCellRenderer */
         public FileObjectRenderer() {
             setOpaque(true);
@@ -770,6 +724,7 @@ public final class BeanInstaller extends Object {
             FileObject fo =(FileObject) value;
 
             setText(fo.getName());
+            
             if (isSelected){
                 setBackground(UIManager.getColor("List.selectionBackground")); // NOI18N
                 setForeground(UIManager.getColor("List.selectionForeground")); // NOI18N
