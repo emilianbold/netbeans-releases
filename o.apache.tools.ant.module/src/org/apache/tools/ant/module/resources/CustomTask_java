@@ -7,9 +7,13 @@
 package Templates.Ant;
 
 // IMPORTANT! You may need to mount ant.jar before this class will
-// compile. So mount the JAR modules/ext/ant-1.5.1.jar (NOT modules/ant.jar)
+// compile. So mount the JAR ant/lib/ant.jar (NOT modules/ant.jar)
 // from your IDE installation directory in your Filesystems before
 // continuing to ensure that it is in your classpath.
+// Or if building the task with Ant, use e.g.:
+// <classpath>
+//     <pathelement location="${ant.home}/lib/ant.jar"/>
+// </classpath>
 
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
