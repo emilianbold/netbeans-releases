@@ -82,7 +82,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
 
         // Adds save cookie to the data object.
         if(obj.getCookie(SaveCookie.class) == null) {
-            obj.getCookieSet().add(saveCookie);
+            obj.getCookieSet0().add(saveCookie);
             obj.setModified(true);
         }
     }
@@ -95,7 +95,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         Cookie cookie = obj.getCookie(SaveCookie.class);
 
         if(cookie != null && cookie.equals(saveCookie)) {
-            obj.getCookieSet().remove(saveCookie);
+            obj.getCookieSet0().remove(saveCookie);
             obj.setModified(false);
         }
     }
@@ -125,7 +125,7 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
          * @return text editor support (instance of enclosing class)
          */
         public CloneableOpenSupport findCloneableOpenSupport() {
-            return (HtmlEditorSupport)((HtmlDataObject)getDataObject()).getCookieSet().getCookie(HtmlEditorSupport.class);
+            return (HtmlEditorSupport)getDataObject().getCookie(HtmlEditorSupport.class);
         }
     } // End of nested Environment class.
 

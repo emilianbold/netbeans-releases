@@ -456,14 +456,14 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
         /** Adds save cookie to the dataobject. */
         private void addSaveCookie() {
             if(propDataObject.getCookie(SaveCookie.class) == null) {
-                propDataObject.getCookieSet().add(this);
+                propDataObject.getCookieSet0().add(this);
             }
         }
         
         /** Removes save cookie from the dataobject. */
         private void removeSaveCookie() {
             if(propDataObject.getCookie(SaveCookie.class) == this) {
-                propDataObject.getCookieSet().remove(this);
+                propDataObject.getCookieSet0().remove(this);
             }
         }
     } // End of inner class ModifiedListener.

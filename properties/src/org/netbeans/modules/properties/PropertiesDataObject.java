@@ -86,6 +86,11 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
         } else
             return null;
     }
+
+    // Accessibility from PropertiesOpen:
+    CookieSet getCookieSet0() {
+        return getCookieSet();
+    }
     
     /** Copies primary and secondary files to new folder.
      * Overrides superclass method.

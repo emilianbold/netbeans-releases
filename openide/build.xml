@@ -105,8 +105,9 @@ Microsystems, Inc. All Rights Reserved.
       <!-- For efficiency and clarity and safety, we explicitly -->
       <!-- list all files known to need preprocessing. -->
       <include name="org/openide/loaders/DataLoaderPool.java"/>
-      <!-- Not possible yet: -->
-      <!-- <include name="org/openide/loaders/MultiDataObject.java"/> -->
+      <include name="org/openide/loaders/MultiDataObject.java"/>
+      <include name="org/openide/nodes/AbstractNode.java"/>
+      <include name="org/openide/compiler/CompilerGroup.java"/>
       <include name="org/openide/compiler/ExternalCompiler.java"/>
       <include name="org/openide/util/actions/SystemAction.java"/>
       <include name="org/openide/filesystems/LocalFileSystem.java"/>

@@ -312,8 +312,9 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
      * firing a change on {@link #PROP_COOKIE}.
      *
      * @param s the cookie set to use
+     * @deprecated
      */
-    public synchronized void setCookieSet (CookieSet s) {
+    protected final synchronized void setCookieSet (CookieSet s) {
         if (cookieSet != null) {
             cookieSet.removeChangeListener (cookieL);
         }
@@ -332,7 +333,7 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
      *
      * @return the cookie set (never <code>null</code>)
      */
-    public CookieSet getCookieSet () {
+    protected final CookieSet getCookieSet () {
         CookieSet s = cookieSet;
         if (s != null) return s;
         synchronized (this) {

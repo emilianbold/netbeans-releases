@@ -78,6 +78,11 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
             return null;
         }
     }
+
+    // Package accessibility for HtmlEditorSupport:
+    CookieSet getCookieSet0() {
+        return getCookieSet();
+    }
     
     static final class ViewSupport implements ViewCookie {
         /** entry */
