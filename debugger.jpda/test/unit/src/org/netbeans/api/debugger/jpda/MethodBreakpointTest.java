@@ -35,7 +35,7 @@ public class MethodBreakpointTest extends DebuggerJPDAApiTestBase {
         super.setUp();
     }
 
-    public void testFieldBreakpoints() throws Exception {
+    public void testMethodBreakpoints() throws Exception {
         try {
             MethodBreakpoint mb1 = MethodBreakpoint.create(CLASS_NAME, "a");
             TestBreakpointListener tbl = new TestBreakpointListener("a", 40, 1);
@@ -86,8 +86,8 @@ public class MethodBreakpointTest extends DebuggerJPDAApiTestBase {
             debugger = support.getDebugger();
 
             for (;;) {
-                support.waitStates(JPDADebugger.STATE_STOPPED, JPDADebugger.STATE_DISCONNECTED, 10000);
-                if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) break;
+                support.waitStates(STATE_STOPPED, STATE_DISCONNECTED, 10000);
+                if (debugger.getState() == STATE_DISCONNECTED) break;
                 support.doContinue();
             }
             tbl.assertFailure();
@@ -141,7 +141,7 @@ public class MethodBreakpointTest extends DebuggerJPDAApiTestBase {
         private void checkEvent(JPDABreakpointEvent event) throws NoInformationException {
             MethodBreakpoint mb = (MethodBreakpoint) event.getSource();
 
-            assertEquals("Breakpoint event: Condition evaluation failed", JPDABreakpointEvent.CONDITION_NONE, event.getConditionResult());
+            assertEquals("Breakpoint event: Condition evaluation failed", CONDITION_NONE, event.getConditionResult());
             assertNotNull("Breakpoint event: Context thread is null", event.getThread());
             assertEquals("Breakpoint event: Hit at wrong place", hitLine, getLine(event));
             assertEquals("Breakpoint event: Hit at wrong method", mb.getMethodName(), getMethod(event));

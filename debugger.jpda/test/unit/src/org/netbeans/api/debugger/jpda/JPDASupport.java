@@ -230,7 +230,8 @@ public class JPDASupport implements DebuggerManagerListener {
             stepLock[0] = "stepStart";
             getActionsManager().doAction(action);
             try {
-                stepLock.wait();
+                stepLock.wait(10000);
+                if (stepLock[0] != null) throw new TimeoutException("Step action timed out");
             } catch (InterruptedException e) {
                  throw new IllegalStateException();
             }
