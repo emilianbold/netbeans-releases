@@ -14,8 +14,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="xtest" default="netbeans" basedir=".">
 
-  <property name="binroot" value=".." />
-
   <target name="compile">
     <javac srcdir="src" destdir="src">
       <classpath>
@@ -24,9 +22,6 @@ Microsystems, Inc. All Rights Reserved.
           <include name="openide*.jar" />
         </fileset>
 	<pathelement location="../core/netbeans/lib/core.jar"/>
-	<pathelement location="${binroot}/core/release/lib/ext/junit.jar"/>
-	<pathelement location="${binroot}/core/release/lib/ext/xalan.jar"/>
-	<pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
       </classpath>
     </javac>
   </target>
