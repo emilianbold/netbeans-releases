@@ -1009,7 +1009,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     
     private final class ToolbarAqua extends JPanel {
         /** Width of grip */
-        static final int WIDTH = 5;
+        static final int WIDTH = 8;
         /** Minimum size. */
         Dimension dim;
         /** Maximum size. */
@@ -1029,10 +1029,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             
             int sz = 5;
             
-            int y = (getHeight() / 2) - (sz / 2);
-            int x = (getWidth() / 2) - (sz / 2);
-            
-            y-=2;
+            int y = ((getHeight() / 2) - (sz / 2)) - 2;
+            int x = ((getWidth() / 2) - (sz / 2)) - 2;
             
             GradientPaint gradient = new GradientPaint(x+1, y+1, Color.BLACK,
             x+sz-1, y+sz-1, Color.WHITE);
