@@ -117,7 +117,9 @@ public class FormDataObject extends JavaDataObject {
   * @see DataNode
   */
   protected Node createNodeDelegate () {
-    return new FormDataNode (this);
+    FormDataNode node = new FormDataNode (this);
+    node.setDefaultAction (SystemAction.get (OpenAction.class));
+    return node;
   }
 
 //--------------------------------------------------------------------
@@ -133,6 +135,8 @@ public class FormDataObject extends JavaDataObject {
 
 /*
  * Log
+ *  17   Gandalf   1.16        5/17/99  Ian Formanek    Fixed bug 1803 - Newly 
+ *       created forms are not automatically opened in editor.
  *  16   Gandalf   1.15        5/4/99   Ian Formanek    package change 
  *       (formeditor -> ..)
  *  15   Gandalf   1.14        4/27/99  Ian Formanek    Fixed bug #1457 - Form 
