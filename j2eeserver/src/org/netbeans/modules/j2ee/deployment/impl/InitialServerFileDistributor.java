@@ -43,6 +43,7 @@ public class InitialServerFileDistributor extends ServerProgress {
     DeploymentTarget dtarget;
     IncrementalDeployment incDeployment;
     Target target;
+    boolean inPlace = false;
 
     /** Creates a new instance of InitialServerFileDistributor */
     public InitialServerFileDistributor(DeploymentTarget dtarget, Target target) {
@@ -63,6 +64,7 @@ public class InitialServerFileDistributor extends ServerProgress {
         File dir = incDeployment.getDirectoryForNewApplication (target, deployable, deployment.getDeploymentConfiguration ());
         try {
             if (dir == null) {
+                inPlace = true;
                 dir = FileUtil.toFile(dtarget.getModule().getContentDirectory());
                 if (dir == null) {
                     String msg = NbBundle.getMessage(InitialServerFileDistributor.class, "MSG_InPlaceNoSupport");
@@ -94,7 +96,7 @@ public class InitialServerFileDistributor extends ServerProgress {
         } catch (Exception e) {
             setStatusDistributeFailed(e.getMessage());
             ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.getMessage());
-            if (!cleanup (dir)) {
+            if (!inPlace && !cleanup (dir)) {
                 setStatusDistributeFailed ("Failed to cleanup the data after unsucesful distribution");
             }
         }
@@ -102,6 +104,9 @@ public class InitialServerFileDistributor extends ServerProgress {
     }
     
     public void cleanup () {
+        if (inPlace)
+            return;
+        
         DeploymentConfigurationProvider deployment = dtarget.getDeploymentConfigurationProvider();
         J2eeModule source = dtarget.getModule();
         DeployableObject deployable = deployment.getDeployableObject(null);

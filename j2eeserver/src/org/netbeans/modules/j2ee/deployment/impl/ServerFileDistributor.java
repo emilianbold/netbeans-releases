@@ -106,14 +106,12 @@ public class ServerFileDistributor extends ServerProgress {
         return new AppChanges(descriptorRelativePaths, serverDescriptorRelativePaths);
     }
     
-    public AppChangeDescriptor distribute(TargetModule targetModule, ModuleChangeReporter mcr) {
+    public AppChangeDescriptor distribute(TargetModule targetModule, ModuleChangeReporter mcr) throws IOException {
         long lastDeployTime = targetModule.getTimestamp();
         TargetModuleID[] childModules = targetModule.getChildTargetModuleID();
         AppChanges changes = new AppChanges();
         File destDir = null;
         
-        try {
-            
             //PENDING: whether module need to be stop first
             for (int i=0; childModules != null && i<childModules.length; i++) {
                 String url = incremental.getModuleUrl(targetModule.delegate());
@@ -138,11 +136,6 @@ public class ServerFileDistributor extends ServerProgress {
             setStatusDistributeCompleted(NbBundle.getMessage(
                 ServerFileDistributor.class, "MSG_DoneIncrementalDeploy", targetModule));
             
-        } catch (Exception e) {
-            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.getMessage());
-            setStatusDistributeFailed(e.getMessage());
-            return null;
-        }
         return changes;
     }
     
