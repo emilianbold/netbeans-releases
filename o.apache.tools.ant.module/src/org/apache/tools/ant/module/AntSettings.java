@@ -51,6 +51,7 @@ public class AntSettings extends SystemOption {
         p.setProperty (DEF_BOOTCLASS_PATH, dummy);
         p.setProperty (DEF_LIBRARY_PATH, dummy);
         p.setProperty (DEF_FILESYSTEMS_PATH, dummy);
+        p.setProperty ("build.sysclasspath", "ignore"); // #9527 NOI18N
         setProperties (p);
         setSaveAll (true);
         setCustomDefs (new IntrospectedInfo ());
