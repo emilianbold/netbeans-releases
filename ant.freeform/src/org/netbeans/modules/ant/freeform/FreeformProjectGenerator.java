@@ -343,8 +343,9 @@ public class FreeformProjectGenerator {
         }
         Element fileEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "source-file"); // NOI18N
         Element el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "location"); // NOI18N
-        // XXX: use REAL Ant script here!!!
-        el.appendChild(doc.createTextNode("build.xml")); // NOI18N
+        // XXX: relativize if possible
+        FileObject fo = getAntScript(helper);
+        el.appendChild(doc.createTextNode(FileUtil.toFile(fo).getAbsolutePath())); // NOI18N
         fileEl.appendChild(el);
         itemsEl.appendChild(fileEl);
         
