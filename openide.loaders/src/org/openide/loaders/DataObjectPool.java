@@ -162,12 +162,16 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
             atomic = Thread.currentThread ();
         }
         
+        Object findPrev = FIND.get ();
         try {
+            FIND.set (target);
             target.getFileSystem ().runAtomicAction(action);
         } finally {
+            FIND.set (findPrev);
             synchronized (this) {
                 atomic = prev;
                 notifyAll ();
+                notifyCreationAll ();
             }
         }
     }
@@ -386,6 +390,32 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         );
     }
     
+    private void notifyCreationAll () {
+        DataObjectPool.Item item = null;
+        Iterator iter = null;
+        synchronized (this) {
+            if (toNotify.isEmpty()) {
+                return;
+            }
+
+            if (toNotify.size () == 1) {
+                item = (DataObjectPool.Item)toNotify.iterator().next ();
+            } else {
+                iter = new HashSet (toNotify).iterator();
+            }
+        }
+
+        if (item != null) {
+            // only one item
+            notifyCreation (item.getDataObjectOrNull());
+        } else {
+            // iter has a lot of objects
+            while (iter.hasNext ()) {
+                DataObjectPool.Item i = (DataObjectPool.Item)iter.next ();
+                notifyCreation (i.getDataObjectOrNull ());
+            }
+        }
+    }
     /** Wait till the data object will be notified. But wait limited amount
      * of time so we will not deadlock
      *
