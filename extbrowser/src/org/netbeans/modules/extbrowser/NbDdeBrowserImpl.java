@@ -30,7 +30,6 @@ import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
-import org.openide.filesystems.FileUtil;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -127,17 +126,21 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         try {
             String cmd = getDefaultOpenCommand ();
             if (cmd != null) {
-                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.IEXPLORE) >= 0)
+                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.IEXPLORE) >= 0) {
                     return ExtWebBrowser.IEXPLORE;
+                }
 
-                if (cmd.toUpperCase ().indexOf ("NETSCP") >= 0)  // NOI18N
+                if (cmd.toUpperCase ().indexOf ("NETSCP") >= 0) { // NOI18N
                     return ExtWebBrowser.NETSCAPE6;
+                }
                 
-                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.NETSCAPE) >= 0)
+                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.NETSCAPE) >= 0) {
                     return ExtWebBrowser.NETSCAPE;
+                }
                 
-                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.MOZILLA) >= 0)
+                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.MOZILLA) >= 0) {
                     return ExtWebBrowser.MOZILLA;
+                }
             }
         } catch (Exception ex) {
             // some problem in native code likely
@@ -257,7 +260,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 String urlStr = url.toString();
                 
                 boolean triedStart = false;
-                int MAX_URL_LENGTH = 199;
+                final int MAX_URL_LENGTH = 199;
                 
                 if ((urlStr != null) && (urlStr.length() > MAX_URL_LENGTH)) {
                      urlStr = getFileUrl(urlStr);

@@ -220,7 +220,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
         }
         if (browserExecutable == null) {
             NbProcessDescriptor oldVal = this.browserExecutable;
-            this.browserExecutable = defaultBrowserExecutable();;
+            this.browserExecutable = defaultBrowserExecutable();
             pcs.firePropertyChange(PROP_BROWSER_EXECUTABLE, oldVal, browserExecutable);
         }
     }

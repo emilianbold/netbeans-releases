@@ -18,7 +18,6 @@ import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import org.openide.ErrorManager;
 
 /*

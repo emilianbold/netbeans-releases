@@ -17,7 +17,6 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import java.io.IOException;
 
 /**
  * @author Martin Grebac
