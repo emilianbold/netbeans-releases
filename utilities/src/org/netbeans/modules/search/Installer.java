@@ -29,13 +29,13 @@ public class Installer extends ModuleInstall {
     private final static long serialVersionUID = 1;
 
     /** Holds hooking code. */
-    private static SearchHook hook;
+    private static FindActionManager hook;
 
 
     /** Restores module. Overrides superclass method. 
      * Hooks <code>SearchPerformer</code> on <code>FindAction</code>. */
     public void restored () {
-        hook = new SearchHook(SearchPerformer.getDefault());
+        hook = new FindActionManager(SearchPerformer.getDefault());
         hook.hook();
     }
 
