@@ -58,8 +58,6 @@ public class AntProjectDataLoader extends UniFileLoader {
             SystemAction.get (RunTargetsAction.class),
             SystemAction.get (FileSystemAction.class),
             null,
-            SystemAction.get (OpenLocalExplorerAction.class),
-            null,
             SystemAction.get (CutAction.class),
             SystemAction.get (CopyAction.class),
             null,
