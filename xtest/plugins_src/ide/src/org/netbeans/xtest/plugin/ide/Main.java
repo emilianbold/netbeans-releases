@@ -180,7 +180,7 @@ public class Main extends Object {
         // Wait a little because of issue 42414 (addAWTEventListener has to be
         // called after IDE adds its own listener)
         try {
-            Thread.sleep(2000);
+            Thread.sleep(5000);
         } catch (Exception e) {
             errMan.notify(ErrorManager.EXCEPTION, e);
         }
