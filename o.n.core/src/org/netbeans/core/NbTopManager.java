@@ -1106,16 +1106,17 @@ public abstract class NbTopManager extends TopManager {
                 Lkp lkp = (Lkp)lookup;
 
                 
-                try {
-                    DataFolder rootFolder = DataFolder.findFolder (
-                        org.openide.TopManager.getDefault ().getRepository ().getDefaultFileSystem ().getRoot ()
-                    );
-                    DataFolder df = DataFolder.create (rootFolder, "Services"); // NOI18N
-		    StartLog.logProgress ("Got Services folder"); // NOI18N
-
-                    FolderLookup folder = new FolderLookup (df, "SL["); // NOI18N
-                    folder.addTaskListener(new ConvertorListener());
-		    StartLog.logProgress ("created FolderLookup"); // NOI18N
+                    FileObject services = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Services");
+                    Lookup nue;
+                    if (services != null) {
+                        StartLog.logProgress("Got Services folder"); // NOI18N
+                        FolderLookup f = new FolderLookup(DataFolder.findFolder(services), "SL["); // NOI18N
+                        f.addTaskListener(new ConvertorListener());
+                        StartLog.logProgress("created FolderLookup"); // NOI18N
+                        nue = f.getLookup();
+                    } else {
+                        nue = Lookup.EMPTY;
+                    }
                     
                     // extend the lookup
                     Lookup[] arr = suppressMetaInfServicesLookup ?
@@ -1125,7 +1126,7 @@ public abstract class NbTopManager extends TopManager {
                             // is actually ready and usable
                             lkp.getLookups()[1], // initialErrorManagerLookup
                             NbTopManager.get ().getInstanceLookup (),
-                            folder.getLookup (),
+                            nue,
                             NbTopManager.get().getModuleSystem().getManager().getModuleLookup(),
                         } :
                         new Lookup[] {
@@ -1135,7 +1136,7 @@ public abstract class NbTopManager extends TopManager {
                             // is actually ready and usable
                             lkp.getLookups()[2], // initialErrorManagerLookup
                             NbTopManager.get ().getInstanceLookup (),
-                            folder.getLookup (),
+                            nue,
                             NbTopManager.get().getModuleSystem().getManager().getModuleLookup(),
                         };
 		    StartLog.logProgress ("prepared other Lookups"); // NOI18N
@@ -1147,10 +1148,7 @@ public abstract class NbTopManager extends TopManager {
                         // Also listen for changes in modules, as META-INF/services/ would change:
                         get().getModuleSystem().getManager().addPropertyChangeListener(new ConvertorListener());
                     }
-                } catch (java.io.IOException ex) {
-                    ex.printStackTrace();
-                    throw new IllegalStateException ("Cannot initialize folder Services"); // NOI18N
-                }
+
             }
 	    StartLog.logEnd ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
         }
