@@ -502,11 +502,14 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
     
     private static class CategoryNode extends AbstractNode {
         
+        private static final String ICON = "org/netbeans/modules/project/libraries/resources/libraryCategory";  //NOI18N
+        
         private LibraryTypeProvider provider;
                 
         public CategoryNode (LibraryTypeProvider provider, LibrariesModel model) {
             super (new CategoryChildren(provider, model));
             this.provider = provider;
+            this.setIconBase(ICON);
         }
         
         public String getName () {
