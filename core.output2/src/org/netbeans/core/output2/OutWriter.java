@@ -161,7 +161,7 @@ class OutWriter extends PrintWriter {
      * @throws IOException
      */
     public synchronized void write(ByteBuffer bb) throws IOException {
-        if (checkError()) {
+        if (checkError() || terminated) {
             return;
         }
         if (lines != null) {
@@ -191,6 +191,12 @@ class OutWriter extends PrintWriter {
                 ErrorManager.getDefault().notify(ioe);
                 setError();
                 storage.dispose();
+            } else {
+                //Existing output may still be readable - close, but leave
+                //open for reads - if there's a problem there too, the error
+                //flag will be set when a read is attempted
+                ErrorManager.getDefault().notify(ioe);
+                threadDeathClose();
             }
         }
         if (start >= 0 && !terminated && lines != null) {
