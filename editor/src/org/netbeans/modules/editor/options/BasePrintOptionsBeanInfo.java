@@ -61,7 +61,7 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
           descriptors[i].setShortDescription(getString("HINT_" + propNames[i]));
         }
 
-        getPD(BasePrintOptions.PRINT_COLORING_ARRAY_PROP).setPropertyEditorClass(ColoringArrayEditor.class);
+        getPD(BasePrintOptions.PRINT_COLORING_MAP_PROP).setPropertyEditorClass(ColoringArrayEditor.class);
 
       } catch (IntrospectionException e) {
         descriptors = new PropertyDescriptor[0];
@@ -114,6 +114,8 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  10   Gandalf   1.9         1/11/00  Petr Nejedly    Fix for missing print 
+*       options
 *  9    Gandalf   1.8         12/28/99 Miloslav Metelka 
 *  8    Gandalf   1.7         11/14/99 Miloslav Metelka 
 *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
