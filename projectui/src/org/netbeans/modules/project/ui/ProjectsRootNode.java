@@ -7,41 +7,42 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.project.ui;
 
-import java.lang.ref.WeakReference;
-import java.util.Iterator;
-import java.util.WeakHashMap;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Sources;
-import org.openide.nodes.FilterNode;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.WeakHashMap;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -121,17 +122,28 @@ public class ProjectsRootNode extends AbstractNode {
         
         if ( ch.type == LOGICAL_VIEW ) {
             Node[] nodes = ch.getNodes( true );
-            for( int i = 0; i < nodes.length; i++  ) {
-                
-                Project p = (Project)nodes[i].getLookup().lookup( Project.class );
-                if ( p == null ) {
-                    continue;
-                }
-                LogicalViewProvider lvp = (LogicalViewProvider)p.getLookup().lookup( LogicalViewProvider.class );
-                if ( lvp != null ) {
-                    Node selectedNode = lvp.findPath( nodes[i], target );
-                    if ( selectedNode != null ) {
-                        return selectedNode;
+            // Speed up search in case we have an owner project - look in its node first.
+            Project ownerProject;
+            if (target instanceof FileObject) {
+                ownerProject = FileOwnerQuery.getOwner((FileObject) target);
+            } else if (target instanceof DataObject) {
+                ownerProject = FileOwnerQuery.getOwner(((DataObject) target).getPrimaryFile());
+            } else {
+                ownerProject = null;
+            }
+            for (int lookOnlyInOwnerProject = (ownerProject != null) ? 0 : 1; lookOnlyInOwnerProject < 2; lookOnlyInOwnerProject++) {
+                for (int i = 0; i < nodes.length; i++) {
+                    Project p = (Project) nodes[i].getLookup().lookup(Project.class);
+                    assert p != null : "Should have had a Project in lookup of " + nodes[i];
+                    if (lookOnlyInOwnerProject == 0 && p != ownerProject) {
+                        continue; // but try again (in next outer loop) as a fallback
+                    }
+                    LogicalViewProvider lvp = (LogicalViewProvider) p.getLookup().lookup(LogicalViewProvider.class);
+                    if (lvp != null) {
+                        Node selectedNode = lvp.findPath(nodes[i], target);
+                        if (selectedNode != null) {
+                            return selectedNode;
+                        }
                     }
                 }
             }
@@ -141,6 +153,7 @@ public class ProjectsRootNode extends AbstractNode {
         else if ( ch.type == PHYSICAL_VIEW ) {
             Node[] nodes = ch.getNodes( true );
             for( int i = 0; i < nodes.length; i++  ) {
+                // XXX could do similar optimization as for LOGICAL_VIEW; every nodes[i] must have some Project in its lookup
                 PhysicalView.PathFinder pf = (PhysicalView.PathFinder)nodes[i].getLookup().lookup( PhysicalView.PathFinder.class );
                 if ( pf != null ) {
                     Node n = pf.findPath( nodes[i], target );
