@@ -91,7 +91,6 @@ final class EnvironmentNode extends AbstractNode {
     setName(NbBundle.getBundle(EnvironmentNode.class).
                    getString("CTL_Environment_name"));
     setIconBase(EN_ICON_BASE);
-    createProperties();
   }
 
   /** Initialize children of this node - adds 6 currently defined subnodes. */
@@ -118,28 +117,18 @@ final class EnvironmentNode extends AbstractNode {
 
   /** Method that prepares properties. Called from initialize.
   */
-  protected void createProperties () {
-    final ResourceBundle bundle = NbBundle.getBundle(EnvironmentNode.class);
+  protected Sheet createSheet () {
+    ResourceBundle bundle = NbBundle.getBundle(EnvironmentNode.class);
     // default sheet with "properties" property set
     Sheet sheet = Sheet.createDefault();
     sheet.get(Sheet.PROPERTIES).put(
-      new PropertySupport.ReadWrite (
-        EnvironmentNode.this.PROP_DISPLAY_NAME,
-        String.class,
+      new PropertySupport.Name(
+        this,
         bundle.getString("PROP_Environment_name"),
         bundle.getString("HINT_Environment_name")
-      ) {
-        public Object getValue() {
-          return EnvironmentNode.this.getName();
-        }
-        public void setValue(Object val) {
-          if (! (val instanceof String)) return;
-          super.setName((String) val);
-        }
-      }
+      )
     );
-    // and set new sheet
-    setSheet(sheet);
+    return sheet;
   }
 
   /** renames this node */
@@ -187,6 +176,8 @@ final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  13   Gandalf   1.12        3/28/99  David Simonek   menu support improved 
+ *       (icons, actions...)
  *  12   Gandalf   1.11        3/26/99  Jaroslav Tulach 
  *  11   Gandalf   1.10        3/26/99  Ian Formanek    Fixed use of obsoleted 
  *       NbBundle.getBundle (this)
