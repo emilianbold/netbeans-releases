@@ -16,6 +16,9 @@ package org.netbeans.modules.editor;
 import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 import org.netbeans.editor.ImplementationProvider;
+import javax.swing.Action;
+import org.openide.util.actions.SystemAction;
+import org.openide.actions.ToggleBreakpointAction;
 
 /** This is NetBeans specific provider of functionality.
  * See base class for detailed comments.
@@ -31,4 +34,8 @@ public class NbImplementationProvider extends ImplementationProvider {
         return NbBundle.getBundle(localizer);
     }
 
+    public Action getToggleBreakpointAction() {
+        return SystemAction.get(org.openide.actions.ToggleBreakpointAction.class);
+    }
+    
 }

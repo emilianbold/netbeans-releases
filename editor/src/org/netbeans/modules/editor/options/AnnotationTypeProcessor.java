@@ -80,8 +80,6 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
      */
     private AnnotationType  annotationType;
 
-    private Parser par;
-    
     /** When the XMLDataObject creates new instance of the processor,
      * it uses this method to attach the processor to the data object.
      *
@@ -131,16 +129,14 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
             Handler h = new Handler(at);
 
             try {
-		Parser xp = par;
-		if (xp == null) {
-            	    SAXParserFactory factory = SAXParserFactory.newInstance ();
-            	    factory.setValidating (false);
-            	    factory.setNamespaceAware(false);
-            	    par = xp = factory.newSAXParser ().getParser ();
-            	    xp.setEntityResolver(h);
-                    xp.setDocumentHandler(h);
-            	    xp.setErrorHandler(h);
-		}
+		Parser xp;
+                SAXParserFactory factory = SAXParserFactory.newInstance ();
+                factory.setValidating (false);
+                factory.setNamespaceAware(false);
+                xp = factory.newSAXParser ().getParser ();
+                xp.setEntityResolver(h);
+                xp.setDocumentHandler(h);
+                xp.setErrorHandler(h);
                 xp.parse(new InputSource(xmlDataObject.getPrimaryFile().getInputStream()));
                 at.putProp(AnnotationType.PROP_FILE, xmlDataObject.getPrimaryFile());
                 annotationType = at;

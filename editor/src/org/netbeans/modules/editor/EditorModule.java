@@ -132,22 +132,7 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
                 public void saveSetting(String settingName, Object value) {
                     // AnnotationType properties are stored to BaseOption
                     BaseOptions bo = (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
-
-                    if (settingName.equals(AnnotationTypes.PROP_BACKGROUND_DRAWING)) {
-                        bo.setSettingValue(AnnotationTypes.PROP_BACKGROUND_DRAWING, value);
-                    }
-                    if (settingName.equals(AnnotationTypes.PROP_BACKGROUND_GLYPH_ALPHA)) {
-                        bo.setSettingValue(AnnotationTypes.PROP_BACKGROUND_GLYPH_ALPHA, value);
-                    }
-                    if (settingName.equals(AnnotationTypes.PROP_COMBINE_GLYPHS)) {
-                        bo.setSettingValue(AnnotationTypes.PROP_COMBINE_GLYPHS, value);
-                    }
-                    if (settingName.equals(AnnotationTypes.PROP_GLYPHS_OVER_LINE_NUMBERS)) {
-                        bo.setSettingValue(AnnotationTypes.PROP_GLYPHS_OVER_LINE_NUMBERS, value);
-                    }
-                    if (settingName.equals(AnnotationTypes.PROP_SHOW_GLYPH_GUTTER)) {
-                        bo.setSettingValue(AnnotationTypes.PROP_SHOW_GLYPH_GUTTER, value);
-                    }
+                    bo.setSettingValue(settingName, value);
                 }
             } );
 
