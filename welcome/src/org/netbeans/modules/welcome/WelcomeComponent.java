@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.welcome;
 
+import java.lang.ref.WeakReference;
 import org.openide.util.NbBundle;
 import org.openide.*;
 import org.openide.windows.*;
@@ -30,7 +31,8 @@ import org.openide.ErrorManager;
  */
 class WelcomeComponent extends TopComponent{
     static final long serialVersionUID=6021472310161712674L;
-    private static WelcomeComponent component = null;
+    private static WeakReference/*<WelcomeComponent>*/ component = 
+                new WeakReference(null); 
     private JComponent panel;
 
     private boolean initialized = false;
@@ -77,11 +79,11 @@ class WelcomeComponent extends TopComponent{
      * from window system. "Welcome" is name of settings file defined in module layer.
      */
     public static WelcomeComponent findComp() {
-        if (component == null) {
+        if (component.get() == null) {
             TopComponent tc = WindowManager.getDefault().findTopComponent("Welcome"); // NOI18N
             if (tc != null) {
                 if (tc instanceof WelcomeComponent) {
-                    component = (WelcomeComponent) tc;
+                    component = new WeakReference(tc);
                 } else {
                     //Incorrect settings file?
                     IllegalStateException exc = new IllegalStateException
@@ -98,16 +100,16 @@ class WelcomeComponent extends TopComponent{
                 WelcomeComponent.createComp();
             }
         }
-        return component;
+        return (WelcomeComponent)component.get();
     }
     
     /* Singleton accessor reserved for window system ONLY. Used by window system to create
      * WelcomeComponent instance from settings file when method is given. Use <code>findComp</code>
      * to get correctly deserialized instance of WelcomeComponent. */
     public static WelcomeComponent createComp() {
-        if(component == null)
-            component = new WelcomeComponent();
-        return component;
+        if(component.get() == null)
+            component = new WeakReference(new WelcomeComponent());
+        return (WelcomeComponent)component.get();
     }
     
     /** Overriden to explicitely set persistence type of WelcomeComponent
@@ -117,7 +119,7 @@ class WelcomeComponent extends TopComponent{
     }
     
     static void clearRef(){
-        component = null;
+        component.clear();
     }
     
     private void initAccessibility(){
