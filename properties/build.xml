@@ -64,11 +64,14 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/eager.dir}"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <property name="build.package.compress" value="false"/>
+    <property name="build.package.index" value="false"/>
     <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/properties.jar"
          manifest="manifest-subst.mf"
          basedir="src"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
-	 compress="false">
+	 compress="${build.package.compress}"
+	 index="${build.package.index}">
       <exclude name="org/netbeans/modules/properties/syntax/"/>
     </jar>
     <copy file="manifest-syntax.mf" tofile="manifest-syntax-subst.mf" filtering="on"/>
@@ -76,7 +79,8 @@ Microsystems, Inc. All Rights Reserved.
             manifest="manifest-syntax-subst.mf"
             basedir="src"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
-            compress="false">
+            compress="${build.package.compress}"
+            index="${build.package.index}">
       <include name="org/netbeans/modules/properties/syntax/"/>
     </jar>
   </target>
