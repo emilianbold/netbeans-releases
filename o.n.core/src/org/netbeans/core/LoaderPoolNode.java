@@ -247,7 +247,6 @@ public final class LoaderPoolNode extends AbstractNode {
     }
 
     /** Notification to finish installation of nodes during startup.
-    * @deprecated no longer does anything, please remove calls to it
     */
     static void installationFinished () {
         installationFinished = true;
@@ -689,71 +688,3 @@ public final class LoaderPoolNode extends AbstractNode {
     } // End of Index
 
 }
-
-/*
-* Log
-*  37   Jaga      1.35.1.0    3/28/00  Jesse Glick     No longer refiring 
-*       irrelevant loader changes to the pool: i.e. display name and actions. 
-*       Only things like extension lists, etc.
-*  36   Gandalf   1.35        1/16/00  Jaroslav Tulach TemplatesExplorer 
-*       removed, startup faster
-*  35   Gandalf   1.34        1/13/00  Jesse Glick     System loaders are 
-*       annotated as such.
-*  34   Gandalf   1.33        1/13/00  Jaroslav Tulach I18N
-*  33   Gandalf   1.32        1/13/00  Jesse Glick     All loaders are displayed
-*       and persisted, incl. system ones, though these cannot be reordered.
-*  32   Gandalf   1.31        12/2/99  Jesse Glick     Loaders cannot be removed
-*       from pool, either intentionally or accidentally (e.g. after failed 
-*       deserialize).
-*  31   Gandalf   1.30        11/26/99 Patrik Knakal   
-*  30   Gandalf   1.29        11/26/99 Jesse Glick     Fixed a 
-*       ConcurrentModificationException, and also added a proper svuid.
-*  29   Gandalf   1.28        11/25/99 Jesse Glick     Rewrite of 
-*       LoaderPoolNode, specifically the management of loader ordering. Now 
-*       permits multiple -before and -after dependencies, and should be more 
-*       robust. Also made LoaderPoolItemNode's properly deletable and fixed a 
-*       timing-related NullPointerException when uninstalling modules.
-*  28   Gandalf   1.27        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  27   Gandalf   1.26        10/8/99  Jaroslav Tulach Prints exceptions only to
-*       console.
-*  26   Gandalf   1.25        9/30/99  Jaroslav Tulach DataLoader is now 
-*       serializable.
-*  25   Gandalf   1.24        9/28/99  Jaroslav Tulach Changes in loader pool 
-*       are reflected in repository.
-*  24   Gandalf   1.23        8/30/99  Jaroslav Tulach Notification of change of
-*       loaders in different thread.
-*  23   Gandalf   1.22        7/8/99   Jesse Glick     Context help.
-*  22   Gandalf   1.21        6/9/99   Ian Formanek    ToolsAction
-*  21   Gandalf   1.20        6/8/99   Ian Formanek    ---- Package Change To 
-*       org.openide ----
-*  20   Gandalf   1.19        5/12/99  Jaroslav Tulach NullPointer fix.
-*  19   Gandalf   1.18        5/11/99  Jaroslav Tulach ToolbarPool changed to 
-*       look better in Open API
-*  18   Gandalf   1.17        5/9/99   Ian Formanek    Fixed bug 1655 - Renaming
-*       of top level nodes is not persistent (removed the possibility to 
-*       rename).
-*  17   Gandalf   1.16        5/4/99   Jaroslav Tulach Relative URL for modules.
-*  16   Gandalf   1.15        4/15/99  Martin Ryzl     add fixed
-*  15   Gandalf   1.14        4/7/99   Ian Formanek    Rename 
-*       Section->ManifestSection
-*  14   Gandalf   1.13        3/30/99  Jaroslav Tulach Form loader before Java 
-*       loaderem.
-*  13   Gandalf   1.12        3/26/99  Ian Formanek    Fixed use of obsoleted 
-*       NbBundle.getBundle (this)
-*  12   Gandalf   1.11        3/25/99  Jaroslav Tulach Loader pool order fixed.
-*  11   Gandalf   1.10        3/24/99  Ian Formanek    
-*  10   Gandalf   1.9         3/24/99  Ian Formanek    
-*  9    Gandalf   1.8         3/18/99  Ian Formanek    
-*  8    Gandalf   1.7         3/18/99  Jaroslav Tulach 
-*  7    Gandalf   1.6         2/16/99  David Simonek   
-*  6    Gandalf   1.5         1/20/99  Jaroslav Tulach 
-*  5    Gandalf   1.4         1/7/99   David Simonek   
-*  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
-*  3    Gandalf   1.2         1/6/99   Ian Formanek    Reflecting change in 
-*       datasystem package
-*  2    Gandalf   1.1         1/6/99   Ian Formanek    Fixed outerclass 
-*       specifiers uncompilable under JDK 1.2
-*  1    Gandalf   1.0         1/5/99   Ian Formanek    
-* $
-*/
