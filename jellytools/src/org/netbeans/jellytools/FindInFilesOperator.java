@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -133,17 +133,6 @@ public class FindInFilesOperator extends NbDialogOperator {
     }
 
     /**
-     * Returns operator for the "Substring" radio button.
-     * @throws JemmyException when wrong page is selected
-     */
-    public JRadioButtonOperator rbSubString() {
-        String text = Bundle.getStringTrimmed("org.netbeans.modules.search.types.Bundle",
-                                       "TEXT_LABEL_SUBSTRING");
-        checkPage("\"" + text + "\" radio button", new String[] {FULL_TEXT_PAGE, OBJECT_NAME_PAGE});
-        return new JRadioButtonOperator(this, text);
-    }
-
-    /**
      * Returns operator for the "Match Whole Words Only" check box.
      * @throws JemmyException when wrong page is selected
      */
@@ -166,32 +155,23 @@ public class FindInFilesOperator extends NbDialogOperator {
     }
 
     /**
-     * Returns operator for the "Regular Expression" radio button.
+     * Returns operator for the "Regular Expression" check box.
      * @throws JemmyException when wrong page is selected
      */
-    public JRadioButtonOperator rbRegExpr() {
+    public JCheckBoxOperator cbRegExpr() {
         String text = Bundle.getStringTrimmed("org.netbeans.modules.search.types.Bundle",
                                               "TEXT_LABEL_RE");
         checkPage("\"" + text + "\" radio button", new String[] {FULL_TEXT_PAGE, OBJECT_NAME_PAGE});
-        return new JRadioButtonOperator(this, text);
+        return new JCheckBoxOperator(this, text);
     }
 
     /**
-     * Returns operator for the "Substring" text field.
+     * Returns operator for the "Search for Text Containing:" text field.
      * @throws JemmyException when wrong page is selected
      */
-    public JTextFieldOperator txtSubstring() {
-        checkPage("Substring text field", new String[] {FULL_TEXT_PAGE, OBJECT_NAME_PAGE});
+    public JTextFieldOperator txtSearchText() {
+        checkPage("Search text field", new String[] {FULL_TEXT_PAGE, OBJECT_NAME_PAGE});
         return new JTextFieldOperator(this);
-    }
-
-    /**
-     * Returns operator for the "Regular Expression" test field.
-     * @throws JemmyException when wrong page is selected
-     */
-    public JTextFieldOperator txtRegexpr() {
-        checkPage("Regexpr text field", new String[] {FULL_TEXT_PAGE, OBJECT_NAME_PAGE});
-        return new JTextFieldOperator(this, 1);
     }
 
     /**
@@ -331,8 +311,7 @@ public class FindInFilesOperator extends NbDialogOperator {
      */
     public void setSubstring(String substring, boolean wholeWords, boolean caseSensitive) {
         checkPage("substring components", new String[] {FULL_TEXT_PAGE, OBJECT_NAME_PAGE});
-        rbSubString().changeSelection(true);
-        JTextFieldOperator field = txtSubstring();
+        JTextFieldOperator field = txtSearchText();
         field.clearText();
         field.typeText(substring);
         cbWholeWords().changeSelection(wholeWords);
@@ -346,8 +325,8 @@ public class FindInFilesOperator extends NbDialogOperator {
      */
     public void setRegExpr(String regexpr) {
         checkPage("regexpr components", new String[] {FULL_TEXT_PAGE, OBJECT_NAME_PAGE});
-        rbRegExpr().changeSelection(true);
-        JTextFieldOperator field = txtRegexpr();
+        cbRegExpr().changeSelection(true);
+        JTextFieldOperator field = txtSearchText();
         field.clearText();
         field.typeText(regexpr);
         useCriterion(true);
@@ -528,22 +507,18 @@ public class FindInFilesOperator extends NbDialogOperator {
         cbUseCriterion();
         btSaveSetting();
         btRestoreSaved();
-        rbSubString();
-        rbRegExpr();
+        cbRegExpr();
         cbWholeWords();
         cbCase();
-        txtSubstring();
-        txtRegexpr();
+        txtSearchText();
         selectObjectNamePage();
         cbUseCriterion();
         btSaveSetting();
         btRestoreSaved();
-        rbSubString();
-        rbRegExpr();
+        cbRegExpr();
         cbWholeWords();
         cbCase();
-        txtSubstring();
-        txtRegexpr();
+        txtSearchText();
         selectTypePage();
         cbUseCriterion();
         btSaveSetting();
