@@ -22,8 +22,10 @@ import org.openide.*;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.filesystems.FileSystem;
 
 import java.io.*;
+import java.util.Enumeration;
 
 
 /** Options for JUnit module, control behavior of test creation and execution.
@@ -48,6 +50,8 @@ public class JUnitSettings extends SystemOption {
     public static final String PROP_CFGCREATE_ENABLED   = "cfgcreate_enabled";
     public static final String PROP_CFGEXEC_ENABLED     = "cfgexec_enabled";
     public static final String PROP_EXECUTOR_TYPE       = "executor_type";
+    public static final String PROP_GENERATE_EXCEPTION_CLASSES = "generate_exceptions";
+    public static final String PROP_TEST_RUNNER         = "test_runner";
 
     public static final int EXECUTOR_EXTERNAL           = 0;
     public static final int EXECUTOR_INTERNAL           = 1;
@@ -76,6 +80,8 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_CFGCREATE_ENABLED, new Boolean(true), true);
         putProperty(PROP_CFGEXEC_ENABLED, new Boolean(true), true);
         putProperty(PROP_EXECUTOR_TYPE, new Integer(EXECUTOR_EXTERNAL), true);
+        putProperty(PROP_GENERATE_EXCEPTION_CLASSES, new Boolean(true), true);
+        putProperty(PROP_TEST_RUNNER, "org.netbeans.modules.junit.TestRunner", true);
     }
 
     public void writeExternal (ObjectOutput out) throws IOException {
@@ -91,6 +97,8 @@ public class JUnitSettings extends SystemOption {
         out.writeObject(getProperty(PROP_CFGCREATE_ENABLED));
         out.writeObject(getProperty(PROP_CFGEXEC_ENABLED));
         out.writeObject(getProperty(PROP_EXECUTOR_TYPE));
+        out.writeObject(getProperty(PROP_GENERATE_EXCEPTION_CLASSES));
+        out.writeObject(getProperty(PROP_TEST_RUNNER));
     }
     
     public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
@@ -106,6 +114,8 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_CFGCREATE_ENABLED, in.readObject(), true);
         putProperty(PROP_CFGEXEC_ENABLED, in.readObject(), true);
         putProperty(PROP_EXECUTOR_TYPE, in.readObject(), true);
+        putProperty(PROP_GENERATE_EXCEPTION_CLASSES, in.readObject(), true);
+        putProperty(PROP_TEST_RUNNER, in.readObject(), true);
     }
 
     public String displayName () {
@@ -126,7 +136,7 @@ public class JUnitSettings extends SystemOption {
     public String getFileSystem() {
         return (String) getProperty(PROP_FILE_SYSTEM);
     }
-
+    
     public void setFileSystem(String newVal) {
         putProperty(PROP_FILE_SYSTEM, newVal, true);
     }
@@ -217,6 +227,22 @@ public class JUnitSettings extends SystemOption {
     
     public void setExecutorType(int newVal) {
         putProperty(PROP_EXECUTOR_TYPE, new Integer(newVal), true);
+    }
+
+    public boolean isGenerateExceptionClasses() {
+        return ((Boolean) getProperty(PROP_GENERATE_EXCEPTION_CLASSES)).booleanValue();
+    }
+
+    public void setGenerateExceptionClasses(boolean newVal) {
+        putProperty(PROP_GENERATE_EXCEPTION_CLASSES, new Boolean(newVal), true);
+    }
+
+    public String getTestRunner() {
+        return (String) getProperty(PROP_TEST_RUNNER);
+    }
+
+    public void setTestRunner(String newVal) {
+        putProperty(PROP_TEST_RUNNER, newVal, true);
     }
 
     public boolean isGlobal() {
