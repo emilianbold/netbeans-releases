@@ -15,6 +15,7 @@
 package org.netbeans.modules.properties;
 
 
+import java.awt.datatransfer.Transferable;
 import java.awt.Component;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -22,24 +23,29 @@ import java.io.ObjectInputStream;
 import java.io.OutputStreamWriter;
 import java.text.MessageFormat;
 import java.util.Iterator;
+import java.util.List;
 
+import org.openide.actions.OpenAction;
+import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.datatransfer.NewType;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-import org.openide.actions.OpenAction;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
-import org.openide.DialogDescriptor;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeTransfer;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.NewType;
+import org.openide.util.datatransfer.PasteType;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+
 
 
 /** 
@@ -50,9 +56,6 @@ import org.openide.TopManager;
  */
 public class PropertiesDataNode extends DataNode {
 
-    /** Icon base for the <code>PropertiesDataNode</code> node. */
-    private static final String PROPERTIES_ICON_BASE = "org/netbeans/modules/properties/propertiesObject"; // NOI18N
-    
     
     /** Create a data node for a given data object.
      * The provided children object will be used to hold all child nodes.
@@ -67,7 +70,7 @@ public class PropertiesDataNode extends DataNode {
     
     /** Initializes instance. Sets icon base and default action. */
     private void initialize () {
-        setIconBase(PROPERTIES_ICON_BASE);
+        setIconBase("org/netbeans/modules/properties/propertiesObject"); // NOI18N
         setDefaultAction (SystemAction.get(OpenAction.class));
     }
 
@@ -203,4 +206,87 @@ public class PropertiesDataNode extends DataNode {
     public Component getCustomizer() {
         return new BundleNodeCustomizer((PropertiesDataObject)getDataObject());
     }
+    
+    /** Creates paste types for this node. Overrides superclass method. 
+     * @param transferable transferable in clipboard 
+     * @param types <code>PasteType</code>'s valid for this node. */
+    public void createPasteTypes(Transferable transferable, List types) {
+        super.createPasteTypes(transferable, types);
+
+        int mode = NodeTransfer.COPY;
+        
+        Node node = NodeTransfer.node(transferable, mode);
+        
+        if(node == null || !(node instanceof PropertiesLocaleNode))
+            mode = NodeTransfer.MOVE;
+        
+        node = NodeTransfer.node(transferable, mode);
+        
+        if(node == null || !(node instanceof PropertiesLocaleNode))
+            return;
+
+        
+        PropertiesFileEntry entry = (PropertiesFileEntry)((PropertiesLocaleNode)node).getFileEntry();
+        
+        types.add(new EntryPasteType(entry, mode));
+
+        return;
+    }
+    
+    
+    /** Paste type for <code>PropertiesDataNode</code>. */
+    private class EntryPasteType extends PasteType {
+
+        /** Entry to copy/move. */
+        private  PropertiesFileEntry entry;
+        
+        /** Flag for copying/moving. */
+        private int flag;
+        
+
+        /** Constructor.
+         * @param entry entry to copy/move 
+         * @param flag flag for moving/copying */
+        public EntryPasteType(PropertiesFileEntry entry, int flag) {
+            this.entry = entry;
+            this.flag = flag;
+        }
+        
+        /** Peforms paste action. Implements superclass abstract method. 
+         * @exception IOException if error occured */
+        public Transferable paste() throws IOException {
+            DataFolder dataFolder = PropertiesDataNode.this.getDataObject().getFolder();
+            
+            if(dataFolder == null)
+                return null;
+            
+            FileObject folder = dataFolder.getPrimaryFile();
+            
+            String newName = getDataObject().getPrimaryFile().getName() + Util.getLocalePartOfFileName(entry);
+            
+            int entryIndex = ((PropertiesDataObject)getDataObject()).getBundleStructure().getEntryIndexByFileName(newName);
+
+            // Has such item -> find brother.
+            if(entryIndex != -1)
+                newName = FileUtil.findFreeFileName(folder, newName, entry.getFile().getExt());
+            
+            if(flag == NodeTransfer.COPY) {
+                FileObject fileObject = entry.getFile();
+                fileObject.copy(folder, newName, fileObject.getExt());
+                
+            } else if(flag == NodeTransfer.MOVE) {
+                FileObject fileObject = entry.getFile();
+                FileLock lock = entry.takeLock();
+                
+                try {
+                    fileObject.move(lock, folder, newName, fileObject.getExt());
+                } finally {
+                    lock.releaseLock ();
+                }
+            }
+            
+            return null;
+        }
+        
+    } // End of class EntryPasteType.
 }
