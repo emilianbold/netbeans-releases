@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
 	
   <target name="init" depends="default.init">
     <patternset id="tomcatint/tomcat5.files">
-      <include name="${nb.modules.dir}/tomacat5.jar"/>
+      <include name="${nb.modules.dir}/tomcat5.jar"/>
     </patternset>
     <path id="cp">
         <pathelement location="${jdkhome}/lib/tools.jar"/>
@@ -37,8 +37,6 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_all}/j2eeserver/external/jsr88javax.jar"/>
         <pathelement location="${web/ddapi.dir}/${nb.modules/autoload.dir}/ddapi.jar"/>
         <pathelement location="${debuggercore/api.dir}/${nb.modules/autoload.dir}/debugger-api.jar"/>
-        <pathelement location="${debuggerjpda.dir}/${nb.modules.dir}/jpdaDebugger.jar"/>
-        <pathelement location="${debuggercore.dir}/${nb.modules/autoload.dir}/debuggerCore.jar"/>
         <pathelement location="${nb_all}/libs/external/xerces-2.6.0.jar"/>
     </path>
   </target>
