@@ -58,6 +58,9 @@ public class DataObjectPanel extends JPanel implements EnhancedCustomPropertyEdi
     public DataObjectPanel(DataObjectEditor my) {
         myEditor = my;
         initComponent();
+        
+        reposTree.getAccessibleContext().setAccessibleName( NbBundle.getBundle (DataObjectPanel.class).getString ( "ACSN_DataObjectPanel" ) );
+        setDescription( NbBundle.getBundle (DataObjectPanel.class).getString ( "ACSD_DataObjectPanel" ) );
     }
     
     public void addNotify() {
