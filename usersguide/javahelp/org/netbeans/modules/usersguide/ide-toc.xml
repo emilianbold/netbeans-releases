@@ -15,25 +15,26 @@
 <tocitem text="Legal Notices" target="ide.credits" />
 
 <tocitem text="Getting Started" target="gs.ide">
+  <tocitem text="An Overview of the IDE" target="gs.tour" />
   <tocitem text="Key Concepts" target="gs.key" />
-  <tocitem text="A Tour of the IDE" target="gs.tour" />
-  <tocitem text="Workspaces" target="gs.wkspc" />
-  <tocitem text="Getting Started Tutorial" target="gs.gstutor" />
-  <tocitem text="Creating the ColorSwitch Application" target="gs.csw">
-    <tocitem text="Creating a Container" target="gs.cont" />
-    <tocitem text="Selecting a Layout Manager" target="gs.lyt" />
-    <tocitem text="Adding a Label and Setting Its Properties" target="gs.label" />
-    <tocitem text="Adding a Button" target="gs.button" />
-    <tocitem text="Setting Up the Button to Switch Color" target="gs.setup" />
-    <tocitem text="Adding Event Handler Code" target="gs.evt" />
-    <tocitem text="Compiling and Running Your Program" target="gs.run" />
-    <tocitem text="Stepping Through the Code" target="gs.step" />
+  <tocitem text="How to Get Started Using the IDE" target="gs.howto" />
+  <tocitem text="Getting Started Tutorial" target="gs.gstutor" >
+    <tocitem text="Creating the ColorSwitch Application" target="gs.csw">
+      <tocitem text="Creating a Container" target="gs.cont" />
+      <tocitem text="Selecting a Layout Manager" target="gs.lyt" />
+      <tocitem text="Adding a Label and Setting Its Properties" target="gs.label" />
+      <tocitem text="Adding a Button" target="gs.button" />
+      <tocitem text="Setting Up the Button to Switch Color" target="gs.setup" />
+      <tocitem text="Adding Event Handler Code" target="gs.evt" />
+      <tocitem text="Compiling and Running Your Program" target="gs.run" />
+      <tocitem text="Stepping Through the Code" target="gs.step" />
+    </tocitem>
   </tocitem>
 </tocitem>
 
 
 <tocitem text="Filesystems and Objects" target="filesystems-objects">
-   <tocitem text="Filesystems and the Java Class Path" target="filesystems.classpath">
+   <tocitem text="Filesystems and Application Development" target="filesystems.classpath">
      <tocitem text="Mounting a Filesystem" target="filesystems.mount" />
      <tocitem text="Changing the Mount Order of Filesystems" target="filesystems.order" />
      <tocitem text="Opening a File Not Mounted in a Filesystem" target="filesystems.openfile" />
@@ -101,6 +102,7 @@
   <tocitem text="Source Editor" target="editing.editorwindow"/>
   <tocitem text="Opening a File in the Source Editor" target="editing.opening"/>
   <tocitem text="Creating New Java Code" target="editing.newcode"/>
+  <tocitem text="Error Marking" target="editing_error-marks"/>
   <tocitem text="Formatting Code" target="editing.formatting"/>
   <tocitem text="Working With Tabs" target="editing.tabs"/>
   <tocitem text="Finding and Replacing Text" target="editing.find"/>
@@ -126,7 +128,6 @@
     <tocitem text="Using the Word Match Feature" target="editing.wordmatch"/>
     <tocitem text="Using the Jump List" target="editing.jumplist"/>
     <tocitem text="Using Bookmarks" target="editing.bookmarks"/>
-    <tocitem text="Using Quick Browse for Java Elements" target="editing.toolbar"/>
     <tocitem text="Using 'Go To' Shortcuts" target="editing.goto"/>
     <tocitem text="Opening a Java File With 'Go To Class'" target="editing.fastopen"/>
     <tocitem text="Adding a Java Import Statement With Fast Import" target="editing.fastimport"/>
@@ -157,6 +158,7 @@
     <tocitem text="Correcting Errors in Source Code" target="compile.error" />
     <tocitem text="Stopping a Compile" target="compile.stop"/>
     <tocitem text="Specifying a Target Directory for Class Files" target="compile.output"/>
+    <tocitem text="Managing Dependencies Between Java Classes" target="compile.javamake"/>
     <tocitem text="Cross-Compiling Between Java Platforms" target="compile.crosscompile"/>
     <tocitem text="Disabling Compilation of a Java Source File" target="compile.disable"/>
     <tocitem text="Deleting .class Files" target="compile.delete"/>
@@ -180,7 +182,6 @@
     <tocitem text="Removing a Compiler Type" target="compile.remove"/>
   </tocitem>
   <tocitem text="Running Java Programs" target="run.jump">
-    <tocitem text="The Running Workspace" target="run.workspace" />
     <tocitem text="Running a Java Program" target="run.run" />
     <tocitem text="Running a Program in Debug Mode" target="run.debugmode" />
     <tocitem text="Running and Debugging an Applet" target="run.debug.applet" />
@@ -202,7 +203,6 @@
     <tocitem text="Applet Executor" target="run.applet"/>
     <tocitem text="JAR Executor" target="run.jarexecutor"/>
     <tocitem text="Debugger Executor" target="run.debugexecutor"/>
-    <tocitem text="Locale Executor" target="run.localeexecutor"/>
     <tocitem text="Ant Script Execution" target="ant.execution"/>
     <tocitem text="J2EE Server Executor" target="run.j2ee_executor"/>
     <tocitem text="Specifying the Default Executor" target="run.project" />
@@ -213,7 +213,7 @@
 </tocitem>
         
 
-<tocitem text="Debugging" target="debug.overview">
+<tocitem text="Debugging Programs" target="debug.overview">
   <tocitem text="The Debug Environment" target="debug.workspace">
     <tocitem text="Debug Toolbar" target="debug.toolbar"></tocitem>
     <tocitem text="Debug Menu" target="debug.menu"></tocitem>
@@ -251,25 +251,21 @@
   <tocitem text="Finishing a Session" target="debug.sessions.finishsession" />
 
   <tocitem text="Setting Breakpoints" target="debug.breakpoint">
-     <tocitem text="Breaking on a Line" target="debug.breakpoint.line" />
-     <tocitem text="Breaking on a Method Name" target="debug.breakpoint.method" />
-     <tocitem text="Breaking on an Exception" target="debug.breakpoint.exception" />
-     <tocitem text="Breaking on a Class" target="debug.breakpoint.class" />
-     <tocitem text="Breaking on a Thread" target="debug.breakpoint.thread" />
-     <tocitem text="Breaking on a Variable" target="debug.breakpoint.variable" />
-     <tocitem text="Conditional Breakpoints" target="debug.breakpoint.condition" />
-     <tocitem text="Enabling and Disabling a Breakpoint" target="debug.breakpoint.enable" />
-     <tocitem text="Viewing the Source for a Line Breakpoint" target="debug.breakpoint.source" />
-     <tocitem text="Grouping Breakpoints" target="debug.breakpoint.group" />    
-     <tocitem text="Deleting a Breakpoint" target="debug.breakpoint.remove" />
-     <tocitem text="Breakpoint Properties" target="debug.breakpoint.properties" > 
-        <tocitem text="Line Breakpoint Properties" target="debug.window.brkpt_line" />    
-        <tocitem text="Method Breakpoint Properties" target="debug.window.brkpt_method" />    
-        <tocitem text="Thread Breakpoint Properties" target="debug.window.brkpt_thread" />    
-        <tocitem text="Variable Breakpoint Properties" target="debug.window.brkpt_variable" />    
-        <tocitem text="Exception Breakpoint Properties" target="debug.window.brkpt_exception" />    
-        <tocitem text="Class Breakpoint Properties" target="debug.window.brkpt_class" />    
+     <tocitem text="Setting Java Breakpoints" target="debug.breakpoint.java">
+
+       <tocitem text="Setting a Line Breakpoint" target="debug.breakpoint.line" />
+       <tocitem text="Setting a Method Breakpoint" target="debug.breakpoint.method" />
+       <tocitem text="Setting an Exception Breakpoint" target="debug.breakpoint.exception" />
+       <tocitem text="Setting a Class Breakpoint" target="debug.breakpoint.class" />
+       <tocitem text="Setting a Thread Breakpoint" target="debug.breakpoint.thread" />
+       <tocitem text="Setting a Variable Breakpoint" target="debug.breakpoint.variable" />
+       <tocitem text="Setting a Condition on a Breakpoint" target="debug.breakpoint.condition" />
+       <tocitem text="Printing a Breakpoint Message" target="debug.breakpoint.message" />
      </tocitem>
+     <tocitem text="Modifying Breakpoint Properties" target="debug.breakpoint.properties" /> 
+     <tocitem text="Viewing the Source for a Line Breakpoint" target="debug.breakpoint.source" />
+     <tocitem text="Enabling and Disabling a Breakpoint" target="debug.breakpoint.enable" />
+     <tocitem text="Deleting a Breakpoint" target="debug.breakpoint.remove" />
 
   </tocitem>
 
@@ -283,21 +279,16 @@
 
   <tocitem text="Using the Call Stack" target="debug.callstack.jump" >
     <tocitem text="Making a Call Current" target="debug.callstack.callingmethod" />
-    <tocitem text="Viewing Source for a Method on the Call Stack" target="debug.callstack.source" />
     <tocitem text="Popping a Call From the Call Stack" target="debug.callstack.pop" />
   </tocitem>
 
   <tocitem text="Examining Variables and Expressions" target="debug.variables.jump" >
-    <tocitem text="Viewing the Value of a Variable" target="debug.variables.evaluate"/>
     <tocitem text="Modifying the Value of a Variable" target="debug.variables.value"/>
     <tocitem text="Creating a Watch" target="debug.watch" />
     <tocitem text="Creating a Fixed Watch" target="debug.watch.fix" />
     <tocitem text="Deleting a Watch" target="debug.watch.delete" />
   </tocitem>
     
-
-  <tocitem text="Examining Classes Loaded by the Program" target="debug.environment.classes" />
-
 
   <tocitem text="Configuring the Debugger" target="debug.debugger.customize">
     <tocitem text="Customizing Debug Views" target="debug.view.customize"></tocitem>
@@ -397,8 +388,8 @@
     <tocitem text="Deleting a Property or Event Set" target="beans.deleting" />
     <tocitem text="Generating BeanInfo" target="beans.beaninfo.generating" />
     <tocitem text="BeanInfo Editor Dialog Box" target="beans.beaninfo.nodes" />
-    <tocitem text="Generating Get and Set Methods" target="beans.getset" />
-    <tocitem text="Configuring Generation of Get and Set Methods" target="beans.settings" />
+    <tocitem text="Generating Getter and Setter Methods" target="beans.getset" />
+    <tocitem text="Configuring Generation of Getter and Setter Methods" target="beans.settings" />
     <tocitem text="Customizing a Bean" target="beans.customizing" />
     <tocitem text="Making a Bean a Container" target="beans.container" />
     <tocitem text="Setting a Bean's Icon" target="beans.icon" />
@@ -411,7 +402,7 @@
    <tocitem text="Adding a Javadoc Comment" target="javadoc.addcomment"/>
    <tocitem text="Searching Through Javadoc Documentation" target="javadoc.search"/>
    <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
-   <tocitem text="Correcting a Javadoc Comments" target="javadoc.accuracy"/>
+   <tocitem text="Correcting a Javadoc Comment" target="javadoc.accuracy"/>
    <tocitem text="Mounting a Javadoc Filesystem" target="javadoc.search.path"/>
    <tocitem text="Configuring a Javadoc Filesystem" target="javadoc.filesystem.configure"/>
    <tocitem text="Removing a Javadoc Filesystem" target="javadoc.filesystem.unmount"/>
@@ -449,9 +440,15 @@
     <tocitem text="Synchronizing Source When Updating an Interface" target="java.sync.update-interface" />
     <tocitem text="Setting Synchronization Mode in a Template" target="java.sync.template" />
   </tocitem>
+  <tocitem text="Switching JDKs" target="java.jdks.jump">
+    <tocitem text="Choosing the IDE's Default JDK" target="java.jdks.default" />
+    <tocitem text="Target JDK Configuration" target="java.jdks.checklist" />
+    <tocitem text="Cross-Compiling Between JDKs" target="compile.crosscompile"/>
+    <tocitem text="Working With Assertions" target="java.assertions" />
+  </tocitem>
   <tocitem text="Overriding Methods" target="java.override" />
-  <tocitem text="Configuring Java Settings" target="java.java_sources" />
   <tocitem text="Setting Character Encoding for Java Files" target="java.encoding" />
+  <tocitem text="Configuring Java Settings" target="java.java_sources" />
 </tocitem>
 
 
@@ -473,7 +470,7 @@
     <tocitem text="Code Formats for Internationalized Strings" target="internation.replformat" />
     <tocitem text="Adding Arguments for Message Formats" target="internation.addparams" />
     <tocitem text="Configuring Internationalization Settings" target="internation.settings" />
-    <tocitem text="Running a Localized Application" target="internation.locale" />
+    <tocitem text="Running Java Sources in a Specific Locale" target="run.locale" />
   </tocitem>
 </tocitem>
 
@@ -540,6 +537,7 @@
   <tocitem text="Ant Project Files" target="ant.ident" />
   <tocitem text="Creating an Ant Project" target="ant.project" />
   <tocitem text="Editing an Ant Script" target="ant.editing" />
+  <tocitem text="Adding a Task to an Ant Script" target="ant.add-task" />
   <tocitem text="Setting Properties in an Ant Script" target="ant.props" />
   <tocitem text="Running an Ant Script" target="ant.running" />
   <tocitem text="Executing a Target" target="ant.target" />
@@ -550,18 +548,13 @@
     <tocitem text="Creating a Custom Ant Task" target="ant.createtask" />
     <tocitem text="Ant Classpath and Custom Tasks" target="ant.tasks-classpath" />
   </tocitem>
+  <tocitem text="Viewing Ant Documentation" target="ant.ant-docs" >
+    <tocitem text="Installing Ant Documentation" target="ant.install-docs" />
+  </tocitem>
+  <tocitem text="Optional Ant Tasks" target="ant.optional-tasks" />
   <tocitem text="Configuring Ant Settings" target="ant.settings" />
 </tocitem>
 
-
-
-<tocitem text="Developing JSP and Servlet Files" target="jsp.jsp_jump">
-  <tocitem text="Creating a JSP or Servlet Source File" target="jsp.jsp_create" />
-  <tocitem text="Editing a JSP or Servlet Source File" target="jsp.jsp_edit" />
-  <tocitem text="Compiling a JSP Source File" target="jsp.jsp_compile" />    
-  <tocitem text="Running a JSP or Servlet File" target="jsp.jsp_run" />
-  <tocitem text="Specifying JSP or Servlet Query Parameters" target="jsp.jsp_queryparams" />    
-</tocitem>
 
 
 <tocitem text="Web Server Integration" target="general_about_the_j2eeserver_module_html">
