@@ -195,6 +195,9 @@ public class ExtensionListEditor extends Object implements PropertyEditor, Strin
      * @return the current value of the property
      */
     public String[] getStringArray() {
+        if (value == null) {
+            return new String[0];
+        }
         List l = new ArrayList ();
         Enumeration e = value.extensions ();
         while (e.hasMoreElements ())
@@ -238,9 +241,3 @@ public class ExtensionListEditor extends Object implements PropertyEditor, Strin
     }
         
 }
-
-/*
- * Log
- *  1    Jaga      1.0         4/4/00   Jaroslav Tulach 
- * $
- */
