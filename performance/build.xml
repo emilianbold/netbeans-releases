@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-
 <!--
                 Sun Public License Notice
 
@@ -12,82 +11,27 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project name="performance" default="netbeans" basedir=".">
 
-  <property name="homepage.base" value="netbeans.org"/>
-  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+<project name="performance" default="compile" basedir=".">
 
   <target name="compile">
-    <javac srcdir="tests" destdir="tests" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
-      </classpath>
-    </javac>
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}"/>
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/tests"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-    <locjar jarfile="netbeans/tests/performance.jar" basedir="tests" excludesfile="../nbbuild/standard-jar-excludes.txt" compress="false">
-      <locale name="ja"/>
-    </locjar>
+    <mkdir dir="lib"/>
+    <jar jarfile="lib/performance.jar"
+	    basedir="src"
+	    excludesfile="../nbbuild/standard-jar-excludes.txt"
+	    compress="false"/>
   </target>
-
-  <target name="netbeans" depends="jars"/>
 
   <target name="clean">
     <delete>
-      <fileset dir="tests">
+      <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
     </delete>
-    <delete dir="netbeans"/>
-    <delete dir="Info"/>
+    <delete dir="lib"/>
   </target>
-
-  <path id="perftest.class.path">
-    <pathelement location="netbeans/tests/performance.jar"/>
-    <fileset dir="../openide/netbeans/lib">
-      <include name="openide*.jar" />
-    </fileset>
-    <pathelement location="../core/netbeans/lib/core.jar"/>
-    <fileset dir="../core/netbeans/lib/ext">
-      <include name="*.jar" />
-    </fileset>
-  </path>
-
-  <target name="runtests" depends="jars,runlocalfstests,runxmlfstests"
-          description="Run performance tests (build them first if needed).">
-
-    <java classname="org.netbeans.performance.tests.filesystems.localfs.LocalFSTest" fork="yes" maxmemory="96m" >
-      <classpath refid="perftest.class.path"/>
-    </java>
-
-    <java classname="org.netbeans.performance.tests.filesystems.xmlfs.XMLFSTest" fork="yes" maxmemory="96m" >
-      <classpath refid="perftest.class.path"/>
-    </java>
-
-  </target>
-
-  <target name="runlocalfstests" depends="jars"
-          description="Run performance tests (build them first if needed).">
-    <java classname="org.netbeans.performance.tests.filesystems.localfs.LocalFSTest" fork="yes" maxmemory="96m" >
-      <classpath refid="perftest.class.path"/>
-    </java>
-
-  </target>
-
-  <target name="runxmlfstests" depends="jars"
-          description="Run performance tests (build them first if needed).">
-
-    <java classname="org.netbeans.performance.tests.filesystems.xmlfs.XMLFSTest" fork="yes" maxmemory="96m" >
-      <classpath refid="perftest.class.path"/>
-    </java>
-
-  </target>
-
 </project>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project basedir="." default="test" name="JDK paltform benchmarks">
+
+    <!-- Properties -->
+    <property name="perf.home" value="../../../performance"/>
+
+    <!-- Task definitions -->
+    <target name="init">
+    </target>
+
+    <!-- test compilation & packaging -->
+    <target name="compile" depends="init">
+        <javac destdir="src" srcdir="src">
+            <classpath>
+                <pathelement location="../../src"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target depends="compile" name="jars">
+        <mkdir dir="lib"/>
+        <jar basedir="src"
+		compress="false"
+		excludesfile="../../../nbbuild/standard-jar-excludes.txt"
+		jarfile="lib/tests.jar"/>
+    </target>
+    
+    <target name="test">
+	<mkdir dir="report"/>
+	<antcall target="test-listappend"/>
+	<antcall target="test-exceptionconstruct"/>
+	<antcall target="test-runnablemethod"/>
+    </target>
+
+    <!-- Temporal way for spawning tests before I write ant task for spawning -->
+
+    <target depends="jars" name="test-listappend">
+	<java	fork="yes"
+		output="report/listappend.txt"
+		classname="org.netbeans.performance.collections.ListAppend"
+		classpath="lib/tests.jar:../../../performance/lib/performance.jar">
+	    <jvmarg value="-Dperf.runs=3"/>
+	    <jvmarg value="-Dperf.presenter=org.netbeans.performance.TextPresenter"/>
+	</java>
+    </target>
+
+    <target depends="jars" name="test-exceptionconstruct">
+	<java	fork="yes"
+		output="report/exceptionconstruct.txt"
+		classname="org.netbeans.performance.platform.ExceptionConstruct"
+		classpath="lib/tests.jar:../../../performance/lib/performance.jar">
+	    <jvmarg value="-Dperf.runs=3"/>
+	    <jvmarg value="-Dperf.presenter=org.netbeans.performance.TextPresenter"/>
+	</java>
+    </target>
+
+    <target depends="jars" name="test-runnablemethod">
+	<java	fork="yes"
+		output="report/runnablemethod.txt"
+		classname="org.netbeans.performance.platform.RunnableMethod"
+		classpath="lib/tests.jar:../../../performance/lib/performance.jar">
+	    <jvmarg value="-Dperf.runs=3"/>
+	    <jvmarg value="-Dperf.presenter=org.netbeans.performance.TextPresenter"/>
+	</java>
+    </target>
+
+
+</project>
