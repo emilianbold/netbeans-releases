@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="nbext" value="../nbbuild"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="license.file" value="${nbext}/standard-nbm-license.txt"/>
+  <property name="license.file" location="${nbext}/standard-nbm-license.txt"/>
   <property name="build.compiler.debug" value="true"/>
 
     <path id="jellytools.classpath">
@@ -43,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="buildDependentModules">
         <ant dir="../jemmy" target="jar"/>
-        <ant dir="../openide" antfile="build.xml" target="jars"/>
+        <ant dir="../openide" antfile="build.xml" target="netbeans"/>
         <ant dir="../openide/loaders" antfile="build.xml" target="jars"/>
         <ant dir="../core" antfile="build.xml" target="jars"/>
         <ant dir="../core/term" antfile="build.xml" target="jars"/>
