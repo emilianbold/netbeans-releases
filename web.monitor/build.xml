@@ -112,11 +112,9 @@ Microsystems, Inc. All Rights Reserved.
          they will be in the same directory as the rest of bundled Tomcat (it means there won't 
          be a conflict between IDE instalation dir and user dir when installed from NBM
     --> 
-    <mkdir dir="netbeans/tomcat404/lib"/>
-    <mkdir dir="netbeans/tomcat404/server/lib"/>
-    <copy file="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" tofile="netbeans/tomcat404/lib/schema2beans.jar"/>
-    <copy file="netbeans/modules/ext/httpmonitor.jar"                      tofile="netbeans/tomcat404/lib/httpmonitor.jar"/>
-    <copy file="netbeans/modules/ext/monitor-valve.jar"                    tofile="netbeans/tomcat404/server/lib/monitor-valve.jar"/>
+    <copy file="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat404/lib/schema2beans.jar"/>
+    <copy file="netbeans/modules/ext/httpmonitor.jar"                      tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat404/lib/httpmonitor.jar"/>
+    <copy file="netbeans/modules/ext/monitor-valve.jar"                    tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat404/server/lib/monitor-valve.jar"/>
   </target>
 
 
