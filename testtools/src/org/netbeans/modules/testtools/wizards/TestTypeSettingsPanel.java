@@ -71,10 +71,10 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
         defaultCheck.setText("Set Test Type as default in Test Workspace");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(defaultCheck, gridBagConstraints);
 
         systemLabel.setDisplayedMnemonic('W');
@@ -82,10 +82,10 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 4, 4);
         panel.add(systemLabel, gridBagConstraints);
 
         sdiRadio.setMnemonic('s');
@@ -95,10 +95,10 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         panel.add(sdiRadio, gridBagConstraints);
 
         mdiRadio.setMnemonic('m');
@@ -107,10 +107,10 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.insets = new java.awt.Insets(5, 11, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 10.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
         panel.add(mdiRadio, gridBagConstraints);
 
         jemmyCheck.setMnemonic('j');
@@ -120,10 +120,10 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(jemmyCheck, gridBagConstraints);
 
         add(panel, "ok");

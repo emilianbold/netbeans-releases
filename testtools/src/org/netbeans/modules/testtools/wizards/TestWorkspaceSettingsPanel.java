@@ -104,10 +104,10 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         panel.add(levelLabel, gridBagConstraints);
 
         levelCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "On top of the module (repository / module)", "One level lower (repository / module / package)", "Two levels lower (repository / module / package / package)", "Out of CVS structute (for local use only)" }));
@@ -122,10 +122,10 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(levelCombo, gridBagConstraints);
 
         typeLabel.setDisplayedMnemonic('T');
@@ -136,10 +136,10 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         panel.add(typeLabel, gridBagConstraints);
 
         typeField.setEnabled(false);
@@ -154,10 +154,10 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(typeField, gridBagConstraints);
 
         attrLabel.setDisplayedMnemonic('A');
@@ -168,10 +168,10 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         panel.add(attrLabel, gridBagConstraints);
 
         attrField.setEnabled(false);
@@ -186,10 +186,10 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(attrField, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -197,9 +197,9 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(17, 0, 0, 11);
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 0.01;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
         panel.add(separator1, gridBagConstraints);
 
         advancedCheck.setText("Advanced Settings");
@@ -212,9 +212,9 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(17, 12, 0, 0);
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
         panel.add(advancedCheck, gridBagConstraints);
 
         netbeansLabel.setDisplayedMnemonic('N');
@@ -225,10 +225,10 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         panel.add(netbeansLabel, gridBagConstraints);
 
         netbeansField.setEnabled(false);
@@ -243,10 +243,10 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(netbeansField, gridBagConstraints);
 
         xtestLabel.setDisplayedMnemonic('X');
@@ -257,10 +257,10 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         panel.add(xtestLabel, gridBagConstraints);
 
         xtestField.setEnabled(false);
@@ -275,10 +275,10 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 11, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(xtestField, gridBagConstraints);
 
         netbeansButton.setText("...");
@@ -295,10 +295,10 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
         panel.add(netbeansButton, gridBagConstraints);
 
         xtestButton.setText("...");
@@ -315,19 +315,19 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
         panel.add(xtestButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(17, 5, 0, 0);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.01;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         panel.add(separator2, gridBagConstraints);
 
         add(panel, "ok");

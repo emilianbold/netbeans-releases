@@ -75,14 +75,16 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         nameLabel.setDisplayedMnemonic('n');
         nameLabel.setLabelFor(nameField);
         nameLabel.setText("Test Bag Name: ");
+        nameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_BagName", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(nameLabel, gridBagConstraints);
 
+        nameField.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_BagName", new Object[] {}));
         nameField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 nameFieldFocusGained(evt);
@@ -94,61 +96,66 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         add(nameField, gridBagConstraints);
 
         executorLabel.setDisplayedMnemonic('X');
         executorLabel.setText("Executor:");
+        executorLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagExecutor", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 12);
         add(executorLabel, gridBagConstraints);
 
         ideRadio.setMnemonic('D');
         ideRadio.setSelected(true);
         ideRadio.setText("IDE");
+        ideRadio.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagExecutor", new Object[] {}));
         buttonGroup.add(ideRadio);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         add(ideRadio, gridBagConstraints);
 
         codeRadio.setMnemonic('C');
         codeRadio.setText("Code");
+        codeRadio.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagExecutor", new Object[] {}));
         buttonGroup.add(codeRadio);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 10.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(codeRadio, gridBagConstraints);
 
         attrLabel.setDisplayedMnemonic('A');
         attrLabel.setLabelFor(attrField);
         attrLabel.setText("Attributes: ");
+        attrLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagAttributes", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         add(attrLabel, gridBagConstraints);
 
+        attrField.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagAttributes", new Object[] {}));
         attrField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 attrFieldFocusGained(evt);
@@ -160,23 +167,25 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         add(attrField, gridBagConstraints);
 
         includeLabel.setDisplayedMnemonic('I');
         includeLabel.setLabelFor(includeField);
         includeLabel.setText("Execution Include Pattern: ");
+        includeLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagInclude", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         add(includeLabel, gridBagConstraints);
 
+        includeField.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagInclude", new Object[] {}));
         includeField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 includeFieldFocusGained(evt);
@@ -188,25 +197,27 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         add(includeField, gridBagConstraints);
 
         excludeLabel.setDisplayedMnemonic('E');
         excludeLabel.setLabelFor(excludeField);
         excludeLabel.setText("Execution Exclude Pattern: ");
+        excludeLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagExclude", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         add(excludeLabel, gridBagConstraints);
 
+        excludeField.setToolTipText(org.openide.util.NbBundle.getMessage(TestBagSettingsPanel.class, "TTT_TestBagExclude", new Object[] {}));
         excludeField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 excludeFieldFocusGained(evt);
@@ -218,10 +229,10 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         add(excludeField, gridBagConstraints);
 
     }//GEN-END:initComponents

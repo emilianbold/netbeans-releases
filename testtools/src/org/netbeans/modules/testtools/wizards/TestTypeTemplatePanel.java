@@ -92,10 +92,10 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(nameLabel, gridBagConstraints);
 
         nameField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -109,10 +109,10 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(nameField, gridBagConstraints);
 
         templateLabel.setDisplayedMnemonic('T');
@@ -122,10 +122,10 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(templateLabel, gridBagConstraints);
 
         templateCombo.addActionListener(new java.awt.event.ActionListener() {
@@ -138,10 +138,11 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(templateCombo, gridBagConstraints);
 
         descriptionLabel.setDisplayedMnemonic('D');
@@ -151,10 +152,10 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(17, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(descriptionLabel, gridBagConstraints);
 
         descriptionPanel.setLayout(new java.awt.CardLayout());
@@ -176,10 +177,10 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 100.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(descriptionPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
