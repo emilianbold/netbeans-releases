@@ -50,9 +50,8 @@ public class TestWorkspaceWizardIterator extends WizardIterator {
         this.wizard=wizard;
         WizardSettings set=new WizardSettings();
         set.workspaceTemplate=wizard.getTemplate();
-        Document doc=getDOM(set.workspaceTemplate);
-        set.defaultType=getProperty(doc, "xtest.testtype", "value");
-        set.defaultAttributes=getProperty(doc, "xtest.attribs", "value");
+        set.readWorkspaceSettings();
+        set.startFromWorkspace=true;
         set.store(wizard);
         panels=new WizardDescriptor.Panel[] {
             wizard.targetChooser(),
@@ -88,8 +87,7 @@ public class TestWorkspaceWizardIterator extends WizardIterator {
         WizardSettings set=WizardSettings.get(wizard);
         set.workspaceTarget=wizard.getTargetFolder();
         set.workspaceName=wizard.getTargetName();
-        set.createType=current>3;
-        set.createBag=current>4;
+        set.createType=current>4;
         set.createSuite=!hasNext();
         return instantiateTestWorkspace(set);
     }

@@ -29,7 +29,7 @@ import java.awt.CardLayout;
  *
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
-public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements WizardDescriptor.FinishPanel {
+public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements WizardDescriptor.Panel {
     
     /** Creates new form TestTypePanel */
     public TestTypeAdvancedSettingsPanel() {
@@ -45,8 +45,6 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup = new javax.swing.ButtonGroup();
-        suffixLabel = new javax.swing.JLabel();
-        suffixField = new javax.swing.JTextField();
         excludesLabel = new javax.swing.JLabel();
         excludesField = new javax.swing.JTextField();
         compileLabel = new javax.swing.JLabel();
@@ -65,34 +63,6 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         jellyButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
-
-        suffixLabel.setText("IDE Command Line Suffix: ");
-        suffixLabel.setDisplayedMnemonic(73);
-        suffixLabel.setLabelFor(suffixField);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
-        add(suffixLabel, gridBagConstraints);
-
-        suffixField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                suffixFieldFocusGained(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-        add(suffixField, gridBagConstraints);
 
         excludesLabel.setText("Compilation Excludes: ");
         excludesLabel.setDisplayedMnemonic(88);
@@ -167,7 +137,7 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
         add(compileButton, gridBagConstraints);
 
-        executeLabel.setText("Execution Class Path: ");
+        executeLabel.setText("Execution Extra Jars: ");
         executeLabel.setDisplayedMnemonic(69);
         executeLabel.setLabelFor(executeField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -209,7 +179,8 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
         add(executeButton, gridBagConstraints);
 
-        jvmLabel.setText("JVM Command Line Suffix: ");
+        jvmLabel.setText("Command Line Suffix: ");
+        jvmLabel.setDisplayedMnemonic(83);
         jvmLabel.setLabelFor(jvmField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -239,6 +210,7 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         add(jvmField, gridBagConstraints);
 
         jemmyLabel.setText("Jemmy Home: ");
+        jemmyLabel.setDisplayedMnemonic(77);
         jemmyLabel.setLabelFor(jemmyField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -280,6 +252,7 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         add(jemmyButton, gridBagConstraints);
 
         jellyLabel.setText("Jelly Home: ");
+        jellyLabel.setDisplayedMnemonic(76);
         jellyLabel.setLabelFor(jellyField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -346,10 +319,6 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
         excludesField.selectAll();
     }//GEN-LAST:event_excludesFieldFocusGained
 
-    private void suffixFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_suffixFieldFocusGained
-        suffixField.selectAll();
-    }//GEN-LAST:event_suffixFieldFocusGained
-
     public void addChangeListener(javax.swing.event.ChangeListener l) {
     }    
     
@@ -362,13 +331,32 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
     }
     
     public void readSettings(Object obj) {
-        TemplateWizard wizard=(TemplateWizard)obj;
+        WizardSettings set=WizardSettings.get(obj);
+        if (set.typeJVMSuffix!=null)
+            jvmField.setText(set.typeJVMSuffix);
+        if (set.typeExcludes!=null)
+            compileField.setText(set.typeExcludes);
+        if (set.typeCompPath!=null)
+            compileField.setText(set.typeCompPath);
+        if (set.typeExecPath!=null)
+            executeField.setText(set.typeExecPath);
+        if (set.typeJemmyHome!=null)
+            jemmyField.setText(set.typeJemmyHome);
+        if (set.typeJellyHome!=null)
+            jellyField.setText(set.typeJellyHome);
     }
     
     public void removeChangeListener(javax.swing.event.ChangeListener l) {
     }
     
     public void storeSettings(Object obj) {
+        WizardSettings set=WizardSettings.get(obj);
+        set.typeJVMSuffix=jvmField.getText();
+        set.typeExcludes=excludesField.getText();
+        set.typeCompPath=compileField.getText();
+        set.typeExecPath=executeField.getText();
+        set.typeJemmyHome=jemmyField.getText();
+        set.typeJellyHome=jellyField.getText();
     }
 
     public boolean isValid() {
@@ -393,9 +381,7 @@ public class TestTypeAdvancedSettingsPanel extends javax.swing.JPanel implements
     private javax.swing.JTextField jellyField;
     private javax.swing.ButtonGroup buttonGroup;
     private javax.swing.JLabel excludesLabel;
-    private javax.swing.JLabel suffixLabel;
     private javax.swing.JTextField excludesField;
-    private javax.swing.JTextField suffixField;
     // End of variables declaration//GEN-END:variables
     
 }

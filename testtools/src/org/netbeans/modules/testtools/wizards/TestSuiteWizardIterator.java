@@ -53,6 +53,7 @@ public class TestSuiteWizardIterator extends WizardIterator {
         WizardSettings set=new WizardSettings();
         set.suiteTemplate=wizard.getTemplate();
         set.templateMethods=getTemplateMethods((JavaDataObject)set.suiteTemplate);
+        set.startFromSuite=true;
         set.store(wizard);
         
         panels=new WizardDescriptor.Panel[] {

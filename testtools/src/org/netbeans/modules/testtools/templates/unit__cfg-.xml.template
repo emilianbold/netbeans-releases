@@ -6,7 +6,7 @@
  		<testset dir="unit/src">
 			<patternset>
 				<include name="**/*.class"/>
-				<!-- <exclude name="mypackage/SomeClass.class/someTest"/> -->
+				<exclude name="**/data"/>
  			</patternset>
  		</testset>
 	</testbag>

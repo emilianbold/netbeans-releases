@@ -56,6 +56,8 @@ public class TestTypeWizardIterator extends WizardIterator {
         this.wizard=wizard;
         WizardSettings set=new WizardSettings();
         set.typeTemplate=wizard.getTemplate();
+        set.startFromType=true;
+        set.readTypeSettings();
         set.store(wizard);
         panels=new WizardDescriptor.Panel[] {
             wizard.targetChooser(),
@@ -85,7 +87,6 @@ public class TestTypeWizardIterator extends WizardIterator {
         WizardSettings set=WizardSettings.get(wizard);
         set.typeTarget=wizard.getTargetFolder();
         set.typeName=wizard.getTargetName();
-        set.createBag=current>2;
         set.createSuite=!hasNext();
         return instantiateTestType(set);
     }

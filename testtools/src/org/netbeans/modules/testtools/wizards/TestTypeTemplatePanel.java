@@ -45,6 +45,7 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
     
     private ChangeListener listener=null;
     private static final String DEFAULT_NAME="<default name>";
+    boolean modified=true;
     
     /** Creates new form TestSuitePanel1 */
     public TestTypeTemplatePanel() {
@@ -87,10 +88,10 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(nameLabel, gridBagConstraints);
 
         nameField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -104,10 +105,10 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(nameField, gridBagConstraints);
 
         templateLabel.setText("Select a Template: ");
@@ -133,10 +134,10 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(templateCombo, gridBagConstraints);
 
         descriptionLabel.setText("Template Description: ");
@@ -171,19 +172,21 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 100.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(descriptionPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
 
     private void templateComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_templateComboActionPerformed
+        modified=true;
         URL url=null;
         DataObject dob=(DataObject)templateCombo.getSelectedItem();
-        if (dob!=null)
+        if (dob!=null) {
             url=TemplateWizard.getDescription(dob);
+        }
         if (url==null) {
             ((CardLayout)descriptionPanel.getLayout()).show(descriptionPanel, "no");
         } else {
@@ -223,7 +226,10 @@ public class TestTypeTemplatePanel extends javax.swing.JPanel implements WizardD
             name=null;
         set.typeName=name;
         set.typeTemplate=(DataObject)templateCombo.getSelectedItem();
-
+        if (modified) {
+            set.readTypeSettings();
+            modified=false;
+        }
     }
 
     private void fireStateChanged() {

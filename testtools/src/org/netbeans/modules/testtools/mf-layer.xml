@@ -99,6 +99,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestTypeWizardIterator.singleton"/>
         <attr name="templatepattern" stringvalue="{2}{1}"/>
         <attr name="usepattern" boolvalue="true"/>
+        <attr name="templateall" boolvalue="true"/>
         <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/qa-functional.html"/>
       </file>
       <file name="unit.group" url="templates/unit.group.template">
@@ -107,6 +108,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.testtools.wizards.TestTypeWizardIterator.singleton"/>
         <attr name="templatepattern" stringvalue="{2}{1}"/>
         <attr name="usepattern" boolvalue="true"/>
+        <attr name="templateall" boolvalue="true"/>
         <attr name="templateWizardURL" urlvalue="nbrescurrloc:/org/netbeans/modules/testtools/templates/unit.html"/>
       </file>
       <file name="simpleTest.java" url="templates/simpleTest.java.template">

@@ -54,11 +54,9 @@ import java.io.File;
 import org.netbeans.modules.group.GroupShadow;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
-import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.w3c.dom.Document;
-import org.apache.tools.ant.module.xml.AntProjectSupport;
-import org.w3c.dom.NodeList;
 import org.openide.cookies.EditorCookie;
+import java.util.Iterator;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -181,7 +179,6 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         }
         suite.append("        return suite;\n");
         clel.getMethod(Identifier.create("suite"), null).setBody(suite.toString());
-        ((EditorCookie)source.getCookie(EditorCookie.class)).saveDocument();
     }
 
     protected static void createGoldenFile(JavaDataObject source, String name) throws IOException {
@@ -226,9 +223,8 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
     }
     
     protected static Set instantiateTestSuite(WizardSettings set) throws IOException {
-        JavaDataObject suite;
         try {
-            suite=(JavaDataObject)set.suiteTemplate.createFromTemplate(set.suiteTarget, set.suiteName);
+            set.suite=(JavaDataObject)set.suiteTemplate.createFromTemplate(set.suiteTarget, set.suiteName);
         } catch (IOException ioe) {
             if (set.suiteName==null)
                 set.suiteName=set.suiteTemplate.getPrimaryFile().getName();
@@ -236,12 +232,14 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         }
             
         try {
-            transformTemplateMethods(suite, set.methods, set.templateMethods);
+            transformTemplateMethods((JavaDataObject)set.suite, set.methods, set.templateMethods);
         } catch (SourceException se) {
             ErrorManager.getDefault().notify(se);
         }
         HashSet res=new HashSet();
-        res.add(suite);
+        res.add(set.suite);
+        save(set.suite);
+        ((EditorCookie)set.suite.getCookie(EditorCookie.class)).open();
         return res;
     }
 
@@ -255,7 +253,18 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
                 set.typeName=set.typeTemplate.getPrimaryFile().getName();
             throw new IOException("Could not create new Test Type \""+set.typeName+"\" in package \""+set.typeTarget.getPrimaryFile().getPackageName('/')+"\". Reason is: "+ioe.getMessage());
         }
-        res.add(dob);
+        Object o[]=((GroupShadow)dob).getLinks();
+        for (int i=0; i<o.length; i++) 
+            if (o[i] instanceof DataObject) {
+                if (((DataObject)o[i]).getName().startsWith("build-"))
+                    set.typeScript=(DataObject)o[i];
+                if (((DataObject)o[i]).getName().startsWith("cfg-"))
+                    set.typeConfig=(DataObject)o[i];
+                res.add((DataObject)o[i]);
+            }
+        dob.delete();
+        
+        set.writeTypeSettings();
         
         if (set.typeName==null)
             set.typeName=set.typeTemplate.getPrimaryFile().getName();
@@ -275,50 +284,6 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         return res;
     }
     
-    protected static Document getDOM(DataObject o) {
-        AntProjectCookie cookie=(AntProjectCookie)o.getCookie(AntProjectCookie.class);
-        if (cookie!=null)
-            return cookie.getDocument();
-        return new AntProjectSupport(o.getPrimaryFile()).getDocument();
-    }
-    
-    
-    protected static void setProperty(Document doc, String name, String valueName, Object valueValue) {
-        setElement(doc, "property", "name", name, valueName, valueValue);
-    }
-    
-    protected static void setElement(Document doc, String element, String valueName, Object valueValue) {
-        setElement(doc, element, null, null, valueName, valueValue);
-    }
-    
-    protected static void setElement(Document doc, String element, String nameName, String nameValue, String valueName, Object valueValue) {
-        if (valueValue==null) return;
-        NodeList list = doc.getElementsByTagName(element);
-        for (int i=0; i<list.getLength(); i++) try {
-            if ((nameName==null)||(nameValue.equals(list.item(i).getAttributes().getNamedItem(nameName).getNodeValue()))) {
-                list.item(i).getAttributes().getNamedItem(valueName).setNodeValue(valueValue.toString());
-            }
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
-        }
-    }
-    
-    protected static String getProperty(Document doc, String name, String valueName) {
-        return getElement(doc, "property", "name", name, valueName);
-    }
-    
-    protected static String getElement(Document doc, String element, String nameName, String nameValue, String valueName) {
-        NodeList list = doc.getElementsByTagName(element);
-        for (int i=0; i<list.getLength(); i++) try {
-            if ((nameName==null)||(nameValue.equals(list.item(i).getAttributes().getNamedItem(nameName).getNodeValue()))) {
-                return list.item(i).getAttributes().getNamedItem(valueName).getNodeValue();
-            }
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
-        }
-        return null;
-    }
-    
     protected static Set instantiateTestWorkspace(WizardSettings set) throws IOException {
         HashSet res=new HashSet();
         
@@ -334,15 +299,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         if (set.workspaceName==null) 
             set.workspaceName=set.workspaceTemplate.getPrimaryFile().getName();
         
-        Document doc=getDOM(set.workspaceScript);
-        setElement(doc, "project", "name", set.workspaceName+" XTest Workspace Script");
-        setProperty(doc, "netbeans.home", "location", set.netbeansHome);
-        setProperty(doc, "xtest.home", "location", set.xtestHome);
-        setProperty(doc, "xtest.module", "value", set.workspaceName);
-        setProperty(doc, "xtest.testtype", "value", set.defaultType);
-        setProperty(doc, "xtest.attribs", "value", set.defaultAttributes);
-
-        ((EditorCookie)set.workspaceScript.getCookie(EditorCookie.class)).saveDocument();
+        set.writeWorkspaceSettings();
         
         if (set.createType) {
             res.addAll(instantiateTestType(set));
@@ -374,4 +331,15 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
         } catch (Exception e) {}
         return (DataObject[])list.toArray(new DataObject[list.size()]);
     }
+    
+    public static void save(final DataObject dob) throws IOException {
+            RequestProcessor.postRequest(new Runnable() {
+                public void run() {
+                    try {
+                        ((EditorCookie)dob.getCookie(EditorCookie.class)).saveDocument();
+                    } catch (Exception e) {}
+                }
+            }, 5000);
+   }
+    
 }

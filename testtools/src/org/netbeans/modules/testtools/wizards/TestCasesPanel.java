@@ -305,7 +305,12 @@ public class TestCasesPanel extends javax.swing.JPanel implements WizardDescript
     }
     
     public void readSettings(Object obj) {
-        testCaseTypes.setModel(new DefaultComboBoxModel(WizardSettings.get(obj).templateMethods));
+        WizardSettings set=WizardSettings.get(obj);
+        if (set.methods==null) {
+            testCaseTypes.setModel(new DefaultComboBoxModel(set.templateMethods));
+            listData.removeAllElements();
+            testCases.setListData(listData);
+        }
         refreshAdd();
         refreshButtons();
     }

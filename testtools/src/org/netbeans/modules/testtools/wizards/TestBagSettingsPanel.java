@@ -128,10 +128,10 @@ public class TestBagSettingsPanel extends javax.swing.JPanel implements WizardDe
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
+        gridBagConstraints.weighty = 10.0;
         add(codeRadio, gridBagConstraints);
 
         attrLabel.setText("Attributes: ");
@@ -278,12 +278,27 @@ public class TestBagSettingsPanel extends javax.swing.JPanel implements WizardDe
     }
     
     public void readSettings(Object obj) {
+        WizardSettings set=WizardSettings.get(obj);
+        if (set.bagAttrs!=null)
+            attrField.setText(set.bagAttrs);
+        if (set.bagIncludes!=null)
+            includeField.setText(set.bagIncludes);
+        if (set.bagExcludes!=null)
+            excludeField.setText(set.bagExcludes);
+        ideRadio.setSelected(set.bagIDEExecutor);
+        codeRadio.setSelected(!set.bagIDEExecutor);
     }
     
     public void removeChangeListener(javax.swing.event.ChangeListener changeListener) {
     }
     
     public void storeSettings(Object obj) {
+        WizardSettings set=WizardSettings.get(obj);
+        set.bagName=nameField.getText();
+        set.bagAttrs=attrField.getText();
+        set.bagIncludes=includeField.getText();
+        set.bagExcludes=excludeField.getText();
+        set.bagIDEExecutor=ideRadio.isSelected();
     }
 
     public boolean isValid() {

@@ -32,6 +32,7 @@ import java.awt.CardLayout;
 public class TestTypeSettingsPanel extends javax.swing.JPanel implements WizardDescriptor.Panel {
     
     private boolean stop=true;
+    private String name=null;
     
     /** Creates new form TestTypePanel */
     public TestTypeSettingsPanel() {
@@ -100,10 +101,10 @@ public class TestTypeSettingsPanel extends javax.swing.JPanel implements WizardD
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
+        gridBagConstraints.weighty = 10.0;
         panel.add(mdiRadio, gridBagConstraints);
 
         jemmyCheck.setMnemonic('j');
@@ -140,22 +141,36 @@ public class TestTypeSettingsPanel extends javax.swing.JPanel implements WizardD
     
     public void readSettings(Object obj) {
         TemplateWizard wizard=(TemplateWizard)obj;
+        WizardSettings set=WizardSettings.get(obj);
         try {
-            String name=wizard.getTargetName();
-            if (name==null)
-                name=wizard.getTemplate().getPrimaryFile().getName();
-            stop=WizardIterator.detectTestType(wizard.getTargetFolder(), name);
+            if (set.startFromType) {
+                name=wizard.getTargetName();
+                if (name==null)
+                    name=wizard.getTemplate().getPrimaryFile().getName();
+                stop=WizardIterator.detectTestType(wizard.getTargetFolder(), name);
+            } else {
+                stop=false;
+            }
         } catch (Exception e) {}
         if (stop)
             ((CardLayout)getLayout()).show(this, "stop");
-        else
+        else {
             ((CardLayout)getLayout()).show(this, "ok");
+            jemmyCheck.setSelected(set.typeUseJemmy);
+            sdiRadio.setSelected(set.typeSDI);
+            mdiRadio.setSelected(!set.typeSDI);
+        }
     }
     
     public void removeChangeListener(javax.swing.event.ChangeListener l) {
     }
     
     public void storeSettings(Object obj) {
+        WizardSettings set=WizardSettings.get(obj);
+        set.typeUseJemmy=jemmyCheck.isSelected();
+        set.typeSDI=sdiRadio.isSelected();
+        if (defaultCheck.isSelected())
+            set.defaultType=name;
     }
 
     public boolean isValid() {

@@ -38,8 +38,12 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
     private boolean stop=true;
     private static final String netbeansPath="../../../nb_all/nbbuild/netbeans";
     private static final String xtestPath="../../../nb_all/xtest";
+    private static final String jemmyPath="../../../nbextra/jemmy";
+    private static final String jellyPath="../../../nbextra/jelly";
     private String type="";
     private String attr="";
+    private String jemmyHome=jemmyPath;
+    private String jellyHome=jellyPath;
     private TemplateWizard wizard;
     /** Creates new form TestWorkspacePanel */
     public TestWorkspaceSettingsPanel() {
@@ -385,18 +389,26 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
             switch (levelCombo.getSelectedIndex()) {
                  case 0:netbeansField.setText(netbeansPath);
                         xtestField.setText(xtestPath);
+                        jemmyHome=jemmyPath;
+                        jellyHome=jellyPath;
                         break;
                  case 1:netbeansField.setText("../"+netbeansPath);
                         xtestField.setText("../"+xtestPath);
+                        jemmyHome="../"+jemmyPath;
+                        jellyHome="../"+jellyPath;
                         break;
                  case 2:netbeansField.setText("../../"+netbeansPath);
                         xtestField.setText("../../"+xtestPath);
+                        jemmyHome="../../"+jemmyPath;
+                        jellyHome="../../"+jellyPath;
                         break;
                  case 3:String home=System.getProperty("netbeans.home");
                         netbeansField.setText(home);
                         if (!new File(home+File.separator+"xtest-distribution").exists()) 
                             home=System.getProperty("netbeans.user");
                         xtestField.setText(home+File.separator+"xtest-distribution");
+                        jemmyHome=home+File.separator+"lib"+File.separator+"ext";
+                        jellyHome=jemmyHome;
                         break;
              }
         }
@@ -444,6 +456,8 @@ public class TestWorkspaceSettingsPanel extends javax.swing.JPanel implements Wi
         set.xtestHome=xtestField.getText();
         set.defaultType=typeField.getText();
         set.defaultAttributes=attrField.getText();
+        set.typeJemmyHome=jemmyHome;
+        set.typeJellyHome=jellyHome;
     }
 
     public boolean isValid() {

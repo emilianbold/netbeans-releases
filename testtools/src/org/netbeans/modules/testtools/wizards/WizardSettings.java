@@ -10,6 +10,9 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.src.MethodElement;
 import org.openide.loaders.TemplateWizard;
+import org.netbeans.modules.group.GroupShadow;
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -27,10 +30,12 @@ class WizardSettings extends Object {
         wiz.putProperty(PROPERTY_NAME, this);
     }
     
-    boolean createBag = false;
+    boolean startFromWorkspace = false;
+    boolean startFromType = false;
+    boolean startFromSuite = false;
     boolean createType = false;
     boolean createSuite = false;
-
+    
     DataFolder workspaceTarget = null;
     String workspaceName = null;
     DataObject workspaceTemplate = null;
@@ -40,21 +45,135 @@ class WizardSettings extends Object {
     DataFolder typeTarget = null;
     String typeName = null;
     DataObject typeTemplate = null;
-
+    DataObject typeScript = null;
+    DataObject typeConfig = null;
+    boolean typeUseJemmy = true;
+    boolean typeSDI = true;
+    String typeJVMSuffix = null;
+    String typeExcludes = null;
+    String typeCompPath = null;
+    String typeExecPath = null;
+    String typeJemmyHome = null;
+    String typeJellyHome = null;
+    
     String bagName = null;
+    String bagAttrs = null;
+    String bagIncludes = null;
+    String bagExcludes = null;
+    boolean bagIDEExecutor = true;
     
     DataFolder suiteTarget = null;
     String suiteName = null;
     DataObject suiteTemplate = null;
+    DataObject suite = null;
     String suitePackage = null;
 
-    String defaultType = null;
-    String defaultAttributes = null;
-    String netbeansHome = null;
-    String xtestHome = null;
-    String jemmyHome = null;
-    String jellyHome = null;
+    String defaultType = "";
+    String defaultAttributes = "";
+    String netbeansHome = "";
+    String xtestHome = "";
     
     WizardIterator.CaseElement methods[];
     MethodElement templateMethods[];
+
+    void readWorkspaceSettings() {
+        XMLDocument doc=new XMLDocument(workspaceTemplate);
+        defaultType=doc.getProperty("xtest.testtype", "value");
+        defaultAttributes=doc.getProperty("xtest.attribs", "value");
+    }
+
+    
+    void writeWorkspaceSettings() throws IOException {
+        XMLDocument doc=new XMLDocument(workspaceScript);
+        if (workspaceName==null)
+            workspaceName=workspaceTemplate.getPrimaryFile().getName();
+        doc.setElement("project", "name", workspaceName+" XTest Workspace Script");
+        doc.setProperty("netbeans.home", "location", netbeansHome);
+        doc.setProperty("xtest.home", "location", xtestHome);
+        doc.setProperty("xtest.module", "value", workspaceName);
+        doc.setProperty("xtest.testtype", "value", defaultType);
+        doc.setProperty("xtest.attribs", "value", defaultAttributes);
+        WizardIterator.save(workspaceScript);
+    }
+
+    void readTypeSettings() {
+        GroupShadow template=(GroupShadow)typeTemplate;
+        Object o[]=template.getLinks();
+        XMLDocument doc=null;
+        for (int i=0; (i<o.length)&&(doc==null); i++) 
+            if ((o[i] instanceof DataObject) && (((DataObject)o[i]).getName().indexOf("build-")>=0))
+                doc=new XMLDocument((DataObject)o[i]);
+        String value;
+        value=doc.getProperty("xtest.extra.jars.path", "value");
+        typeUseJemmy=(value!=null)&&(value.indexOf("jemmy")>=0);
+        value=doc.getProperty("xtest.ide.winsys", "value");;
+        typeSDI=(value!=null)&&value.equals("sdi");
+        typeJVMSuffix=doc.getProperty("xtest.jvmargs", "value");
+        typeExcludes=doc.getProperty("compile.excludes", "value");
+        typeCompPath=doc.getProperty("compiletest.classpath", "classpath");
+        typeExecPath=doc.getProperty("xtest.extra.jars", "value");
+        if (typeJemmyHome==null)
+            typeJemmyHome=doc.getProperty("jemmy.home", "location");
+        if (typeJellyHome==null)
+            typeJellyHome=doc.getProperty("jelly.home", "location");
+        for (int i=0; (i<o.length)&&(doc==null); i++) 
+            if ((o[i] instanceof DataObject) && (((DataObject)o[i]).getName().indexOf("cfg-")>=0))
+                doc=new XMLDocument((DataObject)o[i]);
+        bagAttrs=doc.getElement("testbag", null, null, "testattribs");
+        bagIncludes=doc.getElement("include", null, null, "name");
+        bagExcludes=doc.getElement("exclude", null, null, "name");
+        bagIDEExecutor="ide".equals(doc.getElement("testbag",null,null,"executor"));
+    }
+    
+    void writeTypeSettings() throws IOException {
+        XMLDocument doc=new XMLDocument(typeScript);
+        if (typeName==null)
+            typeName=typeTemplate.getPrimaryFile().getName();
+        doc.setElement("project", "name", typeName+" Test Type Script");
+        doc.setProperty("jemmy.home", "location", typeJemmyHome);
+        doc.setProperty("jelly.home", "location", typeJellyHome);
+        if (typeUseJemmy) {
+            doc.setProperty("xtest.extra.jars.path", "value", "${jemmy.home};${jelly.home}");
+            doc.setProperty("xtest.extra.jars.ide", "value", "jemmy.jar;jelly-nb.jar");
+        } else {
+            doc.setProperty("xtest.extra.jars.path", "value", "");
+            doc.setProperty("xtest.extra.jars.ide", "value", "");
+        }
+        doc.setProperty("xtest.extra.jars", "value", typeExecPath);
+        doc.setProperty("xtest.jvmargs", "value", typeJVMSuffix);
+        doc.setProperty("compiletest.classpath", "classpath", typeCompPath);
+        doc.setProperty("compile.excludes", "value", typeExcludes);
+        if (typeSDI) {
+            doc.setProperty("xtest.ide.winsys", "value", "sdi");
+        } else {
+            doc.setProperty("xtest.ide.winsys", "value", "mdi");
+        }            
+        WizardIterator.save(typeScript);
+        
+        doc=new XMLDocument(typeConfig);
+        doc.setElement("mconfig", "name", typeName+" Test Type Config");
+        String antfile=typeScript.getPrimaryFile().getNameExt();
+        doc.setElement("compiler", "antfile", antfile);
+        doc.setElement("executor", "antfile", antfile);
+        doc.setElement("testbag", null, null, "name", bagName);
+        doc.setElement("testbag", null, null, "testattribs", bagAttrs);
+        doc.setElement("include", null, null, "name", bagIncludes);
+        doc.setElement("exclude", null, null, "name", bagExcludes);
+        if (bagIDEExecutor) {
+            doc.setElement("testbag",null,null,"executor", "ide");
+        } else {
+            doc.setElement("testbag",null,null,"executor", "code");
+        }
+        WizardIterator.save(typeConfig);
+        
+        if (startFromType && defaultType!=null) {
+            FileObject fo=typeTarget.getPrimaryFile().getFileObject("build","xml");
+            if (fo!=null) {
+                workspaceScript=DataObject.find(fo);
+                doc=new XMLDocument(workspaceScript);
+                doc.setProperty("xtest.testtype", "value", defaultType);
+                WizardIterator.save(workspaceScript);
+            }
+        }
+    }
 }

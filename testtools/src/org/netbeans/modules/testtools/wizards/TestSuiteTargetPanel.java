@@ -43,8 +43,9 @@ import java.net.URL;
 */
 public class TestSuiteTargetPanel extends javax.swing.JPanel implements WizardDescriptor.Panel {
 
-private ChangeListener listener=null;
-private static final String DEFAULT_NAME="<default name>";
+    private ChangeListener listener=null;
+    private static final String DEFAULT_NAME="<default name>";
+    private boolean modified=true;
 
     /** Creates new form TestSuitePanel1 */
     public TestSuiteTargetPanel() {
@@ -90,10 +91,10 @@ private static final String DEFAULT_NAME="<default name>";
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(nameLabel, gridBagConstraints);
 
         nameField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -107,10 +108,10 @@ private static final String DEFAULT_NAME="<default name>";
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(nameField, gridBagConstraints);
 
         packageLabel.setText("Package: ");
@@ -120,10 +121,10 @@ private static final String DEFAULT_NAME="<default name>";
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(packageLabel, gridBagConstraints);
 
         packageField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -137,10 +138,10 @@ private static final String DEFAULT_NAME="<default name>";
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(packageField, gridBagConstraints);
 
         templateLabel.setText("Select a Template: ");
@@ -150,10 +151,10 @@ private static final String DEFAULT_NAME="<default name>";
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(templateLabel, gridBagConstraints);
 
         templateCombo.addActionListener(new java.awt.event.ActionListener() {
@@ -166,10 +167,10 @@ private static final String DEFAULT_NAME="<default name>";
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(templateCombo, gridBagConstraints);
 
         descriptionLabel.setText("Template Description: ");
@@ -179,10 +180,10 @@ private static final String DEFAULT_NAME="<default name>";
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(descriptionLabel, gridBagConstraints);
 
         descriptionPanel.setLayout(new java.awt.CardLayout());
@@ -206,15 +207,16 @@ private static final String DEFAULT_NAME="<default name>";
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 100.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(descriptionPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
 
     private void templateComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_templateComboActionPerformed
+        modified=true;
         URL url=null;
         DataObject dob=(DataObject)templateCombo.getSelectedItem();
         if (dob!=null)
@@ -263,7 +265,11 @@ private static final String DEFAULT_NAME="<default name>";
         set.suiteName=name;
         set.suitePackage=packageField.getText().replace('.','/');
         set.suiteTemplate=(DataObject)templateCombo.getSelectedItem();
-        set.templateMethods=WizardIterator.getTemplateMethods((JavaDataObject)set.suiteTemplate);
+        if (modified) {
+            set.templateMethods=WizardIterator.getTemplateMethods((JavaDataObject)set.suiteTemplate);
+            set.methods=null;
+            modified=false;
+        }
 
     }
 
