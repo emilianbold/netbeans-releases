@@ -50,7 +50,7 @@ HTML contents of the document, with substitutions.
 <!ELEMENT api %Flow; >
 <!ATTLIST api
           group (java|property|dtd|layer|java.io.File) 'java'
-          name CDATA #REQUIRED
+          name NMTOKEN #REQUIRED
           type (import|export) #REQUIRED
           category %category; #REQUIRED
           url CDATA #IMPLIED
@@ -58,7 +58,7 @@ HTML contents of the document, with substitutions.
 
 <!ELEMENT property %Flow; >
 <!ATTLIST property
-          name CDATA #REQUIRED
+          name NMTOKEN #REQUIRED
           category %category; #REQUIRED
           url CDATA #IMPLIED
 >
@@ -74,12 +74,12 @@ HTML contents of the document, with substitutions.
 <!ELEMENT category ( question )* >
 <!ATTLIST category
           name CDATA #REQUIRED
-          id CDATA #REQUIRED
+          id NMTOKEN #REQUIRED
 >
 
 <!ELEMENT question (#PCDATA | %inline; | hint)* >
 <!ATTLIST question
-          id CDATA #REQUIRED
+          id NMTOKEN #REQUIRED
           when (init|impl|final) 'init'
 >
 
