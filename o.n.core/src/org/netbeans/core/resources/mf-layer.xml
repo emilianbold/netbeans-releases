@@ -92,6 +92,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-ToolsAction.instance"/>
             <file name="org-openide-actions-ViewAction.instance"/>
             <file name="org-openide-actions-NewTemplateAction.instance"/>
+            <file name="org-netbeans-core-actions-SetupWizardAction.instance"/>
         </folder>
         <folder name="View">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
