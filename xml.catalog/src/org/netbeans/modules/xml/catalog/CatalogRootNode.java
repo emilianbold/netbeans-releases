@@ -65,8 +65,8 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
     protected SystemAction[] createActions() {
         return new SystemAction[] {
             SystemAction.get(CatalogRootNode.MountAction.class),
-//            null,
-//            SystemAction.get(PropertiesAction.class)
+            null,
+            SystemAction.get(PropertiesAction.class)
         };
     }
 
