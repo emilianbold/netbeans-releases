@@ -116,7 +116,7 @@ public class IDESettings extends SystemOption {
     private static String proxyHost = System.getProperty(KEY_PROXY_HOST, "");
     private static String proxyPort = System.getProperty(KEY_PROXY_PORT, "");
     
-    private static int uiMode = UIModeManager.SDI_MODE;
+    private static int uiMode = UIModeManager.MDI_MODE;
     private TabbedContainerUIManager tabbedContainerUIManager = null;
 
     /** Getter for properties file with proxy properties. Installer provides
