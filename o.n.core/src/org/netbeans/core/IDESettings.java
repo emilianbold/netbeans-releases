@@ -15,11 +15,16 @@ package org.netbeans.core;
 
 import java.beans.Introspector;
 import java.beans.PropertyEditorManager;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.net.URL;
 import java.net.InetAddress;
 import java.util.Hashtable;
+import java.util.Properties;
 import javax.swing.SwingUtilities;
 
 import org.openide.NotifyDescriptor;
@@ -110,10 +115,46 @@ public class IDESettings extends SystemOption {
     private static boolean isMiniStatusBarEnabled = true;
     private static String proxyHost = System.getProperty(KEY_PROXY_HOST, "");
     private static String proxyPort = System.getProperty(KEY_PROXY_PORT, "");
-
+    
     private static int uiMode = UIModeManager.SDI_MODE;
     private TabbedContainerUIManager tabbedContainerUIManager = null;
 
+    /** Getter for properties file with proxy properties. Installer provides
+     * this file.*/
+    private static Properties getPreInitProxyProps () throws IOException {
+        final String ideHome = System.getProperty("netbeans.home"); //NOI18N
+        final String propsRelPath = "installer/pre-settings.properties"; //NOI18N        
+        final InputStream propsIStream = new FileInputStream (new File(ideHome, propsRelPath));
+        
+        Properties propsRetVal = new Properties ();
+        propsRetVal.load(propsIStream);
+        propsIStream.close();
+        return propsRetVal;
+    }
+    
+    // do NOT use constructore for setting default values
+    protected void initialize () {
+        // Set default values of properties        
+        super.initialize ();
+        
+        /** default values for proxy properties taken from installer **/
+        String newProxyHost = proxyHost;
+        String newProxyPort =  proxyPort ;
+        if (proxyHost.length() == 0 || proxyPort.length() == 0) {
+            try {
+                Properties props =  getPreInitProxyProps();
+                newProxyHost = props.getProperty("proxy_host"); //NOI18N
+                newProxyPort = props.getProperty("proxy_port"); //NOI18N
+            } catch (IOException iox) {
+                return;// ProxyHost and ProxyPort won`t be overtaken
+            }                      
+            
+            setProxyHost (newProxyHost);
+            setProxyPort(newProxyPort);                
+            setUseProxy (true);            
+        }        
+    }
+            
     // ------------------------------------------
     // property access methods
 
