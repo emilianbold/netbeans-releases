@@ -741,7 +741,11 @@ public final class LoaderPoolNode extends AbstractNode {
         }
         
         public HelpCtx getHelpCtx () {
-            return new HelpCtx (LoaderPoolItemNode.class);
+            HelpCtx help = super.getHelpCtx();
+            if (help == null || help.getHelpID() == null || help.getHelpID().equals(BeanNode.class.getName())) {
+                help = new HelpCtx (LoaderPoolItemNode.class);
+            }
+            return help;
         }
     } // end of LoaderPoolItemNode
 
