@@ -25,7 +25,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 
-import java.lang.reflect.Method;
 import java.util.Iterator;
  
 

@@ -22,7 +22,7 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.lang.reflect.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
