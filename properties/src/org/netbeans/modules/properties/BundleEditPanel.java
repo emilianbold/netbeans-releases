@@ -431,7 +431,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                                 MessageFormat.format(
                                 NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
                                 new Object[] {
-                                    UtilConvert.unicodesToChars(item.getKey()),
+                                    item.getKey(),
                                     Util.getLocaleLabel(entry)
                                 }
                                 ),
@@ -754,7 +754,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
             String text = null;
             
             if(sp.getValue() != null) {
-                text = UtilConvert.unicodesToChars(sp.toString());
+                text = sp.getValue();
             }
             
             // XXX Ugly hack to prevent problems showing 'html-ed' labels.

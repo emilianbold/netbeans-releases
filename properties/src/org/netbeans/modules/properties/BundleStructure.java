@@ -46,7 +46,7 @@ public class BundleStructure extends Object {
      * @see PropertiesFileEntry */
     private PropertiesFileEntry[] entries;
 
-    /** Sorted list of keys. */
+    /** Sorted list of non-escaped keys. */
     private ArrayList keyList;
     
     /** Compartor which sorts keylist.
@@ -131,7 +131,7 @@ public class BundleStructure extends Object {
 
     // Sorted keys management ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    /** Retrieves all keys in bundle. */
+    /** Retrieves all un-escaped keys in bundle. */
     public String[] getKeys() {
         if (keyList == null)
             throw new IllegalStateException("Resource Bundles: KeyList not initialized"); // NOI18N
@@ -146,20 +146,22 @@ public class BundleStructure extends Object {
     /**
      * Retrieves n-th key from the list, indexed from 0.
      * @param keyIndex index accrding to current sort order
+     * @return unescaped key
      * */
     public String keyAt(int keyIndex) {
         if (keyList == null)
             throw new IllegalStateException("Resource Bundles: KeyList not initialized"); // NOI18N
         
-        if ((keyIndex >= keyList.size()) || (keyIndex < 0))
+        if ((keyIndex >= keyList.size()) || (keyIndex < 0)) {
             return null;
-        
-        return (String)keyList.get(keyIndex);
+        } else {
+            return (String)keyList.get(keyIndex);
+        }
     }
 
     /**
      * Retrieves index for a key from the list, by name.
-     * @param keyName key name
+     * @param keyName non-escaped key name
      * @return 0-based position of key in current sort order or -1 it it does not exist
      */
     public int getKeyIndexByName(String keyName) {
@@ -301,9 +303,9 @@ public class BundleStructure extends Object {
     /** Notification method.
      * One item in a properties file has changed. Fires a change event for this item.
      */
-    void itemChanged(Element.ItemElem item) {
+    void notifyItemChanged(PropertiesStructure struct, Element.ItemElem item) {
         propBundleSupport.fireItemChanged(
-            item.getParent().getParent().getEntry().getFile().getName(),
+            struct.getParent().getEntry().getFile().getName(),
             item.getKey()
         );
     }
@@ -312,7 +314,7 @@ public class BundleStructure extends Object {
      * One file in the bundle has changed - no further information.
      * Fires changes for a bundle or a file according to the changes in the keys.
      */
-    void oneFileChanged(StructHandler handler) {
+    void notifyOneFileChanged(StructHandler handler) {
         // PENDING - events should be finer
         // find out whether global key table has changed and fire a change according to that
         ArrayList oldKeyList = keyList;         
@@ -328,7 +330,7 @@ public class BundleStructure extends Object {
     /** One file in the bundle has changed, carries information about what particular items have changed.
      * Fires changes for a bundle or a file according to the changes in the keys.
      */
-    void oneFileChanged(StructHandler handler, Map itemsChanged, Map itemsAdded, Map itemsDeleted) {
+    void notifyOneFileChanged(StructHandler handler, Map itemsChanged, Map itemsAdded, Map itemsDeleted) {
         // PENDING - events should be finer
         // find out whether global key table has changed
         // should use a faster algorithm of building the keyset

@@ -171,7 +171,7 @@ public class PropertiesTableModel extends AbstractTableModel {
                         if (ps != null) {
                             // set the key
                             if (!oldValue.equals(newValue)) {
-                                ps.renameItem(oldValue, UtilConvert.escapePropertiesSpecialChars(newValue));
+                                ps.renameItem(oldValue, newValue);
                                 // this resorting is necessary only if this column index is same as
                                 // column according the sort is performed, REFINE
                                 structure.sort(-1);
@@ -198,18 +198,14 @@ public class PropertiesTableModel extends AbstractTableModel {
                 if (ps != null) {
                     Element.ItemElem item = ps.getItem(key);
                     if (item != null) {
-                        item.setValue(UtilConvert.escapeLineContinuationChar(
-                            UtilConvert.escapeOutsideSpaces(((StringPair)aValue).getValue())
-                            ));
+                        item.setValue(((StringPair)aValue).getValue());
                         item.setComment(((StringPair)aValue).getComment());
                         // this resorting is necessary only if this column index is same as
                         // column according the sort is performed, REFINE
                         structure.sort(-1);
                     } else {
                         if ((((StringPair)aValue).getValue().length() > 0) || (((StringPair)aValue).getComment().length() > 0))  {
-                            ps.addItem(key, UtilConvert.escapeLineContinuationChar(
-                                UtilConvert.escapeOutsideSpaces(((StringPair)aValue).getValue())
-                                ), ((StringPair)aValue).getComment());
+                            ps.addItem(key, ((StringPair)aValue).getValue(), ((StringPair)aValue).getComment());
                             // this resorting is necessary only if this column index is same as
                             // column according the sort is performed, REFINE
                             structure.sort(-1);
@@ -469,8 +465,8 @@ public class PropertiesTableModel extends AbstractTableModel {
             if(comment == null && compared.getComment() != null)
                 return false;
  
-            String str1 = UtilConvert.unicodesToChars(comment);
-            String str2 = UtilConvert.unicodesToChars(compared.getComment());
+            String str1 = comment;
+            String str2 = compared.getComment();
             
             if(!str1.equals(str2))
                 return false;
@@ -479,8 +475,8 @@ public class PropertiesTableModel extends AbstractTableModel {
             if(value == null && compared.getValue() != null)
                 return false;
             
-            str1 = UtilConvert.unicodesToChars(value);
-            str2 = UtilConvert.unicodesToChars(compared.getValue());
+            str1 = value;
+            str2 = compared.getValue();
             
             return str1.equals(str2);
         }

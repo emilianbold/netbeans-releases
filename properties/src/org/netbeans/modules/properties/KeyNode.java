@@ -48,7 +48,7 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
     /** Structure on top of which this element lives. */
     private PropertiesStructure propStructure;
     
-    /** Key for the element. */
+    /** nonescaped Key for the element. */
     private String itemKey;
     
     /** Generated Serialized Version UID. */
@@ -65,9 +65,8 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
         this.propStructure = propStructure;
         this.itemKey = itemKey;
         
-        super.setName(UtilConvert.unicodesToChars(itemKey));
+        super.setName(itemKey);
         
-        setDefaultAction(SystemAction.get(OpenAction.class));
         setActions(
             new SystemAction[] {
                 SystemAction.get(OpenAction.class),
@@ -150,15 +149,13 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
     /** Sets name of the node. Overrides superclass method.
      * @param name new name for the object
      */
-    public void setName(String name) {
+    public void setName(final String name) {
         // The new name is same -> do nothing.
-        if(name.equals(UtilConvert.unicodesToChars(itemKey)))
-            return;
+        if(name.equals(itemKey)) return;
         
         String oldKey = itemKey;
-        name = UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(name));
         itemKey = name;
-        if (!propStructure.renameItem(oldKey, name)) {
+        if (false == propStructure.renameItem(oldKey, name)) {
             itemKey = oldKey;
             NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                 NbBundle.getBundle(KeyNode.class).getString("MSG_CannotRenameKey"),
@@ -188,18 +185,15 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
                 NbBundle.getBundle(KeyNode.class).getString("HINT_item_key")
             ) {
                 public Object getValue () {
-                    return UtilConvert.unicodesToChars(itemKey);
+                    return itemKey;
                 }
 
-                public void setValue (Object val) throws IllegalAccessException,
-                    IllegalArgumentException, InvocationTargetException {
-                    if (!(val instanceof String))
+                public void setValue (Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                    if (false == (val instanceof String)) {
                         throw new IllegalArgumentException();
-                    
-                    String keyValue = UtilConvert.charsToUnicodes(
-                                        UtilConvert.escapeJavaSpecialChars(
-                                        UtilConvert.escapePropertiesSpecialChars((String)val)));
-                    KeyNode.this.setName(keyValue);
+                    } else {
+                        KeyNode.this.setName((String)val);
+                    }
                 }
             };
         property.setName(Element.ItemElem.PROP_ITEM_KEY);
@@ -213,18 +207,16 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
                 NbBundle.getBundle(KeyNode.class).getString("HINT_item_value")
             ) {
                 public Object getValue () {
-                    return UtilConvert.unicodesToChars(getItem().getValue());
+                    return getItem().getValue();
                 }
 
                 public void setValue (Object val) throws IllegalAccessException,
                     IllegalArgumentException, InvocationTargetException {
-                    if (!(val instanceof String))
+                    if (false == (val instanceof String)) {
                         throw new IllegalArgumentException();
-
-                    String valueValue = UtilConvert.charsToUnicodes(
-                                        UtilConvert.escapeJavaSpecialChars(
-                                        UtilConvert.escapeLineContinuationChar((String)val)));
-                    getItem().setValue(valueValue);
+                    } else {
+                        getItem().setValue((String)val);
+                    }
                 }
             };
         property.setName(Element.ItemElem.PROP_ITEM_VALUE);
@@ -238,16 +230,16 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
                 NbBundle.getBundle(KeyNode.class).getString("HINT_item_comment")
             ) {
                 public Object getValue () {
-                    return UtilConvert.unicodesToChars(getItem().getComment());
+                    return getItem().getComment();
                 }
 
                 public void setValue (Object val) throws IllegalAccessException,
                     IllegalArgumentException, InvocationTargetException {
-                    if (!(val instanceof String))
+                    if (!(val instanceof String)) {
                         throw new IllegalArgumentException();
-
-                    String commentValue = UtilConvert.escapeComment((String)val);
-                    getItem().setComment(commentValue);
+                    } else {
+                        getItem().setComment((String)val);
+                    }
                 }
             };
         property.setName(Element.ItemElem.PROP_ITEM_COMMENT);
@@ -278,15 +270,15 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
             String comment = item.getComment();
             if (comment != null) {
                 int displayLenght = Math.min(comment.length(),72);
-                description = UtilConvert.unicodesToChars(comment).substring(0, displayLenght);
+                description = comment.substring(0, displayLenght);
                 if (displayLenght < comment.length()) {
                     description += "...";           //NOI18N
                 }
             } else {
-                description = UtilConvert.unicodesToChars(item.getKey() + "=" + item.getValue());
+                description = item.getKey() + "=" + item.getValue(); // NOI18N
             }
         } else {
-            description = UtilConvert.unicodesToChars(itemKey);
+            description = itemKey;
         }
         
         setShortDescription(description);

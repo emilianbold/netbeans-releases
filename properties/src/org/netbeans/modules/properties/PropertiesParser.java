@@ -189,8 +189,8 @@ class PropertiesParser {
         while (fl != null) {
             firstNull = false;
             if(fl.flag) {
-                // part of the comment
-                comment.append(fl.line);
+                //part of the comment
+                comment.append(trimComment(fl.line));
                 comment.append(fl.lineSep);
                 keyPos = in.position;
             } else
@@ -209,7 +209,7 @@ class PropertiesParser {
             if(comment.charAt(comment.length() - 1) == '\n')
                 comHelp = comment.substring(0, comment.length() - 1);
 
-        commE = new Element.CommentElem(createBiasBounds(begPos, keyPos), comHelp);
+        commE = new Element.CommentElem(createBiasBounds(begPos, keyPos), UtilConvert.loadConvert(comHelp));
         // fl now contains the line after the comment or  null if none exists
 
 
@@ -296,11 +296,24 @@ class PropertiesParser {
                 valuePosFile = currentPos;
             }
             
-            keyE   = new Element.KeyElem  (createBiasBounds(keyPos, valuePosFile), key);
-            valueE = new Element.ValueElem(createBiasBounds(valuePosFile, currentPos), value);
+            keyE   = new Element.KeyElem  (createBiasBounds(keyPos, valuePosFile), UtilConvert.loadConvert(key));
+            valueE = new Element.ValueElem(createBiasBounds(valuePosFile, currentPos), UtilConvert.loadConvert(value));
         }
         
         return new Element.ItemElem(createBiasBounds(begPos, in.position), keyE, valueE, commE);
+    }
+
+    /** Remove leading comment markers. */
+    private StringBuffer trimComment(StringBuffer line) {
+        while (line.length() > 0) {
+            char lead = line.charAt(0);
+            if (lead == '#' || lead == '!') {
+                line.deleteCharAt(0);
+            } else {
+                break;
+            }
+        }
+        return line;
     }
 
     /** Utility method. Computes the real offset from the long value representing position in the parser.

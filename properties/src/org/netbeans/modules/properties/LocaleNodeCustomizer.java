@@ -195,11 +195,8 @@ public class LocaleNodeCustomizer extends JPanel {
                 boolean cellHasFocus)    // the list and the cell have the focus
             {
                 JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-
-                label.setText(UtilConvert.unicodesToChars(value.toString()));
-
+                label.setText(value.toString());
                 label.setIcon(getKeyIcon());
-
                 return label;
             }
         });

@@ -214,7 +214,7 @@ public final class PropertiesLocaleNode extends FileEntryNode implements CookieS
                                             MessageFormat.format(
                                                 NbBundle.getBundle(PropertiesLocaleNode.class).getString("MSG_KeyExists"),
                                                 new Object[] {
-                                                    UtilConvert.unicodesToChars(item.getKey()),
+                                                    item.getKey(),
                                                     Util.getLocaleLabel(getFileEntry())
                                                 }
                                             ),

@@ -22,9 +22,10 @@ import java.util.HashMap;
 import javax.swing.text.BadLocationException;
 
 import org.openide.text.PositionBounds;
+import org.openide.ErrorManager;
 
 
-/** 
+/**
  * Element structure for one .properties file tightly 
  * bound with that file's document.
  *
@@ -32,7 +33,9 @@ import org.openide.text.PositionBounds;
  */
 public class PropertiesStructure extends Element {
 
-    /** Map of <code>Element.KeyElem</code> to <code>Element.ItemElem</code>. */
+    /**
+     * Map&lt;<code>String</code> to <code>Element.ItemElem</code>&gt;.
+     */
     private Map items;
 
     /** If active, contains link to its handler (parent) */
@@ -120,12 +123,12 @@ public class PropertiesStructure extends Element {
 
     /** Prints all structure to document.
      * @return the structure dump */
-    public String printString() {
+    public String getDocumentString() {
         StringBuffer sb = new StringBuffer();
         Element.ItemElem item;
         for (Iterator it = items.values().iterator(); it.hasNext(); ) {
             item = (Element.ItemElem)it.next();
-            sb.append(item.printString());
+            sb.append(item.getDocumentString());
         }
         
         return sb.toString();
@@ -145,12 +148,18 @@ public class PropertiesStructure extends Element {
         return sb.toString();
     }
 
-    /** Retrieves an item by key (property name) or null if does not exist. */
+    /**
+     * Retrieves an item by key (property name) or null if does not exist.
+     * @param key Java string (unescaped)
+     */
     public Element.ItemElem getItem(String key) {
         return (Element.ItemElem)items.get(key);
     }
 
-    /** Renames an item.
+    /**
+     * Renames an item.
+     * @param oldKey nonescaped original name
+     * @param newKey nonescaped new name
      * @return true if the item has been renamed successfully, false if another item with the same name exists.
      */                         
     public boolean renameItem(String oldKey, String newKey) {
@@ -184,10 +193,10 @@ public class PropertiesStructure extends Element {
                 structureChanged();     //??? fired from under lock
                 return true;
             } catch (IOException e) {
-                // PENDING
+                ErrorManager.getDefault().notify(e);
                 return false;
             } catch (BadLocationException e) {
-                // PENDING
+                ErrorManager.getDefault().notify(e);
                 return false;
             }
         }
@@ -210,7 +219,7 @@ public class PropertiesStructure extends Element {
             synchronized(getParent()) {
                 PositionBounds pos = getBounds();
                 
-                PositionBounds itemBounds = pos.insertAfter("\n").insertAfter(item.printString()); // NOI18N
+                PositionBounds itemBounds = pos.insertAfter("\n").insertAfter(item.getDocumentString()); // NOI18N
                 item.bounds = itemBounds;
 
                 //#17044 update in-memory model
@@ -234,18 +243,18 @@ public class PropertiesStructure extends Element {
 
     /** Notification that the given item has changed (its value or comment) */
     void itemChanged(Element.ItemElem elem) {
-        getParentBundleStructure().itemChanged(elem);
+        getParentBundleStructure().notifyItemChanged(this, elem);
     }
 
     /** Notification that the structure has changed (no specific information). */
     void structureChanged() {
-        getParentBundleStructure().oneFileChanged(getParent());
+        getParentBundleStructure().notifyOneFileChanged(getParent());
     }
 
     /** Notification that the structure has changed (items have been added or
      * deleted, also includes changing an item's key). */
     void structureChanged(Map changed, Map inserted, Map deleted) {
-        getParentBundleStructure().oneFileChanged(getParent(), changed, inserted, deleted);
+        getParentBundleStructure().notifyOneFileChanged(getParent(), changed, inserted, deleted);
     }
 
     /** Notification that an item's key has changed. Subcase of structureChanged().

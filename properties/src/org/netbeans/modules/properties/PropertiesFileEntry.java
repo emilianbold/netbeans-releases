@@ -213,7 +213,7 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
         FileObject fo = super.rename(name);
 
         // to notify the bundle structure that name of one file was changed
-        ((PropertiesDataObject)getDataObject()).getBundleStructure().oneFileChanged(getHandler());
+        ((PropertiesDataObject)getDataObject()).getBundleStructure().notifyOneFileChanged(getHandler());
         
         return fo;
     }
@@ -292,7 +292,7 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
                 }
                 // Does not appear to have any effect:
                 // ((PropertiesDataObject) getDataObject ()).getBundleStructure ().
-                //   oneFileChanged (getHandler ());
+                //   notifyOneFileChanged (getHandler ());
                 return nue;
             } else if (overwriteOpt.equals (result)) {
                 FileLock lock = existing.lock ();

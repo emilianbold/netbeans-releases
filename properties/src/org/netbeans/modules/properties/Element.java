@@ -20,6 +20,7 @@ import java.io.*;
 import javax.swing.text.BadLocationException;
 
 import org.openide.nodes.Node;
+import org.openide.ErrorManager;
 import org.openide.text.PositionBounds;
 
 
@@ -27,11 +28,13 @@ import org.openide.text.PositionBounds;
  * Base class for representations of elements in properties files.
  *
  * @author Petr Jiricka
+ * @author Petr Kuzel - moved to nonescaped strings level
+ * //!!! why is it serializable?
  */
-public abstract class Element extends Object implements Serializable {
+public abstract class Element implements Serializable {
 
     /** Property change support */
-    private transient PropertyChangeSupport support;
+    private transient PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     /** Position of the begin and the end of the element. Could
      * be null indicating the element is not part of properties structure yet. */
@@ -49,9 +52,10 @@ public abstract class Element extends Object implements Serializable {
         return bounds;
     }
 
-    /** Updates the element fields. This method is called after reparsing.
-    * @param bounds the carrier of new information.
-    */
+    /**
+     * Updates the element fields. This method is called after reparsing.
+     * @param elem the element to merge with
+     */
     void update(Element elem) {
         this.bounds = elem.bounds;
     }
@@ -62,53 +66,44 @@ public abstract class Element extends Object implements Serializable {
      * @param n new value
      */
     protected final void firePropertyChange(String name, Object o, Object n) {
-        if (support != null) {
-            support.firePropertyChange (name, o, n);
-        }
+        support.firePropertyChange (name, o, n);
     }
 
     /** Adds property listener */
-    public synchronized void addPropertyChangeListener (PropertyChangeListener l) {
-        if (support == null) {
-            synchronized (this) {
-                // new test under synchronized block
-                if (support == null) {
-                    support = new PropertyChangeSupport (this);
-                }
-            }
-        }
+    public void addPropertyChangeListener (PropertyChangeListener l) {
         support.addPropertyChangeListener (l);
     }
 
     /** Removes property listener */
     public void removePropertyChangeListener (PropertyChangeListener l) {
-        if (support != null) {
-            support.removePropertyChangeListener (l);
-        }
+        support.removePropertyChangeListener (l);
     }
 
     /** Prints this element (and all its subelements) by calling <code>bounds.setText(...)</code>
      * If <code>bounds</code> is null does nothing. 
      * @see #bounds */
-    public void print() {
+    public final void print() {
         if(bounds == null)
             return;
         
         try {
-            bounds.setText(printString());
+            bounds.setText(getDocumentString());
         } catch (BadLocationException e) {
-            // PENDING
+            ErrorManager.getDefault().notify(e);
         } catch (IOException e) {
-            // PENDING
+            ErrorManager.getDefault().notify(e);
         }
     }
 
-    /** Get a string representation of the element for printing.
-     * @return the string
+    /**
+     * Get a string representation of the element for printing into Document.
+     * It currently means that it's properly escaped.
+     * @return the string in its Document form
      */
-    public abstract String printString();
+    public abstract String getDocumentString();
 
-    /** Get a value string of the element.
+    /**
+     * Get debug string of the element.
      * @return the string
      */
     public String toString() {
@@ -128,8 +123,9 @@ public abstract class Element extends Object implements Serializable {
             this.value = value;
         }
 
-        /** Updates the element fields. This method is called after reparsing.
-         * @param bounds the carrier of new information.
+        /**
+         * Updates the element fields. This method is called after reparsing.
+         * @param elem elemnet to merge with
          */
         void update(Element elem) {
             super.update(elem);
@@ -143,18 +139,25 @@ public abstract class Element extends Object implements Serializable {
             return value + "   " + super.toString(); // NOI18N
         }
 
-        /** Get a value of the element.
-         * @return the string
+        /**
+         * Get a value of the element.
+         * @return the Java string (no escaping)
          */
         public String getValue() {
             return value;
         }
 
-        /** Sets the value. Does not check if the value has changed. */
+        /**
+         * Sets the value. Does not check if the value has changed.
+         * The value is immediately propadated in text Document possibly
+         * triggering DocumentEvents.
+         * @param value Java string (no escaping)
+         */
         public void setValue(String value) {
             this.value = value;
             this.print();
         }
+
     } // End of nested class Basic.
 
 
@@ -174,9 +177,8 @@ public abstract class Element extends Object implements Serializable {
         /** Get a string representation of the key for printing. Treats the '=' sign as a part of the key
         * @return the string
         */
-        public String printString() {
-            //return UtilConvert.saveConvert(value) + "=";
-            return getValue()+"="; // no converting to unicode back and forth
+        public String getDocumentString() {
+            return UtilConvert.saveConvert(value) + "=";
         }
     } // End of nested class KeyElem.
     
@@ -195,20 +197,28 @@ public abstract class Element extends Object implements Serializable {
         /** Get a string representation of the value for printing. Appends end of the line after the value.
         * @return the string
         */
-        public String printString() {
-            //return UtilConvert.saveConvert(value) + "\n";
-            return getValue()+"\n"; // NOI18N // no converting to unicode back and forth
+        public String getDocumentString() {
+            // escape outerspaces and continious line marks
+            return UtilConvert.saveConvert(value) + "\n";
         }
     } // End of nested class ValueElem.
 
-    /** Class representing comment element in properties files. <code>null</code> values of the string are legal and indicate that the comment is empty. */
+    /**
+     * Class representing comment element in properties files. <code>null</code> values of the
+     * string are legal and indicate that the comment is empty. It should contain
+     * pure comment string without comment markers.
+     */
     public static class CommentElem extends Basic {
 
         /** Genererated serial version UID. */
         static final long serialVersionUID =2418308580934815756L;
         
         
-        /** Create a new comment element. */
+        /**
+         * Create a new comment element.
+         * @param value Comment without its markers (leading '#' or '!'). Markers
+         *        are automatically prepended while writing it down to Document.
+         */
         protected CommentElem(PositionBounds bounds, String value) {
             super(bounds, value);
         }
@@ -218,7 +228,7 @@ public abstract class Element extends Object implements Serializable {
         * that the last line is terminated with an end of line marker.
         * @return the string
         */
-        public String printString() {
+        public String getDocumentString() {
             if (value == null || value.length() == 0)
                 return ""; // NOI18N
             else {
@@ -298,10 +308,11 @@ public abstract class Element extends Object implements Serializable {
 
         /** Gets parent.
          * @exception IllegalStateException if the parent is <code>null</code>. */
-        public PropertiesStructure getParent() {
-            if(parent == null)
+        private PropertiesStructure getParent() {
+            if(parent == null) {
                 throw new IllegalStateException("Resource Bundle: Parent is missing"); // NOI18N
-            
+            }
+
             return parent;
         }
 
@@ -329,9 +340,6 @@ public abstract class Element extends Object implements Serializable {
             return comment;
         }
 
-        /** Updates the element fields. This method is called after reparsing.
-        * @param bounds the carrier of new information.
-        */
         void update(Element elem) {
             super.update(elem);
             if (this.key == null)
@@ -347,22 +355,21 @@ public abstract class Element extends Object implements Serializable {
             this.comment.update(((ItemElem)elem).comment);
         }
 
-        /** Get a string representation of the element for printing.
-        * @return the string
-        */
-        public String printString() {
-            return comment.printString() +
-                ((key   == null) ? "" : key.printString()) + // NOI18N
-                ((value == null) ? "" : value.printString()); // NOI18N
+        public String getDocumentString() {
+            return comment.getDocumentString() +
+                ((key   == null) ? "" : key.getDocumentString()) + // NOI18N
+                ((value == null) ? "" : value.getDocumentString()); // NOI18N
         }
 
-        /** Get a key by which to identify this record */
+        /** Get a key by which to identify this record
+         * @return nonescaped key
+         */
         public String getKey() {
             return (key == null) ? null : key.getValue();
         }
 
         /** Set the key for this item
-        *  @param key the new key
+        *  @param newKey nonescaped key
         */                        
         public void setKey(String newKey) {
             String oldKey = key.getValue();

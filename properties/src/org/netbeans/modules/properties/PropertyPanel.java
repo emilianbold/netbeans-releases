@@ -44,9 +44,9 @@ public class PropertyPanel extends JPanel {
         initComponents();
         initAccessibility();             
                 
-        keyText.setText(UtilConvert.unicodesToChars(element.getKey()));
-        valueText.setText(UtilConvert.unicodesToChars(element.getValue()));
-        commentText.setText(UtilConvert.unicodesToChars(element.getComment()));
+        keyText.setText(element.getKey());
+        valueText.setText(element.getValue());
+        commentText.setText(element.getComment());
 
         // Unregister Enter on text fields so default button could work.
         keyText.getKeymap().removeKeyStrokeBinding(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
@@ -197,15 +197,7 @@ public class PropertyPanel extends JPanel {
     
     /** Value text field event handler. */
     private void valueTextHandler() {
-        element.getValueElem().setValue(
-            UtilConvert.charsToUnicodes(
-                UtilConvert.escapeJavaSpecialChars(
-                    UtilConvert.escapeLineContinuationChar(
-                        UtilConvert.escapeOutsideSpaces(valueText.getText())
-                    )
-                )
-            )
-        );
+        element.getValueElem().setValue(valueText.getText());
     }
     
     private void keyTextFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_keyTextFocusLost
@@ -219,7 +211,7 @@ public class PropertyPanel extends JPanel {
 
     /** Key text field event handler. */
     private void keyTextHandler() {
-        element.getKeyElem().setValue(UtilConvert.charsToUnicodes(UtilConvert.escapeJavaSpecialChars(UtilConvert.escapePropertiesSpecialChars(keyText.getText()))));
+        element.getKeyElem().setValue(keyText.getText());
     }
     
     private void commentTextFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commentTextFocusLost
@@ -233,7 +225,7 @@ public class PropertyPanel extends JPanel {
 
     /** Comment text field event handler. */
     private void commentTextHandler() {
-        element.getCommentElem().setValue(UtilConvert.charsToUnicodes(commentText.getText()));
+        element.getCommentElem().setValue(commentText.getText());
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

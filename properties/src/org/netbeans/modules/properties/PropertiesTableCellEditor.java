@@ -112,8 +112,10 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
 
             // set values as they deserve
             if (sp != null) {
-                ((JTextField)getComponent()).setText(UtilConvert.unicodesToChars(sp.getValue()));
-                commentComponent.setText(UtilConvert.unicodesToChars(sp.getComment()));
+                //!!! text area is required due to multiline values
+                // otherwise the textfield removes new lines
+                ((JTextField)getComponent()).setText(sp.getValue());
+                commentComponent.setText(sp.getComment());
             } else {
                 ((JTextField)getComponent()).setText(""); // NOI18N
                 commentComponent.setText(""); // NOI18N
@@ -126,22 +128,17 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
             
             // Cell is a properties key.
             if(isKeyCell) {
-                value = UtilConvert.escapeJavaSpecialChars(UtilConvert.escapePropertiesSpecialChars(value));
                 valueLabel.setText(NbBundle.getBundle(PropertyPanel.class).getString("LBL_KeyLabel"));
                 valueLabel.setDisplayedMnemonic((NbBundle.getBundle(BundleEditPanel.class).getString("LBL_KeyLabel_Mnem")).charAt(0));
             }
             // Cell is a properties value.
             else {
-                value = UtilConvert.escapeJavaSpecialChars(UtilConvert.escapeLineContinuationChar(value));
                 valueLabel.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_ValueLabel"));
                 valueLabel.setDisplayedMnemonic((NbBundle.getBundle(BundleEditPanel.class).getString("LBL_ValueLabel_Mnem")).charAt(0));
             }
             
             // the cell is a properties key 
-            return new PropertiesTableModel.StringPair(UtilConvert.charsToUnicodes(commentComponent.getText(), true),
-                UtilConvert.charsToUnicodes(value),
-                isKeyCell
-            );
+            return new PropertiesTableModel.StringPair(commentComponent.getText(),value,isKeyCell);
         }
 
     } // End of inner PropertiesEditorDelegate class.
