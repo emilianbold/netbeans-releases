@@ -46,9 +46,6 @@ import org.openide.windows.TopComponent;
 
 public class NbEditorKit extends ExtKit {
 
-    /** Shared suport for find and replace dialogs */
-    private static NbFindDialogSupport nbFindDialogSupport;
-
     /** Action property that stores the name of the corresponding nb-system-action */
     public static final String SYSTEM_ACTION_CLASS_NAME_PROPERTY = "systemActionClassName";
 
@@ -65,8 +62,6 @@ public class NbEditorKit extends ExtKit {
     protected Action[] createActions() {
         Action[] nbEditorActions = new Action[] {
                                        new NbBuildPopupMenuAction(),
-                                       new NbFindAction(),
-                                       new NbReplaceAction(),
                                        new NbUndoAction(),
                                        new NbRedoAction(),
                                    };
@@ -186,30 +181,7 @@ public class NbEditorKit extends ExtKit {
 
 
     }
-
-    public static class NbFindAction extends FindAction {
-
-        public FindDialogSupport getSupport() {
-            if (nbFindDialogSupport == null) {
-                nbFindDialogSupport = new NbFindDialogSupport();
-            }
-            return nbFindDialogSupport;
-        }
-
-    }
-
-    public static class NbReplaceAction extends ReplaceAction {
-
-        public FindDialogSupport getSupport() {
-            if (nbFindDialogSupport == null) {
-                nbFindDialogSupport = new NbFindDialogSupport();
-            }
-            return nbFindDialogSupport;
-        }
-
-    }
-
-
+    
     public static class NbUndoAction extends ActionFactory.UndoAction {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
