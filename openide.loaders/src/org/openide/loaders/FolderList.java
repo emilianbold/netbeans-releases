@@ -603,7 +603,7 @@ implements FileChangeListener, DataObject.Container {
             if (!fo.isValid ()) continue;
 
             Reference ref = (Reference)map.get (fo);
-            DataObject obj = (DataObject)ref.get ();
+            DataObject obj = ref != null ? (DataObject)ref.get() : null;
 
             if (obj == null) {
                 // try to find new data object
