@@ -63,8 +63,7 @@ public final class TAXUtil {
         SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     NotifyDescriptor nd = new NotifyDescriptor.Message
-                        (printableValue (message),
-                         NotifyDescriptor.WARNING_MESSAGE);
+                        (message, NotifyDescriptor.WARNING_MESSAGE);
                     TopManager.getDefault ().notify (nd);
                 }
             });

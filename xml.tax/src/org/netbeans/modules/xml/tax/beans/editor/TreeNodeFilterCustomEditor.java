@@ -419,7 +419,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
             
             if ( ( type == null ) ||
                  ( TreeNodeFilter.isValidNodeType (type) == false ) ) {
-                TAXUtil.notifyWarning (Util.THIS.getString ("MSG_invalidNodeType", val));
+                TAXUtil.notifyWarning (Util.THIS.getString ("MSG_invalidNodeType", val.toString()));
                 return;
             }
             nodeTypesList.set (row, type);
