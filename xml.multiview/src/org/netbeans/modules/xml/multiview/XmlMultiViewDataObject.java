@@ -99,7 +99,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         getEditorSupport().goToXmlPerspective();
     }
     
-    protected boolean isChangedFromUI() {
+    public boolean isChangedFromUI() {
         return changedFromUI;
     }
      /** This method parses XML document and calls abstract updateModelFromDocument() method which
@@ -226,7 +226,8 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         changedFromUI=true;
         if(getCookie(SaveCookie.class) == null) {
             getCookieSet0().add(getEditorSupport().saveCookie);
-            getEditorSupport().getMVTC().setDisplayName(getEditorSupport().getMVTC().getDisplayName()+" *"); // NOI18N
+            org.openide.windows.TopComponent mvtc = getEditorSupport().getMVTC();
+            mvtc .setDisplayName(mvtc.getDisplayName()+" *"); // NOI18N
         }
         updateDocument();
         //setModified(true);
