@@ -43,6 +43,10 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
     private Sources delegate;
+    /**
+     * Flag to forbid multiple invocation of {@link SourcesHelper#registerExternalRoots} 
+     **/
+    private boolean externalRootsRegistered;    
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
 
     EjbJarSources(AntProjectHelper helper, PropertyEvaluator evaluator,
@@ -57,7 +61,13 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
         initSources(); // have to register external build roots eagerly
     }
 
-
+    /**
+     * Returns an array of SourceGroup of given type. It delegates to {@link SourcesHelper}.
+     * This method firstly acquire the {@link ProjectManager#mutex} in read mode then it enters
+     * into the synchronized block to ensure that just one instance of the {@link SourcesHelper}
+     * is created. These instance is cleared also in the synchronized block by the
+     * {@link EjbJarSources#fireChange} method.
+     */
     public SourceGroup[] getSourceGroups(final String type) {
         return (SourceGroup[]) ProjectManager.mutex().readAccess(new Mutex.Action() {
             public Object run() {
@@ -146,10 +156,14 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
         
         h.addNonSourceRoot(BUILD_DIR_PROP);
         h.addNonSourceRoot(DIST_DIR_PROP);
-
+        
+        externalRootsRegistered = false;
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
-                h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                if (!externalRootsRegistered) {
+                    h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                    externalRootsRegistered = true;
+                }
             }
         });
         return h.createSources();
