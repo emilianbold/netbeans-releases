@@ -102,6 +102,10 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
     public boolean canDestroy () {
         return false;
     }
+    
+    public boolean canRename() {
+        return false;
+    }
 
     /**
      * Remove itseld from CatalogSettings,
