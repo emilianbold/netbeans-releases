@@ -340,6 +340,11 @@ public class MakeNBM extends MatchingTask {
             throw new BuildException ("must set module for makenbm", location);
         if (manifest != null && module != null)
             throw new BuildException("cannot set both manifest and module for makenbm", location);
+
+	// If desired, override the license and/or URL. //
+        overrideURLIfNeeded() ;
+	overrideLicenseIfNeeded() ;
+
 	// Will create a file Info/info.xml to be stored alongside netbeans/ contents.
 	File infodir = new File (topdir, "Info");
 	infodir.mkdirs ();
@@ -534,6 +539,17 @@ public class MakeNBM extends MatchingTask {
 	jar.setLocation (location);
 	jar.init ();
 	jar.execute ();
+
+	// Print messages if we overrode anything. //
+	if( file.lastModified () != jarModified) {
+	  if( overrideLicense()) {
+	    log( "Overriding license with: " + getLicenseOverride()) ;
+	  }
+	  if( overrideURL()) {
+	    log( "Overriding homepage URL with: " + getURLOverride()) ;
+	  }
+	}
+
 	// Maybe sign it.
 	if (signature != null && file.lastModified () != jarModified) {
 	    if (signature.keystore == null)
@@ -627,4 +643,60 @@ public class MakeNBM extends MatchingTask {
             throw new IOException(location + "must give either 'manifest' or 'module' on <makenbm>");
         }
     }
+
+  /** This returns true if the license should be overridden. */
+  protected boolean overrideLicense() {
+    return( getLicenseOverride() != null) ;
+  }
+
+  /** Get the license to use if the license should be overridden,
+   *  otherwise return null.
+   */
+  protected String getLicenseOverride() {
+    String s = getProject().getProperty( "makenbm.override.license") ;
+    if( s != null) {
+      if( s.equals( "")) {
+	s = null ;
+      }
+    }
+    return( s) ;
+  }
+
+  /** This returns true if the homepage URL should be overridden. */
+  protected boolean overrideURL() {
+    return( getURLOverride() != null) ;
+  }
+
+  /** Get the homepage URL to use if it should be overridden,
+   *  otherwise return null.
+   */
+  protected String getURLOverride() {
+    String s = getProject().getProperty( "makenbm.override.url") ;
+    if( s != null) {
+      if( s.equals( "")) {
+	s = null ;
+      }
+    }
+    return( s) ;
+  }
+
+  /** If required, this will create a new license using the override
+   *  license file.
+   */
+  protected void overrideLicenseIfNeeded() {
+    if( overrideLicense()) {
+      license = new Blurb() ;
+      license.setFile( new File( getLicenseOverride())) ;
+    }
+  }
+
+  /** If required, this will set the homepage URL using the
+   *  override value.
+   */
+  protected void overrideURLIfNeeded() {
+    if( overrideURL()) {
+      homepage = getURLOverride() ;
+    }
+  }
+
 }
