@@ -31,6 +31,7 @@ import com.sun.jdi.request.EventRequestManager;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.IllegalThreadStateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -842,7 +843,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private void enableAllBreakpoints (List l) {
         int i, k = l.size ();
         for (i = 0; i < k; i++)
-            ((EventRequest) l.get (i)).enable ();
+            try {
+                ((EventRequest) l.get (i)).enable ();
+            } catch (IllegalThreadStateException ex) {
+                // see #53163
+                // this can occurre if there is some "old" StepRequest and
+                // thread named in the request has died
+            }
     }
 
     private void checkJSR45Languages (JPDAThread t) {
