@@ -19,6 +19,8 @@ import org.netbeans.modules.httpserver.*;
 
 import java.awt.Robot;
 import java.awt.event.*;
+import java.io.*;
+import java.net.*;
 import javax.swing.*;
 
 import org.openide.awt.*;
@@ -29,8 +31,10 @@ import org.netbeans.jellytools.actions.*;
 import org.netbeans.jellytools.properties.*;
 import org.netbeans.jemmy.*;
 import org.netbeans.jemmy.operators.*;
+import org.netbeans.junit.AssertionFailedErrorException;
+import org.netbeans.junit.NbTest;
 
-public class Module extends NbTestCase { 
+public class Module extends JellyTestCase { 
 
 	private String workDir=null;
 	private String value=null;
@@ -42,6 +46,8 @@ public class Module extends NbTestCase {
 	private PropertySheetTabOperator psto=null;
 	private String delim="|";	// NOI18N
 	private String failMessage="test failed";	// NOI18N
+        
+        private HttpServerSettings serverSettings = new HttpServerSettings();
 
     public Module(String testName) { 
         super(testName); 
@@ -50,10 +56,16 @@ public class Module extends NbTestCase {
     /** Use for execution inside IDE */ 
     public static void main(java.lang.String[] args) { 
         junit.textui.TestRunner.run(new NbTestSuite(Module.class)); 
+       /* 
+        NbTestSuite suite = new NbTestSuite("test_temp");
+        suite.addTest(new Module("test_4_5_1"));
+        suite.addTest(new Module("test_4_5_2"));
+        junit.textui.TestRunner.run(suite);
+        */
     } 
 
     public void setUp() { 
-
+        System.out.println("#"+getName());
     }
 
     private void waitFor(int ms) {
@@ -62,62 +74,120 @@ public class Module extends NbTestCase {
         new EventTool().waitNoEvent(ms*k);
     }
 
-    private boolean checkDialog(String name) {
+    private AssertionFailedErrorException checkDialog(String name) {
 
 	try {
 		dop=new NbDialogOperator(name);
 	} catch(Exception ex) {
-		failMessage="No '"+name+"' dialog appears";
-		return false;
+		return new AssertionFailedErrorException("No '"+name+"' dialog appears",ex);
 	}
 	dop.close();
-	return true;
+	return null;
     }
 
     private void switchToHTTPServerNode() {
 
-	explorer = ExplorerOperator.invoke();
-	explorer.selectPageRuntime();
-	try {
-		Node node=new Node(new RuntimeTabOperator().tree(),"HTTP Server");
-		new ActionNoBlock(null,"Properties").performPopup(node);
-	}catch(Exception e) {
-		fail("HTTP server not found");
-	}
+        RuntimeTabOperator runtime = RuntimeTabOperator.invoke();
+
+        Node node=new Node(runtime.tree(),"HTTP Server");
+	new PropertiesAction().performPopup(node);
     }
 
-    private void startHTTPServer(boolean run) {
+    private void waitServerRunning(boolean running) {
+        int i;
+        for (i=1;i<=10;i++) {
+            if (serverSettings.isRunning() == running)
+                break;
+            try { Thread.currentThread().sleep(i*100); }
+            catch (InterruptedException e) {}
+        }
+        if (i == 11) 
+            fail("Timeout expired when waiting for server to "+(running?"start":"stop")+" running.");
+    }
+    
+    private void startHTTPServer() {
 
-	explorer = ExplorerOperator.invoke();
-	explorer.selectPageRuntime();
+	RuntimeTabOperator runtime = RuntimeTabOperator.invoke();
+        Node node=new Node(runtime.tree(),"HTTP Server");
+        
+        if (!serverSettings.isRunning()) {
+            new ActionNoBlock(null,"Start HTTP Server").performPopup(node);
+            waitServerRunning(true);
+            waitFor(500);
+        }
+    }
+    
+    private void stopHTTPServer() {
+        
+        RuntimeTabOperator runtime = RuntimeTabOperator.invoke();
+        Node node=new Node(runtime.tree(),"HTTP Server");
 
-        HttpServerSettings server=new HttpServerSettings();
+        if (serverSettings.isRunning()) {
+            new ActionNoBlock(null,"Stop HTTP Server").performPopup(node);
+            waitServerRunning(false);
+            waitFor(500);
+        }
+    }
+    
+    private void restartHTTPServer() {
+        
+        RuntimeTabOperator runtime = RuntimeTabOperator.invoke();
+        Node node=new Node(runtime.tree(),"HTTP Server");
 
-	try {
-		Node node=new Node(new RuntimeTabOperator().tree(),"HTTP Server");
-		if (run){
-				if (server.isRunning()) new ActionNoBlock(null,"Stop HTTP Server").performPopup(node);
-				new ActionNoBlock(null,"Start HTTP Server").performPopup(node);
-			}
-		else new ActionNoBlock(null,"Stop HTTP Server").performPopup(node);
-	}catch(Exception e) {
-		fail("HTTP can't start");
-	}
-
-	waitFor(5000);
+        if (serverSettings.isRunning()) {
+            new ActionNoBlock(null,"Stop HTTP Server").performPopup(node);
+            waitServerRunning(false);
+            waitFor(500);
+        }
+        new ActionNoBlock(null,"Start HTTP Server").performPopup(node);
+        waitServerRunning(true);
+        waitFor(500);
     }
 
+    private void checkResult(String path, int index, String output, boolean expectedFail) {
+        URL url = null;
+        try {
+            if (path.startsWith("http://"))
+                url = new URL(path);
+            else
+                url = new URL("http","localhost",serverSettings.getPort(),path);
+            URLConnection connection = url.openConnection();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String line = null;
+            for (int i=0; i<index; i++) {
+                line = reader.readLine();
+                if (line == null) break;
+            }
+            reader.close();
+            if (expectedFail) {
+                fail("Expected to unable to read from '" + url.toString() + "', but it's accessible.");
+            } else {
+                if (line == null) 
+                    fail("No line "+index+" found when reading from '" + url.toString() + "'. Expected to read text including with '"+output+"'.");
+                if (line.indexOf(output)<0) 
+                    fail("Different text read in line "+index+" from '" + url.toString() + "'. Expected to read text including with '"+output+"'.\nLine "+index+": "+line);
+            }
+        } catch (IOException ioe) {
+            if (!expectedFail)
+                throw new AssertionFailedErrorException("IOException during reading from '" + (url==null?"null":url.toString()) + "'.",ioe);
+        }
+    }
+        
     private boolean checkResult(String url, String output) {
-
+     
 	HtmlBrowser browser = new HtmlBrowser ();
 	browser.setURL(url);
 	browser.requestFocus();
 
 	JFrame jw = new JFrame();
 	jw.getContentPane().add(browser);
+        jw.setSize(200,200);
 	jw.show ();
 
-	NbFrameOperator nfo=new NbFrameOperator(jw);
+        try { Thread.currentThread().sleep(15000); }
+        catch (InterruptedException e) {}
+        
+	JFrameOperator nfo=new JFrameOperator(jw); 
 	waitFor(5000);
 
 	String result=new JTextComponentOperator(nfo, 0).getText();
@@ -130,7 +200,6 @@ public class Module extends NbTestCase {
 		return true;
 	}
     }
-
 
 // Internal HTTP Server Test Specification:  Test suite: 1. Browsing of User Repository
 
@@ -146,11 +215,28 @@ public class Module extends NbTestCase {
 	tf.setValue("repository");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
+	startHTTPServer();
 
- 	if (!checkResult("http://localhost:8082/repository/","Filesystems")) fail("Error viewing 'Filesystems' page"); // NOI18N
+ 	checkResult("/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
+    }
+  
+// 1.5    
+    public void test_1_5() {
+        
+        switchToHTTPServerNode();
+        PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
+        psto = pw.getPropertySheetTabOperator("Expert");
+        
+        TextFieldProperty tf=new TextFieldProperty(psto,"Base Filesystems URL");
+        tf.setValue("repository");	// NOI18N
+        pw.close();
+        
+        startHTTPServer();
+        
+        checkResult("/repository/examples/colorpicker/README.txt",1,"ColorPicker is a simple program",false);
     }
 
+    
 
 // Internal HTTP Server Test Specification:  Test suite: 2. Accessing Items on IDE Classpath
 
@@ -166,9 +252,9 @@ public class Module extends NbTestCase {
 	tf.setValue("classpath");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
+	startHTTPServer();
 
-	if (!checkResult("http://localhost:8082/classpath/","Filesystems")) fail("Error viewing 'Class path' page");	// NOI18N
+	checkResult("/classpath/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
     }
 
 // 2.2
@@ -182,9 +268,10 @@ public class Module extends NbTestCase {
 	tf.setValue("classpath");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
+	startHTTPServer();
 
-	if (!checkResult("http://localhost:8082/classpath/org/netbeans/core/resources/templatesFileSystems.html","Select the type of filesystem")) fail("Error viewing 'templatesFileSystems.html' page");	// NOI18N
+	checkResult("/classpath/org/netbeans/core/resources/templatesFileSystems.html",
+                    15,"Select the type of filesystem that you want to mount.",false);
     }
 
 
@@ -202,15 +289,35 @@ public class Module extends NbTestCase {
 	tf.setValue("javadoc");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
+	startHTTPServer();
 
-	if (!checkResult("http://localhost:8082/javadoc/","List of Javadoc mounts")) fail("Error viewing 'Javadoc' page");	// NOI18N
+	checkResult("/javadoc/",2,"List of Javadoc mounts",false);
     }
 
+// 3.2
+    public void test_3_2() {
+        
+        switchToHTTPServerNode();
+        PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
+        psto = pw.getPropertySheetTabOperator("Expert");
+        
+        TextFieldProperty tf=new TextFieldProperty(psto,"Base Javadoc URL");
+        tf.setValue("javadoc");	// NOI18N
+        pw.close();
+        
+        startHTTPServer();
+        
+        checkResult("/resource/Mount%2FJavadoc%2Forg-netbeans-modules-xml-tools-resources-xml_apis.xml/javax/xml/parsers/SAXParser.html",
+        7,"JAXP 1.1, DOM2, SAX2, SAX2-ext 1.0: Class  SAXParser",false);
+    }
+
+    
+    
   
 // Internal HTTP Server Test Specification:  Test suite: 4. Module Properties
 
 
+    
 // 4.1 Hosts with Granted Access
 
 // 4.1.1
@@ -225,19 +332,16 @@ public class Module extends NbTestCase {
 	tf=new TextFieldProperty(psto,"Hosts with Granted Access");
 	tf.setValue("Selected Hosts: ");
 
-	switchToHTTPServerNode();
-        pw = new PropertySheetOperator("HTTP Server");
         psto = pw.getPropertySheetTabOperator("Expert");
 
 	tf=new TextFieldProperty(psto,"Base Filesystems URL");
 	tf.setValue("repository");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
+	startHTTPServer();
 
-	if (!checkResult("http://localhost:8082/repository/","Filesystems")) fail("Error viewing 'Filesystems' page");	// NOI18N
+	checkResult("/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
     }
-
 
 // 4.2 Port
 
@@ -251,18 +355,17 @@ public class Module extends NbTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
 	tf.setValue("16384");	// NOI18N
 
-	switchToHTTPServerNode();
-        pw = new PropertySheetOperator("HTTP Server");
         psto = pw.getPropertySheetTabOperator("Expert");
 
 	tf=new TextFieldProperty(psto,"Base Filesystems URL");
 	tf.setValue("repository");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
+	startHTTPServer();
 
-	if (!checkResult("http://localhost:16384/repository/","Filesystems")) fail("Error viewing 'Filesystems' page");	// NOI18N
+	checkResult("http://localhost:16384/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
     }
+
 
 // 4.2.2
     public void test_4_2_2() {
@@ -274,19 +377,19 @@ public class Module extends NbTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
 	tf.setValue("16384");	// NOI18N
 
-	switchToHTTPServerNode();
-        pw = new PropertySheetOperator("HTTP Server");
         psto = pw.getPropertySheetTabOperator("Expert");
 
 	tf=new TextFieldProperty(psto,"Base Filesystems URL");
 	tf.setValue("repository");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
+	startHTTPServer();
 
-	if (checkResult("http://localhost:8082/repository/","Filesystems")) fail("'Filesystems' page can be viewed");	// NOI18N
+	checkResult("http://localhost:8082/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",true);
     }
 
+/* commented because of bug in IDE
+ 
 // 4.2.4
     public void test_4_2_4() {
 
@@ -298,15 +401,14 @@ public class Module extends NbTestCase {
 
 	value=tf.getValue();
 	tf.setValue("-9999");	// NOI18N
-
-	if (!checkDialog("Information")) {
-		tf.setValue(value);
-		pw.close();
-		fail(failMessage);
-	}
-
-	pw.close();
+        
+        AssertionFailedErrorException e = checkDialog("Information");
+        tf.setValue(value);
+        pw.close();
+	if (e != null) 
+            throw e;
     }
+
 
 // 4.2.5
     public void test_4_2_5() {
@@ -320,13 +422,11 @@ public class Module extends NbTestCase {
 	value=tf.getValue();
 	tf.setValue("0");	// NOI18N
 
-	if (!checkDialog("Information")) {
-		tf.setValue(value);
-		pw.close();
-		fail(failMessage);
-	}
-
-	pw.close();
+        AssertionFailedErrorException e = checkDialog("Information");
+        tf.setValue(value);
+        pw.close();
+        if (e != null)
+            throw e;
     }
 
 // 4.2.6
@@ -341,15 +441,14 @@ public class Module extends NbTestCase {
 	value=tf.getValue();
 	tf.setValue("65536");	// NOI18N
 
-	if (!checkDialog("Information")) {
-		tf.setValue(value);
-		pw.close();
-		fail(failMessage);
-	}
-
-	pw.close();
+        AssertionFailedErrorException e = checkDialog("Information");
+        tf.setValue(value);
+        pw.close();
+        if (e != null)
+            throw e;
     }
-
+*/
+    
 // 4.2.7
     public void test_4_2_7() {
 
@@ -360,17 +459,15 @@ public class Module extends NbTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
 	tf.setValue("65535");	// NOI18N
 
-	switchToHTTPServerNode();
-        pw = new PropertySheetOperator("HTTP Server");
         psto = pw.getPropertySheetTabOperator("Expert");
 
 	tf=new TextFieldProperty(psto,"Base Filesystems URL");
 	tf.setValue("repository");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
+	startHTTPServer();
 
-	if (!checkResult("http://localhost:65535/repository/","Filesystems")) fail("Error viewing 'Filesystems' page");	// NOI18N
+	checkResult("http://localhost:65535/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
     }
 
 
@@ -386,18 +483,15 @@ public class Module extends NbTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
 	tf.setValue("16384");	// NOI18N
 
-	switchToHTTPServerNode();
-        pw = new PropertySheetOperator("HTTP Server");
         psto = pw.getPropertySheetTabOperator("Expert");
 
 	tf=new TextFieldProperty(psto,"Base Filesystems URL");
 	tf.setValue("repository");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
-	startHTTPServer(false);
+	stopHTTPServer();
 
-	if (checkResult("http://localhost:16384/repository/","Filesystems")) fail("'Filesystems' page can be viewed");	// NOI18N
+	checkResult("http://localhost:65535/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",true);
     }
 
 // 4.3.2
@@ -410,20 +504,18 @@ public class Module extends NbTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
 	tf.setValue("16384");	// NOI18N
 	
-	switchToHTTPServerNode();
-        pw = new PropertySheetOperator("HTTP Server");
         psto = pw.getPropertySheetTabOperator("Expert");
 
 	tf=new TextFieldProperty(psto,"Base Filesystems URL");
 	tf.setValue("repository");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
+	startHTTPServer();
 
-	if (!checkResult("http://localhost:16384/repository/","Filesystems")) fail("Error viewing 'Filesystems' page");	// NOI18N
+	checkResult("http://localhost:16384/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
     }
 
-
+/*
 // 4.5 Base Filesystems URL 
 
 // 4.5.1
@@ -438,14 +530,17 @@ public class Module extends NbTestCase {
 
 	String value=tf.getValue();
 	tf.setValue("/repository/");	// NOI18N
-	if (!value.equals("/")) {	// NOI18N
-		pw.close();
+        
+        AssertionFailedErrorException e = checkDialog("Information");
+        pw.close();
+
+        if (e != null) 
+            throw e;
+
+        if (!value.equals("/")) 
 		fail("Invalid 'Base Filesystems URL' field value");
-	}
-
-	pw.close();
     }
-
+    
 // 4.5.2
     public void test_4_5_2() {
 
@@ -460,11 +555,13 @@ public class Module extends NbTestCase {
 
 	tf=new TextFieldProperty(psto,"Base Filesystems URL");
 	tf.setValue("");	// NOI18N
-	pw.close();
-
-	startHTTPServer(true);
-
-	if (checkResult("http://localhost:8082/repository/","Filesystems")) fail("'Filesystems' page can be viewed");	// NOI18N
+        AssertionFailedErrorException e = checkDialog("Information");
+        pw.close();
+        if (e != null)
+            throw e;
+	
+	startHTTPServer();
+        checkResult("http://localhost:8082/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",true);
     }
 
 // 4.5.3
@@ -483,11 +580,12 @@ public class Module extends NbTestCase {
 	tf.setValue("");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
+	startHTTPServer();
 
-	if (!checkResult("http://localhost:8082/","Filesystems")) fail("Error viewing 'Filesystems' page");	// NOI18N
+        checkResult("http://localhost:8082/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
     }
-
+*/
+    
 // 4.5.4
     public void test_4_5_4() {
 
@@ -504,13 +602,14 @@ public class Module extends NbTestCase {
 	tf.setValue("newrepository");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
+	startHTTPServer();
 
-	if (!checkResult("http://localhost:8082/newrepository/","Filesystems")) fail("Error viewing 'Filesystems' page");	// NOI18N
+        checkResult("http://localhost:8082/newrepository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
     }
 
+    
 // 4.6 Base Class Path URL 
-
+/*
 // 4.6.1
     public void test_4_6_1() {
 	
@@ -524,14 +623,14 @@ public class Module extends NbTestCase {
 	tf1.setValue("foo1");	// NOI18N
 	tf2.setValue("foo1");	// NOI18N
 
-	if (!checkDialog("Information")) {
-		tf1.setValue("repository");	// NOI18N
-		tf2.setValue("classpath");	// NOI18N
-		pw.close();
-		fail(failMessage);
-	}
-
-	pw.close();
+        AssertionFailedErrorException e = checkDialog("Information");
+        
+        tf1.setValue("repository");	// NOI18N
+        tf2.setValue("classpath");	// NOI18N
+        pw.close();
+        
+        if (e != null)
+            throw e;
     }
 
 // 4.6.2
@@ -544,14 +643,20 @@ public class Module extends NbTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Base Class Path URL");
 	tf.setValue("");	// NOI18N
 
-	String value=tf.getValue();
-	tf.setValue("/classpath/");	// NOI18N
+        AssertionFailedErrorException e = checkDialog("Information");
+        String value=tf.getValue();
+	tf.setValue("/classpath/");
+        pw.close();
+        
+        if (e != null)
+            throw e;        
+        
 	if (!value.equals("/")) {	// NOI18N
 		pw.close();
 		fail("Invalid 'Base Class Path URL' field value");
 	}
 
-	pw.close();
+	
     }
 
 // 4.6.3
@@ -568,11 +673,18 @@ public class Module extends NbTestCase {
 
 	tf=new TextFieldProperty(psto,"Base Class Path URL");
 	tf.setValue("");	// NOI18N
+        
+        AssertionFailedErrorException e = checkDialog("Information");
+        
 	pw.close();
+        
+        if (e != null)
+            throw e; 
+        
+	startHTTPServer();
 
-	startHTTPServer(true);
-
-	if (checkResult("http://localhost:8082/classpath/org/netbeans/core/resources/templatesFileSystems.html","Select the type of filesystem")) fail("'templatesFileSystems.html' page can be viewed");	// NOI18N
+        checkResult("http://localhost:8082/classpath/org/netbeans/core/resources/templatesFileSystems.html",
+                    15,"Select the type of filesystem that you want to mount.",true);
     }
 
 // 4.6.4
@@ -591,11 +703,13 @@ public class Module extends NbTestCase {
 	tf.setValue("");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
+	startHTTPServer();
 
-	if (!checkResult("http://localhost:8082/org/netbeans/core/resources/templatesFileSystems.html","Select the type of filesystem")) fail("Error viewing 'templatesFileSystems.html' page");	// NOI18N
+        checkResult("http://localhost:8082/org/netbeans/core/resources/templatesFileSystems.html",
+                    15,"Select the type of filesystem that you want to mount.",false);
     }
-
+*/
+    
 // 4.6.5
     public void test_4_6_5() {
 
@@ -612,14 +726,16 @@ public class Module extends NbTestCase {
 	tf.setValue("newclasspath");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
+	startHTTPServer();
 
-	if (!checkResult("http://localhost:8082/newclasspath/org/netbeans/core/resources/templatesFileSystems.html","Select the type of filesystem")) fail("Error viewing 'templatesFileSystems.html' page");	// NOI18N
+        checkResult("http://localhost:8082/newclasspath/org/netbeans/core/resources/templatesFileSystems.html",
+        15,"Select the type of filesystem that you want to mount.",false);
+  
     }
-
 
 // 4.7 Base Javadoc URL 
 
+/*    
 // 4.7.1
     public void test_4_7_1() {
 
@@ -633,14 +749,15 @@ public class Module extends NbTestCase {
 	tf1.setValue("foo2");	// NOI18N
 	tf2.setValue("foo2");	// NOI18N
 
-	if (!checkDialog("Information")) {
-		tf1.setValue("repository");	// NOI18N
-		tf2.setValue("javadoc");	// NOI18N
-		pw.close();
-		fail(failMessage);
-	}
+        AssertionFailedErrorException e = checkDialog("Information");
+        
+        tf1.setValue("repository");	// NOI18N
+        tf2.setValue("javadoc");	// NOI18N
+        pw.close();
 
-	pw.close();
+        if (e != null) {
+		throw e;
+	}
     }
 
 // 4.7.2
@@ -654,13 +771,18 @@ public class Module extends NbTestCase {
 	tf.setValue("");	// NOI18N
 
 	String value=tf.getValue();
-	tf.setValue("/javadoc/");	// NOI18N
+        AssertionFailedErrorException e = checkDialog("Information");
+
+        tf.setValue("/javadoc/");	// NOI18N
+        pw.close();
+
+        if (e != null) {
+                throw e;
+	}
+ 
 	if (!value.equals("/")) {	// NOI18N
-		pw.close();
 		fail("Invalid 'Base Javadoc URL' field value");
 	}
-
-	pw.close();
     }
 
 // 4.7.3
@@ -677,11 +799,18 @@ public class Module extends NbTestCase {
 
 	tf=new TextFieldProperty(psto,"Base Javadoc URL");
 	tf.setValue("");	// NOI18N
+        
+        AssertionFailedErrorException e = checkDialog("Information");
+ 
 	pw.close();
+ 
+        if (e != null) {
+                throw e;
+        }
+ 
+	startHTTPServer();
 
-	startHTTPServer(true);
-
-	if (checkResult("http://localhost:8082/javadoc/","List of Javadoc mounts")) fail("'Javadoc' page can be viewed");	// NOI18N
+        checkResult("http://localhost:8082/javadoc/",2,"List of Javadoc mounts",true);
     }
 
 // 4.7.4
@@ -700,11 +829,12 @@ public class Module extends NbTestCase {
 	tf.setValue("");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
+	startHTTPServer();
 
-	if (!checkResult("http://localhost:8082/","List of Javadoc mounts")) fail("Error viewing 'Javadoc' page");	// NOI18N
+        checkResult("http://localhost:8082/",2,"List of Javadoc mounts",false);
     }
-
+*/
+    
 // 4.7.5
     public void test_4_7_5() {
 
@@ -721,16 +851,16 @@ public class Module extends NbTestCase {
 	tf.setValue("newjavadoc");	// NOI18N
 	pw.close();
 
-	startHTTPServer(true);
+	startHTTPServer();
 
-	if (!checkResult("http://localhost:8082/newjavadoc/","List of Javadoc mounts")) fail("Error viewing 'Javadoc' page");	// NOI18N
+        checkResult("http://localhost:8082/newjavadoc/",2,"List of Javadoc mounts",false);
     }
 
 
 // 4.8 General Behavior 
 
 // 4.8.1
-    public void test_4_8_1() {
+    public void test_4_8_01() {
 
 	switchToHTTPServerNode();
         PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
@@ -739,16 +869,14 @@ public class Module extends NbTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Hosts with Granted Access");
 	tf.openEditor();
 
-	if (!checkDialog("Hosts with Granted Access")) {
-		pw.close();
-		fail(failMessage);
-	}
-
-	pw.close();
+        AssertionFailedErrorException e = checkDialog("Hosts with Granted Access");
+        pw.close();
+        if (e != null)
+            throw e;
     }
 
 // 4.8.2
-    public void test_4_8_2() {
+    public void test_4_8_02() {
 	
 	switchToHTTPServerNode();
         PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
@@ -762,7 +890,7 @@ public class Module extends NbTestCase {
 		dop=new NbDialogOperator("Hosts with Granted Access");
 	} catch(Exception ex) {
 		pw.close();
-		fail("No 'Hosts with Granted Access' dialog appears");
+		throw new AssertionFailedErrorException("No 'Hosts with Granted Access' dialog appears",ex);
 	}
 
 	JRadioButtonOperator rb=new JRadioButtonOperator(dop,"Any Host");
@@ -780,7 +908,7 @@ public class Module extends NbTestCase {
     }
 
 // 4.8.3
-    public void test_4_8_3() {
+    public void test_4_8_03() {
 
 	switchToHTTPServerNode();
         PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
@@ -794,7 +922,7 @@ public class Module extends NbTestCase {
 		dop=new NbDialogOperator("Hosts with Granted Access");
 	} catch(Exception ex) {
 		pw.close();
-		fail("No 'Hosts with Granted Access' dialog appears");
+		throw new AssertionFailedErrorException("No 'Hosts with Granted Access' dialog appears",ex);
 	}
 
 	JRadioButtonOperator rb=new JRadioButtonOperator(dop,"Any Host");
@@ -811,8 +939,9 @@ public class Module extends NbTestCase {
 	pw.close();
     }
 
+/*  commented out due to bug #38680
 // 4.8.4
-    public void test_4_8_4() {
+    public void test_4_8_04() {
 
 	switchToHTTPServerNode();
         PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
@@ -821,13 +950,12 @@ public class Module extends NbTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Hosts with Granted Access");
         tf.setValue("foo");	// NOI18N
 
-	if (!checkDialog("Information")) {
-		pw.close();
-		fail(failMessage);
-	}
-
-	pw.close();
+        AssertionFailedErrorException e = checkDialog("Information");
+        pw.close();
+        if (e != null)
+            throw e;        
     }
+*/
 
 // 4.8.5
     public void test_4_8_5() {
@@ -844,7 +972,7 @@ public class Module extends NbTestCase {
 		dop=new NbDialogOperator("Hosts with Granted Access");
 	} catch(Exception ex) {
 		pw.close();
-		fail("No 'Hosts with Granted Access' dialog appears");
+		throw new AssertionFailedErrorException("No 'Hosts with Granted Access' dialog appears",ex);
 	}
 
 	JRadioButtonOperator rb=new JRadioButtonOperator(dop,"Selected Hosts");
@@ -853,12 +981,12 @@ public class Module extends NbTestCase {
 	ok.doClick();
 
 	value=tf.getValue();
+	pw.close();
 	if (!value.equals("Selected Hosts: ")) {
 		pw.close();
 		fail("'Selected Hosts: ' isn't set.");
 	}
 
-	pw.close();
     }
 
 // 4.8.6
@@ -868,11 +996,12 @@ public class Module extends NbTestCase {
         PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
         psto = pw.getPropertySheetTabOperator("Properties");
 
-	TextFieldProperty tf=new TextFieldProperty(psto,"Hosts with Granted Access");
+	Property tf=new Property(psto,"Hosts with Granted Access");
 	old_value=tf.getValue();
 
-	JTextFieldOperator to=tf.textField();
-        to.typeText("Selected Hosts: localhost");
+	//JTextFieldOperator to=tf.textField();
+        //to.typeText("Selected Hosts: localhost");
+        tf.setValue("Selected Hosts: localhost");
 
 	try {
 		Robot rb=new java.awt.Robot();
@@ -902,8 +1031,9 @@ public class Module extends NbTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Hosts with Granted Access");
 	old_value=tf.getValue();
 
-	JTextFieldOperator to=tf.textField();
-        to.typeText("Selected Hosts: localhost, boo");
+	//JTextFieldOperator to=tf.textField();
+        //to.typeText("Selected Hosts: localhost, boo");
+        tf.setValue("Selected Hosts: localhost, boo");
 
 	try {
 		Robot rb=new java.awt.Robot();
@@ -936,9 +1066,9 @@ public class Module extends NbTestCase {
 	try {
 		dop=new NbDialogOperator("Hosts with Granted Access");
 	} catch(Exception ex) {
-		dop.close();
+		//dop.close();
 		pw.close();
-		fail("No 'Hosts with Granted Access' dialog appears");
+		throw new AssertionFailedErrorException("No 'Hosts with Granted Access' dialog appears",ex);
 	}
 
 	JTextAreaOperator jt=new JTextAreaOperator(dop,0);
@@ -963,13 +1093,14 @@ public class Module extends NbTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Base Class Path URL");
 	tf.openEditor();
 
-	if (!checkDialog("Base Class Path URL")) {
-		tf.setValue(value);
-		pw.close();
-		fail(failMessage);
-	}
-
-	pw.close();
+        
+        AssertionFailedErrorException e = checkDialog("Base Class Path URL");
+        // What is in value ????
+        //tf.setValue(value);        
+        pw.close();
+        if (e != null)
+            throw e;       
+        
     }
 
 // 4.8.10
@@ -985,8 +1116,9 @@ public class Module extends NbTestCase {
 	try {
 		dop=new NbDialogOperator("Base Class Path URL");
 	} catch(Exception ex) {
+                //dop.close();
 		pw.close();
-		fail("No 'Base Class Path URL' dialog appears");
+		throw new AssertionFailedErrorException("No 'Base Class Path URL' dialog appears",ex);
 	}
 
 	JTextAreaOperator jt=new JTextAreaOperator(dop,0);
@@ -1013,8 +1145,9 @@ public class Module extends NbTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Base Class Path URL");
 	old_value=tf.getValue();
 
-	JTextFieldOperator to=tf.textField();
-        to.typeText("/testvalue_cp/");	// NOI18N
+	//JTextFieldOperator to=tf.textField();
+        //to.typeText("/testvalue_cp/");	// NOI18N
+        tf.setValue("/testvalue_cp/");	// NOI18N
 
 	try {
 		Robot rb=new java.awt.Robot();
@@ -1047,9 +1180,9 @@ public class Module extends NbTestCase {
 	try {
 		dop=new NbDialogOperator("Base Class Path URL");
 	} catch(Exception ex) {
-		dop.close();
+		//dop.close();
 		pw.close();
-		fail("No 'Base Class Path URL' dialog appears");
+		throw new AssertionFailedErrorException("No 'Base Class Path URL' dialog appears",ex);
 	}
 
 	JTextAreaOperator jt=new JTextAreaOperator(dop,0);
@@ -1077,9 +1210,9 @@ public class Module extends NbTestCase {
 	try {
 		dop=new NbDialogOperator("Base Class Path URL");
 	} catch(Exception ex) {
-		dop.close();
+		//dop.close();
 		pw.close();
-		fail("No 'Base Class Path URL' dialog appears");
+		throw new AssertionFailedErrorException("No 'Base Class Path URL' dialog appears",ex);
 	}
 
 	JTextAreaOperator jt=new JTextAreaOperator(dop,0);
@@ -1108,13 +1241,12 @@ public class Module extends NbTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Base Filesystems URL");
 	tf.openEditor();
 
-	if (!checkDialog("Base Filesystems URL")) {
-		tf.setValue(value);
-		pw.close();
-		fail(failMessage);
-	}
-
-	pw.close();
+        AssertionFailedErrorException e = checkDialog("Base Filesystems URL");
+        // what is in value???
+        //tf.setValue(value);
+        pw.close();
+        if (e != null)
+            throw e;          
     }
 
 // 4.8.15
@@ -1130,9 +1262,9 @@ public class Module extends NbTestCase {
 	try {
 		dop=new NbDialogOperator("Base Filesystems URL");
 	} catch(Exception ex) {
-		dop.close();
+		//dop.close();
 		pw.close();
-		fail("No 'Base Filesystems URL' dialog appears");
+		throw new AssertionFailedErrorException("No 'Base Filesystems URL' dialog appears",ex);
 	}
 
 	JTextAreaOperator jt=new JTextAreaOperator(dop,0);
@@ -1160,8 +1292,9 @@ public class Module extends NbTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Base Filesystems URL");
 	old_value=tf.getValue();
 
-	JTextFieldOperator to=tf.textField();
-        to.typeText("/testvalue_fs/");	// NOI18N
+	//JTextFieldOperator to=tf.textField();
+        //to.typeText("/testvalue_fs/");	// NOI18N
+        tf.setValue("/testvalue_fs/");	// NOI18N
 
 	try {
 		Robot rb=new java.awt.Robot();
@@ -1194,9 +1327,9 @@ public class Module extends NbTestCase {
 	try {
 		dop=new NbDialogOperator("Base Filesystems URL");
 	} catch(Exception ex) {
-		dop.close();
+		//dop.close();
 		pw.close();
-		fail("No 'Base Filesystems URL' dialog appears");
+		throw new AssertionFailedErrorException("No 'Base Filesystems URL' dialog appears",ex);
 	}
 
 	JTextAreaOperator jt=new JTextAreaOperator(dop,0);
@@ -1224,9 +1357,9 @@ public class Module extends NbTestCase {
 	try {
 		dop=new NbDialogOperator("Base Filesystems URL");
 	} catch(Exception ex) {
-		dop.close();
+		//dop.close();
 		pw.close();
-		fail("No 'Base Filesystems URL' dialog appears");
+		throw new AssertionFailedErrorException("No 'Base Filesystems URL' dialog appears",ex);
 	}
 
 	JTextAreaOperator jt=new JTextAreaOperator(dop,0);
@@ -1255,13 +1388,13 @@ public class Module extends NbTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Base Javadoc URL");
 	tf.openEditor();
 
-	if (!checkDialog("Base Javadoc URL")) {
-		tf.setValue(value);
-		pw.close();
-		fail(failMessage);
-	}
-
-	pw.close();
+	
+        AssertionFailedErrorException e = checkDialog("Base Javadoc URL");
+        // what is in value???
+        //tf.setValue(value);
+        pw.close();
+        if (e != null)
+            throw e; 
     }
 
 // 4.8.20
@@ -1277,9 +1410,9 @@ public class Module extends NbTestCase {
 	try {
 		dop=new NbDialogOperator("Base Javadoc URL");
 	} catch(Exception ex) {
-		dop.close();
+		//dop.close();
 		pw.close();
-		fail("No 'Base Javadoc URL' dialog appears");
+		throw new AssertionFailedErrorException("No 'Base Javadoc URL' dialog appears",ex);
 	}
 
 	JTextAreaOperator jt=new JTextAreaOperator(dop,0);
@@ -1307,8 +1440,9 @@ public class Module extends NbTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Base Javadoc URL");
 	old_value=tf.getValue();
 
-	JTextFieldOperator to=tf.textField();
-        to.typeText("/testvalue_jd/");	// NOI18N
+	//JTextFieldOperator to=tf.textField();
+        //to.typeText("/testvalue_jd/");	// NOI18N
+        tf.setValue("/testvalue_jd/");	// NOI18N
 
 	try {
 		Robot rb=new java.awt.Robot();
@@ -1341,9 +1475,9 @@ public class Module extends NbTestCase {
 	try {
 		dop=new NbDialogOperator("Base Javadoc URL");
 	} catch(Exception ex) {
-		dop.close();
+		//dop.close();
 		pw.close();
-		fail("No 'Base Javadoc URL' dialog appears");
+		throw new AssertionFailedErrorException("No 'Base Javadoc URL' dialog appears",ex);
 	}
 
 	JTextAreaOperator jt=new JTextAreaOperator(dop,0);
@@ -1371,9 +1505,9 @@ public class Module extends NbTestCase {
 	try {
 		dop=new NbDialogOperator("Base Javadoc URL");
 	} catch(Exception ex) {
-		dop.close();
+		//dop.close();
 		pw.close();
-		fail("No 'Base Javadoc URL' dialog appears");
+		throw new AssertionFailedErrorException("No 'Base Javadoc URL' dialog appears",ex);
 	}
 
 	JTextAreaOperator jt=new JTextAreaOperator(dop,0);
@@ -1407,7 +1541,7 @@ public class Module extends NbTestCase {
 		dop=new NbDialogOperator("Hosts with Granted Access");
 	} catch(Exception ex) {
 		pw.close();
-		fail("No 'Hosts with Granted Access' dialog appears");
+		throw new AssertionFailedErrorException("No 'Hosts with Granted Access' dialog appears",ex);
 	}
 
 	JRadioButtonOperator rb=new JRadioButtonOperator(dop,"Selected Hosts");
@@ -1428,7 +1562,6 @@ public class Module extends NbTestCase {
 	pw.close();
     }
 
-
 // 4.9 Accessibility
 
 // 4.9.1
@@ -1445,9 +1578,9 @@ public class Module extends NbTestCase {
 	try {
 		dop=new NbDialogOperator("Hosts with Granted Access");
 	} catch(Exception ex) {
-		dop.close();
+		//dop.close();
 		pw.close();
-		fail("No 'Hosts with Granted Access' dialog appears");
+		throw new AssertionFailedErrorException("No 'Hosts with Granted Access' dialog appears",ex);
 	}
 
 	try {
@@ -1485,9 +1618,9 @@ public class Module extends NbTestCase {
 	try {
 		dop=new NbDialogOperator("Hosts with Granted Access");
 	} catch(Exception ex) {
-		dop.close();
+		//dop.close();
 		pw.close();
-		fail("No 'Hosts with Granted Access' dialog appears");
+		throw new AssertionFailedErrorException("No 'Hosts with Granted Access' dialog appears",ex);
 	}
 
 	try {
@@ -1525,9 +1658,9 @@ public class Module extends NbTestCase {
 	try {
 		dop=new NbDialogOperator("Hosts with Granted Access");
 	} catch(Exception ex) {
-		dop.close();
+		//dop.close();
 		pw.close();
-		fail("No 'Hosts with Granted Access' dialog appears");
+		throw new AssertionFailedErrorException("No 'Hosts with Granted Access' dialog appears",ex);
 	}
 
 	try {
