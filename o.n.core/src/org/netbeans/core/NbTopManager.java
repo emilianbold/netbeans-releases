@@ -28,6 +28,7 @@ import javax.swing.border.*;
 
 import com.netbeans.ide.util.datatransfer.ExClipboard;
 import com.netbeans.ide.*;
+import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.actions.*;
 import com.netbeans.ide.debugger.Debugger;
 import com.netbeans.ide.debugger.DebuggerException;

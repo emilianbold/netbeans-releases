@@ -24,6 +24,7 @@ import java.util.ResourceBundle;
 import java.util.Vector;
 
 import com.netbeans.ide.*;
+import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.options.*;
 import com.netbeans.ide.actions.PropertiesAction;
 import com.netbeans.ide.actions.RenameAction;
@@ -168,6 +169,8 @@ public final class EnvironmentNode extends AbstractNode {
 
 /*
  * Log
+ *  2    Gandalf   1.1         1/6/99   Jaroslav Tulach ide.* extended to 
+ *       ide.loaders.*
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  * Beta Change History:
