@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.editor;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.text.EditorKit;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
@@ -32,6 +35,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.DialogSupport;
 import org.netbeans.editor.FindSupport;
+import org.netbeans.editor.FindSupport.SearchPatternWrapper;
 import org.netbeans.editor.ImplementationProvider;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.SettingsNames;
@@ -53,6 +57,8 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.PrintSettings;
 import org.openide.util.SharedClassObject;
 import org.openide.windows.TopComponent;
+import org.openidex.search.SearchHistory;
+import org.openidex.search.SearchPattern;
 
 /**
  * Module installation class for editor.
@@ -153,75 +159,67 @@ public class EditorModule extends ModuleInstall {
 //            );
 //        }
 
-         /*   [TEMP]
+         
          searchSelectedPatternListener = new PropertyChangeListener(){
              
              public void propertyChange(PropertyChangeEvent evt){
-                 if (evt == null || !SearchHistory.LAST_SELECTED_SEARCH_PATTERN.equals(evt.getPropertyName())){
+                 if (evt == null || !SearchHistory.LAST_SELECTED.equals(evt.getPropertyName())){
                      return;
                  }
-                 System.out.println("");
-                 System.out.println("API -> editor:");                
+                 //System.out.println("");
+                 //System.out.println("API -> editor:");                
                  FindSupport fs = FindSupport.getFindSupport();
                  SearchPattern sp = SearchHistory.getDefault().getLastSelected();
                  if (sp==null){
                      return;
                  }
                  
-                 Map map = new HashMap();
-                 map.put(SettingsNames.FIND_WHAT, sp.getSearchExpression());
-                 map.put(SettingsNames.FIND_MATCH_CASE, Boolean.valueOf(sp.isMatchCase()));
-                 map.put(SettingsNames.FIND_REG_EXP, Boolean.valueOf(sp.isRegExp()));
-                 map.put(SettingsNames.FIND_WHOLE_WORDS, Boolean.valueOf(sp.isWholeWords()));
+                 FindSupport.SearchPatternWrapper spw = new FindSupport.SearchPatternWrapper(sp.getSearchExpression(),
+                         sp.isWholeWords(), sp.isMatchCase(), sp.isRegExp());
+                 //System.out.println("spw:"+spw);
+                 fs.setLastSelected(spw);
+                 
                  List searchPatterns = SearchHistory.getDefault().getSearchPatterns();
-                 List searchTexts = new ArrayList();
  
+                 List history = new ArrayList();
                  for (int i = 0; i<searchPatterns.size(); i++){
-                     String histString = ((SearchPattern)searchPatterns.get(i)).getSearchExpression();
-                     System.out.println("histString:"+histString);
-                     searchTexts.add(histString);
+                     SearchPattern sptr = ((SearchPattern)searchPatterns.get(i));
+                     SearchPatternWrapper spwrap = new SearchPatternWrapper(sptr.getSearchExpression(),
+                             sptr.isWholeWords(), sptr.isMatchCase(), sptr.isRegExp());
+                     history.add(spwrap);
                  }
-                 fs.putFindProperty(SettingsNames.FIND_HISTORY, null);
-                 map.put(SettingsNames.FIND_HISTORY, searchTexts);
-                 fs.putFindProperties(map);
  
+                 fs.setHistory(history);
              }
          };
          
          editorHistoryChangeListener =  new PropertyChangeListener(){
              public void propertyChange(PropertyChangeEvent evt){
                  
-                 if (evt == null || !SettingsNames.FIND_HISTORY.equals(evt.getPropertyName())){
+                 if (evt == null || !FindSupport.FIND_HISTORY_PROP.equals(evt.getPropertyName())){
                      return;
                  }
  
-                 System.out.println("");
-                 System.out.println("editor -> API");
+                 //System.out.println("");
+                 //System.out.println("editor -> API");
                  
-                 FindSupport fs = FindSupport.getFindSupport();
-                 List list = (List) fs.getFindProperty(SettingsNames.FIND_HISTORY);
-                 if (list != null && list.size() > 0){
-                     boolean matchCase = getFindBooleanProperty(SettingsNames.FIND_MATCH_CASE);
-                     boolean regExp = getFindBooleanProperty(SettingsNames.FIND_REG_EXP);
-                     boolean wholeWords = getFindBooleanProperty(SettingsNames.FIND_WHOLE_WORDS);
-                     String searchExp = (String)list.get(0);
-                     System.out.println("searchExp:"+searchExp);
-                     if (searchExp == null || searchExp.length() == 0) return;
-                     SearchPattern sp = SearchPattern.create(searchExp, wholeWords, matchCase, regExp );
-                     SearchPattern oldSP = SearchHistory.getDefault().getLastSelected();
-                     if (oldSP != null){
-                         System.out.println("oldSP == null");
-                         System.out.println("searchExp:"+searchExp);
-                         System.out.println("oldSP.getSearchExpression:"+oldSP.getSearchExpression());
-                         if (searchExp.equals(oldSP.getSearchExpression()) && matchCase == oldSP.isMatchCase() &&
-                                 regExp == oldSP.isRegExp() && wholeWords == oldSP.isWholeWords()){
-                             return;
-                         }
-                     }
-                     System.out.println("put to API:"+searchExp);
-                     SearchHistory.getDefault().add(sp);
-                     SearchHistory.getDefault().setLastSelected(sp);
+                 SearchPatternWrapper spw = (SearchPatternWrapper)evt.getNewValue();
+                 SearchPattern spLast = SearchHistory.getDefault().getLastSelected();
+                 
+                 if (spw == null){
+                     return;
                  }
+                 //System.out.println("spw:"+spw);
+                 
+                 SearchPattern sp = SearchPattern.create(spw.getSearchExpression(),
+                         spw.isWholeWords(), spw.isMatchCase(), spw.isRegExp());
+                 
+                 if (sp == null || (sp.equals(spLast))){
+                     return;
+                 }
+                 
+                 SearchHistory.getDefault().add(sp);
+                 SearchHistory.getDefault().setLastSelected(sp);
              }
          };
  
@@ -229,7 +227,7 @@ public class EditorModule extends ModuleInstall {
          FindSupport.getFindSupport().addPropertyChangeListener(editorHistoryChangeListener);
          
          // TEMP start
-         
+         /*
          final int fired[] = new int[1];
          fired[0] = 0;
          
@@ -244,9 +242,9 @@ public class EditorModule extends ModuleInstall {
                  }
          });
          timer.start();
-         
-         //TEMP end
          */
+         //TEMP end
+
             
     }
 
