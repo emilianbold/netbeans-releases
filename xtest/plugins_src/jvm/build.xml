@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="all" name="XTest JVM plugin">
@@ -32,7 +32,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="junit*.jar"/>
             </fileset>            
         </path>
-        <javac srcdir="src" destdir="src"
+        <mkdir dir="build/classes"/>
+        <javac srcdir="src" destdir="build/classes"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">          
           <classpath refid="basecp"/>
@@ -42,13 +43,10 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="jar" depends="compile">      
         <jar jarfile="lib/xtest-jvm-plugin.jar"            
-            basedir="src"
-            excludesfile="${nball.cvs.root}/nbbuild/standard-jar-excludes.txt"
+            basedir="build/classes"
+            excludesfile="../../../nbbuild/standard-jar-excludes.txt"
             compress="false">
             <include name="org/netbeans/xtest/plugin/jvm/**"/>
-            <!-- XTestErrorManager has problems - temporarily disabling it
-            <include name="META-INF/services/org.openide.ErrorManager"/>
-            -->
         </jar>
     </target>
     
@@ -64,11 +62,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="clean">
         <delete dir="${plugin.install.dir}"/>    
         <delete file="lib/xtest-jvm-plugin.jar"/>
-        <delete>
-            <fileset dir="src">
-                <include name="**/*.class"/>
-            </fileset>        
-        </delete>    
+        <delete dir="build"/>
     </target>
     
 </project>
