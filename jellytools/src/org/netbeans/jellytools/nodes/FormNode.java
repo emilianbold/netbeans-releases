@@ -51,7 +51,6 @@ public class FormNode extends Node {
 
     static final OpenAction openAction = new OpenAction();
     static final EditAction editAction = new EditAction();
-    static final CustomizeBeanAction customizeBeanAction = new CustomizeBeanAction();
     static final CompileAction compileAction = new CompileAction();
     static final BuildAction buildAction = new BuildAction();
     static final ExecuteAction executeAction = new ExecuteAction();
@@ -71,7 +70,6 @@ public class FormNode extends Node {
         verifyPopup(new Action[]{
             openAction,
             editAction,
-            customizeBeanAction,
             compileAction,
             buildAction,
             executeAction,
@@ -109,11 +107,6 @@ public class FormNode extends Node {
     /** performs EditAction with this node */    
     public void edit() {
         editAction.perform(this);
-    }
-
-    /** performs CustomizeBeanAction with this node */    
-    public void customizeBean() {
-        customizeBeanAction.perform(this);
     }
 
     /** performs CompileAction with this node */    

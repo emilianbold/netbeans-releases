@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,39 +22,23 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 /** Node representing Java source */
 public class JavaNode extends Node {
     
-    /** creates new JavaNode in Filesystems Repository
-     * @param treePath String tree path */    
-    public JavaNode(String treePath) {
-       super(new RepositoryTabOperator().tree(), treePath);
-    }
-
-    /** creates new JavaNode
+    /** Finds Java Node in given tree.
      * @param treeOperator JTreeOperator tree
-     * @param treePath String tree path */    
-    public JavaNode(JTreeOperator treeOperator, String treePath) {
-       super(treeOperator, treePath);
-    }
-
-    /** creates new JavaNode
-     * @param parent parent Node
-     * @param treeSubPath String tree path from parent node */    
-    public JavaNode(Node parent, String treeSubPath) {
-       super(parent, treeSubPath);
-    }
-
-    /** creates new JavaNode
-     * @param treeOperator JTreeOperator tree
-     * @param path TreePath */    
-    public JavaNode(JTreeOperator treeOperator, TreePath path) {
+     * @param path path to node from root (e.g. MyProject|src|mypackage|MyClass)
+     */    
+    public JavaNode(JTreeOperator treeOperator, String path) {
        super(treeOperator, path);
     }
 
+    /** Finds java node under given parent node.
+     * @param parent parent Node
+     * @param subPath path from parent node (e.g. mypackage|MyClass)
+     */    
+    public JavaNode(Node parent, String subPath) {
+       super(parent, subPath);
+    }
+
     static final OpenAction openAction = new OpenAction();
-    static final CustomizeBeanAction customizeBeanAction = new CustomizeBeanAction();
-    static final CompileAction compileAction = new CompileAction();
-    static final BuildAction buildAction = new BuildAction();
-    static final ExecuteAction executeAction = new ExecuteAction();
-    static final CleanAction cleanAction = new CleanAction();
     static final CutAction cutAction = new CutAction();
     static final CopyAction copyAction = new CopyAction();
     static final PasteAction pasteAction = new PasteAction();
@@ -69,11 +53,6 @@ public class JavaNode extends Node {
     public void verifyPopup() {
         verifyPopup(new Action[]{
             openAction,
-            customizeBeanAction,
-            compileAction,
-            buildAction,
-            executeAction,
-            cleanAction,
             cutAction,
             copyAction,
             pasteAction,
@@ -86,47 +65,9 @@ public class JavaNode extends Node {
         });
     }
     
-/*   protected static final Action[] javaActions = new Action[] {
-        cutAction,
-        copyAction,
-        deleteAction,
-        compileAction,
-        buildAction,
-        executeAction
-    };
-    
-    Action[] getActions() {
-        return javaActions;
-    }*/
-
     /** performs OpenAction with this node */    
     public void open() {
         openAction.perform(this);
-    }
-
-    /** performs CustomizeBeanAction with this node */    
-    public void customizeBean() {
-        customizeBeanAction.perform(this);
-    }
-
-    /** performs CompileAction with this node */    
-    public void compile() {
-        compileAction.perform(this);
-    }
-
-    /** performs BuildAction with this node */    
-    public void build() {
-        buildAction.perform(this);
-    }
-
-    /** performs ExecuteAction with this node */    
-    public void execute() {
-        executeAction.perform(this);
-    }
-
-    /** performs CleanAction with this node */    
-    public void clean() {
-        cleanAction.perform(this);
     }
 
     /** performs CutAction with this node */    
@@ -173,5 +114,4 @@ public class JavaNode extends Node {
     public void properties() {
         propertiesAction.perform(this);
     }
-   
 }

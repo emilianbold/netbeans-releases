@@ -15,16 +15,17 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** Used to call "Window|Projects" main menu item.
+/** Used to call "Window|Files" main menu item.
  * @see Action
- * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
-public class ProjectViewAction extends Action {
-    private static final String projectMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")
+ * @author Jiri.Skrivanek@sun.com
+ */
+public class FilesViewAction extends Action {
+    private static final String filesMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window")
                                            + "|"
-                                           + Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "LBL_ProjectsLogicalTabAction_Name");
+                                           + Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "LBL_projectTab_tc");
 
-    /** creates new ProjectViewAction instance */    
-    public ProjectViewAction() {
-        super(projectMenu, null);
+    /** creates new FilesViewAction instance */    
+    public FilesViewAction() {
+        super(filesMenu, null);
     }
 }

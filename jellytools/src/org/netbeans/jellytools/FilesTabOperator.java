@@ -14,54 +14,53 @@
 package org.netbeans.jellytools;
 
 import java.awt.Component;
-import org.netbeans.jellytools.actions.ProjectViewAction;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jellytools.actions.FilesViewAction;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
-/** Operator handling Projects TopComponent.<p>
+/** Operator handling Files TopComponent.<p>
  * Functionality related to Projects tree is delegated to JTreeOperator (method
- * tree()) and nodes (method getRootNode()).<p>
+ * tree()) and nodes (method getProjectNode()).<p>
  *
  * Example:<p>
  * <pre>
- *      ProjectsTabOperator pto = new ProjectsTabOperator();
- *      // or when Projects pane is not already opened
- *      //ProjectsTabOperator pto = ProjectsTabOperator.invoke();
+ *      FilesTabOperator fto = new FilesTabOperator();
+ *      // or when Files pane is not already opened
+ *      FilesTabOperator fto = FilesTabOperator.invoke();
  *      
  *      // get the tree if needed
- *      JTreeOperator tree = pto.tree();
+ *      JTreeOperator tree = fto.tree();
  *      // work with nodes
- *      ProjectRootNode prn = pto.getProjectRootNode("SampleProject").select();
- *      Node node = new Node(prn, "subnode|sub subnode");
+ *      Node projectNode = fto.getProjectNode("SampleProject").select();
+ *      Node node = new Node(projectNode, "subnode|sub subnode");
  * </pre> 
  *
- * @see ProjectViewAction
- * @see ProjectRootNode
+ * @see FilesViewAction
  */
-public class ProjectsTabOperator extends TopComponentOperator {
+public class FilesTabOperator extends TopComponentOperator {
     
-    static final String PROJECT_CAPTION = Bundle.getStringTrimmed(
+    static final String FILES_CAPTION = Bundle.getStringTrimmed(
                                             "org.netbeans.modules.project.ui.Bundle", 
-                                            "LBL_projectTabLogical_tc");
-    private static final ProjectViewAction viewAction = new ProjectViewAction();
+                                            "LBL_projectTab_tc");
+    private static final FilesViewAction viewAction = new FilesViewAction();
     
     private JTreeOperator _tree;
     
-    /** Search for Projects TopComponent within all IDE. */
-    public ProjectsTabOperator() {
-        super(waitTopComponent(null, PROJECT_CAPTION, 0, new ProjectsTabSubchooser()));
+    /** Search for Files TopComponent within all IDE. */
+    public FilesTabOperator() {
+        super(waitTopComponent(null, FILES_CAPTION, 0, new FilesTabSubchooser()));
     }
 
-    /** invokes Projects and returns new instance of ProjectsTabOperator
-     * @return new instance of ProjectsTabOperator */    
-    public static ProjectsTabOperator invoke() {
+    /** invokes Files and returns new instance of FilesTabOperator
+     * @return new instance of FilesTabOperator */
+    public static FilesTabOperator invoke() {
         viewAction.perform();
-        return new ProjectsTabOperator();
+        return new FilesTabOperator();
     }
     
-    /** Getter for Projects JTreeOperator
+    /** Getter for Files JTreeOperator
      * @return JTreeOperator of Projects tree */    
     public JTreeOperator tree() {
         makeComponentVisible();
@@ -71,11 +70,12 @@ public class ProjectsTabOperator extends TopComponentOperator {
         return _tree;
     }
 
-    /** Gets ProjectRootNode
+    /** Gets node representing a project.
      * @param projectName display name of project
-     * @return ProjectsRootNode */    
-    public ProjectRootNode getProjectRootNode(String projectName) {
-        return new ProjectRootNode(tree(), projectName);
+     * @return Node instance representing the project specified by name
+     */
+    public Node getProjectNode(String projectName) {
+        return new Node(tree(), projectName);
     }
 
     /** Performs verification by accessing all sub-components */    
@@ -84,16 +84,16 @@ public class ProjectsTabOperator extends TopComponentOperator {
     }
     
     /** SubChooser to determine TopComponent is instance of 
-     * org.netbeans.modules.projects.ui.ProjectTab
+     * org.netbeans.modules.project.ui.ProjectTab
      * Used in constructor.
      */
-    private static final class ProjectsTabSubchooser implements ComponentChooser {
+    private static final class FilesTabSubchooser implements ComponentChooser {
         public boolean checkComponent(Component comp) {
             return comp.getClass().getName().endsWith("ProjectTab");
         }
         
         public String getDescription() {
-            return "org.netbeans.modules.projects.ui.ProjectTab";
+            return "org.netbeans.modules.project.ui.ProjectTab";
         }
     }
 }
