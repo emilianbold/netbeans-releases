@@ -116,6 +116,7 @@ is divided into following sections:
                 <condition property="no.javadoc.preview">
                     <isfalse value="${{javadoc.preview}}"/>
                 </condition>
+                <available file="${{meta.inf}}/MANIFEST.MF" property="has.custom.manifest"/>
             </target>
 
             <target name="post-init">
@@ -427,7 +428,7 @@ is divided into following sections:
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
                     </xsl:variable>
-                    <copyfiles todir="${{build.web.dir}}">
+                    <copyfiles todir="${{build.classes.dir}}">
                         <xsl:attribute name="files">${<xsl:value-of select="$included.prop.name"/>}</xsl:attribute>
                      </copyfiles>
                 </xsl:for-each>   
@@ -555,14 +556,27 @@ is divided into following sections:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
-            <target name="do-dist">
+            <target name="do-dist-with-manifest">
                 <xsl:attribute name="depends">init,compile,pre-dist,library-inclusion-in-archive</xsl:attribute>
+                <xsl:attribute name="if">has.custom.manifest</xsl:attribute>
+                <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
+                <mkdir dir="${{dist.jar.dir}}"/>
+                <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}" manifest="${{build.classes.dir}}/META-INF/MANIFEST.MF">
+                    <fileset dir="${{build.classes.dir}}"/>
+                </jar>
+            </target>
+            
+            <target name="do-dist-without-manifest">
+                <xsl:attribute name="depends">init,compile,pre-dist,library-inclusion-in-archive</xsl:attribute>
+                <xsl:attribute name="unless">has.custom.manifest</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
                     <fileset dir="${{build.classes.dir}}"/>
                 </jar>
             </target>
+            
+            <target name="do-dist" depends="init,compile,pre-dist,library-inclusion-in-archive, do-dist-without-manifest, do-dist-with-manifest"/>
 
             <target name="do-ear-dist">
                 <xsl:attribute name="depends">init,compile,pre-dist,library-inclusion-in-manifest</xsl:attribute>
