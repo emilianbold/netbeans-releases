@@ -20,7 +20,7 @@ public class BrokenReferencesAlertPanel extends JPanel {
     
     public BrokenReferencesAlertPanel() {
         initComponents();
-        again.setSelected(JavaSettings.getDefault().isShowAgainBrokenRefAlert());
+        notAgain.setSelected(!JavaSettings.getDefault().isShowAgainBrokenRefAlert());
     }
     
     /** This method is called from within the constructor to
@@ -31,36 +31,17 @@ public class BrokenReferencesAlertPanel extends JPanel {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        message = new javax.swing.JTextArea();
-        again = new javax.swing.JCheckBox();
+        notAgain = new javax.swing.JCheckBox();
+        message = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(350, 100));
-        jScrollPane1.setBorder(null);
-        message.setEditable(false);
-        message.setLineWrap(true);
-        message.setText(org.openide.util.NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References"));
-        message.setWrapStyleWord(true);
-        message.setOpaque(false);
-        jScrollPane1.setViewportView(message);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 0);
-        add(jScrollPane1, gridBagConstraints);
-
-        again.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(again, org.openide.util.NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Again"));
-        again.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(notAgain, org.openide.util.NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Again"));
+        notAgain.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        notAgain.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                againActionPerformed(evt);
+                notAgainActionPerformed(evt);
             }
         });
 
@@ -70,19 +51,29 @@ public class BrokenReferencesAlertPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 11, 0, 0);
-        add(again, gridBagConstraints);
+        add(notAgain, gridBagConstraints);
+
+        message.setText(org.openide.util.NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 0);
+        add(message, gridBagConstraints);
 
     }//GEN-END:initComponents
 
-    private void againActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_againActionPerformed
-        JavaSettings.getDefault().setShowAgainBrokenRefAlert(again.isSelected());
-    }//GEN-LAST:event_againActionPerformed
+    private void notAgainActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_notAgainActionPerformed
+        JavaSettings.getDefault().setShowAgainBrokenRefAlert(!notAgain.isSelected());
+    }//GEN-LAST:event_notAgainActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox again;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea message;
+    private javax.swing.JLabel message;
+    private javax.swing.JCheckBox notAgain;
     // End of variables declaration//GEN-END:variables
 
 
