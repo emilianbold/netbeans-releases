@@ -48,16 +48,11 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     
     private static final String AS_SETUP_DIR    = "as_setup";
     private static final String STATE_FILE_NAME = "statefile";
-    private static final String UNINST_DIRECTORY_NAME = "_uninst";
+    public static final String UNINST_DIRECTORY_NAME = "_uninst";
     protected static final String IMAGE_DIRECTORY_NAME = "SunAppServer8.1";
     protected static final String JDK_DIRECTORY_NAME = "java";
     protected static final String POINTBASE_DIRECTORY_NAME = "pointbase";
     
-    //protected static final String AS_EXEC_NAME_WINDOWS = "sjsas_pe-8_0-windows.exe";
-    //protected static final String AS_EXEC_NAME_LINUX   = "sjsas_pe-8_0-linux.bin";
-    //protected static final String AS_EXEC_NAME_SPARC   = "sjsas_pe-8_0-solaris-sparc.bin";
-    //protected static final String AS_EXEC_NAME_X86     = "sjsas_pe-8_0-solaris-i586.bin";
-
     private static final String INSTALL_SH    = "custom-install.sh";
     private static final String UNINSTALL_SH  = "custom-uninstall.sh";
     private static final String INSTALL_BAT   = "custom-install.bat";
@@ -120,17 +115,20 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     throws Exception{
         ProductService pservice = (ProductService)getService(ProductService.NAME);
         String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
-        nbInstallDir = resolveString((String)pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation")) + File.separator;
-        instDirPath = nbInstallDir + UNINST_DIRECTORY_NAME;
+        nbInstallDir = resolveString((String)pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation"));
+        instDirPath = nbInstallDir + File.separator + UNINST_DIRECTORY_NAME;
         logEvent(this, Log.DBG,"instDirPath: "+ instDirPath);
-        imageDirPath  = nbInstallDir + IMAGE_DIRECTORY_NAME;
+        imageDirPath  = nbInstallDir + File.separator + IMAGE_DIRECTORY_NAME;
 	asSetupDirPath = instDirPath + File.separator + AS_SETUP_DIR;
 	if (Util.isWindowsOS()) {
 	    statefilePath = asSetupDirPath + File.separator + STATE_FILE_NAME;
 	} else {
 	    statefilePath = instDirPath + File.separator + STATE_FILE_NAME;
 	}
-        jdkDirPath = resolveString("$J(java.home)");
+        statefilePath = instDirPath + File.separator + STATE_FILE_NAME;
+        logEvent(this, Log.DBG,"statefilePath: "+ statefilePath);
+        //Set JDK selected in JDKSearchPanel. It will be used to run AS Installer.
+        jdkDirPath = Util.getJdkHome();
         logEvent(this, Log.DBG,"jdkDirPath: "+ jdkDirPath);
 
         // Get port information
@@ -227,7 +225,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             statusDesc = resolveString("$L(com.sun.installer.InstallerResources,AS_CLEAN_INST_DIR_DESCRIPTION)");
             mutableOperationState.setStatusDescription(statusDesc);
 
-            if (cleanInstDir) {
+            /*if (cleanInstDir) {
 		if (Util.isWindowsOS()) {
 		    Util.deleteDirectory(new File(asSetupDirPath), this);
 		    mutableOperationState.setStatusDescription("");
@@ -260,7 +258,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 			}
 		    }
 		}
-	    }
+	    }*/
             removeAppserverFromAddRemovePrograms();
             cleanAppserverStartMenu();
 
@@ -974,9 +972,9 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         
 	String logfile;
 	if (scriptType == INSTALL) {
-	    logfile = "install.log";
+	    logfile = "as-install.log";
 	} else {
-	    logfile = "uninstall.log";
+	    logfile = "as-uninstall.log";
 	}
         String installerName = findASInstaller();
 	// Replace the script variables with real values
@@ -1019,7 +1017,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             } else if (line.startsWith("SET STATEFILE")) {
                 line = "SET STATEFILE=\"" + statefilePath + "\"";
             } else if (line.startsWith("SET LOGFILE")) {
-                line = "SET LOGFILE=\"" + nbInstallDir + logfileName + "\"";
+                line = "SET LOGFILE=\"" + instDirPath + File.separator + logfileName + "\"";
             } else if (line.startsWith("SET TMPDIR")) {
                 line = "SET TMPDIR=\"" + tmpDir + "\"";
             } else if (line.startsWith("SET DRIVE")) {
@@ -1045,7 +1043,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             } else if (line.startsWith("STATEFILE")) {
                 line = "STATEFILE=" + statefilePath;
             } else if (line.startsWith("LOGFILE")) {
-                line = "LOGFILE=" + nbInstallDir + logfileName;
+                line = "LOGFILE=" + instDirPath + File.separator + logfileName;
             } else if (line.startsWith("TMPDIR")) {
                 line = "TMPDIR=" + tmpDir;
             } else if (line.startsWith("JAVAHOME")) {
@@ -1058,7 +1056,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     private String findASInstaller () {
 	String installerName = null;
 	String arch = (String) System.getProperty("os.arch");
-        File installDirFile = new File(nbInstallDir);
+        File installDirFile = new File(instDirPath);
         logEvent(this, Log.DBG, "createInstallScript installDirFile: " + installDirFile);
         File [] children = installDirFile.listFiles();
         if (Util.isWindowsOS()) {
@@ -1110,7 +1108,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     }
     
     private boolean createJ2EESDKPropertiesFile() {
-	String filename = nbInstallDir + J2EESDK_PROP_FILE; 
+	String filename = nbInstallDir + File.separator + J2EESDK_PROP_FILE; 
         File file = new File(filename);
 	logEvent(this, Log.DBG, "Creating J2SDKEE properties file: " + 
 		 file.getAbsolutePath());
