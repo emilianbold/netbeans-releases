@@ -1,7 +1,10 @@
-i18n/**/Bundle.properties
-i18n/**/*.html
-i18n/**/*.gif
-i18n/**/*.template
-exclude i18n/**/package.html
-exclude i18n/www/**
-exclude i18n/test/**
+i18n/src/**/Bundle.properties
+i18n/src/**/*.html
+i18n/src/**/*.gif
+i18n/src/**/*.template
+i18n/form/src/**/Bundle.properties
+i18n/form/src/**/*.html
+i18n/form/src/**/*.gif
+i18n/form/src/**/*.template
+exclude i18n/src/**/package.html
+exclude i18n/form/src/**/package.html
