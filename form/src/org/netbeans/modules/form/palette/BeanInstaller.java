@@ -16,6 +16,7 @@ package com.netbeans.developer.modules.loaders.form.palette;
 import java.io.*;
 import java.awt.*;
 import java.util.*;
+import java.util.jar.*;
 import java.beans.PropertyVetoException;
 import java.text.MessageFormat;
 import java.awt.event.MouseAdapter;
@@ -25,8 +26,8 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
 
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.filesystems.JarFileSystem;
+import com.netbeans.ide.*;
+import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.util.NbBundle;
 
 /** Bean Installer
@@ -34,30 +35,33 @@ import com.netbeans.ide.util.NbBundle;
 * @author Petr Hamernik
 */
 public final class BeanInstaller extends Object {
-  
-  ResourceBundle bundle = NbBundle.getBundle(BeanInstaller.class);
 
+  /** Text resources */
+  static final ResourceBundle bundle = NbBundle.getBundle(BeanInstaller.class);
+
+  /** Last opened directory */
   private static String lastDirectory;
-
-  /*
+  
+  /** Borders used in dialogs */
   static final Border hasFocusBorder;
   static final Border noFocusBorder;
 
+  /** Initialize static fields */
   static {
     hasFocusBorder = new LineBorder(UIManager.getColor("List.focusCellHighlight"));
     noFocusBorder = new EmptyBorder(1, 1, 1, 1);
     lastDirectory = null;
-  }*/
+  }
 
   /** Extension of jar archive where to find module */
-  private static String JAR_EXT = ".jar";
+  static String JAR_EXT = ".jar";
 
   //==============================================================================
   // Installing new beans - user action.
   //==============================================================================
   
-  /** Opens the FileOpenDialog for the selection of Jar file and install the selected
-  * module into the system.
+  /** Open the FileOpenDialog for the selection of Jar file and
+  * install the selected module into the system.
   */
   public static void installBean() {
     String fileName = selectJarModule();
@@ -65,48 +69,77 @@ public final class BeanInstaller extends Object {
     if (fileName != null) {
       JarFileSystem jar = createJarForName(fileName);
       if (jar == null) {
-/*        TopManager.getDefault().notify(
-          new NotifyDescriptor.Message(topBundle.getString("MSG_ErrorInFile"),
-                                       NotifyDescriptor.ERROR_MESSAGE)
-          );*/
+        TopManager.getDefault().notify(new NotifyDescriptor.Message(
+          bundle.getString("MSG_ErrorInFile"), NotifyDescriptor.ERROR_MESSAGE)
+        );
       }
       else {
-//        JarFileSystem jar2 = (JarFileSystem) Repository.getDefault().findFileSystem(jar.getSystemName());
-//        if (jar2 != null)
-//          jar = jar2;
-
+        boolean alreadyInstalled = false;
+        Repository rep = TopManager.getDefault().getRepository();
+        JarFileSystem jar2 = (JarFileSystem) rep.findFileSystem(jar.getSystemName());
+        if (jar2 != null) {
+          alreadyInstalled = true;
+          jar = jar2;
+        }
+        
+        LinkedList list = findJavaBeans(jar);
+        
         /*
         BeanSelector sel = new BeanSelector(findJavaBeans(jar));
         sel.show();
-        if (sel.getSelectedBeans ().size () == 0) return;
-
-        PaletteCategory pal = selectPaletteCategory();
-        if (pal != null)
-          finishInstall(jar, sel.getSelectedBeans(), pal, false);
         */
+        if (list.size() == 0)
+          return;
+
+        if (!alreadyInstalled) {
+          jar.setHidden(true);
+          rep.addFileSystem(jar);
+        }
+
+        finishInstall(jar, list);
+        TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                                                                    "Changes in the component palette will only take effect after Netbeans Developer have been restarted",
+                                                                    NotifyDescriptor.INFORMATION_MESSAGE)
+        );
+                      
+/*        PaletteCategory pal = selectPaletteCategory();
+        if (pal != null)
+          finishInstall(jar, sel.getSelectedBeans(), pal, false);*/
       }
     }
   }
 
-  /** Scans all files with attributes in the given jar.
-  * @return Vector of founded beans.
+  /** Scan all files with attributes in the given jar.
+  * @return LinkedList of founded beans.
   */
+  private static LinkedList findJavaBeans(JarFileSystem jar) {
+    LinkedList foundJB = new LinkedList();
 
-  /*
-  private static Vector findJavaBeans(JarFileSystem jar) {
-    Vector foundJB = new Vector();
     // Looking for the beans
-    Enumeration en = jar.filesWithAttributes();
-    while (en.hasMoreElements()) {
-      FileObject fo = (FileObject) en.nextElement();
-      Enumeration attrs = fo.getAttributes();
-      while (attrs.hasMoreElements()) {
-        String key = (String) attrs.nextElement();
-        if (key.equalsIgnoreCase("Java-Bean")) {
-          String value = (String) fo.getAttribute(key);
-          if ((value != null) && (value.equalsIgnoreCase("True"))) {
-            foundJB.addElement(fo);
-            break;
+    Manifest manifest = jar.getManifest();
+    Map entries = manifest.getEntries();
+
+    Iterator it = entries.keySet().iterator();
+    while (it.hasNext()) {
+      String key = (String) it.next();
+      String value = ((Attributes) entries.get(key)).getValue("Java-Bean");
+      if ((value != null) && value.equalsIgnoreCase("True")) {
+        if (key.endsWith(".class")) {
+          String wholeName = key.substring(0, key.length() - 6).replace('/', '.').replace('\\', '.');
+          int lastDot = wholeName.lastIndexOf('.');
+          String pack;
+          String name;
+          if (lastDot == -1) {
+            pack = "";
+            name = wholeName;
+          }
+          else {
+            pack = wholeName.substring(0, lastDot);
+            name = wholeName.substring(lastDot + 1);
+          }
+          FileObject fo = jar.find(pack, name, "class");
+          if (fo != null) {
+            foundJB.add(fo);
           }
         }
       }
@@ -120,43 +153,52 @@ public final class BeanInstaller extends Object {
   * @param pal palettecategory where to place beans.
   * @param sync - if installing has to be synchronized or
   * using RequestProcessor.postRequest
-  *
-  private static void finishInstall(JarFileSystem jar, final Vector v,
-                                    final PaletteCategory pal, boolean sync) {
-    if (v.size() == 0)
+  */
+  private static void finishInstall(JarFileSystem jar, final LinkedList list) {
+    FileObject root = TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot();
+    FileObject paletteFolder = root.getFileObject ("Palette");
+    if (paletteFolder == null) {
       return;
+    }
 
-    jar.setHidden(true);
-    FileSystemPool.getDefault().addFileSystem(jar);
+    FileObject beansCategory = paletteFolder.getFileObject("Beans");
+    if (beansCategory == null) {
+      return;
+    }
+    
 
-    final ProgressDialog progress = new ProgressDialog(topBundle.getString ("CTL_InstallingBeanTitle"), 0, v.size());
-    final String progressLabel = topBundle.getString ("CTL_FMT_InstallingBean");
-
+    
+    /*
     progress.setLabel(MessageFormat.format(progressLabel, new Object[] { "" }));
     progress.center();
     progress.show();
+    */
+    
+/*    Runnable task = new Runnable() {
+public void run() {*/
+    
+          ClassLoader loader = TopManager.getDefault().currentClassLoader();
+          Iterator it = list.iterator();
+          LinkedList paletteNodes = new LinkedList();
 
-    Runnable task = new Runnable() {
-      public void run() {
-        try {
-          ClassLoader loader = TopManager.getDefault ().currentClassLoader();
-          Enumeration selEn = v.elements();
-          Vector paletteNodes = new Vector ();
-
-          while (selEn.hasMoreElements()) {
-            FileObject fo = (FileObject) selEn.nextElement();
-            progress.setLabel(MessageFormat.format(progressLabel, new Object[] { fo.getName() }));
-            progress.inc();
+          while (it.hasNext()) {
+            FileObject fo = (FileObject) it.next();
+            String name = fo.getPackageName('.');
+            createInstance(beansCategory, name, null);
+          }
+//            progress.setLabel(MessageFormat.format(progressLabel, new Object[] { fo.getName() }));
+//            progress.inc();
+            /*
             try {
-              Object o = java.beans.Beans.instantiate (loader, fo.getPackageName('.'));
+              Object o = java.beans.Beans.instantiate(loader, fo.getPackageName('.'));
               if (o == null) {
                 notifyNotFound(fo.getPackageName ('.'));
                 break;
               }  
               Class cl = o.getClass ();
-              PaletteNode n = new PaletteNode (cl, fo.getPackageName ('.'));
-              n.getIcon(); // resolving Icon invokes loading class.
-              paletteNodes.addElement (n);
+//              PaletteNode n = new PaletteNode (cl, fo.getPackageName ('.'));
+//              n.getIcon(); // resolving Icon invokes loading class.
+//              paletteNodes.addElement (n);
             }
             catch (ClassNotFoundException e) {
               if (e.getMessage () != null)
@@ -177,33 +219,62 @@ public final class BeanInstaller extends Object {
               break;
             }
           }
-          progress.setLabel(topBundle.getString ("CTL_UpdatingPalette"));
-          progress.inc ();
+//          progress.setLabel(topBundle.getString ("CTL_UpdatingPalette"));
+//          progress.inc ();
+          /*
           Node[] addNodes = new Node[paletteNodes.size ()];
           paletteNodes.copyInto (addNodes);
           pal.add(addNodes);
-        }
-        finally {
-          progress.setVisible (false);
-          progress.dispose();
-        }
-      }
-    };
-    if (sync) {
+          */
+//        }
+//        finally {
+//          progress.setVisible (false);
+//          progress.dispose();
+//        }
+//      }
+//    };
+/*    if (sync) {
       task.run();
     }
     else {
       RequestProcessor.postRequest(task);
+    }*/
+  }
+
+  private static void createInstance(FileObject folder, String className, String iconName) {
+    String fileName = formatName(className);
+    FileLock lock = null;
+    try {
+      if (folder.getFileObject(fileName+".instance") == null) {
+        FileObject fo = folder.createData(fileName, "instance");
+        if (iconName != null) {
+          lock = fo.lock ();
+          java.io.OutputStream os = fo.getOutputStream (lock);
+          String ic = "icon="+iconName;
+          os.write (ic.getBytes ());
+        }
+      }
+    }
+    catch (java.io.IOException e) {
+      e.printStackTrace();
+    }
+    finally {
+      if (lock != null) {
+        lock.releaseLock ();
+      }
     }
   }
 
-  static void notifyNotFound(String what) {
-    String message = new MessageFormat(
-      Utilities.getMultiLineString(topBundle, "ERR_ClassNotFound")).format(
-        new Object[] { what }
-    );
-    TopManager.getDefault().notify(new NotifyDescriptor.Exception(new Exception(), message));
+  private static String formatName (String className) {
+    String ret = className.substring(className.lastIndexOf (".") + 1) + "[" + className.replace ('.', '-') + "]";
+    return ret;
   }
+
+  /*
+  static void notifyNotFound(String what) {
+    String message = new MessageFormat(bundle.getString("ERR_ClassNotFound")).format(new Object[] { what });
+    TopManager.getDefault().notify(new NotifyDescriptor.Exception(new Exception(), message));
+  } */
 
   /** Opens dialog and lets user select category, where beans should be installed
   *
@@ -213,12 +284,14 @@ public final class BeanInstaller extends Object {
     return sel.getSelectedCategory();
   }*/
 
-  /** This method open java.awt.FileDialog and selects the jar file with the module.
+  /** This method open java.awt.FileDialog and selects
+  * the jar file with the module.
+  *
   * @return filename or null if operation was cancelled.
   */
   private static String selectJarModule() {
     FileDialog openDlg = new FileDialog(TopManager.getDefault().getWindowManager().getMainWindow(),
-                                        "select jar", //topBundle.getString("CTL_SelectJar"),
+                                        bundle.getString("CTL_SelectJar"),
                                         FileDialog.LOAD);
 
     openDlg.setFilenameFilter(new FilenameFilter() {
@@ -243,7 +316,9 @@ public final class BeanInstaller extends Object {
       return null;
   }
 
-  /** @return jar FS for the given name or null if some problems occured */
+  /**
+  * @return jar FS for the given name or null if some problems occured
+  */
   private static JarFileSystem createJarForName(String name) {
     try {
       JarFileSystem jar = new JarFileSystem();
@@ -379,7 +454,8 @@ public final class BeanInstaller extends Object {
       return true;
     }
   }
-    */
+  */
+  
   //==============================================================================
   // Inner classes
   //==============================================================================
@@ -621,6 +697,8 @@ public final class BeanInstaller extends Object {
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/17/99  Petr Hamernik   very simple version of 
+ *       Beans installer
  *  1    Gandalf   1.0         5/17/99  Petr Hamernik   
  * $
  * Beta Change History:
