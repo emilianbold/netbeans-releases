@@ -2,7 +2,7 @@ OpenIDE-Module: org.netbeans.modules.debugger.core/1
 OpenIDE-Module-Name: Debugger Core
 OpenIDE-Module-Install: org/netbeans/modules/debugger/support/DebuggerModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/debugger/resources/mf-layer.xml
-OpenIDE-Module-Specification-Version: 1.1.5
+OpenIDE-Module-Specification-Version: 1.1.6
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Module-Dependencies: org.openidex.util/1
 
