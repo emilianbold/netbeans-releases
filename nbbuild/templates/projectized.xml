@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
         <property file="nbproject/project.properties"/>
         <!-- Do not try to set module.classpath here, in particular: -->
         <!-- during a clean, the ${foo/bar.dir} properties may not be set. -->
-        <parseprojectxml project="." modulesxml="${nb_all}/nbbuild/templates/modules.xml" codenamebasedashesproperty="code.name.base.dashes" codenamebaseslashesproperty="code.name.base.slashes"/>
+        <parseprojectxml project="." modulesxml="${modulesxml.file}" codenamebasedashesproperty="code.name.base.dashes" codenamebaseslashesproperty="code.name.base.slashes"/>
         <property name="module.jar.dir" value="${nb.modules.dir}"/>
         <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="build-init" depends="basic-init">
-        <parseprojectxml project="." modulesxml="${nb_all}/nbbuild/templates/modules.xml" publicpackagesproperty="public.packages" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" moduleclasspathproperty="module.classpath" domainproperty="nbm.domain"/>
+        <parseprojectxml project="." modulesxml="${modulesxml.file}" publicpackagesproperty="public.packages" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" moduleclasspathproperty="module.classpath" domainproperty="nbm.domain"/>
         <condition property="is.regular">
             <not>
                 <or>
