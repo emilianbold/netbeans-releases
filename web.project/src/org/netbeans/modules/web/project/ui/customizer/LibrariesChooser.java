@@ -62,6 +62,8 @@ public class LibrariesChooser extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_LibrariesChooser_LibList_LabelMnemonic").charAt(0));
+        jLabel1.setLabelFor(jList1);
         jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("CTL_InstalledLibraries"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -74,6 +76,7 @@ public class LibrariesChooser extends javax.swing.JPanel {
         add(jLabel1, gridBagConstraints);
 
         jScrollPane1.setViewportView(jList1);
+        jList1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_LibrariesChooser_LibList_A11YDesc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -86,6 +89,7 @@ public class LibrariesChooser extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 12);
         add(jScrollPane1, gridBagConstraints);
 
+        edit.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_LibrariesChooser_Edit_LabelMnemonic").charAt(0));
         edit.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("CTL_EditLibraries"));
         edit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -101,6 +105,7 @@ public class LibrariesChooser extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 12, 12);
         add(edit, gridBagConstraints);
+        edit.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_LibrariesChooser_Edit_A11YDesc"));
 
     }//GEN-END:initComponents
 

@@ -70,6 +70,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
 
         setLayout(new java.awt.GridBagLayout());
 
+        jLabelName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_AACH_ProjectName_LabelMnemonic").charAt(0));
         jLabelName.setText(org.openide.util.NbBundle.getMessage(AntArtifactChooser.class, "LBL_AACH_ProjectName_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -85,7 +86,9 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
         add(jTextFieldName, gridBagConstraints);
+        jTextFieldName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_AACH_ProjectName_A11YDesc"));
 
+        jLabelJarFiles.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_AACH_ProjectJarFiles_LabelMnemonic").charAt(0));
         jLabelJarFiles.setText(org.openide.util.NbBundle.getMessage(AntArtifactChooser.class, "LBL_AACH_ProjectJarFiles_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -94,6 +97,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         add(jLabelJarFiles, gridBagConstraints);
 
         jScrollPane1.setViewportView(jListArtifacts);
+        jListArtifacts.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_AACH_ProjectJarFiles_A11YDesc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
