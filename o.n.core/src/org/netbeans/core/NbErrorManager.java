@@ -195,7 +195,7 @@ public final class NbErrorManager extends ErrorManager {
         //it is not - thus we check if *any* annotation is USER, rather than
         //that the highest level severity in the annotation is USER
         boolean wantStackTrace = severity != USER;
-        if (!wantStackTrace) {
+        if (wantStackTrace) {
             Annotation[] ann = findAnnotations(t);
             if (ann != null) {
                 for (int i=0; i < ann.length; i++) {
