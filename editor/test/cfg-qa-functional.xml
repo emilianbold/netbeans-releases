@@ -65,10 +65,10 @@ Microsystems, Inc. All Rights Reserved.
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest14iiunsorted" />
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiunsorted" />
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiiunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9iiunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9iiiunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10iiunsorted" />
-		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10iiiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9biiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9biiiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10biiunsorted" />
+		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10biiiunsorted" />
             </patternset>
         </testset>
     </testbag>
@@ -104,10 +104,10 @@ Microsystems, Inc. All Rights Reserved.
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest14iiunsorted" />
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiunsorted" />
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest8iiiunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9iiunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9iiiunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10iiunsorted" />
-		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10iiiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9biiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest9biiiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10biiunsorted" />
+		<include name="org/netbeans/test/editor/completion/*Performer.class/testjdk15CCTest10biiiunsorted" />
             </patternset>
         </testset>
     </testbag>
