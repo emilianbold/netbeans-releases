@@ -22,10 +22,9 @@ import org.netbeans.jemmy.Waiter;
 
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 /**
@@ -37,9 +36,10 @@ public class SearchResultsOperator extends NbFrameOperator {
 
     private static final long SEARCH_TIME = 600000;
 
-    private static final String title = Bundle.getString("org.netbeans.modules.search.Bundle",
+    private static final String TITLE = Bundle.getString("org.netbeans.modules.search.Bundle",
                                                          "TEXT_TITLE_SEARCH_RESULTS");
-
+    /** Used to temporary store default comparator */
+    private static StringComparator oldComparator;
     private JButtonOperator _btStop;
     private JButtonOperator _btShowDetails;
     private JButtonOperator _btModifySearch;
@@ -57,12 +57,23 @@ public class SearchResultsOperator extends NbFrameOperator {
      * Waits for window opened.
      */
     public SearchResultsOperator() {
-	super(title, 0, getSearchEnvironment());
+        super(getTitleToFind());
+        setDefaultStringComparator(oldComparator);
         copyEnvironment(Operator.getEnvironmentOperator());
     }
 
     static {
 	Timeouts.initDefault("SearchResultsOperator.SearchTime", SEARCH_TIME);
+    }
+
+    /** Method to set exactly matching comparator to be used in constructor.
+     * @return "Search Results" - title of window to be found
+     */
+    private static String getTitleToFind() {
+        oldComparator = Operator.getDefaultStringComparator();
+        DefaultStringComparator comparator = new DefaultStringComparator(true, true);
+        setDefaultStringComparator(comparator);
+        return TITLE; 
     }
 
     //component access    
@@ -315,12 +326,6 @@ public class SearchResultsOperator extends NbFrameOperator {
         } catch(InterruptedException e) {
             throw(new JemmyException("Waiting has been interrupted", e));
         }
-    }
-
-    private static Operator getSearchEnvironment() {
-        Operator result = Operator.getEnvironmentOperator();
-        result.setComparator(new DefaultStringComparator(true, false));
-        return(result);
     }
 
     /** Performs verification by accessing all sub-components */    
