@@ -344,6 +344,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module lexer..."/>
     <ant dir="../lexer" target="netbeans"/>
   </target>
+  <target name="all-lexer/editorbridge" depends="all-openide,all-editor,all-lexer">
+    <echo message="Building module lexer/editorbridge..."/>
+    <ant dir="../lexer/editorbridge" target="netbeans"/>
+  </target>
   <target name="all-makefile" depends="all-openide">
     <echo message="Building module makefile..."/>
     <ant dir="../makefile" target="netbeans"/>
