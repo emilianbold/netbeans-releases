@@ -106,9 +106,20 @@ public final class MainWindow extends JFrame {
         JComponent tb = getToolbarComponent();
         
         getContentPane().add(tb, BorderLayout.NORTH);
-        JComponent status = StatusLine.createLabel();
-        status.setName("statusLine"); //NOI18N
-        getContentPane().add(status, BorderLayout.SOUTH);
+        
+        if(!Constants.SWITCH_STATUSLINE_IN_MENUBAR) {
+            JLabel status = new StatusLine();
+            // XXX #19910 Not to squeeze status line.
+            status.setText(" "); // NOI18N
+            status.setPreferredSize(new Dimension(0, status.getPreferredSize().height));
+
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.add(new JSeparator(), BorderLayout.NORTH);
+            panel.add(status, BorderLayout.CENTER);
+            panel.setName("statusLine"); //NOI18N
+            getContentPane().add(panel, BorderLayout.SOUTH);
+        }
+        
         // initialize desktop panel
         desktopPanel = new JPanel();
         desktopPanel.setBorder(getDesktopBorder());
@@ -167,6 +178,15 @@ public final class MainWindow extends JFrame {
         MenuBar menu = new MenuBar (null);
         menu.setBorderPainted(false);
         menu.waitFinished();
+        
+        if(Constants.SWITCH_STATUSLINE_IN_MENUBAR) {
+            JLabel status = new StatusLine();
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.add(new JSeparator(JSeparator.VERTICAL), BorderLayout.WEST);
+            panel.add(status, BorderLayout.CENTER);
+            panel.setName("statusLine"); //NOI18N
+            menu.add(panel);
+        }
         
         return menu;
     }

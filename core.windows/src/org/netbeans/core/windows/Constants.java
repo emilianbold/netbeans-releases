@@ -92,6 +92,9 @@ public abstract class Constants {
     /** Enables close button on old tabbed component, relevant only together with switches enabling the old tabs.. */
     public static final boolean SWITCH_CLOSE_BUTTON_TAB     =  System.getProperty("netbeans.tab.close.button.enabled") == null // NOI18N
                                                                ? true : Boolean.getBoolean("netbeans.tab.close.button.enabled"); // NOI18N
+    /** Shows the status line at the end of menu bar instead of at the bottom of main window. */
+    public static final boolean SWITCH_STATUSLINE_IN_MENUBAR = Boolean.getBoolean("netbeans.winsys.statusLine.in.menuBar"); // NOI18N
+
     /** Gets the image resource to be used in the empty editor area. */
     public static final String  SWITCH_IMAGE_SOURCE         = System.getProperty("netbeans.winsys.imageSource"); // NOI18N
     

@@ -13,10 +13,10 @@
 
 package org.netbeans.core.windows.view.ui;
 
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.WeakListeners;
@@ -26,9 +26,6 @@ import org.openide.util.WeakListeners;
 * @author Jaroslav Tulach, Jesse Glick
 */
 final class StatusLine extends JLabel implements ChangeListener, Runnable {
-    /** generated Serialized Version UID */
-    static final long serialVersionUID = -5644391883356409841L;
-    
     private StatusDisplayer d = StatusDisplayer.getDefault();
 
     /** Creates a new StatusLine with specified workspace switcher. */
@@ -49,21 +46,6 @@ final class StatusLine extends JLabel implements ChangeListener, Runnable {
     */
     public void run () {
         setText (d.getStatusText ());
-    }
-
-    public static JComponent createLabel () {
-        StatusLine statusText = new StatusLine ();
-
-        JPanel panel = new JPanel();
-        
-        // Not to squeeze status line, see #19910.
-        statusText.setText(" "); // NOI18N
-        statusText.setPreferredSize(new Dimension(0, statusText.getPreferredSize().height));
-        
-        panel.setLayout(new BorderLayout());
-        panel.add(new JSeparator(), BorderLayout.NORTH);
-        panel.add(statusText, BorderLayout.CENTER);
-        return panel;
     }
 
 }
