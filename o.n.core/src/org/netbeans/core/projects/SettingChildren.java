@@ -160,6 +160,39 @@ public final class SettingChildren extends FilterNode.Children {
         public PropertyEditor getPropertyEditor () {
             return new FileStateEditor ();
         }
+        
+        public String getShortDescription () {
+            Integer val = null;
+            String s = null;
+
+            if (primaryFile != null) {
+                try {
+                    val = (Integer) getValue ();
+                } catch (Exception e) {
+                    // ignore it, will be handled later
+                }
+
+                switch (val == null ? FileStateManager.FSTATE_UNDEFINED : val.intValue()) {
+                    case FileStateManager.FSTATE_DEFINED:
+                        s = NbBundle.getMessage (SettingChildren.class, "LBL_fstate_defined");
+                        break;
+                    case FileStateManager.FSTATE_IGNORED:
+                        s = NbBundle.getMessage (SettingChildren.class, "LBL_fstate_ignored");
+                        break;
+                    case FileStateManager.FSTATE_INHERITED:
+                        s = NbBundle.getMessage (SettingChildren.class, "LBL_fstate_inherited");
+                        break;
+                    default:
+                        // FileStateManager.FSTATE_UNDEFINED
+                        s = NbBundle.getMessage (SettingChildren.class, "LBL_fstate_undefined");
+                        break;
+                }
+            }
+            else {
+                s = super.getShortDescription ();
+            }
+            return s;
+        }
     }
 
     /** Read-only property indicating if specific setting is defined on Project layer. */
