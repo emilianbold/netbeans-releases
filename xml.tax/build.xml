@@ -53,6 +53,9 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${lib_root}/src"/>
                 <pathelement location="${api_root}/src/"/>
                 <pathelement location="../core/src/"/>
+                <fileset dir="${nbroot}/core/external">
+                    <include name="xml-apis*.jar"/>
+                </fileset>
             </classpath>
         </javac>
 
