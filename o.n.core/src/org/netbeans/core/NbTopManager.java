@@ -195,9 +195,11 @@ public abstract class NbTopManager /*extends TopManager*/ {
     public NbTopManager() {
         instanceContent = new InstanceContent ();
         instanceLookup = new AbstractLookup (instanceContent);
-        if (!(Lookup.getDefault() instanceof Lkp)) {
-            throw new ClassCastException("Wrong Lookup impl found: " + Lookup.getDefault());
+        Lookup lookup = Lookup.getDefault();
+        if (!(lookup instanceof Lkp)) {
+            throw new ClassCastException("Wrong Lookup impl found: " + lookup);
         }
+        ((Lkp)lookup).startedNbTopManager();
     }
 
     /** Getter for instance of this manager.
@@ -206,6 +208,20 @@ public abstract class NbTopManager /*extends TopManager*/ {
 //        return (NbTopManager)TopManager.getDefault ();
         return getNbTopManager();
     }
+    
+    /** Danger method for clients who think they want an NbTM but don't actually
+     * care whether it is ready or not. Should be removed eventually by getting
+     * rid of useless protected methods in this class, and using Lookup to find
+     * each configurable piece of impl.
+     * @return a maybe half-constructed NbTM
+     */
+    public static NbTopManager getUninitialized() {
+        if (defaultTopManager != null) {
+            return defaultTopManager;
+        }
+        // Not even started - so synch and get it.
+        return get();
+    }
         
     private static NbTopManager defaultTopManager; 
     
@@ -213,15 +229,9 @@ public abstract class NbTopManager /*extends TopManager*/ {
         return defaultTopManager != null;
     }
     
-    private static /*synchronized*/ NbTopManager getNbTopManager () {
-        // synchronization check
-        if (defaultTopManager != null) {
-            return defaultTopManager;
-        }
+    private static synchronized NbTopManager getNbTopManager () {
+        if (defaultTopManager == null) {
 
-        // XXX double check like it was in TopManager, otherwise led to deadlock at
-        // start, needs to be revised.
-        synchronized(NbTopManager.class) {
             String className = System.getProperty(
                                    "org.openide.TopManager", // NOI18N
                                    "org.netbeans.core.Plain" // NOI18N
@@ -239,9 +249,9 @@ public abstract class NbTopManager /*extends TopManager*/ {
             if (defaultTopManager instanceof Runnable) {
                 ((Runnable)defaultTopManager).run ();
             }
-
-            return defaultTopManager;
         }
+
+        return defaultTopManager;
     }
 
     /** Test method to check whether some level of interactivity is enabled.
@@ -579,8 +589,12 @@ public abstract class NbTopManager /*extends TopManager*/ {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
                         }
                         // save window system, [PENDING] remove this after the winsys will
-                        // persist its state automaticaly
-                        ((WindowManagerImpl)getDefaultWindowManager()).persistenceManager ().writeXML ();
+                        // persist its state automatically
+                        try {
+                            ((WindowManagerImpl)getDefaultWindowManager()).persistenceManager ().writeXML ();
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                        }
                         org.netbeans.core.projects.XMLSettingsHandler.saveOptions();
                         org.netbeans.core.projects.SessionManager.getDefault().close();
                     } catch (ThreadDeath td) {
@@ -775,12 +789,17 @@ public abstract class NbTopManager /*extends TopManager*/ {
     /** The default lookup for the system.
      */
     public static final class Lkp extends ProxyLookup {
-        /** task that initializes the lookup */
-        private Task initTask;
-        /** thread that initialized the task and has to recieve good results */
-        private Thread initThread;
+        private static boolean started = false;
         /** currently effective ClassLoader */
         private static ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        
+        /** Someone called NbTopManager.get().
+         * That means that subsequent calls to lookup on ModuleInfo
+         * need not try to get it again.
+         */
+        public static void startedNbTopManager() {
+            started = true;
+        }
         
         /** Initialize the lookup to delegate to NbTopManager.
         */
@@ -845,31 +864,10 @@ public abstract class NbTopManager /*extends TopManager*/ {
             Lookup lookup = Lookup.getDefault ();
 	    StartLog.logProgress ("Got Lookup"); // NOI18N
 
-            if (lookup instanceof Lkp) {
-                Lkp lkp = (Lkp)lookup;
-                lkp.initializeLookup ();
-                // Wait for the lookup initialization to better measure module startups
-                Task t;
-                synchronized (lkp) {
-                    t = lkp.initTask;
-                }
-                if (t != null) {
-                    t.waitFinished();
-                }
-            }
+            ((Lkp)lookup).doInitializeLookup ();
         }
         
-        private synchronized void initializeLookup () {
-            //System.err.println("initializeLookup");
-            initTask = RequestProcessor.getDefault().post (new Runnable () {
-                public void run () {
-                    doInitializeLookup ();
-                }
-            }, 0, Thread.MAX_PRIORITY);
-            initThread = Thread.currentThread();
-        }
-            
-        final void doInitializeLookup () {
+        private final void doInitializeLookup () {
             //System.err.println("doInitializeLookup");
             FileObject services = Repository.getDefault().getDefaultFileSystem()
                     .findResource("Services");
@@ -898,30 +896,15 @@ public abstract class NbTopManager /*extends TopManager*/ {
             StartLog.logProgress ("Lookups set"); // NOI18N
 
 	    //StartLog.logEnd ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
-            
-            synchronized (this) {
-                // clear the task again
-                initTask = null;
-                initThread = null;
-            }
         }
         
         protected void beforeLookup(Lookup.Template templ) {
-            Task t;
-            Thread h;
-            synchronized (this) {
-                t = initTask;
-                h = initThread;
-            }
-            
-            if (t != null && h == Thread.currentThread ()) {
-                t.waitFinished();
-            }
+            Class type = templ.getType();
             
             // Force module system to be initialize by looking up ModuleInfo.
             // Good for unit tests, etc.
-            if (templ.getType() == ModuleInfo.class || templ.getType() == Module.class) {
-                get();
+            if (!started && (type == ModuleInfo.class || type == Module.class)) {
+                NbTopManager.get();
             }
             
             super.beforeLookup(templ);

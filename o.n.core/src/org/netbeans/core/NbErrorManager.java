@@ -65,7 +65,7 @@ public final class NbErrorManager extends ErrorManager {
             if (logWriter != null) return logWriter;
         }
         
-        PrintWriter pw = NbTopManager.get ().createErrorLogger (minLogSeverity);
+        PrintWriter pw = NbTopManager.getUninitialized().createErrorLogger (minLogSeverity);
         
         synchronized (this) {
             if (logWriter == null) {
