@@ -3306,7 +3306,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   
   <target 
     name="commit-validation" 
-    depends="commitValidation,commit-verification,no-commit-validation" 
+    depends="commit-verification,commitValidation,no-commit-validation" 
     description="Runs tests to validate IDE before commit."
   />
 
