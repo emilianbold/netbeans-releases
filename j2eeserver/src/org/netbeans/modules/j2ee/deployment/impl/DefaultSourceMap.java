@@ -35,7 +35,7 @@ public class DefaultSourceMap extends SourceFileMap {
     
     /** Creates a new instance of DefaultFileMapping */
     public DefaultSourceMap(String name, FileObject[] roots) {
-        this.contextName = contextName;
+        this.contextName = name;
         this.roots = roots;
         for (int i=0; i<roots.length; i++) {
             rootFiles.add(FileUtil.toFile(roots[i]));
