@@ -26,9 +26,6 @@ import java.beans.*;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 import java.util.PropertyPermission;
-import javax.swing.JComponent;
-import org.openide.WizardDescriptor;
-import org.openide.util.Utilities;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Lookup;
 
@@ -347,7 +344,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
     * All API classes which can provide help contexts will be tested for
     * (including <code>HelpCtx</code> instances themselves).
     * <code>JComponent</code>s are checked for an attached help ID property,
-    * as with {@link HelpCtx#findHelp} (but not traversing parents).
+    * as with {@link HelpCtx#findHelp(java.awt.Component)} (but not traversing parents).
     * <p>Also, partial compliance with the JavaHelp section on JavaBeans help is implemented--i.e.,
     * if a Bean in its <code>BeanInfo</code> provides a <code>BeanDescriptor</code> which
     * has the attribute <code>helpID</code>, this will be returned. The value is not
@@ -365,25 +362,8 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
      * @deprecated use org.openide.util.HelpCtx.findHelp (Object)
     */
     public static HelpCtx findHelp (InstanceCookie instance) {
-        Class clazz = null;
         try {
-            clazz = instance.instanceClass ();
-            // First try known API classes.
-            if (
-                    HelpCtx.Provider.class.isAssignableFrom(clazz) ||
-                    WizardDescriptor.Panel.class.isAssignableFrom (clazz) ||
-                    //ManifestSection.FileSystemSection.class.isAssignableFrom (clazz) ||
-                    HelpCtx.class.isAssignableFrom (clazz)) {
-                HelpCtx test;
-                
-                Object obj = instance.instanceCreate ();
-                return HelpCtx.findHelp(obj);
-            }
-            // If a component, look for attached help.
-            if (JComponent.class.isAssignableFrom (clazz)) {
-                return HelpCtx.findHelp (instance.instanceCreate ());
-            }
-
+            Class clazz = instance.instanceClass();
             // [a.n] I have moved the code here as those components's BeanInfo do not contain helpID
             // - it is faster
             // Help on some standard components. Note that borders/layout managers do not really work here.
@@ -395,12 +375,17 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
                         return new HelpCtx (name);
                 }
             }
-
-            return HelpCtx.findHelp (clazz);
+            Object o = instance.instanceCreate();
+            if (o != null) {
+                HelpCtx h = HelpCtx.findHelp(o);
+                if (h != HelpCtx.DEFAULT_HELP) {
+                    return h;
+                }
+            }
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
-            return null;
         }
+        return null;
     }
     
     /** Test whether the instance represents serialized version of a class
