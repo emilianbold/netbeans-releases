@@ -88,7 +88,9 @@ public class LocalsTreeModel implements TreeModel {
                 CallStackFrameImpl sf = (CallStackFrameImpl) debugger.
                     getCurrentCallStackFrame ();
                 if (sf == null) return new AbstractVariable [0];
-                return getLocalVariables (sf.getStackFrame (), true);
+                StackFrame jdiSF = sf.getStackFrame();
+                if (jdiSF == null) return new AbstractVariable [0];
+                return getLocalVariables (jdiSF, true);
             } else
             if (o instanceof SuperVariable) {
                 SuperVariable mv = (SuperVariable) o;

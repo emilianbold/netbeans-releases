@@ -82,7 +82,7 @@ public class CallStackTreeModel implements TreeModel {
             }
             // StackFrame of the same thread with the same index should 
             // be "equal"
-            r [i] = new CallStackFrameImpl ((StackFrame) ch [i], this, id);
+            r [i] = new CallStackFrameImpl(ch[i], this, id);
         }
         return r;
     }
@@ -98,10 +98,10 @@ public class CallStackTreeModel implements TreeModel {
     public boolean isLeaf (Object node) throws UnknownTypeException {
         if (node == BasicCallStackTreeModel.ROOT) 
             return model.isLeaf (node);
+        StackFrame sf = ((CallStackFrameImpl) node).getStackFrame();
+        if (sf == null) return true;
         if (node instanceof CallStackFrameImpl)
-            return model.isLeaf (
-                ((CallStackFrameImpl) node).getStackFrame ()
-            );
+            return model.isLeaf(sf);
         throw new UnknownTypeException (node);
     }
 

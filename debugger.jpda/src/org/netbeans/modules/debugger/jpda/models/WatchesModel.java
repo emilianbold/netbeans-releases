@@ -20,8 +20,7 @@ import com.sun.jdi.Value;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.Vector;
-import java.util.WeakHashMap;
+import java.util.*;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Watch;
@@ -38,6 +37,8 @@ import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.expr.Expression;
+import org.netbeans.modules.debugger.jpda.expr.ParseException;
 
 import org.openide.util.RequestProcessor;
 
@@ -58,7 +59,8 @@ public class WatchesModel implements TreeModel {
     private Listener            listener;
     private Vector              listeners = new Vector ();
     private LookupProvider      lookupProvider;
-    
+    WeakHashMap watchToExpression = new WeakHashMap();
+
     
     public WatchesModel (LookupProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.
@@ -73,10 +75,10 @@ public class WatchesModel implements TreeModel {
     public Object getRoot () {
         return ROOT;
     }
-    
-    /** 
+
+    /**
      *
-     * @return threads contained in this group of threads
+     * @return watches contained in this group of watches
      */
     public Object[] getChildren (Object parent, int from, int to) 
     throws UnknownTypeException, NoInformationException {
@@ -86,7 +88,20 @@ public class WatchesModel implements TreeModel {
             int i, k = ws.length;
             JPDAWatch[] jws = new JPDAWatch [k];
             for (i = 0; i < k; i++) {
-                jws [i] = evaluate (ws [i]);
+                Object expr = watchToExpression.get(ws[i].getExpression());
+                if (expr == null) {
+                    try {
+                        expr = Expression.parse(ws[i].getExpression(), Expression.LANGUAGE_JAVA_1_5);
+                    } catch (ParseException e) {
+                        expr = e.getMessage();
+                    }
+                    watchToExpression.put(ws[i].getExpression(), expr);
+                }
+                if (expr instanceof String) {
+                    jws[i] = new JPDAWatchImpl(this, ws[i], (String) expr);
+                } else {
+                    jws [i] = evaluate(ws[i], (Expression) expr);
+                }
             }
             if (listener == null)
                 listener = new Listener (this, debugger);
@@ -135,7 +150,27 @@ public class WatchesModel implements TreeModel {
                 lookupFirst ("LocalsView", TreeModel.class);
         return localsTreeModel;
     }
-    
+
+    JPDAWatch evaluate(Watch w, Expression expr) {
+        Value v = null;
+        String exception = null;
+        try {
+            v = debugger.evaluateIn(expr);
+        } catch (InvalidExpressionException e) {
+            exception = e.getMessage ();
+        }
+        JPDAWatch wi;
+        if (exception != null)
+            wi = new JPDAWatchImpl (this, w, exception);
+        else
+            if (v instanceof ObjectReference)
+                wi = new JPDAObjectWatchImpl (this, w, (ObjectReference) v);
+            else
+                wi = new JPDAWatchImpl (this, w, v);
+        return wi;
+    }
+
+/*
     JPDAWatch evaluate (Watch w) {
         Value v = null;
         String exception = null;
@@ -155,7 +190,8 @@ public class WatchesModel implements TreeModel {
                 wi = new JPDAWatchImpl (this, w, v);
         return wi;
     }
-    
+*/
+
     // innerclasses ............................................................
     
     private static class Listener extends DebuggerManagerAdapter implements 

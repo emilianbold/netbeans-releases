@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -13,18 +13,7 @@
 
 package org.netbeans.modules.debugger.jpda;
 
-import com.sun.jdi.Bootstrap;
-import com.sun.jdi.ClassType;
-import com.sun.jdi.Method;
-import com.sun.jdi.ObjectCollectedException;
-import com.sun.jdi.ObjectReference;
-import com.sun.jdi.ReferenceType;
-import com.sun.jdi.StringReference;
-import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VMDisconnectedException;
-import com.sun.jdi.Value;
-import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.VirtualMachineManager;
+import com.sun.jdi.*;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -34,6 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.lang.reflect.InvocationTargetException;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -49,12 +39,16 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 
-import org.netbeans.modules.debugger.jpda.evaluator.Evaluator;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
 import org.netbeans.modules.debugger.jpda.models.ThreadsTreeModel;
+import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.modules.debugger.jpda.util.Operator;
+import org.netbeans.modules.debugger.jpda.expr.Expression;
+import org.netbeans.modules.debugger.jpda.expr.EvaluationContext;
+import org.netbeans.modules.debugger.jpda.expr.EvaluationException;
+import org.netbeans.modules.debugger.jpda.expr.ParseException;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
@@ -70,8 +64,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 * @author   Jan Jancura
 */
 public class JPDADebuggerImpl extends JPDADebugger {
-    
-    
+
+
     // variables ...............................................................
 
     //private DebuggerEngine              debuggerEngine;
@@ -90,11 +84,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private Set                         languages;
     private String                      lastStratumn;
     private LookupProvider              lookupProvider;
-    
-    
-    
+
+
+
     // init ....................................................................
-    
+
     public JPDADebuggerImpl (LookupProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         pcs = new PropertyChangeSupport (this);
@@ -104,15 +98,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (l.get (i) instanceof JavaEngineProvider)
                 javaEngineProvider = (JavaEngineProvider) l.get (i);
         if (javaEngineProvider == null)
-            throw new IllegalArgumentException 
+            throw new IllegalArgumentException
                 ("JavaEngineProvider have to be used to start JPDADebugger!");
         languages = new HashSet ();
         languages.add ("Java");
     }
-    
-    
+
+
     // JPDADebugger methods ....................................................
-    
+
     /**
      * Gets value of suspend property.
      *
@@ -133,7 +127,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         suspend = s;
         firePropertyChange (PROP_SUSPEND, new Integer (old), new Integer (s));
     }
-    
+
     /**
      * Returns current state of JPDA debugger.
      *
@@ -146,7 +140,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public int getState () {
         return state;
     }
-    
+
     /**
      * Returns current thread or null.
      *
@@ -155,7 +149,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public JPDAThread getCurrentThread () {
         return currentThread;
     }
-    
+
     /**
      * Returns current stack frame or null.
      *
@@ -164,15 +158,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public CallStackFrame getCurrentCallStackFrame () {
         return currentCallStackFrame;
     }
-     
+
     /**
      * Evaluates given expression in the current context.
      *
      * @param expression a expression to be evaluated
-     *  
+     *
      * @return current value of given expression
      */
-    public Variable evaluate (String expression) 
+    public Variable evaluate (String expression)
     throws InvalidExpressionException {
         Value v = evaluateIn (expression);
         return getLocalsTreeModel ().getVariable (v);
@@ -181,31 +175,31 @@ public class JPDADebuggerImpl extends JPDADebugger {
     /**
      * Returns excerption if initialization of VirtualMachine has failed.
      *
-     * @returns excerption if initialization of VirtualMachine has failed
-     * @see AbstractDICookie#getVirtualMachine()
+     * @return excerption if initialization of VirtualMachine has failed
+     * @see org.netbeans.api.debugger.jpda.AbstractDICookie#getVirtualMachine()
      */
     public Exception getException () {
         return exception;
     }
 
-    
+
     // other methods ...........................................................
 
     public void setException (Exception e) {
         exception = e;
     }
-    
+
     public void setCurrentThread (JPDAThread thread) {
         updateCurrentCallStackFrame (thread);
         if (thread == currentThread) return;
         Object oldT = currentThread;
         CallStackFrame oldCSF = currentCallStackFrame;
         currentThread = (JPDAThreadImpl) thread;
-        
+
         pcs.firePropertyChange (PROP_CURRENT_THREAD, oldT, currentThread);
         pcs.firePropertyChange (
-            PROP_CURRENT_CALL_STACK_FRAME, 
-            oldCSF, 
+            PROP_CURRENT_CALL_STACK_FRAME,
+            oldCSF,
             currentCallStackFrame
         );
     }
@@ -215,12 +209,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
         CallStackFrame old = currentCallStackFrame;
         currentCallStackFrame = callStackFrame;
         pcs.firePropertyChange (
-            PROP_CURRENT_CALL_STACK_FRAME, 
-            old, 
+            PROP_CURRENT_CALL_STACK_FRAME,
+            old,
             currentCallStackFrame
         );
     }
-    
+
     private void updateCurrentCallStackFrame (JPDAThread thread) {
         if ( (thread == null) ||
              (thread.getStackDepth () < 1))
@@ -232,32 +226,71 @@ public class JPDADebuggerImpl extends JPDADebugger {
             currentCallStackFrame = null;
         }
     }
-     
+
+    public Value evaluateIn (
+        String expression
+    ) throws InvalidExpressionException {
+        Expression expr = null;
+        try {
+            expr = Expression.parse(expression, Expression.LANGUAGE_JAVA_1_5);
+            return evaluateIn (expr, getEvaluationThread ());
+        } catch (ParseException e) {
+            throw new InvalidExpressionException(e.getMessage());
+        }
+    }
+
+/*
     public Value evaluateIn (
         String expression
     ) throws InvalidExpressionException {
         return evaluateIn (expression, getEvaluationThread ());
     }
-     
+
     public Value evaluateIn (
         String expression,
         ThreadReference thread
     ) throws InvalidExpressionException {
-        if (thread == null) 
+        if (thread == null)
             throw new InvalidExpressionException ("No current context");
         return Evaluator.evaluate (
-            expression, 
+            expression,
             virtualMachine,
             thread,
             0,
             new ArrayList ()
         );
     }
-    
+*/
+
+    public Value evaluateIn (Expression expression) throws InvalidExpressionException {
+        return evaluateIn(expression, getEvaluationThread ());
+    }
+
+    public Value evaluateIn (Expression expression, ThreadReference thread) throws InvalidExpressionException {
+        if (thread == null)
+            throw new InvalidExpressionException ("No current context");
+
+        // TODO: get imports from the source file
+        List imports = new ArrayList();
+        List staticImports = new ArrayList();
+
+        try {
+            org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator = expression.evaluator(
+                    new EvaluationContext(((CallStackFrameImpl)currentCallStackFrame).getStackFrame(), imports, staticImports));
+            return evaluator.evaluate();
+        } catch (IncompatibleThreadStateException e) {
+            throw new InvalidExpressionException ("No current context");
+        } catch (EvaluationException e) {
+            throw new InvalidExpressionException(e.getMessage());
+        } catch (Throwable e) {
+            throw new InvalidExpressionException(e.getMessage());
+        }
+    }
+
     public VirtualMachine getVirtualMachine () {
         return virtualMachine;
     }
-    
+
     public Operator getOperator () {
         return operator;
     }
@@ -266,7 +299,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         this.startingThread = startingThread;
         setState (STATE_STARTING);
     }
-    
+
     public void setRunning (VirtualMachine vm, Operator o) {
         this.virtualMachine = vm;
         operator = o;
@@ -310,7 +343,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         setState (STATE_STOPPED);
         //S ystem.err.println("setStoppedState end");
     }
-    
+
     public void finish () {
         synchronized (LOCK) {
             if (getState () == STATE_DISCONNECTED) return;
@@ -331,16 +364,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
             javaEngineProvider.getDestructor ().killEngine ();
         }
     }
-    
+
     // other methods ....
-    
+
     private void setState (int state) {
         if (state == this.state) return;
         int o = this.state;
         this.state = state;
         firePropertyChange (PROP_STATE, new Integer (o), new Integer (state));
     }
-    
+
     /**
      * Suspends the target virtual machine (if any).
      *
@@ -359,7 +392,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             //S ystem.err.println("suspend end");
         }
     }
-    
+
     public void resume () {
         synchronized (LOCK) {
             //S ystem.err.println("resume");
@@ -377,36 +410,59 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public void fireBadConditionalBreakpoint (final Breakpoint b) {
 //        System.err.println (
 //            NbBundle.getMessage (
-//                JPDADebuggerImpl.class, 
+//                JPDADebuggerImpl.class,
 //                "CTL_Incorrect_condition"
-//            ) + 
+//            ) +
 //            ": " + // NOI18N
 //            NbBundle.getMessage (
-//                JPDADebuggerImpl.class, 
+//                JPDADebuggerImpl.class,
 //                "CTL_breakpoint_at"
 //            ) + // NOI18N
-//            " " + 
+//            " " +
 //            b + "."
 //            //IOManager.DEBUGGER_OUT
 //        );
     }
-    
+
+    public Value invokeMethod (
+        ObjectReference reference,
+        Method method,
+        Value[] arguments
+    ) throws InvalidExpressionException {
+        if (currentThread == null)
+            throw new InvalidExpressionException ("No current context");
+        try {
+            return org.netbeans.modules.debugger.jpda.expr.Evaluator.invokeVirtual (
+                reference,
+                method,
+                getEvaluationThread (),
+                Arrays.asList (arguments)
+            );
+        } catch (org.netbeans.modules.debugger.jpda.expr.Evaluator.TimeoutException e) {
+            throw new InvalidExpressionException(e.getMessage());
+        } catch (InvocationTargetException e) {
+            throw new InvalidExpressionException(e.getMessage());
+        }
+    }
+
+/*
     public Value invokeMethod (
         ObjectReference reference,
         Method method,
         Value[] arguments
     ) throws InvalidExpressionException {
         synchronized (LOCK) {
-            if (currentThread == null) 
+            if (currentThread == null)
                 throw new InvalidExpressionException ("No current context");
             return Evaluator.invokeMethod (
-                reference, 
+                reference,
                 method,
                 getEvaluationThread (),
                 Arrays.asList (arguments)
             );
         }
     }
+*/
 
     /**
     * Adds property change listener.
@@ -443,7 +499,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public void removePropertyChangeListener (String propertyName, PropertyChangeListener l) {
         pcs.removePropertyChangeListener (propertyName, l);
     }
-    
+
     /**
     * Fires property change.
     */
@@ -451,7 +507,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         pcs.firePropertyChange (name, o, n);
     }
 
-    
+
     // helper methods ..........................................................
 
     private ThreadsTreeModel threadsTreeModel;
@@ -469,7 +525,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 lookupFirst ("LocalsView", TreeModel.class);
         return localsTreeModel;
     }
-    
+
     private JPDAThread getThread (ThreadReference tr) {
         try {
             return (JPDAThread) getThreadsTreeModel ().translate (tr);
@@ -478,7 +534,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             return null;
         }
     }
-    
+
     private ThreadReference getEvaluationThread () {
         //if (currentThread != null) return currentThread.getThreadReference ();
         if (virtualMachine == null) return null;
@@ -490,13 +546,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
             ThreadReference t = (ThreadReference) l.get (i);
             if (t.isSuspended ()) {
                 thread = t;
-                if (t.name ().equals ("Finalizer")) 
+                if (t.name ().equals ("Finalizer"))
                     return t;
             }
         }
         return thread;
     }
-    
+
     private void checkJSR45Languages (JPDAThread t) {
         if (t.getStackDepth () > 0)
             try {
@@ -523,7 +579,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 System.out.println("NoInformationException");
             }
     }
-    
+
     private DebuggerInfo createJSR45DI (final String language) {
         return DebuggerInfo.create (
             "netbeans-jpda-JSR45DICookie-" + language,
