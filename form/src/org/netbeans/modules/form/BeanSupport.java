@@ -130,9 +130,9 @@ public class BeanSupport {
           defaultValues.put (properties[i].getName (), value);
         } catch (Exception e) {
           // problem with reading property ==>> no default value
-/*            if (ideSettings.getOutputLevel () != IDESettings.OUTPUT_MINIMUM) {
-            notifyPropertyException (beanInstance.getClass (), properties [i].getName (), "component", e, true);
-          } */
+          if (FormEditor.getFormSettings ().getOutputLevel () != FormLoaderSettings.OUTPUT_MINIMUM) {
+//            notifyPropertyException (beanInstance.getClass (), properties [i].getName (), "component", e, true);
+          }  
         } 
       } else { // the property does not have plain read method
         if (properties[i] instanceof IndexedPropertyDescriptor) {
@@ -224,6 +224,8 @@ public class BeanSupport {
 
 /*
  * Log
+ *  8    Gandalf   1.7         8/1/99   Ian Formanek    OutputLevel changes 
+ *       reflected
  *  7    Gandalf   1.6         7/30/99  Ian Formanek    changed comment
  *  6    Gandalf   1.5         7/28/99  Ian Formanek    Fixed bug 2147 - 
  *       horizontalAlignment property displays number instead of text.
