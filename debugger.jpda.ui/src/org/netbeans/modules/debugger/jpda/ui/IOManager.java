@@ -61,6 +61,7 @@ public class IOManager {
     private static Hashtable                debuggerToProcesIO = new Hashtable ();
     private static Hashtable                debuggerToDebuggerIO = new Hashtable ();
     private static DebuggerEngine           currentEngine;
+    private static DListener                dListener;
 
     
     // variables ...............................................................
@@ -74,7 +75,6 @@ public class IOManager {
     /** output writer Thread */
     private Hashtable                       lines = new Hashtable ();
     private Listener                        listener = new Listener ();
-    private static DListener                dListener;
 
     
     // init ....................................................................
@@ -196,6 +196,7 @@ public class IOManager {
             });
         }
         manager.removeDebuggerListener (dListener);
+        engine = null;
     }
     
     
@@ -270,20 +271,16 @@ public class IOManager {
     }
     
     static class Line {
-        Session session;
-        String resourceName;
+        String url;
         int lineNumber;
         
-        Line (Session session, String resourceName, int lineNumber) {
-            this.session = session;
-            this.resourceName = resourceName;
+        Line (String url, int lineNumber) {
+            this.url = url;
             this.lineNumber = lineNumber;
         }
         
         void show () {
-            EngineContext ectx = (EngineContext) session.lookupFirst 
-                (EngineContext.class);
-            Context.showSource (ectx.getURL (resourceName), lineNumber);
+            Context.showSource (url, lineNumber);
         }
     }
 }

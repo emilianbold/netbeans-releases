@@ -37,7 +37,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
     private static final Pattern lineNumberPattern = Pattern.compile("\\{lineNumber\\}");
     private static final Pattern expressionPattern = Pattern.compile("\\{=(.*?)\\}");
 
-    private final DebuggerEngine    engine;
+    private DebuggerEngine          engine;
     private IOManager               ioManager;
     private JPDADebugger            debugger;
 
@@ -59,6 +59,9 @@ public class BreakpointOutput extends LazyActionsManagerListener
     protected void destroy() {
         DebuggerManager.getDebuggerManager().removeDebuggerListener(DebuggerManager.PROP_BREAKPOINTS, this);
         unhookBreakpoints();
+        engine = null;
+        ioManager = null;
+        debugger = null;
     }
 
     private void unhookBreakpoints() {

@@ -48,6 +48,7 @@ PropertyChangeListener {
 
     private JPDADebugger        debugger;
     private DebuggerEngine      engine;
+    private EngineContext       engineContext;
     private IOManager           ioManager;
 
 
@@ -55,6 +56,8 @@ PropertyChangeListener {
         this.debugger = (JPDADebugger) engine.lookupFirst
             (JPDADebugger.class);
         this.engine = engine;
+        engineContext = (EngineContext) engine.lookupFirst (EngineContext.class);
+        
         ioManager = new IOManager (engine);
         debugger.addPropertyChangeListener (
             JPDADebugger.PROP_STATE,
@@ -73,6 +76,10 @@ PropertyChangeListener {
             this
         );
         ioManager.stop ();
+        debugger = null;
+        engine = null;
+        engineContext = null;
+        ioManager = null;
     }
 
     public String[] getProperties () {
@@ -183,14 +190,15 @@ PropertyChangeListener {
                 String sourceName = t.getSourceName (language);
                 CallStackFrame f = t.getStackDepth () > 0 ?
                     t.getCallStack () [0] : null;
-                String sourceName1 = f != null ? 
+                String relativePath = f != null ? 
                     Context.getRelativePath (f, language) : null;
+                String url = (relativePath != null) ?
+                    engineContext.getURL (relativePath) :
+                    null;
                 IOManager.Line line = null;
-                if (lineNumber > 0 && sourceName1 != null)
+                if (lineNumber > 0 && url != null)
                     line = new IOManager.Line (
-                        DebuggerManager.getDebuggerManager().
-                            getCurrentSession (), 
-                        sourceName1, 
+                        url, 
                         lineNumber 
                     );
 
