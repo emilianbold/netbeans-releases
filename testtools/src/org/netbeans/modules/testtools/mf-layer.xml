@@ -162,7 +162,12 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
             ]]>
         </file>
     </folder>
-    <file name="org-netbeans-modules-testtools-generator-JellyComponentGeneratorProvider.instance"/>
+    <folder name="Hidden">
+        <file name="org-netbeans-modules-testtools-generator-JellyComponentGeneratorProvider.instance"/>
+<!--        <file name="org-netbeans-modules-testtools-ConfigDataNodeCreator.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.core.XMLDataObject$DataNodeCreator"/>
+        </file>    -->
+    </folder>
     <folder name="JavaHelp">
         <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-testtools-helpset.xml" boolvalue="true"/>
         <file name="org-netbeans-modules-testtools-helpset.xml">

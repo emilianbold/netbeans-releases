@@ -16,6 +16,7 @@
    <mapID target="org.netbeans.modules.testtools.XTestDataObject$XTestNode" url="testtools_services.html" />
    <mapID target="org.netbeans.modules.testtools.XTestExecutor" url="testtools_services.html" />
    <mapID target="org.netbeans.modules.testtools.XTestDataLoader$CleanResultsAction" url="testtools_services.html" />
+   <mapID target="org.netbeans.modules.testtools.ConfigDataLoader$ConfigDataNode" url="testtools_services.html" />
 
    <mapID target="org.netbeans.modules.testtools.wizards.TestTypeTemplatePanel" url="testtools_wizards.html#TypeTemp" />
    <mapID target="org.netbeans.modules.testtools.wizards.TestWorkspaceSettingsPanel" url="testtools_wizards.html#SpaceSet" />

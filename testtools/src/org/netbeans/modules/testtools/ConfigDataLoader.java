@@ -1,0 +1,162 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.testtools;
+/*
+ * ConfigDataLoader.java
+ *
+ * Created on November 26, 2002, 11:22 AM
+ */
+
+
+import java.awt.Component;
+import java.awt.Image;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import javax.swing.JLabel;
+import org.openide.actions.*;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.loaders.UniFileLoader;
+import org.openide.loaders.XMLDataObject;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
+
+/**
+ *
+ * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
+public class ConfigDataLoader extends UniFileLoader {
+
+    static final long serialVersionUID =39178345634634560L;
+
+    static final Image icon = Utilities.loadImage("org/netbeans/modules/testtools/ConfigIcon.gif"); //NO I18N
+    
+    /** Creates a new instance of ConfigDataLoader */
+    public ConfigDataLoader() {
+        super(ConfigDataObject.class);
+    }
+
+    /** Get default actions.
+    * @return array of default system actions or <CODE>null</CODE> if this loader does not have any
+    *   actions
+    */
+    protected SystemAction[] defaultActions () {
+        return new SystemAction[] {
+                       SystemAction.get(OpenAction.class),
+                       SystemAction.get(FileSystemAction.class),
+                       null,
+                       SystemAction.get(CutAction.class),
+                       SystemAction.get(CopyAction.class),
+                       SystemAction.get(PasteAction.class),
+                       null,
+                       SystemAction.get(DeleteAction.class),
+                       SystemAction.get(RenameAction.class),
+                       null,
+                       SystemAction.get(SaveAsTemplateAction.class),
+                       null,
+                       SystemAction.get(ToolsAction.class),
+                       SystemAction.get(PropertiesAction.class)
+                   };
+    }
+
+    /** Get the default display name of this loader.
+    * @return default display name
+    */
+    protected String defaultDisplayName () {
+        return NbBundle.getMessage(ConfigDataLoader.class, "XTestConfigName"); // NOI18N
+    }
+
+    /** performs initialization of Data Loader */    
+    protected void initialize () {
+        super.initialize ();
+        getExtensions().addMimeType("text/xml"); // NOI18N
+        getExtensions().addMimeType("application/xml"); // NOI18N
+    }
+
+
+    /** For a given file finds a primary file.
+    * @param fo the file to find primary file for
+    *
+    * @return the primary file for the file or null if the file is not
+    *   recognized by this loader
+    */
+    protected FileObject findPrimaryFile (FileObject fo) {
+        fo = super.findPrimaryFile (fo);
+        if (fo==null) return null;
+        try {
+            BufferedReader br=new BufferedReader(new InputStreamReader(fo.getInputStream()));
+            String line;
+            while ((line=br.readLine())!=null)
+                if (line.indexOf("\"http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd\"")>=0) { // NOI18N
+                    br.close();
+                    return fo;
+                }
+        } catch (Exception e) {}
+        return null;
+    }
+
+    /** creates instance of ConfigDataObject for given FileObject
+     * @param primaryFile FileObject
+     * @throws DataObjectExistsException when Data Object already exists
+     * @throws IOException when some IO problems
+     * @return new XTestDataObject for given FileObject */    
+    protected MultiDataObject createMultiObject (FileObject primaryFile) throws DataObjectExistsException, IOException {
+        return new ConfigDataObject(primaryFile, this);
+    }
+
+    public static class ConfigDataObject extends XMLDataObject {
+        
+        public ConfigDataObject (FileObject fo, MultiFileLoader loader) throws DataObjectExistsException {
+            super(fo, loader);
+        }
+        
+        protected Node createNodeDelegate() {
+            return new ConfigDataNode(super.createNodeDelegate());
+        }
+    }
+    
+    public static class ConfigDataNode  extends FilterNode {
+
+        public ConfigDataNode(Node n) {
+            super(n);
+        }
+        
+        public boolean hasCustomizer() {
+            return true;
+        }
+        
+        public Component getCustomizer() {
+            return new JLabel("Ahoj");
+        }
+
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(ConfigDataNode.class);
+        }
+
+        public Image getIcon(int i) {
+            return icon;
+        }
+        
+        public Image getOpenedIcon(int i) {
+            return icon;
+        }
+    }
+    
+}

@@ -49,6 +49,9 @@ import org.openide.util.Lookup;
 public class XTestDataObject extends MultiDataObject implements PropertyChangeListener {
 
     static final long serialVersionUID = -8829236025053170557L;
+    
+    static final Image icon = Utilities.loadImage("org/netbeans/modules/testtools/XTestIcon.gif"); // NOI18N
+    static final Image errIcon = Utilities.loadImage("org/netbeans/modules/testtools/XTestIconError.gif"); // NOI18N
 
     /** creates new XTestDataObject
      * @param pf FileObject
@@ -205,9 +208,9 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
             AntProjectCookie cookie = (AntProjectCookie)getDataObject().getCookie(AntProjectCookie.class);
             Throwable exc = cookie.getParseException();
             if (exc != null) {
-                return Utilities.loadImage("org/netbeans/modules/testtools/XTestIconError.gif"); // NOI18N
+                return errIcon; // NOI18N
             } else {
-                return Utilities.loadImage("org/netbeans/modules/testtools/XTestIcon.gif"); // NOI18N
+                return icon; // NOI18N
             }
         }
 
