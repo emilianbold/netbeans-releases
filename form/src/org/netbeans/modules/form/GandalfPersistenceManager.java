@@ -916,7 +916,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
     try {
       PropertyEditor ed = null;
       if (editorNode != null) {
-        ed = (PropertyEditor)TopManager.getDefault ().systemClassLoader ().loadClass (editorNode.getNodeValue ()).newInstance ();
+        Class editorClass = TopManager.getDefault ().systemClassLoader ().loadClass (editorNode.getNodeValue ());
+        if (editorClass.equals (RADConnectionPropertyEditor.class)) {
+          Class valueType = TopManager.getDefault ().systemClassLoader ().loadClass (typeNode.getNodeValue ());
+          ed = new RADConnectionPropertyEditor (valueType);
+        } else {
+          ed = (PropertyEditor)editorClass.newInstance ();
+        }
         if (ed instanceof FormAwareEditor) {
           ((FormAwareEditor)ed).setRADComponent (radComponent);
         }
@@ -1267,6 +1273,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  19   Gandalf   1.18        7/23/99  Ian Formanek    Works with 
+ *       RADConnectionPropertyEditor
  *  18   Gandalf   1.17        7/20/99  Ian Formanek    Persistence of menus
  *  17   Gandalf   1.16        7/18/99  Ian Formanek    More correct handling of
  *       errors during loading form
