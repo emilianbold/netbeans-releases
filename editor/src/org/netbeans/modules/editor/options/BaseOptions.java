@@ -72,6 +72,11 @@ import java.util.StringTokenizer;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import java.util.Set;
 import java.util.HashSet;
+import org.openide.execution.NbClassPath;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileChangeAdapter;
+import java.io.File;
+
 
 
 /**
@@ -203,7 +208,42 @@ public class BaseOptions extends OptionSupport {
     public static BaseOptions getOptions(Class kitClass) {
         return (BaseOptions)kitClass2Options.get(kitClass);
     }
-    
+
+    /** Listening for Settings.settings creation.*/
+    private void attachSettingsFileListener(FileObject folderFO){
+        final String contentType = BaseKit.getKit(getKitClass()).getContentType();
+        if (contentType == null) return;
+        
+        FileObject optionFO = TopManager.getDefault().getRepository().getDefaultFileSystem().
+        findResource(AllOptionsFolder.FOLDER+"/"+contentType+"/"+AllOptionsFolder.OPTION_FILE_NAME); //NOI18N
+        if (optionFO!=null && NbClassPath.toFile(optionFO)!=null){
+            try{
+                NbClassPath.toFile(optionFO).delete();
+            }catch (SecurityException se){
+            }
+        }
+        
+        folderFO.addFileChangeListener(new FileChangeAdapter(){
+            private void delete(FileObject fo){
+                if (fo.getNameExt().equals(AllOptionsFolder.OPTION_FILE_NAME)){
+                    File settingsFile = NbClassPath.toFile(fo);
+                    if (settingsFile != null) {
+                        settingsFile.delete();
+                    }
+                }
+            }
+            public void fileDataCreated(FileEvent fe){
+                if (fe==null) return;
+                delete(fe.getFile());
+            }
+            public void fileChanged(FileEvent fe){
+                if (fe==null) return;
+                delete(fe.getFile());
+            }
+        }
+        );
+    }
+
     
     /** Lazy initialization of the MIME specific settings folder. The folder should be created
      *  via XML layers, if not, it will be created.
@@ -250,6 +290,13 @@ public class BaseOptions extends OptionSupport {
                 DataObject d = DataObject.find(f);
                 DataFolder df = (DataFolder)d.getCookie(DataFolder.class);
                 if (df != null) {
+                    
+                    /* hack for listenning on mime folder
+                       for creation of Settings.settings file. Only file on 
+                       default layer is valid, so if Settings.settings is created, we need to delete it.
+                     */
+                    attachSettingsFileListener(f);
+                    
                     settingsFolder = new MIMEOptionFolder(df, this);
                     return settingsFolder;
                 }
