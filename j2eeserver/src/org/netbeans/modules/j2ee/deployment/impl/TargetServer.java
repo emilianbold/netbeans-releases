@@ -391,7 +391,7 @@ public class TargetServer {
         
         File plan = dtarget.getConfigurationFile();
         DeployableObject deployable = dtarget.getDeploymentConfigurationProvider().getDeployableObject(null);
-        
+
         // handle initial file deployment or distribute
         if (distributeTargets.size() > 0) {
             Target[] targetz = (Target[]) distributeTargets.toArray(new Target[distributeTargets.size()]);
@@ -404,15 +404,22 @@ public class TargetServer {
                     return new TargetModule[0];
                 progressObject = incremental.initialDeploy(targetz[0], deployable, dtarget.getDeploymentConfigurationProvider().getDeploymentConfiguration(), dir);
                 new DistributeEventHandler(progressUI, progressObject);
-                StateType state = progressObject.getDeploymentStatus().getState();
                 //System.out.println("incrementalDeploy: Status="+state);
-                if (state !=  StateType.COMPLETED && state != StateType.FAILED) {
+                if (!sleep(120000) )
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "incrementalDeploy: timeout or interrupted!");
+                StateType state = progressObject.getDeploymentStatus().getState();
+                if (state == StateType.FAILED) {
+                    sfd.cleanup();
+                }
+
+/*                if (state !=  StateType.COMPLETED && state != StateType.FAILED) {
                     //System.out.println("Waiting on incrementalDeploy of ="+Arrays.asList(redeployTargetModules));
                     if (!sleep(120000) )
                         ErrorManager.getDefault().log(ErrorManager.WARNING, "incrementalDeploy: timeout or interrupted!");
                 } else if (state == StateType.FAILED) {
                     sfd.cleanup();
                 }
+ **/
             } else {
                 if (getApplication() != null) {
                     //System.err.println("  Distributing " + application + " to " + Arrays.asList(targetz));
@@ -446,13 +453,16 @@ public class TargetServer {
                     IncrementalEventHandler h = new IncrementalEventHandler(progressObject);
                     progressObject.addProgressListener(h);
                     
-                    StateType state = progressObject.getDeploymentStatus().getState();
+                    if (!sleep(120000) )
+                        ErrorManager.getDefault().log(ErrorManager.WARNING, "incrementalDeploy: timeout or interrupted!");
+/*                    StateType state = progressObject.getDeploymentStatus().getState();
                     //System.out.println("incrementalDeploy: Status="+state);
                     if (state !=  StateType.COMPLETED && state != StateType.FAILED) {
                         //System.out.println("Waiting on incrementalDeploy of ="+Arrays.asList(redeployTargetModules));
                         if (!sleep(120000) )
                             ErrorManager.getDefault().log(ErrorManager.WARNING, "incrementalDeploy: timeout or interrupted!");
                     }
+                    */
                     progressObject.removeProgressListener(h);
                     //System.out.println("incrementalDeploy time="+(System.currentTimeMillis()-t0)+" msecs.");
                 } else { // return original target modules
