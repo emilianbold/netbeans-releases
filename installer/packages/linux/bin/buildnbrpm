@@ -22,12 +22,12 @@ NB_BLD_TMP=/tmp/netbeans-rpms/netbeans-building
 #NOCLEAN="-noclean"
 
 # What to do
-CREATE_PLATFORM5=true
-CREATE_IDE5_MODULES=true
-CREATE_BRANDING=true
-CREATE_ENTERPRISE1=true
-CREATE_IDE=true
-CREATE_MOBILITY=true
+CREATE_PLATFORM5=false
+CREATE_IDE5_MODULES=false
+CREATE_BRANDING=false
+CREATE_ENTERPRISE1=false
+CREATE_IDE=false
+CREATE_MOBILITY=false
 
 # functions ================================================================== #
 
@@ -119,16 +119,23 @@ function processParams()
       --nbdist|-n)
         checkArgument "$2" "$1"
         NB_BIN_ZIP=$2
+        CREATE_PLATFORM5=true
+        CREATE_IDE5_MODULES=true
+        CREATE_BRANDING=true
+        CREATE_ENTERPRISE1=true
+        CREATE_IDE=true
         shift
         ;;
       --mobility|-m)
         checkArgument "$2" "$1"
         MOBILITY_ZIP=$2
+        CREATE_MOBILITY=true
         shift
         ;;
       --wtk|-w)
         checkArgument "$2" "$1"
         WTK_LIN_ZIP=$2
+        CREATE_MOBILITY=true
         shift
         ;;
       --target|-t)
@@ -156,12 +163,19 @@ function checkFile()
 
 function checkParams()
 {
-  if [ -z "$NB_BIN_ZIP" -o -z "$MOBILITY_ZIP" -o -z "$WTK_LIN_ZIP" ]; then
+
+
+  if [ -z "$NB_BIN_ZIP" -a -z "$MOBILITY_ZIP" -a -z "$WTK_LIN_ZIP" ]; then
+    echo "Must be defined at least one source."
     usage
   fi
-  checkFile "$NB_BIN_ZIP"
-  checkFile "$MOBILITY_ZIP"
-  checkFile "$WTK_LIN_ZIP"
+  if [ -n "$MOBILITY_ZIP" -a -n "$WTK_LIN_ZIP" ]; then
+    checkFile "$MOBILITY_ZIP"
+    checkFile "$WTK_LIN_ZIP"
+  fi
+  if [ -n "$NB_BIN_ZIP" ]; then
+    checkFile "$NB_BIN_ZIP"
+  fi
   if [ -d "$TARGET_DIR" ]; then
     perror "Directory \"$TARGET_DIR\" must not exist."
     cleanExit 7
