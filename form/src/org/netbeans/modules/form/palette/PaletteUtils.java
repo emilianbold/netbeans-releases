@@ -13,27 +13,26 @@
 
 package org.netbeans.modules.form.palette;
 
-import java.util.ArrayList;
-import java.text.MessageFormat;
 import java.io.File;
-
-import org.openide.nodes.Node;
-import org.openide.loaders.DataFolder;
-import org.openide.filesystems.*;
-import org.openide.util.NbBundle;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.FileOwnerQuery;
-
 import org.netbeans.modules.form.project.ClassSource;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.nodes.Node;
+import org.openide.loaders.DataFolder;
+import org.openide.util.NbBundle;
 
 /**
  * Class providing various useful methods for palette classes.
  *
  * @author Tomas Pavek
  */
-
 public final class PaletteUtils {
 
     private static FileObject paletteFolder;
@@ -131,10 +130,10 @@ public final class PaletteUtils {
                     return MessageFormat.format(
                           getBundleString("FMT_ComponentFromProject"), // NOI18N
                           new Object[] { project == null ? name :
-                                         project.getProjectDirectory().getPath()
-                                           .replace('/', File.separatorChar) });
+                                         FileUtil.getFileDisplayName(project.getProjectDirectory()) });
+                } catch (Exception ex) {
+                    // XXX must catch specific exceptions and notify them or explain why they are ignored!
                 }
-                catch (Exception ex) {} // ignore
             }
         }
 
