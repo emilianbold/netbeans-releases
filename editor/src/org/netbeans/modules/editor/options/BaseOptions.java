@@ -68,6 +68,7 @@ import java.awt.event.InputEvent;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Template;
 import org.openide.util.Lookup.Item;
+import java.util.StringTokenizer;
 
 /**
  * Options for the base editor kit
@@ -179,7 +180,8 @@ public class BaseOptions extends OptionSupport {
     private transient Map defaultAbbrevsMap;
     private transient Map defaultMacrosMap;
     private transient Map defaultKeyBindingsMap;
-
+    private transient MIMEOptionFolder settingsFolder;
+    
     /** Map of Kit to Options */
     private static final HashMap kitClass2Options = new HashMap();
 
@@ -189,12 +191,8 @@ public class BaseOptions extends OptionSupport {
     }
     
     public BaseOptions(Class kitClass, String typeName) {
-        
         super(kitClass, typeName);
-        
-        createMIMENode(typeName);
         kitClass2Options.put(kitClass, this);
-        
     }
 
     public static BaseOptions getOptions(Class kitClass) {
@@ -202,8 +200,65 @@ public class BaseOptions extends OptionSupport {
     }
     
     
+    /** Lazy initialization of the MIME specific settings folder. The folder should be created
+     *  via XML layers, if not, it will be created.
+     *  Instances of all XML file in this folder will be created.
+     */
+    protected synchronized MIMEOptionFolder getMIMEFolder(){
+        // return already initialized folder
+        if (settingsFolder!=null) return settingsFolder;
+        
+        if (BaseKit.getKit(getKitClass()).getContentType() == null) return null;
+
+        String name = BaseKit.getKit(getKitClass()).getContentType();
+        
+        FileObject f = TopManager.getDefault().getRepository().getDefaultFileSystem().
+        findResource(AllOptionsFolder.FOLDER+"/"+name); //NOI18N
+        
+        // MIME folder doesn't exist, let's create it
+        if (f==null){
+            FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem().
+            findResource(AllOptionsFolder.FOLDER);
+            
+            if (fo != null){
+                try{
+                    StringTokenizer stok = new StringTokenizer(name,"/");
+                    while (stok.hasMoreElements()) {
+                        String newFolder = stok.nextToken();
+                        if (fo.getFileObject(newFolder) == null){
+                            fo = fo.createFolder(newFolder);
+                        }
+                        else
+                            fo = fo.getFileObject(newFolder);
+                    }
+                }catch(IOException ioe){
+                    ioe.printStackTrace();
+                }
+                
+                f = TopManager.getDefault().getRepository().getDefaultFileSystem().
+                findResource(AllOptionsFolder.FOLDER+"/"+name);
+            }
+        }
+        
+        if (f != null) {
+            try {
+                DataObject d = DataObject.find(f);
+                DataFolder df = (DataFolder)d.getCookie(DataFolder.class);
+                if (df != null) {
+                    settingsFolder = new MIMEOptionFolder(df, this);
+                    return settingsFolder;
+                }
+            } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                ex.printStackTrace();
+            }
+        }
+        
+        return null;
+    }
+    
     /** Gets MIMEOptionNode that belongs to this bean */
-    public MIMEOptionNode getMimeNode(){
+    public synchronized MIMEOptionNode getMimeNode(){
+        if (mimeNode == null) createMIMENode(getTypeName());
         return mimeNode;
     }
     
@@ -302,7 +357,7 @@ public class BaseOptions extends OptionSupport {
      * stores them to defaultAbbrevsMap */
     private synchronized void loadDefaultAbbreviations(){
         if (defaultAbbrevsMap!=null) return;
-        MIMEOptionFolder mimeFolder = getMimeNode().getMIMEFolder();
+        MIMEOptionFolder mimeFolder = getMIMEFolder();
         if (mimeFolder == null) return;
         MIMEOptionFolder mof = mimeFolder.getFolder(OptionUtilities.DEFAULT_FOLDER);
         if (mof == null) {
@@ -486,7 +541,7 @@ public class BaseOptions extends OptionSupport {
             mof = mimeFolder.getFolder(OptionUtilities.DEFAULT_FOLDER);
         }else{
             AllOptionsFolder.getDefault().loadDefaultKeyBindings();
-            MIMEOptionFolder mimeFolder = getMimeNode().getMIMEFolder();
+            MIMEOptionFolder mimeFolder = getMIMEFolder();
             if (mimeFolder == null) return;
             mof = mimeFolder.getFolder(OptionUtilities.DEFAULT_FOLDER);
         }
@@ -673,7 +728,7 @@ public class BaseOptions extends OptionSupport {
      *  stores them to defaultMacrosMap */
     private synchronized void loadDefaultMacros(){
         if (defaultMacrosMap!=null) return;
-        MIMEOptionFolder mimeFolder = getMimeNode().getMIMEFolder();
+        MIMEOptionFolder mimeFolder = getMIMEFolder();
         if (mimeFolder == null) return;
 
         MIMEOptionFolder mof = mimeFolder.getFolder(OptionUtilities.DEFAULT_FOLDER);
@@ -882,7 +937,7 @@ public class BaseOptions extends OptionSupport {
             loadSettings(PropertiesMIMEProcessor.class);        
 
             MIMEOptionFile file; 
-            MIMEOptionFolder mimeFolder = getMimeNode().getMIMEFolder();
+            MIMEOptionFolder mimeFolder = getMIMEFolder();
             if (mimeFolder != null){
                 file= mimeFolder.getFile(PropertiesMIMEProcessor.class, false);
                 if (file != null) {
@@ -1029,7 +1084,7 @@ public class BaseOptions extends OptionSupport {
             if (mimeFolder == null) return;
             file= mimeFolder.getFile(processor, false);
         }else{
-            MIMEOptionFolder mimeFolder = getMimeNode().getMIMEFolder();
+            MIMEOptionFolder mimeFolder = getMIMEFolder();
             if (mimeFolder == null) return;
             file= mimeFolder.getFile(processor, false);
         }
@@ -1047,7 +1102,7 @@ public class BaseOptions extends OptionSupport {
             if (mimeFolder == null) return;
             fileX = mimeFolder.getFile(processor, true);
         }else{
-            mimeFolder = getMimeNode().getMIMEFolder();
+            mimeFolder = getMIMEFolder();
             if (mimeFolder == null) return;
             fileX = mimeFolder.getFile(processor, true);
         }
