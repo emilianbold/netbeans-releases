@@ -34,16 +34,15 @@ import org.openide.xml.*;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public final class EntityCatalogImpl extends EntityCatalog {
+public final class EntityCatalogImpl implements EntityResolver {
 
-    /** map between publicId and privateId (String, String) */
+    /** map between publicId and privateId (String, String); must be synchronized */
     private Map id2uri;  
-
-    private static final XMLDataObject.Info INFO = new XMLDataObject.Info();
 
     private static final RequestProcessor catalogRP = new RequestProcessor("EntityCatalog/parser");
 
     public static void init () {
+        XMLDataObject.Info INFO = new XMLDataObject.Info();
         INFO.addProcessorClass(RegistrationProcessor.class);
 //        INFO.setIconBase("/org/netbeans/core/windows/toolbars/xmlToolbars");  //!!!
         XMLDataObject.registerInfo(EntityCatalog.PUBLIC_ID, INFO);
@@ -58,19 +57,17 @@ public final class EntityCatalogImpl extends EntityCatalog {
      * Resolve an entity using cached mapping.
      */
     public InputSource resolveEntity(String publicID, String systemID) {
-        synchronized (id2uri) {
-            if (publicID == null) return null;
+        if (publicID == null) return null;
 
-            String res = (String) id2uri.get(publicID);
+        String res = (String) id2uri.get(publicID); // note this is synchronized Hashtable
 
-            InputSource ret = null;
-            if (res != null) {
-                ret = new InputSource(res);
-            }
+        InputSource ret = null;
+        if (res != null) {
+            ret = new InputSource(res);
+        }
             
 //            System.err.println("" + publicID + " => " + ret);
-            return ret;
-        }
+        return ret;
     }
 
     /** 
@@ -110,6 +107,13 @@ public final class EntityCatalogImpl extends EntityCatalog {
             }
         }
 
+        public InputSource resolveEntity(String pid, String sid) {
+            if (EntityCatalog.PUBLIC_ID.equals(pid)) {
+                return new InputSource("nbresboot:/org/openide/xml/EntityCatalog.dtd"); // NOI18N
+            }
+            return null;
+        }
+
         // Runnable impl (can be a task body)
 
         public void run() {
@@ -121,14 +125,7 @@ public final class EntityCatalogImpl extends EntityCatalog {
                 XMLReader reader = XMLUtil.createXMLReader(true);
                 reader.setErrorHandler(this);
                 reader.setContentHandler(this);
-                reader.setEntityResolver( new EntityResolver() {
-                    public InputSource resolveEntity(String pid, String sid) {
-                        if (EntityCatalog.PUBLIC_ID.equals(pid)) {
-                            return new InputSource("nbresboot:/org/openide/xml/EntityCatalog.dtd");
-                        }
-                        return null;
-                    }
-                });
+                reader.setEntityResolver(this);
                 reader.parse(src);
             } catch (SAXException ex) {
                 // ignore

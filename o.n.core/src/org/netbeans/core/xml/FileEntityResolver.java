@@ -15,18 +15,17 @@ package org.netbeans.core.xml;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import java.io.IOException;
-import org.openide.xml.EntityCatalog;
 
-
-
-/** 
+/** Entity resolver which loads entities (typically DTDs) from fixed
+ * locations in the system file system, according to public ID.
  *
  * @author  Jaroslav Tulach
  */
-public class FileEntityResolver extends EntityCatalog {
+public class FileEntityResolver implements EntityResolver {
     private static final String ENTITY_PREFIX = "/xml/entities"; // NOI18N
     
     /** Constructor
