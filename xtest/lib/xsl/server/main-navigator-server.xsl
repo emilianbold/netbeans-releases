@@ -38,7 +38,17 @@
 		<xsl:if test="@build">
 			Tested build:<B><xsl:value-of select="@build"/></B><BR/>
 		</xsl:if>
-		Run on: <B><xsl:value-of select="SystemInfo/@host"/></B><BR/>
+		Run on: 
+			<B>
+				<xsl:choose>
+					<xsl:when test="not($mappedHostname)">
+						<xsl:value-of select="SystemInfo/@host"/>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:value-of select="$mappedHostname"/>
+					</xsl:otherwise>
+				</xsl:choose>
+			</B><BR/>
 		Run at: <B><xsl:value-of select="@timeStamp"/></B><BR/>						
 		</I>
 		<UL>			
