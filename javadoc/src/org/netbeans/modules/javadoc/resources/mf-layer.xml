@@ -90,6 +90,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
             <attr name="helpID" stringvalue="org.netbeans.modules.javadoc.search.JavaDocSearchType"/>
+            <attr name="org-netbeans-modules-javadoc-search-Jdk12SearchType_japan.settings/org-netbeans-modules-javadoc-search-Jdk12SearchType.settings" boolvalue="true"/>
 
             <file name="org-netbeans-modules-javadoc-search-Jdk12SearchType.settings" url="javadoc_search.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.search.Bundle"/>

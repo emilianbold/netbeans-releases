@@ -83,4 +83,10 @@ public class Jdk12SearchType extends JavadocSearchType {
     public IndexSearchThread getSearchThread( String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer ){
         return new SearchThreadJdk12 ( toFind, fo, diiConsumer, isCaseSensitive() );
     }
+
+
+    public boolean accepts(FileObject apidocRoot, String encoding) {
+        //XXX returns always true, must be the last JavadocType
+        return true;
+    }
 }

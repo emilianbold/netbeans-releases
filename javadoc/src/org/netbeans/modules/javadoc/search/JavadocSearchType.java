@@ -91,4 +91,13 @@ public abstract class JavadocSearchType extends ServiceType {
      * @return IndexSearchThread
      */    
     public abstract IndexSearchThread getSearchThread( String toFind, FileObject fo, IndexSearchThread.DocIndexItemConsumer diiConsumer );
+    
+
+    /**
+     * Returns true if the JavadocSearchType accepts the given apidocRoot.
+     * @param apidocRoot root of the javadoc
+     * @param encoding of the javadoc, may be null if the javadoc has no encoding
+     */
+    public abstract boolean accepts (FileObject apidocRoot, String encoding);
+
 }

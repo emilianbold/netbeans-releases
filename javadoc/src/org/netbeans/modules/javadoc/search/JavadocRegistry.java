@@ -24,9 +24,19 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
+
+import java.io.Reader;
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import javax.swing.event.ChangeEvent;
 
 import javax.swing.event.ChangeListener;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.parser.ParserDelegator;
+import javax.swing.text.MutableAttributeSet;
 
 import org.netbeans.api.java.classpath.ClassPath;
 
@@ -42,6 +52,7 @@ import org.netbeans.modules.javadoc.settings.DocumentationSettings;
 import org.openide.ErrorManager;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  * Class which is able to serve index files of Javadoc for all
@@ -85,10 +96,15 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
     
     
     public JavadocSearchType findSearchType( FileObject apidocRoot ) {
-        // XXX Should try to find correct engine
-        JavadocSearchType type = (JavadocSearchType)DocumentationSettings.getDefault().getSearchEngine();
-        assert type != null;
-        return type;
+        String encoding = getDocEncoding (apidocRoot);
+        Lookup.Result result = Lookup.getDefault().lookup(new Lookup.Template(JavadocSearchType.class));
+        for (Iterator it = result.allInstances().iterator(); it.hasNext();) {
+            JavadocSearchType jdst = (JavadocSearchType) it.next ();
+            if (jdst.accepts(apidocRoot, encoding)) {
+                return jdst;
+            }
+        }        
+        return null;
     }    
         
     // Private methods ---------------------------------------------------------
@@ -197,5 +213,86 @@ public class JavadocRegistry implements GlobalPathRegistryListener, ChangeListen
             it.remove ();
         }
     }
-        
+
+
+    private String getDocEncoding (FileObject root) {
+         assert root != null && root.isFolder();
+        FileObject fo = root.getFileObject("index-all.html");   //NOI18N
+        if (fo == null) {
+            fo = root.getFileObject("index-files"); //NOI18N
+            if (fo == null) {
+                return null;
+            }
+            fo = fo.getFileObject("index-1.html");  //NOI18N
+            if (fo == null) {
+                return null;
+            }
+        }
+        ParserDelegator pd = new ParserDelegator();
+        try {
+            BufferedReader in = new BufferedReader( new InputStreamReader( fo.getInputStream () ));
+            EncodingCallback ecb = new EncodingCallback (in);
+            try {                
+                pd.parse( in, ecb, true );                
+            } catch (IOException ioe) {                
+                //Do nothing
+            } finally {
+               in.close ();              
+            }
+            return ecb.getEncoding ();
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify (ioe);
+        }
+        return null;
+    }
+
+
+
+    private static class EncodingCallback extends HTMLEditorKit.ParserCallback {
+
+
+        private Reader in;
+        private String encoding;
+
+        public EncodingCallback (Reader in) {
+            this.in = in;
+        }
+
+
+        public String getEncoding () {
+            return this.encoding;
+        }
+
+
+        public void handleSimpleTag(HTML.Tag t, MutableAttributeSet a, int pos) {
+            if (t == HTML.Tag.META) {
+                String value = (String) a.getAttribute(HTML.Attribute.CONTENT);
+                if (value != null) {
+                    StringTokenizer tk = new StringTokenizer(value,";");
+                    while (tk.hasMoreTokens()) {
+                        String str = tk.nextToken().trim();
+                        if (str.startsWith("charset")) {        //NOI18N
+                            str = str.substring(7).trim();
+                            if (str.charAt(0)=='=') {
+                                this.encoding = str.substring(1).trim();
+                                try {
+                                    this.in.close();
+                                } catch (IOException ioe) {/*Ignore it*/}
+                                return;                                
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void handleStartTag(javax.swing.text.html.HTML.Tag t, javax.swing.text.MutableAttributeSet a, int pos) {
+            if (t == HTML.Tag.BODY) {
+                try {
+                    this.in.close ();
+                } catch (IOException ioe) {/*Ignore it*/}
+            }
+        }
+    }
+
 }

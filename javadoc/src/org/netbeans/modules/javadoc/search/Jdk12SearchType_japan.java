@@ -15,10 +15,11 @@
 package org.netbeans.modules.javadoc.search;
 
 
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
+
+
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
 
 /* Base class providing search for JDK1.2/1.3 documentation
  * Jdk12SearchType.java
@@ -73,4 +74,28 @@ public class Jdk12SearchType_japan extends Jdk12SearchType {
         //here you can send one more parameter .. getJapanEncoding
         return new SearchThreadJdk12_japan ( toFind, fo, diiConsumer, isCaseSensitive(), getJapanEncoding() );
     }    
+
+    public boolean accepts(org.openide.filesystems.FileObject root, String encoding) {
+        if (encoding == null) {
+            return false;
+        }
+        encoding = encoding.toLowerCase();
+        String acceptedEncoding = getJapanEncoding().toLowerCase();
+        
+        if ("jisautodetect".equals(acceptedEncoding)) {     //NOI18N
+            return "iso-2022-jp".equals (encoding) ||       //NOI18N
+                   "sjis".equals (encoding) ||              //NOI18N
+                   "euc-jp".equals (encoding);              //NOI18N
+                   // || "utf-".equals (encoding);  XXX Probably not, UTF-8 can be anything ????
+                   
+        }
+        else {
+            return  encoding.equals (acceptedEncoding);   //NOI18N
+        }        
+    }
+    
+    
+
+    
+    
 }
