@@ -324,15 +324,15 @@ public class ProjectTab extends TopComponent
     }
     
     public boolean selectNode( Object object, boolean requestFocus ) {
-        // System.out.println("Selecting node " + id + " : " + object );
+        // System.out.println("Selecting node " + id + " : " + object + " -AWT- " + SwingUtilities.isEventDispatchThread() );
         
         ProjectsRootNode root = (ProjectsRootNode)manager.getRootContext();
         Node selectedNode = root.findNode( object );
         if ( selectedNode != null ) {
-            try {
-                manager.setSelectedNodes( new Node[] { selectedNode } );
-                open();
+            try {                
+                manager.setSelectedNodes( new Node[] { selectedNode } );                
                 if (requestFocus) {
+                    open();
                     requestActive();                
                 }
                 btv.scrollToNode(selectedNode);

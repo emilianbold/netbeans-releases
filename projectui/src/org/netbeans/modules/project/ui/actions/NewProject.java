@@ -142,6 +142,10 @@ public class NewProject extends BasicAction {
                                 assert false : obj;
                             }
                         }
+                        
+                        // Show the project tab to show the user we did something
+                        ProjectUtilities.makeProjectTabVisible( true );
+                        
                         // Second open the files                
                         if ( filesToOpen.isEmpty() && p != null) {
                             // Just select and expand the project node
@@ -151,7 +155,7 @@ public class NewProject extends BasicAction {
                             for( Iterator it = filesToOpen.iterator(); it.hasNext(); ) { // Open the files
                                 ProjectUtilities.openAndSelectNewObject( (DataObject)it.next() );
                             }
-                        }
+                        }                                                
 
                     }
                     ProjectUtilities.WaitCursor.hide();

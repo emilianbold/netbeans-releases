@@ -33,6 +33,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
@@ -79,14 +80,15 @@ public class ProjectUtilities {
             
             public void run () {
                 Node root = ptLogial.getExplorerManager ().getRootContext ();
-                Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
+                // Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
+                Node projNode = root.getChildren ().findChild( ProjectUtils.getInformation( p ).getName() );
                 System.out.println("Proj node" + projNode );
                 if ( projNode != null ) {
                     try {                            
                         ptLogial.getExplorerManager ().setSelectedNodes( new Node[] { projNode } );
                         ptLogial.expandNode( projNode );
-                        ptLogial.open ();
-                        ptLogial.requestActive ();
+                        // ptLogial.open ();
+                        // ptLogial.requestActive ();
                     } catch (Exception ignore) {
                         // may ignore it
                     }
@@ -124,7 +126,7 @@ public class ProjectUtilities {
                 // select && expand if the focus is outside ProjectTab
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
-                        boolean success = ptLogial.selectNode (newDo.getPrimaryFile (), false);
+                        boolean success = ptLogial.selectNode (newDo.getPrimaryFile (), false );
                         if (!success) {
                             ptPhysical.selectNode (newDo.getPrimaryFile (), false);
                         }
@@ -133,6 +135,28 @@ public class ProjectUtilities {
             }
         });
     }
+    
+    /** Makes the project tab visible
+     * @param requestFocus if set to true the project tab will not only become visible but also
+     *        will gain focus
+     */
+    public static void makeProjectTabVisible( final boolean requestFocus ) {
+        final ProjectTab ptLogical  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
+        
+//        SwingUtilities.invokeLater (new Runnable () {
+//            public void run () {
+                ptLogical.open();
+                if ( requestFocus ) {
+                    ptLogical.requestActive();
+                }
+                else {
+                    ptLogical.requestVisible();
+                }
+//            }
+//        });
+                
+    }
+    
     
     /** Checks if the given file name can be created in the target folder.
      *
