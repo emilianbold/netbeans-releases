@@ -7,29 +7,37 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 /*
  * 
  */
-
 package org.openide.explorer.view;
 
-import java.lang.ref.*;
-import java.awt.event.*;
-import java.awt.*;
-import java.util.*;
-import javax.swing.JList;
+import java.awt.AWTException;
+import java.awt.BorderLayout;
+import java.awt.Robot;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
-import org.openide.*;
-import org.openide.explorer.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
-import junit.framework.*;
+import javax.swing.JList;
+import javax.swing.SwingUtilities;
+
 import junit.textui.TestRunner;
-import org.netbeans.junit.*;
+
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+
+import org.openide.explorer.ExplorerPanel;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.Children.Array;
 
 /**
  * Tests for class ListView
@@ -52,9 +60,8 @@ public class ListViewTest extends NbTestCase {
      * 2. removes the node
      * 3. Shift-Click another node by java.awt.Robot
      */
-    public void testNodeSelectionByRobot() throws Exception {
-//        TopManager.getDefault();
-        final Children c = new Children.Array();
+    public void testNodeSelectionByRobot() {
+        final Children c = new Array();
         Node n = new AbstractNode (c);
         final PListView lv = new PListView();
         final ExplorerPanel p = new ExplorerPanel();
@@ -76,14 +83,38 @@ public class ListViewTest extends NbTestCase {
             
             // Waiting for until the view is updated.
             // This should not be necessary [HREBEJK]
-            javax.swing.SwingUtilities.invokeAndWait( new EmptyRunnable() );
+            try {
+                SwingUtilities.invokeAndWait( new EmptyRunnable() );
+            } catch (InterruptedException ie) {
+                fail ("Caught InterruptedException:" + ie.getMessage ());
+            } catch (InvocationTargetException ite) {
+                fail ("Caught InvocationTargetException: " + ite.getMessage ());
+            }
        
-            p.getExplorerManager().setSelectedNodes(new Node[] {children[i]} );
+            try {
+                p.getExplorerManager().setSelectedNodes(new Node[] {children[i]} );
+            } catch (PropertyVetoException  pve) {
+                fail ("Caught the PropertyVetoException when set selected node " + children[i].getName ()+ ".");
+            }
+            
             //Thread.sleep(500);
             c.remove(new Node[] { children[i] });
-            Thread.sleep(500);
+            
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ie) {
+                fail ("Caught InterruptedException:" + ie.getMessage ());
+            }
+            
             if (lv.isShowing()) {
-                Robot r = new Robot();
+                Robot r = null;
+                
+                try {
+                    r = new Robot();
+                } catch (AWTException ae) {
+                    fail ("Caught AWTException: " + ae.getMessage ());
+                }
+                
                 r.keyPress(KeyEvent.VK_SHIFT);
                 r.mouseMove(lv.getLocationOnScreen().x + 10,lv.getLocationOnScreen().y + 10);
                 r.mousePress(InputEvent.BUTTON1_MASK);
@@ -98,9 +129,8 @@ public class ListViewTest extends NbTestCase {
     /**
      * Removes selected node by calling destroy
      */
-    public void testDestroySelectedNodes() throws Exception {
-//        TopManager.getDefault();
-        final Children c = new Children.Array();
+    public void testDestroySelectedNodes() {
+        final Children c = new Array();
         Node n = new AbstractNode (c);
         final PListView lv = new PListView();
         final ExplorerPanel p = new ExplorerPanel();
@@ -119,18 +149,25 @@ public class ListViewTest extends NbTestCase {
         
         for (int i = NO_OF_NODES-1; i >= 0; i--) {     
             //Thread.sleep(500);
-            p.getExplorerManager().setSelectedNodes(new Node[] {children[i]} );
+            try {
+                p.getExplorerManager().setSelectedNodes(new Node[] {children[i]} );
+            } catch (PropertyVetoException  pve) {
+                fail ("Caught the PropertyVetoException when set selected node " + children[i].getName ()+ ".");
+            }
             //Thread.sleep(500);
-            children[i].destroy();
+            try {
+                children[i].destroy();
+            } catch (IOException ioe) {
+                fail ("Caught the IOException when destroy the node " + children[i].getName ()+ ".");
+            }
         }
     }
     
     /**
      * Removes selected node by calling Children.Array.remove
      */
-    public void testRemoveAndAddNodes() throws Exception {
-//        TopManager.getDefault();
-        final Children c = new Children.Array();
+    public void testRemoveAndAddNodes() {
+        final Children c = new Array();
         Node n = new AbstractNode (c);
         final PListView lv = new PListView();
         final ExplorerPanel p = new ExplorerPanel();
@@ -147,7 +184,11 @@ public class ListViewTest extends NbTestCase {
         }
         //Thread.sleep(2000);
         
-        p.getExplorerManager().setSelectedNodes(new Node[] {children[0]} );
+        try {
+            p.getExplorerManager().setSelectedNodes(new Node[] {children[0]} );
+        } catch (PropertyVetoException  pve) {
+            fail ("Caught the PropertyVetoException when set selected node " + children[0].getName ()+ ".");
+        }
         
         for (int i = 0; i < NO_OF_NODES; i++) {
             c.remove(new Node [] { children[i] } );
@@ -164,9 +205,8 @@ public class ListViewTest extends NbTestCase {
      * Creates two nodes. Selects one and tries to remove it
      * and replace with the other one (several times).
      */
-    public void testNodeAddingAndRemoving() throws Exception {
-//        TopManager.getDefault();
-        final Children c = new Children.Array();
+    public void testNodeAddingAndRemoving() {
+        final Children c = new Array();
         Node n = new AbstractNode (c);
         final PListView lv = new PListView();
         final ExplorerPanel p = new ExplorerPanel();
@@ -190,7 +230,11 @@ public class ListViewTest extends NbTestCase {
             //Thread.sleep(350);
 	    //javax.swing.SwingUtilities.invokeAndWait( new EmptyRunnable() );
             
-            p.getExplorerManager().setSelectedNodes(new Node[] { c2 } );
+            try {
+                p.getExplorerManager().setSelectedNodes(new Node[] {c2} );
+            } catch (PropertyVetoException  pve) {
+                fail ("Caught the PropertyVetoException when set selected node " + c2.getName ()+ ".");
+            }
             
             c.remove(new Node[] { c2 });
             c.add(new Node[] { c1 });
