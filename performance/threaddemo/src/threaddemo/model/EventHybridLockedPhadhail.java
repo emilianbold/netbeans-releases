@@ -15,12 +15,15 @@ package threaddemo.model;
 
 import java.io.*;
 import java.lang.ref.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
+import threaddemo.locking.Lock;
+import threaddemo.locking.LockAction;
+import threaddemo.locking.LockExceptionAction;
+import threaddemo.locking.Locks;
 
 /**
- * Similar to LockedPhadhail but using the "event hybrid" mutex.
+ * Similar to LockedPhadhail but using the "event hybrid" lock.
  * @author Jesse Glick
  */
 final class EventHybridLockedPhadhail extends AbstractPhadhail {
@@ -44,7 +47,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     }
     
     public List getChildren() {
-        return (List)Mutex.EVENT_HYBRID.readAccess(new Mutex.Action() {
+        return (List)Locks.eventHybridLock().read(new LockAction() {
             public Object run() {
                 return EventHybridLockedPhadhail.super.getChildren();
             }
@@ -52,7 +55,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     }
     
     public String getName() {
-        return (String)Mutex.EVENT_HYBRID.readAccess(new Mutex.Action() {
+        return (String)Locks.eventHybridLock().read(new LockAction() {
             public Object run() {
                 return EventHybridLockedPhadhail.super.getName();
             }
@@ -60,7 +63,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     }
     
     public String getPath() {
-        return (String)Mutex.EVENT_HYBRID.readAccess(new Mutex.Action() {
+        return (String)Locks.eventHybridLock().read(new LockAction() {
             public Object run() {
                 return EventHybridLockedPhadhail.super.getPath();
             }
@@ -68,7 +71,7 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     }
     
     public boolean hasChildren() {
-        return ((Boolean)Mutex.EVENT_HYBRID.readAccess(new Mutex.Action() {
+        return ((Boolean)Locks.eventHybridLock().read(new LockAction() {
             public Object run() {
                 return EventHybridLockedPhadhail.super.hasChildren() ? Boolean.TRUE : Boolean.FALSE;
             }
@@ -77,81 +80,81 @@ final class EventHybridLockedPhadhail extends AbstractPhadhail {
     
     public void rename(final String nue) throws IOException {
         try {
-            Mutex.EVENT_HYBRID.writeAccess(new Mutex.ExceptionAction() {
+            Locks.eventHybridLock().write(new LockExceptionAction() {
                 public Object run() throws IOException {
                     EventHybridLockedPhadhail.super.rename(nue);
                     return null;
                 }
             });
-        } catch (MutexException e) {
-            throw (IOException)e.getException();
+        } catch (InvocationTargetException e) {
+            throw (IOException)e.getCause();
         }
     }
     
     public Phadhail createContainerPhadhail(final String name) throws IOException {
         try {
-            return (Phadhail)Mutex.EVENT_HYBRID.writeAccess(new Mutex.ExceptionAction() {
+            return (Phadhail)Locks.eventHybridLock().write(new LockExceptionAction() {
                 public Object run() throws IOException {
                     return EventHybridLockedPhadhail.super.createContainerPhadhail(name);
                 }
             });
-        } catch (MutexException e) {
-            throw (IOException)e.getException();
+        } catch (InvocationTargetException e) {
+            throw (IOException)e.getCause();
         }
     }
     
     public Phadhail createLeafPhadhail(final String name) throws IOException {
         try {
-            return (Phadhail)Mutex.EVENT_HYBRID.writeAccess(new Mutex.ExceptionAction() {
+            return (Phadhail)Locks.eventHybridLock().write(new LockExceptionAction() {
                 public Object run() throws IOException {
                     return EventHybridLockedPhadhail.super.createLeafPhadhail(name);
                 }
             });
-        } catch (MutexException e) {
-            throw (IOException)e.getException();
+        } catch (InvocationTargetException e) {
+            throw (IOException)e.getCause();
         }
     }
     
     public void delete() throws IOException {
         try {
-            Mutex.EVENT_HYBRID.writeAccess(new Mutex.ExceptionAction() {
+            Locks.eventHybridLock().write(new LockExceptionAction() {
                 public Object run() throws IOException {
                     EventHybridLockedPhadhail.super.delete();
                     return null;
                 }
             });
-        } catch (MutexException e) {
-            throw (IOException)e.getException();
+        } catch (InvocationTargetException e) {
+            throw (IOException)e.getCause();
         }
     }
     
     public InputStream getInputStream() throws IOException {
         try {
-            return (InputStream)Mutex.EVENT_HYBRID.readAccess(new Mutex.ExceptionAction() {
+            return (InputStream)Locks.eventHybridLock().read(new LockExceptionAction() {
                 public Object run() throws IOException {
                     return EventHybridLockedPhadhail.super.getInputStream();
                 }
             });
-        } catch (MutexException e) {
-            throw (IOException)e.getException();
+        } catch (InvocationTargetException e) {
+            throw (IOException)e.getCause();
         }
     }
     
     public OutputStream getOutputStream() throws IOException {
         // See comments in AbstractPhadhail.getOutputStream.
         try {
-            return (OutputStream)Mutex.EVENT_HYBRID.readAccess(new Mutex.ExceptionAction() {
+            return (OutputStream)Locks.eventHybridLock().read(new LockExceptionAction() {
                 public Object run() throws IOException {
                     return EventHybridLockedPhadhail.super.getOutputStream();
                 }
             });
-        } catch (MutexException e) {
-            throw (IOException)e.getException();
+        } catch (InvocationTargetException e) {
+            throw (IOException)e.getCause();
         }
     }
     
-    public Mutex mutex() {
-        return Mutex.EVENT_HYBRID;
+    public Lock lock() {
+        return Locks.eventHybridLock();
     }
     
 }

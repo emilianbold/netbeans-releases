@@ -17,9 +17,9 @@ import java.awt.EventQueue;
 import java.lang.ref.*;
 import java.lang.reflect.*;
 import java.util.*;
-import org.openide.util.Mutex;
 import org.openide.util.Queue;
 import spin.*;
+import threaddemo.locking.Locks;
 
 /**
  * An asynchronous Phadhail impl using Spin.
@@ -59,8 +59,8 @@ final class SpunPhadhail extends Spin {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if (method.getName().equals("toString")) {
             return "SpunPhadhail<" + super.invoke(proxy, method, args) + ">";
-        } else if (method.getName().equals("mutex")) {
-            return Mutex.EVENT;
+        } else if (method.getName().equals("lock")) {
+            return Locks.eventLock();
         } else {
             // XXX what about hashCode/equals? Should these be thread-safe?
             assert method.getName().endsWith("PhadhailListener") || EventQueue.isDispatchThread() : method.getName();

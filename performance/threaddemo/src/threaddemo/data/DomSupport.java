@@ -33,6 +33,9 @@ import org.w3c.dom.events.Event;
 import org.w3c.dom.events.EventListener;
 import org.w3c.dom.events.EventTarget;
 import org.xml.sax.*;
+import threaddemo.locking.Lock;
+import threaddemo.locking.LockAction;
+import threaddemo.locking.LockExceptionAction;
 import threaddemo.model.*;
 import threaddemo.util.*;
 
@@ -56,15 +59,15 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     private final Set listeners = new HashSet();
     private boolean inIsolatingChange = false;
     
-    public DomSupport(Phadhail ph, EditorCookie.Observable edit, Mutex mutex) {
-        super(edit, mutex);
+    public DomSupport(Phadhail ph, EditorCookie.Observable edit, Lock lock) {
+        super(edit, lock);
         this.ph = ph;
         addTwoWayListener(this);
     }
     
     public Document getDocument() throws IOException {
         try {
-            return (Document)getMutex().readAccess(new Mutex.ExceptionAction() {
+            return (Document)getLock().read(new LockExceptionAction() {
                 public Object run() throws IOException {
                     assert !inIsolatingChange;
                     try {
@@ -76,15 +79,15 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
                     }
                 }
             });
-        } catch (MutexException e) {
-            throw (IOException)e.getException();
+        } catch (InvocationTargetException e) {
+            throw (IOException)e.getCause();
         }
     }
     
     public void setDocument(final Document d) throws IOException {
         if (d == null) throw new NullPointerException();
         try {
-            getMutex().writeAccess(new Mutex.ExceptionAction() {
+            getLock().write(new LockExceptionAction() {
                 public Object run() throws IOException {
                     assert !inIsolatingChange;
                     Document old = (Document)getStaleValueNonBlocking();
@@ -102,13 +105,13 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
                     }
                 }
             });
-        } catch (MutexException e) {
-            throw (IOException)e.getException();
+        } catch (InvocationTargetException e) {
+            throw (IOException)e.getCause();
         }
     }
     
     public boolean isReady() {
-        return ((Boolean)getMutex().readAccess(new Mutex.Action() {
+        return ((Boolean)getLock().read(new LockAction() {
             public Object run() {
                 assert !inIsolatingChange;
                 return getValueNonBlocking() != null ? Boolean.TRUE : Boolean.FALSE;
@@ -120,8 +123,8 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
         initiate();
     }
     
-    public Mutex mutex() {
-        return getMutex();
+    public Lock lock() {
+        return getLock();
     }
     
     public void addChangeListener(ChangeListener l) {
@@ -145,14 +148,13 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
             ls = (ChangeListener[])listeners.toArray(new ChangeListener[listeners.size()]);
         }
         final ChangeEvent ev = new ChangeEvent(this);
-        getMutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        getLock().read(new Runnable() {
+            public void run() {
                 assert !inIsolatingChange;
                 System.err.println("DS.fireChange");
                 for (int i = 0; i < ls.length; i++) {
                     ls[i].stateChanged(ev);
                 }
-                return null;
             }
         });
     }
@@ -280,8 +282,8 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     
     public void handleEvent(final Event evt) {
         try {
-            getMutex().writeAccess(new Mutex.Action() {
-                public Object run() {
+            getLock().write(new Runnable() {
+                public void run() {
                     Document d = (Document)evt.getCurrentTarget();
                     Document old = (Document)getValueNonBlocking();
                     assert old == null || old == d;
@@ -292,7 +294,6 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
                             assert false : e;
                         }
                     }
-                    return null;
                 }
             });
         } catch (RuntimeException e) {
@@ -302,7 +303,7 @@ public final class DomSupport extends DocumentParseSupport implements DomProvide
     }
     
     public void isolatingChange(Runnable r) {
-        assert getMutex().canWrite();
+        assert getLock().canWrite();
         assert !inIsolatingChange;
         inIsolatingChange = true;
         try {

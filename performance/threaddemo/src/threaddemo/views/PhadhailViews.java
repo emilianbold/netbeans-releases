@@ -32,9 +32,10 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
-import org.openide.util.Mutex;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
+import threaddemo.locking.LockAction;
+import threaddemo.locking.Locks;
 
 /**
  * Factory for views over Phadhail.
@@ -105,14 +106,14 @@ public class PhadhailViews {
             super(n, n.isLeaf() ? Children.LEAF : new EQReplannedChildren(n));
         }
         public String getName() {
-            return (String)Mutex.EVENT.readAccess(new Mutex.Action() {
+            return (String)Locks.eventLock().read(new LockAction() {
                 public Object run() {
                     return EQReplannedNode.super.getName();
                 }
             });
         }
         public String getDisplayName() {
-            return (String)Mutex.EVENT.readAccess(new Mutex.Action() {
+            return (String)Locks.eventLock().read(new LockAction() {
                 public Object run() {
                     return EQReplannedNode.super.getDisplayName();
                 }
@@ -128,35 +129,35 @@ public class PhadhailViews {
             return new EQReplannedNode(n);
         }
         public Node findChild(final String name) {
-            return (Node)Mutex.EVENT.readAccess(new Mutex.Action() {
+            return (Node)Locks.eventLock().read(new LockAction() {
                 public Object run() {
                     return EQReplannedChildren.super.findChild(name);
                 }
             });
         }
         public Node[] getNodes(final boolean optimalResult) {
-            return (Node[])Mutex.EVENT.readAccess(new Mutex.Action() {
+            return (Node[])Locks.eventLock().read(new LockAction() {
                 public Object run() {
                     return EQReplannedChildren.super.getNodes(optimalResult);
                 }
             });
         }
         protected void filterChildrenAdded(final NodeMemberEvent ev) {
-            Mutex.EVENT.readAccess(new Runnable() {
+            Locks.eventLock().readLater(new Runnable() {
                 public void run() {
                     EQReplannedChildren.super.filterChildrenAdded(ev);
                 }
             });
         }
         protected void filterChildrenRemoved(final NodeMemberEvent ev) {
-            Mutex.EVENT.readAccess(new Runnable() {
+            Locks.eventLock().readLater(new Runnable() {
                 public void run() {
                     EQReplannedChildren.super.filterChildrenRemoved(ev);
                 }
             });
         }
         protected void filterChildrenReordered(final NodeReorderEvent ev) {
-            Mutex.EVENT.readAccess(new Runnable() {
+            Locks.eventLock().readLater(new Runnable() {
                 public void run() {
                     EQReplannedChildren.super.filterChildrenReordered(ev);
                 }

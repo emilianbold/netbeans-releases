@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import org.openide.util.Mutex;
+import threaddemo.locking.Lock;
 
 /**
  * Really, a file.
@@ -47,7 +47,7 @@ public interface Phadhail {
      * caller cannot mutate list, and it might not be thread-safe
      * implementor cannot change list after creation (i.e. size & identity of elements)
      * it is expected that once the list is obtained, asking for elements is fast and nonblocking
-     * (and then the read mutex is not required)
+     * (and then the read lock is not required)
      */
     List getChildren();
     
@@ -73,11 +73,11 @@ public interface Phadhail {
     void removePhadhailListener(PhadhailListener l);
     
     /**
-     * Get a mutex appropriate for locking operations from another thread.
-     * Should be a single mutex for a whole tree of phadhails.
+     * Get a lock appropriate for locking operations from another thread.
+     * Should be a single lock for a whole tree of phadhails.
      * Model methods should automatically acquire the relevant lock for you;
      * the view need not bother, unless it needs to do an atomic operation.
      */
-    Mutex mutex();
+    Lock lock();
     
 }

@@ -22,10 +22,10 @@ import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
 import org.openide.cookies.SaveCookie;
-import org.openide.util.Mutex;
 import org.w3c.dom.*;
 import threaddemo.data.DomProvider;
 import threaddemo.data.PhadhailLookups;
+import threaddemo.locking.LockAction;
 import threaddemo.model.Phadhail;
 
 /**
@@ -79,11 +79,11 @@ public class Refactor {
                     Map.Entry e = (Map.Entry)it.next();
                     final Phadhail ph = (Phadhail)e.getKey();
                     final DomProvider p = (DomProvider)e.getValue();
-                    ph.mutex().readAccess(new Mutex.Action() {
-                        public Object run() {
+                    ph.lock().read(new Runnable() {
+                        public void run() {
                             // Avoid keeping a reference to the old data, since we have
                             // cached DomProvider's and such heavyweight stuff open on them:
-                            it.remove(); // do from inside mutex - calls Phadhail.hashCode
+                            it.remove(); // do from inside lock - calls Phadhail.hashCode
                             final String path = ph.getPath();
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
@@ -91,11 +91,10 @@ public class Refactor {
                                     progressBar.setString(path);
                                 }
                             });
-                            return null;
                         }
                     });
-                    ph.mutex().writeAccess(new Mutex.Action() {
-                        public Object run() {
+                    ph.lock().write(new Runnable() {
+                        public void run() {
                             SaveCookie s = (SaveCookie)PhadhailLookups.getLookup(ph).lookup(SaveCookie.class);
                             refactor(p);
                             if (s == null) {
@@ -109,7 +108,6 @@ public class Refactor {
                                     }
                                 }
                             }
-                            return null;
                         }
                     });
                 }
@@ -123,7 +121,7 @@ public class Refactor {
     }
     
     private static Map/*<Phadhail,DomProvider>*/ collectData(final Phadhail root) {
-        return (Map)root.mutex().readAccess(new Mutex.Action() {
+        return (Map)root.lock().read(new LockAction() {
             private final Map data = new HashMap(); 
             public Object run() {
                 collect(root);

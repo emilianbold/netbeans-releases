@@ -14,7 +14,8 @@
 package threaddemo.model;
 
 import java.io.File;
-import org.openide.util.Mutex;
+import threaddemo.locking.Lock;
+import threaddemo.locking.Locks;
 
 /**
  * Simple synchronous phadhail implementation that can only be used from the
@@ -42,8 +43,8 @@ public class SynchPhadhail extends AbstractPhadhail {
         return FACTORY;
     }
     
-    public Mutex mutex() {
-        return Mutex.EVENT;
+    public Lock lock() {
+        return Locks.eventLock();
     }
     
 }

@@ -20,8 +20,6 @@ import java.io.*;
 import java.util.Date;
 import org.openide.cookies.*;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.windows.CloneableOpenSupport;

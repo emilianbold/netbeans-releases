@@ -17,9 +17,9 @@ Microsystems, Inc. All Rights Reserved.
     <property file="user.build.properties"/>
 
     <property name="nbroot" location="../.."/>
-    <!-- Trunk, except Mutex*.java should be with tag mutex_32439: -->
-    <property name="openide.jar" location="???/openide/netbeans/lib/openide.jar"/>
-    <property name="looks" location="${nbroot}/openide/looks"/>
+    <property name="openide" location="${nbroot}/openide"/>
+    <property name="openide.jar" location="${openide}/netbeans/lib/openide.jar"/>
+    <property name="looks" location="${openide}/looks"/>
     <property name="looks.jar" location="${looks}/netbeans/modules/autoload/openide-looks.jar"/>
     <property name="Spin.jar" location="???/spin-1.1/Spin.jar"/>
     <!-- only needed for optit target: -->
@@ -45,19 +45,15 @@ Microsystems, Inc. All Rights Reserved.
     </path>
     
     <target name="init">
-        <available property="openide/build.xml" file="${openide.jar}/../../../build.xml"/>
         <property name="build.compiler.debug" value="true"/>
     </target>
     
-    <target name="build-openide" depends="init" if="openide/build.xml">
-        <ant dir="${openide.jar}/../../.." target="jars"/>
-    </target>
-    
-    <target name="build-looks" depends="init,build-openide">
+    <target name="build-looks" depends="init">
         <ant dir="${nbroot}/nbbuild" target="all-openide/looks"/>
+        <!-- all-openide is implied by that -->
     </target>
     
-    <target name="compile" depends="build-openide,build-looks">
+    <target name="compile" depends="build-looks">
         <javac srcdir="src" destdir="src" debug="true" deprecation="true" source="1.4">
             <classpath refid="build.cp"/>
         </javac>
@@ -188,7 +184,7 @@ Microsystems, Inc. All Rights Reserved.
         <nbbrowse file="test-results/junit-noframes.html"/>
     </target>
     
-    <target name="clean" depends="init,clean-looks">
+    <target name="clean">
         <delete file="threaddemo.jar"/>
         <delete>
             <fileset dir="src">
@@ -200,10 +196,6 @@ Microsystems, Inc. All Rights Reserved.
         </delete>
         <delete dir="javadoc"/>
         <delete dir="test-results"/>
-    </target>
-    
-    <target name="clean-looks" depends="init" if="looks/build.xml">
-        <ant dir="${looks}" target="clean"/>
     </target>
     
 </project>

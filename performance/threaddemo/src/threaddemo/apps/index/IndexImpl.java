@@ -17,11 +17,11 @@ import java.io.IOException;
 import java.util.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.util.Mutex;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 import org.w3c.dom.*;
 import threaddemo.data.DomProvider;
 import threaddemo.data.PhadhailLookups;
+import threaddemo.locking.Lock;
 import threaddemo.model.*;
 
 // XXX make an IndexImpl be GCable and not hold onto Phadhail's
@@ -45,12 +45,12 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
         this.root = root;
     }
     
-    public Mutex getMutex() {
-        return root.mutex();
+    public Lock getLock() {
+        return root.lock();
     }
     
     public Map getData() {
-        assert getMutex().canRead();
+        assert getLock().canRead();
         Map/*<String,int>*/ data = (Map)processed.get(root);
         if (data != null) {
             return Collections.unmodifiableMap(data);
@@ -93,7 +93,7 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
         synchronized (toProcess) {
             if (!running) {
                 toProcess.add(root);
-                Thread t = new Thread(this, "IndexImpl parsing");
+                Thread t = new Thread(this, "IndexImpl parsing: " + root);
                 t.setDaemon(true);
                 t.start();
                 running = true;
@@ -128,18 +128,18 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
     }
     
     private void process(final Phadhail ph) {
-        getMutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        getLock().read(new Runnable() {
+            public void run() {
                 if (processed.containsKey(ph)) {
                     // Already computed, do nothing.
-                    return null;
+                    return;
                 }
                 if (ph.hasChildren()) {
                     processChildren(ph);
                 } else {
                     // Data, maybe.
                     final Map computed = compute(ph);
-                    getMutex().postWriteRequest(new Runnable() {
+                    getLock().writeLater(new Runnable() {
                         public void run() {
                             processed.put(ph, computed);
                             if (!computed.isEmpty()) {
@@ -148,7 +148,6 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
                         }
                     });
                 }
-                return null;
             }
         });
     }
@@ -171,7 +170,7 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
     }
     
     private Map compute(Phadhail ph) {
-        assert getMutex().canRead();
+        assert getLock().canRead();
         assert !ph.hasChildren();
         DomProvider p = (DomProvider)domProviders2Phadhails.get(ph);
         if (p == null) {
@@ -180,7 +179,7 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
             if (p == null) {
                 return Collections.EMPTY_MAP;
             }
-            p.addChangeListener(WeakListener.change(this, p));
+            p.addChangeListener(WeakListeners.change(this, p));
             domProviders2Phadhails.put(p, ph);
         }
         Document d;
@@ -205,13 +204,12 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
     }
     
     private void bubble(Phadhail ph) {
-        assert getMutex().canWrite();
+        assert getLock().canWrite();
         //System.err.println("bubble: " + ph + " data: " + processed);
         if (ph == root) {
-            getMutex().readAccess(new Mutex.Action() {
-                public Object run() {
+            getLock().read(new Runnable() {
+                public void run() {
                     fireChange();
-                    return null;
                 }
             });
         } else {
@@ -246,7 +244,7 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
     }
     
     private void invalidate(final Phadhail ph) {
-        getMutex().postWriteRequest(new Runnable() {
+        getLock().writeLater(new Runnable() {
             public void run() {
                 processed.remove(ph);
                 synchronized (toProcess) {

@@ -22,7 +22,8 @@ import javax.swing.text.StyledDocument;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.text.NbDocument;
-import org.openide.util.Mutex;
+import threaddemo.locking.Lock;
+import threaddemo.locking.LockAction;
 
 // XXX helper methods to parse/rewrite an entire document atomically using Reader/Writer
 
@@ -46,12 +47,12 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
     private final Listener listener;
 
     /**
-     * Create a support based on an editor cookie and mutex.
+     * Create a support based on an editor cookie and lock.
      * @param edit the container for the document containing some parsable data
-     * @param mutex a lock
+     * @param lock a lock
      */
-    protected DocumentParseSupport(EditorCookie.Observable edit, Mutex mutex) {
-        super(mutex);
+    protected DocumentParseSupport(EditorCookie.Observable edit, Lock lock) {
+        super(lock);
         this.edit = edit;
         listener = new Listener();
         edit.addPropertyChangeListener(listener);
@@ -185,7 +186,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
     
     /**
      * Create the derived model from a text document.
-     * Called with the read mutex and with read access to the document.
+     * Called with the read lock and with read access to the document.
      * @param document the text document to parse, or may be null if
      *                 {@link #requiresUnmodifiedDocument} if false
      * @param documentEvents a list of {@link DocumentEvent} that happened since
@@ -244,7 +245,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
     
     /**
      * Update the text document to reflect changes in the derived model.
-     * Called with the write mutex and holding a document lock if possible.
+     * Called with the write lock and holding a document lock if possible.
      * @param document the document to modify
      * @param oldValue the old derived model, if any
      * @param derivedDelta the change to the derived model
@@ -273,7 +274,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         private void documentUpdate(DocumentEvent e) {
             final List l = new ArrayList(1); // List<DocumentEvent>
             l.add(e);
-            getMutex().readAccess(new Mutex.Action() {
+            getLock().read(new LockAction() {
                 public Object run() {
                     invalidate(l);
                     return null;
@@ -294,10 +295,10 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
-                // Runnable, not Mutex.Action, to avoid blocking: because CES fires
+                // Avoid blocking: because CES fires
                 // PROP_DOCUMENT from within a RP task, and we may already be locking
                 // the EQ with CES.open or .openDocument.
-                getMutex().readAccess(new Runnable() {
+                getLock().readLater(new Runnable() {
                     public void run() {
                         invalidate(evt);
                     }

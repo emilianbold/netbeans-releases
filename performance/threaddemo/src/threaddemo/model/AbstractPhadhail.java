@@ -16,7 +16,7 @@ package threaddemo.model;
 import java.io.*;
 import java.lang.ref.*;
 import java.util.*;
-import org.openide.util.Mutex;
+import threaddemo.locking.Lock;
 
 /**
  * A convenience skeleton for making a phadhail based on files.
@@ -70,7 +70,7 @@ public abstract class AbstractPhadhail implements Phadhail {
     protected abstract Factory factory();
     
     public List getChildren() {
-        assert mutex().canRead();
+        assert lock().canRead();
         List phs = null; // List<Phadhail>
         if (kids != null) {
             phs = (List)kids.get();
@@ -96,7 +96,7 @@ public abstract class AbstractPhadhail implements Phadhail {
             this.files = files;
             kids = new Phadhail[files.length];
         }
-        // These methods need not be called with the read mutex held
+        // These methods need not be called with the read lock held
         // (see Phadhail.getChildren Javadoc).
         public Object get(int i) {
             Phadhail ph = kids[i];
@@ -111,17 +111,17 @@ public abstract class AbstractPhadhail implements Phadhail {
     }
     
     public String getName() {
-        assert mutex().canRead();
+        assert lock().canRead();
         return f.getName();
     }
     
     public String getPath() {
-        assert mutex().canRead();
+        assert lock().canRead();
         return f.getAbsolutePath();
     }
     
     public boolean hasChildren() {
-        assert mutex().canRead();
+        assert lock().canRead();
         return f.isDirectory();
     }
     
@@ -163,8 +163,8 @@ public abstract class AbstractPhadhail implements Phadhail {
     protected final void fireChildrenChanged() {
         final PhadhailListener[] l = listeners();
         if (l != null) {
-            mutex().readAccess(new Mutex.Action() {
-                public Object run() {
+            lock().readLater(new Runnable() {
+                public void run() {
                     firing = true;
                     try {
                         PhadhailEvent ev = PhadhailEvent.create(AbstractPhadhail.this);
@@ -174,7 +174,6 @@ public abstract class AbstractPhadhail implements Phadhail {
                     } finally {
                         firing = false;
                     }
-                    return null;
                 }
             });
         }
@@ -183,8 +182,8 @@ public abstract class AbstractPhadhail implements Phadhail {
     protected final void fireNameChanged(final String oldName, final String newName) {
         final PhadhailListener[] l = listeners();
         if (l != null) {
-            mutex().readAccess(new Mutex.Action() {
-                public Object run() {
+            lock().read(new Runnable() {
+                public void run() {
                     firing = true;
                     try {
                         PhadhailNameEvent ev = PhadhailNameEvent.create(AbstractPhadhail.this, oldName, newName);
@@ -194,14 +193,13 @@ public abstract class AbstractPhadhail implements Phadhail {
                     } finally {
                         firing = false;
                     }
-                    return null;
                 }
             });
         }
     }
     
     public void rename(String nue) throws IOException {
-        assert mutex().canWrite();
+        assert lock().canWrite();
         assert !firing : "Mutation within listener callback";
         String oldName = getName();
         if (oldName.equals(nue)) {
@@ -259,7 +257,7 @@ public abstract class AbstractPhadhail implements Phadhail {
     }
     
     public Phadhail createContainerPhadhail(String name) throws IOException {
-        assert mutex().canWrite();
+        assert lock().canWrite();
         assert !firing : "Mutation within listener callback";
         File child = new File(f, name);
         if (!child.mkdir()) {
@@ -270,7 +268,7 @@ public abstract class AbstractPhadhail implements Phadhail {
     }
     
     public Phadhail createLeafPhadhail(String name) throws IOException {
-        assert mutex().canWrite();
+        assert lock().canWrite();
         assert !firing : "Mutation within listener callback";
         File child = new File(f, name);
         if (!child.createNewFile()) {
@@ -281,7 +279,7 @@ public abstract class AbstractPhadhail implements Phadhail {
     }
     
     public void delete() throws IOException {
-        assert mutex().canWrite();
+        assert lock().canWrite();
         assert !firing : "Mutation within listener callback";
         if (!f.delete()) {
             throw new IOException("Deleting file " + f);
@@ -290,7 +288,7 @@ public abstract class AbstractPhadhail implements Phadhail {
     }
     
     public InputStream getInputStream() throws IOException {
-        assert mutex().canRead();
+        assert lock().canRead();
         return new FileInputStream(f);
     }
     
@@ -298,10 +296,10 @@ public abstract class AbstractPhadhail implements Phadhail {
         // Yes, read access - for the sake of the demo, currently Phadhail.getOutputStream
         // is not considered a mutator method (fires no changes); this would be different
         // if PhadhailListener included a content change event.
-        // That would be trickier because then you would need to acquire the write mutex
+        // That would be trickier because then you would need to acquire the write lock
         // when opening the stream but release it when closing the stream (*not* when
         // returning it to the caller).
-        assert mutex().canRead();
+        assert lock().canRead();
         return new FileOutputStream(f);
     }
     
@@ -311,6 +309,6 @@ public abstract class AbstractPhadhail implements Phadhail {
         return clazz.substring(i + 1) + "<" + f + ">";
     }
 
-    public abstract Mutex mutex();
+    public abstract Lock lock();
     
 }

@@ -18,7 +18,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.util.Mutex;
+import threaddemo.locking.Lock;
 
 // XXX possibly need some method which is like getStaleValueNonBlocking but which
 // throws InvocationTargetException, to permit views to display an error marker
@@ -26,14 +26,14 @@ import org.openide.util.Mutex;
 
 /**
  * Support for bidirectional construction of a derived model from an underlying model.
- * Based on a mutex which is assumed to control both models.
+ * Based on a lock which is assumed to control both models.
  * Handles all locking and scheduling associated with such a system.
  * It is possible to "nest" supports so that the derived model of one is the
- * underlying model of another - but they must still share a common mutex.
+ * underlying model of another - but they must still share a common lock.
  *
  * <p>"Derive" means to take the underlying model (not represented explicitly here,
  * but assumed to be "owned" by the subclass) and produce the derived model;
- * typically this will involve parsing or the like. This operates in a read mutex.
+ * typically this will involve parsing or the like. This operates in a read lock.
  *
  * <p>"Recreate" means to take a new derived model (which may in fact be the same
  * as the old derived model but with different structure) and somehow change the
@@ -85,7 +85,7 @@ import org.openide.util.Mutex;
  * rederived if it is stale. Or you can ask for the value if it is fresh or accept
  * null if it is missing or stale. Or you can ask for the value if it is fresh or
  * stale and accept null if it is missing. The latter two operations do not block
- * (except to get the read mutex) and so are valuable in views.
+ * (except to get the read lock) and so are valuable in views.
  *
  * <p>Derivation is started immediately after an initiate operation if there is
  * no derived model yet. If there is a model but it is stale and you ask to
@@ -119,7 +119,7 @@ import org.openide.util.Mutex;
  * responsible for detecting it and reacting appropriately.
  *
  * <p>Another kind of "clobbering" can occur in case the underlying model is not
- * completely controlled by the mutex. For example, it might be the native filesystem,
+ * completely controlled by the lock. For example, it might be the native filesystem,
  * which can change at any time without acquiring a lock in the JVM. In that case
  * an attempted mutation may be operating against a model derived from an older
  * state of the underlying model. Again, this support does <em>not</em> provide a
@@ -127,7 +127,7 @@ import org.openide.util.Mutex;
  * and recover from it gracefully, e.g. by throwing an exception from
  * <code>doRecreate</code> or by merging changes. Using TwoWaySupport may not be
  * appropriate for such cases anyway, since derivation could then cause an existing
- * reader to see state changes within its read mutex, which could violate its
+ * reader to see state changes within its read lock, which could violate its
  * assumptions about the underlying model.
  *
  * <p>Derivation and recreation may throw checked exceptions. In such cases the
@@ -145,7 +145,7 @@ import org.openide.util.Mutex;
  *
  * <p>You can attach a listener to this class. You will get an event when the
  * status of the support changes. All events are fired as soon as possible in the
- * read mutex.
+ * read lock.
  *
  * @author Jesse Glick
  */
@@ -172,8 +172,8 @@ public abstract class TwoWaySupport {
     /** reverse lookup for model field to support queue collector */
     private static final Map referencesToSupports = new WeakHashMap(); // Map<Reference<Object>,Reference<TwoWaySupport>>
     
-    /** associated mutex */
-    private final Mutex mutex;
+    /** associated lock */
+    private final Lock lock;
     
     /** listener list */
     private final List listeners; // List<TwoWayListener>
@@ -202,27 +202,25 @@ public abstract class TwoWaySupport {
     /**
      * Create an uninitialized support.
      * No derivation or recreation is scheduled initially.
-     * @param mutex the associated mutex
+     * @param lock the associated lock
      */
-    protected TwoWaySupport(Mutex mutex) {
-        // XXX can it really?
-        //if (mutex == Mutex.EVENT) throw new IllegalArgumentException("Mutex.EVENT can deadlock TwoWaySupport!");
-        this.mutex = mutex;
+    protected TwoWaySupport(Lock lock) {
+        this.lock = lock;
         listeners = new ArrayList();
     }
     
     /**
-     * Get the associated mutex.
-     * @return the mutex
+     * Get the associated lock.
+     * @return the lock
      */
-    public final Mutex getMutex() {
-        return mutex;
+    public final Lock getLock() {
+        return lock;
     }
     
     /**
      * Compute the derived model from the underlying model.
      *
-     * <p>This method is called with a read lock held on the mutex.
+     * <p>This method is called with a read lock held on the lock.
      * However for derived models with mutable state you may need to acquire an
      * additional simple lock (monitor) on some part of the model to refresh its
      * state - this is not a true write, but other readers should be locked out
@@ -230,7 +228,7 @@ public abstract class TwoWaySupport {
      * replaced wholesale, this is not necessary.
      *
      * <p>Note that derivations never run in parallel, even though they are in a
-     * read mutex. In this implementation, all derivations in fact run in a dedicated
+     * read lock. In this implementation, all derivations in fact run in a dedicated
      * thread if they are invoked asynchronously using {@link #initiate}, but that
      * may change.
      *
@@ -277,7 +275,7 @@ public abstract class TwoWaySupport {
     /**
      * Compute the effect of two sequential changes to the underlying model.
      * 
-     * <p>This method is called with a read lock held on the mutex.
+     * <p>This method is called with a read lock held on the lock.
      *
      * <p>After this method is called, the first argument is discarded by this support,
      * so a subclass may implement it by mutating the first argument and returning it.
@@ -291,7 +289,7 @@ public abstract class TwoWaySupport {
     /**
      * Recreate the underlying model from the derived model.
      *
-     * <p>This method is called with a write lock held on the mutex.
+     * <p>This method is called with a write lock held on the lock.
      *
      * <p>It is expected that any changes to the underlying model will be notified
      * to the relevant listeners within the dynamic scope of this method. An implementation
@@ -325,7 +323,7 @@ public abstract class TwoWaySupport {
     
     /**
      * Get the value of the derived model, blocking as needed until it is ready.
-     * This method requires the read mutex and may block further for
+     * This method requires the read lock and may block further for
      * {@link #doDerive}.
      * @return the value of the derived model (never null)
      * @throws InvocationTargetException if <code>doDerive</code> was called
@@ -333,7 +331,7 @@ public abstract class TwoWaySupport {
      *                                   earlier derivation run that is still broken)
      */
     public final Object getValueBlocking() throws InvocationTargetException {
-        assert mutex.canRead();
+        assert lock.canRead();
         Object old;
         synchronized (LOCK) {
             assertStateConsistent();
@@ -433,12 +431,12 @@ public abstract class TwoWaySupport {
     
     /**
      * Get the value of the derived model, if it is ready and fresh.
-     * This method requires the read mutex but otherwise does not block.
+     * This method requires the read lock but otherwise does not block.
      * @return the value of the derived model, or null if it is stale or has never
      *         been computed at all
      */
     public final Object getValueNonBlocking() {
-        assert mutex.canRead();
+        assert lock.canRead();
         synchronized (LOCK) {
             assertStateConsistent();
             assert !mutating;
@@ -448,12 +446,12 @@ public abstract class TwoWaySupport {
     
     /**
      * Get the value of the derived model, if it is ready (fresh or stale).
-     * This method requires the read mutex but otherwise does not block.
+     * This method requires the read lock but otherwise does not block.
      * @return the value of the derived model, or null if it has never been
      *         computed at all
      */
     public final Object getStaleValueNonBlocking() {
-        assert mutex.canRead();
+        assert lock.canRead();
         synchronized (LOCK) {
             assertStateConsistent();
             assert !mutating;
@@ -464,7 +462,7 @@ public abstract class TwoWaySupport {
     /**
      * Change the value of the derived model and correspondingly update the
      * underlying model.
-     * <p>This method requires the write mutex and calls {@link #doRecreate}
+     * <p>This method requires the write lock and calls {@link #doRecreate}
      * if it does not throw <code>ClobberException</code>.
      * @param derivedDelta a change to the derived model
      * @return the new value of the derived model
@@ -476,7 +474,7 @@ public abstract class TwoWaySupport {
      */
     public final Object mutate(Object derivedDelta) throws ClobberException, InvocationTargetException {
         if (derivedDelta == null) throw new NullPointerException();
-        assert mutex.canWrite();
+        assert lock.canWrite();
         Object oldValue;
         synchronized (LOCK) {
             assertStateConsistent();
@@ -518,13 +516,13 @@ public abstract class TwoWaySupport {
     /**
      * Indicate that any current value of the derived model is invalid and
      * should no longer be used if exact results are desired.
-     * <p>This method requires the read mutex but does not block otherwise,
+     * <p>This method requires the read lock but does not block otherwise,
      * except to call {@link #composeUnderlyingDeltas}.
      * @param underlyingDelta a change to the underlying model
      */
     public final void invalidate(Object underlyingDelta) {
         if (underlyingDelta == null) throw new NullPointerException();
-        assert mutex.canRead();
+        assert lock.canRead();
         boolean wasInited;
         Object oldValue;
         synchronized (LOCK) {
@@ -553,7 +551,7 @@ public abstract class TwoWaySupport {
      * Initiate creation of the derived model from the underlying model.
      * This is a no-op unless that process has not yet been started or if the
      * value of the derived model is already fresh and needs no rederivation.
-     * <p>This method does not require the mutex nor does it block, except
+     * <p>This method does not require the lock nor does it block, except
      * insofar as {@link #initiating} might.
      */
     public final void initiate() {
@@ -581,7 +579,7 @@ public abstract class TwoWaySupport {
      * The default implementation does nothing. Subclasses may choose to initiate
      * a request for some information from the underlying model, if it is not
      * immediately accessible.
-     * <p>This method is not called with any lock, so if a read mutex is desired,
+     * <p>This method is not called with any lock, so if a read lock is desired,
      * it must be requested explicitly.
      */
     protected void initiating() {
@@ -613,7 +611,7 @@ public abstract class TwoWaySupport {
     }
 
     /**
-     * Fire an event to all listeners in the read mutex.
+     * Fire an event to all listeners in the read lock.
      */
     private void fireChange(final TwoWayEvent e) {
         final TwoWayListener[] ls;
@@ -623,8 +621,8 @@ public abstract class TwoWaySupport {
             }
             ls = (TwoWayListener[])listeners.toArray(new TwoWayListener[listeners.size()]);
         }
-        mutex.readAccess(new Mutex.Action() {
-            public Object run() {
+        lock.read(new Runnable() {
+            public void run() {
                 for (int i = 0; i < ls.length; i++) {
                     if (e instanceof TwoWayEvent.Derived) {
                         ls[i].derived((TwoWayEvent.Derived)e);
@@ -641,7 +639,6 @@ public abstract class TwoWaySupport {
                         ls[i].broken((TwoWayEvent.Broken)e);
                     }
                 }
-                return null;
             }
         });
     }
@@ -816,8 +813,8 @@ public abstract class TwoWaySupport {
                 }
                 logger.log(Level.FINER, "derivation thread processing: {0}", s[0]);
                 // Out of synch block; we have a support to run.
-                s[0].getMutex().readAccess(new Mutex.Action() {
-                    public Object run() {
+                s[0].getLock().read(new Runnable() {
+                    public void run() {
                         try {
                             s[0].getValueBlocking();
                             // Ignore value and exceptions - gVB is
@@ -829,7 +826,6 @@ public abstract class TwoWaySupport {
                         } catch (Error e) {
                             e.printStackTrace();
                         }
-                        return null;
                     }
                 });
                 // Don't explicitly remove it from the queue - if it was

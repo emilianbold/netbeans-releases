@@ -17,8 +17,8 @@ import java.lang.ref.*;
 import java.util.*;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
 import org.openide.util.lookup.*;
+import threaddemo.locking.Lock;
 import threaddemo.model.Phadhail;
 
 // XXX this is inefficient - e.g. LookNode.getIcon will force the PhadhailLookup
@@ -109,7 +109,7 @@ public class PhadhailLookups {
                 return getEd();
             } else {
                 assert obj == KEY_DOM_PROVIDER;
-                Mutex m = ph.mutex(); // XXX may need a different mutex...
+                Lock m = ph.lock(); // XXX may need a different lock...
                 return new DomSupport(ph, getEd(), m);
             }
         }

@@ -3,7 +3,7 @@ large data sets such as massive files.
 
 Configure paths to various libs; see build.xml and create user.build.properties
 or just pass -D args to ant. Make sure openide.jar is up-to-date (check CVS).
---> You need openide/src/org/openide/util/Mutex*.java from branch mutex_32439, but rest of openide from trunk
+--> You need openide from the trunk
 --> You need Looks from the trunk (openide/looks).
 --> Only JDK 1.4 is supported.
 
@@ -96,5 +96,7 @@ Major known problems:
 
 - Refactoring while an XML file is expanded sometimes causes an infinite loop and
   GUI freeze. (Possible Xerces bug? If so, still apparently in 2.4.0...)
+
+- Read/write lock seems to not work with Index view - TBD.
 
 -jglick@netbeans.org

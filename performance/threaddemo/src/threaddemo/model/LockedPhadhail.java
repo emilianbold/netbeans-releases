@@ -16,19 +16,21 @@ package threaddemo.model;
 import java.io.*;
 import java.lang.ref.*;
 import java.util.*;
-import org.openide.util.Mutex;
+import threaddemo.locking.Lock;
+import threaddemo.locking.Locks;
+import threaddemo.locking.PrivilegedLock;
 
 /**
- * A phadhail in which all model methods are locked with a plain mutex.
+ * A phadhail in which all model methods are locked with a plain lock.
  * In this variant, the impl acquires locks automatically, though another
  * style would be to require the client to do this.
  * @author Jesse Glick
  */
 final class LockedPhadhail extends AbstractPhadhail {
     
-    private static final Mutex.Privileged PMUTEX = new Mutex.Privileged();
+    private static final PrivilegedLock PLOCK = new PrivilegedLock();
     static {
-        new Mutex("LP", PMUTEX, 0);
+        Locks.readWriteLock("LP", PLOCK, 0);
     }
     
     private static final Factory FACTORY = new Factory() {
@@ -50,98 +52,98 @@ final class LockedPhadhail extends AbstractPhadhail {
     }
     
     public List getChildren() {
-        PMUTEX.enterReadAccess();
+        PLOCK.enterRead();
         try {
             return super.getChildren();
         } finally {
-            PMUTEX.exitReadAccess();
+            PLOCK.exitRead();
         }
     }
     
     public String getName() {
-        PMUTEX.enterReadAccess();
+        PLOCK.enterRead();
         try {
             return super.getName();
         } finally {
-            PMUTEX.exitReadAccess();
+            PLOCK.exitRead();
         }
     }
     
     public String getPath() {
-        PMUTEX.enterReadAccess();
+        PLOCK.enterRead();
         try {
             return super.getPath();
         } finally {
-            PMUTEX.exitReadAccess();
+            PLOCK.exitRead();
         }
     }
     
     public boolean hasChildren() {
-        PMUTEX.enterReadAccess();
+        PLOCK.enterRead();
         try {
             return super.hasChildren();
         } finally {
-            PMUTEX.exitReadAccess();
+            PLOCK.exitRead();
         }
     }
     
     public void rename(String nue) throws IOException {
-        PMUTEX.enterWriteAccess();
+        PLOCK.enterWrite();
         try {
             super.rename(nue);
         } finally {
-            PMUTEX.exitWriteAccess();
+            PLOCK.exitWrite();
         }
     }
     
     public Phadhail createContainerPhadhail(String name) throws IOException {
-        PMUTEX.enterWriteAccess();
+        PLOCK.enterWrite();
         try {
             return super.createContainerPhadhail(name);
         } finally {
-            PMUTEX.exitWriteAccess();
+            PLOCK.exitWrite();
         }
     }
     
     public Phadhail createLeafPhadhail(String name) throws IOException {
-        PMUTEX.enterWriteAccess();
+        PLOCK.enterWrite();
         try {
             return super.createLeafPhadhail(name);
         } finally {
-            PMUTEX.exitWriteAccess();
+            PLOCK.exitWrite();
         }
     }
     
     public void delete() throws IOException {
-        PMUTEX.enterWriteAccess();
+        PLOCK.enterWrite();
         try {
             super.delete();
         } finally {
-            PMUTEX.exitWriteAccess();
+            PLOCK.exitWrite();
         }
     }
     
     public InputStream getInputStream() throws IOException {
-        PMUTEX.enterReadAccess();
+        PLOCK.enterRead();
         try {
             return super.getInputStream();
         } finally {
-            PMUTEX.exitReadAccess();
+            PLOCK.exitRead();
         }
     }
     
     public OutputStream getOutputStream() throws IOException {
         // See comment in AbstractPhadhail re. use of read access.
-        PMUTEX.enterReadAccess();
+        PLOCK.enterRead();
         try {
             return super.getOutputStream();
         } finally {
-            PMUTEX.exitReadAccess();
+            PLOCK.exitRead();
         }
     }
     
-    public Mutex mutex() {
-        return PMUTEX.getMutex();
+    public Lock lock() {
+        return PLOCK.getLock();
     }
     
 }

@@ -15,7 +15,7 @@ package threaddemo.apps.index;
 
 import java.util.Map;
 import javax.swing.event.ChangeListener;
-import org.openide.util.Mutex;
+import threaddemo.locking.Lock;
 import threaddemo.model.Phadhail;
 
 /**
@@ -44,7 +44,7 @@ interface Index {
      * Get the index data.
      * Keys are XML element names.
      * Values are occurrence counts.
-     * <p>Must be called with mutex held, and result may only be accessed with it held.
+     * <p>Must be called with lock held, and result may only be accessed with it held.
      */
     Map/*<String,int>*/ getData();
     
@@ -59,8 +59,8 @@ interface Index {
     void removeChangeListener(ChangeListener l);
     
     /**
-     * Associated mutex.
+     * Associated lock.
      */
-    Mutex getMutex();
+    Lock getLock();
     
 }

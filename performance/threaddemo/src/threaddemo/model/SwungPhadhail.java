@@ -18,7 +18,10 @@ import java.io.*;
 import java.lang.ref.*;
 import java.util.*;
 import javax.swing.SwingUtilities;
-import org.openide.util.Mutex;
+import threaddemo.locking.Lock;
+import threaddemo.locking.LockAction;
+import threaddemo.locking.LockExceptionAction;
+import threaddemo.locking.Locks;
 
 /**
  * Phadhail model impl using a technique like SwingWorker.
@@ -118,7 +121,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
         assert EventQueue.isDispatchThread();
         Phadhail orig;
         try {
-            orig = (Phadhail)Worker.block(new Mutex.ExceptionAction() {
+            orig = (Phadhail)Worker.block(new LockExceptionAction() {
                 public Object run() throws IOException {
                     if (container) {
                         return ph.createContainerPhadhail(name);
@@ -146,7 +149,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     public void rename(final String nue) throws IOException {
         assert EventQueue.isDispatchThread();
         try {
-            Worker.block(new Mutex.ExceptionAction() {
+            Worker.block(new LockExceptionAction() {
                 public Object run() throws IOException {
                     ph.rename(nue);
                     return null;
@@ -162,7 +165,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     public void delete() throws IOException {
         assert EventQueue.isDispatchThread();
         try {
-            Worker.block(new Mutex.ExceptionAction() {
+            Worker.block(new LockExceptionAction() {
                 public Object run() throws IOException {
                     ph.delete();
                     return null;
@@ -235,7 +238,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     public InputStream getInputStream() throws IOException {
         assert EventQueue.isDispatchThread();
         try {
-            return (InputStream)Worker.block(new Mutex.ExceptionAction() {
+            return (InputStream)Worker.block(new LockExceptionAction() {
                 public Object run() throws IOException {
                     return ph.getInputStream();
                 }
@@ -250,7 +253,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     public OutputStream getOutputStream() throws IOException {
         assert EventQueue.isDispatchThread();
         try {
-            return (OutputStream)Worker.block(new Mutex.ExceptionAction() {
+            return (OutputStream)Worker.block(new LockExceptionAction() {
                 public Object run() throws IOException {
                     return ph.getOutputStream();
                 }
@@ -267,7 +270,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
         //System.err.println("hasChildren on " + this);
         if (leaf == null) {
             //System.err.println("not cached");
-            leaf = (Boolean)Worker.block(new Mutex.Action() {
+            leaf = (Boolean)Worker.block(new LockAction() {
                 public Object run() {
                     //System.err.println("hasChildren: working...");
                     return ph.hasChildren() ? Boolean.FALSE : Boolean.TRUE;
@@ -327,8 +330,8 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
         });
     }
     
-    public Mutex mutex() {
-        return Mutex.EVENT;
+    public Lock lock() {
+        return Locks.eventLock();
     }
     
 }

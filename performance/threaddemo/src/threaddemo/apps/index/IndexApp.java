@@ -20,7 +20,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.*;
-import org.openide.util.Mutex;
+import threaddemo.locking.LockAction;
 import threaddemo.model.Phadhail;
 
 /**
@@ -60,7 +60,7 @@ public class IndexApp extends JFrame {
     }
     
     private void refreshTable() {
-        final SortedMap/*<String,int>*/ data = (SortedMap)index.getMutex().readAccess(new Mutex.Action() {
+        final SortedMap/*<String,int>*/ data = (SortedMap)index.getLock().read(new LockAction() {
             public Object run() {
                 return new TreeMap(index.getData());
             }

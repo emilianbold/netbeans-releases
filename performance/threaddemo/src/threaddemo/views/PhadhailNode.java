@@ -19,7 +19,7 @@ import javax.swing.Action;
 import org.openide.actions.*;
 import org.openide.cookies.*;
 import org.openide.nodes.*;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import threaddemo.data.*;
@@ -38,7 +38,7 @@ final class PhadhailNode extends AbstractNode implements PhadhailListener {
     public PhadhailNode(Phadhail ph) {
         super(ph.hasChildren() ? new PhadhailChildren(ph) : Children.LEAF, PhadhailLookups.getLookup(ph));
         this.ph = ph;
-        ph.addPhadhailListener((PhadhailListener)WeakListener.create(PhadhailListener.class, this, ph));
+        ph.addPhadhailListener((PhadhailListener)WeakListeners.create(PhadhailListener.class, this, ph));
     }
     
     public String getName() {
@@ -50,12 +50,12 @@ final class PhadhailNode extends AbstractNode implements PhadhailListener {
     }
     
     public void childrenChanged(PhadhailEvent ev) {
-        assert ev.getPhadhail().mutex().canRead();
+        assert ev.getPhadhail().lock().canRead();
         ((PhadhailChildren)getChildren()).update();
     }
     
     public void nameChanged(PhadhailNameEvent ev) {
-        assert ev.getPhadhail().mutex().canRead();
+        assert ev.getPhadhail().lock().canRead();
         fireNameChange(ev.getOldName(), ev.getNewName());
         fireDisplayNameChange(null, ev.getPhadhail().getPath());
     }

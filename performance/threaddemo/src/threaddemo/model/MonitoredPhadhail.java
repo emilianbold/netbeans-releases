@@ -16,7 +16,8 @@ package threaddemo.model;
 import java.io.*;
 import java.lang.ref.*;
 import java.util.*;
-import org.openide.util.Mutex;
+import threaddemo.locking.Lock;
+import threaddemo.locking.Locks;
 
 /**
  * A phadhail in which all model methods are locked with a simple monitor.
@@ -28,7 +29,7 @@ final class MonitoredPhadhail extends AbstractPhadhail {
     
     private static final class LOCK {}
     private static final Object LOCK = new LOCK();
-    private static final Mutex MUTEX = Mutex.createFromMonitor(LOCK);
+    private static final Lock MLOCK = Locks.monitorLock(LOCK);
     
     private static final Factory FACTORY = new Factory() {
         public AbstractPhadhail create(File f) {
@@ -108,8 +109,8 @@ final class MonitoredPhadhail extends AbstractPhadhail {
         }
     }
     
-    public Mutex mutex() {
-        return MUTEX;
+    public Lock lock() {
+        return MLOCK;
     }
     
 }
