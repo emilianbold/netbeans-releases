@@ -71,6 +71,7 @@ class FormToolBar extends JToolBar {
             FormUtils.getBundleString("CTL_SelectionButtonHint")); // NOI18N
         HelpCtx.setHelpIDString(selectionButton, "gui.components.palette"); // NOI18N
         selectionButton.setSelected(true);
+        initButton(selectionButton);
 
         // connection button
         connectionButton = new JToggleButton(
@@ -82,6 +83,7 @@ class FormToolBar extends JToolBar {
         connectionButton.setToolTipText(
             FormUtils.getBundleString("CTL_ConnectionButtonHint")); // NOI18N
         HelpCtx.setHelpIDString(connectionButton, "gui.connecting.intro"); // NOI18N
+        initButton(connectionButton);
 
         // palette button
         paletteButton = new JToggleButton(
@@ -93,6 +95,7 @@ class FormToolBar extends JToolBar {
         paletteButton.setToolTipText(
             FormUtils.getBundleString("CTL_BeansButtonHint")); // NOI18N
         HelpCtx.setHelpIDString(paletteButton, "gui.components.adding"); // NOI18N
+        initButton(paletteButton);
 
         // status label
         addLabel = new JLabel();
@@ -119,10 +122,12 @@ class FormToolBar extends JToolBar {
         TestAction testAction = (TestAction) SystemAction.get(TestAction.class);
         JButton testButton = (JButton) testAction.getToolbarPresenter();
         testButton.addMouseListener(listener);
+        initButton(testButton);
 
         InstallBeanAction paletteManagerAction = (InstallBeanAction)
                                       SystemAction.get(InstallBeanAction.class);
         JButton pmButton = (JButton) paletteManagerAction.getToolbarPresenter();
+        initButton(pmButton);
 
         add(Box.createHorizontalStrut(4));
         add(separator1);
@@ -148,6 +153,12 @@ class FormToolBar extends JToolBar {
     }
 
     // --------
+    
+    private void initButton(AbstractButton button) {
+        button.setBorderPainted(false);
+        button.setOpaque(false);
+        button.setFocusPainted(false);
+    }
 
     void updateDesignerMode(int mode) {
         selectionButton.setSelected(mode == FormDesigner.MODE_SELECT);
