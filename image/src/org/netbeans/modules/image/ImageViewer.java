@@ -266,6 +266,12 @@ public class ImageViewer extends CloneableTopComponent {
         super.open(workspace);
         openOnOtherWorkspaces(realWorkspace);
     }
+    
+    /**
+     */
+    protected String preferredID() {
+        return getClass().getName();
+    }
 
     private void superOpen(Workspace workspace) {
         super.open(workspace);
