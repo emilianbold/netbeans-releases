@@ -464,7 +464,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.3/docs/api"/>
     <property name="xml-docs-location" value="http://xml.apache.org/apiDocs"/>
     <tstamp/>
-    <property name="open-apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2000 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
+    <property name="open-apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2001 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
     <echo message="Build Open API documentation..."/>
     <mkdir dir="OpenAPIs"/>
     <javadoc destdir="OpenAPIs"
@@ -499,7 +499,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
              packages="org.openide.modules"/>
       <group title="TopManager, ServiceType, WizardDescriptor, ..."
              packages="org.openide"/>
-      <group title="&lt;a href=&quot;@TOP@org/openide/doc-files/services-api.html&quot;&gt;Services and Lookup APIs&lt;/a&gt;"
+      <group title="&lt;a href=&quot;@TOP@org/openide/doc-files/services-api.html&quot;&gt;Services &amp;amp; Lookup API&lt;/a&gt;"
              packages="org.openide.util.lookup"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/filesystems/doc-files/api.html&quot;&gt;FileSystems API&lt;/a&gt;"
              packages="org.openide.filesystems"/>
@@ -523,11 +523,10 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
              packages="org.openide.windows"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/options/doc-files/api.html&quot;&gt;Options API&lt;/a&gt;"
              packages="org.openide.options"/>
-      <group title="XML API" packages="org.openide.xml"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/src/doc-files/api.html&quot;&gt;Java Hierarchy API&lt;/a&gt;"
              packages="org.openide.src:org.openide.src.nodes"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/util/doc-files/api.html&quot;&gt;Utility Classes&lt;/a&gt;"
-             packages="org.openide.awt:org.openide.util:org.openide.util.enum:org.openide.util.io"/>
+             packages="org.openide.awt:org.openide.util:org.openide.util.enum:org.openide.util.io:org.openide.xml"/>
     </javadoc>
     <copy file="api/doc/open-apis.css" tofile="OpenAPIs/open-apis.css"/>
     <replace dir="OpenAPIs" token="@JDK@" value="${jdk-docs-location}">
