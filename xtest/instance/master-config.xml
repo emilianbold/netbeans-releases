@@ -194,10 +194,40 @@ Microsystems, Inc. All Rights Reserved.
   </config>
   
   <!-- QA functional tests for FFJ CE -->
-  <!-- Currently tests for FFJ are in orion_fcs branch 
   <config name="qa-functional-ffjce">
+      <module name="ant" 	testtypes="qa-functional"   attributes="validation,full"/>      
+      <module name="beans" 	testtypes="qa-func" 	    attributes="validation,full"/>
+      <module name="clazz" 	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="core" 	testtypes="qa-functional"   attributes="validation,full"/>  
+      <module name="editor" 	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="form" 	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="i18n" 	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="java" 	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="javacvs" 	testtypes="qa-functional"   attributes="validation,full"/>      
+      <module name="openide" 	testtypes="qa-functional"   attributes="validation,full"/>  
+      <module name="projects" 	testtypes="qa-functional"   attributes="validation,full,jdk14"/>
+      <module name="qa" 	testtypes="serialization"   attributes="validation,full"/>
+      <module name="qa"       	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="vcsgeneric"	testtypes="qa-functional"   attributes="validation,full"/>      
   </config>
-  -->
+  
+  <!-- QA functional tests for FFJ CE on jdk 1.3 -->
+  <config name="qa-functional-ffjce-jdk13">
+      <module name="ant" 	testtypes="qa-functional"   attributes="validation,full"/>      
+      <module name="beans" 	testtypes="qa-func" 	    attributes="validation,full"/>
+      <module name="clazz" 	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="core" 	testtypes="qa-functional"   attributes="validation,full"/>  
+      <module name="editor" 	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="form" 	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="i18n" 	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="java" 	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="javacvs" 	testtypes="qa-functional"   attributes="validation,full"/>      
+      <module name="openide" 	testtypes="qa-functional"   attributes="validation,full"/>  
+      <module name="projects" 	testtypes="qa-functional"   attributes="validation,full,jdk13"/>
+      <module name="qa" 	testtypes="serialization"   attributes="validation,full"/>
+      <module name="qa"       	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="vcsgeneric"	testtypes="qa-functional"   attributes="validation,full"/>      
+  </config>
   
   <config name="david">
       <module name="jndi"    	testtypes="qa-functional"  attributes="validation">
