@@ -393,6 +393,18 @@ public abstract class Operator extends Object
     //Util                                                //
     ////////////////////////////////////////////////////////
 
+    public String[] getParentPath(String path[]) {
+        if(path.length > 1) {
+            String[] ppath = new String[path.length - 1];
+            for(int i = 0; i < ppath.length; i++) {
+                ppath[i] = path[i];
+            }
+            return(ppath);
+        } else {
+            return(new String[0]);
+        }
+    }
+
     /**
      * Parses strings like "1|2|3" into arrays {"1", "2", "3"}
      */

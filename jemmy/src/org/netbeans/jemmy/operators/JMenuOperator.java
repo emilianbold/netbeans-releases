@@ -432,6 +432,33 @@ implements Outputable, Timeoutable{
 	pushMenuNoBlock(parseString(path, delim));
     }
 
+    public JMenuItemOperator showMenuItem(String[] path, StringComparator comparator) {
+        String[] parentPath = getParentPath(path);
+        JMenu menu;
+        if(parentPath.length > 0) {
+            menu = (JMenu)pushMenu(getParentPath(path), comparator);
+        } else {
+            push();
+            menu = (JMenu)getSource();
+        }
+        JPopupMenuOperator popup = new JPopupMenuOperator(menu.getPopupMenu());
+        popup.copyEnvironment(this);
+        JMenuItemOperator result = new JMenuItemOperator(popup, path[path.length - 1]);
+        result.copyEnvironment(this);
+        return(result);
+    }
+
+    public JMenuItemOperator showMenuItem(String[] path) {
+        return(showMenuItem(path, getComparator()));
+    }
+
+    public JMenuItemOperator showMenuItem(String path, String delim, StringComparator comparator ) {
+        return(showMenuItem(parseString(path, delim), comparator));
+    }
+    public JMenuItemOperator showMenuItem(String path, String delim) {
+        return(showMenuItem(path, delim, getComparator()));
+    }
+
     /**
      * Returns information about component.
      */
