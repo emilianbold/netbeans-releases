@@ -228,8 +228,10 @@ public class PropertiesStructure extends Element {
      * @see org.openide.text.PositionBounds#insertAfter */
     private PositionBounds getSuitablePositionBoundsForInsert() {
         Element.ItemElem e = null;
-        for (Iterator nonEmpty = nonEmptyItems(); nonEmpty.hasNext();)
-            e = (Element.ItemElem)nonEmpty.next();
+        
+        for(Iterator it = items.iterator(); it.hasNext();)
+            e = (Element.ItemElem)it.next();
+        
         if (e == null)
             return getBounds();
         else {
