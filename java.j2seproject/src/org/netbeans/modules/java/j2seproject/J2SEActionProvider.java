@@ -141,7 +141,6 @@ class J2SEActionProvider implements ActionProvider {
             ErrorManager.getDefault().notify(e);
         }
     }
-        
 
     /**
      * @return array of targets or null to stop execution; can return empty array
@@ -161,17 +160,12 @@ class J2SEActionProvider implements ActionProvider {
             }
         } 
         else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
-            FileObject[] files = findTestSources(context, true);
-            p.setProperty("test.includes", ActionUtils.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
-            p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
-            targetNames = new String[] {"test-single"}; // NOI18N
+            FileObject[] files = findTestSourcesForSources(context);
+            targetNames = setupTestSingle(p, files);
         } 
         else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
-            FileObject[] files = findTestSources(context, true);
-            String path = FileUtil.getRelativePath(project.getTestSourceDirectory(), files[0]);
-            // Convert foo/FooTest.java -> foo.FooTest
-            p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
-            targetNames = new String[] {"debug-test"}; // NOI18N
+            FileObject[] files = findTestSourcesForSources(context);
+            targetNames = setupDebugTestSingle(p, files);
         } 
         else if ( command.equals( JavaProjectConstants.COMMAND_DEBUG_FIX ) ) {
             FileObject[] files = findSources( context );
@@ -211,58 +205,48 @@ class J2SEActionProvider implements ActionProvider {
                 throw new IllegalArgumentException(command);
             }
         } else if (command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_DEBUG_SINGLE)) {
-            FileObject file = findSources(context)[0];
-            String clazz = FileUtil.getRelativePath(project.getSourceDirectory(), file);
-            p.setProperty("javac.includes", clazz); // NOI18N
-            // Convert foo/FooTest.java -> foo.FooTest
-            if (clazz.endsWith(".java")) { // NOI18N
-                clazz = clazz.substring(0, clazz.length() - 5);
-            }
-            clazz = clazz.replace('/','.');
-            
-            if (!MainClassChooser.hasMainMethod(file)) {
-                if (AppletSupport.isApplet(file)) {
-                    URL url = null;
-                    try {
-                        String buildDirProp = project.evaluator().getProperty("build.dir"); //NOI18N
-                        String classesDirProp = project.evaluator().getProperty("build.classes.dir"); //NOI18N
-                        FileObject buildDir = antProjectHelper.resolveFileObject(buildDirProp);
-                        FileObject classesDir = antProjectHelper.resolveFileObject(classesDirProp);
-                        
-                        if (buildDir == null) {
-                            buildDir = FileUtil.createFolder(project.getProjectDirectory(), buildDirProp);
-                        }
-                            
-                        if (classesDir == null) {
-                            classesDir = FileUtil.createFolder(project.getProjectDirectory(), classesDirProp);
-                        }
-                        url = AppletSupport.generateHtmlFileURL(file, buildDir, classesDir);
-                    } catch (FileStateInvalidException fe) {
-                        //ingore
-                    } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
-                        return null;
-                    }
-                    if (command.equals (COMMAND_RUN_SINGLE)) {
-                        targetNames = new String[] {"run-applet"}; // NOI18N
-                    } else {
-                        targetNames = new String[] {"debug-applet"}; // NOI18N
-                    }
-                    if (url != null) {
-                        p.setProperty("applet.url", url.toString()); // NOI18N
-                    }
+            FileObject[] files = findTestSources(context, false);
+            if (files != null) {
+                if (command.equals(COMMAND_RUN_SINGLE)) {
+                    targetNames = setupTestSingle(p, files);
                 } else {
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(J2SEActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    return null;
+                    targetNames = setupDebugTestSingle(p, files);
                 }
             } else {
-                if (command.equals (COMMAND_RUN_SINGLE)) {
-                    p.setProperty("run.class", clazz); // NOI18N
-                    targetNames = (String[])commands.get(COMMAND_RUN_SINGLE);
+                FileObject file = findSources(context)[0];
+                String clazz = FileUtil.getRelativePath(project.getSourceDirectory(), file);
+                p.setProperty("javac.includes", clazz); // NOI18N
+                // Convert foo/FooTest.java -> foo.FooTest
+                if (clazz.endsWith(".java")) { // NOI18N
+                    clazz = clazz.substring(0, clazz.length() - 5);
+                }
+                clazz = clazz.replace('/','.');
+
+                if (!MainClassChooser.hasMainMethod(file)) {
+                    if (AppletSupport.isApplet(file)) {
+                        URL url = generateAppletHTML(file);
+                        if (url == null) {
+                            return null;
+                        }
+                        p.setProperty("applet.url", url.toString()); // NOI18N
+                        if (command.equals (COMMAND_RUN_SINGLE)) {
+                            targetNames = new String[] {"run-applet"}; // NOI18N
+                        } else {
+                            targetNames = new String[] {"debug-applet"}; // NOI18N
+                        }
+                    } else {
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(J2SEActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+                        DialogDisplayer.getDefault().notify(nd);
+                        return null;
+                    }
                 } else {
-                    p.setProperty("debug.class", clazz); // NOI18N
-                    targetNames = (String[])commands.get(COMMAND_DEBUG_SINGLE);
+                    if (command.equals (COMMAND_RUN_SINGLE)) {
+                        p.setProperty("run.class", clazz); // NOI18N
+                        targetNames = (String[])commands.get(COMMAND_RUN_SINGLE);
+                    } else {
+                        p.setProperty("debug.class", clazz); // NOI18N
+                        targetNames = (String[])commands.get(COMMAND_DEBUG_SINGLE);
+                    }
                 }
             }
         } else {
@@ -274,8 +258,20 @@ class J2SEActionProvider implements ActionProvider {
         return targetNames;
     }
     
+    private String[] setupTestSingle(Properties p, FileObject[] files) {
+        p.setProperty("test.includes", ActionUtils.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
+        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
+        return new String[] {"test-single"}; // NOI18N
+    }
+
+    private String[] setupDebugTestSingle(Properties p, FileObject[] files) {
+        String path = FileUtil.getRelativePath(project.getTestSourceDirectory(), files[0]);
+        // Convert foo/FooTest.java -> foo.FooTest
+        p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
+        return new String[] {"debug-test"}; // NOI18N
+    }
+
     public boolean isActionEnabled( String command, Lookup context ) {
-        
         if ( findBuildXml() == null ) {
             return false;
         }
@@ -283,32 +279,24 @@ class J2SEActionProvider implements ActionProvider {
             return findSources( context ) != null || findTestSources( context, false ) != null;
         }
         else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
-            return findTestSources( context, true ) != null;
+            return findTestSourcesForSources(context) != null;
         }
         else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
-            FileObject[] files = findTestSources( context, true );
+            FileObject[] files = findTestSourcesForSources(context);
             return files != null && files.length == 1;
-        }
-        else if ( command.equals( JavaProjectConstants.COMMAND_DEBUG_FIX ) ) {
+        } else if (command.equals(COMMAND_RUN_SINGLE) || 
+                        command.equals(COMMAND_DEBUG_SINGLE) ||
+                        command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
             FileObject fos[] = findSources(context);
             if (fos != null && fos.length == 1) {
                 return true;
             }
             fos = findTestSources(context, false);
             return fos != null && fos.length == 1;
-        } else if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE)) {
-            FileObject fos[] = findSources(context);
-            if (fos != null && fos.length == 1) {
-                return true;
-            } else {
-                return false;
-            }
         } else {
             // other actions are global
             return true;
         }
-
-        
     }
     
     
@@ -354,6 +342,18 @@ class J2SEActionProvider implements ActionProvider {
             }
         }
         return null;
+    }    
+    
+    /** Find tests corresponding to selected sources.
+     */
+    private FileObject[] findTestSourcesForSources(Lookup context) {
+        FileObject[] sourceFiles = findSources(context);
+        if (sourceFiles == null) {
+            return null;
+        }
+        FileObject testSrcDir = project.getTestSourceDirectory();
+        FileObject srcDir = project.getSourceDirectory();
+        return ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcDir, SUBST, true);
     }    
     
     private boolean isSetMainClass (FileObject sourcesRoot, String mainClass) {
@@ -408,5 +408,30 @@ class J2SEActionProvider implements ActionProvider {
 
         return canceled;
     }
-        
+
+    private URL generateAppletHTML(FileObject file) {
+        URL url = null;
+        try {
+            String buildDirProp = project.evaluator().getProperty("build.dir"); //NOI18N
+            String classesDirProp = project.evaluator().getProperty("build.classes.dir"); //NOI18N
+            FileObject buildDir = antProjectHelper.resolveFileObject(buildDirProp);
+            FileObject classesDir = antProjectHelper.resolveFileObject(classesDirProp);
+
+            if (buildDir == null) {
+                buildDir = FileUtil.createFolder(project.getProjectDirectory(), buildDirProp);
+            }
+
+            if (classesDir == null) {
+                classesDir = FileUtil.createFolder(project.getProjectDirectory(), classesDirProp);
+            }
+            url = AppletSupport.generateHtmlFileURL(file, buildDir, classesDir);
+        } catch (FileStateInvalidException fe) {
+            //ingore
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+            return null;
+        }
+        return url;
+    }
+    
 }
