@@ -35,7 +35,7 @@ public class MakeListOfNBM extends Task {
     }
     
     /** Sets the directory used to create the NBM list file */
-    public void setOutputfileDir(File s) {
+    public void setOutputfiledir(File s) {
         outputFile = s;
     }
 
@@ -45,10 +45,10 @@ public class MakeListOfNBM extends Task {
         if ( outputFile == null ) new BuildException( "You have to specify output directoty" );
         log ("Generating information for Auto Update...");
         
-        if (!outputFile.exists()) {
+/*        if (!outputFile.exists()) {
             outputFile.mkdirs();
         }
-        
+*/        
         Task nbms[] = ((Target) this.getProject().getTargets().get(targetName)).getTasks();
         UpdateTracking track = new UpdateTracking( outputFile.getAbsolutePath() );
         for( int i=0; i < nbms.length; i++) {

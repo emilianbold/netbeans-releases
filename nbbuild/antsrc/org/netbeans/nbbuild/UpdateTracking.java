@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.io.IOException;
+import java.io.FileFilter;
 import java.util.*;
 
 import org.w3c.dom.*;
@@ -30,7 +31,6 @@ import org.xml.sax.InputSource;
  * @author  akemr
  */
 public class UpdateTracking {
-    private static final String ELEMENT_MODULES = "installed_modules"; // NOI18N
     private static final String ELEMENT_MODULE = "module"; // NOI18N
     private static final String ATTR_CODENAMEBASE = "codename"; // NOI18N
     private static final String ELEMENT_VERSION = "module_version"; // NOI18N
@@ -49,41 +49,101 @@ public class UpdateTracking {
     private static final String FILE_SEPARATOR = System.getProperty ("file.separator");                
 
     /** The name of the install_later file */
-    private static final String TRACKING_FILE_NAME = "update_tracking.xml"; // NOI18N
+    public static final String TRACKING_DIRECTORY = "update_tracking"; // NOI18N
     
-    /** Holds value of property modules. 
-     * Each element of this List is instance of Module class.
-     */
-    private List modules = new ArrayList();
-
     private boolean pError = false;
-    
-    private static UpdateTracking trackingHome;
-    private static UpdateTracking trackingUser;
-    
-    private boolean fromUser = false;
     
     private File trackingFile = null;
     
     private String origin = NBM_ORIGIN;
+    private String nbPath = null;
+    private Module module = null;
    
     // for generating xml in build process
     public UpdateTracking( String nbPath ) {
-        trackingFile = new File( nbPath + FILE_SEPARATOR + TRACKING_FILE_NAME);
-        
-        read();
-        
+        this.nbPath = nbPath;
         origin = INST_ORIGIN;
     }
     
+    public Version addNewModuleVersion( String codenamebase, String spec_version ) {
+        module = new Module();
+        module.setCodenamebase( codenamebase );
+        Version version = new Version();        
+        version.setVersion( spec_version );
+        version.setOrigin( origin );
+        version.setLast( true );
+        version.setInstall_time( System.currentTimeMillis() );
+        module.setVersion( version );
+        return version;
+    }
+    
+    public void removeLocalized( String locale ) {
+        File updateDirectory = new File( nbPath );
+        File[] trackingFiles = updateDirectory.listFiles( new FileFilter() { // Get only *.xml files
+            public boolean accept( File file ) {
+                return file.isFile() &&file.getName().endsWith(".xml");
+            }
+        } );
+        if (trackingFiles != null)
+            for (int i = trackingFiles.length-1; i >= 0; i--) {
+                trackingFile = trackingFiles[i];
+                read();
+                module.removeLocalized( locale );
+                write();
+            }
+    }
+    
+    void write( ) {
+        Document document = XMLUtil.createDocument(ELEMENT_MODULE);  
+        Element e_module = null;
+        Element e_version = null;
+        Element e_file = null;
+        e_module = document.createElement(ELEMENT_MODULE);
+        e_module.setAttribute(ATTR_CODENAMEBASE, module.getCodenamebase());
+        document.appendChild( e_module );
+        Iterator it2 = module.getVersions().iterator();
+        while ( it2.hasNext() ) {
+            Version ver = (Version)it2.next();
+            e_version = document.createElement(ELEMENT_VERSION);
+            e_version.setAttribute(ATTR_VERSION, ver.getVersion());
+            e_version.setAttribute(ATTR_ORIGIN, ver.getOrigin());
+            e_version.setAttribute(ATTR_LAST, "true");                          //NO I18N
+            e_version.setAttribute(ATTR_INSTALL, Long.toString(ver.getInstall_time()));
+            e_module.appendChild( e_version );
+            Iterator it3 = ver.getFiles().iterator();
+            while ( it3.hasNext() ) {
+                ModuleFile file = (ModuleFile)it3.next();
+                e_file = document.createElement(ELEMENT_FILE);
+                e_file.setAttribute(ATTR_FILE_NAME, file.getName());
+                e_file.setAttribute(ATTR_CRC, file.getCrc());
+                e_version.appendChild( e_file );
+            }
+        }
+        
+        //document.getDocumentElement().normalize();
+        String trackingFileName = module.getCodenamebase();
+        trackingFileName = trackingFileName.substring(0, trackingFileName.indexOf('/')).replace('.', '-') + ".xml";
+        File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+        trackingFile = new File(directory, trackingFileName);
+        try {
+	    OutputStreamWriter os = new OutputStreamWriter( new FileOutputStream( trackingFile ), "UTF-8" );
+	    //Writer os = new FileWriter( trackingFile );
+            XMLUtil.write(document, os);
+            //document.write (os);
+            os.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }        
+    }
+
     /** Scan through org.w3c.dom.Document document. */
     private void read() {
         /** org.w3c.dom.Document document */
         org.w3c.dom.Document document;
-        if (!trackingFile.exists()) {
-            document = XMLUtil.createDocument("modules");  //NOI18N
-        }
-        else {
+        if (trackingFile.exists()) {
             InputStream is;
             try {
                 is = new FileInputStream( trackingFile );
@@ -95,40 +155,25 @@ public class UpdateTracking {
             }
             catch ( org.xml.sax.SAXException e ) {
                 System.out.println("Bad update_tracking" ); // NOI18N
-                e.printStackTrace ();
+                e.printStackTrace();
                 return;
             }
             catch ( java.io.IOException e ) {
                 System.out.println("Missing update_tracking" ); // NOI18N
-                e.printStackTrace ();
+                e.printStackTrace();
                 return;
             }
-        }
-
-        org.w3c.dom.Element element = document.getDocumentElement();
-        if ((element != null) && element.getTagName().equals(ELEMENT_MODULES)) {
-            scanElement_installed_modules(element);
-        }            
-    }    
-    
-    /** Scan through org.w3c.dom.Element named installed_modules. */
-    void scanElement_installed_modules(org.w3c.dom.Element element) { // <installed_modules>
-        // element.getValue();
-        org.w3c.dom.NodeList nodes = element.getChildNodes();
-        for (int i = 0; i < nodes.getLength(); i++) {
-            org.w3c.dom.Node node = nodes.item(i);
-            if ( node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE ) {
-                org.w3c.dom.Element nodeElement = (org.w3c.dom.Element)node;
-                if (nodeElement.getTagName().equals(ELEMENT_MODULE)) {
-                    scanElement_module(nodeElement);
-                }                
+            
+            org.w3c.dom.Element element = document.getDocumentElement();
+            if ((element != null) && element.getTagName().equals(ELEMENT_MODULE)) {
+                scanElement_module(element);
             }
         }
-    }
+    }    
     
     /** Scan through org.w3c.dom.Element named module. */
     void scanElement_module(org.w3c.dom.Element element) { // <module>
-        Module module = new Module();        
+        module = new Module();        
         org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
@@ -146,7 +191,6 @@ public class UpdateTracking {
                 }
             }
         }
-        modules.add( module );
     }
     
     /** Scan through org.w3c.dom.Element named module_version. */
@@ -202,89 +246,6 @@ public class UpdateTracking {
         version.addFile (file );
     }
     
-    public Version addNewModuleVersion( String codenamebase, String spec_version ) {
-        Module module = getModule( codenamebase );
-        if ( module == null ) {
-            module = new Module();
-            module.setCodenamebase( codenamebase );
-            modules.add( module );
-        }
-        Version version = new Version();        
-        version.setVersion( spec_version );
-        version.setOrigin( origin );
-        version.setLast( true );
-        version.setInstall_time( System.currentTimeMillis() );
-        module.setVersion( version );
-        return version;
-    }
-    
-    public void removeLocalized( String locale ) {
-        Iterator it = modules.iterator();
-        while ( it.hasNext() ) {
-            Module mod = (Module)it.next();
-            mod.removeLocalized( locale );
-        }        
-    }
-    
-    private Module getModule( String codenamebase ) {
-        Iterator it = modules.iterator();
-        while ( it.hasNext() ) {
-            Module mod = (Module)it.next();
-            if ( mod.getCodenamebase().equals( codenamebase ) )
-                return mod;            
-        }
-        return null;
-    }
-    
-    void write( ) {
-        Document document = XMLUtil.createDocument(ELEMENT_MODULES);  
-//        com.sun.xml.tree.XmlDocument document = new com.sun.xml.tree.XmlDocument();
-        Element root = document.createElement(ELEMENT_MODULES);        
-        //document.getDocumentElement();
-        document.appendChild( root );
-        //Element root = document.createElement(ELEMENT_MODULES);
-        Element e_module = null;
-        Element e_version = null;
-        Element e_file = null;
-        Iterator it = modules.iterator();
-        while ( it.hasNext() ) {
-            Module mod = (Module)it.next();
-            e_module = document.createElement(ELEMENT_MODULE);
-            e_module.setAttribute(ATTR_CODENAMEBASE, mod.getCodenamebase());
-            root.appendChild( e_module );
-            Iterator it2 = mod.getVersions().iterator();
-            while ( it2.hasNext() ) {
-                Version ver = (Version)it2.next();
-                e_version = document.createElement(ELEMENT_VERSION);
-                e_version.setAttribute(ATTR_VERSION, ver.getVersion());
-                e_version.setAttribute(ATTR_ORIGIN, ver.getOrigin());
-                e_version.setAttribute(ATTR_LAST, "true");                          //NO I18N
-                e_version.setAttribute(ATTR_INSTALL, Long.toString(ver.getInstall_time()));                
-                e_module.appendChild( e_version );
-                Iterator it3 = ver.getFiles().iterator();
-                while ( it3.hasNext() ) {
-                    ModuleFile file = (ModuleFile)it3.next();
-                    e_file = document.createElement(ELEMENT_FILE);
-                    e_file.setAttribute(ATTR_FILE_NAME, file.getName());
-                    e_file.setAttribute(ATTR_CRC, file.getCrc());
-                    e_version.appendChild( e_file );                
-                }
-            }
-        }
-        
-        //document.getDocumentElement().normalize();
-
-        try {
-	    OutputStreamWriter os = new OutputStreamWriter( new FileOutputStream( trackingFile ), "UTF-8" );
-	    //Writer os = new FileWriter( trackingFile );
-            XMLUtil.write(document, os);
-            //document.write (os);
-            os.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }        
-    }
-
     class Module extends Object {        
         
         /** Holds value of property codenamebase. */
