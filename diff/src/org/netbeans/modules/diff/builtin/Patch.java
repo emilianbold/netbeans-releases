@@ -146,19 +146,26 @@ public class Patch extends Reader {
     /** Reads a line and returns the char sequence for newline */
     private static String readLine(PushbackReader r, StringBuffer nl) throws IOException {
         StringBuffer line = new StringBuffer();
-        char c = (char) r.read();
+        int ic = r.read();
+        if (ic == -1) return null;
+        char c = (char) ic;
         while (c != '\n' && c != '\r') {
             line.append(c);
-            c = (char) r.read();
+            ic = r.read();
+            if (ic == -1) break;
+            c = (char) ic;
         }
         if (nl != null) {
             nl.append(c);
         }
         if (c == '\r') {
             try {
-                c = (char) r.read();
-                if (c != '\n') r.unread(c);
-                else if (nl != null) nl.append(c);
+                ic = r.read();
+                if (ic != -1) {
+                    c = (char) ic;
+                    if (c != '\n') r.unread(c);
+                    else if (nl != null) nl.append(c);
+                }
             } catch (IOException ioex) {}
         }
         return line.toString();
@@ -202,6 +209,7 @@ public class Patch extends Reader {
             readStr = adjustTextNL(readStr);
             pos = readStr.length();
         } while (n > 0 && pos < chars.length);
+        readStr.getChars(0, readStr.length(), chars, 0);
         line += numChars('\n', chars);
         //System.out.println("Comparing text of the diff:\n'"+text+"'\nWith the read text:\n'"+readStr+"'\n");
         //System.out.println("  EQUALS = "+readStr.equals(text));
