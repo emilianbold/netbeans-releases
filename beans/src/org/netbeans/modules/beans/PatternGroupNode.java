@@ -159,6 +159,12 @@ public class  PatternGroupNode extends AbstractNode {
                            createElement(kind);
                        }
                        catch (SourceException e) {
+                           if (e instanceof SourceException.IO) {
+                               if (((SourceException.IO) e).getReason() == null) {
+                                   DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.INFORMATION_MESSAGE));
+                                   return ;
+                               }
+                           }
                            e.printStackTrace();
                            throw new IOException(e.getMessage());
                        }
