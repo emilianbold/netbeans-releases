@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- properties just for compiler -->
     <property name="build.compiler.deprecation" value="off"/>
-    <property name="build.compiler.debug" value="off"/>   
+    <property name="build.compiler.debug" value="off"/>
     
     <!-- These in/excludes will be added to xtest.pattern    -->
     <!-- if you want to use these properties, you should use -->
@@ -297,6 +297,7 @@ Microsystems, Inc. All Rights Reserved.
             <include name="**/src/**/*.class"/>
             <include name="**/src/**/*.jar"/>
             <include name="**/src/**/*.xml"/>
+            <include name="**/data/**"/>
         </jar>
     </target>
     
