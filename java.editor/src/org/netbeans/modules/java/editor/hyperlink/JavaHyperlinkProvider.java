@@ -43,6 +43,8 @@ import org.openide.util.NbBundle;
  */
 public final class JavaHyperlinkProvider implements HyperlinkProvider {
  
+    private static final int TOKEN_LIMIT = 100;
+    
     private static MessageFormat mf = null;
     
     private static synchronized MessageFormat getCannotOpenElementMF() {
@@ -62,10 +64,13 @@ public final class JavaHyperlinkProvider implements HyperlinkProvider {
         SyntaxSupport sup = doc.getSyntaxSupport();
         NbJavaJMISyntaxSupport nbJavaSup = (NbJavaJMISyntaxSupport)sup.get(NbJavaJMISyntaxSupport.class);
         boolean wasIdentifier = false;
+        int tokenLimitCounter = 0;
         
         try {
-            while (true) {
+            while (tokenLimitCounter < TOKEN_LIMIT) {
                 TokenID token = nbJavaSup.getTokenID(offset);
+                
+                tokenLimitCounter++;
                 
                 if (token == JavaTokenContext.IDENTIFIER && !wasIdentifier) {
                     int[] span = org.netbeans.editor.Utilities.getIdentifierBlock(doc, offset);
