@@ -20,35 +20,25 @@ import org.openide.loaders.DataLoader;
 import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 
 public class DataLoaderPool {
 
-    /** Method used in [Folder|Instance]LoaderBeanInfo for making 'extensions' property r/o 
-     * instead of r/w as it is declaredi in UniFileDataLoaderBeanInfo. The rest of property
-     * descriptors declared in UniFileDataLoaderBeanInfo are untouched.
+    /** Create read-only 'extensions' property. Method used in [Folder|Instance]LoaderBeanInfo.
      */
-    private static PropertyDescriptor[] supportGetPropertyDescriptors () {
-        PropertyDescriptor[] descriptors = null;
-
+    private static PropertyDescriptor[] createExtensionsPropertyDescriptor () {
         try {
-            SimpleBeanInfo uniFileLoader = (SimpleBeanInfo) Introspector.getBeanInfo (UniFileLoader.class);
-            if (uniFileLoader != null) {
-                descriptors = uniFileLoader.getPropertyDescriptors();
-                if (descriptors != null) {
-                    for (int i = 0; i < descriptors.length; i++) {
-                        if (descriptors[i].getName().equals("extensions")) { // NOI18N
-                            descriptors[i].setWriteMethod(null);
-                        }
-                    }
-                }
-            }
+            PropertyDescriptor extensions = new PropertyDescriptor ("extensions", UniFileLoader.class); // NOI18N
+            extensions.setDisplayName (NbBundle.getBundle (DataLoaderPool.class).getString ("PROP_UniFileLoader_extensions"));
+            extensions.setShortDescription (NbBundle.getBundle (DataLoaderPool.class).getString ("HINT_UniFileLoader_extensions"));
+            extensions.setWriteMethod(null);
+            return new PropertyDescriptor[] { extensions };
         } 
         catch (IntrospectionException ie) {
             if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
                 ie.printStackTrace ();
             return null;
         }
-        return descriptors;
     }
     
     public static class FolderLoaderBeanInfo extends SimpleBeanInfo {
@@ -69,7 +59,7 @@ public class DataLoaderPool {
         }
 
         public PropertyDescriptor[] getPropertyDescriptors () {
-            return supportGetPropertyDescriptors();
+             return createExtensionsPropertyDescriptor();
         }
 
         public Image getIcon (int type) {
@@ -99,7 +89,7 @@ public class DataLoaderPool {
         }
 
         public PropertyDescriptor[] getPropertyDescriptors () {
-            return supportGetPropertyDescriptors();
+             return createExtensionsPropertyDescriptor();
         }
         
         public Image getIcon (int type) {
