@@ -71,9 +71,10 @@ public class PlatformUiSupport {
      */
     public static void storePlatform (EditableProperties props, UpdateHelper helper, String platformDisplayName, SpecificationVersion sourceLevel) {
         JavaPlatform platform = getPlatform(platformDisplayName);
-        String platformAntName = (String) platform.getProperties().get("platform.ant.name");    //NOI18N        
         //null means active broken (unresolved) platform, no need to do anything
-        if (platformAntName != null) {
+        if (platform != null) {
+            String platformAntName = (String) platform.getProperties().get("platform.ant.name");    //NOI18N        
+            assert platformAntName != null;
             props.put(EjbJarProjectProperties.JAVA_PLATFORM, platformAntName);
             Element root = helper.getPrimaryConfigurationData(true);
             boolean defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform().getDisplayName().equals(platformDisplayName);        
