@@ -62,9 +62,12 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
     public void initValues(FileObject fo) {
         String configFiles = FileUtil.toFile(guessConfigFilesPath(fo)).getAbsolutePath();
-        String libraries = FileUtil.toFile(guessLibrariesFolder(fo)).getAbsolutePath();
         jTextFieldConfigFiles.setText(configFiles);
-        jTextFieldLibraries.setText(libraries);
+        FileObject librariesFO = guessLibrariesFolder(fo);
+        if (librariesFO != null) {
+            String libraries = FileUtil.toFile(librariesFO).getAbsolutePath();
+            jTextFieldLibraries.setText(libraries);
+        }
     }
 
     private FileObject guessConfigFilesPath (FileObject dir) {
