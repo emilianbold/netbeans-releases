@@ -256,7 +256,7 @@ public class CreationFactory {
     }
 
     // ---------------------------------------------------
-    // constructors descriptor for some "special" classes...
+    // constructors descriptors for some "special" classes...
 
     private static void createDefaultDescriptors() {
         // borders ------------
@@ -351,8 +351,10 @@ public class CreationFactory {
             { "borderInsets", "tileIcon" },
             { "borderInsets", "matteColor" }
         };
-        Object[] defaultMatteBorderParams = { new java.awt.Insets(1,1,1,1),
-                                              java.awt.Color.black };
+        Object[] defaultMatteBorderParams = { //new java.awt.Insets(1,1,1,1),
+            new Integer(1), new Integer(1), new Integer(1), new Integer(1),
+            java.awt.Color.black
+        };
         registerDescriptor(new ConstructorsDescriptor(
             javax.swing.border.MatteBorder.class,
             matteBorderConstructors, defaultMatteBorderParams));
