@@ -70,6 +70,13 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/StyleSheet.html" />
             </file>
 
+            <file name="xml_entity.ent" url="templates/xml_entity.ent.template">
+                <attr name="template" boolvalue="true" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/entObject.gif" />
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xml_entity.html" />
+            </file>
+
             <!-- until we can bundle DTDs
             <file name="xhtml.xml" url="templates/xhtml.xml.template">
                 <attr name="template" boolvalue="true" />
@@ -85,9 +92,10 @@ Microsystems, Inc. All Rights Reserved.
 <!--            <attr name="StyleSheet.xml/xhtml.xml" boolvalue="true"/>
             <attr name="xhtml.xml/XMLwithROOT.xml" boolvalue="true"/>-->
             <attr name="XMLwithROOT.xml/XMLwithDTD.xml" boolvalue="true"/>
+            <attr name="XMLwithDTD.xml/xml_entity.ent" boolvalue="true"/>
 
-        </folder>
-    </folder>
+        </folder> <!-- XML -->
+    </folder> <!-- Templates -->
 
     <!-- register services with Lookup -->
     <folder name="Services">
