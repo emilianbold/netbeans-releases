@@ -804,11 +804,15 @@ public class FormDesigner extends TopComponent
         if (comp == null)
             return false;
 
-        comp = comp.getParent();
-        while (comp != null && comp.getClass() != ComponentLayer.class) {
-            if (!JComponent.class.isAssignableFrom(comp.getClass()))
+        // don't allow in-place editing if there's some AWT parent (it may
+        // cause problems with fake peers on some platforms)
+        RADComponent parent = metacomp.getParentComponent();
+        while (parent != null) {
+            if (!JComponent.class.isAssignableFrom(parent.getBeanClass())
+                && !RootPaneContainer.class.isAssignableFrom(
+                                        parent.getBeanClass()))
                 return false;
-            comp = comp.getParent();
+            parent = parent.getParentComponent();
         }
 
         return InPlaceEditLayer.supportsEditingFor(metacomp.getBeanClass(),
