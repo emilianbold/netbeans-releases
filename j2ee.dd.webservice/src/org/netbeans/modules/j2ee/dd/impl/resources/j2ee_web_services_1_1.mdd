@@ -90,7 +90,7 @@
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>ParamValueType</bean-name>
                 <implements>
-                org.netbeans.modules.j2ee.dd.api.web.InitParam, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
+                org.netbeans.modules.j2ee.dd.api.common.InitParam, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
                 </implements>
                 <extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
 		<user-code>

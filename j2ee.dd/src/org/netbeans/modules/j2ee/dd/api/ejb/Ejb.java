@@ -22,6 +22,11 @@ import org.netbeans.modules.j2ee.dd.api.common.ComponentInterface;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
+import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
+import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
+import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
+import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
 public interface Ejb extends CommonDDBean, ComponentInterface {
@@ -54,9 +59,9 @@ public interface Ejb extends CommonDDBean, ComponentInterface {
         
         public EnvEntry[] getEnvEntry();
         
-        public int addEnvEntry(org.netbeans.modules.j2ee.dd.api.ejb.EnvEntry value);
+        public int addEnvEntry(EnvEntry value);
         
-        public int removeEnvEntry(org.netbeans.modules.j2ee.dd.api.ejb.EnvEntry value);
+        public int removeEnvEntry(EnvEntry value);
         
         public int sizeEnvEntry();
         
@@ -126,9 +131,9 @@ public interface Ejb extends CommonDDBean, ComponentInterface {
         
         public int sizeResourceEnvRef();
         
-        public int addResourceEnvRef(org.netbeans.modules.j2ee.dd.api.ejb.ResourceEnvRef value);
+        public int addResourceEnvRef(ResourceEnvRef value);
 
-	public int removeResourceEnvRef(org.netbeans.modules.j2ee.dd.api.ejb.ResourceEnvRef value);
+	public int removeResourceEnvRef(ResourceEnvRef value);
         
         public ResourceEnvRef newResourceEnvRef();
         
@@ -141,11 +146,11 @@ public interface Ejb extends CommonDDBean, ComponentInterface {
 
         public MessageDestinationRef[] getMessageDestinationRef() throws VersionNotSupportedException;
         
-        public int removeMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws VersionNotSupportedException;
+        public int removeMessageDestinationRef(MessageDestinationRef value) throws VersionNotSupportedException;
 
 	public int sizeMessageDestinationRef() throws VersionNotSupportedException;
         
-        public int addMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef value) throws VersionNotSupportedException;
+        public int addMessageDestinationRef(MessageDestinationRef value) throws VersionNotSupportedException;
 
         public MessageDestinationRef newMessageDestinationRef() throws VersionNotSupportedException;
         
@@ -157,11 +162,11 @@ public interface Ejb extends CommonDDBean, ComponentInterface {
 
         public ServiceRef[] getServiceRef() throws VersionNotSupportedException;
         
-        public int removeServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws VersionNotSupportedException;
+        public int removeServiceRef(ServiceRef value) throws VersionNotSupportedException;
 
         public int sizeServiceRef() throws VersionNotSupportedException;
 
-	public int addServiceRef(org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef value) throws VersionNotSupportedException;
+	public int addServiceRef(ServiceRef value) throws VersionNotSupportedException;
 
         public ServiceRef newServiceRef() throws VersionNotSupportedException;
          

@@ -100,7 +100,7 @@
             <bean-name>InitParam</bean-name>
             <extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
             <implements> 
-                org.netbeans.modules.j2ee.dd.api.web.InitParam, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
+                org.netbeans.modules.j2ee.dd.api.common.InitParam, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
             </implements>
             <user-code>
                 public String getKeyProperty() { return "ParamName"; }
@@ -248,7 +248,7 @@
             <bean-name>MessageDestination</bean-name>
             <extends>org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanMultiple</extends>
             <implements> 
-                org.netbeans.modules.j2ee.dd.api.web.MessageDestination, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
+                org.netbeans.modules.j2ee.dd.api.common.MessageDestination, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
             </implements>
             <user-code>
                 public String getKeyProperty() { return "MessageDestinationName"; }
@@ -325,7 +325,7 @@
             <bean-name>EnvEntry</bean-name>
             <extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
             <implements> 
-                org.netbeans.modules.j2ee.dd.api.web.EnvEntry, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
+                org.netbeans.modules.j2ee.dd.api.common.EnvEntry, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
             </implements>
             <user-code>
                 public String getKeyProperty() { return "EnvEntryName"; }
@@ -373,7 +373,7 @@
             <bean-name>ResourceEnvRef</bean-name>
             <extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
             <implements> 
-                org.netbeans.modules.j2ee.dd.api.web.ResourceEnvRef, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
+                org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
             </implements>
             <user-code>
                 public String getKeyProperty() { return "ResourceEnvRefName"; }
@@ -385,7 +385,7 @@
             <bean-name>MessageDestinationRef</bean-name>
             <extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
             <implements> 
-                org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
+                org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
             </implements>
             <user-code>
                 public String getKeyProperty() { return "MessageDestinationRefName"; }
@@ -440,7 +440,7 @@
             <comparator-class>org.netbeans.modules.j2ee.dd.impl.common.Comparator</comparator-class>
             <extends>org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanMultiple</extends>
             <implements> 
-                org.netbeans.modules.j2ee.dd.api.web.ServiceRef, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
+                org.netbeans.modules.j2ee.dd.api.common.ServiceRef, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
             </implements>
             <user-code>
                 public String getKeyProperty() { return "ServiceRefName"; }
@@ -463,7 +463,7 @@
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>PortComponentRef</bean-name>
                 <implements> 
-                    org.netbeans.modules.j2ee.dd.api.web.PortComponentRef
+                    org.netbeans.modules.j2ee.dd.api.common.PortComponentRef
                 </implements>
 	</meta-element>
 	<meta-element>
@@ -473,7 +473,7 @@
             <comparator-class>org.netbeans.modules.j2ee.dd.impl.common.Comparator</comparator-class>
             <extends>org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanMultiple</extends>
             <implements> 
-                org.netbeans.modules.j2ee.dd.api.web.ServiceRefHandler, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
+                org.netbeans.modules.j2ee.dd.api.common.ServiceRefHandler, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
             </implements>
             <user-code>
                 public String getKeyProperty() { return "HandlerName"; }
@@ -663,7 +663,7 @@
 		<bean-name>RunAs</bean-name>
                 <extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
                 <implements> 
-                    org.netbeans.modules.j2ee.dd.api.web.RunAs
+                    org.netbeans.modules.j2ee.dd.api.common.RunAs
                 </implements>
 	</meta-element>
 	<meta-element>

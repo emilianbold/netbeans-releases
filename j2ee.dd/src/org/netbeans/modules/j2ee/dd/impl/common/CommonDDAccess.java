@@ -20,7 +20,7 @@ package org.netbeans.modules.j2ee.dd.impl.common;
 
 import java.lang.reflect.*;
 import java.util.HashMap;
-import org.netbeans.modules.j2ee.dd.api.web.ServiceRef;
+import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.schema2beans.BaseBean;

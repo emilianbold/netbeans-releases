@@ -18,7 +18,7 @@
 
 package org.netbeans.modules.j2ee.dd.api.webservices;
 import org.netbeans.modules.j2ee.dd.api.common.Icon;
-import org.netbeans.modules.j2ee.dd.api.web.InitParam;
+import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 
 public interface PortComponentHandler extends org.netbeans.modules.j2ee.dd.api.common.ComponentInterface {
 	
@@ -46,9 +46,9 @@ public interface PortComponentHandler extends org.netbeans.modules.j2ee.dd.api.c
 
 	public InitParam[] getInitParam();
 
-	public int addInitParam(org.netbeans.modules.j2ee.dd.api.web.InitParam value);
+	public int addInitParam(InitParam value);
 
-	public int removeInitParam(org.netbeans.modules.j2ee.dd.api.web.InitParam value);
+	public int removeInitParam(InitParam value);
 
 	public InitParam newInitParam();
 

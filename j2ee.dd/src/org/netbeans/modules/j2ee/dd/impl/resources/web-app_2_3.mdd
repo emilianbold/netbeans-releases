@@ -24,67 +24,67 @@
                 public org.netbeans.modules.j2ee.dd.api.web.JspConfig getSingleJspConfig() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public void setServiceRef(int index, org.netbeans.modules.j2ee.dd.api.web.ServiceRef valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public void setServiceRef(int index, org.netbeans.modules.j2ee.dd.api.common.ServiceRef valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public org.netbeans.modules.j2ee.dd.api.web.ServiceRef getServiceRef(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public org.netbeans.modules.j2ee.dd.api.common.ServiceRef getServiceRef(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public void setServiceRef(org.netbeans.modules.j2ee.dd.api.web.ServiceRef[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public void setServiceRef(org.netbeans.modules.j2ee.dd.api.common.ServiceRef[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public org.netbeans.modules.j2ee.dd.api.web.ServiceRef[] getServiceRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public org.netbeans.modules.j2ee.dd.api.common.ServiceRef[] getServiceRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
                 public int sizeServiceRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public int addServiceRef(org.netbeans.modules.j2ee.dd.api.web.ServiceRef valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public int addServiceRef(org.netbeans.modules.j2ee.dd.api.common.ServiceRef valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public int removeServiceRef(org.netbeans.modules.j2ee.dd.api.web.ServiceRef valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public int removeServiceRef(org.netbeans.modules.j2ee.dd.api.common.ServiceRef valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef getMessageDestinationRef(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef getMessageDestinationRef(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public void setMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public void setMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef[] getMessageDestinationRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef[] getMessageDestinationRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
                 public int sizeMessageDestinationRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public int addMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public int addMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public int removeMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public int removeMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public void setMessageDestination(int index, org.netbeans.modules.j2ee.dd.api.web.MessageDestination valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public void setMessageDestination(int index, org.netbeans.modules.j2ee.dd.api.common.MessageDestination valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public org.netbeans.modules.j2ee.dd.api.web.MessageDestination getMessageDestination(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public org.netbeans.modules.j2ee.dd.api.common.MessageDestination getMessageDestination(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public void setMessageDestination(org.netbeans.modules.j2ee.dd.api.web.MessageDestination[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public void setMessageDestination(org.netbeans.modules.j2ee.dd.api.common.MessageDestination[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public org.netbeans.modules.j2ee.dd.api.web.MessageDestination[] getMessageDestination() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public org.netbeans.modules.j2ee.dd.api.common.MessageDestination[] getMessageDestination() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
                 public int sizeMessageDestination() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public int addMessageDestination(org.netbeans.modules.j2ee.dd.api.web.MessageDestination valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public int addMessageDestination(org.netbeans.modules.j2ee.dd.api.common.MessageDestination valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
-                public int removeMessageDestination(org.netbeans.modules.j2ee.dd.api.web.MessageDestination valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                public int removeMessageDestination(org.netbeans.modules.j2ee.dd.api.common.MessageDestination valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
                     throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(VERSION_2_3);
                 }
                 public void setLocaleEncodingMappingList(org.netbeans.modules.j2ee.dd.api.web.LocaleEncodingMappingList valueInterface) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
@@ -136,7 +136,7 @@
 		<dtd-name>context-param</dtd-name>
 		<bean-name>ContextParam</bean-name>
                 <extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanSingle</extends>
-		<implements>org.netbeans.modules.j2ee.dd.api.web.InitParam, org.netbeans.modules.j2ee.dd.impl.common.KeyBean</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.InitParam, org.netbeans.modules.j2ee.dd.impl.common.KeyBean</implements>
                 <user-code>
                     public String getKeyProperty() { return "ParamName"; }
                 </user-code>
@@ -251,7 +251,7 @@
             <dtd-name>resource-env-ref</dtd-name>
             <bean-name>ResourceEnvRef</bean-name>
             <extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanSingle</extends>
-            <implements>org.netbeans.modules.j2ee.dd.api.web.ResourceEnvRef, org.netbeans.modules.j2ee.dd.impl.common.KeyBean</implements>
+            <implements>org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef, org.netbeans.modules.j2ee.dd.impl.common.KeyBean</implements>
             <user-code>
                 public String getKeyProperty() { return "ResourceEnvRefName"; }
             </user-code>
@@ -292,7 +292,7 @@
             <dtd-name>env-entry</dtd-name>
             <bean-name>EnvEntry</bean-name>
             <extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanSingle</extends>
-            <implements>org.netbeans.modules.j2ee.dd.api.web.EnvEntry, org.netbeans.modules.j2ee.dd.impl.common.KeyBean</implements>
+            <implements>org.netbeans.modules.j2ee.dd.api.common.EnvEntry, org.netbeans.modules.j2ee.dd.impl.common.KeyBean</implements>
             <user-code>
                 public String getKeyProperty() { return "EnvEntryName"; }
             </user-code>
@@ -525,7 +525,7 @@
             <dtd-name>init-param</dtd-name>
             <bean-name>InitParam</bean-name>
             <extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanSingle</extends>
-            <implements>org.netbeans.modules.j2ee.dd.api.web.InitParam, org.netbeans.modules.j2ee.dd.impl.common.KeyBean</implements>
+            <implements>org.netbeans.modules.j2ee.dd.api.common.InitParam, org.netbeans.modules.j2ee.dd.impl.common.KeyBean</implements>
             <user-code>
                 public String getKeyProperty() { return "ParamName"; }
             </user-code>
@@ -539,7 +539,7 @@
 		<dtd-name>run-as</dtd-name>
 		<bean-name>RunAs</bean-name>
                 <extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanSingle</extends>
-		<implements>org.netbeans.modules.j2ee.dd.api.web.RunAs</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.RunAs</implements>
 	</meta-element>
 	<meta-element>
             <dtd-name>security-role-ref</dtd-name>

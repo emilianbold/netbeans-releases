@@ -93,7 +93,7 @@ public class WebAppProxy implements WebApp {
         listeners.remove(pcl);
     }
     
-    public int addContextParam(org.netbeans.modules.j2ee.dd.api.web.InitParam value) {
+    public int addContextParam(org.netbeans.modules.j2ee.dd.api.common.InitParam value) {
         return webApp==null?-1:webApp.addContextParam(value);
     }
     
@@ -105,7 +105,7 @@ public class WebAppProxy implements WebApp {
         return webApp==null?-1:webApp.addEjbRef(value);
     }
     
-    public int addEnvEntry(org.netbeans.modules.j2ee.dd.api.web.EnvEntry value) {
+    public int addEnvEntry(org.netbeans.modules.j2ee.dd.api.common.EnvEntry value) {
         return webApp==null?-1:webApp.addEnvEntry(value);
     }
     
@@ -125,11 +125,11 @@ public class WebAppProxy implements WebApp {
         return webApp==null?-1:webApp.addListener(value);
     }
     
-    public int addMessageDestination(org.netbeans.modules.j2ee.dd.api.web.MessageDestination value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    public int addMessageDestination(org.netbeans.modules.j2ee.dd.api.common.MessageDestination value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return webApp==null?-1:webApp.addMessageDestination(value);
     }
     
-    public int addMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    public int addMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return webApp==null?-1:webApp.addMessageDestinationRef(value);
     }
     
@@ -137,7 +137,7 @@ public class WebAppProxy implements WebApp {
         return webApp==null?-1:webApp.addMimeMapping(value);
     }
     
-    public int addResourceEnvRef(org.netbeans.modules.j2ee.dd.api.web.ResourceEnvRef value) {
+    public int addResourceEnvRef(org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef value) {
         return webApp==null?-1:addResourceEnvRef(value);
     }
     
@@ -153,7 +153,7 @@ public class WebAppProxy implements WebApp {
         return webApp==null?-1:webApp.addSecurityRole(value);
     }
     
-    public int addServiceRef(org.netbeans.modules.j2ee.dd.api.web.ServiceRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    public int addServiceRef(org.netbeans.modules.j2ee.dd.api.common.ServiceRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return webApp==null?-1:webApp.addServiceRef(value);
     }
     
@@ -197,11 +197,11 @@ public class WebAppProxy implements WebApp {
         return webApp==null?new java.util.HashMap():webApp.getAllIcons();
     }
     
-    public org.netbeans.modules.j2ee.dd.api.web.InitParam[] getContextParam() {
-        return webApp==null?new org.netbeans.modules.j2ee.dd.api.web.InitParam[0]:webApp.getContextParam();
+    public org.netbeans.modules.j2ee.dd.api.common.InitParam[] getContextParam() {
+        return webApp==null?new org.netbeans.modules.j2ee.dd.api.common.InitParam[0]:webApp.getContextParam();
     }
     
-    public org.netbeans.modules.j2ee.dd.api.web.InitParam getContextParam(int index) {
+    public org.netbeans.modules.j2ee.dd.api.common.InitParam getContextParam(int index) {
         return webApp==null?null:webApp.getContextParam(index);
     }
     
@@ -241,11 +241,11 @@ public class WebAppProxy implements WebApp {
         return webApp==null?null:webApp.getEjbRef(index);
     }
     
-    public org.netbeans.modules.j2ee.dd.api.web.EnvEntry[] getEnvEntry() {
-        return webApp==null?new org.netbeans.modules.j2ee.dd.api.web.EnvEntry[0]:webApp.getEnvEntry();
+    public org.netbeans.modules.j2ee.dd.api.common.EnvEntry[] getEnvEntry() {
+        return webApp==null?new org.netbeans.modules.j2ee.dd.api.common.EnvEntry[0]:webApp.getEnvEntry();
     }
     
-    public org.netbeans.modules.j2ee.dd.api.web.EnvEntry getEnvEntry(int index) {
+    public org.netbeans.modules.j2ee.dd.api.common.EnvEntry getEnvEntry(int index) {
         return webApp==null?null:webApp.getEnvEntry(index);
     }
     
@@ -297,19 +297,19 @@ public class WebAppProxy implements WebApp {
         return webApp==null?null:webApp.getSingleLocaleEncodingMappingList();
     }
     
-    public org.netbeans.modules.j2ee.dd.api.web.MessageDestination[] getMessageDestination() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        return webApp==null?new org.netbeans.modules.j2ee.dd.api.web.MessageDestination[0]:webApp.getMessageDestination();
+    public org.netbeans.modules.j2ee.dd.api.common.MessageDestination[] getMessageDestination() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+        return webApp==null?new org.netbeans.modules.j2ee.dd.api.common.MessageDestination[0]:webApp.getMessageDestination();
     }
     
-    public org.netbeans.modules.j2ee.dd.api.web.MessageDestination getMessageDestination(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    public org.netbeans.modules.j2ee.dd.api.common.MessageDestination getMessageDestination(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return webApp==null?null:webApp.getMessageDestination(index);
     }
     
-    public org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef[] getMessageDestinationRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        return webApp==null?new org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef[0]:webApp.getMessageDestinationRef();
+    public org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef[] getMessageDestinationRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+        return webApp==null?new org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef[0]:webApp.getMessageDestinationRef();
     }
     
-    public org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef getMessageDestinationRef(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    public org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef getMessageDestinationRef(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return webApp==null?null:webApp.getMessageDestinationRef(index);
     }
     
@@ -321,11 +321,11 @@ public class WebAppProxy implements WebApp {
         return webApp==null?null:webApp.getMimeMapping(index);
     }
     
-    public org.netbeans.modules.j2ee.dd.api.web.ResourceEnvRef[] getResourceEnvRef() {
-        return webApp==null?null:webApp==null?new org.netbeans.modules.j2ee.dd.api.web.ResourceEnvRef[0]:webApp.getResourceEnvRef();
+    public org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef[] getResourceEnvRef() {
+        return webApp==null?null:webApp==null?new org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef[0]:webApp.getResourceEnvRef();
     }
     
-    public org.netbeans.modules.j2ee.dd.api.web.ResourceEnvRef getResourceEnvRef(int index) {
+    public org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef getResourceEnvRef(int index) {
         return webApp==null?null:webApp.getResourceEnvRef(index);
     }
     
@@ -353,11 +353,11 @@ public class WebAppProxy implements WebApp {
         return webApp==null?null:webApp.getSecurityRole(index);
     }
     
-    public org.netbeans.modules.j2ee.dd.api.web.ServiceRef[] getServiceRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
-        return webApp==null?new org.netbeans.modules.j2ee.dd.api.web.ServiceRef[0]:webApp.getServiceRef();
+    public org.netbeans.modules.j2ee.dd.api.common.ServiceRef[] getServiceRef() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+        return webApp==null?new org.netbeans.modules.j2ee.dd.api.common.ServiceRef[0]:webApp.getServiceRef();
     }
     
-    public org.netbeans.modules.j2ee.dd.api.web.ServiceRef getServiceRef(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    public org.netbeans.modules.j2ee.dd.api.common.ServiceRef getServiceRef(int index) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return webApp==null?null:webApp.getServiceRef(index);
     }
     
@@ -438,7 +438,7 @@ public class WebAppProxy implements WebApp {
         if (webApp!=null) webApp.removeAllIcons();
     }
     
-    public int removeContextParam(org.netbeans.modules.j2ee.dd.api.web.InitParam value) {
+    public int removeContextParam(org.netbeans.modules.j2ee.dd.api.common.InitParam value) {
         return webApp==null?-1:webApp.removeContextParam(value);
     }
     
@@ -466,7 +466,7 @@ public class WebAppProxy implements WebApp {
         return webApp==null?-1:webApp.removeEjbRef(value);
     }
     
-    public int removeEnvEntry(org.netbeans.modules.j2ee.dd.api.web.EnvEntry value) {
+    public int removeEnvEntry(org.netbeans.modules.j2ee.dd.api.common.EnvEntry value) {
         return webApp==null?-1:webApp.removeEnvEntry(value);
     }
     
@@ -502,11 +502,11 @@ public class WebAppProxy implements WebApp {
         return webApp==null?-1:webApp.removeListener(value);
     }
     
-    public int removeMessageDestination(org.netbeans.modules.j2ee.dd.api.web.MessageDestination value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    public int removeMessageDestination(org.netbeans.modules.j2ee.dd.api.common.MessageDestination value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return webApp==null?-1:webApp.removeMessageDestination(value);
     }
     
-    public int removeMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    public int removeMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return webApp==null?-1:webApp.removeMessageDestinationRef(value);
     }
     
@@ -514,7 +514,7 @@ public class WebAppProxy implements WebApp {
         return webApp==null?-1:webApp.removeMimeMapping(value);
     }
     
-    public int removeResourceEnvRef(org.netbeans.modules.j2ee.dd.api.web.ResourceEnvRef value) {
+    public int removeResourceEnvRef(org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef value) {
         return webApp==null?-1:webApp.removeResourceEnvRef(value);
     }
     
@@ -530,7 +530,7 @@ public class WebAppProxy implements WebApp {
         return webApp==null?-1:webApp.removeSecurityRole(value);
     }
     
-    public int removeServiceRef(org.netbeans.modules.j2ee.dd.api.web.ServiceRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    public int removeServiceRef(org.netbeans.modules.j2ee.dd.api.common.ServiceRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         return webApp==null?-1:webApp.removeServiceRef(value);
     }
     
@@ -566,11 +566,11 @@ public class WebAppProxy implements WebApp {
         if (webApp!=null) webApp.setAllIcons(locales, smallIcons, largeIcons);
     }
     
-    public void setContextParam(org.netbeans.modules.j2ee.dd.api.web.InitParam[] value) {
+    public void setContextParam(org.netbeans.modules.j2ee.dd.api.common.InitParam[] value) {
         if (webApp!=null) webApp.setContextParam(value);
     }
     
-    public void setContextParam(int index, org.netbeans.modules.j2ee.dd.api.web.InitParam value) {
+    public void setContextParam(int index, org.netbeans.modules.j2ee.dd.api.common.InitParam value) {
         if (webApp!=null) webApp.setContextParam(index, value);
     }
     
@@ -610,11 +610,11 @@ public class WebAppProxy implements WebApp {
         if (webApp!=null) webApp.setEjbRef(index, value);
     }
     
-    public void setEnvEntry(org.netbeans.modules.j2ee.dd.api.web.EnvEntry[] value) {
+    public void setEnvEntry(org.netbeans.modules.j2ee.dd.api.common.EnvEntry[] value) {
         if (webApp!=null) webApp.setEnvEntry(value);
     }
     
-    public void setEnvEntry(int index, org.netbeans.modules.j2ee.dd.api.web.EnvEntry value) {
+    public void setEnvEntry(int index, org.netbeans.modules.j2ee.dd.api.common.EnvEntry value) {
         if (webApp!=null) webApp.setEnvEntry(index, value);
     }
     
@@ -716,19 +716,19 @@ public class WebAppProxy implements WebApp {
         if (webApp!=null) webApp.setLoginConfig(value);
     }
     
-    public void setMessageDestination(org.netbeans.modules.j2ee.dd.api.web.MessageDestination[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    public void setMessageDestination(org.netbeans.modules.j2ee.dd.api.common.MessageDestination[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webApp!=null) webApp.setMessageDestination(value);
     }
     
-    public void setMessageDestination(int index, org.netbeans.modules.j2ee.dd.api.web.MessageDestination value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    public void setMessageDestination(int index, org.netbeans.modules.j2ee.dd.api.common.MessageDestination value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webApp!=null) webApp.setMessageDestination(index, value);
     }
     
-    public void setMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    public void setMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webApp!=null) webApp.setMessageDestinationRef(value);
     }
     
-    public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webApp!=null) webApp.setMessageDestinationRef(index, value);
     }
     
@@ -740,11 +740,11 @@ public class WebAppProxy implements WebApp {
         if (webApp!=null) webApp.setMimeMapping(index, value);
     }
     
-    public void setResourceEnvRef(org.netbeans.modules.j2ee.dd.api.web.ResourceEnvRef[] value) {
+    public void setResourceEnvRef(org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef[] value) {
         if (webApp!=null) webApp.setResourceEnvRef(value);
     }
     
-    public void setResourceEnvRef(int index, org.netbeans.modules.j2ee.dd.api.web.ResourceEnvRef value) {
+    public void setResourceEnvRef(int index, org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef value) {
         if (webApp!=null) webApp.setResourceEnvRef(index, value);
     }
     
@@ -772,11 +772,11 @@ public class WebAppProxy implements WebApp {
         if (webApp!=null) webApp.setSecurityRole(index, value);
     }
     
-    public void setServiceRef(org.netbeans.modules.j2ee.dd.api.web.ServiceRef[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    public void setServiceRef(org.netbeans.modules.j2ee.dd.api.common.ServiceRef[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webApp!=null) webApp.setServiceRef(value);
     }
     
-    public void setServiceRef(int index, org.netbeans.modules.j2ee.dd.api.web.ServiceRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+    public void setServiceRef(int index, org.netbeans.modules.j2ee.dd.api.common.ServiceRef value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
         if (webApp!=null) webApp.setServiceRef(index, value);
     }
     

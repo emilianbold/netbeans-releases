@@ -17,6 +17,7 @@ package org.netbeans.modules.j2ee.dd.api.ejb;
 // This interface has all of the bean info accessor methods.
 // 
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRole;
+import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 
 public interface AssemblyDescriptor extends org.netbeans.modules.j2ee.dd.api.common.CommonDDBean {
@@ -92,9 +93,9 @@ public interface AssemblyDescriptor extends org.netbeans.modules.j2ee.dd.api.com
         
         public int sizeMessageDestination() throws VersionNotSupportedException;
 
-	public int removeMessageDestination(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination value) throws VersionNotSupportedException;
+	public int removeMessageDestination(MessageDestination value) throws VersionNotSupportedException;
 
-	public int addMessageDestination(org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination value) throws VersionNotSupportedException;
+	public int addMessageDestination(MessageDestination value) throws VersionNotSupportedException;
         
         public MessageDestination newMessageDestination() throws VersionNotSupportedException;
         

@@ -13,6 +13,16 @@
 
 package org.netbeans.modules.j2ee.dd.api.web;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.dd.api.common.InitParam;
+import org.netbeans.modules.j2ee.dd.api.common.EnvEntry;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
+import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
+import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
+import org.netbeans.modules.j2ee.dd.api.common.MessageDestination;
+import org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef;
+
 /**
  * Generated interface for WebApp element.<br>
  * The WebApp object is the root of bean graph generated<br>
@@ -54,19 +64,19 @@ public interface WebApp extends org.netbeans.modules.j2ee.dd.api.common.RootInte
          */
 	public boolean isDistributable();        
 
-	public void setContextParam(int index, org.netbeans.modules.j2ee.dd.api.web.InitParam valueInterface);
+	public void setContextParam(int index, InitParam valueInterface);
 
-	public org.netbeans.modules.j2ee.dd.api.web.InitParam getContextParam(int index);
+	public InitParam getContextParam(int index);
 
-	public void setContextParam(org.netbeans.modules.j2ee.dd.api.web.InitParam[] value);
+	public void setContextParam(InitParam[] value);
 
-	public org.netbeans.modules.j2ee.dd.api.web.InitParam[] getContextParam();
+	public InitParam[] getContextParam();
 
 	public int sizeContextParam();
 
-	public int addContextParam(org.netbeans.modules.j2ee.dd.api.web.InitParam valueInterface);
+	public int addContextParam(InitParam valueInterface);
 
-	public int removeContextParam(org.netbeans.modules.j2ee.dd.api.web.InitParam valueInterface);
+	public int removeContextParam(InitParam valueInterface);
 
 	public void setFilter(int index, org.netbeans.modules.j2ee.dd.api.web.Filter valueInterface);
 
@@ -206,117 +216,117 @@ public interface WebApp extends org.netbeans.modules.j2ee.dd.api.common.RootInte
 
 	public int removeSecurityRole(org.netbeans.modules.j2ee.dd.api.common.SecurityRole valueInterface);
 
-	public void setEnvEntry(int index, org.netbeans.modules.j2ee.dd.api.web.EnvEntry valueInterface);
+	public void setEnvEntry(int index, EnvEntry valueInterface);
 
-	public org.netbeans.modules.j2ee.dd.api.web.EnvEntry getEnvEntry(int index);
+	public EnvEntry getEnvEntry(int index);
 
-	public void setEnvEntry(org.netbeans.modules.j2ee.dd.api.web.EnvEntry[] value);
+	public void setEnvEntry(EnvEntry[] value);
 
-	public org.netbeans.modules.j2ee.dd.api.web.EnvEntry[] getEnvEntry();
+	public EnvEntry[] getEnvEntry();
 
 	public int sizeEnvEntry();
 
-	public int addEnvEntry(org.netbeans.modules.j2ee.dd.api.web.EnvEntry valueInterface);
+	public int addEnvEntry(EnvEntry valueInterface);
 
-	public int removeEnvEntry(org.netbeans.modules.j2ee.dd.api.web.EnvEntry valueInterface);
+	public int removeEnvEntry(EnvEntry valueInterface);
 
-	public void setEjbRef(int index, org.netbeans.modules.j2ee.dd.api.common.EjbRef valueInterface);
+	public void setEjbRef(int index, EjbRef valueInterface);
 
-	public org.netbeans.modules.j2ee.dd.api.common.EjbRef getEjbRef(int index);
+	public EjbRef getEjbRef(int index);
 
-	public void setEjbRef(org.netbeans.modules.j2ee.dd.api.common.EjbRef[] value);
+	public void setEjbRef(EjbRef[] value);
 
-	public org.netbeans.modules.j2ee.dd.api.common.EjbRef[] getEjbRef();
+	public EjbRef[] getEjbRef();
 
 	public int sizeEjbRef();
 
-	public int addEjbRef(org.netbeans.modules.j2ee.dd.api.common.EjbRef valueInterface);
+	public int addEjbRef(EjbRef valueInterface);
 
-	public int removeEjbRef(org.netbeans.modules.j2ee.dd.api.common.EjbRef valueInterface);
+	public int removeEjbRef(EjbRef valueInterface);
 
-	public void setEjbLocalRef(int index, org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef valueInterface);
+	public void setEjbLocalRef(int index, EjbLocalRef valueInterface);
 
-	public org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef getEjbLocalRef(int index);
+	public EjbLocalRef getEjbLocalRef(int index);
 
-	public void setEjbLocalRef(org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef[] value);
+	public void setEjbLocalRef(EjbLocalRef[] value);
 
-	public org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef[] getEjbLocalRef();
+	public EjbLocalRef[] getEjbLocalRef();
 
 	public int sizeEjbLocalRef();
 
-	public int addEjbLocalRef(org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef valueInterface);
+	public int addEjbLocalRef(EjbLocalRef valueInterface);
 
-	public int removeEjbLocalRef(org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef valueInterface);
+	public int removeEjbLocalRef(EjbLocalRef valueInterface);
 
-	public void setServiceRef(int index, org.netbeans.modules.j2ee.dd.api.web.ServiceRef valueInterface) throws VersionNotSupportedException;
+	public void setServiceRef(int index, ServiceRef valueInterface) throws VersionNotSupportedException;
 
-	public org.netbeans.modules.j2ee.dd.api.web.ServiceRef getServiceRef(int index) throws VersionNotSupportedException;
+	public ServiceRef getServiceRef(int index) throws VersionNotSupportedException;
 
-	public void setServiceRef(org.netbeans.modules.j2ee.dd.api.web.ServiceRef[] value) throws VersionNotSupportedException;
+	public void setServiceRef(ServiceRef[] value) throws VersionNotSupportedException;
 
-	public org.netbeans.modules.j2ee.dd.api.web.ServiceRef[] getServiceRef() throws VersionNotSupportedException;
+	public ServiceRef[] getServiceRef() throws VersionNotSupportedException;
 
 	public int sizeServiceRef() throws VersionNotSupportedException;
 
-	public int addServiceRef(org.netbeans.modules.j2ee.dd.api.web.ServiceRef valueInterface) throws VersionNotSupportedException;
+	public int addServiceRef(ServiceRef valueInterface) throws VersionNotSupportedException;
 
-	public int removeServiceRef(org.netbeans.modules.j2ee.dd.api.web.ServiceRef valueInterface) throws VersionNotSupportedException;
+	public int removeServiceRef(ServiceRef valueInterface) throws VersionNotSupportedException;
 
-	public void setResourceRef(int index, org.netbeans.modules.j2ee.dd.api.common.ResourceRef valueInterface);
+	public void setResourceRef(int index, ResourceRef valueInterface);
 
-	public org.netbeans.modules.j2ee.dd.api.common.ResourceRef getResourceRef(int index);
+	public ResourceRef getResourceRef(int index);
 
-	public void setResourceRef(org.netbeans.modules.j2ee.dd.api.common.ResourceRef[] value);
+	public void setResourceRef(ResourceRef[] value);
 
-	public org.netbeans.modules.j2ee.dd.api.common.ResourceRef[] getResourceRef();
+	public ResourceRef[] getResourceRef();
 
 	public int sizeResourceRef();
 
-	public int addResourceRef(org.netbeans.modules.j2ee.dd.api.common.ResourceRef valueInterface);
+	public int addResourceRef(ResourceRef valueInterface);
 
-	public int removeResourceRef(org.netbeans.modules.j2ee.dd.api.common.ResourceRef valueInterface);
+	public int removeResourceRef(ResourceRef valueInterface);
 
-	public void setResourceEnvRef(int index, org.netbeans.modules.j2ee.dd.api.web.ResourceEnvRef valueInterface);
+	public void setResourceEnvRef(int index, ResourceEnvRef valueInterface);
 
-	public org.netbeans.modules.j2ee.dd.api.web.ResourceEnvRef getResourceEnvRef(int index);
+	public ResourceEnvRef getResourceEnvRef(int index);
 
-	public void setResourceEnvRef(org.netbeans.modules.j2ee.dd.api.web.ResourceEnvRef[] value);
+	public void setResourceEnvRef(ResourceEnvRef[] value);
 
-	public org.netbeans.modules.j2ee.dd.api.web.ResourceEnvRef[] getResourceEnvRef();
+	public ResourceEnvRef[] getResourceEnvRef();
 
 	public int sizeResourceEnvRef();
 
-	public int addResourceEnvRef(org.netbeans.modules.j2ee.dd.api.web.ResourceEnvRef valueInterface);
+	public int addResourceEnvRef(ResourceEnvRef valueInterface);
 
-	public int removeResourceEnvRef(org.netbeans.modules.j2ee.dd.api.web.ResourceEnvRef valueInterface);
+	public int removeResourceEnvRef(ResourceEnvRef valueInterface);
 
-	public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef valueInterface) throws VersionNotSupportedException;
+	public void setMessageDestinationRef(int index, MessageDestinationRef valueInterface) throws VersionNotSupportedException;
 
-	public org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef getMessageDestinationRef(int index) throws VersionNotSupportedException;
+	public MessageDestinationRef getMessageDestinationRef(int index) throws VersionNotSupportedException;
 
-	public void setMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef[] value) throws VersionNotSupportedException;
+	public void setMessageDestinationRef(MessageDestinationRef[] value) throws VersionNotSupportedException;
 
-	public org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef[] getMessageDestinationRef() throws VersionNotSupportedException;
+	public MessageDestinationRef[] getMessageDestinationRef() throws VersionNotSupportedException;
 
 	public int sizeMessageDestinationRef() throws VersionNotSupportedException;
 
-	public int addMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef valueInterface) throws VersionNotSupportedException;
+	public int addMessageDestinationRef(MessageDestinationRef valueInterface) throws VersionNotSupportedException;
 
-	public int removeMessageDestinationRef(org.netbeans.modules.j2ee.dd.api.web.MessageDestinationRef valueInterface) throws VersionNotSupportedException;
+	public int removeMessageDestinationRef(MessageDestinationRef valueInterface) throws VersionNotSupportedException;
 
-	public void setMessageDestination(int index, org.netbeans.modules.j2ee.dd.api.web.MessageDestination valueInterface) throws VersionNotSupportedException;
+	public void setMessageDestination(int index, MessageDestination valueInterface) throws VersionNotSupportedException;
 
-	public org.netbeans.modules.j2ee.dd.api.web.MessageDestination getMessageDestination(int index) throws VersionNotSupportedException;
+	public MessageDestination getMessageDestination(int index) throws VersionNotSupportedException;
 
-	public void setMessageDestination(org.netbeans.modules.j2ee.dd.api.web.MessageDestination[] value) throws VersionNotSupportedException;
+	public void setMessageDestination(MessageDestination[] value) throws VersionNotSupportedException;
 
-	public org.netbeans.modules.j2ee.dd.api.web.MessageDestination[] getMessageDestination() throws VersionNotSupportedException;
+	public MessageDestination[] getMessageDestination() throws VersionNotSupportedException;
 
 	public int sizeMessageDestination() throws VersionNotSupportedException;
 
-	public int addMessageDestination(org.netbeans.modules.j2ee.dd.api.web.MessageDestination valueInterface) throws VersionNotSupportedException;
+	public int addMessageDestination(MessageDestination valueInterface) throws VersionNotSupportedException;
 
-	public int removeMessageDestination(org.netbeans.modules.j2ee.dd.api.web.MessageDestination valueInterface) throws VersionNotSupportedException;
+	public int removeMessageDestination(MessageDestination valueInterface) throws VersionNotSupportedException;
 
 	public org.netbeans.modules.j2ee.dd.api.web.LocaleEncodingMappingList getSingleLocaleEncodingMappingList() throws VersionNotSupportedException;
         

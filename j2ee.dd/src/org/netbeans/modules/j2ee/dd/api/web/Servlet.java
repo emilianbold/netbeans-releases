@@ -48,20 +48,20 @@ public interface Servlet extends org.netbeans.modules.j2ee.dd.api.common.Compone
          * @param index position in the array of elements
          * @param valueInterface init-param element (InitParam object)
          */
-	public void setInitParam(int index, org.netbeans.modules.j2ee.dd.api.web.InitParam valueInterface);
+	public void setInitParam(int index, org.netbeans.modules.j2ee.dd.api.common.InitParam valueInterface);
         /** Getter for init-param element.
          * @param index position in the array of elements
          * @return init-param element (InitParam object)
          */
-	public org.netbeans.modules.j2ee.dd.api.web.InitParam getInitParam(int index);
+	public org.netbeans.modules.j2ee.dd.api.common.InitParam getInitParam(int index);
         /** Setter for init-param elements.
          * @param value array of init-param elements (InitParam objects)
          */
-	public void setInitParam(org.netbeans.modules.j2ee.dd.api.web.InitParam[] value);
+	public void setInitParam(org.netbeans.modules.j2ee.dd.api.common.InitParam[] value);
         /** Getter for init-param elements.
          * @return array of init-param elements (InitParam objects)
          */
-	public org.netbeans.modules.j2ee.dd.api.web.InitParam[] getInitParam();
+	public org.netbeans.modules.j2ee.dd.api.common.InitParam[] getInitParam();
         /** Returns size of init-param elements.
          * @return number of init-param elements 
          */
@@ -70,12 +70,12 @@ public interface Servlet extends org.netbeans.modules.j2ee.dd.api.common.Compone
          * @param valueInterface init-param element (InitParam object)
          * @return index of new init-param
          */
-	public int addInitParam(org.netbeans.modules.j2ee.dd.api.web.InitParam valueInterface);
+	public int addInitParam(org.netbeans.modules.j2ee.dd.api.common.InitParam valueInterface);
         /** Removes init-param element.
          * @param valueInterface init-param element (InitParam object)
          * @return index of the removed init-param
          */
-	public int removeInitParam(org.netbeans.modules.j2ee.dd.api.web.InitParam valueInterface);
+	public int removeInitParam(org.netbeans.modules.j2ee.dd.api.common.InitParam valueInterface);
         /** Setter for load-on-startup property.
          * @param value property value
          */
@@ -87,11 +87,11 @@ public interface Servlet extends org.netbeans.modules.j2ee.dd.api.common.Compone
         /** Setter for run-as element.
          * @param valueInterface run-as element (RunAs object)
          */
-	public void setRunAs(org.netbeans.modules.j2ee.dd.api.web.RunAs valueInterface);
+	public void setRunAs(org.netbeans.modules.j2ee.dd.api.common.RunAs valueInterface);
         /** Getter for run-as element.
          * @return run-as element (RunAs object)
          */
-	public org.netbeans.modules.j2ee.dd.api.web.RunAs getRunAs();
+	public org.netbeans.modules.j2ee.dd.api.common.RunAs getRunAs();
         /** Setter for security-role-ref element.
          * @param index position in the array of elements
          * @param valueInterface security-role-ref element (SecurityRoleRef object)

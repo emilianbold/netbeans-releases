@@ -77,7 +77,7 @@
 		<dtd-name>message-destinationType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>MessageDestination</bean-name>
-		<implements>org.netbeans.modules.j2ee.dd.api.ejb.MessageDestination</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.MessageDestination</implements>
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanMultiple</extends>
 	</meta-element>
 	<meta-element>
@@ -313,14 +313,14 @@
 		<dtd-name>run-asType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>RunAs</bean-name>
-		<implements>org.netbeans.modules.j2ee.dd.api.ejb.RunAs</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.RunAs</implements>
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
 	</meta-element>
 	<meta-element>
 		<dtd-name>env-entryType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>EnvEntry</bean-name>
-		<implements>org.netbeans.modules.j2ee.dd.api.ejb.EnvEntry</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.EnvEntry</implements>
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
 	</meta-element>
 	<meta-element>
@@ -348,14 +348,14 @@
 		<dtd-name>resource-env-refType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>ResourceEnvRef</bean-name>
-		<implements>org.netbeans.modules.j2ee.dd.api.ejb.ResourceEnvRef</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef</implements>
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
 	</meta-element>
 	<meta-element>
 		<dtd-name>message-destination-refType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>MessageDestinationRef</bean-name>
-		<implements>org.netbeans.modules.j2ee.dd.api.ejb.MessageDestinationRef</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.MessageDestinationRef</implements>
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
 	</meta-element>
 	<meta-element>
@@ -386,7 +386,7 @@
 		<dtd-name>service-refType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>ServiceRef</bean-name>
-		<implements>org.netbeans.modules.j2ee.dd.api.ejb.ServiceRef</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.ServiceRef</implements>
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanMultiple</extends>
 	</meta-element>
 	<meta-element>
@@ -405,20 +405,20 @@
 		<dtd-name>port-component-refType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>PortComponentRef</bean-name>
-		<implements>org.netbeans.modules.j2ee.dd.api.ejb.PortComponentRef</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.PortComponentRef</implements>
 	</meta-element>
 	<meta-element>
 		<dtd-name>service-ref_handlerType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>ServiceRefHandler</bean-name>
-                <implements>org.netbeans.modules.j2ee.dd.api.ejb.ServiceRefHandler</implements>
+                <implements>org.netbeans.modules.j2ee.dd.api.common.ServiceRefHandler</implements>
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanMultiple</extends>
 	</meta-element>
 	<meta-element>
 		<dtd-name>param-valueType</dtd-name>
 		<namespace>http://java.sun.com/xml/ns/j2ee</namespace>
 		<bean-name>ParamValue</bean-name>
-		<implements>org.netbeans.modules.j2ee.dd.api.ejb.ParamValue</implements>
+		<implements>org.netbeans.modules.j2ee.dd.api.common.InitParam</implements>
 		<extends>org.netbeans.modules.j2ee.dd.impl.common.DescriptionBeanMultiple</extends>
 	</meta-element>
 	<meta-element>
