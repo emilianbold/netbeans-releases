@@ -26,6 +26,7 @@ import org.netbeans.editor.EditorState;
 
 /**
 * Root node for all available editor options
+* @deprecated the AllOptions class has been replaced by AllOptionsFolder
 *
 * @author Miloslav Metelka
 * @version 1.00
@@ -40,6 +41,9 @@ public class AllOptions extends ContextSystemOption {
     private transient BaseOptions baseOptions
         = (BaseOptions)BaseOptions.findObject(BaseOptions.class, true);
 
+    /**
+     * @deprecated the AllOptions has been replaced by AllOptionsFolder
+     */
     public AllOptions() {
         // Dead class
         // Add the initializer for the base options. It will not be removed
