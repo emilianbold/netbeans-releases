@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <SyntheticProperties>
+    <SyntheticProperty name="encoding" type="java.lang.String" value="UTF-8"/>
+  </SyntheticProperties>
+
+  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
+  <SubComponents>
+    <Component class="javax.swing.JCheckBox" name="generateCheck">
+      <Properties>
+        <Property name="selected" type="boolean" editor="sun.beans.editors.BoolEditor" value="true"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_GenerateField" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="generateCheckActionPerformed"/>
+      </Events>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="2" gridX="-1" gridY="-1" insetsBottom="0" insetsLeft="12" insetsRight="0" insetsTop="12" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Component class="javax.swing.JLabel" name="modifiersLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Modifiers" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="1" gridX="0" gridY="1" insetsBottom="0" insetsLeft="12" insetsRight="0" insetsTop="12" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="defaultRadio">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_DefaultRadio" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
+      </Properties>
+
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="defaultRadioActionPerformed"/>
+      </Events>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="1" gridX="1" gridY="1" insetsBottom="0" insetsLeft="12" insetsRight="0" insetsTop="12" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="privateRadio">
+      <Properties>
+        <Property name="selected" type="boolean" editor="sun.beans.editors.BoolEditor" value="true"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.beaninfo.editors.StringEditor" value="private"/>
+        <Property name="enabled" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
+      </Properties>
+
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="privateRadioActionPerformed"/>
+      </Events>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="1" gridX="1" gridY="2" insetsBottom="0" insetsLeft="12" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="protectedRadio">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.beaninfo.editors.StringEditor" value="protected"/>
+        <Property name="enabled" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
+      </Properties>
+
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="protectedRadioActionPerformed"/>
+      </Events>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="1" gridX="1" gridY="3" insetsBottom="0" insetsLeft="12" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="publicRadio">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.beaninfo.editors.StringEditor" value="public"/>
+        <Property name="enabled" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
+      </Properties>
+
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="publicRadioActionPerformed"/>
+      </Events>
+
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="ButtonGroup radioGroup = new ButtonGroup();&#xa;&#xa;radioGroup.add(defaultRadio);&#xa;radioGroup.add(privateRadio);&#xa;radioGroup.add(protectedRadio);&#xa;radioGroup.add(publicRadio);"/>
+      </AuxValues>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="1" gridX="1" gridY="4" insetsBottom="0" insetsLeft="12" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="staticCheck">
+      <Properties>
+        <Property name="selected" type="boolean" editor="sun.beans.editors.BoolEditor" value="true"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.beaninfo.editors.StringEditor" value="static"/>
+        <Property name="enabled" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
+      </Properties>
+
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="staticCheckActionPerformed"/>
+      </Events>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="3" gridX="2" gridY="1" insetsBottom="0" insetsLeft="12" insetsRight="11" insetsTop="12" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="finalCheck">
+      <Properties>
+        <Property name="selected" type="boolean" editor="sun.beans.editors.BoolEditor" value="true"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.beaninfo.editors.StringEditor" value="final"/>
+        <Property name="enabled" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
+      </Properties>
+
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="finalCheckActionPerformed"/>
+      </Events>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="3" gridX="2" gridY="2" insetsBottom="0" insetsLeft="12" insetsRight="11" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="transientCheck">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.beaninfo.editors.StringEditor" value="transient"/>
+        <Property name="enabled" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
+      </Properties>
+
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="transientCheckActionPerformed"/>
+      </Events>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="3" gridX="2" gridY="3" insetsBottom="0" insetsLeft="12" insetsRight="11" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Component class="javax.swing.JLabel" name="identifierLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Identifier" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="1" gridX="0" gridY="5" insetsBottom="0" insetsLeft="12" insetsRight="0" insetsTop="11" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Component class="javax.swing.JTextField" name="identifierTextField">
+
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="identifierTextFieldActionPerformed"/>
+        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="identifierTextFieldFocusLost"/>
+      </Events>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="4" gridX="1" gridY="5" insetsBottom="0" insetsLeft="12" insetsRight="11" insetsTop="11" ipadX="0" ipadY="0" weightX="1.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Component class="javax.swing.JLabel" name="initLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_InitFormat" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="1" gridX="0" gridY="6" insetsBottom="0" insetsLeft="12" insetsRight="0" insetsTop="11" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Component class="javax.swing.JTextField" name="initTextField">
+      <Properties>
+        <Property name="editable" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
+      </Properties>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="2" gridX="1" gridY="6" insetsBottom="0" insetsLeft="12" insetsRight="0" insetsTop="12" ipadX="0" ipadY="0" weightX="1.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Component class="javax.swing.JLabel" name="fieldLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Field" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="1" gridX="0" gridY="7" insetsBottom="11" insetsLeft="12" insetsRight="0" insetsTop="11" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Component class="javax.swing.JTextField" name="fieldTextField">
+      <Properties>
+        <Property name="editable" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
+      </Properties>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="4" gridX="1" gridY="7" insetsBottom="11" insetsLeft="12" insetsRight="11" insetsTop="12" ipadX="0" ipadY="0" weightX="1.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Component class="javax.swing.JButton" name="initButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_Format" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="initButtonActionPerformed"/>
+      </Events>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="13" fill="0" gridHeight="1" gridWidth="1" gridX="3" gridY="6" insetsBottom="0" insetsLeft="5" insetsRight="11" insetsTop="12" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+  </SubComponents>
+</Form>
