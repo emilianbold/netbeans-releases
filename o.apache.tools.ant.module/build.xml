@@ -53,7 +53,7 @@
     <javac srcdir="src" destdir="src">
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
-	<pathelement location="release/lib/ext/ant.jar"/>
+	<pathelement location="release/modules/ext/ant.jar"/>
 	<pathelement location="release/modules/ext/xalan.jar"/>
 	<pathelement location="release/modules/ext/xerces.jar"/>
 	<!-- Using IDE's version of jaxp + parser, these cannot be overridden: -->
@@ -72,7 +72,16 @@
          basedir="src"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false">
-      <exclude name="README.txt"/>
+      <include name="org/apache/tools/ant/module/"/>
+    </jar>
+    <mkdir dir="netbeans/modules/patches"/>
+    <!-- Special patch to Ant 1.2 to help it work inside the IDE: -->
+    <jar jarfile="netbeans/modules/patches/antclassloading.jar"
+         basedir="src"
+	 excludesfile="../nbbuild/standard-jar-excludes.txt"
+	 compress="false">
+      <include name="org/apache/tools/ant/AntClassLoader*.class"/>
+      <include name="org/apache/tools/ant/taskdefs/Taskdef*.class"/>
     </jar>
   </target>
 
