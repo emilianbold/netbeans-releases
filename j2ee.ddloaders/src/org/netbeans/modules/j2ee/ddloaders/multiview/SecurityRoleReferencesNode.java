@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
@@ -23,11 +22,11 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  * @author pfiala
  */
 public class SecurityRoleReferencesNode extends SectionNode {
-    public SecurityRoleReferencesNode(SectionNodeView sectionNodeView, Ejb ejb) {
+    public SecurityRoleReferencesNode(SectionNodeView sectionNodeView, EntityAndSession ejb) {
         super(sectionNodeView, ejb, "Security role references", Utils.ICON_BASE_MISC_NODE);
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        return new SecurityRoleReferencesPanel(getSectionNodeView(), null, (EntityAndSession) key);
+        return new SecurityRoleReferencesPanel(getSectionNodeView(), (EntityAndSession) key);
     }
 }

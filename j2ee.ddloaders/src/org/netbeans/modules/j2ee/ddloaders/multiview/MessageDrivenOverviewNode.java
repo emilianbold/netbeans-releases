@@ -27,6 +27,6 @@ public class MessageDrivenOverviewNode extends SectionNode {
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        return null;
+        return new MessageDrivenOverviewPanel(getSectionNodeView(), (MessageDriven) key);
     }
 }

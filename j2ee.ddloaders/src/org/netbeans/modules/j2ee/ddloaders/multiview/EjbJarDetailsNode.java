@@ -29,8 +29,7 @@ class EjbJarDetailsNode extends SectionNode {
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        SectionNodeView sectionView = getSectionNodeView();
-        return new EjbJarDetailsPanel(sectionView, (EjbJarMultiViewDataObject) sectionView.getDataObject(),
-                (EjbJar) key);
+        SectionNodeView sectionNodeView = getSectionNodeView();
+        return new EjbJarDetailsPanel(sectionNodeView, (EjbJar) key);
     }
 }

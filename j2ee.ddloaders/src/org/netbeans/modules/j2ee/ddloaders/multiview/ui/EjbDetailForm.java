@@ -26,8 +26,8 @@ public class EjbDetailForm extends SectionInnerPanel {
     /**
      * Creates new form EjbDetailForm
      */
-    public EjbDetailForm(SectionNodeView sectionView) {
-        super(sectionView);
+    public EjbDetailForm(SectionNodeView sectionNodeView) {
+        super(sectionNodeView);
         initComponents();
         descriptionTextArea.setBorder(displayNameTextField.getBorder());
     }

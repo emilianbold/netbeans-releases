@@ -27,8 +27,7 @@ public class SessionOverviewNode extends SectionNode {
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        SectionNodeView sectionView = getSectionNodeView();
-        return new SessionOverviewPanel(sectionView, (EjbJarMultiViewDataObject) sectionView.getDataObject(),
-                (Session) key);
+        SectionNodeView sectionNodeView = getSectionNodeView();
+        return new SessionOverviewPanel(sectionNodeView, (Session) key);
     }
 }

@@ -26,8 +26,8 @@ public class SessionOverviewForm extends SectionInnerPanel {
     /**
      * Creates new form SessionOverviewForm
      */
-    public SessionOverviewForm(SectionNodeView sectionView) {
-        super(sectionView);
+    public SessionOverviewForm(SectionNodeView sectionNodeView) {
+        super(sectionNodeView);
         initComponents();
     }
 

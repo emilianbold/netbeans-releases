@@ -13,8 +13,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.Session;
-import org.netbeans.modules.j2ee.ddloaders.multiview.ui.SessionOverviewForm;
+import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
+import org.netbeans.modules.j2ee.ddloaders.multiview.ui.MessageDrivenOverviewForm;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.ItemOptionHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
@@ -22,50 +22,40 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-public class SessionOverviewPanel extends SessionOverviewForm {
-
-    public SessionOverviewPanel(final SectionNodeView sectionNodeView, final Session session) {
+public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
+    /**
+     * @param sectionNodeView enclosing SectionNodeView object
+     */
+    public MessageDrivenOverviewPanel(SectionNodeView sectionNodeView, final MessageDriven messageDriven) {
         super(sectionNodeView);
 
         final EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
 
-        new ItemEditorHelper(getEjbNameTextField(), new TextItemEditorModel(dataObject) {
+        new ItemEditorHelper(getNameTextField(), new TextItemEditorModel(dataObject) {
             protected boolean validate(String value) {
                 return value.length() > 0;
             }
 
             protected String getValue() {
-                return session.getEjbName();
+                return messageDriven.getEjbName();
             }
 
             protected void setValue(String value) {
-                session.setEjbName(value);
+                messageDriven.setEjbName(value);
             }
         });
-
-        new ItemOptionHelper(getSessionTypeButtonGroup()) {
-
-            public String getItemValue() {
-                return session.getSessionType();
-            }
-
-            public void setItemValue(String value) {
-                session.setSessionType(value);
-                dataObject.modelUpdatedFromUI();
-            }
-        };
 
         new ItemOptionHelper(getTransactionTypeButtonGroup()) {
 
             public String getItemValue() {
-                return session.getTransactionType();
+                return messageDriven.getTransactionType();
             }
 
             public void setItemValue(String value) {
-                session.setTransactionType(value);
+                messageDriven.setTransactionType(value);
                 dataObject.modelUpdatedFromUI();
             }
         };
-    }
 
+    }
 }

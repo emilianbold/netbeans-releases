@@ -117,9 +117,9 @@ class BeanDetailsPanel extends EjbDetailForm {
         }
     }
 
-    public BeanDetailsPanel(SectionNodeView sectionView, EjbJarMultiViewDataObject dataObject, final Ejb ejb) {
-        super(sectionView);
-        this.dataObject = dataObject;
+    public BeanDetailsPanel(SectionNodeView sectionNodeView, final Ejb ejb) {
+        super(sectionNodeView);
+        this.dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
         this.ejb = ejb;
         new ItemEditorHelper(getDisplayNameTextField(), new DisplayNameEditorModel());
         new ItemEditorHelper(getDescriptionTextArea(), new DescriptionEditorModel());

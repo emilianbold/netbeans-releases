@@ -18,11 +18,8 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.xml.multiview.SectionNode;
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-
-import javax.swing.*;
 
 /**
  * @author pfiala
@@ -32,19 +29,26 @@ class EjbNode extends SectionNode {
     EjbNode(SectionNodeView sectionNodeView, Ejb ejb) {
         super(sectionNodeView, false, ejb, ejb.getDefaultDisplayName(), getIconBase(ejb));
         if (ejb instanceof Session) {
-            addChild(new SessionOverviewNode(sectionNodeView, (Session) ejb));
-            addChild(new EjbImplementationAndInterfacesNode(sectionNodeView, ejb));
-            addChild(new BeanEnvironmentNode(sectionNodeView, ejb));
-            addChild(new BeanDetailNode(sectionNodeView, ejb));
+            Session session = (Session) ejb;
+            addChild(new SessionOverviewNode(sectionNodeView, session));
+            addChild(new EjbImplementationAndInterfacesNode(sectionNodeView, session));
+            addChild(new BeanEnvironmentNode(sectionNodeView, session));
+            addChild(new BeanDetailNode(sectionNodeView, session));
         } else if (ejb instanceof Entity) {
-            addChild(new EntityCmpOverviewNode(sectionNodeView, (Entity) ejb));
-            addChild(new EjbImplementationAndInterfacesNode(sectionNodeView, ejb));
-            addChild(new BeanDetailNode(sectionNodeView, ejb));
+            Entity entity = (Entity) ejb;
+            addChild(new EntityOverviewNode(sectionNodeView, entity));
+            addChild(new EjbImplementationAndInterfacesNode(sectionNodeView, entity));
+            if (Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType())) {
+                addChild(new CmpFieldsNode(sectionNodeView, entity));
+                addChild(new SelectMethodsNode(sectionNodeView, entity));
+            }
+            addChild(new BeanDetailNode(sectionNodeView, entity));
         } else if (ejb instanceof MessageDriven) {
-            addChild(new MessageDrivenOverviewNode(sectionNodeView, (MessageDriven) ejb));
-            addChild(new EjbImplementationNode(sectionNodeView, ejb));
-            addChild(new BeanEnvironmentNode(sectionNodeView, ejb));
-            addChild(new BeanDetailNode(sectionNodeView, ejb));
+            MessageDriven messageDriven = (MessageDriven) ejb;
+            addChild(new MessageDrivenOverviewNode(sectionNodeView, messageDriven));
+            addChild(new MdbImplementationNode(sectionNodeView, messageDriven));
+            addChild(new BeanEnvironmentNode(sectionNodeView, messageDriven));
+            addChild(new BeanDetailNode(sectionNodeView, messageDriven));
         }
     }
 
@@ -63,30 +67,6 @@ class EjbNode extends SectionNode {
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        SectionNodeView sectionNodeView = getSectionNodeView();
-        XmlMultiViewDataObject dataObject = (XmlMultiViewDataObject) sectionNodeView.getDataObject();
-        if (key instanceof Session) {
-            return null;
-        } else if (key instanceof Entity) {
-            return null;
-        } else if (key instanceof MessageDriven) {
-//            return new MessageDrivenPanel(sectionNodeView, dataObject, (EjbJar) key);
-            return new SectionInnerPanel(sectionNodeView) {
-                public JComponent getErrorComponent(String errorId) {
-                    return null;  //To change body of implemented methods use File | Settings | File Templates.
-                }
-
-                public void setValue(JComponent source, Object value) {
-                    //To change body of implemented methods use File | Settings | File Templates.
-                }
-
-                public void linkButtonPressed(Object ddBean, String ddProperty) {
-                    //To change body of implemented methods use File | Settings | File Templates.
-                }
-            };
-        } else {
-            return null;
-        }
-
+        return null;
     }
 }

@@ -13,20 +13,21 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview.ui;
 
-import org.netbeans.modules.xml.multiview.ui.SectionView;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 
 import javax.swing.*;
 
 /**
  * @author pfiala
  */
-public class EjbImplementationAndInterfacesForm extends org.netbeans.modules.xml.multiview.ui.SectionInnerPanel {
+public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
 
     /**
      * Creates new form BeanForm
      */
-    public EjbImplementationAndInterfacesForm(SectionView sectionView) {
-        super(sectionView);
+    public EjbImplementationAndInterfacesForm(SectionNodeView sectionNodeView) {
+        super(sectionNodeView);
         initComponents();
     }
 

@@ -16,7 +16,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
-import org.netbeans.modules.xml.multiview.ui.SectionView;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -87,10 +87,9 @@ public class InnerTablePanel extends SectionInnerPanel {
         }
     }
 
-    public InnerTablePanel(SectionView sectionView, final XmlMultiViewDataObject dataObject, DefaultTableModel model,
-            TableCellEditor tableCellEditor) {
-        super(sectionView);
-        this.dataObject = dataObject;
+    public InnerTablePanel(SectionNodeView sectionNodeView, DefaultTableModel model, TableCellEditor tableCellEditor) {
+        super(sectionNodeView);
+        this.dataObject = (XmlMultiViewDataObject) sectionNodeView.getDataObject();
         tablePanel = new TablePanel(model);
         model.addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent e) {
@@ -129,8 +128,8 @@ public class InnerTablePanel extends SectionInnerPanel {
         }
     }
 
-    public InnerTablePanel(SectionView sectionView, final XmlMultiViewDataObject dataObject, DefaultTableModel model) {
-        this(sectionView, dataObject, model, null);
+    public InnerTablePanel(SectionNodeView sectionNodeView, DefaultTableModel model) {
+        this(sectionNodeView, model, null);
 
     }
 

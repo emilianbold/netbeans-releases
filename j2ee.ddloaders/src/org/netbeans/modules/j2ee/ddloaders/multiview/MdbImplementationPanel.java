@@ -13,22 +13,21 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.xml.multiview.SectionNode;
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
+import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
+import org.netbeans.modules.j2ee.ddloaders.multiview.ui.MdbImplementationForm;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 /**
  * @author pfiala
  */
-class CmpFieldsNode extends SectionNode {
+public class MdbImplementationPanel extends MdbImplementationForm {
+    /**
+     * Creates new form MdbImplementationForm
+     *
+     * @param sectionNodeView enclosing SectionNodeView object
+     */
+    public MdbImplementationPanel(SectionNodeView sectionNodeView, MessageDriven messageDriven) {
+        super(sectionNodeView);
 
-    CmpFieldsNode(SectionNodeView sectionNodeView, Entity entity) {
-        super(sectionNodeView, true, entity, "CMP Fields", Utils.ICON_BASE_MISC_NODE);
-    }
-
-    protected SectionInnerPanel createNodeInnerPanel() {
-        SectionNodeView sectionNodeView = getSectionNodeView();
-        return new CmpFieldsPanel(sectionNodeView, (Entity) key);
     }
 }

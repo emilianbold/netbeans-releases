@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
@@ -21,14 +21,13 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-class EjbImplementationAndInterfacesNode extends SectionNode {
+class SelectMethodsNode extends SectionNode {
 
-    EjbImplementationAndInterfacesNode(SectionNodeView sectionNodeView, EntityAndSession ejb) {
-        super(sectionNodeView, true, ejb, "Enterprise Bean Implementation and Interfaces", Utils.ICON_BASE_MISC_NODE);
+    SelectMethodsNode(SectionNodeView sectionNodeView, Entity entity) {
+        super(sectionNodeView, true, entity, "CMP Finders and Selects", Utils.ICON_BASE_MISC_NODE);
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        SectionNodeView sectionNodeView = getSectionNodeView();
-        return new EjbImplementationAndInterfacesPanel(sectionNodeView, (EntityAndSession) getKey());
+        return new SelectMethodsPanel(getSectionNodeView(), (Entity) key);
     }
 }

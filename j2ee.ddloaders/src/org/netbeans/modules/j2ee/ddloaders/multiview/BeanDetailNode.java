@@ -27,7 +27,7 @@ public class BeanDetailNode extends SectionNode {
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        SectionNodeView sectionView = getSectionNodeView();
-        return new BeanDetailsPanel(sectionView, (EjbJarMultiViewDataObject) sectionView.getDataObject(), (Ejb) key);
+        SectionNodeView sectionNodeView = getSectionNodeView();
+        return new BeanDetailsPanel(sectionNodeView, (Ejb) key);
     }
 }

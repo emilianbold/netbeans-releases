@@ -27,6 +27,6 @@ public class EjbReferencesNode extends SectionNode {
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        return new EjbReferencesPanel(getSectionNodeView(), null, (Ejb) getKey());
+        return new EjbReferencesPanel(getSectionNodeView(), (Ejb) getKey());
     }
 }

@@ -117,9 +117,9 @@ class EjbJarDetailsPanel extends EjbDetailForm {
         }
     }
 
-    public EjbJarDetailsPanel(SectionNodeView sectionView, EjbJarMultiViewDataObject dataObject, final EjbJar ejbJar) {
-        super(sectionView);
-        this.dataObject = dataObject;
+    public EjbJarDetailsPanel(SectionNodeView sectionNodeView, final EjbJar ejbJar) {
+        super(sectionNodeView);
+        this.dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
         this.ejbJar = ejbJar;
         new ItemEditorHelper(getDisplayNameTextField(), new DisplayNameEditorModel());
         new ItemEditorHelper(getDescriptionTextArea(), new DescriptionEditorModel());

@@ -14,6 +14,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
@@ -29,7 +30,9 @@ class BeanEnvironmentNode extends SectionNode {
         addChild(new EnvironmentEntriesNode(sectionNodeView, ejb));
         addChild(new ResourceReferencesNode(sectionNodeView, ejb));
         addChild(new ResourceEnvironmentReferencesNode(sectionNodeView, ejb));
-        addChild(new SecurityRoleReferencesNode(sectionNodeView, ejb));
+        if(ejb instanceof EntityAndSession) {
+            addChild(new SecurityRoleReferencesNode(sectionNodeView, (EntityAndSession) ejb));
+        }
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
