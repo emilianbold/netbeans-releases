@@ -169,7 +169,7 @@ public abstract class BaseFileObj extends FileObject {
         }
         
         //TODO: no lock used
-        if (!getFileName().rename(file2Rename.getName())) {
+        if (!NamingFactory.rename(getFileName(),file2Rename.getName())) {
             FSException.io("EXC_CannotRename", file.getName(), getFileSystem().getDisplayName(), file2Rename.getName()); // NOI18N                                        
         }
 

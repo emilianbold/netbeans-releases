@@ -22,27 +22,29 @@ import java.io.File;
 public class FileName implements FileNaming {
     private String name;
     private final FileNaming parent;
-    private final Integer id;
+    private Integer id;
 
     protected FileName(final FileNaming parent, final File file) {
         this.parent = parent;
         this.name = parseName(file);
-        //assert !this.name.startsWith("/") && !this.name.startsWith("\\") : this.name + " " + this.getClass();
         id = NamingFactory.createID(file);
-
     }
 
     private static String parseName(final File file) {
         return (file.getParentFile() == null) ? file.getPath() : file.getName();
     }
 
-    public final boolean rename(final String name) {
+    public final boolean rename(final String name) {        
         boolean retVal = false;
         final File f = getFile();
 
         if (f.exists()) {
-            retVal = f.renameTo(new File(f.getParentFile(), name));
-            this.name = name;
+            File newFile = new File(f.getParentFile(), name);
+            retVal = f.renameTo(newFile);
+            if (retVal) {
+                this.name = name;
+                id = NamingFactory.createID(newFile);
+            }
         }
         FolderName.freeCaches();
         return retVal;

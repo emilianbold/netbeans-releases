@@ -42,23 +42,46 @@ public final class NamingFactory {
         return fileName;
     }
 
+    public static synchronized FileNaming fromFile(final FileNaming parentFn, final File file) {            
+        return NamingFactory.registerInstanceOfFileNaming(parentFn, file);
+    }
+    
+    public static synchronized boolean rename (FileNaming fNaming, String newName) {        
+        boolean retVal = false;
+        Object value = NamingFactory.nameMap.get(fNaming.getId());
+        if (value instanceof List) {
+            Reference ref = NamingFactory.getReference((List) value, fNaming.getFile());
+            if (ref != null) {
+                ((List) value).remove(ref);                
+            }            
+        } else {
+            NamingFactory.nameMap.remove(fNaming.getId());
+        }
+        retVal = fNaming.rename(newName);
+        NamingFactory.registerInstanceOfFileNaming(fNaming.getParent(), fNaming.getFile(), fNaming);
+        return retVal;
+    }
+
     public static Integer createID(final File file) {
         return new Integer(file.hashCode());
     }
+    private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file) {
+        return NamingFactory.registerInstanceOfFileNaming(parentName, file, null);       
+    }
 
-    private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File f) {
+    private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, final FileNaming newValue) {
         FileNaming retVal;
-        final Object value = NamingFactory.nameMap.get(new Integer(f.hashCode()));
-        Reference ref = null;
-        ref = (Reference) (ref == null && value instanceof Reference ? value : null);
-        ref = (ref == null && value instanceof List ? NamingFactory.getReference((List) value, f) : ref);
+        
+        final Object value = NamingFactory.nameMap.get(new Integer(file.hashCode()));
+        Reference ref = (Reference) (value instanceof Reference ? value : null);
+        ref = (ref == null && value instanceof List ? NamingFactory.getReference((List) value, file) : ref);
 
         final FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
 
-        if (cachedElement != null && cachedElement.getFile().compareTo(f) == 0) {
+        if (cachedElement != null && cachedElement.getFile().compareTo(file) == 0) {
             retVal = cachedElement;
         } else {
-            retVal = NamingFactory.createFileNaming(f, parentName);
+            retVal = (newValue == null) ? NamingFactory.createFileNaming(file, parentName) : newValue;
             final WeakReference refRetVal = new WeakReference(retVal);
 
             final boolean isList = (value instanceof List);
@@ -73,7 +96,8 @@ public final class NamingFactory {
                 }
             } else {
                 // Reference impl.                
-                NamingFactory.nameMap.put(retVal.getId(), refRetVal);
+                Reference r = (Reference)NamingFactory.nameMap.put(retVal.getId(), refRetVal);
+                assert r == null || r.get() == null;
             }
         }
 

@@ -122,7 +122,7 @@ java.lang.AssertionError: E:\work\nb_all8\openide\masterfs\build
         
         final File child = new File(folder, childName);
         final FileInfo fInfo = new FileInfo(child);
-        return (fInfo.isConvertibleToFileObject()) ? NamingFactory.fromFile(child) : null;
+        return (fInfo.isConvertibleToFileObject()) ? NamingFactory.fromFile(folderName, child) : null;
     }
     
     private static Set rescanChildren(final FileNaming folderName) {
@@ -136,7 +136,9 @@ java.lang.AssertionError: E:\work\nb_all8\openide\masterfs\build
         //assert childs != null : folder.getAbsolutePath();
         if (childs != null) {
             for (int i = 0; i < childs.length; i++) {
-                retVal.add(NamingFactory.fromFile(childs[i]));
+                FileNaming child = NamingFactory.fromFile(folderName, childs[i]);
+                assert child.getParent() == folderName;
+                retVal.add(child);
             }
         }
         
