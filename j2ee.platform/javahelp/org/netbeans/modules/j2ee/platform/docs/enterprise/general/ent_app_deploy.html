@@ -12,26 +12,40 @@
 
 <h2>Deploying an Enterprise Application</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>When you build an EAR file, or when changes have been made to any of its modules,
-you should verify that the result is a valid implementation of the J2EE 1.4 specification.
-A verified application implements the J2EE 1.4 specification correctly.</p>
+<p>Unless your EJB modules and web modules are designed to be deployed as stand-alone modules, 
+  you should always deploy them by deploying the enterprise application 
+  that contains them. If you run the Run Project or Deploy Project commands on an individual 
+  modules that are part of an enterprise application, the IDE only deploys that 
+  module itself. Any changes you have made in the other modules in the project are 
+  not propagated to the server.</p>
+  <p><b>To deploy an enterprise application:</b></p>
+<ul>
+  <li>In the Projects window, right-click the enterprise application project and choose one of the 
+    following: 
+    <ul>
+	    <li><b>Run Project.</b> Starts the target application server and domain, undeploys 
+	    the enterprise application if it is already deployed, deploys the enterprise application
+	    to the target application server and domain,
+	    and displays it in the IDE's default browser.</li>
+      <li><b>Deploy Project.</b> 
+      Starts the target application server and domain and deploys the enterprise application to it.</li>
+    </ul>
+  </li>
+</ul>
+  <p><b>To undeploy an enterprise application:</b></p>
+  <ol>
+	<li>In the Runtime window, expand the Server Registry node
+	and the Sun Java System Application Server 8 node.
 <table cellpadding="3" cellspacing="0" border="0">
   <tr valign="top"> 
     <td><img src="../../web/images/tip.gif" alt="tip">&nbsp;</td>
-    <td>Not all failures to
-	    comply with the J2EE 1.4 specification will cause the application to fail. However,
-	    it is good to know where your application does not comply to the J2EE 1.4
-    specification, so that you can take appropriate steps, if any.</td>
+    <td>If the Sun Java System Application Server 8 has been stopped
+     or removed, <a href="ent_app_server.html">set the target server</a>.</td>
   </tr>
 </table>
-<ol>
-<li>Right-click an enterprise application project node in the Projects window and choose Verify.
-<p>The Verifier window opens and displays all the results.</p></li>
-<li>Filter the results according to your needs:
-<ul><li>Click Failures Only to display only failures.</li>
-	<li>Click Failures and Warnings Only to display only failures and warnings.</li>
-</ul>
-<li>Make appropriate changes, if any, and verify the application again.</li>
+</li>
+<li>Expand the Applications node and the Enterprise Applications node.</li>
+<li>Right-click the enterprise applications node and choose Undeploy.</li>
 </ol>
 <table>
   <tr> 
@@ -41,8 +55,7 @@ A verified application implements the J2EE 1.4 specification correctly.</p>
     <td width="23"></td>
     <td><a href="about_ent_apps.html">About Enterprise Applications</a><br>
 	    <a href="ent_app_build.html">Building an Enterprise Application</a><br>
-	    <a href="ent_app_verify.html">Verifying an Enterprise Application</a><br>
-	    <a href="ent_app_server.html">Setting the Target Server for an Enterprise Application</a><br></td>
+	    <a href="ent_app_verify.html">Verifying an Enterprise Application</a><br></td>
   </tr>
 </table>
 
