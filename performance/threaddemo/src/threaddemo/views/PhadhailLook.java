@@ -145,6 +145,8 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     public void destroy(Object o, Lookup e) throws IOException {
         Phadhail ph = (Phadhail)o;
         ph.delete();
+        // XXX since this fires no changes of its own...
+        fireObjectDestroyed(ph);
     }
     
     public Action[] getActions(Object o, Lookup e) {
