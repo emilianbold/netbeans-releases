@@ -467,8 +467,11 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
 */
   
-  private void generatePropertySetter (RADComponent comp, RADComponent.RADProperty prop, Writer initCodeWriter) throws IOException {
+  private synchronized void generatePropertySetter (RADComponent comp, RADComponent.RADProperty prop, Writer initCodeWriter) throws IOException {
     PropertyDescriptor desc = prop.getPropertyDescriptor ();
+/*    if (prop instanceof RADComponent.RADPropertyImpl) {
+      ((RADComponent.RADPropertyImpl)prop).ps.println (">>> generatePropertySetter: " +((RADComponent.RADPropertyImpl)prop).count+", : "+ prop + ", : "+prop.getCurrentEditor ()+", thread: "+Thread.currentThread ().getName ());
+    } */
     Method writeMethod = desc.getWriteMethod ();
     PropertyEditor ed = null;
     try {
@@ -478,22 +481,33 @@ public class JavaCodeGenerator extends CodeGenerator {
         ed = (PropertyEditor)prop.getCurrentEditor ().getClass ().newInstance ();
       }
     } catch (Exception e) {
-      if (System.getProperty ("netbeans.full.hack") != null) {
-        e.printStackTrace ();
-      }
+      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
       return; // cannot generate code for this property without the property editor
     }
+//    System.out.println ("*&*&*&*& Generate setter: "+prop+", : "+ed);
+//    if (prop instanceof RADComponent.RADPropertyImpl) {
+//    System.out.println ("Cha cha...");
+//      ((RADComponent.RADPropertyImpl)prop).ps.println (">>> generatePropertySetter: ED: " +ed);
+//      ((RADComponent.RADPropertyImpl)prop).ps.flush ();
+//    } else { System.out.println ("Property not Impl: "+prop); }
     Object value = null;
     try {
       value = prop.getValue ();
     } catch (java.lang.reflect.InvocationTargetException e) {
+      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
       return; // no code generated
     } catch (IllegalAccessException e) {
+      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
       return; // no code generated
     }
     
     if (ed == null) { // cannot generate without property editor
       return;
+    }
+    
+    // process FormAwareEditors
+    if (ed instanceof FormAwareEditor) {
+      ((FormAwareEditor)ed).setRADComponent (comp);
     }
 
     String javaInitializationString = null;
@@ -502,7 +516,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       try {
         ed.setValue (value);
       } catch (Exception e) {
-        System.out.println ("Ahoj...");
+        if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
         return; // cannot generate
       }
       javaInitializationString = ed.getJavaInitializationString ();
@@ -1172,6 +1186,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  40   Gandalf   1.39        7/23/99  Ian Formanek    Fixed work with 
+ *       FormAwareEditors
  *  39   Gandalf   1.38        7/14/99  Ian Formanek    Serialization of 
  *       components on form save and generation of correct code for 
  *       instantiating such components
