@@ -153,8 +153,13 @@ public class I18nWizardDescriptor extends WizardDescriptor {
                     public void propertyChange(PropertyChangeEvent evt) {
                         if("defaultButton".equals(evt.getPropertyName())) { // NOI18N
                             Object newValue = evt.getNewValue();
-                            if(newValue != nextButton && newValue != finishButton)
-                                updateDefaultButton();
+                            if(newValue != nextButton && newValue != finishButton) {
+                                RequestProcessor.postRequest(new Runnable() {
+                                    public void run() {
+                                        updateDefaultButton();
+                                    }
+                                });
+                            }
                         }
                     }
                 },

@@ -17,6 +17,8 @@ package org.netbeans.modules.i18n.wizard;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.TreeMap;
@@ -44,6 +46,9 @@ public class I18nTestWizardAction extends NodeAction {
     /** Generated serial version UID. */
     static final long serialVersionUID = -3265587506739081248L;
 
+    /** Weak reference to dialog. */
+    private Reference dialogWRef = new WeakReference(null);
+    
     
     /** Implements superclass abstract method. 
      * @return <code>true</code> */
@@ -53,6 +58,12 @@ public class I18nTestWizardAction extends NodeAction {
     
     /** Actually performs action. Implements superclass abstract method. */
     public void performAction(Node[] activatedNodes) {
+        Dialog dialog = (Dialog)dialogWRef.get();
+        
+        if(dialog != null) {
+            dialog.setVisible(false);
+            dialog.dispose();
+        }
         
         WizardDescriptor wizardDescriptor = new I18nWizardDescriptor(
             getWizardIterator(),
@@ -61,9 +72,11 @@ public class I18nTestWizardAction extends NodeAction {
 
         initWizard(wizardDescriptor);
         
-        Dialog dialog = TopManager.getDefault().createDialog(wizardDescriptor);
+        dialog = TopManager.getDefault().createDialog(wizardDescriptor);
         
         dialog.show();
+        
+        dialogWRef = new WeakReference(dialog);
     }
 
     /** Gets wizard iterator thru panels used in wizard invoked by this action, 
