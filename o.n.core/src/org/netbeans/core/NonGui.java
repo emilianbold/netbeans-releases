@@ -276,8 +276,8 @@ public class NonGui extends NbTopManager implements Runnable {
                                     }
                                 }
                                 ClassLoader l = new URLClassLoader((URL[])urls.toArray(new URL[urls.size()]), NonGui.class.getClassLoader());
-                                Class wizardClass = Class.forName("org.netbeans.core.upgrade.UpgradeWizard", true, l); // NOI18N
-                                Method showMethod = wizardClass.getMethod( "showWizard", new Class[] { Splash.SplashOutput.class } ); // NOI18N
+                                Class wizardClass = Class.forName("org.netbeans.core.upgrade.AutoUpgrade", true, l); // NOI18N
+                                Method showMethod = wizardClass.getMethod( "handleUpgrade", new Class[] { Splash.SplashOutput.class } ); // NOI18N
 
                                 Boolean canceled = (Boolean)showMethod.invoke( null, new Object[] { getSplash() } );
                                 System.setProperty("import.canceled", canceled.toString()); // NOI18N
