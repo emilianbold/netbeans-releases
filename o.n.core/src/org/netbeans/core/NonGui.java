@@ -248,6 +248,9 @@ public class NonGui extends NbTopManager implements Runnable {
         return systemFileSystem;
     }
 
+    /** Subclasses will do better. */
+    protected void setStatusTextImpl(String text) {}
+
     /** Everything is interactive */
     public boolean isInteractive (int il) {
         return true;

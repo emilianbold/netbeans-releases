@@ -95,10 +95,9 @@ public class Plain extends NbTopManager implements Runnable {
     return new Object();
   }
   
-  /** */
-  public void setStatusText(String text) {
-    System.out.println(text);
-  }
+    protected void setStatusTextImpl(String text) {
+        System.out.println(text);
+    }
   
     /** Initializaton of modules if user directory provided.
      */

@@ -143,7 +143,7 @@ public abstract class NbTopManager extends TopManager {
     private DataLoaderPool loaderPool;
 
     /** status text */
-    private String statusText;
+    private String statusText = " "; // NOI18N
 
     /** the debugger listener listening on adding/removing debugger*/
     private static LookupListener debuggerLsnr = null;
@@ -556,15 +556,17 @@ public abstract class NbTopManager extends TopManager {
     /** Shows specified text in MainWindow's status line.
     * @param text the text to be shown
     */
-    public void setStatusText(String text) {
-        if (Utilities.compareObjects(statusText, text)) return;
+    public final void setStatusText(String text) {
         if (text == null || text.length () == 0) {
             text = " "; // NOI18N
         }
-
+        if (text.equals(statusText)) return;
+        String old = statusText;
         statusText = text;
-        firePropertyChange (PROP_STATUS_TEXT, null, text);
+        setStatusTextImpl(text);
+        firePropertyChange (PROP_STATUS_TEXT, old, text);
     }
+    protected abstract void setStatusTextImpl(String text);
 
     /** Getter for status text.
     */
