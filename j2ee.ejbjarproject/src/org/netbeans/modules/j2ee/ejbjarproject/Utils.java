@@ -12,16 +12,6 @@
  */
 
 package org.netbeans.modules.j2ee.ejbjarproject;
-
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.api.java.queries.UnitTestForSourceQuery;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -29,16 +19,10 @@ import org.openide.WizardDescriptor;
 
 import javax.swing.*;
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
+import java.io.IOException;
+import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
+import org.openide.src.ClassElement;
 
 public class Utils {
 
@@ -104,4 +88,24 @@ public class Utils {
         setSteps(panels, steps, steps, 0);
     }
     
+    public static void save(ClassElement ce) {
+        if (ce == null) {
+            return;
+        }
+        SaveCookie saveCookie = (SaveCookie) ce.getCookie(SaveCookie.class);
+        assert saveCookie != null: ("SaveCookie not found for " + ce.getName().getName());
+        if (saveCookie != null) {
+            try {
+                saveCookie.save();
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
+            }
+        }
+    }
+    
+    public static boolean isModified(ClassElement ce) {
+        DataObject dataObject = (DataObject) ce.getCookie(DataObject.class);
+        assert dataObject != null: ("DataObject not found for " + ce.getName().getName());
+        return dataObject.isModified();
+    }
 }
