@@ -19,18 +19,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.text.MessageFormat;
-import java.util.TreeSet;
-import java.util.ResourceBundle;
-import java.util.Iterator;
-import java.util.ArrayList;
+import java.util.*;
 
 import org.openide.cookies.CompilerCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
@@ -41,7 +36,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 
 
-/** This entry defines utility methods for finding out locale-specific data about entries. */
+/** This entry represents one properties file which is part of bunlde of properties files with same basic name.
+ * This entry has some dataobject attributes, has cookies, node delegate etc. */
 public class PropertiesFileEntry extends PresentableFileEntry {
 
     /** Basic name of bundle .properties file. */
@@ -50,7 +46,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     /** Structure handler for .properties file represented by this instance. */
     private transient StructHandler propStruct;
 
-    /** Helper variable. Flag if cookies were initialized. */
+    /** Helper variable for lazy cookie initialization. Flag if cookies were initialized. */
     private transient boolean cookiesInitialized = false;
     
     /** Generated serial version UID. */    
@@ -85,8 +81,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
      * Look for a cookie in the current cookie set matching the requested class.
      *
      * @param type the class to look for
-     * @return an instance of that class, or <code>null</code> if this class of cookie
-     *    is not supported
+     * @return an instance of that class, or <code>null</code> if this class of cookie is not supported
      */
     public Node.Cookie getCookie(Class clazz) {
         if(CompilerCookie.class.isAssignableFrom(clazz)) {
@@ -139,12 +134,11 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         return (PropertiesEditorSupport)getCookieSet().getCookie(EditCookie.class);
     }
 
-    /* Renames underlying fileobject. This implementation returns the
-    * same file.
-    *
-    * @param name new base name of the bundle
-    * @return file object with renamed file
-    */
+    /** Renames underlying fileobject. This implementation returns the same file.
+     *
+     * @param name new base name of the bundle
+     * @return file object with renamed file
+     */
     public FileObject rename (String name) throws IOException {
     
         if (!getFile().getName().startsWith(basicName))
@@ -155,12 +149,11 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         return fo;
     }
 
-    /* Renames underlying fileobject. This implementation returns the
-    * same file.
-    *
-    * @param name full name of the file
-    * @return file object with renamed file
-    */
+    /** Renames underlying fileobject. This implementation returns the same file.
+     *
+     * @param name full name of the file
+     * @return file object with renamed file
+     */
     public FileObject renameEntry (String name) throws IOException {
 
         if (!getFile().getName().startsWith(basicName))
@@ -183,6 +176,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         return fo;
     }
 
+    /** Creates from template. */
     public FileObject createFromTemplate (FileObject folder, String name) throws IOException {
         ResourceBundle bundle = NbBundle.getBundle (PropertiesFileEntry.class);
         if (! getFile ().getName ().startsWith (basicName))
@@ -271,47 +265,47 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         }
     }
 
-    /** Test whether the object may be deleted.
-    * @return <code>true</code> if it may (primary file can't be deleted)
-    */
+    /** Whether the object may be deleted.
+     * @return <code>true</code> if it may (primary file can't be deleted)
+     */
     public boolean isDeleteAllowed() {
         // PENDING - better implementation : don't allow deleting Bunlde_en when Bundle_en_US exists
         return (!getFile ().isReadOnly ()) && (!basicName.equals(getFile().getName()));
     }
 
-    /** Test whether the object may be copied.
-    * @return <code>true</code> if it may
-    */
+    /** Whether the object may be copied.
+     * @return <code>true</code> if it may
+     */
     public boolean isCopyAllowed () {
         return true;
     }
     // [PENDING] copy should be overridden because e.g. copy and then paste
     // to the same folder creates a new locale named "1"! (I.e. "foo_1.properties")
 
-    /* Getter for move action.
-    * @return true if the object can be moved
-    */
+    /** Getter for move action.
+     * @return true if the object can be moved
+     */
     public boolean isMoveAllowed() {
         return !getFile ().isReadOnly ();
     }
 
-    /* Getter for rename action.
-    * @return true if the object can be renamed
-    */
+    /** Getter for rename action.
+     * @return true if the object can be renamed
+     */
     public boolean isRenameAllowed () {
         return !getFile ().isReadOnly ();
     }
 
-    /* Help context for this object.
-    * @return help context
-    */
+    /** Help context for this object.
+     * @return help context
+     */
     public HelpCtx getHelpCtx() {
         return new HelpCtx (PropertiesFileEntry.class);
     }
 
     
     /** Children of a node representing s single properties file.
-    * Contains nodes representing individual properties. */
+     * Contains nodes representing individual properties. */
     private class PropKeysChildren extends Children.Keys {
 
         /** Listens to changes on the properties file entry */
@@ -342,8 +336,8 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         }
 
         /** Called to notify that the children has been asked for children
-        * after and that they should set its keys.
-        */
+         * after and that they should set its keys.
+         */
         protected void addNotify () {
             mySetKeys();
             // listener
@@ -354,8 +348,8 @@ public class PropertiesFileEntry extends PresentableFileEntry {
 
                   }; // end of inner class
 
-            PropertiesFileEntry.this.addPropertyChangeListener (new WeakListener.PropertyChange(pcl));
-            PropertiesFileEntry.this.getHandler().addPropertyChangeListener (new WeakListener.PropertyChange(pcl));
+            PropertiesFileEntry.this.addPropertyChangeListener(WeakListener.propertyChange(pcl, PropertiesFileEntry.this));
+            PropertiesFileEntry.this.getHandler().addPropertyChangeListener(WeakListener.propertyChange(pcl, PropertiesFileEntry.this.getHandler()));
 
             pbl = new PropertyBundleListener () {
                 public void bundleChanged(PropertyBundleEvent evt) {
@@ -397,9 +391,9 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         }
 
         /** Called to notify that the children has lost all of its references to
-        * its nodes associated to keys and that the keys could be cleared without
-        * affecting any nodes (because nobody listens to that nodes).
-        */
+         * its nodes associated to keys and that the keys could be cleared without
+         * affecting any nodes (because nobody listens to that nodes).
+         */
         protected void removeNotify () {
             setKeys(new ArrayList());
         }
@@ -411,6 +405,5 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         }
 
     } // End of inner class PropKeysChildren.
-
 
 }

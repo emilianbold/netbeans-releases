@@ -56,10 +56,11 @@ public class FileEntryNode extends AbstractNode {
     public FileEntryNode (PresentableFileEntry entry, Children ch) {
         super (ch);
         this.entry = entry;
+        
         PropL propListener = new PropL ();
-        PropertyChangeListener wl = new WeakListener.PropertyChange(propListener);
-        entry.addPropertyChangeListener (wl);
+        entry.addPropertyChangeListener(WeakListener.propertyChange(propListener, entry));
         entry.getDataObject().addPropertyChangeListener (propListener);
+        
         super.setName (entry.getName ());
 
         setIconBase (ICON_BASE);

@@ -24,7 +24,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import org.openide.actions.OpenAction;
 import org.openide.cookies.CompilerCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -139,15 +138,15 @@ public final class PropertiesDataObject extends MultiDataObject {
     }
 
     /** Provides node that should represent this data object. When a node for representation
-    * in a parent is requested by a call to getNode (parent) it is the exact copy of this node
-    * with only parent changed. This implementation creates instance
-    * <CODE>DataNode</CODE>.
-    * <P>
-    * This method is called only once.
-    *
-    * @return the node representation for this data object
-    * @see DataNode
-    */                                                           
+     * in a parent is requested by a call to getNode (parent) it is the exact copy of this node
+     * with only parent changed. This implementation creates instance
+     * <CODE>DataNode</CODE>.
+     * <P>
+     * This method is called only once.
+     *
+     * @return the node representation for this data object
+     * @see DataNode
+     */                                                           
     protected Node createNodeDelegate () {
         PropertiesChildren pc = new PropertiesChildren();
 
@@ -220,8 +219,8 @@ public final class PropertiesDataObject extends MultiDataObject {
         }
 
         /** Called to notify that the children has been asked for children
-        * after and that they should set its keys.
-        */
+         * after and that they should set its keys.
+         */
         protected void addNotify () {
             mySetKeys();
             // listener
@@ -233,13 +232,13 @@ public final class PropertiesDataObject extends MultiDataObject {
                 }
             }; 
 
-            PropertiesDataObject.this.addPropertyChangeListener (new WeakListener.PropertyChange(pcl));
+            PropertiesDataObject.this.addPropertyChangeListener(WeakListener.propertyChange(pcl, PropertiesDataObject.this));
         }
 
         /** Called to notify that the children has lost all of its references to
-        * its nodes associated to keys and that the keys could be cleared without
-        * affecting any nodes (because nobody listens to that nodes).
-        */
+         * its nodes associated to keys and that the keys could be cleared without
+         * affecting any nodes (because nobody listens to that nodes).
+         */
         protected void removeNotify () {
             setKeys(new ArrayList());
         }
