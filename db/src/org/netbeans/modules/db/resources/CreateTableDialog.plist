@@ -1,0 +1,117 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+{
+	columns = (
+		{
+			name = "pkey";
+			columntitle = "Key";
+			columnclass = java.lang.Boolean;
+			default = false;
+			width = 30;
+			minwidth = 20;
+		},
+		{
+			name = "idx";
+			columntitle = "Idx";
+			columnclass = java.lang.Boolean;
+			default = false;
+			width = 30;
+			minwidth = 20;
+		},
+		{
+			name = "nullable";
+			columntitle = "Null";
+			columnclass = java.lang.Boolean;
+			default = true;
+			width = 30;
+			minwidth = 20;
+		},
+		{
+			name = "unique";
+			columntitle = "Unique";
+			columnclass = java.lang.Boolean;
+			default = false;
+			width = 40;
+			minwidth = 20;
+		},
+		{
+			name = "name";
+			columntitle = "Name";
+			columnclass = java.lang.String;
+			default = "";
+			width = 200;
+			minwidth = 100;
+			tip = "Enter column name";
+		},
+		{
+			name = "type";
+			columntitle = "Type";
+			columnclass = java.lang.String;
+			default = "";
+			width = 100;
+			minwidth = 50;
+		},
+		{
+			name = "size";
+			columntitle = "Size";
+			columnclass = java.lang.Integer;
+			alignment = right;
+			default = 0;
+			width = 80;
+			minwidth = 40;
+		},
+		{
+			name = "scale";
+			columntitle = "Scale";
+			columnclass = java.lang.Integer;
+			alignment = right;
+			default = 0;
+			width = 80;
+			minwidth = 40;
+		},
+		{
+			name = "comment";
+			columntitle = "Comment";
+			columnclass = java.lang.String;
+			default = "";
+			width = 200;
+			minwidth = 100;
+		},
+		{
+			name = "defval";
+			columntitle = "Default value";
+			columnclass = java.lang.String;
+			alignment = right;
+			default = "";
+			width = 200;
+			minwidth = 100;
+		},
+		{
+			name = "check";
+			columntitle = "Check";
+			columnclass = java.lang.Boolean;
+			default = false;
+			width = 30;
+			minwidth = 20;
+		},
+		{
+			name = "checkcode";
+			columntitle = "Check constraint";
+			columnclass = java.lang.String;
+			default = "";
+			width = 100;
+			minwidth = 50;
+		}
+	);
+}
