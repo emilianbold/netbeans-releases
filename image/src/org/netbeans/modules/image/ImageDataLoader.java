@@ -13,19 +13,13 @@
 
 package com.netbeans.developer.modules.loaders.image;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.util.ResourceBundle;
-
-import com.netbeans.ide.*;
-import com.netbeans.ide.filesystems.*;
+import com.netbeans.ide.filesystems.FileObject;
 import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.actions.*;
 import com.netbeans.ide.util.actions.SystemAction;
 import com.netbeans.ide.util.NbBundle;
 
 /** Data loader which recognizes image files.
-*
 * @author Petr Hamernik, Jaroslav Tulach
 */
 public class ImageDataLoader extends UniFileDataLoader {
@@ -59,11 +53,16 @@ public class ImageDataLoader extends UniFileDataLoader {
 
   }
 
-  /** Creates new ImageDataObject for this FileObject.
-  * @param fo FileObject
-  * @return new ImageDataObject
+  /** Creates the right data object for given primary file.
+  * It is guaranteed that the provided file is realy primary file
+  * returned from the method findPrimaryFile.
+  *
+  * @param primaryFile the primary file
+  * @return the data object for this file
+  * @exception DataObjectExistsException if the primary file already has data object
   */
-  protected DataObject createDataObject(FileObject fo) throws IOException {
+  protected abstract MultiDataObject createMultiObject (FileObject primaryFile)
+  throws DataObjectExistsException, java.io.IOException;
     return new ImageDataObject(fo);
   }
 
@@ -71,6 +70,8 @@ public class ImageDataLoader extends UniFileDataLoader {
 
 /*
  * Log
+ *  2    Gandalf   1.1         1/6/99   Ian Formanek    Updated to new 
+ *       DataSystem
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  * Beta Change History:
