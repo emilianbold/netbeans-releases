@@ -26,6 +26,11 @@ import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.FormProperty;
 
 /**
+ * Support class for GridBagLayout. This is an example of support for layout
+ * managers with complex layout constraints for which rather special code
+ * structure must be managed - GridBagConstraints require to be set up
+ * field by field.
+ *
  * @author Tran Duc Trung, Tomas Pavek
  */
 
@@ -33,14 +38,33 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 {
     private static Constructor constrConstructor;
 
+    /** Gets the supported layout manager class - GridBagLayout.
+     * @return the class supported by this delegate
+     */
     public Class getSupportedClass() {
         return GridBagLayout.class;
     }
 
+    /** Returns a class of a customizer for the whole layout (an analogy to
+     * the JavaBean customizer). GridBagCustomizer is special internal class
+     * using private form editor features.
+     * @return layout customizer class, null if no customizer is provided
+     */
     public Class getCustomizerClass() {
         return GridBagCustomizer.class;
     }
 
+    /** This method is called when switching layout - giving an opportunity to
+     * convert the previous constrainst of components to constraints of the new
+     * layout (this layout). Conversion from AbsoluteConstraints to
+     * GridBagConstraints is implemented here.
+     * @param previousConstraints [input] layout constraints of components in
+     *                                    the previous layout
+     * @param currentConstraints [output] array of converted constraints for
+     *                                    the new layout - to be filled
+     * @param components [input] real components in a real container having the
+     *                           previous layout
+     */
     public void convertConstraints(LayoutConstraints[] previousConstraints,
                                    LayoutConstraints[] currentConstraints,
                                    Component[] components)
@@ -97,15 +121,34 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
     // --------
 
+    /** This method is called from readComponentCode method to read layout
+     * constraints of a component from code (GridBagConstraints in this case).
+     * @param constrExp CodeExpression object of the constraints (taken from
+     *        add method in the code)
+     * @param constrCode CodeGroup to be filled with the relevant constraints
+     *        initialization code
+     * @param compExp CodeExpression of the component for which the constraints
+     *        are read (not needed here)
+     * @return LayoutConstraints based on information read form code
+     */
     protected LayoutConstraints readConstraintsCode(CodeExpression constrExp,
                                                     CodeGroup constrCode,
                                                     CodeExpression compExp)
     {
         GridBagLayoutConstraints constr = new GridBagLayoutConstraints();
+        // reading is done in GridBagLayoutConstraints
         constr.readCodeExpression(constrExp, constrCode);
         return constr;
     }
 
+    /** Called from createComponentCode method, creates code for a component
+     * layout constraints (opposite to readConstraintsCode).
+     * @param constrCode CodeGroup to be filled with constraints code
+     * @param constr layout constraints metaobject representing the constraints
+     * @param compExp CodeExpression object representing the component; not
+     *        needed here
+     * @return created CodeExpression representing the layout constraints
+     */
     protected CodeExpression createConstraintsCode(CodeGroup constrCode,
                                                    LayoutConstraints constr,
                                                    CodeExpression compExp,
@@ -114,16 +157,41 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         if (!(constr instanceof GridBagLayoutConstraints))
             return null;
 
+        // the code creation is done in GridBagLayoutConstraints
         return ((GridBagLayoutConstraints)constr).createCodeExpression(
                                             getCodeStructure(), constrCode);
     }
 
+    /** This method is called to get a default component layout constraints
+     * metaobject in case it is not provided (e.g. in addComponents method).
+     * @return the default LayoutConstraints object for the supported layout;
+     *         null if no component constraints are used
+     */
     protected LayoutConstraints createDefaultConstraints() {
         return new GridBagLayoutConstraints();
     }
 
     // -----------------
 
+    /** LayoutConstraints implementation class for GridBagConstraints.
+     * GridBagConstraints class is special in that it requires more code
+     * statements for initialization (setting up the individual fields).
+     *
+     * There are two possible code variants: simple and complex.
+     * In the simple situation, no parameter of GridBagConstraints is set, so
+     * the code looks like:
+     *   container.add(component, new GridBagConstraints());
+     *
+     * In the complex situation, there are some parameters set - this requires
+     * additional code statement for each parameter, and also a variable to
+     * be used for the constraints object. Then the code looks like:
+     *   GridBagConstraints gridBagConstraints;
+     *   ...
+     *   gridBagConstraints = new GridBagConstraints();
+     *   gridBagConstraints.gridx = 1;
+     *   gridBagConstraints.gridy = 2;
+     *   container.add(component, gridBagConstraints);
+     */
     public static class GridBagLayoutConstraints implements LayoutConstraints {
         private GridBagConstraints constraints;
 
@@ -132,8 +200,8 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         private Property[] properties;
 
         private CodeExpression constraintsExpression;
-        private CodeGroup constraintsCode;
-        private CodeStatement[] propertyStatements;
+        private CodeGroup constraintsCode; // set of all relevant statements
+        private CodeStatement[] propertyStatements; // statements for properties
 
         private static Constructor constrConstructor;
 
@@ -170,20 +238,39 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
         // -------
 
+        /** This method creates code expression for the constraints. It's
+         * called from the delegate's createConstraintsCode method.
+         * @param codeStructure CodeStructure in which the expression will be
+         *        created
+         * @param constrCode CodeGroup to be filled with all the initialization
+         *        statements
+         * @return CodeExpression representing the constraints
+         */
         private CodeExpression createCodeExpression(CodeStructure codeStructure,
                                                     CodeGroup constrCode)
         {
             this.constraintsCode = constrCode;
             propertyStatements = null;
 
+            // GridBagConstraints is created by a simple constructor...
             constraintsExpression = codeStructure.createExpression(
                                         getConstraintsConstructor(),
                                         CodeStructure.EMPTY_PARAMS);
+            // ...but the additionlly it requires to create the initialization
+            // code statements
             updateCodeExpression();
 
             return constraintsExpression;
         }
 
+        /** This method reads CodeExpression object representing the
+         * constraints and also all its initialization statements which are
+         * mapped to the constraints properties. It's called from the
+         * delegate's readConstraintsCode method.
+         * @param constrExp CodeExpression of the constraints
+         * @param constrCode CodeGroup to be filled with recognize
+         *        initialization statements
+         */
         private void readCodeExpression(CodeExpression constrExp,
                                         CodeGroup constrCode)
         {
@@ -201,14 +288,17 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
             Iterator it = CodeStructure.getDefinedStatementsIterator(constrExp);
             while (it.hasNext()) {
+                // go through all the statements of constraints code expression
                 CodeStatement statement = (CodeStatement) it.next();
                 for (int j=0; j < properties.length; j++) {
                     Property prop = properties[j];
                     if (prop.field.equals(statement.getMetaObject())) {
+                        // this statement represents a GridBagConstraints field
+                        // assignment, we map the corresponding property to it
                         FormCodeSupport.readPropertyStatement(
                                             statement, prop, false);
                         setPropertyStatement(j, statement);
-                        if (prop.isChanged()) {
+                        if (prop.isChanged()) { // this is a non-default value
                             constrCode.addStatement(statement);
                             isAnyChanged = true;
                         }
@@ -220,6 +310,12 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             setupVariable(isAnyChanged);
         }
 
+        /** This method updates the constraints code according to the
+         * properties. This is called at the beginning - when the constraints
+         * code expression is created - and then after each change of the
+         * constraints properties. This keeps the code consistent with the
+         * properties.
+         */
         private void updateCodeExpression() {
             if (constraintsCode == null || constraintsExpression == null)
                 return;
@@ -230,6 +326,8 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
             boolean isAnyChanged = false;
             for (int i=0; i < properties.length; i++)
+                // for each changed property, add the corresponding statement
+                // to the code (constraintsCode - instance of CodeGroup)
                 if (properties[i].isChanged()) {
                     constraintsCode.addStatement(getPropertyStatement(i));
                     isAnyChanged = true;
@@ -238,6 +336,10 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             setupVariable(isAnyChanged);
         }
 
+        /** This method returns the code statement corresponding to property
+         * of given index. The statement is created if it does not exist yet.
+         * @param index index of required statement
+         */
         private CodeStatement getPropertyStatement(int index) {
             if (propertyStatements == null)
                 propertyStatements = new CodeStatement[properties.length];
@@ -248,6 +350,8 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                     constraintsExpression.getCodeStructure().createExpression(
                         FormCodeSupport.createOrigin(properties[index]));
 
+                // statement is field assignment; the property code expression
+                // represents the assigned value
                 propStatement = CodeStructure.createStatement(
                                     constraintsExpression,
                                     properties[index].field,
@@ -258,6 +362,10 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             return propStatement;
         }
 
+        /** Sets the code statement read form code for given property index.
+         * @param index index of the corresponding property
+         * @param propStatement CodeStatement to be set
+         */
         private void setPropertyStatement(int index,
                                           CodeStatement propStatement)
         {
@@ -266,6 +374,12 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             propertyStatements[index] = propStatement;
         }
 
+        /** This method sets up the variable for constraints code expression.
+         * The variable is needed only there's some property change (i.e.
+         * there's some statement in which the variable would be used). Once
+         * the variable is created, it's used for all the GridBagConstraints
+         * in the form.
+         */
         private void setupVariable(boolean anyChangedProperty) {
             CodeStructure codeStructure =
                 constraintsExpression.getCodeStructure();
@@ -285,7 +399,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                                           constraintsExpression, var);
                     }
                 }
-                // add assignment code
+                // add variable assignment code
                 constraintsCode.addStatement(
                                   0, var.getAssignment(constraintsExpression));
             }
@@ -299,7 +413,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             CodeStructure codeStructure =
                 constraintsExpression.getCodeStructure();
 
-            // first try  "gridBagConstraints" name - this succeeds in most
+            // first try "gridBagConstraints" name - this succeeds in most
             // cases (unless the name is used elsewhere or not created yet)
             CodeVariable var = codeStructure.getVariable(defaultVariableName);
             if (var != null
@@ -307,7 +421,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                     && GridBagConstraints.class.equals(var.getDeclaredType()))
                 return var;
 
-            // try to find variable of corresponding type
+            // try to find variable of corresponding type (time expensive)
             Iterator it = codeStructure.getVariablesIterator(
                                             variableType,
                                             variableMask,
@@ -417,6 +531,11 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 
         // ---------
 
+        /** Property implementation for GridBagLayoutConstraints. Each property
+         * is tied to one field of GridBagConstraints. After a change in
+         * property, updateCodeExpression is called to reflect the change in
+         * the code.
+         */
         private final class Property extends FormProperty {
             private Field field;
             private Class propertyEditorClass;

@@ -26,8 +26,9 @@ import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.FormProperty;
 
 /**
- * Support class for BoxLayout. As BoxLayout is not a bean, it must be
- * handled differently from other layout managers.
+ * Support class for BoxLayout. This is an example of support for layout
+ * manager which is not a JavaBean - some general functionality from
+ * AbstractLayoutSupport must be overridden and handled differently.
  *
  * @author Tran Duc Trung, Tomas Pavek
  */
@@ -41,17 +42,44 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
 
     private static Constructor boxLayoutConstructor;
 
+    /** Gets the supported layout manager class - BoxLayout.
+     * @return the class supported by this delegate
+     */
     public Class getSupportedClass() {
         return BoxLayout.class;
     }
 
+    /** This method is called after a property of the layout is changed by
+     * the user. The delagate implementation may check whether the layout is
+     * valid after the change and throw PropertyVetoException if the change
+     * should be reverted.
+     * @param ev PropertyChangeEvent object describing the change
+     */
     public void acceptContainerLayoutChange(PropertyChangeEvent ev)
         throws PropertyVetoException
-    {
+    {   // accept any change, just need to update the BoxLayout instance;
+        // since it has no properties, it must be create again
         updateLayoutInstance();
         super.acceptContainerLayoutChange(ev);
     }
 
+    /** This method calculates position (index) for a component dragged
+     * over a container (or just for mouse cursor being moved over container,
+     * without any component).
+     * @param container instance of a real container over/in which the
+     *        component is dragged
+     * @param containerDelegate effective container delegate of the container
+     *        (for layout managers we always use container delegate instead of
+     *        the container)
+     * @param component the real component being dragged; not needed here
+     * @param index position (index) of the component in its current container;
+     *        not needed here
+     * @param posInCont position of mouse in the container delegate
+     * @param posInComp position of mouse in the dragged component;
+     *        not needed here
+     * @return index corresponding to the position of the component in the
+     *         container
+     */
     public int getNewIndex(Container container,
                            Container containerDelegate,
                            Component component,
@@ -78,6 +106,21 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
         return components.length;
     }
 
+    /** This method paints a dragging feedback for a component dragged over
+     * a container (or just for mouse cursor being moved over container,
+     * without any component).
+     * @param container instance of a real container over/in which the
+     *        component is dragged
+     * @param containerDelegate effective container delegate of the container
+     *        (for layout managers we always use container delegate instead of
+     *        the container)
+     * @param component the real component being dragged, not needed here
+     * @param newConstraints component layout constraints to be presented;
+     *        not used for BoxLayout
+     * @param newIndex component's index position to be presented
+     * @param g Graphics object for painting (with color and line style set)
+     * @return whether any feedback was painted (true in this case)
+     */
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -121,27 +164,56 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
         return true;
     }
 
+    /** Sets up the layout (without adding components) on a real container,
+     * according to the internal metadata representation. This method must
+     * override AbstractLayoutSupport because BoxLayout instance cannot
+     * be used universally - new instance must be created for each container.
+     * @param container instance of a real container to be set
+     * @param containerDelegate effective container delegate of the container;
+     *        for layout managers we always use container delegate instead of
+     *        the container
+     */
     public void setLayoutToContainer(Container container,
                                      Container containerDelegate)
-    {   // overriding this method because BoxLayout referential instance
-        // (from MetaLayout) cannot be used directly in meta container
+    {
         containerDelegate.setLayout(cloneLayoutInstance(container,
                                                         containerDelegate));
     }
 
     // ------------
 
+    /** Creates a default instance of LayoutManager (for internal use).
+     * This method must override AbstractLayoutSupport because BoxLayout is not
+     * a bean (so it cannot be created automatically).
+     * @return new instance of BoxLayout
+     */
     protected LayoutManager createDefaultLayoutInstance() {
         return new BoxLayout(new JPanel(), BoxLayout.X_AXIS);
     }
 
+    /** Cloning method - creates a clone of the reference LayoutManager
+     * instance (for external use). This method must override
+     * AbstractLayoutSupport because BoxLayout is not a bean (so it cannot be
+     * cloned automatically).
+     * @param container instance of a real container in whose container
+     *        delegate the layout manager will be probably used
+     * @param containerDelegate effective container delegate of the container
+     * @return cloned instance of BoxLayout
+     */
     protected LayoutManager cloneLayoutInstance(Container container,
                                                 Container containerDelegate)
     {
         return new BoxLayout(containerDelegate, axis);
     }
 
-    // we must override this because BoxLayout is not a bean
+    /** This method is to read the layout manager bean code (i.e. code for
+     * constructor and properties). As the BoxLayout is not a bean, this
+     * method must override AbstractLayoutSupport.
+     * @param layoutExp CodeExpressin of the layout manager
+     * @param layoutCode CodeGroup to be filled with relevant initialization
+     *        code; not needed here because BoxLayout is represented only by
+     *        a single constructor code expression and no statements
+     */
     protected void readInitLayoutCode(CodeExpression layoutExp,
                                       CodeGroup layoutCode)
     {
@@ -153,7 +225,15 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
         }
     }
 
-    // we must override this because BoxLayout is not a bean
+    /** Creates code structures for a new layout manager (opposite to
+     * readInitLayoutCode). As the BoxLayout is not a bean, this method must
+     * override from AbstractLayoutSupport.
+     * @param layoutCode CodeGroup to be filled with relevant
+     *        initialization code; not needed here because BoxLayout is
+     *        represented only by a single constructor code expression and
+     *        no statements
+     * @return new CodeExpression representing the BoxLayout
+     */
     protected CodeExpression createInitLayoutCode(CodeGroup layoutCode) {
         CodeStructure codeStructure = getCodeStructure();
 
@@ -166,7 +246,13 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
                                               params);
     }
 
-    // we must override this because BoxLayout is not a bean
+    /** Since BoxLayout is not a bean, we must specify its properties
+     * explicitly. This method is called from getPropertySets() implementation
+     * to obtain the default property set for the layout (assuming there's only
+     * one property set). So it woul be also possible to override (more
+     * generally) getPropertySets() instead.
+     * @return array of properties of the layout manager
+     */
     protected FormProperty[] getProperties() {
         if (properties == null) {
             // we cannot use RADProperty because "axis" is not a real
@@ -210,9 +296,16 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
         return properties;
     }
 
+    /** Method to obtain just one propetry of given name. Must be override
+     * AbstractLayoutSupport because alternative properties are used for
+     * BoxLayout (see getProperties method)
+     * @return layout property of given name
+     */
     protected Node.Property getProperty(String propName) {
         return "axis".equals(propName) ? getProperties()[0] : null; // NOI18N
     }
+
+    // --------
 
     private static Constructor getBoxLayoutConstructor() {
         if (boxLayoutConstructor == null) {
@@ -229,6 +322,8 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
 
     // --------------
 
+    /** PropertyEditor for axis property of BoxLayoutSupport.
+     */
     public static final class BoxAxisEditor extends PropertyEditorSupport {
         private final String[] tags = {
             getBundle().getString("VALUE_axis_x"), // NOI18N

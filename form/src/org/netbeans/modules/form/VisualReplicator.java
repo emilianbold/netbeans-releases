@@ -202,8 +202,7 @@ public class VisualReplicator {
         // add removed subcomponents
         laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
 
-        if (laysup.supportsArranging())
-            laysup.arrangeContainer(cont, contDelegate);
+        laysup.arrangeContainer(cont, contDelegate);
 
         // workaround for JTabbedPane bug 4190719
         if (cont instanceof JTabbedPane) {
@@ -237,8 +236,8 @@ public class VisualReplicator {
                           contDelegate,
                           new Component[] { (Component) clone },
                           ((RADVisualComponent)metacomp).getComponentIndex());
-            if (laysup.supportsArranging())
-                laysup.arrangeContainer(cont, contDelegate);
+
+            laysup.arrangeContainer(cont, contDelegate);
         }
         else if (metacomp instanceof RADMenuItemComponent) {
             Object clone = createClone(metacomp);
@@ -458,8 +457,7 @@ public class VisualReplicator {
                 });
             }
 
-            if (laysup.supportsArranging())
-                laysup.arrangeContainer(cont, contDelegate);
+            laysup.arrangeContainer(cont, contDelegate);
         }
         else if (metacomp instanceof RADMenuComponent) {
             RADComponent[] metacomps = ((RADMenuComponent)metacomp).getSubBeans();

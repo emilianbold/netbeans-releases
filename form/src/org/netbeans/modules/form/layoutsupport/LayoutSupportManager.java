@@ -25,6 +25,10 @@ import org.netbeans.modules.form.layoutsupport.delegates.NullLayoutSupport;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 /**
+ * Main class of general layout support infrastructure. Connects form editor
+ * metadata with specialized LayoutSupportDelegate implementations (layout
+ * specific functionality is delegated to the right LayoutSupportDelegate).
+ *
  * @author Tomas Pavek
  */
 
@@ -225,9 +229,9 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         return metaContainer;
     }
 
-    public boolean supportsArranging() {
-        return layoutDelegate instanceof LayoutSupportArranging;
-    }
+//    public boolean supportsArranging() {
+//        return layoutDelegate instanceof LayoutSupportArranging;
+//    }
 
     private LayoutConstraints[] removeLayoutDelegate(
                                     boolean extractConstraints)
@@ -632,22 +636,24 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                                                     sizeChanges);
     }
 
-    // arranging support - use only if supportsArranging() returns true
-    public void processMouseClick(Point p, Container cont) {
-        ((LayoutSupportArranging)layoutDelegate).processMouseClick(p, cont);
+    // arranging support
+    public void processMouseClick(Point p,
+                                  Container cont,
+                                  Container contDelegate)
+    {
+        layoutDelegate.processMouseClick(p, cont, contDelegate);
     }
 
-    // arranging support - use only if supportsArranging() returns true
-    public void selectComponent(int index) { //RADVisualComponent metacomp
-        ((LayoutSupportArranging)layoutDelegate).selectComponent(index);
+    // arranging support
+    public void selectComponent(int index) {
+        layoutDelegate.selectComponent(index);
     }
 
-    // arranging support - use only if supportsArranging() returns true
+    // arranging support
     public void arrangeContainer(Container container,
                                  Container containerDelegate)
     {
-        ((LayoutSupportArranging)layoutDelegate)
-            .arrangeContainer(container, containerDelegate);
+        layoutDelegate.arrangeContainer(container, containerDelegate);
     }
 
     // -----------

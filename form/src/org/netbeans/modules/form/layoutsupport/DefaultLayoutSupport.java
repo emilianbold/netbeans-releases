@@ -14,6 +14,11 @@
 package org.netbeans.modules.form.layoutsupport;
 
 /**
+ * This class is used internally to provide default support for any layout
+ * manager class. The layout manager is handled as a JavaBean, no component
+ * constraints are supported, as well as no drag&drop and no arranging
+ * features.
+ *
  * @author Tomas Pavek
  */
 

@@ -19,15 +19,35 @@ import javax.swing.*;
 import org.netbeans.modules.form.layoutsupport.*;
 
 /**
+ * Dedicated layout support class for JToolBar.
+ *
  * @author Tomas Pavek
  */
 
 public class JToolBarSupport extends AbstractLayoutSupport {
 
+    /** Gets the supported layout manager class - JToolBar.
+     * @return the class supported by this delegate
+     */
     public Class getSupportedClass() {
         return JToolBar.class;
     }
 
+    /** This method calculates position (index) for a component dragged
+     * over a container (or just for mouse cursor being moved over container,
+     * without any component).
+     * @param container instance of a real container over/in which the
+     *        component is dragged
+     * @param containerDelegate effective container delegate of the container
+     * @param component the real component being dragged; not needed here
+     * @param index position (index) of the component in its current container;
+     *        not needed here
+     * @param posInCont position of mouse in the container delegate
+     * @param posInComp position of mouse in the dragged component;
+     *        not needed here
+     * @return index corresponding to the position of the component in the
+     *         container
+     */
     public int getNewIndex(Container container,
                            Container containerDelegate,
                            Component component,
@@ -56,6 +76,21 @@ public class JToolBarSupport extends AbstractLayoutSupport {
         return components.length;
     }
 
+    /** This method paints a dragging feedback for a component dragged over
+     * a container (or just for mouse cursor being moved over container,
+     * without any component).
+     * @param container instance of a real container over/in which the
+     *        component is dragged
+     * @param containerDelegate effective container delegate of the container
+     *        (for layout managers we always use container delegate instead of
+     *        the container)
+     * @param component the real component being dragged, not needed here
+     * @param newConstraints component layout constraints to be presented;
+     *        not used for JToolBar
+     * @param newIndex component's index position to be presented
+     * @param g Graphics object for painting (with color and line style set)
+     * @return whether any feedback was painted (true in this case)
+     */
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,

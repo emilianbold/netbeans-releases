@@ -32,25 +32,43 @@ import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.form.FormLoaderSettings;
 
 /**
+ * Support class for AbsoluteLayout - for absolute positioning and sizing of
+ * components using AbsoluteConstraints. This is an example of support for
+ * layout manager using component constraints as complex objects initialized
+ * by constructor with parameters mapped to properties. AbsoluteLayoutSupport
+ * is also the superclass of NullLayoutSupport and JLayeredPane support, so it
+ * is a bit more complicated than would be necessary for simple implementation.
+ *
  * @author Tomas Pavek
  */
 
 public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
 
-    /** The icon for AbsoluteLayout */
-    private static String iconURL = "/org/netbeans/modules/form/layoutsupport/resources/AbsoluteLayout.gif"; // NOI18N
-    private static String icon32URL = "/org/netbeans/modules/form/layoutsupport/resources/AbsoluteLayout32.gif"; // NOI18N
+    /** The icon for AbsoluteLayout. */
+    private static String iconURL =
+        "/org/netbeans/modules/form/layoutsupport/resources/AbsoluteLayout.gif"; // NOI18N
+    /** The icon for AbsoluteLayout. */
+    private static String icon32URL =
+        "/org/netbeans/modules/form/layoutsupport/resources/AbsoluteLayout32.gif"; // NOI18N
 
     private static Constructor constrConstructor;
 
     private static FormLoaderSettings formSettings = (FormLoaderSettings)
                    SharedClassObject.findObject(FormLoaderSettings.class, true);
 
-
+    /** Gets the supported layout manager class - AbsoluteLayout.
+     * @return the class supported by this delegate
+     */
     public Class getSupportedClass() {
         return AbsoluteLayout.class;
     }
 
+    /** Provides an icon to be used for the layout node in Component
+     * Inspector. Only 16x16 color icon is required.
+     * @param type is one of BeanInfo constants: ICON_COLOR_16x16,
+     *        ICON_COLOR_32x32, ICON_MONO_16x16, ICON_MONO_32x32
+     * @return icon to be displayed for node in Component Inspector
+     */
     public Image getIcon(int type) {
         switch (type) {
             case BeanInfo.ICON_COLOR_16x16:
@@ -61,6 +79,54 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
         }
     }
 
+    /** This method is called when switching layout - giving an opportunity to
+     * convert the previous constrainst of components to constraints of the new
+     * layout (this layout). For AbsoluteLayout, we can simply create new
+     * constraints from positions and sizes of real components.
+     * @param previousConstraints [input] layout constraints of components in
+     *                                    the previous layout
+     * @param currentConstraints [output] array of converted constraints for
+     *                                    the new layout - to be filled
+     * @param components [input] real components in a real container having the
+     *                           previous layout
+     */
+    public void convertConstraints(LayoutConstraints[] previousConstraints,
+                                   LayoutConstraints[] currentConstraints,
+                                   Component[] components)
+    {
+        if (currentConstraints == null || components == null)
+            return;
+
+        for (int i=0; i < currentConstraints.length; i++)
+            if (currentConstraints[i] == null) {
+                Rectangle bounds = components[i].getBounds();
+                Dimension prefSize = components[i].getPreferredSize();
+                int x = bounds.x;
+                int y = bounds.y;
+                int w = computeConstraintSize(bounds.width, -1, prefSize.width);
+                int h = computeConstraintSize(bounds.height, -1, prefSize.height);
+
+                currentConstraints[i] = new AbsoluteLayoutConstraints(x, y, w, h);
+            }
+    }
+
+    /** This method calculates layout constraints for a component dragged
+     * over a container (or just for mouse cursor being moved over container,
+     * without any component).
+     * @param container instance of a real container over/in which the
+     *        component is dragged
+     * @param containerDelegate effective container delegate of the container
+     *        (for layout managers we always use container delegate instead of
+     *        the container)
+     * @param component the real component being dragged, can be null
+     * @param index position (index) of the component in its container;
+     *        -1 if there's no dragged component
+     * @param posInCont position of mouse in the container delegate
+     * @param posInComp position of mouse in the dragged component; null if
+     *        there's no dragged component
+     * @return new LayoutConstraints object corresponding to the position of
+     *         the component in the container
+     */
     public LayoutConstraints getNewConstraints(Container container,
                                                Container containerDelegate,
                                                Component component,
@@ -108,6 +174,22 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
         return createNewConstraints(constr, x, y, w, h);
     }
 
+    /** This method paints a dragging feedback for a component dragged over
+     * a container (or just for mouse cursor being moved over container,
+     * without any component). For AbsoluteLayout, it simply paints a rectangle
+     * corresponding to the component position and size.
+     * @param container instance of a real container over/in which the
+     *        component is dragged
+     * @param containerDelegate effective container delegate of the container
+     *        (for layout managers we always use container delegate instead of
+     *        the container)
+     * @param component the real component being dragged, can be null
+     * @param newConstraints component layout constraints to be presented
+     * @param newIndex component's index position to be presented; not used
+     *        for AbsoluteLayout
+     * @param g Graphics object for painting (with color and line style set)
+     * @return whether any feedback was painted (true in this case)
+     */
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -135,10 +217,20 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
         return true;
     }
 
+    /** Provides resizing options for given component. It can combine the
+     * bit-flag constants RESIZE_UP, RESIZE_DOWN, RESIZE_LEFT, RESIZE_RIGHT.
+     * @return resizing options for a component
+     */
     public int getResizableDirections(Component component, int index) {
         return RESIZE_UP | RESIZE_DOWN | RESIZE_LEFT | RESIZE_RIGHT;
     }
 
+    /** This method calculates layout constraints for a component being resized.
+     * @param component real component to be resized
+     * @param index position of the component in its container
+     * @param sizeChanges Insets object with size differences
+     * @return component layout constraints for resized component
+     */
     public LayoutConstraints getResizedConstraints(Component component,
                                                    int index,
                                                    Insets sizeChanges)
@@ -208,28 +300,20 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
         return createNewConstraints(constr, x, y, w, h);
     }
 
-    public void convertConstraints(LayoutConstraints[] previousConstraints,
-                                   LayoutConstraints[] currentConstraints,
-                                   Component[] components)
-    {
-        if (currentConstraints == null || components == null)
-            return;
-
-        for (int i=0; i < currentConstraints.length; i++)
-            if (currentConstraints[i] == null) {
-                Rectangle bounds = components[i].getBounds();
-                Dimension prefSize = components[i].getPreferredSize();
-                int x = bounds.x;
-                int y = bounds.y;
-                int w = computeConstraintSize(bounds.width, -1, prefSize.width);
-                int h = computeConstraintSize(bounds.height, -1, prefSize.height);
-
-                currentConstraints[i] = new AbsoluteLayoutConstraints(x, y, w, h);
-            }
-    }
-
     // -------
 
+    /** This method is called from readComponentCode method to read layout
+     * constraints of a component from code (AbsoluteConstraints in this case).
+     * @param constrExp CodeExpression object of the constraints (taken from
+     *        add method in the code)
+     * @param constrCode CodeGroup to be filled with the relevant constraints
+     *        initialization code; not needed here because AbsoluteConstraints
+     *        object is represented only by a single code expression (based on
+     *        constructor) and no statements
+     * @param compExp CodeExpression of the component for which the constraints
+     *        are read (not needed here)
+     * @return LayoutConstraints based on information read form code
+     */
     protected LayoutConstraints readConstraintsCode(CodeExpression constrExp,
                                                     CodeGroup constrCode,
                                                     CodeExpression compExp)
@@ -239,12 +323,23 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
 
         CodeExpression[] params = constrExp.getOrigin().getCreationParameters();
         if (params.length == 4) {
+            // reading is done in AbsoluteLayoutConstraints
             constr.readPropertyExpressions(params, 0);
         }
 
         return constr;
     }
 
+    /** Called from createComponentCode method, creates code for a component
+     * layout constraints (opposite to readConstraintsCode).
+     * @param constrCode CodeGroup to be filled with constraints code; not
+     *        needed here because AbsoluteConstraints object is represented
+     *        only by a single constructor code expression and no statements
+     * @param constr layout constraints metaobject representing the constraints
+     * @param compExp CodeExpression object representing the component; not
+     *        needed here
+     * @return created CodeExpression representing the layout constraints
+     */
     protected CodeExpression createConstraintsCode(CodeGroup constrCode,
                                                    LayoutConstraints constr,
                                                    CodeExpression compExp,
@@ -253,13 +348,19 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
         if (!(constr instanceof AbsoluteLayoutConstraints))
             return null;
 
-        CodeStructure codeStructure = getCodeStructure();
-        AbsoluteLayoutConstraints absConstr = (AbsoluteLayoutConstraints) constr;
-        return codeStructure.createExpression(
-                   getConstraintsConstructor(),
-                   absConstr.createPropertyExpressions(codeStructure, 0));
+        AbsoluteLayoutConstraints absConstr = (AbsoluteLayoutConstraints)constr;
+        // code expressions for constructor parameters are created in
+        // AbsoluteLayoutConstraints
+        CodeExpression[] params = absConstr.createPropertyExpressions(
+                                                 getCodeStructure(), 0);
+        return getCodeStructure().createExpression(getConstraintsConstructor(),
+                                                   params);
     }
 
+    /** This method is called to get a default component layout constraints
+     * metaobject in case it is not provided (e.g. in addComponents method).
+     * @return the default LayoutConstraints object for the supported layout
+     */
     protected LayoutConstraints createDefaultConstraints() {
         return new AbsoluteLayoutConstraints(0, 0, -1, -1);
     }
@@ -303,6 +404,8 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
 
     // -------------
 
+    /** LayoutConstraints implementation class for AbsoluteConstraints.
+     */
     public static class AbsoluteLayoutConstraints implements LayoutConstraints {
         int x, y, w, h; // position and size
 
@@ -437,11 +540,25 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
             catch(java.lang.reflect.InvocationTargetException e2) {} // should not happen
         }
 
+        /** This method creates CodeExpression objects for properties of
+         * AbsoluteConstraints - this is used by the layout delegate's method
+         * createConstraintsCode which uses the expressions as parameters
+         * in AbsoluteConstraints constructor.
+         * @param codeStructure main CodeStructure object in which the code
+         *        expressions are created
+         * @param shift this parameter is used only by subclasses of
+         *        AbsoluteLayoutConstraints (which may insert another
+         *        constructor parameters before x, y, w and h)
+         * @return array of created code expressions
+         */
         protected final CodeExpression[] createPropertyExpressions(
                                              CodeStructure codeStructure,
                                              int shift)
         {
+            // first make sure properties are created...
             getProperties();
+
+            // ...then create code expressions based on the properties
             CodeExpression xEl = codeStructure.createExpression(
                            FormCodeSupport.createOrigin(properties[shift++]));
             CodeExpression yEl = codeStructure.createExpression(
@@ -453,10 +570,21 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
             return new CodeExpression[] { xEl, yEl, wEl, hEl };
         }
 
+        /** This method reads CodeExpression objects for properties (used as
+         * AbsoluteConstraints constructor parameters). Called by layout
+         * delegate's readConstraintsCode method.
+         * @param exps array of code expressions to read to properties
+         * @param shift this parameter is used only by subclasses of
+         *        AbsoluteLayoutConstraints (which may insert another
+         *        constructor parameters before x, y, w and h)
+         */
         protected final void readPropertyExpressions(CodeExpression[] exps,
                                                      int shift)
         {
+            // first make sure properties are created...
             getProperties();
+
+            // ...then map the properties to the code expressions
             for (int i=0; i < exps.length; i++)
                 FormCodeSupport.readPropertyExpression(exps[i],
                                                        properties[i+shift],
@@ -466,8 +594,12 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
 
     // -----------
 
+    /** PropertyEditor for width and height properties of
+     * AbsoluteLayoutConstraints.
+     */
     public static final class SizeEditor extends PropertyEditorSupport
-                                         implements EnhancedPropertyEditor {
+                                         implements EnhancedPropertyEditor
+    {
         final Integer prefValue = new Integer(-1);
         final String prefTag = getBundle().getString("VALUE_preferred"); // NOI18N
 

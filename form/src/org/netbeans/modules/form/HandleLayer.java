@@ -423,7 +423,8 @@ class HandleLayer extends JPanel
     }
 
     private void processMouseClickInLayoutSupport(RADComponent metacomp,
-                                                  MouseEvent e) {
+                                                  MouseEvent e)
+    {
         if (!(metacomp instanceof RADVisualComponent))
             return;
 
@@ -436,13 +437,12 @@ class HandleLayer extends JPanel
                 return;
         }
 
-        LayoutSupportManager laysup = metacont.getLayoutSupport();
-        if (laysup.supportsArranging()) {
-            Container cont = (Container) formDesigner.getComponent(metacont);
-            Point p = SwingUtilities.convertPoint(HandleLayer.this,
-                                                  e.getPoint(), cont);
-            laysup.processMouseClick(p, cont);
-        }
+        Container cont = (Container) formDesigner.getComponent(metacont);
+        Container contDelegate = metacont.getContainerDelegate(cont);
+        Point p = SwingUtilities.convertPoint(HandleLayer.this,
+                                              e.getPoint(),
+                                              contDelegate);
+        metacont.getLayoutSupport().processMouseClick(p, cont, contDelegate);
     }
 
     private void showContextMenu(Point popupPos) {

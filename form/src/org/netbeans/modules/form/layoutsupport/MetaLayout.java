@@ -19,7 +19,7 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.form.*;
 
 /**
- * Meta component representing a LayoutManager instance.
+ * Meta component representing a LayoutManager instance as a JavaBean.
  *
  * @author Tomas Pavek
  */
@@ -46,6 +46,7 @@ class MetaLayout extends RADComponent {
     }
 
     protected void createCodeExpression() {
+        // code expression is handled by the layout support class
     }
 
     protected void createPropertySets(java.util.List propSets) {

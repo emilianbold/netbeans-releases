@@ -22,6 +22,8 @@ import org.openide.filesystems.*;
 import org.openide.cookies.InstanceCookie;
 
 /**
+ * Registry and factory class for LayoutSupportDelegate implementations.
+ *
  * @author Tomas Pavek
  */
 

@@ -20,6 +20,11 @@ import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.codestructure.*;
 
 /**
+ * Experimental class which manages code structure for a bean with a set of
+ * properties. It creates code expression for the bean and manages its
+ * initialization code for constructor and properties, updating the code on
+ * properties changes.
+ *
  * @author Tomas Pavek
  */
 

@@ -24,15 +24,38 @@ import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.FormProperty;
 
 /**
+ * Support class for BorderLayout. This is an example of support for layout
+ * manager using simple component constraints (String).
+ *
  * @author Tran Duc Trung, Tomas Pavek
  */
 
 public class BorderLayoutSupport extends AbstractLayoutSupport
 {
+    /** Gets the supported layout manager class - BorderLayout.
+     * @return the class supported by this delegate
+     */
     public Class getSupportedClass() {
         return BorderLayout.class;
     }
 
+    /** This method calculates layout constraints for a component dragged
+     * over a container (or just for mouse cursor being moved over container,
+     * without any component).
+     * @param container instance of a real container over/in which the
+     *        component is dragged
+     * @param containerDelegate effective container delegate of the container
+     *        (for layout managers we always use container delegate instead of
+     *        the container)
+     * @param component the real component being dragged, can be null
+     * @param index position (index) of the component in its container;
+     *        not needed for BorderLayout
+     * @param posInCont position of mouse in the container delegate
+     * @param posInComp position of mouse in the dragged component; not needed
+     *        for BorderLayout
+     * @return new LayoutConstraints object corresponding to the position of
+     *         the component in the container
+     */
     public LayoutConstraints getNewConstraints(Container container,
                                                Container containerDelegate,
                                                Component component,
@@ -104,6 +127,21 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
         return new BorderConstraints(free[0]);
     }
 
+    /** This method paints a dragging feedback for a component dragged over
+     * a container (or just for mouse cursor being moved over container,
+     * without any component).
+     * @param container instance of a real container over/in which the
+     *        component is dragged
+     * @param containerDelegate effective container delegate of the container
+     *        (for layout managers we always use container delegate instead of
+     *        the container)
+     * @param component the real component being dragged, can be null
+     * @param newConstraints component layout constraints to be presented
+     * @param newIndex component's index position to be presented; not used
+     *        for BorderLayout
+     * @param g Graphics object for painting (with color and line style set)
+     * @return whether any feedback was painted (true in this case)
+     */
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -189,21 +227,20 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
         return true;
     }
 
-/*    public LayoutConstraints fixConstraints(LayoutConstraints constraints) {
-        if (!(constraints instanceof BorderConstraints))
-            return new BorderConstraints(findFreePositions()[0]);
-
-        String direction = (String) constraints.getConstraintsObject();
-        String[] freePositions = findFreePositions();
-        for (int i = 0; i < freePositions.length; i++) {
-            if (direction.equals(freePositions[i]))
-                return constraints;
-        }
-        return new BorderConstraints(BorderLayout.CENTER);
-    } */
-
     // ----------
 
+    /** This method is called from readComponentCode method to read layout
+     * constraints of a component from code. It is just a simple String for
+     * BorderLayout.
+     * @param constrExp CodeExpression object of the constraints (taken from
+     *        add method in the code)
+     * @param constrCode CodeGroup to be filled with the relevant constraints
+     *        initialization code; not needed here because String is just
+     *        a single code expression
+     * @param compExp CodeExpression of the component for which the constraints
+     *        are read (not needed here)
+     * @return LayoutConstraints based on information read form code
+     */
     protected LayoutConstraints readConstraintsCode(CodeExpression constrExp,
                                                     CodeGroup constrCode,
                                                     CodeExpression compExp)
@@ -215,6 +252,16 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
         return constr;
     }
 
+    /** Called from createComponentCode method, creates code for a component
+     * layout constraints (opposite to readConstraintsCode).
+     * @param constrCode CodeGroup to be filled with constraints code; not
+     *        needed here String (used as the constraints object) is just
+     *        a single code expression
+     * @param constr layout constraints metaobject representing the constraints
+     * @param compExp CodeExpression object representing the component; not
+     *        needed here
+     * @return created CodeExpression representing the layout constraints
+     */
     protected CodeExpression createConstraintsCode(CodeGroup constrCode,
                                                    LayoutConstraints constr,
                                                    CodeExpression compExp,
@@ -227,6 +274,10 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
                    FormCodeSupport.createOrigin(constr.getProperties()[0]));
     }
 
+    /** This method is called to get a default component layout constraints
+     * metaobject in case it is not provided (e.g. in addComponents method).
+     * @return the default LayoutConstraints object for the supported layout
+     */
     protected LayoutConstraints createDefaultConstraints() {
         return new BorderConstraints(findFreePositions()[0]);
     }
@@ -277,6 +328,9 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
 
     // ----------------
 
+    /** LayoutConstraints implementation class for component constraints of
+     * BorderLayout.
+     */
     public static class BorderConstraints implements LayoutConstraints {
         private String direction;
 
@@ -323,6 +377,8 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
 
     // ---------
 
+    /** PropertyEditor for the BorderLayout constraints property.
+     */
     static class BorderDirectionEditor extends PropertyEditorSupport {
         private final String[] values = {
             BorderLayout.CENTER,

@@ -26,6 +26,7 @@ import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.FormProperty;
 
 /**
+ * Dedicated layout support class for JSplitPane.
  * @author Tomas Pavek
  */
 
@@ -36,10 +37,27 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
     private static Method setTopComponentMethod;
     private static Method setBottomComponentMethod;
 
+    /** Gets the supported layout manager class - JSplitPane.
+     * @return the class supported by this delegate
+     */
     public Class getSupportedClass() {
         return JSplitPane.class;
     }
     
+    /** This method calculates layout constraints for a component dragged
+     * over a container (or just for mouse cursor being moved over container,
+     * without any component).
+     * @param container instance of a real container over/in which the
+     *        component is dragged
+     * @param containerDelegate effective container delegate of the container
+     * @param component the real component being dragged, not needed here
+     * @param index position (index) of the component in its container;
+     *        not needed here
+     * @param posInCont position of mouse in the container
+     * @param posInComp position of mouse in the dragged component; not needed
+     * @return new LayoutConstraints object corresponding to the position of
+     *         the component in the container
+     */
     public LayoutConstraints getNewConstraints(Container container,
                                                Container containerDelegate,
                                                Component component,
@@ -76,6 +94,18 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
         return new SplitConstraints(freePosition);
     }
 
+    /** This method paints a dragging feedback for a component dragged over
+     * a container (or just for mouse cursor being moved over container,
+     * without any component).
+     * @param container instance of a real container over/in which the
+     *        component is dragged
+     * @param containerDelegate effective container delegate of the container
+     * @param component the real component being dragged; not needed here
+     * @param newConstraints component layout constraints to be presented
+     * @param newIndex component's index position to be presented; not needed
+     * @param g Graphics object for painting (with color and line style set)
+     * @return whether any feedback was painted (true in this case)
+     */
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -150,6 +180,13 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
         return true;
     }
 
+    /** Adds real components to given container (according to layout
+     * constraints stored for the components).
+     * @param container instance of a real container to be added to
+     * @param containerDelegate effective container delegate of the container
+     * @param components components to be added
+     * @param index position at which to add the components to container
+     */
     public void addComponentsToContainer(Container container,
                                          Container containerDelegate,
                                          Component[] components,
@@ -167,15 +204,32 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
         }
     }
 
+    /** Removes a real component from a real container.
+     * @param container instance of a real container
+     * @param containerDelegate effective container delegate of the container
+     * @param component component to be removed
+     * @return whether it was possible to remove the component (some containers
+     *         may not support removing individual components reasonably)
+     */
     public boolean removeComponentFromContainer(Container container,
                                                 Container containerDelegate,
                                                 Component component)
     {
-        return false;
+        return false; // cannot remove component from JSplitPane
     }
 
     // ------
 
+    /** This method is used for scanning code structures and recognizing
+     * components added to containers and their constraints. It's called from
+     * initialize method. When a relevant code statement is found, then the
+     * CodeExpression of component is get and added to component, and also the
+     * layout constraints information is read.
+     * @param statement CodeStatement to be tested if it contains relevant code
+     * @param componentCode CodeGroup to be filled with all component code
+     * @return CodeExpression representing found component; null if the
+     *         statement is not relevant
+     */
     protected CodeExpression readComponentCode(CodeStatement statement,
                                                CodeGroup componentCode)
     {
@@ -204,6 +258,14 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
         return params[0];
     }
 
+    /** Creates code for a component added to the layout (opposite to
+     * readComponentCode method).
+     * @param componentCode CodeGroup to be filled with complete component code
+     *        (code for initializing the layout constraints and adding the
+     *        component to the layout)
+     * @param componentExpression CodeExpression object representing component
+     * @param index position of the component in the layout
+     */
     protected void createComponentCode(CodeGroup componentCode,
                                        CodeExpression componentExpression,
                                        int index)
@@ -218,6 +280,11 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
                                componentExpression);
     }
 
+    /** This method is called to get a default component layout constraints
+     * metaobject in case it is not provided (e.g. in addComponents method).
+     * @return the default LayoutConstraints object for the supported layout;
+     *         null if no component constraints are used
+     */
     protected LayoutConstraints createDefaultConstraints() {
         return new SplitConstraints(findFreePosition());
     }
@@ -296,6 +363,9 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
 
     // -----------
 
+    /** LayoutConstraints implementation holding component position in
+     * JSplitPane.
+     */
     public static class SplitConstraints implements LayoutConstraints {
         private String position;
 

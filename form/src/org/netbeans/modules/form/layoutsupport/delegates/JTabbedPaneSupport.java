@@ -26,22 +26,98 @@ import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.*;
 
 /**
+ * Dedicated layout support class for JTabbedPane.
+ *
  * @author Tomas Pavek
  */
 
-public class JTabbedPaneSupport extends AbstractLayoutSupport
-                                implements LayoutSupportArranging
-{
+public class JTabbedPaneSupport extends AbstractLayoutSupport {
+
     private int selectedTab = -1;
 
     private static Method addTabMethod1;
     private static Method addTabMethod2;
     private static Method addTabMethod3;
 
+    /** Gets the supported layout manager class - JTabbedPane.
+     * @return the class supported by this delegate
+     */
     public Class getSupportedClass() {
         return JTabbedPane.class;
     }
 
+    /** Removes one component from the layout (at metadata level).
+     * The code structures describing the layout is updated immediately.
+     * @param index index of the component in the layout
+     */
+    public void removeComponent(int index) {
+        super.removeComponent(index);
+        if (selectedTab >= getComponentCount())
+            selectedTab = getComponentCount() - 1;
+    }
+
+    /** This method is called when user clicks on the container in form
+     * designer. For JTabbedPane, we it switch the selected TAB.
+     * @param p Point of click in the container
+     * @param real instance of the container when the click occurred
+     * @param containerDelegate effective container delegate of the container
+     */
+    public void processMouseClick(Point p,
+                                  Container container,
+                                  Container containerDelegate)
+    {
+        if (!(container instanceof JTabbedPane))
+            return;
+
+        JTabbedPane tabbedPane = (JTabbedPane)container;
+        int n = tabbedPane.getTabCount();
+        for (int i=0; i < n; i++) {
+            if (tabbedPane.getBoundsAt(i).contains(p)) {
+                selectedTab = i;
+                tabbedPane.setSelectedIndex(i);
+                break;
+            }
+        }
+    }
+
+    /** This method is called when a component is selected in Component
+     * Inspector.
+     * @param index position (index) of the selected component in container
+     */
+    public void selectComponent(int index) {
+        selectedTab = index; // remember as selected tab
+    }
+
+    /** In this method, the layout delegate has a chance to "arrange" real
+     * container instance additionally - some other way that cannot be
+     * done through layout properties and added components.
+     * @param container instance of a real container to be arranged
+     * @param containerDelegate effective container delegate of the container
+     */
+    public void arrangeContainer(Container container,
+                                 Container containerDelegate)
+    {
+        if (!(container instanceof JTabbedPane) || selectedTab < 0)
+            return;
+
+        // select the tab
+        ((JTabbedPane)container).setSelectedIndex(selectedTab);
+    }
+
+    /** This method should calculate position (index) for a component dragged
+     * over a container (or just for mouse cursor being moved over container,
+     * without any component).
+     * @param container instance of a real container over/in which the
+     *        component is dragged
+     * @param containerDelegate effective container delegate of the container
+     * @param component the real component being dragged; not needed here
+     * @param index position (index) of the component in its current container;
+     *        not needed here
+     * @param posInCont position of mouse in the container delegate; not needed
+     * @param posInComp position of mouse in the dragged component; not needed
+     * @return index corresponding to the position of the component in the
+     *         container
+     */
     public int getNewIndex(Container container,
                            Container containerDelegate,
                            Component component,
@@ -54,6 +130,19 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport
         return container.getComponentCount();
     }
 
+    /** This method paints a dragging feedback for a component dragged over
+     * a container (or just for mouse cursor being moved over container,
+     * without any component).
+     * @param container instance of a real container over/in which the
+     *        component is dragged
+     * @param containerDelegate effective container delegate of the container
+     * @param component the real component being dragged; not needed here
+     * @param newConstraints component layout constraints to be presented;
+     *        not used for JTabbedPane
+     * @param newIndex component's index position to be presented; not needed
+     * @param g Graphics object for painting (with color and line style set)
+     * @return whether any feedback was painted (true in this case)
+     */
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -78,12 +167,13 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport
         return true;
     }
     
-    public void removeComponent(int index) {
-        super.removeComponent(index);
-        if (selectedTab >= getComponentCount())
-            selectedTab = getComponentCount() - 1;
-    }
-
+    /** Adds real components to given container (according to layout
+     * constraints stored for the components).
+     * @param container instance of a real container to be added to
+     * @param containerDelegate effective container delegate of the container
+     * @param components components to be added
+     * @param index position at which to add the components to container
+     */
     public void addComponentsToContainer(Container container,
                                          Container containerDelegate,
                                          Component[] components,
@@ -117,6 +207,18 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport
         }
     }
 
+    // ---------
+
+    /** This method is used for scanning code structures and recognizing
+     * components added to containers and their constraints. It's called from
+     * initialize method. When a relevant code statement is found, then the
+     * CodeExpression of component is get and added to component, and also the
+     * layout constraints information is read.
+     * @param statement CodeStatement to be tested if it contains relevant code
+     * @param componentCode CodeGroup to be filled with all component code
+     * @return CodeExpression representing found component; null if the
+     *         statement is not relevant
+     */
     protected CodeExpression readComponentCode(CodeStatement statement,
                                                CodeGroup componentCode)
     {
@@ -155,6 +257,14 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport
         return compExp;
     }
 
+    /** Creates code for a component added to the layout (opposite to
+     * readComponentCode method).
+     * @param componentCode CodeGroup to be filled with complete component code
+     *        (code for initializing the layout constraints and adding the
+     *        component to the layout)
+     * @param compExp CodeExpression object representing component
+     * @param index position of the component in the layout
+     */
     protected void createComponentCode(CodeGroup componentCode,
                                        CodeExpression componentExpression,
                                        int index)
@@ -169,9 +279,16 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport
                            componentExpression);
     }
 
+    /** This method is called to get a default component layout constraints
+     * metaobject in case it is not provided (e.g. in addComponents method).
+     * @return the default LayoutConstraints object for the supported layout;
+     *         null if no component constraints are used
+     */
     protected LayoutConstraints createDefaultConstraints() {
         return new TabConstraints("tab"+(getComponentCount())); // NOI18N
     }
+
+    // ----------
 
     // tab, icon, component, tooltip
     private static Method getAddTabMethod1() {
@@ -221,38 +338,10 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport
     }
 
     // ----------
-    // LayoutSupportArranging
 
-    public void processMouseClick(Point p, Container cont) {
-        if (!(cont instanceof JTabbedPane))
-            return;
-
-        JTabbedPane tabbedPane = (JTabbedPane)cont;
-        int n = tabbedPane.getTabCount();
-        for (int i=0; i < n; i++) {
-            if (tabbedPane.getBoundsAt(i).contains(p)) {
-                selectedTab = i;
-                tabbedPane.setSelectedIndex(i);
-                break;
-            }
-        }
-    }
-
-    public void selectComponent(int index) {
-        selectedTab = index;
-    }
-
-    public void arrangeContainer(Container container,
-                                 Container containerDelegate)
-    {
-        if (!(container instanceof JTabbedPane) || selectedTab < 0)
-            return;
-
-        ((JTabbedPane)container).setSelectedIndex(selectedTab);
-    }
-
-    // ----------
-
+    /** LayoutConstraints implementation for managing JTabbedPane tab
+     * parameters.
+     */
     public static class TabConstraints implements LayoutConstraints {
         private String title;
         private Icon icon;

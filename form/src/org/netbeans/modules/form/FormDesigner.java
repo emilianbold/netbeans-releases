@@ -135,9 +135,6 @@ public class FormDesigner extends TopComponent
     }
 
     public void open(Workspace workspace) {
-//        if (formModel == null)
-//            return;
-        
         if (workspace == null)
             workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
         
@@ -363,11 +360,9 @@ public class FormDesigner extends TopComponent
     }
 
     void addComponentToSelectionImpl(RADComponent metacomp) {
-        if (metacomp == null) {
-//            System.err.println("**** cannot add null to selection");
-            Thread.dumpStack();
+        if (metacomp == null)
             return;
-        }
+
         selectedComponents.add(metacomp);
         if (metacomp instanceof RADVisualComponent)
             ensureComponentIsShown((RADVisualComponent)metacomp);
@@ -408,11 +403,9 @@ public class FormDesigner extends TopComponent
         RADVisualContainer metacont = metacomp.getParentContainer();
 
         if (comp == null) { // visual component doesn't exist yet
-            if (metacont != null) {
-                LayoutSupportManager laysup = metacont.getLayoutSupport();
-                if (laysup.supportsArranging())
-                    laysup.selectComponent(metacont.getIndexOf(metacomp));
-            }
+            if (metacont != null)
+                metacont.getLayoutSupport().selectComponent(
+                               metacont.getIndexOf(metacomp));
             return;
         }
 
@@ -422,7 +415,7 @@ public class FormDesigner extends TopComponent
             return; // component is not in designer
 
         Component topComp = (Component) getComponent(topDesignComponent);
-        if (!topComp.isShowing())
+        if (topComp == null || !topComp.isShowing())
             return; // designer is not showing
 
         RADVisualComponent child = metacomp;
@@ -430,11 +423,10 @@ public class FormDesigner extends TopComponent
         while (metacont != null) {
             Container cont = (Container) getComponent(metacont);
             LayoutSupportManager laysup = metacont.getLayoutSupport();
-            if (laysup.supportsArranging()) {
-                Container contDelegate = metacont.getContainerDelegate(cont);
-                laysup.selectComponent(child.getComponentIndex());
-                laysup.arrangeContainer(cont, contDelegate);
-            }
+            Container contDelegate = metacont.getContainerDelegate(cont);
+
+            laysup.selectComponent(child.getComponentIndex());
+            laysup.arrangeContainer(cont, contDelegate);
 
             if (metacont == topDesignComponent || cont.isShowing())
                 break;

@@ -20,15 +20,38 @@ import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.codestructure.*;
 
 /**
- * @author Tran Duc Trung
+ * Support class for GridLayout.  This is an example of very simple layout
+ * with no constraints; just basic drag & drop is implemented.
+ *
+ * @author Tran Duc Trung, Tomas Pavek
  */
 
 public class GridLayoutSupport extends AbstractLayoutSupport
 {
+    /** Gets the supported layout manager class - GridLayout.
+     * @return the class supported by this delegate
+     */
     public Class getSupportedClass() {
         return GridLayout.class;
     }
 
+    /** This method calculates position (index) for a component dragged
+     * over a container (or just for mouse cursor being moved over container,
+     * without any component).
+     * @param container instance of a real container over/in which the
+     *        component is dragged
+     * @param containerDelegate effective container delegate of the container
+     *        (for layout managers we always use container delegate instead of
+     *        the container)
+     * @param component the real component being dragged; not needed here
+     * @param index position (index) of the component in its current container;
+     *        not needed here
+     * @param posInCont position of mouse in the container delegate
+     * @param posInComp position of mouse in the dragged component;
+     *        not needed here
+     * @return index corresponding to the position of the component in the
+     *         container
+     */
     public int getNewIndex(Container container,
                            Container containerDelegate,
                            Component component,
@@ -73,6 +96,21 @@ public class GridLayoutSupport extends AbstractLayoutSupport
         return newIndex >= components.length ? components.length : newIndex;
     }
 
+    /** This method paints a dragging feedback for a component dragged over
+     * a container (or just for mouse cursor being moved over container,
+     * without any component).
+     * @param container instance of a real container over/in which the
+     *        component is dragged
+     * @param containerDelegate effective container delegate of the container;
+     *        for layout managers we always use container delegate instead of
+     *        the container
+     * @param component the real component being dragged, not needed here
+     * @param newConstraints component layout constraints to be presented;
+     *        not used for GridLayout
+     * @param newIndex component's index position to be presented
+     * @param g Graphics object for painting (with color and line style set)
+     * @return whether any feedback was painted (true in this case)
+     */
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -122,8 +160,14 @@ public class GridLayoutSupport extends AbstractLayoutSupport
 
     // ------------
 
-    // overriding this method because "rows" and "columns" properties are
-    // dependent (so not true JavaBean properties)
+    /** This method is called from readLayoutCode to read the layout manager
+     * bean code (i.e. code for constructor and properties). This method is
+     * overridden here because "rows" and "columns" properties are mutually
+     * dependent (so not true JavaBean properties).
+     * @param layoutExp CodeExpressin of the layout manager
+     * @param initLayoutCode CodeGroup to be filled with relevant
+     *        initialization code
+     */
     protected void readInitLayoutCode(CodeExpression layoutExp,
                                       CodeGroup initLayoutCode)
     {

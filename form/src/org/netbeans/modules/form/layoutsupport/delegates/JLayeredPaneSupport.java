@@ -27,6 +27,10 @@ import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.FormProperty;
 
 /**
+ * Dedicated layout support class for JLayeredPane. It is based on
+ * AbsoluteLayoutSupport - similarly as NullLayoutSupport, but with one
+ * additional constraints parameter - the layer.
+ *
  * @author Tomas Pavek
  */
 
@@ -34,10 +38,24 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
 
     private static Method setBoundsMethod;
 
+    /** Gets the supported layout manager class - JLayeredPane.
+     * @return the class supported by this delegate
+     */
     public Class getSupportedClass() {
         return JLayeredPane.class;
     }
 
+    /** This method is called when switching layout - giving an opportunity to
+     * convert the previous constrainst of components to constraints of the new
+     * layout (this layout). It should do nothing for JLayeredPane - but with
+     * must override it from from AbsoluteLayoutSupport.
+     * @param previousConstraints [input] layout constraints of components in
+     *                                    the previous layout
+     * @param currentConstraints [output] array of converted constraints for
+     *                                    the new layout - to be filled
+     * @param components [input] real components in a real container having the
+     *                           previous layout
+     */
     public void convertConstraints(LayoutConstraints[] previousConstraints,
                                    LayoutConstraints[] currentConstraints,
                                    Component[] components)
@@ -45,6 +63,13 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
         return; // not needed here (contrary to AbsoluteLayoutSupport)
     }
 
+    /** Adds real components to given container (according to layout
+     * constraints stored for the components).
+     * @param container instance of a real container to be added to
+     * @param containerDelegate effective container delegate of the container
+     * @param components components to be added
+     * @param index position at which to add the components to container
+     */
     public void addComponentsToContainer(Container container,
                                          Container containerDelegate,
                                          Component[] components,
@@ -72,6 +97,18 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
         }
     }
 
+    // ------
+
+    /** This method is called from readComponentCode method to read layout
+     * constraints of a component from code.
+     * @param constrExp CodeExpression object of the constraints (taken from
+     *        add method in the code)
+     * @param constrCode CodeGroup to be filled with the relevant constraints
+     *        initialization code
+     * @param compExp CodeExpression of the component for which the constraints
+     *        are read
+     * @return LayoutConstraints based on information read form code
+     */
     protected LayoutConstraints readConstraintsCode(CodeExpression constrExp,
                                                     CodeGroup constrCode,
                                                     CodeExpression compExp)
@@ -96,6 +133,14 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
         return constr;
     }
 
+    /** Creates code for a component added to the layout (opposite to
+     * readComponentCode method).
+     * @param componentCode CodeGroup to be filled with complete component code
+     *        (code for initializing the layout constraints and adding the
+     *        component to the layout)
+     * @param compExp CodeExpression object representing component
+     * @param index position of the component in the layout
+     */
     protected CodeExpression createConstraintsCode(CodeGroup constrCode,
                                                    LayoutConstraints constr,
                                                    CodeExpression compExp,
@@ -119,12 +164,18 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
                  FormCodeSupport.createOrigin(layerConstr.getProperties()[0]));
     }
 
+    /** This method is called to get a default component layout constraints
+     * metaobject in case it is not provided (e.g. in addComponents method).
+     * @return the default LayoutConstraints object for the supported layout;
+     *         null if no component constraints are used
+     */
     protected LayoutConstraints createDefaultConstraints() {
         return new LayeredConstraints(0, 0, 0, -1, -1);
     }
 
     // ----------
 
+    // overriding AbsoluteLayoutSupport
     protected LayoutConstraints createNewConstraints(
                                     LayoutConstraints currentConstr,
                                     int x, int y, int w, int h)
@@ -152,6 +203,9 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
 
     // ----------
 
+    /** Extended AbsoluteLayoutConstraints class - with additional layer
+     * property.
+     */
     public static class LayeredConstraints extends AbsoluteLayoutConstraints {
         private int layer;
 
