@@ -1,4 +1,5 @@
 X param
+public static final String CONST
 public X[] elements
 protected native Object clone() throws CloneNotSupportedException
 public boolean equals(Object obj)
@@ -19,10 +20,13 @@ public final void wait(long timeout, int nanos) throws InterruptedException
 GenericInner
 Inner
 accesscontroltest
+arraystest
 com
+ctorstest
 genericstest
 java
 javax
+localvarstest
 org
 test1
 test10

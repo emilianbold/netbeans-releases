@@ -6,14 +6,18 @@ MyGenericClass<Integer> mci
 MyGenericClass<Long> mcl
 Inner mcsi
 MyGenericsTest<Integer,ArithmeticException> mgt
+public static final String CONST
 public static void main(String... args)
 GenericInner
 Inner
 accesscontroltest
+arraystest
 com
+ctorstest
 genericstest
 java
 javax
+localvarstest
 org
 test1
 test10

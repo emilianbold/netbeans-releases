@@ -1,6 +1,5 @@
 String[] args
-List<String> l
-String s
+public static String staticField
 public static void main(String[] args)
 accesscontroltest
 arraystest

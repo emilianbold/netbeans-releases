@@ -1,3 +1,4 @@
+public static final String CONST
 public Long[] elements
 public boolean equals(Object obj)
 public final native Class<Object> getClass()

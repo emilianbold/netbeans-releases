@@ -10,10 +10,13 @@ Long
 Number
 Short
 accesscontroltest
+arraystest
 com
+ctorstest
 genericstest
 java
 javax
+localvarstest
 org
 test1
 test10

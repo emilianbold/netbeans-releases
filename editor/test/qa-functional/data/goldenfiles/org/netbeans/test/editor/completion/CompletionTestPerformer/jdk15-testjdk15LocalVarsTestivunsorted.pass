@@ -1,6 +1,7 @@
+String arg
 String[] args
-List<String> l
-String s
+int i
+Test inst
 public static void main(String[] args)
 accesscontroltest
 arraystest
