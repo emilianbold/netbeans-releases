@@ -1,5 +1,6 @@
 package org.netbeans.jemmy.testing;
 
+import java.awt.*;
 import java.awt.event.*;
 
 import javax.swing.*;
@@ -28,5 +29,13 @@ public class TestFrame extends JFrame {
 		public void windowIconified(WindowEvent e) {}
 		public void windowOpened(WindowEvent e) {}
 	    });
+    }
+
+    public void show() {
+	Dimension size = getSize();
+	Dimension ssize = Toolkit.getDefaultToolkit().getScreenSize();
+	setLocation((ssize.width  - size.width ) / 2,
+		    (ssize.height - size.height) / 2);
+	super.show();
     }
 }

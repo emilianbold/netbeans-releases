@@ -50,7 +50,7 @@ public class DefaultWindowDriver extends SupportiveDriver implements WindowDrive
 	checkSupported(oper);
  	eDriver.dispatchEvent(oper.getSource(), 
 			      new WindowEvent((Window)oper.getSource(),
-					      WindowEvent.WINDOW_CLOSED));
+					      WindowEvent.WINDOW_CLOSING));
 	((WindowOperator)oper).setVisible(false);
     }
     public void move(ComponentOperator oper, int x, int y) {

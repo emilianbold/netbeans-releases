@@ -55,6 +55,7 @@ public class JTreeMouseDriver extends SupportiveDriver implements TreeDriver {
 	checkSupported(oper);
 	MouseDriver mdriver = DriverManager.getMouseDriver(oper);
 	JTreeOperator toper = (JTreeOperator)oper;
+	toper.clearSelection();
 	Point p = toper.getPointToClick(indices[0]);
 	Timeout clickTime = oper.getTimeouts().create("ComponentOperator.MouseClickTimeout");
 	mdriver.clickMouse(oper, p.x, p.y, 1, Operator.getDefaultMouseButton(),

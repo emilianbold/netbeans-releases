@@ -87,7 +87,18 @@ public class jemmy_006 extends JemmyTest {
 	
 	    Demonstrator.nextStep("Change second node00 text to node01");
 
-	    to.changePathText(to.findPath("node00", "1", "|", true, true), "node01");
+	    TreePath pathy = to.findPath("node00", "1", "|");
+
+	    to.selectPath(pathy);
+	    to.selectPath(pathy);
+	    if(to.isEditing()) {
+		getOutput().printErrLine("JTree turned into editing mode after" +
+					 " two path selecting");
+		finalize();
+		return(1);
+	    }
+
+	    to.changePathText(pathy, "node01");
 
 	    Demonstrator.showFinalComment("Test passed");
 
