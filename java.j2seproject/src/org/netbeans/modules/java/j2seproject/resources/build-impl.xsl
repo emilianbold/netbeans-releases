@@ -675,13 +675,15 @@ is divided into following sections:
                             <istrue value="${{javadoc.private}}"/>
                         </condition>
                         <property name="javadoc.private.opt" value=""/>
-                        <!-- For weird space-in-path behaviors on Windows, see #46901 and #50548. -->
-                        <condition property="javadoc.classpath.opt" value="${{javac.classpath}}">
-                            <not>
-                                <equals arg1="${{javac.classpath}}" arg2=""/>
-                            </not>
+                        <!-- For weird space-in-path behaviors on Windows, see #46901 and #50548 and #54201 -->
+                        <condition property="javadoc.classpath.opt" value='""'>                            
+                            <equals arg1="${{javac.classpath}}" arg2=""/>                            
                         </condition>
-                        <property name="javadoc.classpath.opt" value='""'/>
+                        <path id="javadoc.classpath.temp">
+                            <pathelement path="${{javac.classpath}}"/>
+                        </path>        
+                        <property name="javadoc.classpath.opt" refid="javadoc.classpath.temp"/>
+                        
                         <apply executable="${{platform.javadoc}}" failonerror="true" parallel="true">
                             <arg value="-d"/>
                             <arg file="${{dist.javadoc.dir}}"/>
@@ -693,7 +695,7 @@ is divided into following sections:
                             <arg value="${{javadoc.windowtitle}}"/>
                             <arg line="${{javadoc.notree.opt}} ${{javadoc.use.opt}} ${{javadoc.nonavbar.opt}} ${{javadoc.noindex.opt}} ${{javadoc.splitindex.opt}} ${{javadoc.author.opt}} ${{javadoc.version.opt}} ${{javadoc.private.opt}} ${{javadoc.additionalparam}}"/>
                             <arg value="-classpath"/>
-                            <arg path="${{javadoc.classpath.opt}}"/>
+                            <arg value="${{javadoc.classpath.opt}}"/>
                             <arg value="-sourcepath"/>
                             <xsl:element name="arg">
                                 <xsl:attribute name="path">
