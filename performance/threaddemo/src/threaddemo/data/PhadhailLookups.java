@@ -69,6 +69,9 @@ public class PhadhailLookups {
             super(c);
             this.ph = ph;
             this.c = c;
+        }
+        
+        protected void initialize() {
             if (!ph.hasChildren()) {
                 c.add(KEY_EDITOR, this);
                 /* XXX readd when DomSupport functional:
@@ -77,6 +80,7 @@ public class PhadhailLookups {
                 }
                  */
             }
+            super.initialize();
         }
         
         public void modified(SaveCookie s) {
