@@ -4,7 +4,6 @@ OpenIDE-Module-Specification-Version: 1.3
 OpenIDE-Module-Implementation-Version: 1.3
 OpenIDE-Module-Install: org/netbeans/modules/properties/PropertiesModule.class
 OpenIDE-Module-Description: org.netbeans.modules.properties.docs.HelpSet
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor/1
 
 Name: org/netbeans/modules/properties/PropertiesDataLoader.class
 OpenIDE-Module-Class: Loader
