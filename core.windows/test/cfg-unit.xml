@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="core/windows unit test config">
 
     <!-- Tests which should be run before commit to validate IDE. -->
-    <testbag testattribs="noncommit" executor="ide" name="Before Commit Validation">
+    <testbag testattribs="commit" executor="ide" name="Before Commit Validation">
         <testset dir="unit/src">
             <patternset>
 		<include name="**/ValidateLayer*Test.class" />
