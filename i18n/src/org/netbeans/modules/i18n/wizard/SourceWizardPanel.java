@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,15 +17,8 @@ package org.netbeans.modules.i18n.wizard;
 
 import java.awt.Component;
 import java.beans.BeanInfo;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -34,32 +27,20 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.FileOwnerQuery;
 
 import org.netbeans.modules.i18n.FactoryRegistry;
 import org.netbeans.modules.i18n.I18nUtil;
 
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.RepositoryNodeFactory;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.nodes.NodeOperation;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
-import org.openide.util.Lookup;
-import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.netbeans.modules.i18n.SelectorUtils;
-import org.openide.ErrorManager;
 
 /**
  * First panel used in I18N (test) Wizard.
