@@ -18,6 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nball.dir" location="../../../nb_all"/>
     <property name="nbextra.dir" location="../../../nbextra"/>
     <property name="nbextra.qa.performance.dist.dir" location="${nbextra.dir}/qa/performance/dist"/>
+    <property name="guitracker.dist.jar" location="${nball.dir}/performance/guitracker/dist/guitracker.jar"/>
     
     <!-- Imports default set boot classpath for appropriate JDK used for testing,
         unzip projects for testing. -->
@@ -70,6 +71,7 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="jvm">
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
+            <property name="xtest.userdata|guitracker.dist.jar" value="${guitracker.dist.jar}"/>
             
             <property name="xtest.enable.assertions" value="false" /> 
             
@@ -107,6 +109,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.ide.reuse.userdir" value="true"/>
             <property name="xtest.userdata|netbeans.dest.dir" value="${netbeans.dest.dir}"/>
             <property name="xtest.userdata|userdir.prepared" value="${xtest.workdir}"/>
+            <property name="xtest.userdata|guitracker.dist.jar" value="${guitracker.dist.jar}"/>
             
             <!-- Property for repeatedly used userdir with opened files -->
             <property name="xtest.userdata|org.netbeans.performance.repeat" value="5"/>
