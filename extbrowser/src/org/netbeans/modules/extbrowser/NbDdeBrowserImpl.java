@@ -25,6 +25,7 @@ import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
+import org.openide.execution.NbProcessDescriptor;
 import org.openide.options.SystemOption;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
@@ -50,8 +51,10 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             if (org.openide.util.Utilities.isWindows ())
                 System.loadLibrary("extbrowser");   // NOI18N
         } catch(Exception e) {
-            System.out.println(java.util.ResourceBundle.getBundle("org/netbeans/modules/extbrowser/Bundle").getString("ERR_cant_locate_dll"));
-            e.printStackTrace ();
+            TopManager.getDefault ().notify (
+                new NotifyDescriptor.Message(java.util.ResourceBundle.getBundle("org/netbeans/modules/extbrowser/Bundle").getString("ERR_cant_locate_dll"),
+                NotifyDescriptor.INFORMATION_MESSAGE)
+            );
         }
     }
     
@@ -100,33 +103,15 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     throws NbBrowserException;
     
     /** finds registry entry for browser opening */
-    native private String getBrowserPath (String browser)
+    native static String getBrowserPath (String browser)
     throws NbBrowserException;
 
     /** returns the command that executes default application for opening of 
      *  .html files
      */
-    native private String getDefaultOpenCommand ()
+    native static String getDefaultOpenCommand ()
     throws NbBrowserException;
 
-    /** creates service for WWW_*Progress* topics */
-    /*
-    private void initProgress () {
-        try {
-            if (!bProgressInitialized) {
-                ddeProgressSrvName = "NETBEANSPROGRESS";    // NOI18N
-                String topic = BEGIN_PROGRESS+","+SET_PROGRESS_RANGE+","+MAKING_PROGRESS+","+END_PROGRESS;
-                createDDE (ddeProgressSrvName, topic);
-                bProgressInitialized = true;
-            }
-        }
-        catch (NbBrowserException ex) {
-            ex.printStackTrace();
-        }
-    }
-     */
-    
-    
     /** This should navigate browser back. Actually does nothing.
      */
     public void backward() {
@@ -178,7 +163,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             }
         
             nativeRunnable.url = url;
-            nativeThread.run ();    // PENDING: should be nativeThread.start ();
+            nativeThread.run ();        // PENDING: this should be nativeThread.start ();
             // PENDING: add this timeout to browser properties
             nativeThread.join(10000);
             if (nativeThread.isAlive()) {
@@ -215,7 +200,11 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         return setting.getPort ();
     }
 
-    private String getDDEServerName () {
+    /** Finds the name of DDE server. 
+     *  If <Default system browser> is set then it resolves it into either 
+     *  Netscape or IExplore
+     */
+    private String realDDEServer () {
         String srv = winBrowserFactory.getDDEServer ();
         if (srv != null)
             return srv;
@@ -242,7 +231,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     class URLDisplayer implements Runnable { // NOI18N
         
         /** url to be displayed */
-        URL url;
+        private URL url;
         
         public void run() {
             try {
@@ -262,18 +251,18 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 // activate browser window (doesn't work on Win9x)
                 if (!win9xHack ()) {
                     // IE problem
-                    if (getDDEServerName().equals(ExtBrowserSettings.IEXPLORE))
+                    if (realDDEServer().equals(ExtBrowserSettings.IEXPLORE))
                         winID = "0xFFFFFFFF";
                     else
                         winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: currWinID).toUpperCase(); // NOI18N
                     if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
 
                     try {
-                        data = reqDdeMessage(getDDEServerName(),"WWW_Activate",winID,5000);
+                        data = reqDdeMessage(realDDEServer(),"WWW_Activate",winID,5000);
                     }
                     catch (NbBrowserException ex) {
                         startBrowser ();
-                        data = reqDdeMessage(getDDEServerName(),"WWW_Activate",winID,5000);
+                        data = reqDdeMessage(realDDEServer(),"WWW_Activate",winID,5000);
                         hasNoWindow = false;
                     }
                     
@@ -292,7 +281,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 }
 
 
-                if (getDDEServerName().equals(ExtBrowserSettings.IEXPLORE)) {
+                if (realDDEServer().equals(ExtBrowserSettings.IEXPLORE)) {
                     winID = (hasNoWindow && !win9xHack())? "0": "-1";
                 }
                 else
@@ -303,21 +292,21 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 String args1;
                 args1="\""+url.toString()+"\",,"+winID+",0x1,,,"+(ddeProgressSrvName==null?"":ddeProgressSrvName);  // NOI18N
                 if (!win9xHack ()) {
-                    data = reqDdeMessage(getDDEServerName(),"WWW_OpenURL",args1,3000); // NOI18N
+                    data = reqDdeMessage(realDDEServer(),"WWW_OpenURL",args1,3000); // NOI18N
                 }
                 else {
                     // we've skipped WWW_Activate step so we need to start it if it doesn't run 
                     try {
-                        data = reqDdeMessage(getDDEServerName(),"WWW_OpenURL",args1,3000); // NOI18N
+                        data = reqDdeMessage(realDDEServer(),"WWW_OpenURL",args1,3000); // NOI18N
                     }
                     catch (NbBrowserException ex) {
                         startBrowser ();
-                        data = reqDdeMessage(getDDEServerName(),"WWW_OpenURL",args1,3000); // NOI18N
+                        data = reqDdeMessage(realDDEServer(),"WWW_OpenURL",args1,3000); // NOI18N
                     }
                 }
                     
                 if (data != null && data.length >= 4) {
-                    if (!getDDEServerName().equals("IEXPLORE")) {
+                    if (!realDDEServer().equals("IEXPLORE")) {
                         currWinID=DdeBrowserSupport.getDWORDAtOffset(data, 0);
                         if (currWinID < 0) currWinID = -currWinID;
                     }
@@ -342,7 +331,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
          * Checks for IExplorer & Win9x combination.
          */
         private boolean win9xHack () {
-            return getDDEServerName().equals(ExtBrowserSettings.IEXPLORE)
+            return realDDEServer().equals(ExtBrowserSettings.IEXPLORE)
                    && (Utilities.getOperatingSystem() == Utilities.OS_WIN98 
                       ||  Utilities.getOperatingSystem() == Utilities.OS_WIN95);
         }
@@ -355,39 +344,11 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         private void startBrowser() throws NbBrowserException, java.io.IOException, InterruptedException {
             String b;
             if (ExtBrowserSettings.OPTIONS.isStartWhenNotRunning()) {
-                // get the browser
-                if (winBrowserFactory.getExecutable() != null
-                &&  !winBrowserFactory.getExecutable().equals("")) { // NOI18N
-                    b = winBrowserFactory.getExecutable();
-                }
-                else {
-                    b = (winBrowserFactory.getDDEServer()!=null)?
-                    getBrowserPath(getDDEServerName()):
-                        getDefaultOpenCommand();
-                }
-                
-                // start it
-                if (b != null) {
-                    // check quoted path
-                    if (b.charAt(0) == '"') {
-                        int from, to;
-                        from = b.indexOf('"'); to = b.indexOf('"', from+1);
-                        b = b.substring(from+1, to);
-                    }
-                    else {
-                        StringTokenizer st = new StringTokenizer(b);
-                        b = st.nextToken();
-                    }
-                    // start IE with -nohome
-                    if (ExtBrowserSettings.IEXPLORE.equals(getDDEServerName())) {
-                        b += " -nohome";    // NOI18N
-                    }
-                    
-                    setStatusMessage(bundle.getString("MSG_Running_command")+b);
-                    Runtime.getRuntime().exec(b);
-                    // wait for browser start
-                    Thread.currentThread().sleep(7000);
-                }
+                NbProcessDescriptor cmd = winBrowserFactory.getBrowserExecutable();
+                // setStatusMessage(bundle.getString("MSG_Running_command")+cmd);
+                cmd.exec();
+                // wait for browser start
+                Thread.currentThread().sleep(7000);
             }
         }
     }

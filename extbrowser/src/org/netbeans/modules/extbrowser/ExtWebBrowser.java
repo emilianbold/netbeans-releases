@@ -17,6 +17,7 @@ import java.beans.*;
 
 import org.openide.TopManager;
 import org.openide.ErrorManager;
+import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.awt.HtmlBrowser;
 
@@ -27,10 +28,14 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
 
     private static final long serialVersionUID = -3021027901671504127L;
     
-    private static final String PROP_EXECUTABLE = "Executable"; // NOI18N
+    public static final String PROP_BROWSER_NAME = "name"; // NOI18N
+    public static final String PROP_BROWSER_EXECUTABLE = "browserExecutable"; // NOI18N
     
-    /** command that executes the browser */
+    /** command that executes the browser. Used in an old version. */
     private String executable;
+    
+    /** Holds value of property browserExecutable. */
+    private NbProcessDescriptor browserExecutable;
     
     protected transient PropertyChangeSupport pcs;
     
@@ -51,14 +56,32 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
         return NbBundle.getMessage (ExtWebBrowser.class, "CTL_ExternalBrowser");
     }
     
-    public String getExecutable () {
-        return executable;
+    /** Getter for property browserExecutable.
+     * @return Value of property browserExecutable.
+     */
+    public NbProcessDescriptor getBrowserExecutable () {
+        if (browserExecutable == null || "".equals (browserExecutable.getProcessName ())) { // NOI18N
+            return defaultBrowserExecutable ();
+        }
+        return browserExecutable;
+    }
+
+    /** Setter for property browserExecutable.
+     * @param browserExecutable New value of property browserExecutable.
+     */
+    public void setBrowserExecutable (NbProcessDescriptor browserExecutable) {
+        NbProcessDescriptor old = this.browserExecutable;
+        this.browserExecutable = browserExecutable;
+        pcs.firePropertyChange (PROP_BROWSER_EXECUTABLE, old, browserExecutable);
     }
     
-    public void setExecutable (String executable) {
-        String old = this.executable;
-        this.executable = executable;
-        pcs.firePropertyChange (PROP_EXECUTABLE, old, executable);
+    /** Default command for browser execution.
+     *  Can be overriden to return browser that suits to platform and settings.
+     *
+     * @return netscape without any argument.
+     */
+    protected NbProcessDescriptor defaultBrowserExecutable () {
+        return new NbProcessDescriptor ("netscape", "");    // NOI18N
     }
     
     /**
@@ -89,6 +112,18 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
     private void readObject (java.io.ObjectInputStream ois) 
     throws java.io.IOException, ClassNotFoundException {
         ois.defaultReadObject ();
+        if (executable != null) {
+            if (executable.charAt (0) == '"') {
+                int idx = executable.indexOf ('"', 1);
+                if (idx > 0)
+                    executable = executable.substring (1, idx);
+                else
+                    executable = executable.substring (1);
+            }
+            browserExecutable = new NbProcessDescriptor (executable, "");   // NOI18N
+            executable = null;
+        }
         init ();
     }
+    
 }
