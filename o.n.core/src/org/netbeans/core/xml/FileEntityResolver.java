@@ -13,20 +13,28 @@
 
 package org.netbeans.core.xml;
 
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import java.io.IOException;
+
+import org.openide.TopManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.*;
+import org.openide.cookies.InstanceCookie;
+import org.openide.util.Lookup;
+
 
 /** Entity resolver which loads entities (typically DTDs) from fixed
  * locations in the system file system, according to public ID.
  *
  * @author  Jaroslav Tulach
  */
-public class FileEntityResolver implements EntityResolver {
+public class FileEntityResolver 
+implements EntityResolver, Environment.Provider {
     private static final String ENTITY_PREFIX = "/xml/entities"; // NOI18N
+    private static final String LOOKUP_PREFIX = "/xml/lookups"; // NOI18N
     
     /** Constructor
      */
@@ -50,6 +58,96 @@ public class FileEntityResolver implements EntityResolver {
         }
     }
     
+    /** A method that tries to find the correct lookup for given XMLDataObject.
+     * @return the lookup
+     */
+    public Lookup getEnvironment(DataObject obj) {
+        if (obj instanceof XMLDataObject) {
+            XMLDataObject xml = (XMLDataObject)obj;
+            
+            String id;
+            try {
+                id = xml.getDocument ().getDoctype ().getPublicId ();
+            } catch (IOException ex) {
+                TopManager.getDefault ().getErrorManager().notify (ex);
+                return null;
+            } catch (org.xml.sax.SAXException ex) {
+                TopManager.getDefault ().getErrorManager().notify (ex);
+                return null;
+            }
+            
+            id = convertPublicId (id);
+            
+            StringBuffer sb = new StringBuffer (200);
+            sb.append (LOOKUP_PREFIX);
+            sb.append (id);
+            int len = sb.length ();
+            // at least for now
+            sb.append (".instance"); // NOI18N 
+            FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource (sb.toString ());
+            if (fo == null) {
+                // try to find a file with xml extension
+                sb.setLength (len);
+                sb.append (".xml"); // NOI18N
+                fo = Repository.getDefault ().getDefaultFileSystem ().findResource (sb.toString ());
+            }
+            
+            if (fo != null) {
+                try {
+                    DataObject dataobj = DataObject.find (fo);
+                    InstanceCookie cookie = (InstanceCookie)dataobj.getCookie (InstanceCookie.class);
+                    if (cookie != null) {
+                        Object inst = cookie.instanceCreate ();
+                        if (inst instanceof Environment.Provider) {
+                            return ((Environment.Provider)inst).getEnvironment (obj);
+                        }
+                        
+                        if (inst instanceof XMLDataObject.Processor) {
+                            // convert provider
+                            XMLDataObject.Info info = new XMLDataObject.Info ();
+                            info.addProcessorClass (inst.getClass ());
+                            inst = info;
+                        }
+                        
+                        if (inst instanceof XMLDataObject.Info) {
+                            return createInfoLookup (xml, ((XMLDataObject.Info)inst));
+                        }
+                        
+                    }
+                } catch (IOException ex) {
+                    TopManager.getDefault ().getErrorManager ().notify (ex);
+                } catch (ClassNotFoundException ex) {
+                    TopManager.getDefault ().getErrorManager ().notify (ex);
+                }
+            }
+        }
+        return null;
+    }
+    
+    /** Ugly hack to get to openide hidden functionality.
+     */
+    private static java.lang.reflect.Method method;
+    private static Lookup createInfoLookup (XMLDataObject obj, XMLDataObject.Info info) {
+        // well, it is a hack, but just for default compatibility
+        if (method == null) {
+            try {
+                method = XMLDataObject.class.getDeclaredMethod ("createInfoLookup", new Class[] {
+                    XMLDataObject.class,
+                    XMLDataObject.Info.class
+                });
+                method.setAccessible (true);
+            } catch (Exception ex) {
+                TopManager.getDefault ().getErrorManager ().notify (ex);
+                return null;
+            }
+        }
+        try {
+            return (Lookup)method.invoke (null, new Object[] { obj, info });
+        } catch (Exception ex) {
+            TopManager.getDefault ().getErrorManager ().notify (ex);
+            return null;
+        }
+    }
 
     /** Converts the publicID into filesystem friendly name.
      * 

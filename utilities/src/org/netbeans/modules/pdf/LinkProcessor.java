@@ -65,8 +65,8 @@ public class LinkProcessor implements InstanceCookie, XMLDataObject.Processor, A
     private XMLDataObject xmlDataObject;
     
     
-
-    /** Initilializes <code>LinkProcessor</code>. */
+    /* JST: Replaced with registration in xml layer.
+    * Initilializes <code>LinkProcessor</code>. *
     public static void init () {
         // Registering of catalog is in xml layer, see org/netbeans/modules/utilities/Layer.xml.
         
@@ -76,6 +76,7 @@ public class LinkProcessor implements InstanceCookie, XMLDataObject.Processor, A
         xmlInfo.addProcessorClass(LinkProcessor.class);
         XMLDataObject.registerInfo(PUBLIC_ID, xmlInfo);
     }
+     */
 
     /** Attaches this processor to specified xml data object. Implements <code>XMLDataObject.Processor</code> interface. 
      * @param xmlDataObject xml data object to which attach this processor */

@@ -41,13 +41,6 @@ public final class EntityCatalogImpl implements EntityResolver {
 
     private static final RequestProcessor catalogRP = new RequestProcessor("EntityCatalog/parser");
 
-    public static void init () {
-        XMLDataObject.Info INFO = new XMLDataObject.Info();
-        INFO.addProcessorClass(RegistrationProcessor.class);
-//        INFO.setIconBase("/org/netbeans/core/windows/toolbars/xmlToolbars");  //!!!
-        XMLDataObject.registerInfo(EntityCatalog.PUBLIC_ID, INFO);
-    }
-    
     /** Creates new EntityCatalogImpl */
     private EntityCatalogImpl(Map map) {
         id2uri = map;

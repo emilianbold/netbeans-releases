@@ -54,8 +54,6 @@ public class Installer extends ModuleInstall {
                 }
             }, 60000
         );
-
-        LinkProcessor.init ();
     }
     
     /** Uninstalls module. Shuts down openfile server and uninstalls

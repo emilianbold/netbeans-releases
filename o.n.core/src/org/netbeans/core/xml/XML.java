@@ -24,8 +24,8 @@ public final class XML extends Object {
      */
     public static void init () {
         org.netbeans.core.NbTopManager.get ().register (new FileEntityResolver ());
-        org.netbeans.core.xml.EntityCatalogImpl.init ();
-        org.netbeans.core.windows.toolbars.ToolbarConfiguration.init ();
+        //org.netbeans.core.xml.EntityCatalogImpl.init ();
+        //org.netbeans.core.windows.toolbars.ToolbarConfiguration.init ();
     }
 
 }
