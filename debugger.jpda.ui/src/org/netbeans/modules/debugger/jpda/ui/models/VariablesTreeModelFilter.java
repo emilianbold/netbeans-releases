@@ -17,10 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import javax.swing.Action;
 
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.LookupProvider;
-import org.netbeans.api.debugger.jpda.Field;
-import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.jpda.VariablesFilter;
@@ -196,9 +193,10 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
         Object value
     ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (row);
-        if (vf == null) 
+        if (vf == null)
             original.setValueAt (row, columnID, value);
-        vf.setValueAt (original, (Variable) row, columnID, value);
+        else
+            vf.setValueAt (original, (Variable) row, columnID, value);
     }
     
     
