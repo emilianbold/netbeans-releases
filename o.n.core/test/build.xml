@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This calls common clean process. -->
     <target name="cleantests">
         <!-- Call cleantests also from imported script -->
-        <antcall target="default_module_test_build_script.cleantests"/>
+        <antcall target="module-build.cleantests"/>
         <ant dir="unit/src/org/netbeans/core/modules" target="clean"/>
         <ant dir="unit/src/org/netbeans/core/projects" target="clean"/>
         <ant dir="unit/src/org/netbeans/core/lookup/data" target="clean"/>             
