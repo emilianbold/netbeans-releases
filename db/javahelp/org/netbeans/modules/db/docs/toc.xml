@@ -21,7 +21,6 @@ Microsystems, Inc. All Rights Reserved.
 <tocitem text="About the Database Explorer" target="dbexpovew" />
 	
 <tocitem text="Setting Up a Database Connection">
-<tocitem text="About Connection Pools" target="server_aboutdbconnect" />
 <tocitem text="Adding a New Driver" target="adddriver" />
 <tocitem text="Connecting to a Database" target="connectdb" />
 <tocitem text="Connecting to a Pointbase Database" target="pointbasedb" />
