@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -246,6 +246,9 @@ committed to CVS for legal reasons. You need to download it:
     <!-- Show various lists: -->
 
     <xsl:template match="changelist[@style = 'list-all-apis']">
+        <xsl:call-template name="changelist-list-all-apis"/>
+    </xsl:template>
+    <xsl:template name="changelist-list-all-apis">
         <ul>
             <xsl:apply-templates select="/apichanges/changes/change/api" mode="api-summary">
                 <xsl:sort data-type="text" order="ascending" select="@name"/>
@@ -257,6 +260,9 @@ committed to CVS for legal reasons. You need to download it:
     </xsl:template>
 
     <xsl:template match="changelist[@style = 'incompat-by-date']">
+        <xsl:call-template name="changelist-incompat-by-date"/>
+    </xsl:template>
+    <xsl:template name="changelist-incompat-by-date">
         <ul>
             <xsl:apply-templates select="/apichanges/changes/change[compatibility/@binary='incompatible' or compatibility/@source='incompatible' or compatibility/@semantic='incompatible']" mode="summary">
                 <xsl:sort data-type="number" order="descending" select="date/@year"/>
@@ -277,6 +283,9 @@ committed to CVS for legal reasons. You need to download it:
     </xsl:template>
 
     <xsl:template match="changelist[@style = 'all-by-date']">
+        <xsl:call-template name="changelist-all-by-date"/>
+    </xsl:template>
+    <xsl:template name="changelist-all-by-date">
         <ul>
             <xsl:apply-templates select="/apichanges/changes/change" mode="summary">
                 <xsl:sort data-type="number" order="descending" select="date/@year"/>
@@ -287,6 +296,9 @@ committed to CVS for legal reasons. You need to download it:
     </xsl:template>
 
     <xsl:template match="changelist[@style = 'all-by-version']">
+        <xsl:call-template name="changelist-all-by-version"/>
+    </xsl:template>
+    <xsl:template name="changelist-all-by-version">
         <ul>
             <xsl:apply-templates select="/apichanges/changes/change[version]" mode="summary-show-version">
                 <xsl:sort data-type="number" order="descending" select="version/@major"/>
@@ -305,6 +317,9 @@ committed to CVS for legal reasons. You need to download it:
     </xsl:template>
 
     <xsl:template match="changelist[@style = 'all-by-class']">
+        <xsl:call-template name="changelist-all-by-class"/>
+    </xsl:template>
+    <xsl:template name="changelist-all-by-class">
         <xsl:apply-templates select="/apichanges/changes/change/class" mode="summary-group-class">
             <xsl:sort data-type="text" order="ascending" select="@name"/>
             <xsl:sort data-type="number" order="descending" select="../date/@year"/>
@@ -322,6 +337,9 @@ committed to CVS for legal reasons. You need to download it:
     </xsl:template>
 
     <xsl:template match="changelist[@style = 'details-by-api']">
+        <xsl:call-template name="changelist-details-by-api"/>
+    </xsl:template>
+    <xsl:template name="changelist-details-by-api">
         <xsl:apply-templates select="/apichanges/changes/change[api]" mode="details-group-api">
             <xsl:sort data-type="text" order="ascending" select="api/@name"/>
             <xsl:sort data-type="number" order="descending" select="date/@year"/>
@@ -343,6 +361,47 @@ committed to CVS for legal reasons. You need to download it:
         <xsl:message terminate="yes">
             Unrecognized changelist style: <xsl:value-of select="@style"/>
         </xsl:message>
+    </xsl:template>
+    
+    <!-- Show all change lists usually needed: -->
+    
+    <xsl:template match="standard-changelists">
+      <h1><a name="list-all-apis">Index of APIs</a></h1>
+      <xsl:call-template name="changelist-list-all-apis"/>
+
+      <h1><a name="incompat-by-date">Incompatible changes by date</a></h1>
+      <p>Fuller descriptions of all changes can be found below (follow links).</p>
+      <p>Not all deprecations are listed here, assuming that the deprecated
+        APIs continue to essentially work. For a full deprecation list, please
+        consult the
+        <a href="deprecated-list.html">Javadoc</a>.</p>
+      <xsl:call-template name="changelist-incompat-by-date"/>
+
+      <h1><a name="all-by-date">All changes by date</a></h1>
+      <xsl:call-template name="changelist-all-by-date"/>
+
+      <h1><a name="all-by-version">Changes by version</a></h1>
+      <p>
+        These API specification versions may be used to indicate that a module
+        requires a certain API feature in order to function. For example, if you
+        see here a feature you need which is labelled <samp>1.20</samp>, your
+        manifest should contain in its main attributes the line:
+      </p>
+      <xsl:choose>
+          <xsl:when test="starts-with(@module-code-name, 'IDE/')">
+              <pre>OpenIDE-Module-IDE-Dependencies: <xsl:value-of select="@module-code-name"/> &gt; 1.20</pre>
+          </xsl:when>
+          <xsl:otherwise>
+              <pre>OpenIDE-Module-Module-Dependencies: <xsl:value-of select="@module-code-name"/> &gt; 1.20</pre>
+          </xsl:otherwise>
+      </xsl:choose>
+      <xsl:call-template name="changelist-all-by-version"/>
+
+      <h1><a name="all-by-class">Changes by affected class</a></h1>
+      <xsl:call-template name="changelist-all-by-class"/>
+
+      <hr/><h1><a name="details-by-api">Details of all changes by API and date</a></h1>
+      <xsl:call-template name="changelist-details-by-api"/>
     </xsl:template>
 
     <!-- Format dates readably: -->

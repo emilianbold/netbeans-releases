@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <?xml-stylesheet type="text/xml" href="CHANGEME/nbbuild/javadoctools/apichanges.xsl"?>
@@ -108,36 +108,8 @@ is the proper place.
 <p>This document lists changes made to the <a href="http://CHANGEME.netbeans.org/">CHANGEME API</a>.</p>
 
 <!-- The actual lists of changes, as summaries and details: -->
-
-      <hr/><h1><a name="list-all-apis">Index of APIs</a></h1>
-      <changelist style="list-all-apis"/>
-
-      <h1><a name="incompat-by-date">Incompatible changes by date</a></h1>
-      <p>Fuller descriptions of all changes can be found below (follow links).</p>
-      <p>Not all deprecations are listed here, assuming that the deprecated
-        APIs continue to essentially work. For a full deprecation list, please
-        consult the
-        <a href="deprecated-list.html">Javadoc</a>.</p>
-      <changelist style="incompat-by-date"/>
-
-      <h1><a name="all-by-date">All changes by date</a></h1>
-      <changelist style="all-by-date"/>
-
-      <h1><a name="all-by-version">Changes by version</a></h1>
-      <p>
-        These API specification versions may be used to indicate that a module
-        requires a certain API feature in order to function. For example, if you
-        see here a feature you need which is labelled <samp>1.20</samp>, your
-        manifest should contain in its main attributes the line:
-      </p>
-      <pre>OpenIDE-Module-Module-Dependencies: CHANGEME &gt; 1.20</pre>
-      <changelist style="all-by-version"/>
-
-      <h1><a name="all-by-class">Changes by affected class</a></h1>
-      <changelist style="all-by-class"/>
-
-      <hr/><h1><a name="details-by-api">Details of all changes by API and date</a></h1>
-      <changelist style="details-by-api"/>
+      <hr/>
+      <standard-changelists module-code-name="CHANGEME/1"/>
 
       <hr/><p>@FOOTER@</p>
 

@@ -7,7 +7,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -34,6 +34,8 @@ Describes format of NetBeans API changes list.
 <!ENTITY % special "br | span | bdo | object | img | map | date">
 <!-- Override lists to include change lists formatted in various ways: -->
 <!ENTITY % lists "ul | ol | dl | changelist">
+<!-- Override blocks to include standard-changelists: -->
+<!ENTITY % blocktext "pre | hr | blockquote | address | standard-changelists">
 <!-- Now include normal XHTML DTD: -->
 %xhtml;
 
@@ -178,6 +180,14 @@ A list of changes, formatted in a predefined way.
 <!ELEMENT changelist EMPTY>
 <!ATTLIST changelist
           style (%changeliststyles;) #REQUIRED
+>
+
+<!--
+The usually needed change lists.
+-->
+<!ELEMENT standard-changelists EMPTY>
+<!ATTLIST standard-changelists
+          module-code-name CDATA #REQUIRED
 >
 
 <!--
