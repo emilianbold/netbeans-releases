@@ -630,7 +630,7 @@ public class J2SEProjectProperties {
         
     }
     
-    private static class PathParser extends PropertyParser {
+    public static class PathParser extends PropertyParser {
         
         // XXX Define in the LibraryManager
         private static final String LIBRARY_PREFIX = "${libs."; // NOI18N

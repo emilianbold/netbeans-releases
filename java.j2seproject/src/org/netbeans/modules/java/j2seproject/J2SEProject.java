@@ -32,6 +32,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathExtender;
 import org.netbeans.modules.java.j2seproject.queries.CompiledSourceForBinaryQuery;
 import org.netbeans.modules.java.j2seproject.queries.JavadocForBinaryQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.SourceLevelQueryImpl;
@@ -165,6 +166,7 @@ final class J2SEProject implements Project, AntProjectListener {
             }),
             fileBuilt,
             new RecommendedTemplatesImpl(),
+            new J2SEProjectClassPathExtender(helper, eval,refHelper)
         });
     }
 
