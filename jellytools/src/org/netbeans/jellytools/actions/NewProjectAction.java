@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools.actions;
@@ -16,9 +16,15 @@ import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle; 
 
 /** Used to call "File|New Project..."  main menu item,
- *  or Ctrl+Shift+N shortcut.
+ *  or Ctrl+Shift+N shortcut.<br>
+ * Usage:
+ * <pre>
+ *  new NewProjectAction.performMenu();
+ *  new NewProjectAction().performShortcut();
+ * </pre>
  * @see Action
  * @see ActionNoBlock
+ * @author tb115823
  */
 public class NewProjectAction extends ActionNoBlock {
     
