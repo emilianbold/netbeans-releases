@@ -58,6 +58,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         if (!isWizard) {
             jTextArea1.setText(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "LBL_ClasspathPanel_Explanation"));
         }
+        jTextArea1.setDisabledTextColor(jLabel2.getForeground());
     }
     
     public HelpCtx getHelpCtx() {
@@ -275,6 +276,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(moveUp, gridBagConstraints);
+        moveUp.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("AD_ClasspathPanel_noveUp"));
 
         moveDown.setText(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "LBL_ClasspathPanel_Move_Down"));
         moveDown.addActionListener(new java.awt.event.ActionListener() {
@@ -289,11 +291,13 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(moveDown, gridBagConstraints);
+        moveDown.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("AD_ClasspathPanel_moveDown"));
 
         jTextArea1.setEditable(false);
         jTextArea1.setLineWrap(true);
         jTextArea1.setText(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "MSG_ClasspathPanel_jTextArea"));
         jTextArea1.setWrapStyleWord(true);
+        jTextArea1.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -318,6 +322,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(separateClasspath, gridBagConstraints);
+        separateClasspath.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("AD_ClasspathPanel_separateClasspath"));
 
     }//GEN-END:initComponents
 

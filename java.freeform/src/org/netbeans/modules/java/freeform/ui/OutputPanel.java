@@ -59,6 +59,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
                 update ();
             }
         });
+        jTextArea1.setDisabledTextColor(jLabel2.getForeground());
     }    
     
     private void update() {
@@ -213,6 +214,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(sourceFolder, gridBagConstraints);
+        sourceFolder.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("AD_OutputPanel_sourceFolder"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -225,6 +227,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         jTextArea1.setLineWrap(true);
         jTextArea1.setText(org.openide.util.NbBundle.getMessage(OutputPanel.class, "MSG_OutputPanel_jTextArea1"));
         jTextArea1.setWrapStyleWord(true);
+        jTextArea1.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -243,6 +246,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         jPanel2.add(javadoc, gridBagConstraints);
+        javadoc.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("AD_OutputPanel_javadoc"));
 
         org.openide.awt.Mnemonics.setLocalizedText(javadocBrowse, org.openide.util.NbBundle.getMessage(OutputPanel.class, "BTN_OutputPanel_browseJavadoc"));
         javadocBrowse.addActionListener(new java.awt.event.ActionListener() {
@@ -257,6 +261,7 @@ public class OutputPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         jPanel2.add(javadocBrowse, gridBagConstraints);
+        javadocBrowse.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("AD_OutputPanel_javadocBrowse"));
 
         javadocLabel.setLabelFor(javadoc);
         org.openide.awt.Mnemonics.setLocalizedText(javadocLabel, org.openide.util.NbBundle.getMessage(OutputPanel.class, "LBL_OutputPanel_JavadocLabel"));
