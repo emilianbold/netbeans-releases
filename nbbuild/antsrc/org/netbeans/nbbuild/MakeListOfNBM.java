@@ -72,6 +72,8 @@ public class MakeListOfNBM extends Task {
 		String codenamebase = attr.getValue ("OpenIDE-Module");
 		if (codenamebase == null)
                     throw new BuildException ("invalid manifest, does not contain OpenIDE-Module", location);
+                int idx = codenamebase.lastIndexOf ('/');
+                if (idx != -1) codenamebase = codenamebase.substring (0, idx);
                 
 		String versionSpecNum = attr.getValue ("OpenIDE-Module-Specification-Version");
 		if (versionSpecNum == null) {

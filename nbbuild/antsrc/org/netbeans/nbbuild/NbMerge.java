@@ -366,12 +366,11 @@ public class NbMerge extends Task {
         }
         log("mergedmodules=" + mergemodules);
         it = suppressedlocales.iterator ();
-        UpdateTracking tr = new UpdateTracking( dest.getAbsolutePath() + File.separator + UpdateTracking.TRACKING_DIRECTORY );
-        log ( dest.getAbsolutePath() + UpdateTracking.TRACKING_DIRECTORY );
+        UpdateTracking tr = new UpdateTracking( dest.getAbsolutePath() );
+        log ( dest.getAbsolutePath() );
         while (it.hasNext ()) {
           String locale = (String) it.next ();
           tr.removeLocalized(locale);
         }
-        tr.write();
     }
 }

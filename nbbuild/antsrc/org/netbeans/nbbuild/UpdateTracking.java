@@ -78,7 +78,7 @@ public class UpdateTracking {
     }
     
     public void removeLocalized( String locale ) {
-        File updateDirectory = new File( nbPath );
+        File updateDirectory = new File( nbPath, TRACKING_DIRECTORY );
         File[] trackingFiles = updateDirectory.listFiles( new FileFilter() { // Get only *.xml files
             public boolean accept( File file ) {
                 return file.isFile() &&file.getName().endsWith(".xml");
@@ -122,7 +122,7 @@ public class UpdateTracking {
         
         //document.getDocumentElement().normalize();
         String trackingFileName = module.getCodenamebase();
-        trackingFileName = trackingFileName.substring(0, trackingFileName.indexOf('/')).replace('.', '-') + ".xml";
+        trackingFileName = trackingFileName.replace('.', '-') + ".xml";
         File directory = new File( nbPath + FILE_SEPARATOR + TRACKING_DIRECTORY );
         if (!directory.exists()) {
             directory.mkdirs();
