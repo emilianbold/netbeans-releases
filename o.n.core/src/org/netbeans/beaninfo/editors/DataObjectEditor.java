@@ -226,7 +226,7 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
     public String getAsText() {
         Object value = getValue();
         if (value instanceof DataObject) {
-            return ((DataObject)value).getName();
+            return ((DataObject)value).getNodeDelegate().getDisplayName();
         }
         return "";
     }
