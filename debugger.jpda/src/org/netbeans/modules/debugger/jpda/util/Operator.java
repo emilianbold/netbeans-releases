@@ -65,7 +65,6 @@ public class Operator {
         Executor starter,
         Runnable finalizer
     ) {
-        if (!virtualMachine.canBeModified ()) return;
         EventQueue eventQueue = virtualMachine.eventQueue ();
         if (eventQueue == null) 
             throw new NullPointerException ();
@@ -158,9 +157,7 @@ public class Operator {
     * Starts checking of JPDA messages.
     */
     public void start () {
-        if (thread != null)
-            // thread can be null on unmodifiable JVM
-            thread.start ();
+        thread.start ();
     }
 
     /**
