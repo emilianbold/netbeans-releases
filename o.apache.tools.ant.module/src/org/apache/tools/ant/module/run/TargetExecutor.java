@@ -133,12 +133,6 @@ public final class TargetExecutor implements Runnable {
                         io.flushReader();
                     } else {
                         // Discard it.
-                        // XXX if you run e.g. F9 many times very fast, sometimes
-                        // it can happen that some tabs stay open even though they
-                        // should be closed. Why? Happens with both core/output and
-                        // core/output2 so may be a bug in the execution engine...
-                        // or in code shared between these two modules.
-                        // Replanning to EQ does not help, either.
                         free.closeInputOutput();
                     }
                 }
@@ -147,10 +141,6 @@ public final class TargetExecutor implements Runnable {
             if (io == null) {
                 io = IOProvider.getDefault().getIO(displayName, true);
             }
-            // Disabled since for Ant-based compilation it is usually annoying:
-            // #16720:
-            //io.select();
-            
             task = ExecutionEngine.getDefault().execute(displayName, this, InputOutput.NULL);
         }
         WrapperExecutorTask wrapper = new WrapperExecutorTask(task, io);
@@ -205,17 +195,7 @@ public final class TargetExecutor implements Runnable {
             // Generally more annoying than helpful:
             io.setErrSeparated (false);
             // But want to bring I/O window to front without selecting, if possible:
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    // XXX would be cleaner to call ioTC.requestVisible but we have
-                    // no way of getting the TC corresponding to io...
-                    TopComponent orig = TopComponent.getRegistry().getActivated();
-                    io.select();
-                    if (orig != null) {
-                        orig.requestActive();
-                    }
-                }
-            });
+            io.select();
         }
         
         if (AntSettings.getDefault ().getSaveAll ()) {
