@@ -102,11 +102,6 @@ public final class PersistenceManager implements PropertyChangeListener {
     /** Components module folder */
     private FileObject compsModuleFolder;
     
-    /** Window manager module folder */
-    private FileObject wmModuleFolder;
-    /** Window manager local folder */
-    private FileObject wmLocalFolder;
-    
     /** Groups folder */
     private FileObject groupsModuleFolder;
     /** Groups folder */
@@ -157,8 +152,6 @@ public final class PersistenceManager implements PropertyChangeListener {
     /** Lock for synchronizing access to IDs. */
     private final Object LOCK_IDS = new Object();
     
-    /** true when read from xml was processed */
-    private boolean readProcessed = false;
     /** true if we are saving just now, false otherwise */
     private boolean isSaveInProgress;
     
@@ -260,42 +253,6 @@ public final class PersistenceManager implements PropertyChangeListener {
         }
         return null;
     }
-    
-    /** @return Folder for window manager */
-    /*public FileObject getWindowManagerModuleFolder () {
-        try {
-            if (wmModuleFolder == null) {
-                wmModuleFolder = FileUtil.createFolder(
-                    getRootModuleFolder(), WINDOWMANAGER_FOLDER
-                );
-            }
-            return wmModuleFolder;
-        } catch (IOException exc) {
-            String annotation = NbBundle.getMessage(PersistenceManager.class,
-                "EXC_WindowManagerFolder", WINDOWMANAGER_FOLDER);
-            ErrorManager.getDefault().annotate(exc, annotation);
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, exc);
-        }
-        return null;
-    }*/
-    
-    /** @return Folder for window manager */
-    /*public FileObject getWindowManagerLocalFolder () {
-        try {
-            if (wmLocalFolder == null) {
-                wmLocalFolder = FileUtil.createFolder(
-                    getRootLocalFolder(), WINDOWMANAGER_FOLDER
-                );
-            }
-            return wmLocalFolder;
-        } catch (IOException exc) {
-            String annotation = NbBundle.getMessage(PersistenceManager.class,
-                "EXC_WindowManagerFolder", WINDOWMANAGER_FOLDER);
-            ErrorManager.getDefault().annotate(exc, annotation);
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, exc);
-        }
-        return null;
-    }*/
     
     /** @return Module folder for groups */
     public FileObject getGroupsModuleFolder () {
@@ -990,70 +947,6 @@ public final class PersistenceManager implements PropertyChangeListener {
         failedCompsMap = null;
     }
     
-    // -------------------------------------------------------------------------
-    // -- WindowSystem saving/loading part
-    // -- WindowManager
-    // -- Mode
-    // -- TCRef
-    // -------------------------------------------------------------------------
-    /** Write to XML 
-     * XXX: projects module calls this function in order to force winsys saving
-     * whenever the project needs to be saved (bugfix #18560), this ugly dependency will be
-     * removed after the winsys will persist its state automaticaly after each change
-     */
-//    public void writeXML () throws IOException {
-//        // XXX - hack, ignore writing during first start of the IDE
-//        // will be solved by correct sync of writing and reading, 
-//        // we will need method getLoadedWorkspaces() and change save of winman
-//        if (!readProcessed) {
-//            return;
-//        }
-//        try {
-//            DataObject windowManagerFolder = DataObject.find(getWindowManagerFolder());
-//            SaveCookie sc = (SaveCookie)windowManagerFolder.getCookie(SaveCookie.class);
-//            setSaveInProgress(true);
-//            if (sc != null) {
-//                saveTopComponents();
-//                synchronized(this) {
-//                    sc.save();
-//                }
-//                cleanupTopComponentFiles();
-//            } else {
-//                IOException ex = new IOException("Window system could not be saved: no save cookie found"); // NOI18N
-//                ErrorManager emgr = ErrorManager.getDefault();
-//                emgr.annotate(ex, ErrorManager.UNKNOWN, "DataObject: " + windowManagerFolder, null, null, null); // NOI18N
-//                emgr.annotate(ex, ErrorManager.UNKNOWN, "Other files in that dir: " // NOI18N
-//                + java.util.Arrays.asList(getWindowManagerFolder().getParent().getChildren()), null, null, null); // NOI18N
-//                throw ex;
-//            }
-//        } finally {
-//            setSaveInProgress(false);
-//            checkPersistenceErrors(false);
-//        }
-//    }
-//    
-//    /** Write to XML, waits for DeferredPerformer
-//     * XXX: projects module calls this function in order to force winsys saving
-//     * whenever the project needs to be saved (bugfix #18560), this ugly dependency will be
-//     * removed after the winsys will persist its state automaticaly after each change
-//     */
-//    public void writeXMLWaiting () throws IOException {
-//        if (SwingUtilities.isEventDispatchThread()) {
-//            writeXML();
-//        } else {
-//            javax.swing.SwingUtilities.invokeLater(new Runnable () {
-//                public void run () {
-//                    try {
-//                        writeXML();
-//                    } catch (IOException exc) {
-//                        ErrorManager em = ErrorManager.getDefault();
-//                        em.notify(ErrorManager.INFORMATIONAL, exc);
-//                    } 
-//                }
-//            });
-//        }
-//    } // TEMP
-    
     private void setSaveInProgress (boolean isSaveInProgress) {
         this.isSaveInProgress = isSaveInProgress;
     } // TEMP
@@ -1288,22 +1181,6 @@ public final class PersistenceManager implements PropertyChangeListener {
             }
         }
     }
-    
-    /** Read from XML */
-//    public void readXML () throws IOException, ClassNotFoundException {
-//        readProcessed = true;
-//        try {
-//            DataObject windowManagerFolder = DataObject.find(getWindowManagerFolder());
-//            InstanceCookie ic = (InstanceCookie)windowManagerFolder.getCookie(InstanceCookie.class);
-//            if (ic == null)
-//                return;
-//            synchronized(this) {
-//                ic.instanceCreate();
-//            }
-//        } finally {
-//            checkPersistenceErrors(true);
-//        }
-//    } // TEMP
     
     /** Copy all settings files from module folder to local folder. */
     private void copySettingsFiles () {
