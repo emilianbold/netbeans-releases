@@ -141,11 +141,12 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   * @return true if the form was correcly loaded, false if any error occured 
   */
   protected boolean loadForm () {
+    PersistenceManager loadManager = null;
     for (Iterator it = PersistenceManager.getManagers (); it.hasNext (); ) {
       PersistenceManager man = (PersistenceManager)it.next ();
       try {
         if (man.canLoadForm (formObject)) {
-          saveManager = man;
+          loadManager = man;
           break;
         }
       } catch (IOException e) {
@@ -153,14 +154,29 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       }
     }
 
-    if (saveManager == null) {
+    if (loadManager == null) {
       // [PENDING - notify user]
       return false;
     }
 
+    if (!loadManager.supportsAdvancedFeatures ()) {
+      Object result = TopManager.getDefault().notify(
+        new NotifyDescriptor.Confirmation("The form is saved in an older format. Do you want to convert the form to the new XML persistence format?\nNote: If you answer No, some new features of the form editor will not be available",
+                                          NotifyDescriptor.YES_NO_OPTION,
+                                          NotifyDescriptor.QUESTION_MESSAGE)
+        );
+      if (NotifyDescriptor.YES_OPTION.equals(result)) {
+        saveManager = new GandalfPersistenceManager ();
+      } else {
+        saveManager = loadManager;
+      }
+    } else {
+      saveManager = loadManager;
+    }
+
     FileObject formFile = formObject.getFormEntry ().getFile ();
     try {
-      formManager = saveManager.loadForm (formObject);
+      formManager = loadManager.loadForm (formObject);
       if (formManager == null) {
         return false;
         // [PENDING] - solve the failure
@@ -177,17 +193,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     } catch (IOException e) {
       TopManager.getDefault ().notifyException (e);
       return false;
-    }
-
-    if (!saveManager.supportsAdvancedFeatures ()) {
-      Object result = TopManager.getDefault().notify(
-        new NotifyDescriptor.Confirmation("The form is saved in an older format. Do you want to convert the form to the new XML persistence format?\nNote: If you answer No, some new features of the form editor will not be available",
-                                          NotifyDescriptor.YES_NO_OPTION,
-                                          NotifyDescriptor.QUESTION_MESSAGE)
-        );
-      if (NotifyDescriptor.YES_OPTION.equals(result)) {
-        saveManager = new GandalfPersistenceManager ();
-      }
     }
 
     return true;
@@ -262,6 +267,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  24   Gandalf   1.23        7/14/99  Ian Formanek    supportsAdvancedFeatures
+ *       is checked before the form is loaded
  *  23   Gandalf   1.22        7/12/99  Ian Formanek    Notifies form load 
  *       exceptions
  *  22   Gandalf   1.21        7/11/99  Ian Formanek    
