@@ -49,13 +49,15 @@ public interface WsCompileEditorSupport {
     
     public final class ServiceSettings {
         private String name;
+        private StubDescriptor stubType;
         private List/*String*/ availableFeatures;
         private List/*String*/ importantFeatures;
         private String currentFeatures;
         private String newFeatures;
         
-        public ServiceSettings(String sn, String c, List a, List i) {
+        public ServiceSettings(String sn, StubDescriptor st, String c, List a, List i) {
             name = sn;
+            stubType = st;
             currentFeatures = newFeatures = c;
             availableFeatures = Collections.unmodifiableList(a);
             importantFeatures = Collections.unmodifiableList(i);
@@ -63,6 +65,10 @@ public interface WsCompileEditorSupport {
         
         public String getServiceName() {
             return name;
+        }
+        
+        public StubDescriptor getStubDescriptor() {
+            return stubType;
         }
         
         public String getCurrentFeatures() {
