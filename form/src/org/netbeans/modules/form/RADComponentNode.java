@@ -165,34 +165,41 @@ public class RADComponentNode extends FormNode
         ArrayList actions = new ArrayList(20);
 
         if (component.isReadOnly()) {
+            if (component == component.getFormModel().getTopRADComponent()) {
+                actions.add(SystemAction.get(TestAction.class));
+                actions.add(null);
+            }
             Event[] events = component.getKnownEvents();
             for (int i=0; i < events.length; i++)
                 if (events[i].hasEventHandlers()) {
                     actions.add(SystemAction.get(EventsAction.class));
                     actions.add(null);
+                    break;
                 }
 
             actions.add(SystemAction.get(CopyAction.class));
         }
         else {
+            RADComponent topComp = component.getFormModel().getTopRADComponent();
             if (component instanceof RADVisualContainer) {
                 if (!((RADVisualContainer)component).getLayoutSupport().isDedicated()) {
                     actions.add(SystemAction.get(SelectLayoutAction.class));
                     actions.add(SystemAction.get(CustomizeLayoutAction.class));
                     actions.add(null);
                 }
-
                 actions.add(SystemAction.get(AddAction.class));
-                actions.add(null);
-                actions.add(SystemAction.get(EditContainerAction.class));
-                RADComponent topComp =
-                    component.getFormModel().getTopRADComponent();
-                if (topComp != null && component != topComp)
-                    actions.add(SystemAction.get(EditFormAction.class));
-                actions.add(null);
             }
 
             actions.add(SystemAction.get(EventsAction.class));
+            actions.add(null);
+            if (component == topComp)
+                actions.add(SystemAction.get(TestAction.class));
+
+            if (component instanceof RADVisualContainer) {
+                actions.add(SystemAction.get(EditContainerAction.class));
+                if (topComp != null && component != topComp)
+                    actions.add(SystemAction.get(EditFormAction.class));
+            }
             actions.add(null);
 
             if (InPlaceEditLayer.supportsEditingFor(component.getBeanClass(),
@@ -214,7 +221,8 @@ public class RADComponentNode extends FormNode
                     actions.add(null);
                 }
                 actions.add(SystemAction.get(ReorderAction.class));
-            } else {
+            }
+            else {
                 actions.add(SystemAction.get(CutAction.class));
                 actions.add(SystemAction.get(CopyAction.class));
                 actions.add(null);
