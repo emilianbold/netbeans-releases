@@ -156,8 +156,6 @@ public class CreateNewIndexedProperty extends JellyTestCase {
 
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
-        eo.select(1,10);
-        new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();               
     }
@@ -197,8 +195,6 @@ public class CreateNewIndexedProperty extends JellyTestCase {
 
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
-        eo.select(1,10);
-        new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();                       
     }
@@ -250,8 +246,6 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
-        eo.select(1,10);
-        new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();                       
     }
@@ -284,8 +278,6 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
-        eo.select(1,10);
-        new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();                       
     }
@@ -318,8 +310,6 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
-        eo.select(1,10);
-        new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();                       
     }
@@ -352,8 +342,6 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
-        eo.select(1,10);
-        new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();                       
     }
@@ -389,8 +377,6 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
-        eo.select(1,10);
-        new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();                       
     }
@@ -427,8 +413,6 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
-        eo.select(1,10);
-        new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();                               
 //                        
@@ -469,8 +453,6 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
-        eo.select(1,10);
-        new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();                               
 //                        
@@ -511,8 +493,6 @@ public class CreateNewIndexedProperty extends JellyTestCase {
                 
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
-        eo.select(1,10);
-        new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();                               
 //                        
@@ -560,13 +540,10 @@ public class CreateNewIndexedProperty extends JellyTestCase {
 
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
-        eo.select(1,10);
-        new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();                               
 //                               
     }
 
 }
-
 

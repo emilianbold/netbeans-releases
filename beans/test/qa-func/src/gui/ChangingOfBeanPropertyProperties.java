@@ -199,9 +199,6 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
-        eo.select(1,10);
-        new EventTool().waitNoEvent(500);
-        new DeleteAction().performAPI(eo);
         new EventTool().waitNoEvent(500);
         ref(eo.getText());
         compareReferenceFiles();
@@ -280,8 +277,6 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
 
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
-        eo.select(1,10);
-        new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();
         
@@ -404,8 +399,6 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         
         EditorWindowOperator ewo = new EditorWindowOperator();
         EditorOperator eo = new EditorOperator(ewo, NAME_TEST_FILE);
-        eo.select(1,10);
-        new DeleteAction().performAPI(eo);
         ref(eo.getText());
         compareReferenceFiles();
         

@@ -82,6 +82,7 @@ public class BeansTemplates extends JellyTestCase {
         ctso.setComparator(comparator);
         String bean = Bundle.getString("org.netbeans.modules.beans.Bundle", "Templates/Beans") + "|" + Bundle.getString("org.netbeans.modules.beans.Bundle", "Templates/Beans/Bean.java");
         System.out.println("lookin for " + bean);
+        new EventTool().waitNoEvent(1000);
         ctso.selectTemplate(bean);
         ctso.next();
         TargetLocationStepOperator tlso = new TargetLocationStepOperator();
@@ -113,6 +114,7 @@ public class BeansTemplates extends JellyTestCase {
         NewWizardOperator newWizardOper = new NewWizardOperator();
         ChooseTemplateStepOperator ctso = new ChooseTemplateStepOperator();
         String bean = Bundle.getString("org.netbeans.modules.beans.Bundle", "Templates/Beans") + "|" + Bundle.getString("org.netbeans.modules.beans.Bundle","Templates/Beans/BeanInfo.java");
+        new EventTool().waitNoEvent(1000);
         ctso.selectTemplate(bean);
         ctso.next();
         TargetLocationStepOperator tlso = new TargetLocationStepOperator();
@@ -139,6 +141,7 @@ public class BeansTemplates extends JellyTestCase {
         ChooseTemplateStepOperator ctso = new ChooseTemplateStepOperator();
         String bean = Bundle.getString("org.netbeans.modules.beans.Bundle", "Templates/Beans") + "|" + Bundle.getString("org.netbeans.modules.beans.Bundle","Templates/Beans/BeanInfoNoIcon.java");
         System.out.println("lookin for " + bean);
+        new EventTool().waitNoEvent(1000);
         ctso.selectTemplate(bean);
         ctso.next();
         TargetLocationStepOperator tlso = new TargetLocationStepOperator();
@@ -167,6 +170,7 @@ public class BeansTemplates extends JellyTestCase {
         ChooseTemplateStepOperator ctso = new ChooseTemplateStepOperator();
         String bean = Bundle.getString("org.netbeans.modules.beans.Bundle", "Templates/Beans") + "|" + Bundle.getString("org.netbeans.modules.beans.Bundle","Templates/Beans/Customizer.java");
         System.out.println("lookin for " + bean);
+        new EventTool().waitNoEvent(1000);
         ctso.selectTemplate(bean);
         ctso.next();
         TargetLocationStepOperator tlso = new TargetLocationStepOperator();
@@ -205,6 +209,7 @@ public class BeansTemplates extends JellyTestCase {
         ChooseTemplateStepOperator ctso = new ChooseTemplateStepOperator();
         String bean = Bundle.getString("org.netbeans.modules.beans.Bundle", "Templates/Beans") + "|" + Bundle.getString("org.netbeans.modules.beans.Bundle","Templates/Beans/PropertyEditor.java");
         System.out.println("lookin for " + bean);
+        new EventTool().waitNoEvent(1000);
         ctso.selectTemplate(bean);
         ctso.next();
         TargetLocationStepOperator tlso = new TargetLocationStepOperator();
