@@ -510,7 +510,8 @@
 <!--csh page for projects|settings|Java Sources-->
 <mapID target="org.netbeans.modules.java.settings.JavaSettings" url="java/java_sources.html" />
 
-<mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="beans/settings.html" />
+<!--Removed help for bean node  properties-->
+<mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="pending.html" />
 
 <!-- Following csh page hooked to both method and constructor customizer dialogs -->
 <mapID target="java.method.customizer" url="pending.html" />
