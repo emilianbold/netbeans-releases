@@ -694,7 +694,7 @@ class BeanPatternGenerator extends Object {
 
         StringBuffer comment = new StringBuffer ( PatternNode.getString( "COMMENT_FireMethodMC" ) );
         if ( !usesConstructorParameters( eventClass, passEvent ) ) {
-            comment.append( "\n@param e The event to be fired\n" ); // NOI18N
+            comment.append( "\n@param event The event to be fired\n" ); // NOI18N
         }
         else {
             comment.append( fireParametersComment( newMethodParams, eventType.getClassName().getName() ) );
@@ -770,7 +770,7 @@ class BeanPatternGenerator extends Object {
 
         StringBuffer comment = new StringBuffer ( PatternNode.getString( "COMMENT_FireMethodUC" ) );
         if ( !usesConstructorParameters( eventClass, passEvent ) ) {
-            comment.append( "\n@param e The event to be fired\n" ); // NOI18N
+            comment.append( "\n@param event The event to be fired\n" ); // NOI18N
         }
         else {
             comment.append( fireParametersComment( newMethodParams, eventType.getClassName().getName() ) ); // the event parameter
