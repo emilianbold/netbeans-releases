@@ -188,17 +188,22 @@ public class JavadocModule extends ModuleInstall {
    * and directroy for javadoc output and mounts it into javadoc repository
    */
   
-  void installJavadocDirectories() {
+  public static void installJavadocDirectories() {
 
     // Try to find Java documantation 
     
-    File jdkDocsDir = new File ( System.getProperty ("java.home")  + java.io.File.separator + ".." 
+    File jdkDocsDir = new File ( System.getProperty ("java.home")  + java.io.File.separator + ".." // NOI18N
                                  + java.io.File.separator + "docs" ); // NOI18N
     mount( jdkDocsDir, true );
     
     // Try to find NetBeans open-api documentation
         
-    File apiDocsDir = new File ( System.getProperty ("netbeans.user")  + java.io.File.separator + "docs" 
+    File apiDocsDir = null;
+    
+    apiDocsDir = new File ( System.getProperty ("netbeans.user")  + java.io.File.separator + "docs" // NOI18N
+                                 + java.io.File.separator + "openide-api" ); // NOI18N
+    if ( apiDocsDir == null || !apiDocsDir.isDirectory() )
+      apiDocsDir = new File ( System.getProperty ("netbeans.home")  + java.io.File.separator + "docs" // NOI18N
                                  + java.io.File.separator + "openide-api" ); // NOI18N
     mount( apiDocsDir, true );
     
@@ -217,7 +222,7 @@ public class JavadocModule extends ModuleInstall {
    *  a searchable javadoc directory if so mounts the directory
    *  into Javadoc repository
    */
-  void mount( File root, boolean testSearchability ) {
+  static void mount( File root, boolean testSearchability ) {
 
     
     if ((root != null) && (root.isDirectory())) {
@@ -270,6 +275,8 @@ public class JavadocModule extends ModuleInstall {
 
 /* 
  * Log
+ *  25   Gandalf   1.24        1/19/00  Petr Hrebejk    Hack for project module 
+ *       added
  *  24   Gandalf   1.23        1/16/00  Jesse Glick     Actions pool.
  *  23   Gandalf   1.22        1/15/00  Jesse Glick     Actions pool 
  *       installation.
