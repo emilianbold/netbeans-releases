@@ -23,17 +23,40 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
 
-  <target name="jars">
+  <target name="compile">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <classpath>
+	<pathelement location="../openide/openide-13javac-workaround.jar"/>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
+      </classpath>
+    </javac>
+    <javac destdir="demosrc" srcdir="demosrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <classpath>
+        <pathelement location="../form/release/beans/TimerBean.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="tojar" depends="compile">
+    <zip compress="true" zipfile="src/org/netbeans/modules/usersguide/demosrc.zip">
+      <!-- Source and classes both. -->
+      <fileset dir="demosrc"/>
+    </zip>
+  </target>
+
+  <target name="jars" depends="tojar">
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <!-- Empty JAR: -->
-    <jar jarfile="netbeans/modules/usersguide.jar"
-         whenempty="create"
-         manifest="manifest-subst.mf"
-         basedir=".">
-      <exclude name="**/*"/>
-    </jar>
+    <locjar jarfile="netbeans/modules/usersguide.jar"
+            manifest="manifest-subst.mf"
+	    excludesfile="../nbbuild/standard-jar-excludes.txt"
+	    compress="false"
+            basedir="src">
+      <locale name="ja"/>
+    </locjar>
   </target>
 
   <target name="javahelp">
@@ -79,10 +102,15 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="usersguide.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
+    <delete>
+      <fileset dir="src">
+        <include name="**/*.class"/>
+      </fileset>
+      <fileset dir="demosrc">
+        <include name="**/*.class"/>
+      </fileset>
+    </delete>
+    <delete file="src/org/netbeans/modules/usersguide/demosrc.zip"/>
   </target>
 
 </project>
-
-
-
-

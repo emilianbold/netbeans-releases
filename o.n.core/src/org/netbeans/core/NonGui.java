@@ -118,16 +118,58 @@ public class NonGui extends NbTopManager implements Runnable {
                 userDir = getHomeDir ();
                 System.getProperties ().put ("netbeans.user", homeDir); // NOI18N
             }
+            File systemDirFile = new File (userDir, SYSTEM_FOLDER);
+            if (!systemDirFile.isDirectory ()) {
+                // try to create it
+                makedir (systemDirFile);
+                if (! userDir.equals (homeDir)) {
+                    // Need to set up a multiuser user directory. Formerly in launcher.
+                    System.out.println (getString ("MSG_setting_up_user_dir", userDir));
+                    touch (new File (systemDirFile, "project.last_hidden")); // NOI18N
+                    touch (new File (systemDirFile, "project.basic_hidden")); // NOI18N
+                    File projDir = new File (systemDirFile, "Projects"); // NOI18N
+                    makedir (projDir);
+                    touch (new File (projDir, "workspace.ser_hidden")); // NOI18N
+                    makedir (new File (userDir, DIR_MODULES));
+                    File libDir = new File (userDir, "lib"); // NOI18N
+                    makedir (libDir);
+                    makedir (new File (libDir, "ext")); // NOI18N
+                    makedir (new File (libDir, "patches")); // NOI18N
+                }
+            }
+            systemDir = systemDirFile.getAbsolutePath ();
         }
         return userDir;
+    }
+
+    private static void makedir (File f) {
+        if (f.isFile ()) {
+            Object[] arg = new Object[] {f};
+            System.out.println (new MessageFormat(getString("CTL_CannotCreate_text")).format(arg));
+            doExit (6);
+        }
+        if (! f.exists ()) {
+            if (! f.mkdirs ()) {
+                Object[] arg = new Object[] {f};
+                System.out.println (new MessageFormat(getString("CTL_CannotCreateSysDir_text")).format(arg));
+                doExit (7);
+            }
+        }
+    }
+
+    private static void touch (File f) {
+        try {
+            new FileOutputStream (f).close ();
+        } catch (IOException ioe) {
+            System.out.println (ioe);
+            doExit (8);
+        }
     }
 
     /** System directory getter.
     */
     protected static String getSystemDir () {
-        if (systemDir == null) {
-            systemDir = getUserDir () + File.separator + "system"; // NOI18N
-        }
+        getUserDir ();
         return systemDir;
     }
 
@@ -160,22 +202,6 @@ public class NonGui extends NbTopManager implements Runnable {
         if (!userDirFile.isDirectory ()) {
             System.out.println (getString("CTL_Netbeanshome3"));
             doExit (5);
-        }
-
-        File systemDirFile = new File (getSystemDir ());
-        if (systemDirFile.exists ()) {
-            if (!systemDirFile.isDirectory ()) {
-                Object[] arg = new Object[] {userDir};
-                System.out.println (new MessageFormat(getString("CTL_CannotCreate_text")).format(arg));
-                doExit (6);
-            }
-        } else {
-            // try to create it
-            if (!systemDirFile.mkdirs ()) {
-                Object[] arg = new Object[] {userDir};
-                System.out.println (new MessageFormat(getString("CTL_CannotCreateSysDir_text")).format(arg));
-                doExit (7);
-            }
         }
 
         // -----------------------------------------------------------------------------------------------------
