@@ -68,6 +68,9 @@ public class TopComponentActivatedNodesTest extends NbTestCase {
     private PropertyChangeListener listenerEM, listenerTC;
     
     protected void setUp () {        
+        System.setProperty("org.openide.util.Lookup", "-"); // no lookup
+        
+        
         p = new ExplorerPanel ();
         em = p.getExplorerManager ();
         
@@ -241,6 +244,59 @@ public class TopComponentActivatedNodesTest extends NbTestCase {
         });
     }
     
+    
+    public void testInteroperabilityWithTopComponentRegistry () throws Exception {
+        final TopComponent tc = new TopComponent ();
+        final Lookup.Result res = tc.getLookup ().lookup (new Lookup.Template (Node.class));
+        
+        assertNull ("Empty arrays", tc.getActivatedNodes());
+        assertEquals ("Empty list of nodes", 0, res.allInstances().size ());
+        
+        class L implements PropertyChangeListener, org.openide.util.LookupListener {
+            public Object[] expectedArray;
+            public java.util.ArrayList events = new java.util.ArrayList ();
+            
+            public void resultChanged (org.openide.util.LookupEvent ev) {
+                events.add (ev);
+            }
+            
+            public void propertyChange (PropertyChangeEvent ev) {
+                if (TopComponent.Registry.PROP_CURRENT_NODES.equals (ev.getPropertyName ())) {
+                    assertArrays ("Should be the same", tc.getActivatedNodes(), expectedArray);
+                    assertArrays (
+                        "Also in lookup. ", 
+                        res.allInstances ().toArray (),
+                        expectedArray
+                    );
+                }
+                events.add (ev);
+            }
+        }
+        L l = new L ();
+        res.addLookupListener(l);
+
+        tc.requestFocus ();        
+        assertEquals ("Really activated", tc, TopComponent.getRegistry ().getActivated ());
+        try {
+            TopComponent.getRegistry ().addPropertyChangeListener (l);
+            
+            Node[] arr = { Node.EMPTY };
+            l.expectedArray = arr;
+            tc.setActivatedNodes (arr);
+            
+            Object[] ev = l.events.toArray ();
+            assertEquals ("Three events", 3, ev.length);
+            assertEquals ("First is lookup change", org.openide.util.LookupEvent.class, ev[0].getClass ());
+            assertEquals ("Second is prop change", PropertyChangeEvent.class, ev[1].getClass ());
+            assertEquals ("Third is prop change", PropertyChangeEvent.class, ev[2].getClass ());
+            
+            assertEquals (TopComponent.Registry.PROP_ACTIVATED_NODES, ((PropertyChangeEvent)ev[1]).getPropertyName());
+            assertEquals (TopComponent.Registry.PROP_CURRENT_NODES, ((PropertyChangeEvent)ev[2]).getPropertyName());
+        } finally {
+            TopComponent.getRegistry ().removePropertyChangeListener (l);
+        }
+    }
+    
     private void assertArrays (String msg, Object[] arr1, Object[] arr2) {
         // DEBUG MSG log content of arrays
 //        System.out.println("do ["+msg+"]: ");
@@ -253,17 +309,17 @@ public class TopComponentActivatedNodesTest extends NbTestCase {
             if (arr2.length == 0) {
                 return ;
             } else {
-                fail (msg + " BUT: Array1 was null Array2 was not null");
+                fail (msg + " BUT: Array1 was null Array2 was " + java.util.Arrays.asList (arr2));
             }
         }
         if (arr2 == null) {
             if (arr1.length == 0) {
                 return ;
             } else {
-                fail (msg + " BUT: Array2 was null Array1 was not null");
+                fail (msg + " BUT: Array2 was null Array1 was " + java.util.Arrays.asList (arr1));
             }
         }
-        if (arr1.length != arr2.length) fail (msg + "Arrays have a diferent size.");
+        if (arr1.length != arr2.length) fail (msg + "Arrays have a diferent size. First: " + java.util.Arrays.asList (arr1) + " second: " + java.util.Arrays.asList (arr2));
         //Arrays.sort (arr1);
         //Arrays.sort (arr2);
         for (int i = 0; i < arr1.length; i++) {
