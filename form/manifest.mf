@@ -1,7 +1,7 @@
 OpenIDE-Module: org.netbeans.modules.form/1
 OpenIDE-Module-Name: Form Editor
-OpenIDE-Module-Specification-Version: 1.0
-OpenIDE-Module-Implementation-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Implementation-Version: 1.1
 OpenIDE-Module-Install: org/netbeans/modules/form/FormEditorModule.class
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1, org.netbeans.modules.clazz/1, org.openidex.util/1
 

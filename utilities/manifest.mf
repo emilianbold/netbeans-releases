@@ -1,7 +1,7 @@
 OpenIDE-Module: org.netbeans.modules.utilities/1
 OpenIDE-Module-Name: User Utilities
-OpenIDE-Module-Specification-Version: 1.0
-OpenIDE-Module-Implementation-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Implementation-Version: 1.1
 OpenIDE-Module-Install: org/netbeans/modules/utilities/Installer.class
 OpenIDE-Module-Module-Dependencies: org.openidex.util/1 > 1.0
 Class-Path: ext/regexp.jar

@@ -1,8 +1,8 @@
 OpenIDE-Module: org.netbeans.modules.editor/1
 OpenIDE-Module-Name: Editor
 OpenIDE-Module-Install: org/netbeans/modules/editor/EditorModule.class
-OpenIDE-Module-Specification-Version: 1.1
-OpenIDE-Module-Implementation-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Implementation-Version: 1.2
 OpenIDE-Module-Module-Dependencies: org.openidex.util/1
 
 Name: org/netbeans/modules/editor/options/AllOptions.class
