@@ -42,12 +42,23 @@ public class GetModuleName extends Task {
         if (root == null)
             throw new BuildException("You must set the root dir", this.getLocation());
         try {
-            String basedir = this.getProject().getBaseDir().getCanonicalPath();
+            File dir = this.getProject ().getBaseDir ();
             String rootdir = root.getCanonicalPath();
-            log("Basedir: " + basedir + " rootdir: " + rootdir, Project.MSG_VERBOSE);
-            if (!basedir.startsWith(rootdir)) throw new BuildException( "This module in on different path than the root dir",this.getLocation());
-            String modulename = basedir.substring(rootdir.length() + 1).replace(File.separatorChar,'/');
-            this.getProject().setNewProperty( name, modulename);
+            StringBuffer modulename = new StringBuffer ();
+            while (dir != null) {
+                if (dir.getCanonicalPath ().equals (rootdir)) {
+                    break;
+                }
+                if (modulename.length () > 0) {
+                    modulename.insert (0, '/');
+                }
+                modulename.insert (0, dir.getName ());
+                dir = dir.getParentFile ();
+            }
+            
+            //log("Basedir: " + basedir + " rootdir: " + rootdir);
+            if (dir == null) throw new BuildException( "This module in on different path than the root dir",this.getLocation());
+            this.getProject().setNewProperty( name, modulename.toString ());
         }
         catch (IOException ex) {
             throw new BuildException("Root dir or module's base dir wasn't recognized", ex, this.getLocation());
