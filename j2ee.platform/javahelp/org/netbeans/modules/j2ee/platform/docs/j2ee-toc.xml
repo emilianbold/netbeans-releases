@@ -154,7 +154,7 @@
             <tocitem text="About Debugging and Testing Web Applications" target="about_debug"/>
     <!--    <tocitem text="Validating JSP Syntax" target="jsp_validate" />  -->
     	    <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
-            <tocitem text="Writing A Debug Target for a Free-Form Web Project" target="proj_webfree_debug" />
+            <tocitem text="Writing A Debug Target for a Free-Form Web Project" target="debug_freeform" />
      </tocitem>
     
 <!-- End of web applications -->

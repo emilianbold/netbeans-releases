@@ -15,19 +15,19 @@
 </head>
 <body>
 
-<h2>Customizing a Tomcat Server</h2>
+<h2>Customizing a Tomcat Web Server</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
 
 <ol><li>Choose Window <img src="../images/arrow.gif" alt="and choose">&nbsp;Runtime (Ctrl+5)
 from the main menu. The Runtime window appears.</li>
-<li>Expand the Server Registry node in the tree view to view the Tomcat Server nodes.</li>
-<li>Right-click a Tomcat Server's instance and select Properties from the contextual menu.</li></ol>
-<p>A Tomcat Server's instance property sheet has two sections:</p>
+<li>Expand the Server Registry node in the tree view to view the Tomcat Web Server nodes.</li>
+<li>Right-click a Tomcat Web Server's instance and select Properties from the contextual menu.</li></ol>
+<p>A Tomcat Web Server's instance property sheet has two sections:</p>
 <h3>Properties Section</h3>
 <ul>
-	<li><b>Display Name.</b> Specifies the Tomcat Server's name for display
+	<li><b>Display Name.</b> Specifies the Tomcat Web Server's name for display
     purposes in the Runtime window.</li>
    <li><b>Server Port.</b> Specifies the number of the TCP/IP port that the server listens 
     on. The URL for a web application that is deployed on the server is derived from 
@@ -36,27 +36,27 @@ from the main menu. The Runtime window appears.</li>
     server listens to.</li>
     <li><b>User.</b> Specifies the user name that the IDE uses to log into the server's manager 
     application. The user must be associated with the manager role. The first 
-    time the IDE starts the bundled Tomcat Server, such as through the Start/Stop Server menu 
+    time the IDE starts the bundled Tomcat Web Server, such as through the Start/Stop Server menu 
     action or by executing a web component from the IDE, the IDE adds an admin 
     user with a randomly-generated password to the <i>tomcat-base-path</i><tt>/conf/tomcat-users.xml</tt> 
-    file. (Right-click the Tomcat Server instance node in the Runtime window and select Properties.
+    file. (Right-click the Tomcat Web Server instance node in the Runtime window and select Properties.
     In the Properties dialog box, the Base Directory property points to the <tt><i>base-dir directory</i></tt>.)
     The admin user entry in the <tt>tomcat-users.xml</tt> file looks similar to the following: 
     <PRE>  &lt;user username=&quot;ide&quot; password=&quot;woiehh&quot; roles=&quot;manager&quot;/&gt;</PRE>
    </li>
    <li><b>Password.</b> Specifies the user's password. See the explanation for the User property above for details.</li>
    <li><b>Home Directory.</b> Specifies the home directory for the server on your local system. 
-    This property is set when you add a Tomcat Server to the Server Registry. 
+    This property is set when you add a Tomcat Web Server to the Server Registry. 
     This location is where Tomcat expects to find its own binaries and any libraries 
     that are used by web applications but which are not part of Tomcat itself.</li>
-   <li><b>Base Directory.</b> Specifies the base directory for the Tomcat Server. You can 
-    set this property when you add a Tomcat Server to the Server Registry. If 
+   <li><b>Base Directory.</b> Specifies the base directory for the Tomcat Web Server. You can 
+    set this property when you add a Tomcat Web Server to the Server Registry. If 
     you set a base directory, then that is where the Tomcat configuration files 
      reside. One reason for specifying a separate base directory is to allow 
     more than one user to use the same server. If no base directory is specified, 
     then the configuration files reside in the home directory.</li>
   <li><b>Enable HTTP Monitor.</b> If selected, this checkbox enables the HTTP Monitor 
-    for web applications executing on the Tomcat Server. When enabling the monitor, you must 
+    for web applications executing on the Tomcat Web Server. When enabling the monitor, you must 
     restart the server in order for the change to take affect. The HTTP Monitor 
     is useful for debugging web applications. If you are using the server for production 
     purposes only, you may want to clear the checkbox to reduce its impact on 
@@ -68,7 +68,7 @@ from the main menu. The Runtime window appears.</li>
     <li><b>Open Context Log on Run.</b> If selected, this checkbox enables the context
     log to be opened while the web application is being deployed. You can watch
     the stack trace as it builds.</li>
-    <li><b>Use Security Manager.</b> If selected, this checkbox enables the Tomcat Server
+    <li><b>Use Security Manager.</b> If selected, this checkbox enables the Tomcat Web Server
     to be started with the <tt>-security</tt> option. The security policy implemented by the
     Security Manager are configured in the <tt>catalina.policy</tt> file, which is in the
     Tomcat home directory's <tt>conf</tt> folder. For details, see
@@ -112,12 +112,12 @@ from the main menu. The Runtime window appears.</li>
 
     <td width="23"></td>
 
-<td><a href="tomcat_plugintro.html">About the Tomcat Server</a><br>
-<a href="tomcat_top_node.html">Viewing a Tomcat Server in the IDE</a><br>
+<td><a href="tomcat_plugintro.html">About the Tomcat Web Server</a><br>
+<a href="tomcat_top_node.html">Viewing a Tomcat Web Server in the IDE</a><br>
 <a href="tomcat_context_add.html">Setting a Context Path for a Web Application</a><br>
-<a href="tomcat_start.html">Starting and Stopping a Tomcat Server</a><br>
-<a href="tomcat_edit_config.html">Reconfiguring a Tomcat Server</a><br>
-<a href="tomcat_addinstall.html">Adding a Tomcat Server</a><br></td>
+<a href="tomcat_start.html">Starting and Stopping a Tomcat Web Server</a><br>
+<a href="tomcat_edit_config.html">Reconfiguring a Tomcat Web Server</a><br>
+<a href="tomcat_addinstall.html">Adding a Tomcat Web Server</a><br></td>
 
   </tr>
 
