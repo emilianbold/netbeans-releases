@@ -161,6 +161,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.testtype" value="${xtest.testtype}"/>
             <property name="xtest.attribs" value="${xtest.attribs}"/>
         </ant>        
+        <antcall target="localworkdir-clean"/>
         <!--
         <mkdir dir="${xtest.uploaddir}/${xtest.module}/${xtest.testtype}"/>
         <copy todir="${xtest.uploaddir}/${xtest.module}/${xtest.testtype}">
@@ -234,11 +235,15 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="cleantestdist">
-        <delete dir="dist"/>
+        <delete dir="${xtest.distdir}"/>
     </target>
     
     <target name="localresults-clean">
-        <delete dir="results"/>
+        <delete dir="${xtest.results}"/>
+    </target>
+
+    <target name="localworkdir-clean">
+        <delete dir="${xtest.workdir}"/>
     </target>
     
     <!-- =============== -->
