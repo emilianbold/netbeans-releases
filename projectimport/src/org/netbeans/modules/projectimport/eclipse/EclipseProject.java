@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
+import org.netbeans.modules.projectimport.LoggerFactory;
 
 /**
  * Represents Eclipse project structure.
@@ -28,6 +30,10 @@ import java.util.Set;
  * @author mkrauskopf
  */
 public final class EclipseProject implements Comparable {
+    
+    /** Logger for this class. */
+    private static final Logger logger =
+            LoggerFactory.getDefault().createLogger(EclipseProject.class);
     
     static final String PROJECT_FILE = ".project";
     static final String CLASSPATH_FILE = ".classpath";
@@ -304,12 +310,13 @@ public final class EclipseProject implements Comparable {
     }
     
     /**
-     * Find variable for the given variable rawPath. Note that this method 
+     * Find variable for the given variable rawPath. Note that this method
      * returns <code>null</code> if workspace wasn't set for the project.
      */
     private Workspace.Variable getVariable(String rawPath) {
         if (workspace == null) {
             // workspace wasn't set for this project
+            logger.fine("Workspace wasn't set for the project \"" + getName() + "\""); // NOI18N
             return null;
         }
         Set variables = workspace.getVariables();
@@ -321,6 +328,7 @@ public final class EclipseProject implements Comparable {
                 }
             }
         }
+        logger.info("Cannot resolve variable for raw path: " + rawPath);
         return null;
     }
     
