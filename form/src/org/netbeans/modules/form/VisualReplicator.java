@@ -158,9 +158,21 @@ public class VisualReplicator {
         // add subcomponents again
         RADVisualComponent[] subcomps = metacont.getSubComponents();
         for (int i = 0; i < subcomps.length; i++) {
-            Component comp = (Component) getClonedComponent(subcomps[i]);
+            RADVisualComponent subMetaComp = subcomps[i];
+
+            Component comp = (Component) getClonedComponent(subMetaComp);
+            if (comp == null)
+                comp = (Component) createClone(subMetaComp);
+            else if (comp.getParent() != null)
+                comp.getParent().remove(comp);
+
+            // re-attach fake peer
+            boolean attached = FakePeerSupport.attachFakePeer(comp);
+            if (attached && comp instanceof Container)
+                FakePeerSupport.attachFakePeerRecursively((Container)comp);
+
             addComponentToContainer(metacont, cont, contDelegate,
-                                    subcomps[i], comp);
+                                    subMetaComp, comp);
         }
 
         if (laysup instanceof LayoutSupportArranging)
@@ -195,21 +207,16 @@ public class VisualReplicator {
         if (metacomp == null)
             return;
 
-        Object comp = getClonedComponent(metacomp);
-        if (comp == null)
+        Object clone = getClonedComponent(metacomp);
+        if (clone == null)
             return;
 
         if (metacomp instanceof RADVisualComponent
-                && comp instanceof Component) {
-            RADVisualContainer metacont =
-                ((RADVisualComponent)metacomp).getParentContainer();
-            Container cont = (Container) getClonedComponent(metacont);
-            if (cont == null) // should not happen
-                return;
-
-            // this is temporary code - may not work properly for some containers
-            Container contDelegate = metacont.getContainerDelegate(cont);
-            contDelegate.remove((Component)comp);
+                && clone instanceof Component) {
+            Component comp = (Component) clone;
+            if (comp.getParent() != null)
+                comp.getParent().remove(comp);
+            else return;
         }
 
         removeMapping(metacomp);
