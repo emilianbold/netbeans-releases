@@ -413,19 +413,19 @@ public final class ProjectWebModule extends J2eeModuleProvider
    }
     
     public FileObject[] getSourceRoots() {
-        // TODO: AB: this is not correct, instead should not only include getDocumentBase() iff not null
-        if (!isProjectOpened())
-            return new FileObject[0];
-        
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject[] roots = new FileObject[groups.length+1];
-        roots[0] = getDocumentBase();
-        for (int i=0; i < groups.length; i++) {
-            roots[i+1] = groups[i].getRootFolder();
-        }
         
-        return roots; 
+        List roots = new LinkedList();
+        for (int i = 0; i < groups.length; i++) {
+            roots.add(groups[i].getRootFolder());
+        }
+        FileObject documentBase = getDocumentBase();
+        if (documentBase != null)
+            roots.add(documentBase);
+        
+        FileObject[] rootArray = new FileObject[roots.size()];
+        return (FileObject[])roots.toArray(rootArray);        
     }
     
     private boolean isProjectOpened() {
