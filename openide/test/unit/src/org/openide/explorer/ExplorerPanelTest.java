@@ -22,13 +22,13 @@ import org.netbeans.junit.NbTestSuite;
 
 import javax.swing.Action;
 
-import org.openide.actions.ActionCloneable;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -84,8 +84,8 @@ public class ExplorerPanelTest extends NbTestCase {
             panel.getExplorerManager().setRootContext(new TestRoot(
                 new Node[] {enabledNode, disabledNode}));
 
-            Action copy = ((ActionCloneable)SystemAction.get(CopyAction.class)).clone(context);
-            Action cut = ((ActionCloneable)SystemAction.get(CutAction.class)).clone(context);
+            Action copy = ((ContextAwareAction)SystemAction.get(CopyAction.class)).createContextAwareInstance(context);
+            Action cut = ((ContextAwareAction)SystemAction.get(CutAction.class)).createContextAwareInstance(context);
 
             assertTrue("Copy action has to be disabled", !copy.isEnabled());
             assertTrue("Cut action has to be disabled", !cut.isEnabled());
