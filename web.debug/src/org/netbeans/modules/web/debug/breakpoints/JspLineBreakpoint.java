@@ -86,6 +86,8 @@ public class JspLineBreakpoint extends Breakpoint {
         JspLineBreakpoint b = new JspLineBreakpoint();
         
         String servletClass = Utils.getServletClass(url);
+        Utils.getEM().log("jsp url: " + url);
+        Utils.getEM().log("servletClass: " + servletClass);
         LineBreakpoint javalb = LineBreakpoint.create(servletClass, lineNumber);
 
         d.addBreakpoint(javalb);
@@ -164,6 +166,9 @@ public class JspLineBreakpoint extends Breakpoint {
      * Called when breakpoint is removed.
      */
     protected void dispose() {
+        if (javalb != null) {
+            DebuggerManager.getDebuggerManager().removeBreakpoint(javalb);
+        }
     }
 
     /**
