@@ -38,7 +38,7 @@ import org.netbeans.api.project.SourceGroup;
  *
  * @author  Petr Kuzel
  */
-public final class Util {
+public class Util {
     
     public static String getString(String key) {
         return NbBundle.getMessage(Util.class, key);
@@ -81,5 +81,23 @@ public final class Util {
     } 
     return project;
   }
+
+    /**
+     * Gets EXECUTION ClassPath for the given resource file accessible from the
+     * given source file.
+     */
+    public static ClassPath getExecClassPath(FileObject srcFile, FileObject resFile) {
+        ClassPath cp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE );
+        String name = cp.getResourceName( resFile, '.', false );
+
+        if (name == null) { // not found, try SOURCE class-path
+            ClassPath cp1 = ClassPath.getClassPath( srcFile, ClassPath.SOURCE );
+            return cp1;
+        } else {
+            return cp;
+        }
+    }
+        
+        
 
 }

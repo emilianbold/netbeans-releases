@@ -74,7 +74,7 @@ final class ResourceWizardPanel extends JPanel {
     private final Map sourceMap = Util.createWizardSourceMap();
 
     /** Table model for resourcesTable. */
-    private final AbstractTableModel tableModel = new ResourceTableModel();
+    private final ResourceTableModel tableModel = new ResourceTableModel();
 
     /** This component panel wizard descriptor.
      * @see org.openide.WizardDescriptor.Panel 
@@ -134,12 +134,24 @@ final class ResourceWizardPanel extends JPanel {
                 boolean isSelected, boolean hasFocus, int row, int column) {
                     
                 JLabel label = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
                 DataObject dataObject = (DataObject)value;
 
                 if(dataObject != null) {                    
-                    ClassPath cp = ClassPath.getClassPath( dataObject.getPrimaryFile(), ClassPath.SOURCE );                    
-                    label.setText(cp.getResourceName( dataObject.getPrimaryFile(), '.', false )); // NOI18N
+                    String name = "N/A";
+                    if (column == 0) {
+                        // name for the first column, from sources
+                        ClassPath cp = ClassPath.getClassPath(dataObject.getPrimaryFile(), ClassPath.SOURCE );                    
+                        name = cp.getResourceName( dataObject.getPrimaryFile(), '.', false );
+                    } else {
+                        // name for resource bundle, from execution,
+                        // but the reference file must be the
+                        // corresponding source
+                        DataObject dob = (DataObject)tableModel.getValueAt(row, 0);
+                        ClassPath cp = Util.getExecClassPath(dob.getPrimaryFile(), dataObject.getPrimaryFile());
+                        name = cp.getResourceName( dataObject.getPrimaryFile(), '.', false );
+                    }
+
+                    label.setText(name); // NOI18N
                     label.setIcon(new ImageIcon(dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16)));
                 } else {
                     label.setText(""); // NOI18N
@@ -287,14 +299,15 @@ final class ResourceWizardPanel extends JPanel {
     /** Helper method. Gets user selected resource. */
     private DataObject selectResource() {
         Project prj = null;
+        FileObject fo = null;
         Iterator it = sourceMap.keySet().iterator();
         if (it.hasNext()) {
             DataObject dobj = (DataObject) it.next();
-            FileObject fo = dobj.getPrimaryFile();
+            fo = dobj.getPrimaryFile();
             prj = FileOwnerQuery.getOwner(fo);
         }
 
-	return SelectorUtils.selectBundle(prj);
+	return SelectorUtils.selectBundle(prj, fo);
     }
     
     

@@ -179,16 +179,15 @@ public class I18nString {
 
         // Create map.
         
+        DataObject sourceDataObject = getSupport().getSourceDataObject();
+
         FileObject fo = getSupport().getResourceHolder().getResource().getPrimaryFile();
-        ClassPath cp = ClassPath.getClassPath( fo, ClassPath.SOURCE );
-        
+        ClassPath cp = Util.getExecClassPath(sourceDataObject.getPrimaryFile(), fo); 
         Map map = new HashMap(4);
 
         map.put("key", getKey()); // NOI18N
         map.put("bundleNameSlashes", cp.getResourceName( fo, '/', false ) ); // NOI18N
         map.put("bundleNameDots", cp.getResourceName( fo, '.', false ) ); // NOI18N
-
-        DataObject sourceDataObject = getSupport().getSourceDataObject();
         map.put("sourceFileName", sourceDataObject == null ? "" : sourceDataObject.getPrimaryFile().getName()); // NOI18N
 
         fillFormatMap(map);

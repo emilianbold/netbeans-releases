@@ -132,7 +132,27 @@ public class I18nPanel extends JPanel {
     public void setProject(Project project) {
         ((ResourcePanel)resourcePanel).setProject(project);
     }
+
+    public Project getProject() { 
+        return ((ResourcePanel)resourcePanel).getProject();
+    }
     
+    /**
+     * Sets the file associated with this panel -- the one, which
+     * is localized
+     */ 
+    public void setFile(FileObject file) {
+        ((ResourcePanel)resourcePanel).setFile(file);
+    }
+    
+    /**
+     * Gets the file associated with this panel -- the one, which
+     * is localized
+     */ 
+    public FileObject getFile() {
+        return ((ResourcePanel)resourcePanel).getFile();
+    }
+
     
     /** Overrides superclass method to set default button. */
     public void addNotify() {

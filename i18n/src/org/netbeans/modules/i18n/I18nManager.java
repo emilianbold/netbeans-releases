@@ -313,6 +313,7 @@ public class I18nManager {
 
         // Set default i18n string.
         i18nPanel.setProject(project);
+        i18nPanel.setFile(sourceDataObject.getPrimaryFile());
         i18nPanel.setI18nString(support.getDefaultI18nString());
         i18nPanel.setDefaultResource(sourceDataObject);
 

@@ -40,7 +40,7 @@ import org.netbeans.api.project.FileOwnerQuery;
  *
  * @author  Petr Kuzel
  */
-final class Util {
+final class Util extends org.netbeans.modules.i18n.Util {
     
     public static String getString(String key) {
         return NbBundle.getMessage(org.netbeans.modules.i18n.wizard.Util.class, key);
@@ -74,18 +74,16 @@ final class Util {
                 DataObject.Container container = (DataObject.Container) activatedNodes[i].getCookie(DataObject.Container.class);
                 
                 if (container != null) {
-                
-                    if (container instanceof DataFolder) {
-                        Iterator it = I18nUtil.getAcceptedDataObjects(container).iterator();
-
-                        while(it.hasNext()) {
-                            addSource(sourceMap, (DataObject)it.next());
-                        }
+                    Iterator it = I18nUtil.getAcceptedDataObjects(container).iterator();
+                    
+                    while(it.hasNext()) {
+                        addSource(sourceMap, (DataObject)it.next());
                     }
                 }
 
                 DataObject dobj = (DataObject) activatedNodes[i].getCookie(DataObject.class);
                 if (dobj == null) continue;
+
                 if (FactoryRegistry.hasFactory(dobj.getClass())) {
                     addSource(sourceMap, dobj);
                 }

@@ -236,7 +236,7 @@ public final class I18nUtil {
 
         for(int i = 0; i < children.length; i++) {
             if(children[i] instanceof DataObject.Container) {
-                accepted.addAll(getAcceptedDataObjects((DataFolder)children[i]));
+                accepted.addAll(getAcceptedDataObjects((DataObject.Container)children[i]));
             } else {
                 if(FactoryRegistry.hasFactory(children[i].getClass()))
                     accepted.add(children[i]);
