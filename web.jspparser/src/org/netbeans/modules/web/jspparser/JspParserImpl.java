@@ -68,7 +68,7 @@ public class JspParserImpl implements JspParserAPI {
         }*/
     }
     
-    public synchronized JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, WebModule wm, boolean useEditor) {
+    public JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, WebModule wm, boolean useEditor) {
         FileObject wmRoot = wm.getDocumentBase();
         if (wmRoot == null) {
             // PENDING - we could do a better job here in making up a fallback
@@ -78,7 +78,7 @@ public class JspParserImpl implements JspParserAPI {
         return ps.getJspOpenInfo(jspFile, useEditor);
     }
 
-    public synchronized JspParserAPI.ParseResult analyzePage(FileObject jspFile, WebModule wm, int errorReportingMode) {
+    public JspParserAPI.ParseResult analyzePage(FileObject jspFile, WebModule wm, int errorReportingMode) {
         FileObject wmRoot = wm.getDocumentBase();
         if (wmRoot == null) {
             return getNoWebModuleResult(jspFile, wm);
@@ -97,7 +97,7 @@ public class JspParserImpl implements JspParserAPI {
      *    [0] The location
      *    [1] If the location is a jar file, this is the location of the tld.
      */
-    public synchronized Map getTaglibMap(WebModule wm) throws IOException {
+    public Map getTaglibMap(WebModule wm) throws IOException {
         FileObject wmRoot = wm.getDocumentBase();
         if (wmRoot == null) {
             throw new IOException();
