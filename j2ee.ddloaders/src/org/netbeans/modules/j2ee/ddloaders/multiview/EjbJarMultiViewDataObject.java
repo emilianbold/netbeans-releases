@@ -39,7 +39,6 @@ import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
@@ -66,8 +65,7 @@ import java.util.List;
  * @author pfiala
  */
 public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
-        implements DDChangeListener, EjbJarProxy.OutputProvider, FileChangeListener, ChangeListener,
-        PropertyChangeListener {
+        implements DDChangeListener, EjbJarProxy.OutputProvider, FileChangeListener, ChangeListener {
 
     private EjbJar ejbJar;
     private FileObject srcRoots[];
@@ -82,11 +80,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
      * Property name for documentDTD property
      */
     public static final String PROP_DOCUMENT_DTD = "documentDTD";   // NOI18N
-
-    /**
-     * Property name for property documentValid
-     */
-    public static final String PROP_DOC_VALID = "documentValid"; // NOI18N
 
     private static final int HOME = 10;
     private static final int REMOTE = 20;
@@ -112,7 +105,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             sources.addChangeListener(this);
         }
         refreshSourceFolders();
-        addPropertyChangeListener(this);
     }
 
     private void refreshSourceFolders() {
@@ -489,7 +481,8 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             ejbJarChangeListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (!merging) {
-                        updateDocument();
+                        setSaxError(null);
+                        modelUpdatedFromUI();
                     }
                 }
             };
@@ -538,26 +531,12 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         return (ejbJar!=null && ((EjbJarProxy)ejbJar).getOriginal()!=null);
     }
 
-    /**
-     * This method gets called when a bound property is changed.
-     *
-     * @param evt A PropertyChangeEvent object describing the event source
-     *            and the property that has changed.
-     */
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (EjbJarMultiViewDataObject.PROP_DOCUMENT_VALID.equals(evt.getPropertyName())) {
-            if (Boolean.TRUE.equals(evt.getNewValue())) {
-                ((DataNode) getNodeDelegate()).setIconBase(Utils.ICON_BASE_DD_VALID);
-            } else {
-                ((DataNode) getNodeDelegate()).setIconBase(Utils.ICON_BASE_DD_VALID);
-            }
-        }
-
-    }
-
     public boolean isMerging() {
         return merging;
+    }
+
+    public boolean isParseable() {
+        return parseable;
     }
 
     private static class DDView extends DesignMultiViewDesc implements java.io.Serializable {

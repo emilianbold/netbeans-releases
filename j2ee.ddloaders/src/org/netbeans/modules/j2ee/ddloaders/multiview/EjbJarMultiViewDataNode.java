@@ -14,6 +14,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
@@ -73,12 +74,13 @@ public class EjbJarMultiViewDataNode extends DataNode {
                         && Boolean.TRUE.equals(evt.getNewValue())) {
                     removePropertyChangeListener(EjbJarMultiViewDataNode.this.ddListener);
                 }
-                if (EjbJarMultiViewDataObject.PROP_DOC_VALID.equals(evt.getPropertyName())) {
+                if (XmlMultiViewDataObject.PROP_DOCUMENT_VALID.equals(evt.getPropertyName())) {
                     if (Boolean.TRUE.equals(evt.getNewValue())) {
                         setIconBase(dataObject.getIconBaseForValidDocument());
                     } else {
                         setIconBase(dataObject.getIconBaseForInvalidDocument());
                     }
+                    fireIconChange();
                 }
                 if (Node.PROP_PROPERTY_SETS.equals(evt.getPropertyName())) {
                     firePropertySetsChange(null, null);
