@@ -145,6 +145,8 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
         if (newObj instanceof String) {
             helpID = (String)newObj;
         }
+        // fix of 19318
+        env.getFeatureDescriptor().setValue( "canEditAsText", Boolean.FALSE );
     }
     
     /**
@@ -177,6 +179,12 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
         }
         if (currentFolder != null) {
             customEditor.setDataObject(currentFolder);
+        }
+        else {
+            Object value = getValue();
+            if ( value != null && value instanceof DataObject) {
+                customEditor.setDataObject( (DataObject)value );
+            }
         }
         if (label != null) {
             customEditor.setText(label);
