@@ -105,6 +105,12 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
             }
         });
 
+        cboxJspSourcePath.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cboxJspSourcePathItemStateChanged(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -155,6 +161,17 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
 
     }//GEN-END:initComponents
 
+    private void cboxJspSourcePathItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cboxJspSourcePathItemStateChanged
+        String value = (String)cboxJspSourcePath.getSelectedItem();
+        if (value != null && value.indexOf(':') > -1) {
+            String ctx = value.substring(0,value.indexOf(':')-1);
+            String name = value.substring(value.indexOf(':') + 2);
+            event.setContextRoot(ctx);
+            event.setJspName(name);
+        }
+        
+    }//GEN-LAST:event_cboxJspSourcePathItemStateChanged
+
     private void tfLineNumberKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfLineNumberKeyTyped
         // Add your handling code here:
         run();
@@ -194,17 +211,9 @@ class JspBreakpointPanel extends JPanel implements Controller, Runnable {
     }//GEN-LAST:event_tfLineNumberFocusLost
 
     private void cboxJspSourcePathFocusGained(java.awt.event.FocusEvent evt) {
-        if (!evt.isTemporary()) {
-            cboxJspSourcePath.getEditor().selectAll();
-        }
     }
 
     private void cboxJspSourcePathFocusLost(java.awt.event.FocusEvent evt) {
-        if (!evt.isTemporary()) {
-            ComboBoxEditor editor = cboxJspSourcePath.getEditor();
-            String value = ((String)editor.getItem()).trim();
-            event.setJspName(value);
-        }
     }
 
     private void fillLineNumber () {
