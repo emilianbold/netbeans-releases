@@ -36,15 +36,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.execution.NbClassPath;
 import org.openide.util.NbBundle;
 
-//import org.netbeans.modules.j2ee.server.web.WebServerInstance;
-//import org.netbeans.modules.j2ee.server.datamodel.WebStandardData;
-//import org.netbeans.modules.j2ee.server.ServerInstance;
-//import org.netbeans.modules.j2ee.server.Server;
 import org.netbeans.modules.web.core.WebExecUtil;
-
-//import org.netbeans.modules.web.webdata.WebDataFactory;
-//import org.netbeans.modules.web.webdata.WebResourceImpl;
-
 import org.openide.filesystems.FileUtil;
 
 /** JSP compilation utilities
@@ -55,42 +47,6 @@ public class JspCompileUtil {
     
     private static final Object repositoryJobLock = new Object();
 
-    /** Returns the current ServerInstance for the given resource file. 
-     *  May return null if the server registry does not contain any web server.
-     */
-/*    public static WebServerInstance getCurrentServerInstance(DataObject resource) {
-        FileObject fo = resource.getPrimaryFile();
-        ServerInstance si = WebDataFactory.getFactory().findServerInstance(getResourceData(fo));
-        if (si instanceof WebServerInstance)
-            return (WebServerInstance)si;
-        return null;
-    }*/
-    
-    /** Gets WebStandardData implementation for a given resource. */
-/*    public static WebStandardData.WebResource getResourceData(FileObject fo) {
-    	WebStandardData.WebResource result = WebDataFactory.getFactory().
-    	    findResource(fo.getPackageNameExt('/','.'), WebDataFactory.getFactory().findWebModule(fo));
-    	// hack to work around a bug in WebDataFactoryImpl
-    	try {
-    	    DataObject res = DataObject.find(fo);
-    	    if ((res instanceof JspDataObject) && (!(result instanceof WebStandardData.WebJsp))) {
-    	    	// bug in the factory
-                result = WebDataFactory.getFactory().getWebJsp(fo.getPackageNameExt('/','.'), 
-                             WebDataFactory.getFactory().findWebModule(fo));
-    	    }
-    	}
-    	catch (DataObjectNotFoundException e) {
-    	    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-    	}
-    	return result;
-    }*/
-
-    
-    /** Gets a FileObject for a given WebResource. */
-/*    public static FileObject getFOForWebResource(WebStandardData.WebResource res) {
-            return ((WebResourceImpl)res).getFileObject();
-    }*/
-    
     /** Finds a fileobject for an absolute file name or null if not found */
     public static FileObject findFileObjectForFile(String fileName) {
         Repository rep = Repository.getDefault();
@@ -159,23 +115,6 @@ public class JspCompileUtil {
         return ff.getAbsolutePath();
     }
 
-    /** Gets the folder which is at the root of the context into which fo belongs
-    */
-    public static final FileObject getContextRoot(FileObject fo) {
-        // pending
-        try {
-            return fo.getFileSystem().getRoot();
-        }
-        catch (FileStateInvalidException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            FileObject par;
-            while ((par = fo.getParent()) != null) {
-                fo = par;
-            }
-            return fo;
-        }
-    }
-    
     /** Decides whether a given file is in the subtree defined by the given folder.
      * Similar to <code>org.openide.filesystems.FileUtil.isParentOf (FileObject folder, FileObject fo)</code>, 
      * but also accepts the case that <code>fo == folder</code>
@@ -254,65 +193,6 @@ public class JspCompileUtil {
     public static final String getContextPath(FileObject fo) {
         return "/" + fo.getPackageNameExt('/','.'); // NOI18N
     }
-
-
-    /** Does the following:
-    * <ul>
-    * <li>creates a hidden LocalFileSystem (with compile, execute and debug capabilities)
-    * with root in <code>intendedRoot</code>, if it does not exist yet</li>
-    * <li>returns the root of this filesystem
-    * </ul> */
-    static FileObject getAsRootOfFileSystem(File intendedRoot) {
-        // synchronize on our private lock
-        synchronized (repositoryJobLock) {
-            /*
-            FileObject fos[] = FileUtil.fromFile(intendedRoot);
-            if (fos.length > 0) {
-                return fos[0];
-            }
-            */
-            // try to find it among current filesystems
-            for (Enumeration en = Repository.getDefault().getFileSystems(); en.hasMoreElements(); ) {
-                FileSystem fs = (FileSystem)en.nextElement();
-                File root = FileUtil.toFile(fs.getRoot());
-                if (root != null) {
-                    if (root.equals(intendedRoot))
-                        return fs.getRoot();
-                }
-            }
-
-            // does not exist in repository
-            if (!intendedRoot.exists()) {
-                boolean success = WebExecUtil.myMkdirs(intendedRoot);
-            }
-
-            DebugSourceCapabilityBean cap = new DebugSourceCapabilityBean();
-
-            cap.setCompile(true);
-            cap.setExecute(true);
-            cap.setDebug(true);
-            cap.setDoc(false);
-            cap.setDebugsource(true);
-
-            LocalFileSystem newFs = new LocalFileSystem(cap);
-
-            try {
-                newFs.setRootDirectory(intendedRoot);
-            }
-            catch (Exception e) {
-                NotifyDescriptor.Message message = new NotifyDescriptor.Message(
-                                                       MessageFormat.format(NbBundle.getBundle(JspCompileUtil.class).
-                                                                            getString("EXC_JspFSNotCreated"),
-                                                                            new Object[] {intendedRoot.getAbsolutePath()}), NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(message);
-                return null;
-            }
-            newFs.setHidden(true);
-            Repository.getDefault().addFileSystem(newFs);
-            return newFs.getRoot();
-        }
-    }
-    
 
     /** Returns an absolute context URL (starting with '/') for a relative URL and base URL.
     *  @param relativeTo url to which the relative URL is related. Treated as directory iff

@@ -29,27 +29,12 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="Listeners/Html.html" boolvalue="true"/>	    
       <attr name="Listeners/TLD.tld" boolvalue="true"/>	    
 
-      <!-- Web module --> 
-      <file name="webapp.warImage" url="templates/WebModule.template">
-          <attr name="template" boolvalue="true"/>
-          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/context/resources/WebModule.html"/>
-          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.context.WebAppWizardIterator.emptyModule"/>
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.context.Bundle"/>
-      </file>
-<!--
-      <file name="webappSample.warImage" url="templates/WebModuleSample.template">
-          <attr name="template" boolvalue="true"/>
-          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/context/resources/WebModuleSample.html"/>
-          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.context.WebAppWizardIterator.sampleModule"/>
-          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.context.Bundle"/>
-      </file>
---> 
       <folder name="JSPs">
         <attr name="JSP.jsp/JSPX.jspx" boolvalue="true"/>
         <attr name="JSPX.jspx/JSPF.jspf" boolvalue="true"/>
 	<attr name="templateWizardURL" 
               urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPfolder.html"/>
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.context.Bundle"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
 	<!-- Basic JSP --> 
         <file name="JSP.jsp" url="templates/JSP.template">
           <attr name="template" boolvalue="true"/>
@@ -57,8 +42,10 @@ Microsystems, Inc. All Rights Reserved.
                 urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
 	  <attr name="SystemFileSystem.localizingBundle"
 		      stringvalue="org.netbeans.modules.web.core.Bundle"/>
+<!--
 	  <attr name="templateWizardIterator" 
                 methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createJspIterator"/>
+-->
         </file>
 
 	<!--  JSP Document --> 
@@ -68,8 +55,10 @@ Microsystems, Inc. All Rights Reserved.
                 urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPDoc.html"/>
           <attr name="SystemFileSystem.localizingBundle" 
                 stringvalue="org.netbeans.modules.web.core.Bundle"/>
+<!--
           <attr name="templateWizardIterator" 
                 methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createJspDocIterator"/>
+-->
         </file>
 
         <!--  JSP Segment --> 
@@ -79,8 +68,10 @@ Microsystems, Inc. All Rights Reserved.
                 urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSPF.html"/>
           <attr name="SystemFileSystem.localizingBundle"
                 stringvalue="org.netbeans.modules.web.core.Bundle"/>
+<!--
           <attr name="templateWizardIterator" 
                 methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createJspfIterator"/>
+-->
         </file>
       </folder> 
      
@@ -88,7 +79,9 @@ Microsystems, Inc. All Rights Reserved.
       <file name="Servlet.java" url="templates/Servlet.template">
           <attr name="template" boolvalue="true"/>
           <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Servlet.html"/>
+<!--
           <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createServletIterator"/>
+-->          
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
           <attr name="org.netbeans.modules.web.IsServletFile" boolvalue="true"/>
       </file>
@@ -96,7 +89,7 @@ Microsystems, Inc. All Rights Reserved.
       <file name="Html.html" url="nbresloc:/org/netbeans/modules/html/templates/html.html">
          <attr name="template" boolvalue="true" />
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html" />
-         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.html.Bundle"/>
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
       </file>
       <attr name="webapp.warImage/JSP.jsp" boolvalue="true"/>
       <attr name="webappSample.warImage/JSP.jsp" boolvalue="true"/>
@@ -112,13 +105,17 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="template" boolvalue="true"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/SimpleFilter.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+<!--
             <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createFilterIterator"/>            
+-->            
         </file>        
         <file name="AdvancedFilter.java" url="templates/AdvancedFilter.template">
             <attr name="template" boolvalue="true"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/AdvancedFilter.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+<!--
             <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.dd.wizards.ServletIterator.createFilterIterator"/>            
+-->            
         </file>        
       </folder>
       
@@ -131,28 +128,36 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="template" boolvalue="true"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/ContextListener.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+<!--
             <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>
+-->            
         </file> 
 
         <file name="ContextAttributeListener.java" url="templates/ContextAttributeListener.template">
             <attr name="template" boolvalue="true"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/ContextAttributeListener.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+<!--
             <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>
+-->            
         </file>
 
         <file name="SessionListener.java" url="templates/SessionListener.template">
             <attr name="template" boolvalue="true"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/SessionListener.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+<!--
             <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>
+-->            
         </file>
 
         <file name="SessionAttributeListener.java" url="templates/SessionAttributeListener.template">
             <attr name="template" boolvalue="true"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/SessionAttributeListener.html"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
+<!--
             <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ListenerIterator"/>
+-->            
         </file>
                         
       </folder>
@@ -166,9 +171,6 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <file name="Execute (restart server).instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.execution.Execute2Action"/>
-      </file>
-      <file name="Validate.instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.jsploader.ValidateAction"/>
       </file>
     </folder>
     <folder name="System">
@@ -186,24 +188,6 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
 
-  <folder name="Mount">
-      <folder name="java">
-          <file name="org-netbeans-modules-web-core-resources-library-servlet.xml" url="servlet-24-library.xml">
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
-          </file>
-          <file name="org-netbeans-modules-web-core-resources-library-jsp.xml" url="jsp-20-library.xml">
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
-          </file>
-      </folder>
-      <folder name="Javadoc">
-          <file name="org-netbeans-modules-web-core-resources-javadoc_servlet.xml" url="javadoc-servlet.xml">
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
-          </file>
-          <file name="org-netbeans-modules-web-core-resources-javadoc_jsp.xml" url="javadoc-jsp.xml">
-              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />
-          </file>
-      </folder> <!-- Javadoc -->
-  </folder>
   <folder name="Services">
     <folder name="Hidden">
 	    <attr name="hidden" boolvalue="true" />

@@ -31,30 +31,16 @@ import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
+import org.netbeans.api.web.webmodule.WebModule;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataNode;
 
-/*import org.netbeans.modules.web.project.WebModuleUtils;
-import org.netbeans.modules.web.project.WebModule;
-import org.netbeans.api.projects.*;
-import org.netbeans.api.projects.ide.ProjectUtil;
-*/
 public class JspContextInfoImpl extends JspContextInfo {
     
     public JspContextInfoImpl() {
     }
     
-    /*private static Project getProject(Document doc) {
-        Object o = doc.getProperty("project");
-        if (o != null && Lookup.class.isAssignableFrom (o.getClass ())){
-            Lookup l = (Lookup) o;
-            Project p = (Project) l.lookup (Project.class);
-            return p;
-        }
-        return null;
-    }*/
-
     private static TagLibParseSupport getTagLibParseSupport(Document doc, FileObject fo){
         TagLibParseSupport tlps = null;
         if (fo != null){
@@ -69,30 +55,13 @@ public class JspContextInfoImpl extends JspContextInfo {
     }
     
     public URLClassLoader getModuleClassLoader(Document doc, FileObject fo){
-        FileObject wmRoot = JspCompileUtil.getContextRoot(fo);
-        return JspParserFactory.getJspParser().getModuleClassLoader(WebModule.getJspParserWM (wmRoot));
-    }
-    
-    /** Returns the root of the web module containing the given file object.
-     * If the resource belongs to the subtree of the project's web module,
-     * returns this module's document base directory.
-     * Otherwise (or if the project parameter is null), it checks for the WEB-INF directory,
-     * and determines the root accordingly. If WEB-INF is not found, returns null.
-     *
-     * @param fo the resource for which to find the web module root
-     * @param doc document in which is fileobject editted.
-     * @return the root of the web module, or null if a directory containing WEB-INF 
-     *   is not on the path from resource to the root
-     */
-    public FileObject guessWebModuleRoot (Document doc, FileObject fo){
-        return JspCompileUtil.getContextRoot(fo);
+        return JspParserFactory.getJspParser().getModuleClassLoader(JspParserAccess.getJspParserWM (WebModule.getWebModule (fo)));
     }
     
     /** Returns the taglib map as returned by the parser, taking data from the editor as parameters.
      * Returns null in case of a failure (exception, no web module, no parser etc.)
      */
     public Map getTaglibMap(Document doc, FileObject fo) {
-        FileObject wmRoot = guessWebModuleRoot(doc, fo);
         try {
             JspParserAPI parser = JspParserFactory.getJspParser();
             if (parser == null) {
@@ -100,7 +69,7 @@ public class JspContextInfoImpl extends JspContextInfo {
                 new NullPointerException());
             }
             else {
-                return parser.getTaglibMap(WebModule.getJspParserWM (wmRoot));
+                return parser.getTaglibMap(JspParserAccess.getJspParserWM (WebModule.getWebModule (fo)));
             }
         }
         catch (IOException e) {
@@ -156,4 +125,7 @@ public class JspContextInfoImpl extends JspContextInfo {
         return null;
     }
     
+    public FileObject guessWebModuleRoot (Document doc, FileObject fo) {
+        return WebModule.getWebModule (fo).getDocumentBase ();
+    }
 }

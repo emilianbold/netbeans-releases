@@ -70,8 +70,6 @@ public class JspServletDataLoader extends JavaDataLoader {
             SystemAction.get(CustomizeBeanAction.class),
             SystemAction.get(FileSystemAction.class),
             null,
-            SystemAction.get(CompileAction.class),
-            null,
             SystemAction.get(ExecuteAction.class),
             null,
             SystemAction.get(CutAction.class),

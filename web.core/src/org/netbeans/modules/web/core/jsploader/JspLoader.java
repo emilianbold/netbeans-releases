@@ -95,11 +95,8 @@ public class JspLoader extends UniFileLoader {
      * @return array of default system actions.
      */
     protected SystemAction[] defaultActions () {
-	if (JspCompilationProxy.getCompilationProxy() == null) {
-            // no JSP compilation 
-            return new SystemAction[] {
+        return new SystemAction[] {
                         SystemAction.get (OpenAction.class),
-                        SystemAction.get (ValidateAction.class),
                         SystemAction.get (EditServletAction.class),
                         SystemAction.get (FileSystemAction.class),
                         null,
@@ -117,32 +114,6 @@ public class JspLoader extends UniFileLoader {
                         SystemAction.get (ToolsAction.class),
                         SystemAction.get (PropertiesAction.class),
                     };
-        }
-        else {
-            // JSP compilation enabled
-            return new SystemAction[] {
-                        SystemAction.get (OpenAction.class),
-                        SystemAction.get (ValidateAction.class),
-                        SystemAction.get (EditServletAction.class),
-                        SystemAction.get (FileSystemAction.class),
-                        null,
-                        SystemAction.get (org.openide.actions.ExecuteAction.class),
-                        SystemAction.get (CompileAction.class),
-                        null,
-                        SystemAction.get (CutAction.class),
-                        SystemAction.get (CopyAction.class),
-                        SystemAction.get (PasteAction.class),
-                        null,
-                        SystemAction.get (DeleteAction.class),
-                        SystemAction.get (RenameAction.class),
-                        null,
-                        SystemAction.get (SaveAsTemplateAction.class),
-                        null,
-                        SystemAction.get (ToolsAction.class),
-                        SystemAction.get (PropertiesAction.class),
-                    };
-            
-        }
     }
     
     public JspLoader() {

@@ -21,7 +21,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
 import org.openide.loaders.DataNode;
-import org.openide.loaders.CompilerSupport;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.actions.OpenAction;

@@ -20,8 +20,7 @@ import java.util.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
-//import org.netbeans.modules.j2ee.server.ServerInstance;
-import org.netbeans.modules.web.context.WebContextObject;
+import org.netbeans.api.web.webmodule.WebModule;
 import org.openide.ErrorManager;
 
 import org.openide.filesystems.*;
@@ -53,30 +52,16 @@ public class CompileData {
     /** Creates new CompileData */
     public CompileData(JspDataObject jspPage) {
         this.jspPage = jspPage;
-        this.docRoot = JspCompileUtil.getContextRoot(jspPage.getPrimaryFile());
+        this.docRoot = WebModule.getWebModule (jspPage.getPrimaryFile()).getDocumentBase ();
         String jspResourcePath = JspCompileUtil.findRelativeContextPath(docRoot, jspPage.getPrimaryFile());
-        try {
-            JSPServletFinder finder = J2eeModuleProvider.getJSPServletFinder(DataObject.find(docRoot));
-            servletJavaRoot = finder.getServletTempDirectory();
-            servletResourceName = finder.getServletResourcePath(jspResourcePath);
-            servletEncoding = finder.getServletEncoding(jspResourcePath);
-        }
-        catch (DataObjectNotFoundException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }
-//        serverInstance = JspCompileUtil.getCurrentServerInstance(jspPage);
-//        servletJavaRoot = getServletJavaRootFromServer();
-//        servletResourceName = getServletResourceNameFromServer();
-//        servletEncoding = getServletEncodingFromServer();
+        JSPServletFinder finder = J2eeModuleProvider.getJSPServletFinder(docRoot);
+        servletJavaRoot = finder.getServletTempDirectory();
+        servletResourceName = finder.getServletResourcePath(jspResourcePath);
+        servletEncoding = finder.getServletEncoding(jspResourcePath);
     }
     
     public FileObject getServletJavaRoot() {
-        if ((servletJavaRoot != null) && servletJavaRoot.exists()) {
-            return JspCompileUtil.getAsRootOfFileSystem(servletJavaRoot);
-        }
-        else {
-            return null;
-        }
+        return WebModule.getWebModule (jspPage.getPrimaryFile ()).getJavaSourcesFolder ();
     }
     
     public String getServletResourceName() {
@@ -171,16 +156,9 @@ public class CompileData {
     /** Finds the context path used by this JSP during deployment.
      */
     private String getContextPath() {
-        try {
-            FileObject contextRoot = JspCompileUtil.getContextRoot(jspPage.getPrimaryFile());
-            DataObject dobj = DataObject.find(contextRoot);
-            if (dobj instanceof WebContextObject) {
-                WebContextObject wco = (WebContextObject)dobj;
-                return wco.getURIParameter();
-            }
-        }
-        catch (DataObjectNotFoundException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        WebModule wm = WebModule.getWebModule (jspPage.getPrimaryFile());
+        if (wm != null) {
+            return wm.getContextPath ();
         }
         // an ugly fallback
         return "";

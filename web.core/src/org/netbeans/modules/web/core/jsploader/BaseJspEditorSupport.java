@@ -46,7 +46,6 @@ import org.openide.cookies.*;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.text.CloneableEditor;
 import org.openide.util.actions.SystemAction;
-import org.openide.actions.CompileAction;
 import org.openide.actions.ExecuteAction;
 import org.openide.util.TaskListener;
 import org.openide.util.Task;
@@ -72,7 +71,7 @@ import org.openide.debugger.Debugger;
 import org.openide.debugger.Breakpoint;
 
 import org.openide.loaders.DataObject;
-import org.netbeans.modules.web.context.WebContextObject;
+import org.netbeans.api.web.webmodule.WebModule;
 
 public class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, OpenCookie, LineCookie, CloseCookie, PrintCookie {
     
@@ -357,46 +356,17 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         
         public Action[] getActions() {
             Action[] sa = super.getActions();
-            Action[] jspServletActions;
-            if (JspCompilationProxy.getCompilationProxy() == null) {
-                // no JSP compilation 
-                jspServletActions = new SystemAction[] {
-                    null,
-                    SystemAction.get(ValidateAction.class),
-                    SystemAction.get(EditServletAction.class),
-                    null,
-                    SystemAction.get(ExecuteAction.class)
-                };
-            }
-            else {
-                // JSP compilation enabled
-                jspServletActions = new SystemAction[] {
-                    null,
-                    SystemAction.get(CompileAction.class),
-                    SystemAction.get(ValidateAction.class),
-                    SystemAction.get(EditServletAction.class),
-                    null,
-                    SystemAction.get(ExecuteAction.class)
-                };
-            }
+            Action[] jspServletActions = new SystemAction[] {
+                null,
+                SystemAction.get(EditServletAction.class),
+                null,
+                SystemAction.get(ExecuteAction.class)
+            };
             List acs = new ArrayList(Arrays.asList(sa));
             acs.addAll(Arrays.asList(jspServletActions));
             return (Action[])acs.toArray(new Action[0]);
         }
 
-        /*
-        public SystemAction[] getSystemActions() {
-            SystemAction[] sa = super.getSystemActions();
-            SystemAction[] jspServletActions = new SystemAction[] {
-                null,
-                SystemAction.get(CompileAction.class),
-                null,
-                SystemAction.get(ExecuteAction.class),
-            };
-            return SystemAction.linkActions(sa, jspServletActions);
-        }
-        */
-        
         protected void notifyParsingDone() {
         }
         
@@ -428,8 +398,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
                 DataObject data = ((BaseJspEditorSupport)cloneableEditorSupport()).getDataObject();
                 if ((data instanceof JspDataObject) && (data != null)) {
                     if (JspLoader.getMimeType((JspDataObject)data).equals(JspLoader.JSP_MIME_TYPE)) {
-                        DataObject module = ((JspDataObject)data).getModule();
-                        if ((module instanceof WebContextObject) && (module != null)) {
+                        if (WebModule.getWebModule (data.getPrimaryFile ()) != null) {
                             return true;
                         }
                     }

@@ -34,7 +34,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.URLCookie;
 
 import org.openide.*;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.CompilerCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
@@ -47,16 +46,11 @@ import org.openide.util.enum.*;
 import org.openide.util.actions.*;
 import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
-import org.openide.compiler.Compiler;
-import org.openide.compiler.CompilerJob;
-import org.openide.compiler.CompilerType;
-import org.openide.compiler.ExternalCompilerGroup;
 
 import org.netbeans.modules.web.core.ServletSettings;
 import org.netbeans.modules.web.core.QueryStringCookie;
-import org.netbeans.modules.web.context.WebContextObject;
+import org.netbeans.api.web.webmodule.WebModule;
 
-import org.netbeans.modules.java.environment.Utilities;
 import org.netbeans.modules.java.Util;
 import org.netbeans.modules.web.core.WebExecSupport;
 
@@ -73,6 +67,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
     public static final String PROP_SCRIPTING_LANGUAGE = "scriptingLanguage"; // NOI18N
 //    public static final String PROP_ENCODING = "encoding"; // NOI18N
     public static final String PROP_SERVER_CHANGE = "PROP_SERVER_CHANGE";// NOI18N
+    public static final String PROP_REQUEST_PARAMS = "PROP_REQUEST_PARAMS"; //NOI18N
 
     transient private EditorCookie servletEdit;
     transient protected JspServletDataObject servletDataObject;
@@ -99,34 +94,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
         return super.getCookieSet ();
     }
     
-    public Node.Cookie getCookie(Class cl) {
-        if (CompilerCookie.class.isAssignableFrom (cl)) {
-            JspCompilationProxy jcp = JspCompilationProxy.getCompilationProxy();
-            if (jcp != null) {
-                CompilerCookie cc = jcp.getCompilerCookie(this, cl);
-                if (cc != null) {
-                    return cc;
-                }
-            }
-        }
-        return super.getCookie(cl);
-    }
-    
-    public DataObject getModule(){
-        try {
-                FileObject root = JspCompileUtil.getContextRoot(getPrimaryFile());
-                DataObject wco = DataObject.find(root);
-
-                if (wco instanceof WebContextObject) {
-                    return wco;
-                }
-            } 
-            catch (DataObjectNotFoundException e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-            }
-        return null;        
-    }
-    
     protected org.openide.nodes.Node createNodeDelegate () {
         return new JspNode (this);
     }
@@ -143,7 +110,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
     public synchronized CompileData getPlugin() {
         if (compileData == null) {
             if ( firstStart ) {
-                addWebContextListener();
 		firstStart=false;
             }
    	    compileData = new CompileData(this);
@@ -233,46 +199,11 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
         return encodingAlias;
     }
 
-    private void printJob(CompilerJob job) {
-/*        System.out.println("-- compilers --"); // NOI18N
-        java.util.Iterator compilers = job.compilers().iterator();
-        for (; compilers.hasNext();) {
-            org.openide.compiler.Compiler comp = (org.openide.compiler.Compiler)compilers.next();
-            CompilerJob newJob = new CompilerJob(Compiler.DEPTH_ZERO);
-            newJob.add(comp);
-            System.out.println(comp.toString() + " upToDate=" + newJob.isUpToDate());
-        }
-        System.out.println("-- x --");*/ // NOI18N
-    }
-
     private void initialize() {
     	firstStart = true;
         listener = new Listener();
         listener.register (getPrimaryFile());
-        addPropertyChangeListener(listener);
         refreshPlugin(false);
-    }
-    
-    private void addWebContextListener() {
-        //server changes
-        try {
-            FileObject root = JspCompileUtil.getContextRoot(getPrimaryFile());
-            DataObject wco = DataObject.find(root);
-            if (!(wco instanceof WebContextObject)) {
-                /*
-                PENDING
-                ServerRegistryImpl source = ServerRegistryImpl.getRegistry();
-                source.addServerRegistryListener(
-                    ServerRegistryImpl.weakServerRegistryListener(listener, source));
-                */
-            }
-            else {
-                wco.addPropertyChangeListener(WeakListener.propertyChange(listener, wco));
-            }
-        } 
-        catch (DataObjectNotFoundException e) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-        }
     }
     
     /** Updates classFileData, servletDataObject, servletEdit 
@@ -433,7 +364,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
     
     public void setQueryString (String params) throws java.io.IOException {
         WebExecSupport.setQueryString(getPrimaryEntry ().getFile (), params);
-        firePropertyChange (ServletDataNode.PROP_REQUEST_PARAMS, null, null);
+        firePropertyChange (PROP_REQUEST_PARAMS, null, null);
     }
     
     protected org.openide.filesystems.FileObject handleRename (String str) throws java.io.IOException {
@@ -457,7 +388,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
 
 
     public String getURL() {
-        String url = JspCompileUtil.findRelativeContextPath(JspCompileUtil.getContextRoot(getPrimaryFile()), getPrimaryFile());
+        String url = JspCompileUtil.findRelativeContextPath(WebModule.getWebModule (getPrimaryFile ()).getDocumentBase (), getPrimaryFile ());
         url = url + JspNode.getRequestParams(((MultiDataObject)this).getPrimaryEntry());        
         return url;
     }
@@ -498,10 +429,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
                     register ((FileObject)evt.getNewValue());;
                 refreshPlugin(true);
             }
-            // primary file changed or files changed
-            if (WebContextObject.PROP_NEW_SERVER_INSTANCE.equals(evt.getPropertyName())) {
-                serverChange();
-            }
             // the context object has changed
             if (DataObject.PROP_VALID.equals(evt.getPropertyName())) {
                 if (evt.getSource() instanceof DataObject) {
@@ -510,7 +437,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie,
                         dobj.removePropertyChangeListener(this);
                         // PENDING
                         //ServerRegistryImpl.getRegistry().removeServerRegistryListener(this);
-                        JspDataObject.this.addWebContextListener();
+                        //JspDataObject.this.addWebContextListener();
                     }
                 }
             }

@@ -31,8 +31,6 @@ import org.openide.text.Line;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.java.JavaDataObject;
-import org.openide.compiler.Compiler;
-import org.openide.compiler.CompilerJob;
 
 /** Dataobject representing a servlet generated from a JSP page
 *
@@ -43,10 +41,6 @@ public class JspServletDataObject extends JavaDataObject {
     public static final String EA_ORIGIN_JSP_PAGE = "NetBeansAttrOriginJspPage"; // NOI18N
 
     private transient ServletEditorCookie servletEditor;
-    
-    private static final CompilerCookie.Build NULL_BUILD   = NullCompiler.INSTANCE;
-    private static final CompilerCookie.Build NULL_COMPILE = NullCompiler.INSTANCE;
-    private static final CompilerCookie.Build NULL_CLEAN   = NullCompiler.INSTANCE;
     
     /**
      * Helper object that handles execution bits for us. Lazy initialized from
@@ -83,18 +77,6 @@ public class JspServletDataObject extends JavaDataObject {
             if (servletEditor != null)
                 return servletEditor;
         }
-        if (c.isAssignableFrom(CompilerSupport.Build.class)) {
-            // need to return non-null because of JavaDataObject.checkUpToDate()
-            return NULL_BUILD;
-        } 
-        if (c.isAssignableFrom(CompilerSupport.Compile.class)) {
-            // need to return non-null because of JavaDataObject.checkUpToDate()
-            return NULL_COMPILE;
-        } 
-        if (c.isAssignableFrom(CompilerSupport.Clean.class)) {
-            // need to return non-null because of JavaDataObject.checkUpToDate()
-            return NULL_CLEAN;
-        } 
 	// all execution-related services -> getExecSupport
         if (c.isAssignableFrom(JspServletExecSupport.class)) {
             return getExecDebugCookie();
@@ -179,19 +161,6 @@ public class JspServletDataObject extends JavaDataObject {
         return null;
     }
     
-    private static class NullCompiler implements CompilerCookie.Build, CompilerCookie.Clean, CompilerCookie.Compile {
-        
-        public static final NullCompiler INSTANCE = new NullCompiler();
-        
-        public void addToJob(CompilerJob job, Compiler.Depth depth) {
-        }
-        
-        public boolean isDepthSupported(Compiler.Depth depth) {
-            return true;
-        }
-        
-    }
-
     private static class ServletEditorCookie implements EditorCookie.Observable, PropertyChangeListener {
         
         private EditorCookie original;
