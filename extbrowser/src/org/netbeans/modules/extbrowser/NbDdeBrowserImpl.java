@@ -23,6 +23,7 @@ import java.util.StringTokenizer;
 
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
+import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.options.SystemOption;
 import org.openide.util.SharedClassObject;
@@ -64,7 +65,12 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     
     private Thread  urlEchoThread = null;
 
-
+    /** native thread that displays URLs */
+    private Thread nativeThread = null;
+    
+    /** runnable class that implements the work of nativeThread */
+    private NbDdeBrowserImpl.URLDisplayer nativeRunnable = null;
+    
     /** name of DDE server receiving progress */
     private String  ddeProgressSrvName;
     boolean bProgressInitialized = false;
@@ -161,102 +167,29 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
      *
      * @param url URL to show in the browser.
      */
-    public void setURL(final URL url) {
-        new Thread () {
-            public void run () {
-                try {
-                    URL myurl;
-                    // internal protocols cannot be displayed in external viewer
-                    if (isInternalProtocol (url.getProtocol ())) {
-                        myurl = WrapperServlet.createHttpURL (url);
-                    }
-                    else {
-                        myurl = url;
-                    }
-                    byte [] data;
-                    boolean hasNoWindow = (currWinID == -1);
-
-                    // initProgress ();
-
-                    String winID;
-                    // IE problem
-                    if (getDDEServerName ().equals(ExtBrowserSettings.IEXPLORE))
-                        winID = "0xFFFFFFFF";
-                    else
-                        winID = "0x00000000"+Integer.toHexString (hasNoWindow? 0: currWinID).toUpperCase (); // NOI18N
-                    if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
-
-                    try {
-                        data = reqDdeMessage (getDDEServerName (),"WWW_Activate",winID,3000);
-                    }
-                    catch (NbBrowserException ex) {
-                        // try to start browser and activet it again
-                        data = null;
-                        if (ExtBrowserSettings.OPTIONS.isStartWhenNotRunning ()) {
-                            String b = getBrowserPath (getDDEServerName ());
-                            if (b != null) {
-                                if (b.charAt(0) == '"') {
-                                    int from, to;
-                                    from = b.indexOf ('"'); to = b.indexOf ('"', from+1);
-                                    b = b.substring (from+1, to);
-                                }
-                                else {
-                                    StringTokenizer st = new StringTokenizer(b);
-                                    b = st.nextToken();
-                                }
-                                setStatusMessage (bundle.getString("MSG_Running_command")+b);
-                                Runtime.getRuntime ().exec (b);
-                                // wait for browser start
-                                Thread.currentThread ().sleep (7000);
-                                data = reqDdeMessage (getDDEServerName (),"WWW_Activate",winID,3000);
-                                hasNoWindow = false;
-                            }
-                        }
-                    }
-
-                    if (data != null && data.length >= 4) {
-                        currWinID=DdeBrowserSupport.getDWORDAtOffset (data, 0);
-                        setStatusMessage (bundle.getString("MSG_use_win")+currWinID);
-                    }
-                    else {
-                        currWinID = -1;
-                        // System.out.println("Corrupted data read.");
-                        setStatusMessage (bundle.getString("ERR_cant_activate_browser"));
-                        return;
-                    }
-
-                    if (getDDEServerName ().equals(ExtBrowserSettings.IEXPLORE))
-                        winID = hasNoWindow? "0": "-1";
-                    else
-                        winID = "0x00000000"+Integer.toHexString (hasNoWindow? 0: currWinID).toUpperCase (); // NOI18N
-                    if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
-
-                    // nbfs can be displayed internally and in ext. viewer too
-                    String args1;
-                    args1="\""+url.toString()+"\",,"+winID+",0x1,,,"+(ddeProgressSrvName==null?"":ddeProgressSrvName);  // NOI18N
-                    data = reqDdeMessage (getDDEServerName (),"WWW_OpenURL",args1,3000); // NOI18N
-                    if (data != null && data.length >= 4) {
-                        if (!getDDEServerName ().equals ("IEXPLORE")) {
-                            currWinID=DdeBrowserSupport.getDWORDAtOffset (data, 0);
-                            if (currWinID < 0) currWinID = -currWinID;
-                        }
-                        setStatusMessage (bundle.getString ("MSG_use_win"));
-                    }
-                    URL oldUrl = NbDdeBrowserImpl.this.url;
-                    NbDdeBrowserImpl.this.url = url;
-                    pcs.firePropertyChange(PROP_URL, oldUrl, url);
-                }
-                catch (NbBrowserException ex) {
-                    TopManager.getDefault ().notifyException (ex);
-                }
-                catch (java.io.IOException ex) {
-                    TopManager.getDefault ().notifyException (ex);
-                }
-                catch (InterruptedException ex) {
-                    TopManager.getDefault ().notifyException (ex);
-                }
+    public synchronized void setURL(final URL url) {
+        try {
+            if (nativeThread == null) {
+                nativeRunnable = new NbDdeBrowserImpl.URLDisplayer ();
+                nativeThread = new Thread(nativeRunnable, "URLdisplayer");
             }
-        }.start ();
+        
+            nativeRunnable.url = url;
+            nativeThread.run();
+            // PENDING: add this timeout to browser properties
+            nativeThread.join(10000);
+            if (nativeThread.isAlive()) {
+                // something is wrong
+                nativeThread.stop();
+                TopManager.getDefault().notify(
+                new NotifyDescriptor.Message(bundle.getString("MSG_win_browser_invocation_failed"),
+                NotifyDescriptor.INFORMATION_MESSAGE)
+                );
+            }
+        }
+        catch (InterruptedException ex) {
+            TopManager.getDefault().getErrorManager().notify( ErrorManager.INFORMATIONAL, ex);
+        }
     }
 
     /** Invoked when the history button is pressed.
@@ -301,5 +234,116 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         }
         // guess IE
         return ExtBrowserSettings.IEXPLORE;
+    }
+    
+    class URLDisplayer implements Runnable { // NOI18N
+        
+        /** url to be displayed */
+        URL url;
+        
+        public void run() {
+            try {
+                // internal protocols cannot be displayed in external viewer
+                if (isInternalProtocol(url.getProtocol())) {
+                    url = WrapperServlet.createHttpURL(url);
+                }
+                else {
+                    url = url;
+                }
+                byte [] data;
+                boolean hasNoWindow = (currWinID == -1);
+
+                // initProgress ();
+
+                String winID;
+                // IE problem
+                if (getDDEServerName().equals(ExtBrowserSettings.IEXPLORE))
+                    winID = "0xFFFFFFFF";
+                else
+                    winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: currWinID).toUpperCase(); // NOI18N
+                if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
+
+                try {
+                    data = reqDdeMessage(getDDEServerName(),"WWW_Activate",winID,5000);
+                }
+                catch (NbBrowserException ex) {
+                    // try to start browser and activet it again
+                    data = null;
+                    String b;
+                    if (ExtBrowserSettings.OPTIONS.isStartWhenNotRunning()) {
+                        // get the browser
+                        if (winBrowserFactory.getExecutable() != null
+                        &&  !winBrowserFactory.getExecutable().equals("")) { // NOI18N
+                            b = winBrowserFactory.getExecutable();
+                            System.out.println("b = "+b);
+                        }
+                        else {
+                            b = (winBrowserFactory.getDDEServer()!=null)?
+                                getBrowserPath(getDDEServerName()):
+                                getDefaultOpenCommand();
+                        }
+
+                        // start it
+                        if (b != null) {
+                            if (b.charAt(0) == '"') {
+                                int from, to;
+                                from = b.indexOf('"'); to = b.indexOf('"', from+1);
+                                b = b.substring(from+1, to);
+                            }
+                            else {
+                                StringTokenizer st = new StringTokenizer(b);
+                                b = st.nextToken();
+                            }
+                            setStatusMessage(bundle.getString("MSG_Running_command")+b);
+                            Runtime.getRuntime().exec(b);
+                            // wait for browser start
+                            Thread.currentThread().sleep(7000);
+                            data = reqDdeMessage(getDDEServerName(),"WWW_Activate",winID,5000);
+                            hasNoWindow = false;
+                        }
+                    }
+                }
+
+                if (data != null && data.length >= 4) {
+                    currWinID=DdeBrowserSupport.getDWORDAtOffset(data, 0);
+                    setStatusMessage(bundle.getString("MSG_use_win")+currWinID);
+                }
+                else {
+                    currWinID = -1;
+                    setStatusMessage(bundle.getString("ERR_cant_activate_browser"));
+                    return;
+                }
+
+                if (getDDEServerName().equals(ExtBrowserSettings.IEXPLORE))
+                    winID = hasNoWindow? "0": "-1";
+                else
+                    winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: currWinID).toUpperCase(); // NOI18N
+                if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
+
+                // nbfs can be displayed internally and in ext. viewer too
+                String args1;
+                args1="\""+url.toString()+"\",,"+winID+",0x1,,,"+(ddeProgressSrvName==null?"":ddeProgressSrvName);  // NOI18N
+                data = reqDdeMessage(getDDEServerName(),"WWW_OpenURL",args1,3000); // NOI18N
+                if (data != null && data.length >= 4) {
+                    if (!getDDEServerName().equals("IEXPLORE")) {
+                        currWinID=DdeBrowserSupport.getDWORDAtOffset(data, 0);
+                        if (currWinID < 0) currWinID = -currWinID;
+                    }
+                    setStatusMessage(bundle.getString("MSG_use_win"));
+                }
+                URL oldUrl = NbDdeBrowserImpl.this.url;
+                NbDdeBrowserImpl.this.url = url;
+                pcs.firePropertyChange(PROP_URL, oldUrl, url);
+            }
+            catch (Exception ex) {
+                final Exception ex1 = ex;
+                TopManager.getDefault().getErrorManager().annotate(ex1, bundle.getString("MSG_win_browser_invocation_failed"));
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        TopManager.getDefault().notifyException(ex1);
+                    }
+                });
+            }
+        }
     }
 }
