@@ -104,6 +104,8 @@ Microsystems, Inc. All Rights Reserved.
         <!-- and then testset specific dir and then returned in property tbag.classpath -->
         <property name="tbag.classpath.root" location="${xtest.workdir}"/>
         <property name="tbag.classpath.work" value="sys/tests"/>
+        
+       	<property file="${xtest.userdata.propertyfile}"/>
     </target>
     
     <target name="prepare-xtest">
@@ -131,7 +133,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="runtests" depends="config">
         <echo message="Running ${xtest.module} tests, test type: ${xtest.testtype}, test attributes: ${xtest.attribs}"/>
 
-      	<property file="${xtest.userdata.propertyfile}"/>
         <property name="test.propertyfile" location="${xtest.workdir}/sys/userdata.properties"/>
    	<write-property propertyPrefix="xtest.userdata" attribs="${xtest.attribs}" file="${test.propertyfile}"/>
 
