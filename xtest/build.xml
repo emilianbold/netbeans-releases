@@ -202,9 +202,13 @@ Microsystems, Inc. All Rights Reserved.
                       targetParamTestAttributes="xtest.attributes"/>        
     </target>
 
-    <target name="buildxtest"
+    <target name="buildxtest" depends="setnobuildxtest"
             description="Builds XTest framework." unless="xtest.nobuildxtest">
         <ant antfile="xtest.xml"/>
+    </target>
+    
+    <target name="setnobuildxtest" if="xtest.distexec">
+	<property name="xtest.nobuildxtest" value="true"/>
     </target>
     
     <target name="cleanxtest"
