@@ -59,5 +59,4 @@ Definition of one property: it has a name and some optional string data
 <!ATTLIST property
     name CDATA #REQUIRED
     value CDATA #IMPLIED
-    hexvalue CDATA #IMPLIED
 >
