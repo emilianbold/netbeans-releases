@@ -188,6 +188,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     }
                     pw.println ("</module_updates>");
                     pw.println ();
+                    pw.flush ();
                     pw.close ();
                 
                     os = new java.io.FileOutputStream (desc_ent);
@@ -305,8 +306,10 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.println ("</module_updates>");
                     pw.println ();
                 }
+                pw.flush ();
 		pw.close ();
 	    } finally {
+                os.flush ();
 		os.close ();
 	    }
 	} catch (java.io.IOException ioe) {
