@@ -58,7 +58,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             updateCurrentThread ();
             annotate ();
         } else
-        if (e.getPropertyName () == JPDADebugger.PROP_CURRENT_THREAD) {
+        if (e.getPropertyName () == JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME) {
             updateCurrentThread ();
             annotate ();
         } else
@@ -115,6 +115,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             removeAnnotations ();
             return;
         }
+        final CallStackFrame csf = currentDebugger.getCurrentCallStackFrame ();
         final JPDAThread ct = currentThread;
         final String language = DebuggerManager.getDebuggerManager ().
             getCurrentSession ().getCurrentLanguage ();
@@ -131,7 +132,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                     SourcePath sp = (SourcePath) DebuggerManager.
                         getDebuggerManager ().getCurrentEngine ().lookupFirst 
                         (null, SourcePath.class);
-                    sp.showSource (ct, language);
+                    sp.showSource (csf, language);
 
                     // annotate current line
                     currentPC = sp.annotate (ct, language);

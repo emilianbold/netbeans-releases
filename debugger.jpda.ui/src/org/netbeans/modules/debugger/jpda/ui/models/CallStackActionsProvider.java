@@ -133,14 +133,5 @@ public class CallStackActionsProvider implements NodeActionsProvider {
     
     private void makeCurrent (final CallStackFrame frame) {
         frame.makeCurrent ();
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                String language = DebuggerManager.getDebuggerManager ().
-                    getCurrentSession ().getCurrentLanguage ();
-                SourcePath ectx = (SourcePath) lookupProvider.lookupFirst 
-                    (null, SourcePath.class);
-                ectx.showSource (frame, language);
-            }
-        });
     }
 }
