@@ -493,8 +493,23 @@ public class WebProjectProperties {
         for( Iterator it = removed.iterator(); it.hasNext(); ) {
             VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
             if ( vcpi.getType() == VisualClassPathItem.TYPE_ARTIFACT ||
-                    vcpi.getType() == VisualClassPathItem.TYPE_JAR ) {
-                refHelper.destroyForeignFileReference(vcpi.getRaw());
+                 vcpi.getType() == VisualClassPathItem.TYPE_JAR ) {
+                     boolean used = false; // now check if the file reference isn't used anymore
+                     for (int i=0; i < allPaths.length; i++) {
+                        PropertyInfo pi = (PropertyInfo)properties.get( allPaths[i] );
+                        List values = (List)pi.getValue();
+                        if (values == null) break;
+                        for (Iterator v = values.iterator(); v.hasNext(); ) {
+                            VisualClassPathItem valcpi = (VisualClassPathItem)v.next();
+                            if (valcpi.getRaw().indexOf(vcpi.getRaw()) > -1) {
+                                used = true;
+                                break;
+                            }
+                        }
+                     }
+                     if (!used) {
+                        refHelper.destroyForeignFileReference(vcpi.getRaw());
+                     }
             }
         }
         
@@ -596,7 +611,7 @@ public class WebProjectProperties {
                 newValueEncoded = null;
             }
         }
-
+        
         public Object getValue() {
             return isModified() ? newValue : value; 
         }
