@@ -513,10 +513,37 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module monitor..."/>
     <ant dir="../monitor" target="netbeans"/>
   </target>
-  <target name="all-mdr" depends="all-openide,all-openide/loaders">
-    <echo message="Building module mdr..."/>
-    <ant dir="../mdr" target="netbeans"/>
+  <target name="all-mdr" depends="all-openide,all-openide/loaders,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof,all-mdr/nbjmiutils,all-mdr/jmiutils,all-mdr/lib,all-mdr/module">
   </target>
+  <target name="all-mdr/module" depends="all-openide,all-openide/loaders,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof,all-mdr/nbjmiutils,all-mdr/jmiutils,all-mdr/lib">
+    <echo message="Building module mdr/module..."/>
+    <ant dir="../mdr/module" target="netbeans"/>
+  </target>
+  <target name="all-mdr/lib" depends="all-openide,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof,all-mdr/nbjmiutils,all-mdr/jmiutils">
+    <echo message="Building mdr library..."/>
+    <ant dir="../mdr" target="jar"/>
+  </target>
+  <target name="all-mdr/nbjmiutils" depends="all-mdr/jmiutils,all-openide,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof">
+    <echo message="Building module mdr/nbjmiutils..."/>
+    <ant dir="../mdr/nbjmiutils" target="netbeans"/>
+  </target>
+  <target name="all-mdr/jmiutils" depends="all-openide,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof">
+    <echo message="Building module mdr/jmiutils..."/>
+    <ant dir="../mdr/jmiutils" target="jar"/>
+  </target>
+  <target name="all-mdr/mdrapi" depends="all-mdr/jmi,all-mdr/mof,all-openide">
+    <echo message="Building module mdr/mdrapi..."/>
+    <ant dir="../mdr/mdrapi" target="netbeans"/>
+  </target>
+  <target name="all-mdr/mof" depends="all-mdr/jmi">
+    <echo message="Building module mdr/mof..."/>
+    <ant dir="../mdr/mof" target="netbeans"/>
+  </target>
+  <target name="all-mdr/jmi" depends="">
+    <echo message="Building module mdr/jmi..."/>
+    <ant dir="../mdr/jmi" target="netbeans"/>
+  </target>
+  
   <target name="all-multicompile" depends="all-openide,all-openide/compiler,all-openide/execution">
     <echo message="Building module multicompile..."/>
     <ant dir="../multicompile" target="netbeans"/>
