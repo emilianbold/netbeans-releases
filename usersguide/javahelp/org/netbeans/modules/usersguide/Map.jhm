@@ -406,7 +406,6 @@
 <mapID target="taglib_packlib" url="web/taglib/packlib.html" />
 <mapID target="ctx_taglibcust" url="web/taglib/ctx_taglibcust.html" />
 <mapID target="ctx_tagcust" url="web/taglib/ctx_tagcust.html" />
-<mapID target="ctx_scrvarcust" url="web/taglib/ctx_scrvarcust.html" />
 <mapID target="ctx_repaddto" url="web/taglibUI/ctx_repaddto.html" />
 <mapID target="tagsupport_fromrepository" url="web/taglibUI/repaddfrom.html" />
 <mapID target="tagsupport_fromfilesys" url="web/taglibUI/addfilesys.html" />
@@ -434,7 +433,6 @@
 <mapID target="webmod_server_set" url="web/webmod/mod_server_set.html" />
 <mapID target="webmod_packagewar" url="web/webmod/mod_packagewar.html" />
 <mapID target="webmod_deploy" url="web/webmod/mod_deploy.html" />
-<mapID target="webmod_webxmlprops" url="web/webmod/mod_webxml_props.html" />
 <mapID target="webmod_xml" url="web/webmod/mod_xml.html" />
 <mapID target="webmod_browser" url="web/webmod/mod_browser.html" />
 <mapID target="webmod_addtglb" url="web/webmod/mod_addtglb.html" />
@@ -445,16 +443,12 @@
 <mapID target="webmod_addtagf" url="web/webmod/mod_tagf_add.html" />
 <mapID target="webmod_abouttagf" url="web/webmod/mod_tagf_about.html" />
 <mapID target="war_delete" url="web/warpkg/war_delete.html" />
-<mapID target="war_unpack" url="web/warpkg/war_unpack.html" />
 <mapID target="war_xtrafiles" url="web/warpkg/war_xtrafiles.html" />
 <mapID target="mod_process" url="web/overvw/mod_process.html" />
 <mapID target="filter_addtodd" url="web/servlet/filter_addtodd.html" />
 <mapID target="filter_create" url="web/servlet/filter_create.html" />
-<mapID target="filter_props" url="web/servlet/filter_props.html" />
 <mapID target="listen_addtodd" url="web/servlet/listen_addtodd.html" />
-<mapID target="listen_props" url="web/servlet/listen_props.html" />
 <mapID target="listen_create" url="web/servlet/listen_create.html" />
-<mapID target="servlet_props" url="web/servlet/servlet_props.html" />
 <mapID target="ieglossary_URL_query_string" url="web/glossary/URL_query_string.html" />
 <mapID target="debug.attachvm.window" url="debug/debug_remote.html" />
 
@@ -1169,18 +1163,6 @@
   url="/org/netbeans/modules/usersguide/editing/configuring/indentation.html" />
 
 <!-- context sensitive help map IDs -->
-
-
-<mapID target="org.netbeans.modules.web.dd.DDDataObject" 
-        url="web/webmod/mod_webxml_node.html" />
-<mapID target="org.netbeans.modules.web.dd.DDDataNode.PropertySheet" 
-        url="web/webmod/mod_webxml_props.html" />
-
-
-<mapID target="org.netbeans.modules.web.context.WebInfObject" 
-        url="web/webmod/mod_webinf_node.html" />
-<mapID target="org.netbeans.modules.web.context.WebInfObject.PropertySheet" 
-        url="web/webmod/mod_webinf_props.html" />
 
 <mapID target="org.netbeans.modules.web.dd.wizards.ListenerPanel" 
         url="web/servlet/listen_addtodd.html" />
