@@ -348,11 +348,14 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
     
     /** Returns true if the Antscript represented by the passed cookie is read-only. */
     public static boolean isScriptReadOnly(AntProjectCookie cookie) {
-        if (cookie != null && cookie.getFileObject() != null) {
-            return cookie.getFileObject().isReadOnly();
-        } else {
-            return ! cookie.getFile().canWrite();
+        if (cookie != null) {
+            if (cookie.getFileObject() != null) {
+                return cookie.getFileObject().isReadOnly();
+            } else if (cookie.getFile() != null) {
+                return ! cookie.getFile().canWrite();
+            }
         }
+        return true;
     }
     
     /** Property displaying the build sequence of the whole project. */
