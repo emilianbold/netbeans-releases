@@ -829,9 +829,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
                 if (getNodeReference() != null) { // propagate the change to node
                     getNodeReference().firePropertyChangeHelper(
-                                           propName,
-                                           evt.getOldValue(),
-                                           evt.getNewValue());
+                                            propName, null, null);
                 }
             }
         }
