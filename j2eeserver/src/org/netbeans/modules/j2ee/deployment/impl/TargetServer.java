@@ -185,20 +185,29 @@ public class TargetServer {
     }
     
     // return list of target modules to redeploy
-    private TargetModule[] checkUndeployForSameReferences(Target[] targs) {
-        return checkUndeployForSharedReferences(Collections.EMPTY_SET, targs, null);
+    private TargetModule[] checkUndeployForSharedReferences(Target[] toDistribute) {
+        Set distSet = new HashSet(Arrays.asList(toDistribute));
+        return checkUndeployForSharedReferences(Collections.EMPTY_SET, distSet);
     }
-    private TargetModule[] checkUndeployForSharedReferences(Set toRedeploy, Target[] targs) {
-        return checkUndeployForSharedReferences(toRedeploy, targs, null);
+    private TargetModule[] checkUndeployForSharedReferences(Set toRedeploy, Set toDistribute) {
+        return checkUndeployForSharedReferences(toRedeploy, toDistribute, null);
     }
-    private TargetModule[] checkUndeployForSharedReferences(Set toRedeploy, Target[] targs, Map queryInfo) {
-        // PENDING: what are changed references for ejbmod, j2eeapp???
-        if (contextRoot == null) {
+    private TargetModule[] checkUndeployForSharedReferences(Set toRedeploy, Set toDistribute, Map queryInfo) {
+        // we don't want to undeploy anything when both distribute list and redeploy list are empty
+        if (contextRoot == null || (toRedeploy.isEmpty() && toDistribute.isEmpty())) {
             return (TargetModule[]) toRedeploy.toArray(new TargetModule[toRedeploy.size()]);
         }
         
+        Set allTargets = new HashSet(Arrays.asList(TargetModule.toTarget((TargetModule[]) toRedeploy.toArray(new TargetModule[toRedeploy.size()]))));
+        allTargets.addAll(toDistribute);
+        Target[] targs = (Target[]) allTargets.toArray(new Target[allTargets.size()]);
+
         boolean shared = false;
-        
+        List addToDistributeWhenSharedDetected = new ArrayList();
+        List removeFromRedeployWhenSharedDetected = new ArrayList();
+        List addToUndeployWhenSharedDetected = new ArrayList();
+        List sharerTMIDs;
+  
         TargetModuleIDResolver tmidResolver = instance.getTargetModuleIDResolver();
         if (tmidResolver != null) {
             if (queryInfo == null) {
@@ -206,58 +215,64 @@ public class TargetServer {
                 queryInfo.put(TargetModuleIDResolver.KEY_CONTEXT_ROOT, contextRoot);
             }
             
-            List maybeRedistributeWhenSharedDetected = new ArrayList();
-            List maybeRemoveFromRedeployWhenSharedDetected = new ArrayList();
             TargetModuleID[] haveSameReferences = TargetModule.EMPTY_TMID_ARRAY;
             if (targs.length > 0) {
                 haveSameReferences = tmidResolver.lookupTargetModuleID(queryInfo, targs);
             }
             for (int i=0; i<haveSameReferences.length; i++) {
-                TargetModule hasSameReferences = new TargetModule(keyOf(haveSameReferences[i]), haveSameReferences[i]); 
-                if (! toRedeploy.contains(hasSameReferences)) {
+                haveSameReferences[i] = new TargetModule(keyOf(haveSameReferences[i]), haveSameReferences[i]); 
+            }
+            sharerTMIDs = Arrays.asList(haveSameReferences);
+
+            for (Iterator i=sharerTMIDs.iterator(); i.hasNext();) {
+                TargetModule sharer = (TargetModule) i.next();
+                if ((toRedeploy.size() > 0 && ! toRedeploy.contains(sharer)) ||
+                    toDistribute.contains(sharer.getTarget())) {
                     shared = true;
+                    addToUndeployWhenSharedDetected.add(sharer.delegate());
                 } else {
-                    // to transfer from redeploy to redistribute when sharing detected
-                    maybeRemoveFromRedeployWhenSharedDetected.add(haveSameReferences[i]);
-                    maybeRedistributeWhenSharedDetected.add(haveSameReferences[i].getTarget());
+                    removeFromRedeployWhenSharedDetected.add(sharer);
+                    addToDistributeWhenSharedDetected.add(sharer.getTarget());
                 }
             }
-                
-            if (shared) {
-                //Note: undeploy all with same references, including the ones being considered to redeploy
-                undeployTMIDs.addAll(Arrays.asList(haveSameReferences)); 
-                TargetModule.removeByContextRoot(dtarget.getServer(), contextRoot);
-
-                //Note: for brand new module not known on any targets (toRedeploy empty) these transfer lists will be empty
-                distributeTargets.addAll(maybeRedistributeWhenSharedDetected);
-                toRedeploy.removeAll(maybeRemoveFromRedeployWhenSharedDetected);
-            } 
         }
+        
+        // this is in addition to the above check: TMID provided from tomcat 
+        // plugin does not have module deployment name element
+        if (!shared) {  
+            sharerTMIDs = TargetModule.findByContextRoot(dtarget.getServer(), contextRoot);
+            sharerTMIDs = TargetModule.initDelegate(sharerTMIDs, getAvailableTMIDsMap());
 
-        if (!shared) {
-            // rely on our own then (not as sure and efficient)
-            List contextShared = TargetModule.findByContextRoot(dtarget.getServer(), contextRoot);
-            contextShared = TargetModule.initDelegate(contextShared, getAvailableTMIDsMap());
-            List toRemoveFromRedeploy = new ArrayList();
-            for (Iterator i=contextShared.iterator(); i.hasNext();) {
-                TargetModule same = (TargetModule) i.next();
-                boolean keep = false;
+            for (Iterator i=sharerTMIDs.iterator(); i.hasNext();) {
+                TargetModule sharer = (TargetModule) i.next();
+                boolean redeployHasSharer = false;
                 for (Iterator j=toRedeploy.iterator(); j.hasNext();) {
                     TargetModule redeploying = (TargetModule) j.next();
-                    if (redeploying.equals(same) && redeploying.getContentDirectory().equals(same.getContentDirectory())) {
-                        keep = true;
-                    } else {
-                        toRemoveFromRedeploy.add(redeploying);
-                        distributeTargets.add(redeploying.getTarget());
-                    }                
+                    if (redeploying.equals(sharer) && redeploying.getContentDirectory().equals(sharer.getContentDirectory())) {
+                        redeployHasSharer = true;
+                        break;
+                    }
                 }
-                if (! keep) {
-                    undeployTMIDs.add(same.delegate());
-                    same.remove();
+                if (! redeployHasSharer ||
+                    toDistribute.contains(sharer.getTarget())) {
+                        shared = true;
+                        addToUndeployWhenSharedDetected.add(sharer.delegate());
+                } else {
+                    removeFromRedeployWhenSharedDetected.add(sharer);
+                    addToDistributeWhenSharedDetected.add(sharer.getTarget());
                 }
             }
-            toRedeploy.removeAll(toRemoveFromRedeploy);
         }
+
+        if (shared) {
+            undeployTMIDs.addAll(addToUndeployWhenSharedDetected); 
+            //erase memory of them if any
+            TargetModule.removeByContextRoot(dtarget.getServer(), contextRoot);
+            // transfer from redeploy to distribute
+            toRedeploy.removeAll(removeFromRedeployWhenSharedDetected);
+            distributeTargets.addAll(addToDistributeWhenSharedDetected);
+        } 
+    
         return (TargetModule[]) toRedeploy.toArray(new TargetModule[toRedeploy.size()]);
     }
 
@@ -289,7 +304,7 @@ public class TargetServer {
         // new module
         if (targetModules == null || targetModules.length == 0) {
             distributeTargets.addAll(Arrays.asList(targets));
-            checkUndeployForSameReferences(targets);
+            checkUndeployForSharedReferences(targets);
             return;
         }
         
@@ -337,12 +352,10 @@ public class TargetServer {
                 }
             }
         }
-        redeployTargetModules = (TargetModule[]) toRedeploy.toArray(new TargetModule[toRedeploy.size()]);
-        
-        redeployTargetModules = checkUndeployForChangedReferences(toRedeploy);
 
-        Target[] targs = TargetModule.toTarget(redeployTargetModules);
-        redeployTargetModules = checkUndeployForSharedReferences(toRedeploy, targs);
+        redeployTargetModules = checkUndeployForChangedReferences(toRedeploy);
+        Set targetSet = new HashSet(distributeTargets);
+        redeployTargetModules = checkUndeployForSharedReferences(toRedeploy, targetSet);
     }
     
     private File getApplication() {
@@ -505,11 +518,12 @@ public class TargetServer {
     }
     
     private static String keyOf(TargetModuleID tmid) {
-        StringBuffer sb =  new StringBuffer(256);
+        /*StringBuffer sb =  new StringBuffer(256);
         sb.append(tmid.getModuleID());
         sb.append("@"); //NOI18N
         sb.append(tmid.getTarget().getName());
-        return sb.toString();
+        return sb.toString();*/
+        return tmid.toString();
     }
     
     //collect root modules into TargetModule with timestamp
@@ -519,7 +533,6 @@ public class TargetServer {
         Set originals = new HashSet();
         for (int i=0; i<modules.length; i++) {
             if (modules[i].getParentTargetModuleID() == null) {
-                //String id = modules[i].toString();
                 String id = keyOf(modules[i]);
                 String targetName = modules[i].getTarget().getName();
                 TargetModule tm = new TargetModule(id, instance.getUrl(), timestamp, currentContentDir.getAbsolutePath(), contextRoot, modules[i]);
@@ -536,6 +549,8 @@ public class TargetServer {
     
     public TargetModule[] deploy(DeployProgressUI ui, boolean forceRedeploy) throws IOException {
         ProgressObject po = null;
+        boolean hasActivities = false;
+        
         init(ui);
         if (forceRedeploy) {
             if (redeployTargetModules == null) {
@@ -557,6 +572,7 @@ public class TargetServer {
 
         // handle initial file deployment or distribute
         if (distributeTargets.size() > 0) {
+            hasActivities = true;
             Target[] targetz = (Target[]) distributeTargets.toArray(new Target[distributeTargets.size()]);
             
             if (incremental != null && canFileDeploy(targetz, deployable)) {
@@ -577,6 +593,7 @@ public class TargetServer {
         
         // handle increment or standard redeploy
         if (redeployTargetModules != null && redeployTargetModules.length > 0) {
+            hasActivities = true;
             if (incremental != null && canFileDeploy(redeployTargetModules, deployable)) {
                 AppChangeDescriptor acd = distributeChanges(redeployTargetModules[0], ui);
                 if (anyChanged(acd)) {
@@ -597,7 +614,12 @@ public class TargetServer {
                 handleDeployProgress(ui, po);
             }
         }
-        return (TargetModule[]) deployedRootTMIDs.toArray(new TargetModule[deployedRootTMIDs.size()]);
+        
+        if (hasActivities) {
+            return (TargetModule[]) deployedRootTMIDs.toArray(new TargetModule[deployedRootTMIDs.size()]);
+        } else {
+            return dtarget.getTargetModules();
+        }
     }
     
     /**
