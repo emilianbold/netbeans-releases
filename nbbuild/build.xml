@@ -355,6 +355,11 @@ workspaceswitcher
     <ant dir="../externaleditor" target="netbeans"/>
   </target>
 
+  <target name="all-corba" depends="all-openide,all-editor,all-projects,all-core,all-java">
+    <echo message="Building module corba..."/>
+    <ant dir="../corba" target="netbeans"/>
+  </target>
+
   <target name="all-xml/tax" depends="all-openide">
       <echo message="Building module xml/tax..."/>
       <ant dir="../xml/tax" target="netbeans"/>
