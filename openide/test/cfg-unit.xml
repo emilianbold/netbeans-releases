@@ -57,7 +57,6 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- following test was excluded because of issue #22629 
                 <include name="org/openide/explorer/FindHelpTest.class"/>
                 -->                
-                <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetTab"/>
                 <include name="org/openide/explorer/propertysheet/PropertyPanelTest.class"/>
                 <include name="org/openide/compiler/*Test.class"/>
             </patternset>
