@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
 *     Copyright 2001 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
@@ -147,7 +147,7 @@ clipboard.</td>
 <td valign="top">Finds a text string.</td> 
 </tr>
 <tr>
-<td valign="top">Ctrl-R</td>
+<td valign="top">Ctrl-H</td>
 <td valign="top">Replace</td>
 <td valign="top">Finds a string of text and replaces it with the
 string specified.</td>
@@ -210,8 +210,8 @@ string specified.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-8</td>
-<td valign="top">Component Inspector</td>
-<td valign="top">Opens the Component Inspector window.</td>
+<td valign="top">Form Editor</td>
+<td valign="top">Opens the Form Editor window.</td>
 </tr>
 <tr>
 <td valign="top">Ctrl-9</td>
@@ -219,7 +219,7 @@ string specified.</td>
 <td valign="top">Opens the Object Browser window.</td>
 </tr>
 <tr>
-<td valign="top">Ctrl-F1</td>
+<td valign="top">Ctrl-Shift-F1</td>
 <td valign="top">Javadoc Index Search</td>
 <td valign="top">Opens the Javadoc Index Search window.</td>
 </tr>
@@ -235,11 +235,6 @@ string specified.</td>
 <th align="left">Action</th>
 </tr>
 <tr>
-<td valign="top">Ctrl-Shift-S</td>
-<td valign="top">Save Project</td>
-<td valign="top">Saves the current project.</td>
-</tr>
-<tr>
 <td valign="top">Ctrl-Shift-F9</td>
 <td valign="top">Compile Project</td>
 <td valign="top">Compiles all of a project's uncompiled and
@@ -247,7 +242,7 @@ out-of-date class files, that have been changed or that have not been
 previously compiled.</td>
 </tr>
 <tr>
-<td valign="top">Ctrl-Shift-F10</td>
+<td valign="top">Ctrl-Shift-F11</td>
 <td valign="top">Build Project</td>
 <td valign="top">Compiles all of the current project's classes and the
 classes they are dependent on whether or not they were previously
@@ -256,7 +251,7 @@ compiled.</td>
 <tr>
 <td valign="top">Ctrl-Shift-M</td>
 <td valign="top">Set Main Class</td>
-<td valign="top">Specifies the main class of a program.</td> 
+<td valign="top">Specifies the main class of a project.</td> 
 </tr>
 <tr>
 <td valign="top">Ctrl-Shift-F6</td>
@@ -289,32 +284,32 @@ compiles only the files that are new or have changed since the last
 compile.</td> 
 </tr>
 <tr>
-<td valign="top">Ctrl-F9</td> 
+<td valign="top">Shift-F9</td> 
 <td valign="top">Compile All</td> 
 <td valign="top">Compiles all files within the selected
 folder that are new or that have changed.</td>
 </tr>
 <tr>
-<td valign="top">Alt-F9</td>
+<td valign="top">F11</td>
 <td valign="top">Build</td>
 <td valign="top">Compiles the file. If you select a folder, the IDE
 compiles all files regardless of whether they have changed since the
 last compile.</td> 
 </tr> 
 <tr>
-<td valign="top">Ctrl-Alt-F9</td>
+<td valign="top">Shift-F11</td>
 <td valign="top">Build All</td>
 <td valign="top">Compiles all files within the selected folder
 regardless of whether they have changed since the last compile.</td> 
 </tr>
 <tr>
-<td valign="top">F11</td>
+<td valign="top">F12</td>
 <td valign="top">Clean</td>
 <td valign="top">Remove obsolete and extraneous files of the selected
 node.</td>
 </tr>
 <tr>
-<td valign="top">Ctrl-F11</td>
+<td valign="top">Shift-F12</td>
 <td valign="top">Clean All</td>
 <td valign="top">Remove obsolete and extraneous files of the selected
 node and its subnodes.</td> 
@@ -325,13 +320,13 @@ node and its subnodes.</td>
 <td valign="top">Stops compilation of the current program.</td>
 </tr>
 <tr>
-<td valign="top">F12</td>
+<td valign="top">Alt-F10</td>
 <td valign="top">Next Error</td>
 <td valign="top">Scrolls the editor window to the line that contains
 the next build error.</td>
 </tr>
 <tr>
-<td valign="top">Shift-F12</td>
+<td valign="top">Ctrl-Alt-F10</td>
 <td valign="top">Previous Error</td>
 <td valign="top">Scrolls the editor window to the line that contains
 the previous build error.</td>
@@ -353,7 +348,7 @@ the previous build error.</td>
 <th align="left">Action</th>
 </tr>
 <tr>
-<td valign="top">F5</td>
+<td valign="top">Alt-F5</td>
 <td valign="top">Start</td>
 <td valign="top">Starts debugging the current program until a
 breakpoint or the end of the program is reached. Changes the
@@ -377,7 +372,7 @@ breakpoint or the end of the program is reached.</td>
 the file and stop program execution.
 </td>
 <tr>
-<td valign="top">F8</td>
+<td valign="top">Shift-F7</td>
 <td valign="top">Step Over</td>
 <td valign="top">Executes one source line of a program. If the line is
 a method call, executes the entire method then stops.</td>
@@ -391,14 +386,25 @@ a method call, executes the program up to the method's first
 statement and stops.</td> 
 </tr>
 <tr>
-<td valign="top">Ctrl-F7</td>
+<td valign="top">Alt-Shift-F7</td>
 <td valign="top">Step Out</td>
 <td valign="top">Executes one source line of a program. If the line is
 a method call, executes the methods and returns control to the
 caller.</td> 
 </tr>
 <tr>
-<td valign="top">Ctrl-F8</td>
+<td valign="top">Ctrl-Alt-Up</td>
+<td valign="top">Go To Called Method</td>
+<td valign="top"></td>
+</tr>
+<tr>
+<td valign="top">Ctrl-Alt-Down</td>
+<td valign="top">Go To Calling Method</td>
+<td valign="top">Displays and highlights the line of code containing
+the method that calls the method you are currently in.</td>
+</tr>
+<tr>
+<td valign="top">Shift-F8</td>
 <td valign="top">Toggle Breakpoint</td>
 <td valign="top">Adds a breakpoint or removes the breakpoint at the
 cursor location in the program.</td>
@@ -410,15 +416,31 @@ cursor location in the program.</td>
 exception, or method.</td>
 </tr>
 <tr>
-<td valign="top">Shift-F8</td>
+<td valign="top">Ctrl-Shift-F7</td>
 <td valign="top">Add Watch</td>
 <td valign="top">Adds the specified variable to watch.</td> 
 </tr>
-
 <tr>
 <td valign="top">Ctrl-5</td>
 <td valign="top">Debugger Window</td>
 <td valign="top">Opens the Debugger window.</td>
+</tr>
+</table></p>
+
+<a name="window"></a>
+<h3>Tools Menu</h3>
+<p>
+<table border="1">
+<tr>
+<th align="left">Keys</th>
+<th align="left">Command</th>
+<th align="left">Action</th>
+</tr>
+<tr>
+<td valign="top">Alt-Shift-O</td>
+<td valign="top">Go To Class</td>
+<td valign="top">Displays the source file containing the definition of
+the selected class in the filesystem.</td>
 </tr>
 </table></p>
 
@@ -444,7 +466,6 @@ exception, or method.</td>
 </table></p>
 
 <hr>
-<font size=-2><a href="../credits.html">Legal Notices</a></font>
+<small><a href="../credits.html">Legal Notices</a></small>
 
 </body>
-</html>
