@@ -35,14 +35,22 @@ import com.netbeans.enterprise.modules.db.explorer.nodes.*;
 */
 public class DatabaseOption extends SystemOption 
 {
+	private static boolean debugMode;
 	private static Vector drivers;
 	private static Vector connections;
+	private static int fetchlimit = 100;
+	private static int fetchstep = 200;
+
+	public static final String PROP_DEBUG_MODE = "debugMode";
+	public static final String PROP_FETCH_LIMIT = "fetchLimit";
+	public static final String PROP_FETCH_STEP = "fetchStep";
 
 	public DatabaseOption()
 	{
 		super();
 		drivers = new Vector();
 		connections = new Vector();
+		debugMode = false;
 	}	
 
 	/** Returns vector of registered drivers */
@@ -57,7 +65,10 @@ public class DatabaseOption extends SystemOption
 				Enumeration defe = def.elements();
 				while(defe.hasMoreElements()) {
 					Object rit = defe.nextElement();
-					if (rit instanceof Map) rit = new DatabaseDriver((String)((Map)rit).get("name"), (String)((Map)rit).get("driver"));
+					String name = (String)((Map)rit).get("name");
+					String drv = (String)((Map)rit).get("driver");
+					String prefix = (String)((Map)rit).get("prefix");
+					rit = new DatabaseDriver(name, drv, prefix);
 					if (rit != null) rvec.add(rit);
 				}				
 			} else rvec = new Vector();
@@ -65,6 +76,18 @@ public class DatabaseOption extends SystemOption
 		}
     	return drivers;
   	}
+
+	public boolean getDebugMode()
+	{
+		return debugMode;
+	}
+	
+	public void setDebugMode(boolean flag)
+	{
+		if (debugMode == flag) return;
+		debugMode = flag;
+		firePropertyChange(PROP_DEBUG_MODE, new Boolean(!debugMode), new Boolean(debugMode));
+	}
 
 	/** Sets vector of available drivers.
 	* @param c Vector with drivers
@@ -89,6 +112,32 @@ public class DatabaseOption extends SystemOption
     	connections = c;
   	}
 
+	public int getFetchLimit()
+	{
+		return fetchlimit;
+	}
+	
+	public void setFetchLimit(int limit)
+	{
+		int old = fetchlimit;
+		if (old == limit) return;
+		fetchlimit = limit;
+		firePropertyChange(PROP_FETCH_LIMIT, new Integer(old), new Integer(limit));
+	}
+
+	public int getFetchStep()
+	{
+		return fetchstep;
+	}
+	
+	public void setFetchStep(int limit)
+	{
+		int old = fetchstep;
+		if (old == limit) return;
+		fetchstep = limit;
+		firePropertyChange(PROP_FETCH_STEP, new Integer(old), new Integer(limit));
+	}
+
 	/** Name of the option */
 	public String displayName() 
 	{
@@ -109,6 +158,7 @@ public class DatabaseOption extends SystemOption
 		super.writeExternal(out);
 		out.writeObject(getAvailableDrivers());
 		out.writeObject(getConnections());
+		out.writeInt(fetchlimit);
 	}
 	
 	/** Reads data
@@ -119,6 +169,7 @@ public class DatabaseOption extends SystemOption
 		super.readExternal(in);
 		drivers = (Vector)in.readObject();
 		connections = (Vector)in.readObject();
+		fetchlimit = in.readInt();
 	}
 }
 
