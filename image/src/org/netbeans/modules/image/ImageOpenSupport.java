@@ -143,6 +143,8 @@ public class ImageOpenSupport extends OpenSupport implements OpenCookie, CloseCo
     
     /** Environment for image open support. */
     private static class Environment extends OpenSupport.Env {
+        /** generated Serialized Version UID */
+        static final long serialVersionUID = -1934890789745432254L;
 
         /** Constructor. */
         public Environment(DataObject dataObject) {
