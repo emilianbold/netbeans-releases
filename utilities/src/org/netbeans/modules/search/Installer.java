@@ -22,30 +22,24 @@ import org.openide.modules.ModuleInstall;
  * Module installation class for search 'sub module'.
  *
  * @author  Petr Kuzel
+ * @author  Marian Petras
  */
 public class Installer extends ModuleInstall {
 
     /** Serial version UID. */
     private final static long serialVersionUID = 1;
 
-    /** Holds hooking code. */
-    private static FindActionManager hook;
-
-
-    /** Restores module. Overrides superclass method. 
-     * Hooks <code>SearchPerformer</code> on <code>FindAction</code>. */
+    /**
+     */
     public void restored () {
-        hook = new FindActionManager(SearchPerformer.getDefault());
-        hook.hook();
-        
+        FindActionManager.getInstance().init();
         FindDialogMemory.getDefault().initialize();
     }
 
-    /** Unistalls module. Overrides superclass method.
-     * Unhooks <code>SearchPerformer</code> from <code>FindAction</code>. */
+    /**
+     */
     public void uninstalled () {
-        hook.unhook();
-        
+        FindActionManager.getInstance().cleanup();
         FindDialogMemory.getDefault().uninitialize();
         Manager.getInstance().doCleanup();
     }

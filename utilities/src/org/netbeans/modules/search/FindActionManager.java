@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,9 +16,15 @@ package org.netbeans.modules.search;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Iterator;
+import java.util.Set;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 
 import org.openide.actions.FindAction;
 import org.openide.text.CloneableEditor;
+import org.openide.util.SharedClassObject;
+import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.Mutex;
 import org.openide.windows.TopComponent;
@@ -27,64 +33,57 @@ import org.openide.windows.TopComponent;
 /**
  * Manages <em>FindAction</em> - enables and disables it by current set of
  * selected nodes.
- * <p>
- * FindAction's performer is changed according to current set of
- * selected nodes. If there is no node selected or if no registered
- * {@linkplain org.openidex.search.SearchType search type} is able to perform
- * search on the selected nodes, the action is temporarily disabled.
  *
  * @author  Petr Kuzel
  * @author  Marian Petras
- * @see SearchPerformer#enabled
  * @see org.openide.actions.FindAction
  * @see org.openide.windows.TopComponent.Registry
  */
-public class FindActionManager implements PropertyChangeListener {
+final class FindActionManager implements PropertyChangeListener, Runnable {
 
+    /**
+     */
+    private static FindActionManager instance;
     /** Search perfomer. */
-    private SearchPerformer performer;
+    private final SearchPerformer performer;
+    /** holds set of windows for which their ActionMap was modified */
+    private final Set activatedOnWindows = new WeakSet(8);
     
-    /** Search hook. */
-    private static FindActionManager theHook = null;
-
-    /** the system FindAction */
-    private FindAction findAction;
+    /** */
+    private Object findActionMapKey;
     
     /**
-     * Creates a new <code>FindActionManager</code>.
-     *
-     * @param  performer  object delegated to perform the <em>find</em> action
-     *                    and to decide whether the action is to be enabled
-     *                    or disabled
-     * @see  SearchPerformer#performAction(SystemAction)
-     * @see  SearchPerformer#enabled
      */
-    public FindActionManager(SearchPerformer performer) {
-        this.performer = performer;
+    private FindActionManager() {
+        performer = (SearchPerformer)
+                    SharedClassObject.findObject(SearchPerformer.class, true);
     }
-
-    /** Hooks performer at <code>FindAction</code>.
-     * Conditionally hooks performer to FindAction.
-     * Condition: active top component is ExplorerManager.Provider AND
-     * some criteria is enabled be current nodes
+    
+    /**
      */
-    public void hook() {
-        findAction = (FindAction) SystemAction.get(FindAction.class);
-        if (findAction == null) { // hook target does not exist
-            throw new RuntimeException("Should not happen: Cannot locate FindAction."); // NOI18N
+    static FindActionManager getInstance() {
+        if (instance == null) {
+            instance = new FindActionManager();
         }
-        setHookListener(this);
-        // TopComponent.getRegistry().addPropertyChangeListener(this);
+        return instance;
     }
 
     /**
-     * Unhooks performer. After invoking, this class is useless. */
-    public void unhook() {
-        setHookListener(null);
-        performer = null;
+     */
+    void init() {
+        TopComponent.getRegistry().addPropertyChangeListener(this);
+        
+        Mutex.EVENT.writeAccess(this);
+    }
+
+    /**
+     */
+    void cleanup() {
+        //System.out.println("cleanup");
+        TopComponent.getRegistry().removePropertyChangeListener(this);
         
         /*
-         * We just need to run method 'someoneActivated' in the AWT event
+         * We just need to run method 'cleanupWindowRegistry' in the AWT event
          * dispatching thread. We use Mutex.EVENT for this task.
          * 
          * We use Mutex.Action rather than Runnable. The reason is that
@@ -94,67 +93,72 @@ public class FindActionManager implements PropertyChangeListener {
          */
         Mutex.EVENT.readAccess(new Mutex.Action() {
             public Object run() {
-                someoneActivated();
+                cleanupWindowRegistry();
                 return null;
             }
         });
-        findAction = null;
-        // hook();
-        // TopComponent.getRegistry().removePropertyChangeListener(this);
+    }
+    
+    /**
+     */
+    public void run() {
+        someoneActivated();
+    }
+    
+    /**
+     */
+    private void cleanupWindowRegistry() {
+        for (Iterator i = activatedOnWindows.iterator(); i.hasNext(); ) {
+            TopComponent tc = (TopComponent) i.next();
+            ActionMap tcActionMap = tc.getActionMap();
+            Action mappedAction = tcActionMap.get(findActionMapKey);
+            if (mappedAction.getClass() == SearchPerformer.class) {
+                //System.out.println("removed mapping for window " + tc.getDisplayName());
+                tcActionMap.put(findActionMapKey, null);
+            }
+        }
+        activatedOnWindows.clear();
     }
 
-    /** Sets hook listener. */
-    private static void setHookListener(FindActionManager hook) {
-        TopComponent.Registry regs = TopComponent.getRegistry();
-
-        if (theHook != null) {
-            regs.removePropertyChangeListener(theHook);
-        }
-
-        if (hook != null) {
-            regs.addPropertyChangeListener(hook);
-        }
-
-        theHook = hook;
-    }
-
-    /** Determine if activated topcomponent represent Editor
-     * if not call overwriting routine.
-     * It prevents battle about FindAction performer.
+    /**
      */
     private void someoneActivated() {
-        TopComponent activated = TopComponent.getRegistry().getActivated();
-        if(activated !=null && !(activated instanceof CloneableEditor)) {
-            overwriteFindPerformer();
+        //System.out.println("someoneActivated");
+        TopComponent window = TopComponent.getRegistry().getActivated();
+
+        if ((window != null)
+                && checkIsApplicableOnWindow(window)
+                && activatedOnWindows.add(window)) {
+            window.getActionMap().put(getFindActionMapKey(), performer);
+            //System.out.println("added mapping for window " + window.getDisplayName());
         }
     }
-
-    /** Sets performer as find performer if no performer is set. */
-    private void overwriteFindPerformer() {
-
-        if(performer == null) { // handle deinstalation
-            if (findAction != null) 
-                findAction.setActionPerformer(null);
-            return;
-        }
-
-        Object currPerformer = findAction.getActionPerformer();
-
-        if(performer.enabled(TopComponent.getRegistry().getCurrentNodes())) {
-            findAction.setActionPerformer(performer);
-        } else if (currPerformer != null && currPerformer.getClass().equals(SearchPerformer.class)) {
-            findAction.setActionPerformer(null);
-        }
+    
+    /**
+     * Checks whether the Find action is applicable on the given window.
+     */
+    private boolean checkIsApplicableOnWindow(TopComponent window) {
+        return !(window instanceof CloneableEditor);
     }
-
+    
     /** Implements <code>PropertyChangeListener</code>. Be interested in current_nodes property change. */
     public void propertyChange(PropertyChangeEvent evt) {
-        String propName = evt.getPropertyName();
-        
-        if(TopComponent.Registry.PROP_CURRENT_NODES.equals(propName)  ||
-           TopComponent.Registry.PROP_ACTIVATED.equals(propName)) {
-                someoneActivated();
+        if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())){
+            someoneActivated();
         }
+    }
+    
+    /**
+     */
+    private Object getFindActionMapKey() {
+        if (findActionMapKey == null) {
+            SharedClassObject findAction = 
+                    SharedClassObject.findObject(FindAction.class);
+            assert findAction != null;
+            
+            findActionMapKey = ((FindAction) findAction).getActionMapKey();
+        }
+        return findActionMapKey;
     }
 
 }
