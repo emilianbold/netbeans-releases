@@ -96,6 +96,7 @@ public class EventsAction extends CookieAction {
   public JMenuItem getPopupPresenter() {
     JMenu popupMenu = new org.openide.awt.JMenuPlus (org.openide.util.NbBundle.getBundle (EventsAction.class).getString ("ACT_Events"));
     popupMenu.setEnabled (isEnabled ());
+    HelpCtx.setHelpIDString (popupMenu, EventsAction.class.getName ());
     popupMenu.addMenuListener(new MenuListener() {
         Hashtable mapping = new Hashtable ();
         public void menuSelected(MenuEvent e) {
@@ -117,6 +118,7 @@ public class EventsAction extends CookieAction {
           for (int i = 0; i < setHandlers.length; i++) {
             String name = setHandlers[i].getName ();            
             JMenu m = new org.openide.awt.JMenuPlus (name.substring (0, 1).toUpperCase () + name.substring (1));
+            HelpCtx.setHelpIDString (m, EventsAction.class.getName ());
             menu.add (m);
             EventsList.Event[] events = setHandlers[i].getEvents();
             for (int j = 0; j < events.length; j++) {
@@ -127,6 +129,7 @@ public class EventsAction extends CookieAction {
                 menuText.append ("]");
               }
               JMenuItem jmi = new JMenuItem (menuText.toString ());
+              HelpCtx.setHelpIDString (jmi, EventsAction.class.getName ());
               m.add (jmi);
               mapping.put (jmi, events[j]);
               jmi.addActionListener (new ActionListener () {
@@ -154,6 +157,7 @@ public class EventsAction extends CookieAction {
 }
 /*
  * Log
+ *  8    Gandalf   1.7         7/20/99  Jesse Glick     Context help.
  *  7    Gandalf   1.6         6/28/99  Ian Formanek    Fixed positioning 
  *       problems with popup menu
  *  6    Gandalf   1.5         6/27/99  Ian Formanek    FUlly implemented for 

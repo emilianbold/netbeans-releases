@@ -136,6 +136,7 @@ public class SelectLayoutAction extends CookieAction {
   public JMenuItem getPopupPresenter() {
     JMenu popupMenu = new org.openide.awt.JMenuPlus (getName ());
     popupMenu.setEnabled (isEnabled ());
+    HelpCtx.setHelpIDString (popupMenu, SelectLayoutAction.class.getName ());
     popupMenu.addMenuListener(new MenuListener() {
         public void menuSelected(MenuEvent e) {
           JMenu menu = (JMenu)e.getSource ();
@@ -149,6 +150,7 @@ public class SelectLayoutAction extends CookieAction {
           
           for (int i = 0; i < layouts.length; i++) {
             JMenuItem mi = new JMenuItem (layouts[i].getName ());
+            HelpCtx.setHelpIDString (mi, SelectLayoutAction.class.getName ());
             menu.add (mi);
             mi.addActionListener (new LayoutActionListener (nodes, layouts[i]));
           }
@@ -201,6 +203,7 @@ public class SelectLayoutAction extends CookieAction {
 }
 /*
  * Log
+ *  7    Gandalf   1.6         7/20/99  Jesse Glick     Context help.
  *  6    Gandalf   1.5         6/28/99  Ian Formanek    Fixed positioning 
  *       problems with popup menu
  *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 

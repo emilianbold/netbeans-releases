@@ -17,7 +17,9 @@ import org.openide.TopManager;
 import org.openide.actions.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.loaders.InstanceSupport;
 import org.openide.nodes.*;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -91,6 +93,24 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   
   public Image getOpenedIcon (int iconType) {
     return getIcon (iconType);
+  }
+
+  public HelpCtx getHelpCtx () {
+    HelpCtx help = InstanceSupport.findHelp (new InstanceCookie () {
+      public Object instanceCreate () {
+        return component.getBeanInstance ();
+      }
+      public String instanceName () {
+        return component.getName ();
+      }
+      public Class instanceClass () {
+        return component.getBeanClass ();
+      }
+    });
+    if (help != null)
+      return help;
+    else
+      return new HelpCtx (RADComponentNode.class);
   }
   
   public Node.PropertySet[] getPropertySets () {
@@ -615,6 +635,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  26   Gandalf   1.25        7/20/99  Jesse Glick     Context help.
  *  25   Gandalf   1.24        7/19/99  Ian Formanek    paste copy, paste 
  *       instance
  *  24   Gandalf   1.23        7/16/99  Ian Formanek    default action

@@ -478,14 +478,6 @@ final public class FormEditor extends Object {
       return new Dimension (DEFAULT_INSPECTOR_WIDTH, DEFAULT_INSPECTOR_HEIGHT);
     }
     
-    /** Provides a Help context for this object.
-    * @see org.openide.Help
-    * @see org.openide.HelpCtx
-    */
-    public org.openide.util.HelpCtx getHelp() {
-      return new org.openide.util.HelpCtx (ComponentInspector.class);
-    }
-
     /** replaces this in object stream */
     public Object writeReplace() {
       return new ResolvableHelper ();
@@ -582,6 +574,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  27   Gandalf   1.26        7/20/99  Jesse Glick     Context help.
  *  26   Gandalf   1.25        7/12/99  Ian Formanek    Fixed to compile
  *  25   Gandalf   1.24        7/9/99   Ian Formanek    Menu editor improvements
  *  24   Gandalf   1.23        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
