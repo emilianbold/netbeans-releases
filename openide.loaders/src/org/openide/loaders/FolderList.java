@@ -368,6 +368,12 @@ implements FileChangeListener, DataObject.Container {
                     // file without data object => no changes
                 }
             }
+            
+            // Resort if sorting by last modification or size:
+            DataFolder.SortMode sortMode = getComparator().getSortMode();
+            if (sortMode == DataFolder.SortMode.LAST_MODIFIED || sortMode == DataFolder.SortMode.SIZE) {
+                changeComparator();
+            }
         }
     }
 

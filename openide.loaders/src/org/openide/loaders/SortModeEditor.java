@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,18 +15,18 @@ package org.openide.loaders;
 
 import java.beans.*;
 
-
 /** Editor for sorting mode
-*
-* @author Jaroslav Tulach
-*/
+ * @author Jaroslav Tulach, Jesse Glick
+ */
 class SortModeEditor extends PropertyEditorSupport {
     /** modes */
     private static final DataFolder.SortMode[] values = {
         DataFolder.SortMode.NONE,
         DataFolder.SortMode.NAMES,
         DataFolder.SortMode.CLASS,
-        DataFolder.SortMode.FOLDER_NAMES
+        DataFolder.SortMode.FOLDER_NAMES,
+        DataFolder.SortMode.LAST_MODIFIED,
+        DataFolder.SortMode.SIZE,
     };
 
     /** Names for modes. First is for displaying files */
@@ -34,7 +34,9 @@ class SortModeEditor extends PropertyEditorSupport {
         DataObject.getString ("VALUE_sort_none"),
         DataObject.getString ("VALUE_sort_names"),
         DataObject.getString ("VALUE_sort_class"),
-        DataObject.getString ("VALUE_sort_folder_names")
+        DataObject.getString ("VALUE_sort_folder_names"),
+        DataObject.getString ("VALUE_sort_last_modified"),
+        DataObject.getString ("VALUE_sort_size"),
     };
 
     /** @return names of the two possible modes */

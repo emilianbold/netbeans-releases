@@ -7,22 +7,22 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
 import java.util.*;
+import org.openide.filesystems.FileObject;
 
 import org.openide.util.Lookup;
 import org.openide.nodes.Node;
 
 /**
-*
-*
-* @author Jaroslav Tulach
-*/
+ * Compares objects in a folder.
+ * @author Jaroslav Tulach, Jesse Glick
+ */
 class FolderComparator extends DataFolder.SortMode implements Comparator {
     /** modes */
     public static final int NONE = 0;
@@ -32,6 +32,10 @@ class FolderComparator extends DataFolder.SortMode implements Comparator {
     * by names
     */
     public static final int FOLDER_NAMES = 3;
+    /** by folders, then modification time */
+    public static final int LAST_MODIFIED = 4;
+    /** by folders, then size */
+    public static final int SIZE = 5;
 
 
     /** mode to use */
@@ -73,8 +77,14 @@ class FolderComparator extends DataFolder.SortMode implements Comparator {
         case CLASS:
             return compareClass (obj1, obj2);
         case FOLDER_NAMES:
-        default:
             return compareFoldersFirst (obj1, obj2);
+        case LAST_MODIFIED:
+            return compareLastModified(obj1, obj2);
+        case SIZE:
+            return compareSize(obj1, obj2);
+        default:
+            assert false : mode;
+            return 0;
         }
     }
 
@@ -142,4 +152,63 @@ class FolderComparator extends DataFolder.SortMode implements Comparator {
                    obj2.getName ()
                );
     }
+
+    /**
+     * Sort folders alphabetically first. Then files, newest to oldest.
+     */
+    private static int compareLastModified(DataObject obj1, DataObject obj2) {
+        if (obj1 instanceof DataFolder) {
+            if (obj2 instanceof DataFolder) {
+                return obj1.getName().compareTo(obj2.getName());
+            } else {
+                return -1;
+            }
+        } else {
+            if (obj2 instanceof DataFolder) {
+                return 1;
+            } else {
+                FileObject fo1 = obj1.getPrimaryFile();
+                FileObject fo2 = obj2.getPrimaryFile();
+                Date d1 = fo1.lastModified();
+                Date d2 = fo2.lastModified();
+                if (d1.after(d2)) {
+                    return -1;
+                } else if (d2.after(d1)) {
+                    return 1;
+                } else {
+                    return fo1.getNameExt().compareTo(fo2.getNameExt());
+                }
+            }
+        }
+    }
+
+    /**
+     * Sort folders alphabetically first. Then files, biggest to smallest.
+     */
+    private static int compareSize(DataObject obj1, DataObject obj2) {
+        if (obj1 instanceof DataFolder) {
+            if (obj2 instanceof DataFolder) {
+                return obj1.getName().compareTo(obj2.getName());
+            } else {
+                return -1;
+            }
+        } else {
+            if (obj2 instanceof DataFolder) {
+                return 1;
+            } else {
+                FileObject fo1 = obj1.getPrimaryFile();
+                FileObject fo2 = obj2.getPrimaryFile();
+                long s1 = fo1.getSize();
+                long s2 = fo2.getSize();
+                if (s1 > s2) {
+                    return -1;
+                } else if (s2 > s1) {
+                    return 1;
+                } else {
+                    return fo1.getNameExt().compareTo(fo2.getNameExt());
+                }
+            }
+        }
+    }
+
 }

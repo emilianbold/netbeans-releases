@@ -21,11 +21,7 @@ import java.util.*;
 import javax.swing.Action;
 
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileStatusListener;
-import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileObject;
+import org.openide.filesystems.*;
 import org.openide.util.datatransfer.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
@@ -314,52 +310,111 @@ public class DataNode extends AbstractNode {
         p = createNameProperty (obj);
         ss.put (p);
 
-        if ( !getDataObject().getPrimaryFile().isReadOnly() )
+        FileObject fo = getDataObject().getPrimaryFile();
+        if (couldBeTemplate(fo) && !fo.isReadOnly()) {
             try {            
-                p = new PropertySupport.Reflection (
-                        obj, Boolean.TYPE, "isTemplate", "setTemplate" // NOI18N
-                    );
-                p.setName (DataObject.PROP_TEMPLATE);
-                p.setDisplayName (DataObject.getString("PROP_template"));
-                p.setShortDescription (DataObject.getString("HINT_template"));
-                ss.put (p);
+                p = new PropertySupport.Reflection(obj, Boolean.TYPE, "isTemplate", "setTemplate"); // NOI18N
+                p.setName(DataObject.PROP_TEMPLATE);
+                p.setDisplayName(DataObject.getString("PROP_template"));
+                p.setShortDescription(DataObject.getString("HINT_template"));
+                ss.put(p);
             } catch (Exception ex) {
-                throw new InternalError ();
+                throw new InternalError();
             }
+        }
 
-        /*
-        // Add a property with a list of all contained files, sorted by primary and then alphabetically:
-        ss.put (new PropertySupport.ReadOnly (DataObject.PROP_FILES, String[].class, "Files", "Files contained in this object.") { // [PENDING] I18N
-          public Object getValue () {
-            Set files = obj.files ();
-            String[] toret = new String[files.size ()];
-            int i = 0; for (Iterator it = files.iterator (); it.hasNext (); i++)
-              toret[i] = getNameExt ((FileObject) it.next ());
-            final String pfilename = getNameExt (obj.getPrimaryFile ());
-            Arrays.sort (toret, new Comparator () {
-              public int compare (Object o1, Object o2) {
-                String fname1 = (String) o1;
-                String fname2 = (String) o2;
-                if (fname1.equals (pfilename))
-                  return -1;
-                else if (fname2.equals (pfilename))
-                  return 1;
-                else
-                  return fname1.compareTo (fname2);
-              }
-            });
-            return toret;
-          }
-          private String getNameExt (FileObject fo) {
-            if (fo.isRoot ()) return "<root of filesystem>"; // [PENDING] I18N
-            String name = fo.getName ();
-            String ext = fo.getExt ();
-            return ext == null || ext.equals ("") ? name : name + '.' + ext;
-          }
-    });
-        */
+        if (fo.isData()) {
+            ss.put(new AllFilesProperty());
+            ss.put(new SizeProperty());
+            ss.put(new LastModifiedProperty());
+        }
 
         return s;
+    }
+    
+    private static boolean couldBeTemplate(FileObject fo) {
+        FileSystem fs;
+        try {
+            fs = fo.getFileSystem();
+        } catch (FileStateInvalidException e) {
+            return false;
+        }
+        return fs.isDefault() && fo.getPath().startsWith("Templates/"); // NOI18N
+    }
+    
+    /**
+     * A property with a list of all contained files.
+     * Sorted to first show primary file, then all secondary files alphabetically.
+     * Shows absolute file path or the closest equivalent.
+     */
+    private final class AllFilesProperty extends PropertySupport.ReadOnly {
+        
+        public AllFilesProperty() {
+            super(DataObject.PROP_FILES, String[].class,
+                  DataObject.getString("PROP_files"), DataObject.getString("HINT_files"));
+        }
+        
+        public Object getValue() {
+            Set files = obj.files();
+            String[] toret = new String[files.size()];
+            int i = 0; for (Iterator it = files.iterator(); it.hasNext(); i++) {
+                toret[i] = name((FileObject)it.next());
+            }
+            final String pfilename = name(obj.getPrimaryFile());
+            Arrays.sort(toret, new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    String fname1 = (String) o1;
+                    String fname2 = (String) o2;
+                    if (fname1.equals(pfilename))
+                        return -1;
+                    else if (fname2.equals(pfilename))
+                        return 1;
+                    else
+                        return fname1.compareTo(fname2);
+                }
+            });
+            return toret;
+        }
+        
+        private String name(FileObject fo) {
+            File f = FileUtil.toFile(fo);
+            if (f != null) {
+                return f.getAbsolutePath();
+            } else {
+                FileSystem fs;
+                try {
+                    fs = fo.getFileSystem();
+                } catch (FileStateInvalidException e) {
+                    return fo.getPath();
+                }
+                return NbBundle.getMessage(DataNode.class, "FMT_file_in_fs", fo.getPath(), fs.getDisplayName());
+            }
+        }
+        
+    }
+    
+    private final class SizeProperty extends PropertySupport.ReadOnly {
+        
+        public SizeProperty() {
+            super("size", Long.TYPE, DataObject.getString("PROP_size"), DataObject.getString("HINT_size"));
+        }
+        
+        public Object getValue() {
+            return new Long(getDataObject().getPrimaryFile().getSize());
+        }
+        
+    }
+    
+    private final class LastModifiedProperty extends PropertySupport.ReadOnly {
+        
+        public LastModifiedProperty() {
+            super("lastModified", Date.class, DataObject.getString("PROP_lastModified"), DataObject.getString("HINT_lastModified"));
+        }
+        
+        public Object getValue() {
+            return getDataObject().getPrimaryFile().lastModified();
+        }
+        
     }
     
     /** Copy this node to the clipboard.

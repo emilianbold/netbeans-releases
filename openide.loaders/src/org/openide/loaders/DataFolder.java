@@ -1009,6 +1009,19 @@ implements Serializable, DataObject.Container {
         * objects sorted by name.
         */
         public static final SortMode FOLDER_NAMES = new FolderComparator (FolderComparator.FOLDER_NAMES);
+        
+        /**
+         * Folders go first (sorted by name) followed by files sorted by decreasing
+         * last modification time.
+         * @since org.openide.loaders 4.10
+         */
+        public static final SortMode LAST_MODIFIED = new FolderComparator(FolderComparator.LAST_MODIFIED);
+
+        /**
+         * Folders go first (sorted by name) followed by files sorted by decreasing size.
+         * @since org.openide.loaders 4.10
+         */
+        public static final SortMode SIZE = new FolderComparator(FolderComparator.SIZE);
 
         /** Method to write the sort mode to a folder's attributes.
         * @param folder folder write this mode to
@@ -1021,6 +1034,8 @@ implements Serializable, DataObject.Container {
             if (this == FOLDER_NAMES) x = "F"; // NOI18N
             else if (this == NAMES) x = "N"; // NOI18N
             else if (this == CLASS) x = "C"; // NOI18N
+            else if (this == LAST_MODIFIED) x = "M"; // NOI18N
+            else if (this == SIZE) x = "S"; // NOI18N
             else x = "O"; // NOI18N
 
             f.setAttribute (EA_SORT_MODE, x);
@@ -1037,6 +1052,8 @@ implements Serializable, DataObject.Container {
             case 'N': return NAMES;
             case 'C': return CLASS;
             case 'O': return NONE;
+            case 'M': return LAST_MODIFIED;
+            case 'S': return SIZE;
             case 'F':
             default:
                 return FOLDER_NAMES;
