@@ -139,13 +139,6 @@ NodeActionsProvider, NodeActionsProviderFilter {
         fireModelChanged();
     }
 
-    private void createFixedWatch(String name, String type, String value) {
-        if (fixedWatches == null) fixedWatches = new ArrayList();
-        FixedWatch fw = new FixedWatch(name, type, value);
-        fixedWatches.add(fw);
-        fireModelChanged();
-    }
-
     public Object getRoot (TreeModel original) {
         return original.getRoot ();
     }
@@ -157,18 +150,27 @@ NodeActionsProvider, NodeActionsProviderFilter {
         int to
     ) throws NoInformationException,ComputingException, UnknownTypeException {
         if (parent == TreeModel.ROOT) {
-            Object[] children = original.getChildren (parent, from, to);
-            if (fixedWatches == null) return children;
+            if (fixedWatches == null || fixedWatches.size() == 0) return original.getChildren(parent, from, to);
 
-            Object [] allChildren = new Object [
-                children.length + fixedWatches.size ()
-            ];
-            fixedWatches.toArray (allChildren);
+            int fixedSize = fixedWatches.size();
+            int originalFrom = from - fixedSize;
+            int originalTo = to - fixedSize;
+            if (originalFrom < 0) originalFrom = 0;
+
+            Object [] children;
+            if (originalTo > originalFrom) {
+                children = original.getChildren(parent, originalFrom, originalTo);
+            } else {
+                children = new Object[0];
+            }
+            Object [] allChildren = new Object[children.length + fixedSize];
+
+            fixedWatches.toArray(allChildren);
             System.arraycopy (
                 children, 
                 0, 
                 allChildren, 
-                fixedWatches.size (), 
+                fixedSize,
                 children.length
             );
             Object[] fallChildren = new Object [to - from];
