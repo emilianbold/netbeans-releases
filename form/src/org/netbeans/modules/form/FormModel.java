@@ -208,14 +208,8 @@ public class FormModel
     }
 
     public RADComponent[] getNonVisualComponents() {
-        ArrayList list = new ArrayList();
-        for (Iterator it=nonVisualComponents.iterator(); it.hasNext(); ) {
-            Object comp = it.next();
-            list.add(comp);
-            if (comp instanceof ComponentContainer)
-                collectMetaComponents((ComponentContainer)comp, list);
-        }
-        return (RADComponent[]) list.toArray(new RADComponent[list.size()]);
+        return (RADComponent[]) nonVisualComponents.toArray(
+                                new RADComponent[nonVisualComponents.size()]); 
     }
 
     void reorderNonVisualComponents(int[] perm) {
