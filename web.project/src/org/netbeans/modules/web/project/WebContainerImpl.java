@@ -15,11 +15,9 @@ package org.netbeans.modules.web.project;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.web.dd.DDProvider;
 import org.netbeans.api.web.dd.EjbLocalRef;
 import org.netbeans.api.web.dd.EjbRef;
@@ -28,12 +26,10 @@ import org.netbeans.api.web.dd.ResourceRef;
 import org.netbeans.api.web.dd.WebApp;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.schema2beans.BaseBean;
-import org.netbeans.modules.web.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -46,7 +42,6 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
     private Project webProject;
     private ReferenceHelper helper;
     private AntProjectHelper antHelper;
-    private static final String J2EE_14_LIBRARY = "j2ee14"; //NOI18N
     
     public WebContainerImpl(Project p, ReferenceHelper helper, AntProjectHelper antHelper) {
         webProject = p;
@@ -90,8 +85,8 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
                 s += File.pathSeparatorChar + helper.createForeignFileReference(target);
 		ep.setProperty(WebProjectProperties.JAVAC_CLASSPATH, s);
                 antHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                ProjectManager.getDefault().saveProject(webProject);
         }
-        addJ2eeLibrary();
          
         writeDD(bb);
         return refName;
@@ -99,22 +94,6 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
     
     public String getServiceLocatorName() {
         return null;
-    }
-    
-    private void addJ2eeLibrary() {
-//        Library lib = LibraryManager.getDefault().getLibrary(J2EE_14_LIBRARY);
-//        
-//        WebProjectProperties wp = new WebProjectProperties(
-//            webProject, 
-//            new UpdateHelper (webProject, antHelper, antHelper.createAuxiliaryConfiguration(), new GeneratedFilesHelper(antHelper), UpdateHelper.createDefaultNotifier()),
-//            ((WebProject) webProject).evaluator(),
-//            helper);
-//        
-//        List vcpis = (List) wp.get (WebProjectProperties.JAVAC_CLASSPATH);
-//        VisualClassPathItem vcpi = VisualClassPathItem.create (lib, VisualClassPathItem.PATH_IN_WAR_NONE);
-//        vcpis.add (vcpi);
-//        wp.put (WebProjectProperties.JAVAC_CLASSPATH, vcpis); 
-//        wp.store();
     }
     
     private BaseBean findDD() throws IOException {
