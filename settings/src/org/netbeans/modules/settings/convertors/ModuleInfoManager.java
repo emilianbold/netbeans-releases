@@ -192,7 +192,7 @@ final class ModuleInfoManager {
     /** ModuleInfo status provider shared by registered listeners
      * @see #registerPropertyChangeListener
      */
-    private final class PCL implements PropertyChangeListener {
+    private static final class PCL implements PropertyChangeListener {
         /** a flag to be set to true when a module has been disabled */
         private boolean aModuleHasBeenChanged = false;
         private boolean wasModuleEnabled;

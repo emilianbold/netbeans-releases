@@ -818,7 +818,6 @@ public final class SerialDataNode extends DataNode {
     
     /** Derived from BeanChildren and allow replace beancontext. */
     private final static class InstanceChildren extends Children.Keys {
-        java.lang.ref.WeakReference dobjListener;
         SerialDataNode task;
         DataObject dobj;
         Object bean;

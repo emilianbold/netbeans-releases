@@ -326,7 +326,7 @@ public final class NbErrorManager extends ErrorManager {
             String getter = (String)NESTS.get(c.getName());
             if (getter != null) {
                 try {
-                    if (getter.startsWith(".")) { // NOI18N
+                    if (getter.charAt(0) == '.') { // NOI18N
                         Field f = c.getField(getter.substring(1));
                         return (Throwable)f.get(t);
                     } else {

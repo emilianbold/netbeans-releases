@@ -412,7 +412,7 @@ public final class LoaderPoolNode extends AbstractNode {
             NbMarshalledObject obj;
             if (o1 instanceof String) {
                 String name = (String)o1;
-                if (name.startsWith("=")) { // NOI18N
+                if (name.length() > 0 && name.charAt(0) == '=') { // NOI18N
                     // #27190: unmodified loader, just here for the ordering.
                     String cname = name.substring(1);
                     DataLoader dl = (DataLoader)names2Loaders.get(cname);

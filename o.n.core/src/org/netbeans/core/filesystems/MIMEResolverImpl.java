@@ -68,7 +68,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         return ic;
     }
     
-    class FileTypeNode extends DataNode {
+    static class FileTypeNode extends DataNode {
         public FileTypeNode (DataObject obj, Children ch) {
             super(obj, ch);
         }
@@ -539,7 +539,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
 
                     // RFC3023; allows "+xml" suffix
 
-                    if (mimes[i].startsWith("+") && s.endsWith(mimes[i])) return true; // NOI18N
+                    if (mimes[i].length() > 0 && mimes[i].charAt(0) == '+' && s.endsWith(mimes[i])) return true; // NOI18N
                 }
             }
             
