@@ -20,6 +20,7 @@ import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.util.NotImplementedException;
 import com.netbeans.ide.nodes.*;
+import com.netbeans.ide.util.NbBundle;
 import com.netbeans.developer.impl.workspace.WorkspacePoolContext;
 
 /** Important places in the system.
@@ -27,11 +28,22 @@ import com.netbeans.developer.impl.workspace.WorkspacePoolContext;
 * @author Jaroslav Tulach
 */
 final class NbPlaces extends Object implements Places, Places.Nodes, Places.Folders {
+  /** session settings icon base */
+  private static final String SESSION_SETTINGS_ICON_BASE="/com/netbeans/developer/impl/resources/sessionSettings";
+  
   /** default */
   private static NbPlaces places;
   /** set of roots */
   private static ArrayList roots = new ArrayList ();
+  /** session node */
+  private static AbstractNode session;
 
+  static {
+    session = new AbstractNode (new Children.Array ());
+    session.setName (NbBundle.getBundle (NbPlaces.class).getString ("CTL_Session_Settings"));
+    session.setIconBase (SESSION_SETTINGS_ICON_BASE);
+  }
+  
   /** No instance outside this class.
   */
   private NbPlaces() {
@@ -58,6 +70,18 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     if (roots.remove (n)) {
       NbTopManager.change.firePropertyChange (NbTopManager.PROP_PLACES, null, null);
     }
+  }
+  
+  /** Adds new session node.
+  */
+  public static void addSession (Node n) {
+    session.getChildren ().add (new Node[] { n });
+  }
+  
+  /** Removes new session node.
+  */
+  public static void removeSession (Node n) {
+    session.getChildren ().remove (new Node[] { n });
   }
 
   /** Interesting places for nodes.
@@ -96,6 +120,11 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
   */
   public Node environment () {
     return EnvironmentNode.getDefault ();
+  }
+
+  /** Session node */
+  public Node session () {
+    return NbPlaces.session;
   }
 
   /** Control panel
@@ -187,6 +216,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  17   Gandalf   1.16        3/29/99  Jaroslav Tulach places ().nodes 
+*       ().session ()
 *  16   Gandalf   1.15        3/25/99  Jaroslav Tulach Faster startup.
 *  15   Gandalf   1.14        3/19/99  Jaroslav Tulach TopManager.getDefault 
 *       ().getRegistry ()
