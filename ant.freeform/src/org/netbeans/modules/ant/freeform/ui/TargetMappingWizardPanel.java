@@ -15,6 +15,7 @@ package org.netbeans.modules.ant.freeform.ui;
 
 import java.awt.Component;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -38,6 +39,7 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
     private TargetMappingPanel component;
     private WizardDescriptor wizardDescriptor;
     private String projectType;
+    private List targetNames;
     
     public TargetMappingWizardPanel(String projectType) {
         this.projectType = projectType;
@@ -90,7 +92,11 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
         // Util.getAntScriptTargetNames can return null when script is 
         // invalid but first panel checks script validity so it is OK here.
         List l = Util.getAntScriptTargetNames(fo);
-        component.setTargetNames(l, true);
+        // #47784 - update panel only once or when Ant script has changed
+        if (targetNames == null || !targetNames.equals(l)) {
+            targetNames = new ArrayList(l);
+            component.setTargetNames(l, true);
+        }
         File projDir = (File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_FOLDER);
         File antScript = (File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_ANT_SCRIPT);
         if (!antScript.getParentFile().equals(projDir) && antScript.getName().equals("build.xml")) { // NOI18N
