@@ -17,21 +17,33 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ResourceBundle;
+import java.net.URL;
+import java.net.MalformedURLException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import com.netbeans.ide.options.SystemOption;
 import com.netbeans.ide.util.NbBundle;
+import com.netbeans.ide.util.HttpServer;
+import com.netbeans.ide.filesystems.FileObject;
 
 /** Options for http server
 *
 * @author Ales Novak, Petr Jiricka
 * @version 0.12, May 5, 1999
 */
-public class HttpServerSettings extends SystemOption {
+public class HttpServerSettings extends SystemOption implements HttpServer.Impl {
   
   /** generated Serialized Version UID */
   //static final long serialVersionUID = -2930037136839837001L;
-  
+                 
+  /** Object to synchronize on */               
   static Object lock = new Object();
+  
+  /** Has this been initialized ? 
+  *  Becomes true if a "running" getter or setter is called
+  */
+  static boolean inited = false;
 
   /** constant for local host */
   public  static final String LOCALHOST = "local";
@@ -45,12 +57,16 @@ public class HttpServerSettings extends SystemOption {
   /** port */
   private static int port = 81; //8080
 
-  /** mapping of repository to URL */
+  /** allowed connections hosts - local/any */
   private static String host = LOCALHOST;
 
-  /** allowed connections hosts - local/any */
+  /** mapping of repository to URL */
   private static String repositoryBaseURL = "/repository/";
   
+  /** mapping of classpath to URL */
+  private static String classpathBaseURL = "/classpath/";
+                                        
+  /** Reflects whether the server is actually running, not the running property */
   private static boolean running = false;
 
   /** http settings */
@@ -58,7 +74,6 @@ public class HttpServerSettings extends SystemOption {
 
 
   public HttpServerSettings() {
-    System.out.println("Server settings instantiated");
   }
 
   /** human presentable name */
@@ -68,20 +83,63 @@ public class HttpServerSettings extends SystemOption {
                                       
   /** getter for running status */
   public boolean isRunning() {
-    return running;
+    if (inited)
+      return running;
+    else {
+      // default value, which is true -> start it
+      setRunning(true);
+      return running;
+    } 
+  }                                         
+  
+  /** Intended to be called by the thread which succeeded to start the server */
+  void runSuccess() {
+    running = true;
   }
 
+  /** Intended to be called by the thread which failed to start the server */
+  void runFailure() {
+    running = false;
+  }
+
+  /** Restarts the server if it is running */
+  private void restartIfNecessary() {
+    if (isRunning()) {
+      HttpServerModule.stopHTTPServer();
+      HttpServerModule.initHTTPServer();
+    }
+  }
+  
+  /** Returns a relative directory URL with a leading and a trailing slash */
+  private String getCanonicalRelativeURL(String url) {
+    String newURL;
+    if (url.length() == 0)
+      newURL = "/";
+    else {
+      if (url.charAt(0) != '/')
+        newURL = "/" + url;
+      else
+        newURL = url;
+      if (newURL.charAt(newURL.length() - 1) != '/')
+        newURL = newURL + "/";
+    }      
+    return newURL;                               
+  }
+  
   /** setter for running status */
   public void setRunning(boolean running) {
+    inited = true;
     if (this.running == running)
       return;
     
     synchronized (this) {
-      this.running = running;
       if (running)  
+        // running status is set by another thread
         HttpServerModule.initHTTPServer();
-      else   
+      else {
+        running = false;
         HttpServerModule.stopHTTPServer();
+      }  
     }  
     // PENDING  
     //firePropertyChange(
@@ -92,27 +150,10 @@ public class HttpServerSettings extends SystemOption {
     return repositoryBaseURL;
   }
   
-  private void restartIfNecessary() {
-    if (isRunning()) {
-      HttpServerModule.stopHTTPServer();
-      HttpServerModule.initHTTPServer();
-    }
-  }
-  
   /** setter for repository base */
   public void setRepositoryBaseURL(String repositoryBaseURL) {
     // canonical form starts and ends with a /
-    String newURL;
-    if (repositoryBaseURL.length() == 0)
-      newURL = "/";
-    else {
-      if (repositoryBaseURL.charAt(0) != '/')
-        newURL = "/" + repositoryBaseURL;
-      else
-        newURL = repositoryBaseURL;
-      if (newURL.charAt(newURL.length() - 1) != '/')
-        newURL = newURL + "/";
-    }                                     
+    String newURL = getCanonicalRelativeURL(repositoryBaseURL);
     
     // check if any change is taking place
     if (this.repositoryBaseURL.equals(newURL))
@@ -127,6 +168,29 @@ public class HttpServerSettings extends SystemOption {
     //firePropertyChange(
   }
                                       
+  /** getter for classpath base */
+  public String getClasspathBaseURL() {
+    return classpathBaseURL;
+  }
+  
+  /** setter for classpath base */
+  public void setClasspathBaseURL(String classpathBaseURL) {
+    // canonical form starts and ends with a /
+    String newURL = getCanonicalRelativeURL(classpathBaseURL);
+    
+    // check if any change is taking place
+    if (this.classpathBaseURL.equals(newURL))
+      return;
+    
+    // implement the change  
+    synchronized (lock) {
+      this.classpathBaseURL = newURL;
+      restartIfNecessary();
+    }
+    // PENDING
+    //firePropertyChange(
+  }
+
   /** setter for port */
   public void setPort(int p) {
     synchronized (lock) {
@@ -156,11 +220,39 @@ public class HttpServerSettings extends SystemOption {
   void firePropertyChange0 (String name, Object oldVal, Object newVal) {
     firePropertyChange (name, oldVal, newVal);
   }
-
+                                       
+  /* Implementation of HttpServer interface */
+                                       
+  /** Maps a file object to a URL. Should ensure that the file object is accessible on the given URL. */
+  public URL getRepositoryURL(FileObject fo) throws MalformedURLException, UnknownHostException {
+    setRunning(true);                                                           
+    return new URL("http", InetAddress.getLocalHost().getHostName(), getPort(), 
+      getRepositoryBaseURL() + fo.getPackageNameExt('/','.'));
+  }
+                             
+  /** Maps the repository root to a URL. This URL should serve a page from which repository objects are accessible. */
+  public URL getRepositoryRoot() throws MalformedURLException, UnknownHostException {
+    setRunning(true);                                                           
+    return new URL("http", InetAddress.getLocalHost().getHostName(), getPort(), getRepositoryBaseURL());
+  }
+                                                                                                                     
+  /** Maps a resource path to a URL. Should ensure that the resource is accessible on the given URL.
+  * @param resourcePath path of the resource in the classloader format
+  * @see ClassLoader#getResource(java.lang.String)
+  * @see TopManager#systemClassLoader()
+  */
+  public URL getResourceURL(String resourcePath) throws MalformedURLException, UnknownHostException {
+    setRunning(true);                                                           
+    return new URL("http", InetAddress.getLocalHost().getHostName(), getPort(), 
+      getClasspathBaseURL() + resourcePath);
+  }
+    
+                                       
 }
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/10/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/7/99   Petr Jiricka    
  * $
  */

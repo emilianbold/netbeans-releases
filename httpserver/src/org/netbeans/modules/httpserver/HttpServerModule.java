@@ -16,8 +16,10 @@ package com.netbeans.developer.modules.httpserver;
 import java.util.Enumeration;
 
 import com.netbeans.ide.modules.ModuleInstall;
-import com.netbeans.ide.TopManager;
 import com.netbeans.ide.execution.Executor;
+import com.netbeans.ide.util.NbBundle;
+import com.netbeans.ide.TopManager;
+import com.netbeans.ide.NotifyDescriptor;
 
 import com.mortbay.HTTP.HttpServer;
 
@@ -50,7 +52,8 @@ public class HttpServerModule implements ModuleInstall {
     Thread.currentThread().sleep(10000);
     } catch (Exception e) {
     System.out.println("Exc:" + e.getMessage());}
-    stopHTTPServer();*/
+    stopHTTPServer();*/ 
+    com.netbeans.ide.util.HttpServer.registerDefaultServer(new HttpServerSettings());
   }
 
   /** Module was uninstalled. */
@@ -59,23 +62,27 @@ public class HttpServerModule implements ModuleInstall {
 
   /** Module is being closed. */
   public boolean closing () {
-    // stop the server
-/*    stopHTTPServer();*/
+    // stop the server, don't set the running status
+    stopHTTPServer();
     return true; // agree to close
   }
 
   /** initiates HTTPServer so it runs */
   static synchronized void initHTTPServer() {
     if (serverThread == null) {
-      System.out.println("Starting the server");
       serverThread = new Thread("HTTPServer") {
         public void run() {
+          HttpServerSettings set = new HttpServerSettings();
           try {                
-            HttpServerSettings set = new HttpServerSettings();
             config = new NbServer(set);
             server = new HttpServer(config);
+            set.runSuccess();
           } catch (Exception ex) {
-            com.netbeans.ide.TopManager.getDefault().notifyException(ex);
+            // couldn't start
+            set.runFailure();
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+              NbBundle.getBundle(HttpServerModule.class).getString("MSG_HTTP_SERVER_START_FAIL"), 
+              NotifyDescriptor.Message.WARNING_MESSAGE));
           }
         }
       };
@@ -86,7 +93,6 @@ public class HttpServerModule implements ModuleInstall {
   /** stops the HTTP server */
   static synchronized void stopHTTPServer() {
     if ((serverThread != null) && (server != null)) {
-      System.out.println("Stopping the server");
       server.close();                                
       try {
         serverThread.join();
@@ -95,7 +101,6 @@ public class HttpServerModule implements ModuleInstall {
         // PENDING
       }
       serverThread = null;
-      System.out.println("Server stopped");
     }  
   }
 
@@ -104,6 +109,7 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/10/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/7/99   Petr Jiricka    
  * $
  */
