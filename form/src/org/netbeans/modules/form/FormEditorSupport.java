@@ -126,12 +126,17 @@ public class FormEditorSupport extends JavaEditor
      * @see OpenCookie#open
      */
     public void openFormEditor() {
-        elementToOpen = FORM_ELEMENT_INDEX;
+        boolean alreadyOpened = opened.contains(this);
+        if (!alreadyOpened) {
+            elementToOpen = FORM_ELEMENT_INDEX;
+        }
         multiviewTC = openCloneableTopComponent();
         multiviewTC.requestActive();
 
-        MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
-        handler.requestActive(handler.getPerspectives()[FORM_ELEMENT_INDEX]);
+        if (!alreadyOpened) {
+            MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
+            handler.requestActive(handler.getPerspectives()[FORM_ELEMENT_INDEX]);
+        }
     }
 
     /** Overriden from JavaEditor - opens editor and ensures it is selected
