@@ -284,10 +284,10 @@ public final class Actions extends Object {
                         if (createdDO == null) {
                             //Select only first node in array added to favorites
                             createdDO = obj.createShadow(f);
+                            listAdd.add(createdDO);
                         } else {
-                            obj.createShadow(f);
+                            listAdd.add(obj.createShadow(f));
                         }
-                        listAdd.add(createdDO);
                     } catch (java.io.IOException ex) {
                         ErrorManager.getDefault().notify(ex);
                     }
