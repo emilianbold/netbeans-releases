@@ -89,7 +89,7 @@ public class AddDriverDialog
 		
 			JTextArea notes = new JTextArea(bundle.getString("AddDriverURLNotes"), 2, 50);
 			notes.setLineWrap(true);
-			notes.setWrapStyleWord(false);
+			notes.setWrapStyleWord(true);
 			notes.setFont(label.getFont());
 			notes.setBackground(label.getBackground());
             con.weightx = 1.0;
