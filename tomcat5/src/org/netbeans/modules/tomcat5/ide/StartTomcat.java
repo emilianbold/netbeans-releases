@@ -24,8 +24,11 @@ import javax.enterprise.deploy.spi.status.*;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 import org.netbeans.modules.tomcat5.*;
+import org.netbeans.modules.tomcat5.config.*;
+import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
 
@@ -38,8 +41,12 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.debugger.DebuggerInfo;
 import org.netbeans.modules.debugger.jpda.RemoteDebuggerInfo;
+import org.openide.filesystems.*;
 
+import org.w3c.dom.Document;
+import org.xml.sax.*;
 import org.xml.sax.SAXException;
+import org.openide.xml.XMLUtil;
 
 /** Extension to Deployment API that enables starting of Tomcat.
  *
@@ -61,6 +68,9 @@ public final class StartTomcat extends StartServer implements ProgressObject
     //public static final String TAG_SHUTDOWN_CMD   = "shutdown"; // NOI18N
     /** Debug startup/shutdown tag */
     public static final String TAG_DEBUG_CMD   = "catalina"; // NOI18N
+    
+    private static final Integer DEFAULT_ADMIN_PORT = new Integer (8025);
+    private static final Integer DEFAULT_SERVER_PORT = new Integer (8084);
     
     private static NbProcessDescriptor defaultExecDesc(String command, String argCommand) {
         return new NbProcessDescriptor (
@@ -520,9 +530,33 @@ public final class StartTomcat extends StartServer implements ProgressObject
                     }
                 }
             }
+            //patch server.xml using S2B
+            tm.getCatalinaBaseFileSystem ();
+//            try {
+//                lfs = new LocalFileSystem ();
+//                lfs.setRootDirectory (baseDir);
+//                lfs.setHidden (true);
+//                Repository.getDefault ().addFileSystem (lfs);
+                File serverFile = new File (baseDir, "conf/server.xml");   // NOI18N
+                FileInputStream is = new FileInputStream (serverFile);
+                Document doc = XMLUtil.parse(new InputSource(is), false, false, null,org.openide.xml.EntityCatalog.getDefault());
+                TomcatInstallUtil.setAdminPort (DEFAULT_ADMIN_PORT, FileUtil.fromFile (serverFile)[0]);
+                TomcatInstallUtil.setServerPort (DEFAULT_SERVER_PORT, FileUtil.fromFile (serverFile)[0]);
+                is.close();
+//            } catch (java.beans.PropertyVetoException pex) {
+//                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, pex);
+//                return null;
+//            } finally {
+//                if (lfs != null) {
+//                    Repository.getDefault ().removeFileSystem (lfs);
+//                }
+//            }            
         }
         catch (java.io.IOException ioe) {
             ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
+            return null;
+        } catch (org.xml.sax.SAXException spe) {
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, spe);
             return null;
         }
         return baseDir;

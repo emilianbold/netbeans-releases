@@ -11,6 +11,10 @@ import java.io.*;
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.*;
+import org.openide.loaders.*;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 
 import org.netbeans.modules.tomcat5.config.*;
 import org.netbeans.modules.tomcat5.TomcatFactory;
@@ -216,4 +220,69 @@ public class TomcatInstallUtil {
          org.openide.util.NbBundle.getMessage(TomcatInstallUtil.class,"MSG_TomcatIsRunning")));
     }
     
+    public static boolean setServerPort(Integer port, FileObject tomcatConf) {
+        FileObject fo = tomcatConf;
+        boolean success=false;
+        try {
+            XMLDataObject dobj = (XMLDataObject)DataObject.find(fo);
+            org.w3c.dom.Document doc = dobj.getDocument();
+            org.w3c.dom.Element root = doc.getDocumentElement();
+            org.w3c.dom.NodeList list = root.getElementsByTagName("Service"); //NOI18N
+            int size=list.getLength();
+            if (size>0) {
+                org.w3c.dom.Element service=(org.w3c.dom.Element)list.item(0);
+                org.w3c.dom.NodeList cons = service.getElementsByTagName("Connector"); //NOI18N
+                for (int i=0;i<cons.getLength();i++) {
+                    org.w3c.dom.Element con=(org.w3c.dom.Element)cons.item(i);
+                    String protocol = con.getAttribute("protocol"); //NOI18N
+                    if ((protocol == null) || protocol.length()==0 || (protocol.toLowerCase().indexOf("http") > -1)) { //NOI18N
+                        con.setAttribute("port", String.valueOf(port)); //NOI18N
+                        updateDocument(dobj,doc);
+                        success=true;
+                    }
+                }
+            }
+        } catch(org.xml.sax.SAXException ex){
+            org.openide.ErrorManager.getDefault ().notify(ex);
+        } catch(org.openide.loaders.DataObjectNotFoundException ex){
+            org.openide.ErrorManager.getDefault ().notify(ex);
+        } catch(javax.swing.text.BadLocationException ex){
+            org.openide.ErrorManager.getDefault ().notify(ex);
+        } catch(java.io.IOException ex){
+            org.openide.ErrorManager.getDefault ().notify(ex);
+        }
+        return success;
+    }
+    
+    public static boolean setAdminPort(Integer port, FileObject tomcatConf) {
+        FileObject fo = tomcatConf;
+        boolean success=false;
+        try {
+            XMLDataObject dobj = (XMLDataObject)DataObject.find(fo);
+            org.w3c.dom.Document doc = dobj.getDocument();
+            org.w3c.dom.Element root = doc.getDocumentElement();
+            root.setAttribute("port", String.valueOf(port)); //NOI18N
+            updateDocument(dobj,doc);
+            success=true;
+        } catch(org.xml.sax.SAXException ex){
+            org.openide.ErrorManager.getDefault ().notify(ex);
+        } catch(org.openide.loaders.DataObjectNotFoundException ex){
+            org.openide.ErrorManager.getDefault ().notify(ex);
+        } catch(javax.swing.text.BadLocationException ex){
+            org.openide.ErrorManager.getDefault ().notify(ex);
+        } catch(java.io.IOException ex){
+            org.openide.ErrorManager.getDefault ().notify(ex);
+        }
+        return success;
+    }
+    
+    public static void updateDocument(DataObject dobj, org.w3c.dom.Document doc)
+        throws javax.swing.text.BadLocationException, java.io.IOException {
+        org.openide.cookies.EditorCookie editor = (EditorCookie)dobj.getCookie(EditorCookie.class);
+        javax.swing.text.Document textDoc = editor.getDocument();
+        if (textDoc==null) textDoc = editor.openDocument();
+        TomcatInstallUtil.updateDocument(textDoc,TomcatInstallUtil.getDocumentText(doc),"<Server"); //NOI18N
+        SaveCookie savec = (SaveCookie) dobj.getCookie(SaveCookie.class);
+        if (savec!=null) savec.save();
+    }
 }
