@@ -74,7 +74,8 @@ public class PackageViewTest extends NbTestCase {
 	FileUtil.createFolder( root, "src/a/b/c" );
         assertNodes( ch, 
                      new String[] { "a.b.c", },
-                     new int[] { 0, } );
+                     new int[] { 0, }, 
+                     true ); // Needs to compute the nodes first
         
         // Create ignored folder             
         FileUtil.createFolder( root, "src/KRTEK.folder" );
@@ -275,7 +276,8 @@ public class PackageViewTest extends NbTestCase {
         // Default package should be there
         assertNodes( ch, 
                      new String[] { "<default package>" },
-                     new int[] { 0 } );
+                     new int[] { 0 }, 
+                     true ); // Needs to compute the nodes first
                      
         // Default package should disappear             
         FileObject a = FileUtil.createFolder( root, "src/a" );
@@ -319,6 +321,13 @@ public class PackageViewTest extends NbTestCase {
         group = new SimpleSourceGroup( srcRoot );
         rootNode = PackageView.createPackageView( group );
 
+        // Compute the nodes
+        assertNodes( rootNode.getChildren(), 
+                     new String[] { "a.aa", },
+                     new int[] { 0, }, 
+                     true ); // Needs to compute the nodes first
+        
+        
         n = PackageView.findPath( rootNode, toDelete );
         n.destroy();        
         assertFileObjects( srcRoot, new String[0] );
