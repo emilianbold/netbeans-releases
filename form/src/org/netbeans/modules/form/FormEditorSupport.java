@@ -220,7 +220,11 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     if (workspacesListener != null) {
       TopManager.getDefault ().getWindowManager ().removePropertyChangeListener (workspacesListener);
     }
-    if (getFormTopComponent () != null) getFormTopComponent ().close ();
+    org.openide.windows.TopComponent formWin = getFormTopComponent ();
+    if (formWin != null) {
+      formWin.setCloseOperation (org.openide.windows.TopComponent.CLOSE_EACH);
+      formWin.close ();
+    }
     FormEditor.getComponentInspector().focusForm (null);
     SourceChildren sc = (SourceChildren)formObject.getNodeDelegate ().getChildren ();
     sc.remove (new RADComponentNode [] { formRootNode });
@@ -384,6 +388,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  31   Gandalf   1.30        8/17/99  Ian Formanek    Fixed closing forms if 
+ *       opened on workspace without form
  *  30   Gandalf   1.29        8/15/99  Ian Formanek    Form is opened on 
  *       editing workspace only
  *  29   Gandalf   1.28        8/13/99  Ian Formanek    Fixed bug 3253 - Messy 
