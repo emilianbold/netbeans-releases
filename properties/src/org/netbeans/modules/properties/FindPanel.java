@@ -31,8 +31,8 @@ import org.openide.util.NbBundle;
  */
 public class FindPanel extends javax.swing.JPanel {
     
-    /** Resource bundle variable. */
-    private static final ResourceBundle bundle = NbBundle.getBundle(PropertiesModule.class);
+    /** Resource bundle variable used for i18n os string in this source. */
+    private static ResourceBundle bundle;
     
     
     /** Creates new form FindPanel. */
@@ -96,7 +96,7 @@ public class FindPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
-        findLabel.setText(bundle.getString("LBL_Find"));
+        findLabel.setText(FindPanel.getBundle().getString("LBL_Find"));
         findLabel.setLabelFor(findCombo);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -119,7 +119,7 @@ public class FindPanel extends javax.swing.JPanel {
         add(findCombo, gridBagConstraints1);
         
         
-        findButton.setText(bundle.getString("CTL_Find"));
+        findButton.setText(FindPanel.getBundle().getString("CTL_Find"));
         findButton.setNextFocusableComponent(cancelButton);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -131,7 +131,7 @@ public class FindPanel extends javax.swing.JPanel {
         add(findButton, gridBagConstraints1);
         
         
-        cancelButton.setText(bundle.getString("CTL_Cancel"));
+        cancelButton.setText(FindPanel.getBundle().getString("CTL_Cancel"));
         cancelButton.setNextFocusableComponent(findCombo);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -143,7 +143,7 @@ public class FindPanel extends javax.swing.JPanel {
         add(cancelButton, gridBagConstraints1);
         
         
-        matchCaseCheck.setText(bundle.getString("CTL_MatchCaseCheck"));
+        matchCaseCheck.setText(FindPanel.getBundle().getString("CTL_MatchCaseCheck"));
         matchCaseCheck.setNextFocusableComponent(backwardCheck);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -155,7 +155,7 @@ public class FindPanel extends javax.swing.JPanel {
         add(matchCaseCheck, gridBagConstraints1);
         
         
-        backwardCheck.setText(bundle.getString("CTL_BackwardCheck"));
+        backwardCheck.setText(FindPanel.getBundle().getString("CTL_BackwardCheck"));
         backwardCheck.setNextFocusableComponent(wrapCheck);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -167,7 +167,7 @@ public class FindPanel extends javax.swing.JPanel {
         add(backwardCheck, gridBagConstraints1);
         
         
-        wrapCheck.setText(bundle.getString("CTL_WrapSearch"));
+        wrapCheck.setText(FindPanel.getBundle().getString("CTL_WrapSearch"));
         wrapCheck.setNextFocusableComponent(rowCheck);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -178,7 +178,7 @@ public class FindPanel extends javax.swing.JPanel {
         add(wrapCheck, gridBagConstraints1);
         
         
-        rowCheck.setText(bundle.getString("CTL_SearchByRows"));
+        rowCheck.setText(FindPanel.getBundle().getString("CTL_SearchByRows"));
         rowCheck.setNextFocusableComponent(findButton);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -189,7 +189,7 @@ public class FindPanel extends javax.swing.JPanel {
         add(rowCheck, gridBagConstraints1);
         
         
-        highlightCheck.setText(bundle.getString("CTL_HighlightCheck"));
+        highlightCheck.setText(FindPanel.getBundle().getString("CTL_HighlightCheck"));
         highlightCheck.setNextFocusableComponent(matchCaseCheck);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
@@ -215,4 +215,11 @@ public class FindPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox highlightCheck;
     // End of variables declaration//GEN-END:variables
 
+    /** Helper variable for lazy <code>bundle</code> initialization. */
+    private static ResourceBundle getBundle() {
+        if(bundle == null)
+            bundle = NbBundle.getBundle(PropertiesModule.class);
+        
+        return bundle;            
+    }
 }

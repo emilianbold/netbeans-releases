@@ -10,7 +10,7 @@
     <Component class="javax.swing.JLabel" name="findLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="LBL_Find"/>
+          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" generateField="false" identifier="bundle" initFormat="java.util.ResourceBundle.getBundle(&quot;{0}&quot;)" key="LBL_Find" replaceFormat="FindPanel.getBundle().getString(&quot;{1}&quot;)"/>
         </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="findCombo" type="code"/>
@@ -38,7 +38,7 @@
     <Component class="javax.swing.JButton" name="findButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="CTL_Find"/>
+          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" generateField="false" identifier="bundle" initFormat="java.util.ResourceBundle.getBundle(&quot;{0}&quot;)" key="CTL_Find" replaceFormat="FindPanel.getBundle().getString(&quot;{1}&quot;)"/>
         </Property>
         <Property name="nextFocusableComponent" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="cancelButton" type="bean"/>
@@ -53,7 +53,7 @@
     <Component class="javax.swing.JButton" name="cancelButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="CTL_Cancel"/>
+          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" generateField="false" identifier="bundle" initFormat="java.util.ResourceBundle.getBundle(&quot;{0}&quot;)" key="CTL_Cancel" replaceFormat="FindPanel.getBundle().getString(&quot;{1}&quot;)"/>
         </Property>
         <Property name="nextFocusableComponent" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="findCombo" type="bean"/>
@@ -68,7 +68,7 @@
     <Component class="javax.swing.JCheckBox" name="matchCaseCheck">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="CTL_MatchCaseCheck"/>
+          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" generateField="false" identifier="bundle" initFormat="java.util.ResourceBundle.getBundle(&quot;{0}&quot;)" key="CTL_MatchCaseCheck" replaceFormat="FindPanel.getBundle().getString(&quot;{1}&quot;)"/>
         </Property>
         <Property name="nextFocusableComponent" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="backwardCheck" type="bean"/>
@@ -83,7 +83,7 @@
     <Component class="javax.swing.JCheckBox" name="backwardCheck">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="CTL_BackwardCheck"/>
+          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" generateField="false" identifier="bundle" initFormat="java.util.ResourceBundle.getBundle(&quot;{0}&quot;)" key="CTL_BackwardCheck" replaceFormat="FindPanel.getBundle().getString(&quot;{1}&quot;)"/>
         </Property>
         <Property name="nextFocusableComponent" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="wrapCheck" type="bean"/>
@@ -98,7 +98,7 @@
     <Component class="javax.swing.JCheckBox" name="wrapCheck">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="CTL_WrapSearch"/>
+          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" generateField="false" identifier="bundle" initFormat="java.util.ResourceBundle.getBundle(&quot;{0}&quot;)" key="CTL_WrapSearch" replaceFormat="FindPanel.getBundle().getString(&quot;{1}&quot;)"/>
         </Property>
         <Property name="nextFocusableComponent" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="rowCheck" type="bean"/>
@@ -113,7 +113,7 @@
     <Component class="javax.swing.JCheckBox" name="rowCheck">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="CTL_SearchByRows"/>
+          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" generateField="false" identifier="bundle" initFormat="java.util.ResourceBundle.getBundle(&quot;{0}&quot;)" key="CTL_SearchByRows" replaceFormat="FindPanel.getBundle().getString(&quot;{1}&quot;)"/>
         </Property>
         <Property name="nextFocusableComponent" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="findButton" type="bean"/>
@@ -128,7 +128,7 @@
     <Component class="javax.swing.JCheckBox" name="highlightCheck">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="CTL_HighlightCheck"/>
+          <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" generateField="false" identifier="bundle" initFormat="java.util.ResourceBundle.getBundle(&quot;{0}&quot;)" key="CTL_HighlightCheck" replaceFormat="FindPanel.getBundle().getString(&quot;{1}&quot;)"/>
         </Property>
         <Property name="nextFocusableComponent" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="matchCaseCheck" type="bean"/>
