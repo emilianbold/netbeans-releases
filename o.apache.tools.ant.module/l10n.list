@@ -1,7 +1,4 @@
 ant/src/**/Bundle.properties
 ant/src/org/apache/tools/ant/module/resources/*.html
 ant/src-bridge/**/Bundle.properties
-ant/browsetask/src/**/Bundle.properties
-ant/docs/src/**/Bundle.properties
-ant/grammar/src/**/Bundle.properties
-ant/project/src/**/Bundle.properties
+ant/*/src/**/Bundle.properties
