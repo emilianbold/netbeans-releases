@@ -242,6 +242,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public Value evaluateIn (Expression expression) throws InvalidExpressionException {
+        if (currentCallStackFrame == null) {
+            throw new InvalidExpressionException("No current context (stack frame)");
+        }
         return evaluateIn(expression, ((CallStackFrameImpl)currentCallStackFrame).getStackFrame());
     }
 
