@@ -71,10 +71,8 @@ ToDo:
     <!-- The following is not permitted by Ant: -->
     <!-- <property name="modules" value="${config.modules.${moduleconfig}}"/> -->
     <!-- So this is a little trick to do it anyway. -->
-    <echo file="moduledefs-tmp.properties">modules=$${config.modules.${moduleconfig}}
-fixedmodules=$${config.fixedmodules.${moduleconfig}}
-</echo>
-    <property file="moduledefs-tmp.properties"/>
+    <resolve name="modules" property="config.modules.${moduleconfig}"/>
+    <resolve name="fixedmodules" property="config.fixedmodules.${moduleconfig}"/>
     <property name="allmodules" value="${fixedmodules},${modules}"/>
   </target>
 
