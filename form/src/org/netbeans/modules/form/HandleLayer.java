@@ -1093,13 +1093,21 @@ class HandleLayer extends JPanel
                     if (draggingCanceled) {
                         draggingCanceled = false;
                     }
+                    else if ((resizeType & DESIGNER_RESIZING) != 0
+                             && e.getClickCount() == 2
+                             && !e.isShiftDown()
+                             && !e.isControlDown()
+                             && !e.isAltDown())
+                    {   // doubleclick on designer's resizing border
+                        setUserDesignerSize();
+                    }
                     else if (prevLeftMousePoint != null
                              && e.getClickCount() == 1
                              && prevLeftMousePoint.distance(e.getPoint()) <= 2
                              && !e.isShiftDown()
                              && !e.isControlDown()
                              && !e.isAltDown())
-                    {
+                    {   // second click on the same place in a component
                         formDesigner.startInPlaceEditing(
                             getMetaComponentAt(e.getPoint(), COMP_SELECTED));
                     }
@@ -1107,7 +1115,7 @@ class HandleLayer extends JPanel
                              && !e.isAltDown()
                              && !e.isControlDown()
                              && e.isShiftDown())
-                    {   // interval selection (with Shift) on mouse release
+                    {   // Shift + mouse release - interval selection
                         selectComponent(e);
                     }
                 }
@@ -1167,14 +1175,12 @@ class HandleLayer extends JPanel
 
                     if (!e.isShiftDown() || e.isAltDown() || e.isControlDown()) {
                         // mouse not pressed with Shift only (reserved for
-                        // interval selection, applied on mouse release or
+                        // interval or area selection, applied on mouse release
                         // or mouse dragged)
                         if (designerResizer == null && !modifier
                             && (resizeType & DESIGNER_RESIZING) != 0)
-                        {   // we can start resizing of the designer
-                            if (e.getClickCount() == 2)
-                                setUserDesignerSize();
-                            else // start designer resizing
+                        {   // start designer resizing
+                            if (e.getClickCount() != 2)
                                 designerResizer = new DesignerResizer();
                         }
                         else if (!mouseOnVisual(lastLeftMousePoint)) {
