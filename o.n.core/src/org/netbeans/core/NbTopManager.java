@@ -286,16 +286,31 @@ public abstract class NbTopManager extends TopManager {
             if (lookup != null) {
                 return lookup;
             }
-            lookup = new org.netbeans.core.lookup.ProxyLookup (new org.openide.util.Lookup[] {
+            lookup = new org.netbeans.core.lookup.ProxyLookup (
+                new org.openide.util.Lookup[] {
+                    new org.netbeans.core.lookup.TMLookup ()
+                }
+            );
+            return lookup;
+        }
+    }
+    
+    /** When all module classes are accessible thru systemClassLoader, this
+     * method is called to initialize the FolderLookup.
+     */
+    final synchronized void modulesClassPathInitialized () {
+        // replace the lookup by new one
+
+        org.netbeans.core.lookup.ProxyLookup pl = (org.netbeans.core.lookup.ProxyLookup)lookup;
+        pl.setLookups (
+            new org.openide.util.Lookup[] {
                 new org.netbeans.core.lookup.TMLookup (),
                 getInstanceLookup (),
                 new org.netbeans.core.lookup.FolderLookup ("Services").getLookup () // NOI18N
-            });
-            return lookup;
-        }
-        
+            }
+        );
     }
-
+    
     //
     // Implementation of methods from TopManager
     //
