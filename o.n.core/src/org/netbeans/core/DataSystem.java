@@ -42,7 +42,7 @@ import org.netbeans.core.actions.RefreshAllFilesystemsAction;
 * @author Jaroslav Tulach, Petr Hamernik
 */
 public final class DataSystem extends AbstractNode 
-implements RepositoryListener, NewTemplateAction.Cookie {
+implements RepositoryListener {
     /** default instance */
     private static DataSystem def;
 
@@ -65,7 +65,6 @@ implements RepositoryListener, NewTemplateAction.Cookie {
         setName (NbBundle.getBundle (DataSystem.class).getString ("dataSystemName"));
         setShortDescription (NbBundle.getBundle (DataSystem.class).getString ("CTL_Repository_Hint"));
         getCookieSet ().add (new InstanceSupport.Instance (fsp));
-        getCookieSet ().add (this);
     }
 
     /** Constructor. Uses default file system pool.
@@ -120,8 +119,6 @@ implements RepositoryListener, NewTemplateAction.Cookie {
                    SystemAction.get (org.openide.actions.FindAction.class),
                    null,
                    new RefreshAllFilesystemsAction(), // #31047
-                   null,
-                   SystemAction.get (org.netbeans.core.actions.MountAction.class),
                    null,
                    SystemAction.get (org.openide.actions.ToolsAction.class),
                    //SystemAction.get (org.openide.actions.PropertiesAction.class), // #12072
@@ -192,12 +189,6 @@ implements RepositoryListener, NewTemplateAction.Cookie {
         return true;
     }
 
-    /** Getter for the wizard that should be used for this cookie.
-     */
-    public org.openide.loaders.TemplateWizard getTemplateWizard() {
-        return org.netbeans.core.ui.MountNode.wizard();
-    }
-
     /** Children that listens to changes in filesystem pool.
     */
     static class DSMap extends Children.Keys implements PropertyChangeListener {
@@ -222,13 +213,7 @@ implements RepositoryListener, NewTemplateAction.Cookie {
         protected Node[] createNodes (Object key) {
             DataFolder df = (DataFolder)key;
             Node n = new FilterNode(df.getNodeDelegate(), df.createNodeChildren (getDS ().filter));
-            try {
-                n = org.netbeans.core.ui.MountNode.customize (n, df.getPrimaryFile ().getFileSystem ());
-            } catch (FileStateInvalidException fsi) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, fsi);
-            }
-            Node[] retVal = (n != null) ? new Node[] { n } : new Node[] {};
-            return retVal;
+            return new Node[] {n};
         }
 
         /** Refreshes the pool.

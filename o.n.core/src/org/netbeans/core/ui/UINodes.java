@@ -73,31 +73,6 @@ public final class UINodes extends Object {
         return sessionNode;
     }
 
-   /** Getter for filesystem pool node.
-    * @return a node
-    * /
-    public static Node createFileSystems () {
-        return new MountNode (
-            NbPlaces.getDefault().findSessionFolder ("Mount") // NOI18N
-        );
-    }
-    */
-
-/*
-    static Node getProjectSettingsNode () {
-        return ControlPianelNode.getProjectSettings ();
-    }
-*/
-
-    /** Getter for environment node.
-    * @return environment node
-    *
-    static Node createProjectSettingsNode () {
-        return getProjectSettingsNode ().cloneNode ();
-    }
-    */
-
-
     /** Creates template node.
     */
     public static Node createTemplate () {

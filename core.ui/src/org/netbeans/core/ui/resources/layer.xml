@@ -43,7 +43,6 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="System">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-netbeans-core-actions-MountAction.instance"/>
             <file name="org-netbeans-core-actions-ConfigureShortcutsAction.instance"/>
             <file name="org-openide-actions-EditAction.instance"/>
             <file name="org-netbeans-core-actions-SystemExit.instance"/>
@@ -345,16 +344,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="simple" boolvalue="false" />
 	</folder>
         
-        <!-- folder for all registered filesystem templates -->
-        <folder name="Mount">
-            <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
-            <attr name="simple" boolvalue="false" />
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/core/resources/templatesFileSystems.html"/>
-            <attr name="helpID" stringvalue="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeFilesystems"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
-        </folder>
-        
      </folder>
               
      <folder name="Wizards">
@@ -419,13 +408,6 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="System">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
-                    <!-- No longer useful:
-                    <file name="FileSystems.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createFileSystems" />
-                        <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-                    </file>
-                    -->
-
                     <file name="Modules.instance">
                         <attr name="instanceCreate" newvalue="org.netbeans.core.ui.ModuleNode" />
                         <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
@@ -469,9 +451,7 @@ Microsystems, Inc. All Rights Reserved.
 	-->
         <folder name="Modes">
             <file name="explorer.wsmode" url="windowmanager/explorer.wsmode" />
-            <folder name="explorer">
-                <file name="filesystems.wstcref" url="windowmanager/explorer/filesystems.wstcref" />
-            </folder>
+            <folder name="explorer"/>
                 
             <file name="editor.wsmode" url="windowmanager/editor.wsmode" />
             <folder name="editor">
@@ -504,7 +484,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <folder name="Components">
-            <file name="filesystems.settings" url="components/filesystems.settings" />
             <file name="output.settings" url="components/output.settings" />
             <file name="properties.settings" url="components/properties.settings" />
         </folder>

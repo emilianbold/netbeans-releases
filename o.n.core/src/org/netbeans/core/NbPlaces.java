@@ -29,7 +29,6 @@ import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 
 import org.netbeans.core.modules.ManifestSection;
-import org.netbeans.core.ui.MountNode;
 
 /** Important places in the system.
 *
@@ -119,7 +118,7 @@ public final class NbPlaces extends Object {
 
     /** Repository settings */
     public Node repositorySettings () {
-        return new MountNode ();
+        return new AbstractNode(Children.LEAF);
     }
 
     /** Workspace node for current project. This node can change when project changes.

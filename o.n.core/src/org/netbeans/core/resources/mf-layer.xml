@@ -66,24 +66,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder> 
 
-    <folder name="Mount">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
-        <attr name="helpID" stringvalue="org.netbeans.core.ui.MountNode"/>
-
-        <!-- XXX this may be obsolete: -->
-        <file name="SystemFileSystem.instance">
-            <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-            <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.MountNode.createSystemNode" />
-        </file>
-        
-        <!-- SystemFileSystem should be the first one -->
-        <attr name="OpenIDE-Folder-Order" stringvalue="SystemFileSystem" />
-        
-        <!-- 
-        Mounted filesystems
-        -->    
-    </folder>  
+    <folder name="Mount"/> <!-- deprecated -->
 
     <folder name="xml">
 
