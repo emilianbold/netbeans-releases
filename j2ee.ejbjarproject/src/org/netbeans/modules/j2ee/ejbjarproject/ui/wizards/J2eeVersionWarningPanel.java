@@ -129,7 +129,6 @@ public final class J2eeVersionWarningPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(100, 70));
         setJdk14Panel.setLayout(new java.awt.GridBagLayout());
 
         warningJdk14TextArea.setEditable(false);
