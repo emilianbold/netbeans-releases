@@ -32,10 +32,12 @@ import javax.swing.table.*;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.options.SystemOption;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
 
 
@@ -51,7 +53,12 @@ public class BundleEditPanel extends JPanel {
     
     /** Reference to column selection model for managing editing cells, together with #rowSelections.*/
     private ListSelectionModel columnSelections;
+    
+    /** Helper listener used in <code>setColumnWidths</code> method only. 
+     * @see #setColumnWidths */
+    private PropertyChangeListener workspaceListener;
 
+    /** Generated serialized version UID. */
     static final long serialVersionUID =-843810329041244483L;
 
     /** Default implementation of PropertiesSettings interface. */
@@ -317,22 +324,44 @@ public class BundleEditPanel extends JPanel {
     /** 
     * Calculates the initial widths of columns of the table component.
     */
-    void setColumnWidths() {
+    private void setColumnWidths() {
         // The least initial width of column (1/10 of screen witdh).
         int columnWidth = Toolkit.getDefaultToolkit().getScreenSize().width/10;        
-        
+
         // Try to set widths according parent (viewport) width.
-        int totalWidth = theTable.getParent().getWidth();
+        int totalWidth = 0;
+        TopComponent tc = (TopComponent)SwingUtilities.getAncestorOfClass(TopComponent.class, theTable);
+        if(tc != null)
+            totalWidth = tc.getBounds().width;
         
         // If previous was not succesful try to set width according EDITOR_MODE width.
         if(totalWidth == 0) {
-            try {
-                Workspace currWS = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
-                Mode editorMode = currWS.findMode(org.openide.text.CloneableEditorSupport.EDITOR_MODE);
+            final Workspace currWS = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
+            Mode editorMode = currWS.findMode(CloneableEditorSupport.EDITOR_MODE);
+            if(editorMode != null) {
                 totalWidth = editorMode.getBounds().width;
-            } catch (NullPointerException npe) {
-                // just catch exception
-                // means the editor mode is was not yet reconstructed
+            } else {
+                // Again one ugly trick to set columns.
+                // This is used when IDE starts and one table was opened last time.
+                // It has to determine its size from Mode but it was not created yet.
+                // Therefore we have to listen on creation of the mode and just then 
+                // set the columns. It should work properly and the set of columns 
+                // should succed before the table appears on the screen.
+                currWS.addPropertyChangeListener(WeakListener.propertyChange(
+                    workspaceListener = new PropertyChangeListener() {
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            if(evt.getPropertyName().equals(Workspace.PROP_MODES)) {
+                                if(currWS.findMode(CloneableEditorSupport.EDITOR_MODE) != null) {
+                                    // Finally set the columns from Mode.
+                                    setColumnWidths();
+                                    // Causes removing listener.
+                                    BundleEditPanel.this.workspaceListener = null;
+                                }
+                            }
+                        }
+                    },
+                    currWS)
+                );
             }
         }
         
@@ -343,13 +372,16 @@ public class BundleEditPanel extends JPanel {
             if(computedColumnWidth > columnWidth)
                 columnWidth = computedColumnWidth;
         }
-
+        
         // set the column widths
         for (int i = 0; i < theTable.getColumnCount(); i++) {
             TableColumn column = theTable.getColumnModel().getColumn(i);
 
             column.setPreferredWidth(columnWidth);
         }
+        
+        theTable.invalidate();
+        theTable.getParent().validate();
     }
 
     void stopEditing() {
