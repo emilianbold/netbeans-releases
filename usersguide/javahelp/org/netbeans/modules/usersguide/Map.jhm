@@ -320,6 +320,13 @@
 <mapID target="debug.window.classes" url="debug/environment/classes_view.html" />
 <mapID target="debug.window.watches" url="debug/environment/watches_view.html" />
 <mapID target="debug.window.variables" url="debug/environment/variables_view.html" />
+<mapID target="debug.window.brkpt_line" url="debug/environment/brkpt_line.html" />
+<mapID target="debug.window.brkpt_method" url="debug/environment/brkpt_method.html" />
+<mapID target="debug.window.brkpt_exception" url="debug/environment/brkpt_exception.html" />
+<mapID target="debug.window.brkpt_class" url="debug/environment/brkpt_class.html" />
+<mapID target="debug.window.brkpt_thread" url="debug/environment/brkpt_thread.html" />
+<mapID target="debug.window.brkpt_variable" url="debug/environment/brkpt_variable.html" />
+
 <mapID target="debug.options" url="debug/environment/options.html" />
 <mapID target="debug.toolbar" url="debug/environment/toolbar.html" />
 <mapID target="debug.attachvm.window" url="debug/environment/attachvm_window.html" />
