@@ -146,7 +146,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
         String formWorkspace = FormEditor.getFormSettings().getWorkspace();
         if (!formWorkspace.equalsIgnoreCase(
-                FormEditor.getFormBundle().getString("VALUE_WORKSPACE_NONE"))) {
+                FormEditor.getFormBundle().getString("VALUE_WORKSPACE_NONE"))
+            && isCurrentWorkspaceEditing()
+            ) {
             Workspace visualWorkspace =
                 TopManager.getDefault().getWindowManager().findWorkspace(formWorkspace);
             if (visualWorkspace != null)
