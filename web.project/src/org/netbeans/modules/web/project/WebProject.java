@@ -119,6 +119,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     private final UpdateHelper updateHelper;
     private final AuxiliaryConfiguration aux;
     private final WebProjectClassPathExtender classPathExtender;
+    private PropertyChangeListener evalListener;
 
     private class FileWatch implements AntProjectListener, FileChangeListener {
 
@@ -267,7 +268,8 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         // XXX might need to use a custom evaluator to handle active platform substitutions... TBD
         // It is currently safe to not use the UpdateHelper for PropertyEvaluator; UH.getProperties() delegates to APH
         PropertyEvaluator e = helper.getStandardPropertyEvaluator();
-        e.addPropertyChangeListener(WeakListeners.propertyChange(this, e));
+        PropertyChangeListener evalListener = WeakListeners.propertyChange(this, e);
+        e.addPropertyChangeListener(evalListener);
         return e;
     }
     
@@ -722,6 +724,11 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
             if (platform != null) {
                 unregisterJ2eePlatformListener(platform);
+            }
+            
+            // unregister the property change listener on the prop evaluator
+            if (evalListener != null) {
+                evaluator().removePropertyChangeListener(evalListener);
             }
 
             // Probably unnecessary, but just in case:

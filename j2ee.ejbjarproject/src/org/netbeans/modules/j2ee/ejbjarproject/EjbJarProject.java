@@ -115,6 +115,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private PropertyHelper propertyHelper;
     private final EjbJarProjectClassPathExtender classpathExtender; 
     private PropertyChangeListener j2eePlatformListener;
+    private PropertyChangeListener evalListener;
     
     // TODO: AB: replace the code in EjbJarProjectProperties.setNewServerInstanceValue with this 
     /*private String propJ2eeServerInstance;
@@ -217,7 +218,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     
     private PropertyEvaluator createEvaluator() {
         PropertyEvaluator eval = helper.getStandardPropertyEvaluator();
-        eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
+        evalListener = WeakListeners.propertyChange(this, eval);
+        eval.addPropertyChangeListener(evalListener);
         return eval;
     }
     
@@ -739,6 +741,11 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
             if (platform != null) {
                 unregisterJ2eePlatformListener(platform);
+            }
+            
+            // unregister the property change listener on the prop evaluator
+            if (evalListener != null) {
+                evaluator().removePropertyChangeListener(evalListener);
             }
             
             // Probably unnecessary, but just in case:
