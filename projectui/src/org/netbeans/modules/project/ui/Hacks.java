@@ -27,6 +27,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
 
@@ -98,9 +99,9 @@ public class Hacks {
                             pname = ProjectUtils.getInformation((Project)projects.iterator().next()).getDisplayName();
                             assert pname != null;
                         } else if (projects.isEmpty()) {
-                            pname = "No Project"; // XXX I18N
+                            pname = NbBundle.getMessage (Hacks.class, "LBL_NoProject"); // NOI18N
                         } else {
-                            pname = "Multiple Projects"; // XXX I18N
+                            pname = NbBundle.getMessage (Hacks.class, "LBL_MultipleProjects"); // NOI18N
                         }
                         try {
                             setProjectName.invoke(windowSystemImpl, new Object[] {pname});
