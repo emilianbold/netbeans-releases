@@ -87,6 +87,12 @@ public final class NbClipboard extends ExClipboard
     // the thread will wait for the system clipboard forever but not the whole
     // IDE
 
+    private RequestProcessor.Task syncTask =
+        new RequestProcessor("System clipboard synchronizer").create(this); // NOI18N
+
+    private Transferable data;
+    private ClipboardOwner dataOwner;
+    
     public synchronized void setContents(Transferable contents, ClipboardOwner owner) {
         // XXX(-dstrupl) the following line might lead to a double converted
         // transferable. Can be fixed as Jesse describes in #32485
@@ -98,9 +104,10 @@ public final class NbClipboard extends ExClipboard
 	    if (last != null) transferableOwnershipLost(last);
 	    last = contents;
 	}
-        
-        systemClipboard.setContents(contents, owner);
-        fireClipboardChange();
+
+        data = contents;
+        dataOwner = owner;
+        syncTask.schedule(0);
     }
 
     public synchronized Transferable getContents(Object requestor) {
@@ -119,6 +126,23 @@ public final class NbClipboard extends ExClipboard
     }
 
     public void run() {
+        Transferable contents = null;
+        ClipboardOwner owner = null;
+
+        synchronized (this) {
+            if (data != null) {
+             contents = data;
+             owner = dataOwner;
+            }
+            data = null;
+            dataOwner = null;
+        }
+        if (contents != null) {
+            systemClipboard.setContents(contents, owner);
+            fireClipboardChange();
+            return;
+        }
+
         try {
             Transferable transferable = systemClipboard.getContents(this);
             super.setContents(transferable, null);
@@ -131,8 +155,6 @@ public final class NbClipboard extends ExClipboard
         }
     }
 
-    private RequestProcessor.Task syncTask =
-        new RequestProcessor("System clipboard synchronizer").create(this); // NOI18N
 
     public void eventDispatched(AWTEvent ev) {
         if (!(ev instanceof WindowEvent))
