@@ -13,15 +13,14 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbImplementationAndInterfacesForm;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbImplementationAndInterfacesForm;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 
 /**
  * @author pfiala
  */
-public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInterfacesForm{
+public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInterfacesForm {
     /**
      * Creates new form BeanForm
      */

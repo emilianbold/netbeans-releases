@@ -18,8 +18,8 @@ import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbDetailForm;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * @author pfiala

@@ -27,6 +27,6 @@ public class EnvironmentEntriesNode extends SectionNode {
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        return null;
+        return new EnvironmentEntriesPanel(getSectionNodeView(), null, (Ejb) key);
     }
 }

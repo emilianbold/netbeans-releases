@@ -25,6 +25,8 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumnModel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -36,7 +38,7 @@ public class InnerTablePanel extends SectionInnerPanel {
     private final TablePanel tablePanel;
     private final XmlMultiViewDataObject dataObject;
 
-    private static class TablePanel extends DefaultTablePanel {
+    private class TablePanel extends DefaultTablePanel {
 
         /**
          * Creates a new InnerTablePanel.
@@ -48,22 +50,41 @@ public class InnerTablePanel extends SectionInnerPanel {
             addButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     model.addRow((Object[]) null);
+                    modelUpdatedFromUI();
                 }
             });
             final JTable table = getTable();
             removeButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     model.removeRow(table.getSelectedRow());
+                    modelUpdatedFromUI();
                 }
             });
-            editButton.setVisible(false);
             table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                 public void valueChanged(ListSelectionEvent e) {
                     removeButton.setEnabled(table.getSelectedRow() >= 0);
+                    modelUpdatedFromUI();
                 }
             });
         }
 
+        private void modelUpdatedFromUI() {
+            if (dataObject != null) {
+                dataObject.modelUpdatedFromUI();
+            }
+        }
+
+        public JButton getAddButton() {
+            return addButton;
+        }
+
+        public JButton getEditButton() {
+            return editButton;
+        }
+
+        public JButton getRemoveButton() {
+            return removeButton;
+        }
     }
 
     public InnerTablePanel(SectionView sectionView, final XmlMultiViewDataObject dataObject, DefaultTableModel model,
@@ -73,11 +94,38 @@ public class InnerTablePanel extends SectionInnerPanel {
         tablePanel = new TablePanel(model);
         model.addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent e) {
-                dataObject.modelUpdatedFromUI();
+                if (dataObject != null) {
+                    dataObject.modelUpdatedFromUI();
+                }
             }
         });
+        final JTable table = tablePanel.getTable();
         if (tableCellEditor != null) {
-            tablePanel.getTable().setCellEditor(tableCellEditor);
+            table.setCellEditor(tableCellEditor);
+        }
+
+        table.setPreferredSize(table.getPreferredSize());
+        setLayout(new BorderLayout());
+        add(tablePanel, BorderLayout.WEST);
+    }
+
+    public JButton getAddButton() {
+        return tablePanel.getAddButton();
+    }
+
+    public JButton getEditButton() {
+        return tablePanel.getEditButton();
+    }
+
+    public JButton getRemoveButton() {
+        return tablePanel.getRemoveButton();
+    }
+
+    public void setColumnWidths(int[] widths) {
+        final JTable table = tablePanel.getTable();
+        TableColumnModel columnModel = table.getColumnModel();
+        for (int i = 0, n = widths.length; i < n; i++) {
+            columnModel.getColumn(i).setPreferredWidth(widths[i]);
         }
     }
 

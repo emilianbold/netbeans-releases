@@ -27,6 +27,6 @@ public class ResourceReferencesNode extends SectionNode {
     }
 
     protected SectionInnerPanel createNodeInnerPanel() {
-        return null;
+        return new ResourceReferencesPanel(getSectionNodeView(), null, (Ejb) key);
     }
 }
