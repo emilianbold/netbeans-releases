@@ -1,7 +1,5 @@
 
-
 import java.beans.*;
-
 
 public class MyBean extends Object implements java.io.Serializable {
     
