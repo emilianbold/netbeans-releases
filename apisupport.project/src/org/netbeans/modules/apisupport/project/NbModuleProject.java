@@ -100,15 +100,14 @@ final class NbModuleProject implements Project {
         // difficult to predict statically exactly what they are!
         // XXX would be good to mark at least the module JAR as owned by this project
         // (currently FOQ/SH do not support that)
+        // XXX I18N
         sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Source Packages", /*XXX*/null, null);
         sourcesHelper.addTypedSourceRoot("${test.unit.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Unit Test Packages", /*XXX*/null, null);
         sourcesHelper.addTypedSourceRoot("${test.qa-functional.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Functional Test Packages", /*XXX*/null, null);
-        /* In case there are any JH-specific templates:
         if (helper.resolveFileObject("javahelp/manifest.mf") == null) { // NOI18N
             // Special hack for core - ignore core/javahelp
-            sourcesHelper.addTypedSourceRoot("javahelp", "javahelp", "JavaHelp Packages");
+            sourcesHelper.addTypedSourceRoot("javahelp", "javahelp", "JavaHelp Packages", null, null);
         }
-         */
         lookup = Lookups.fixed(new Object[] {
             new Info(),
             helper.createAuxiliaryConfiguration(),
@@ -149,7 +148,7 @@ final class NbModuleProject implements Project {
         return helper.getProjectDirectory();
     }
     
-    FileObject getManifestFile() {
+    public FileObject getManifestFile() {
         return helper.resolveFileObject(eval.getProperty("manifest.mf")); // NOI18N
     }
     
@@ -170,7 +169,7 @@ final class NbModuleProject implements Project {
         return null;
     }
     
-    AntProjectHelper getHelper() {
+    public AntProjectHelper getHelper() {
         return helper;
     }
     
@@ -260,7 +259,7 @@ final class NbModuleProject implements Project {
         return cp.toString();
     }
     
-    PropertyEvaluator evaluator() {
+    public PropertyEvaluator evaluator() {
         return eval;
     }
     
@@ -279,29 +278,29 @@ final class NbModuleProject implements Project {
         }
     }
 
-    FileObject getSourceDirectory() {
+    public FileObject getSourceDirectory() {
         return getDir("src.dir"); // NOI18N
     }
     
-    FileObject getTestSourceDirectory() {
+    public FileObject getTestSourceDirectory() {
         return getDir("test.unit.src.dir"); // NOI18N
     }
     
-    FileObject getFunctionalTestSourceDirectory() {
+    public FileObject getFunctionalTestSourceDirectory() {
         return getDir("test.qa-functional.src.dir"); // NOI18N
     }
     
-    File getClassesDirectory() {
+    public File getClassesDirectory() {
         String classesDir = eval.getProperty("build.classes.dir"); // NOI18N
         return helper.resolveFile(classesDir);
     }
     
-    File getTestClassesDirectory() {
+    public File getTestClassesDirectory() {
         String testClassesDir = eval.getProperty("build.test.unit.classes.dir"); // NOI18N
         return helper.resolveFile(testClassesDir);
     }
     
-    FileObject getJavaHelpDirectory() {
+    public FileObject getJavaHelpDirectory() {
         if (helper.resolveFileObject("javahelp/manifest.mf") != null) { // NOI18N
             // Special hack for core.
             return null;
@@ -309,11 +308,11 @@ final class NbModuleProject implements Project {
         return helper.resolveFileObject("javahelp"); // NOI18N
     }
     
-    File getModuleJarLocation() {
+    public File getModuleJarLocation() {
         return helper.resolveFile(eval.evaluate("${netbeans.dest.dir}/${cluster.dir}/${module.jar}")); // NOI18N
     }
     
-    URL getModuleJavadocDirectoryURL() {
+    public URL getModuleJavadocDirectoryURL() {
         String moduleJavadoc = "javadoc/" + eval.getProperty("javadoc.name"); // NOI18N
         File f = helper.resolveFile(moduleJavadoc);
         try {
@@ -324,7 +323,7 @@ final class NbModuleProject implements Project {
         }
     }
     
-    String getCodeNameBase() {
+    public String getCodeNameBase() {
         Element config = helper.getPrimaryConfigurationData(true);
         Element cnb = Util.findElement(config, "code-name-base", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
         if (cnb != null) {
@@ -334,7 +333,7 @@ final class NbModuleProject implements Project {
         }
     }
     
-    String getPath() {
+    public String getPath() {
         Element config = helper.getPrimaryConfigurationData(true);
         Element path = Util.findElement(config, "path", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
         if (path != null) {
@@ -353,7 +352,7 @@ final class NbModuleProject implements Project {
         return ".."; // NOI18N
     }
     
-    FileObject getNbroot() {
+    public FileObject getNbroot() {
         String nbrootRel = getNbrootRel();
         FileObject nbroot = getHelper().resolveFileObject(nbrootRel);
         if (nbroot == null) {
@@ -362,7 +361,7 @@ final class NbModuleProject implements Project {
         return nbroot;
     }
     
-    FileObject getNbrootFile(String path) {
+    public FileObject getNbrootFile(String path) {
         FileObject nbroot = getNbroot();
         if (nbroot != null) {
             return nbroot.getFileObject(path);
@@ -371,15 +370,24 @@ final class NbModuleProject implements Project {
         }
     }
     
-    ModuleList getModuleList() {
+    public ModuleList getModuleList() {
         return moduleList;
     }
     
-    boolean supportsJavadoc() {
+    public FileObject getArchXml() {
+        String loc = eval.getProperty("javadoc.arch"); // NOI18N
+        if (loc != null) {
+            return helper.resolveFileObject(loc);
+        } else {
+            return null;
+        }
+    }
+    
+    public boolean supportsJavadoc() {
         return supportsFeature("javadoc"); // NOI18N
     }
     
-    boolean supportsUnitTests() {
+    public boolean supportsUnitTests() {
         return getTestSourceDirectory() != null;
     }
     
