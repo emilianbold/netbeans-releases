@@ -91,10 +91,6 @@ public class ToolBarDesignEditor extends AbstractDesignEditor {
         errorPanel = new ErrorPanel(this);
         return errorPanel;
     }
-    /*
-    public void componentActivated() {
-        super.componentActivated();
-    }*/
     public void componentClosed() {
         super.componentClosed();
     }
