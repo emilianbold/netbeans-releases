@@ -27,9 +27,10 @@ public abstract class ItemComboBoxHelper implements ActionListener {
     private final XmlMultiViewDataObject dataObject;
 
     /**
-     * Constructor initializes object by combo box which will be handled
+     * Constructor initializes object by combo box and data object which will be handled
      *
-     * @param comboBox handled JComboBox.
+     * @param comboBox   handled JComboBox.
+     * @param dataObject related data object
      */
     public ItemComboBoxHelper(JComboBox comboBox, XmlMultiViewDataObject dataObject) {
         this.comboBox = comboBox;
