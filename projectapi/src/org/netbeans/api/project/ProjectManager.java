@@ -24,6 +24,7 @@ import java.util.WeakHashMap;
 import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -47,6 +48,10 @@ public final class ProjectManager {
     // (but currently customizers always save the project on exit, so not so high priority)
     
     // XXX change listeners?
+    
+    private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(ProjectManager.class.getName());
+    // for unit testing purposes:
+    private static final int ERR_LVL = Boolean.getBoolean(ProjectManager.class.getName() + ".LOG_WARN") ? ErrorManager.WARNING : ErrorManager.INFORMATIONAL; // NOI18N
     
     private static final Lookup.Result/*<ProjectFactory>*/ factories =
         Lookup.getDefault().lookup(new Lookup.Template(ProjectFactory.class));
@@ -180,7 +185,13 @@ public final class ProjectManager {
                                     if (Thread.currentThread() == loadingThread) {
                                         throw new IllegalStateException("Attempt to call ProjectManager.findProject within the body of ProjectFactory.loadProject (hint: try using ProjectManager.mutex().postWriteRequest(...) within the body of your Project's constructor to prevent this)"); // NOI18N
                                     }
+                                    if (ERR.isLoggable(ERR_LVL)) {
+                                        ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": waiting for LOADING_PROJECT...");
+                                    }
                                     dir2Proj.wait();
+                                    if (ERR.isLoggable(ERR_LVL)) {
+                                        ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": ...done waiting for LOADING_PROJECT");
+                                    }
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
@@ -188,21 +199,33 @@ public final class ProjectManager {
                         } while (o == LOADING_PROJECT);
                         assert o != LOADING_PROJECT;
                         if (o == NO_SUCH_PROJECT) {
+                            if (ERR.isLoggable(ERR_LVL)) {
+                                ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": NO_SUCH_PROJECT");
+                            }
                             return null;
                         } else if (o != null && o != SOME_SUCH_PROJECT) {
                             Reference r = (Reference)o;
                             Project p = (Project)r.get();
                             if (p != null) {
+                                if (ERR.isLoggable(ERR_LVL)) {
+                                    ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": cached project");
+                                }
                                 return p;
                             }
                         }
                         // not in cache
                         dir2Proj.put(projectDirectory, LOADING_PROJECT);
                         loadingThread = Thread.currentThread();
+                        if (ERR.isLoggable(ERR_LVL)) {
+                            ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": will load new project...");
+                        }
                     }
                     boolean resetLP = false;
                     try {
                         Project p = createProject(projectDirectory);
+                        if (ERR.isLoggable(ERR_LVL)) {
+                            ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": created new project");
+                        }
                         synchronized (dir2Proj) {
                             dir2Proj.notifyAll();
                             projectDirectory.addFileChangeListener(projectDeletionListener);
@@ -217,6 +240,9 @@ public final class ProjectManager {
                             }
                         }
                     } catch (IOException e) {
+                        if (ERR.isLoggable(ERR_LVL)) {
+                            ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": error loading project: " + e);
+                        }
                         // Do not cache the exception. Might be useful in some cases
                         // but would also cause problems if there were a project that was
                         // temporarily corrupted, fP is called, then it is fixed, then fP is
@@ -226,8 +252,14 @@ public final class ProjectManager {
                         loadingThread = null;
                         if (!resetLP) {
                             // IOException or a runtime exception interrupted.
-                            assert dir2Proj.get(projectDirectory) == LOADING_PROJECT;
-                            dir2Proj.remove(projectDirectory);
+                            if (ERR.isLoggable(ERR_LVL)) {
+                                ERR.log(ERR_LVL, "findProject(" + projectDirectory + ") in " + Thread.currentThread().getName() + ": cleaning up after error");
+                            }
+                            synchronized (dir2Proj) {
+                                assert dir2Proj.get(projectDirectory) == LOADING_PROJECT;
+                                dir2Proj.remove(projectDirectory);
+                                dir2Proj.notifyAll(); // make sure other threads can continue
+                            }
                         }
                     }
                 }
@@ -246,7 +278,7 @@ public final class ProjectManager {
     private Project createProject(FileObject dir) throws IOException {
         assert dir != null;
         assert dir.isFolder();
-        //assert mutex().canRead();
+        assert mutex().isReadAccess();
         ProjectStateImpl state = new ProjectStateImpl();
         Iterator it = factories.allInstances().iterator();
         while (it.hasNext()) {
@@ -335,7 +367,7 @@ public final class ProjectManager {
     private boolean checkForProject(FileObject dir) {
         assert dir != null;
         assert dir.isFolder() : dir;
-        //assert mutex().canRead();
+        assert mutex().isReadAccess();
         Iterator it = factories.allInstances().iterator();
         while (it.hasNext()) {
             ProjectFactory factory = (ProjectFactory)it.next();
