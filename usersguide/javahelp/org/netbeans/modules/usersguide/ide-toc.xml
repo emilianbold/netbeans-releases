@@ -324,12 +324,12 @@
     <tocitem text="Adding an Event Handler to a Menu Item" target="gui.menus.events" />
   </tocitem>
   <tocitem text="Creating a Multiple Document Interface (MDI) Application" target="gui.mdi" />
-  <tocitem text="Configuring the Form Editor" target="gui.configuring" />
   <tocitem text="Customizing the Component Palette" target="gui.custompalette.intro"> 
     <tocitem text="Creating a Component Palette Tab" target="gui.custompalette.creating" />
     <tocitem text="Moving a Tab or Component" target="gui.custompalette.moving" />
     <tocitem text="Removing Items From the Component Palette" target="gui.custompalette.removing" />
   </tocitem>
+  <tocitem text="Configuring the Form Editor" target="gui.configuring" />
 </tocitem>
 
 <tocitem text="Working With Java Source" target="java.intro">
