@@ -55,7 +55,7 @@ public class ServerInstance implements Node.Cookie {
         this.server = server; this.url = url; this.manager = manager;
     }
     
-    private InstanceProperties props = null;
+    /*private InstanceProperties props = null;
     private String getName() {
         if (props == null)
             props = InstanceProperties.getInstanceProperties(getUrl());
@@ -63,11 +63,11 @@ public class ServerInstance implements Node.Cookie {
             return props.getProperty(InstanceProperties.NAME_ATTR);
         else
             return null;
-    }
+    }*/
     
     public String getDisplayName() {
-        if (getName() != null)
-            return getName();
+        /*if (getName() != null)
+            return getName();*/
         return server.getDisplayName() + "(" + url + ")";
     }
     
