@@ -9,10 +9,25 @@
 -->
 
 
-<api-questions version="$Revision$" date="$date" >
+<api-questions version="$Revision$" date="$date: $" >
+    <category id="arch" name="General Informations">
+        <question id="arch-what">
+            What is this project good for?
+            <hint>
+            Please provide here few lines describing the the project, 
+            what problem it should solve, provide links to documentation, 
+            specifications, etc.
+            </hint>
+        </question>
+        
+    </category>
     <category id="dep" name="Project and platform dependencies">
         <question id="dep-nb">
             What other NetBeans projects this one depends on?
+            <hint>
+            If you want, describe such projects as imported API using
+            the <code>&lt;api name="identification" type="import or export" category="stable" url="where is the description" /&gt;</code>
+            </hint>
         </question>
         
         <question id="dep-non-nb">
@@ -29,10 +44,19 @@
         <question id="dep-platform">
             On which platforms your module run? Any? Does it run in the same
             way?
+            <hint>
+            If your module is using JNI or deals with special differences of
+            OSes like filesystems, etc. please describe here what they are.
+            </hint>
         </question>
         
         <question id="dep-jre">
             Which version of JRE you need (1.2, 1.3, 1.4, etc.)?
+            <hint>
+            It is expected that if your module runs on 1.x that it will run 
+            on 1.x+1 if no, state that please. Also describe here cases where
+            you run different code on different versions of JRE and why.
+            </hint>
         </question>
 
         <question id="dep-jrejdk">
@@ -44,14 +68,29 @@
     <category id="deploy" name="Deployment">
         <question id="deploy-jar">
             Do you deploy just module JAR file(s) or some other files?
+            <hint>
+            If your module consist just from one module JAR file, just confirm that.
+            If it uses more than one JAR, describe where there are located, how
+            they refer to each other. 
+            If it consist of module JAR(s) and other files, please describe
+            what is their purpose, why other files are necessary. Please 
+            make sure that installation/deinstallation leaves the system 
+            in state as it was before installation.
+            </hint>
         </question>
     
         <question id="deploy-nbm">
             Can you deploy NBM via AutoUpdate center?
+            <hint>
+            If not why?
+            </hint>
         </question>
         
         <question id="deploy-shared">
             Do you need to be installed in shared location or only in user directory?
+            <hint>
+            Installation location shall not matter, if it does explain why.
+            </hint>
         </question>
         
         
@@ -75,6 +114,11 @@
     <category id="compat" name="Compatiblity with environment">
         <question id="compat-i18n">
             Is your module correctly internationalized?
+            <hint>
+            Correct internationalization means that it obeys instuctions 
+            at <a href="http://www.netbeans.org/devhome/docs/i18n/index.html">
+            NetBeans I18N pages</a>.
+            </hint>
         </question>
         <question id="compat-standards">
             Does the module implements or defines any standards? Is the 
@@ -119,28 +163,56 @@
             </hint>
         </question>
         
-        <question id="resources-mask">
-            Does your module read any resource provided by another one in
-            module layer? Why?
-        </question>
-        
         <question id="resources-read">
             Does your module read any resources from layers? For what purpose?
+            
+            <hint>
+            As this is some kind of intermodule dependency, it is a kind of API.
+            Please describe it and clasify according to 
+            <a href="http://openide.netbeans.org/tutorial/api-design.html#categories">
+            common stability categories</a>.
+            </hint>
+        </question>
+        
+        <question id="resources-mask">
+            Does your module mask/hide/override any resource provided by another one in
+            module layer? 
+            
+            <hint>
+            If you mask a file provided by another module, you probably depend
+            on that and do not want the other module to (for example) change
+            the file's name. That module shall thus make that file available as an API
+            of some stability category.
+            </hint>
         </question>
     </category>
 
     
     <category id="lookup" name="Lookup of components">
         <question id="lookup-lookup">
-            Does your module used <code>org.openide.util.Lookup</code>
+            Does your module uses <code>org.openide.util.Lookup</code>
             to find any components to communicate to? Which ones?
+            
+            <hint>
+            Please describe the interfaces you are searching for, where 
+            are defined, whether you are searching for just one or more of them,
+            if the order is important, etc. Also clasify the stability of such
+            API contract.
+            </hint>
         </question>
         <question id="lookup-register">
-            Do you register anything into the lookup for other to find? Who are 
-            the others?
+            Do you register anything into the lookup for other to find? 
+            <hint>
+            Do you register using layer file or using <code>META-INF/services</code>?
+            Who is supposed to find your component?
+            </hint>
         </question>
         <question id="lookup-remove">
-            Are removing entries of other modules from the lookup? Why?
+            Are removing entries of other modules from the lookup? 
+            <hint>
+            Why? Of course, that is possible, but it can be dangerous. Is the module
+            your are masking resource from aware of what you are doing?
+            </hint>
         </question>
     </category>
 
@@ -154,6 +226,17 @@
         <question id="exec-property">
             Is execution of your code influenced by any environment of
             system (<code>System.getProperty</code>) property?
+            
+            <hint>
+            If there is a property that can change the behaviour of your 
+            code, somebody will likely use it. You should describe what it does 
+            and the stability category of this API. You may use
+            <PRE>
+                &lt;property name="id" category="private" &gt
+                    description of the property, where it is used, what it influence, etc.
+                &lt;/property&gt;            
+            </PRE>
+            </hint>
         </question>
         
         <question id="exec-component">
