@@ -79,6 +79,20 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
         return false;
     }
 
+    public boolean clearContainer(Container container,
+                                  Container containerDelegate)
+    {
+        if (container instanceof JScrollPane) {
+            JScrollPane scrollPane = (JScrollPane) container;
+            Component comp = scrollPane.getViewport().getView();
+            if (comp != null)
+                comp.removeNotify();
+            scrollPane.setViewportView(null);
+            return true;
+        }
+        else return super.clearContainer(container, containerDelegate);
+    }
+
     protected CodeExpression getActiveContainerCodeExpression() {
         return getLayoutContext().getContainerCodeExpression();
     }
