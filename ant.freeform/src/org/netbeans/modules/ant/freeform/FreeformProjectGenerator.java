@@ -558,8 +558,10 @@ public class FreeformProjectGenerator {
                         data.appendChild(props);
                     }
                     h[0].putPrimaryConfigurationData(data, true);
-                    
-                    putTargetMappings(h[0], mappings);
+
+                    if (mappings.size() > 0) {
+                        putTargetMappings(h[0], mappings);
+                    }
                     
                     if (sources.size() > 0) {
                         putSourceFolders(h[0], sources, null);
@@ -575,6 +577,10 @@ public class FreeformProjectGenerator {
                     }
                     putBuildXMLSourceFile(h[0], antPath);
                     putContextMenuAction(h[0], mappings);
+                    List exports = guessExports(h[0].getStandardPropertyEvaluator(), mappings, compUnits);
+                    if (exports.size() > 0) {
+                        putExports(h[0], exports);
+                    }
                 }
             }
         );
@@ -1178,6 +1184,115 @@ public class FreeformProjectGenerator {
             return null;
         }
         return PropertyUtils.resolveFile(freeformProjectBase, location).getAbsolutePath();
+    }
+
+    /**
+     * Structure describing one export record.
+     * Data in the struct are in the same format as they are stored in XML.
+     */
+    public static final class Export {
+        public String type;
+        public String location;
+        public String script; // optional
+        public String buildTarget;
+        public String cleanTarget; // optional
+    }
+
+    /**
+     * Try to guess project's exports. See issue #49221 for more details.
+     */
+    public static List/*<Export>*/ guessExports(PropertyEvaluator evaluator,
+            List/*<TargetMapping>*/ targetMappings, List/*<JavaCompilationUnit>*/ javaCompilationUnits) {
+        List/*<Export>*/ exports = new ArrayList();
+        String targetName = null;
+        String scriptName = null;
+        Iterator it = targetMappings.iterator();
+        while (it.hasNext()) {
+            TargetMapping tm = (TargetMapping)it.next();
+            if (tm.name.equals("build")) { // NOI18N
+                if (tm.targets.size() == 1) {
+                    targetName = (String)tm.targets.get(0);
+                    scriptName = tm.script;
+                } else {
+                    return new ArrayList();
+                }
+            }
+        }
+        if (targetName == null) {
+            return new ArrayList();
+        }
+        it = javaCompilationUnits.iterator();
+        while (it.hasNext()) {
+            JavaCompilationUnit cu = (JavaCompilationUnit)it.next();
+            String location = null;
+            if (cu.output != null) {
+                Iterator it2 = cu.output.iterator();
+                while (it2.hasNext()) {
+                    String output = (String)it2.next();
+                    String output2 = evaluator.evaluate(output);
+                    if (output2.endsWith(".jar")) { // NOI18N
+                        location = output;
+                        break;
+                    }
+                }
+            }
+            if (location != null) {
+                Export e = new Export();
+                e.type = "jar"; // NOI18N
+                e.location = location;
+                e.script = scriptName;
+                e.buildTarget = targetName;
+                exports.add(e);
+            }
+        }
+        return exports;
+    }
+    
+    /**
+     * Update exports of the project. 
+     * Project is left modified and you must save it explicitely.
+     * @param helper AntProjectHelper instance
+     * @param exports list of Export instances
+     */
+    public static void putExports(AntProjectHelper helper, List/*<Export>*/ exports) {
+        ArrayList list = new ArrayList();
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+        Iterator it = Util.findSubElements(data).iterator();
+        while (it.hasNext()) {
+            Element exportEl = (Element)it.next();
+            if (!exportEl.getLocalName().equals("export")) { // NOI18N
+                continue;
+            }
+            data.removeChild(exportEl);
+        }
+        Iterator it2 = exports.iterator();
+        while (it2.hasNext()) {
+            Export export = (Export)it2.next();
+            Element exportEl = doc.createElementNS(FreeformProjectType.NS_GENERAL, "export"); // NOI18N
+            Element el;
+            el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "type"); // NOI18N
+            el.appendChild(doc.createTextNode(export.type)); // NOI18N
+            exportEl.appendChild(el);
+            el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "location"); // NOI18N
+            el.appendChild(doc.createTextNode(export.location)); // NOI18N
+            exportEl.appendChild(el);
+            if (export.script != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "script"); // NOI18N
+                el.appendChild(doc.createTextNode(export.script)); // NOI18N
+                exportEl.appendChild(el);
+            }
+            el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "build-target"); // NOI18N
+            el.appendChild(doc.createTextNode(export.buildTarget)); // NOI18N
+            exportEl.appendChild(el);
+            if (export.cleanTarget != null) {
+                el = doc.createElementNS(FreeformProjectType.NS_GENERAL, "clean-target"); // NOI18N
+                el.appendChild(doc.createTextNode(export.cleanTarget)); // NOI18N
+                exportEl.appendChild(el);
+            }
+            appendChildElement(data, exportEl, rootElementsOrder);
+        }
+        helper.putPrimaryConfigurationData(data, true);
     }
     
 }

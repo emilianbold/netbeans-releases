@@ -15,10 +15,7 @@ package org.netbeans.modules.ant.freeform;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,13 +45,13 @@ import org.w3c.dom.Element;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
-import org.openide.filesystems.FileLock;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyProvider;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
-// XXX: part of the testSourceFoldersAndSourceViews test is commented out
-// becasue implementation of Source interface does not refresh automatically.
 /**
  * Tests for FreeformProjectGenerator.
  *
@@ -161,22 +158,30 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         sf.location = "location3";
         sf.style = "tree";
         folders.add(sf);
+        List exports = new ArrayList();
+        FreeformProjectGenerator.Export e = new FreeformProjectGenerator.Export();
+        e.type = "jar";
+        e.location = "folder/output.jar";
+        e.buildTarget = "target";
+        exports.add(e);
+        
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
         FreeformProjectGenerator.putContextMenuAction(helper, mappings);
         FreeformProjectGenerator.putCustomContextMenuActions(helper, customActions);
         FreeformProjectGenerator.putSourceFolders(helper, folders, null);
         FreeformProjectGenerator.putSourceViews(helper, folders, null);
+        FreeformProjectGenerator.putExports(helper, exports);
 //        ProjectManager.getDefault().saveAllProjects();
         
         // check that all elements are written in expected order
         
         Element el = helper.getPrimaryConfigurationData(true);
         List subElements = Util.findSubElements(el);
-        assertEquals(5, subElements.size());
+        assertEquals(6, subElements.size());
         assertElementArray(subElements, 
-            new String[]{"name", "properties", "folders", "ide-actions", "view"}, 
-            new String[]{null, null, null, null, null});
-        Element el2 = (Element)subElements.get(4);
+            new String[]{"name", "properties", "folders", "ide-actions", "export", "view"}, 
+            new String[]{null, null, null, null, null, null});
+        Element el2 = (Element)subElements.get(5);
         subElements = Util.findSubElements(el2);
         assertEquals(2, subElements.size());
         assertElementArray(subElements, 
@@ -204,22 +209,24 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         ((FreeformProjectGenerator.SourceFolder)folders.get(0)).style = "tree";
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
         FreeformProjectGenerator.putContextMenuAction(helper, mappings);
+        FreeformProjectGenerator.putExports(helper, exports);
         FreeformProjectGenerator.putCustomContextMenuActions(helper, customActions);
         FreeformProjectGenerator.putSourceFolders(helper, folders, null);
         FreeformProjectGenerator.putSourceViews(helper, folders, null);
         FreeformProjectGenerator.putSourceViews(helper, folders, null);
         FreeformProjectGenerator.putSourceFolders(helper, folders, null);
+        FreeformProjectGenerator.putExports(helper, exports);
         FreeformProjectGenerator.putCustomContextMenuActions(helper, customActions);
         FreeformProjectGenerator.putContextMenuAction(helper, mappings);
         FreeformProjectGenerator.putTargetMappings(helper, mappings);
 //        ProjectManager.getDefault().saveAllProjects();
         el = helper.getPrimaryConfigurationData(true);
         subElements = Util.findSubElements(el);
-        assertEquals(5, subElements.size());
+        assertEquals(6, subElements.size());
         assertElementArray(subElements, 
-            new String[]{"name", "properties", "folders", "ide-actions", "view"}, 
-            new String[]{null, null, null, null, null});
-        el2 = (Element)subElements.get(4);
+            new String[]{"name", "properties", "folders", "ide-actions", "export", "view"}, 
+            new String[]{null, null, null, null, null, null});
+        el2 = (Element)subElements.get(5);
         subElements = Util.findSubElements(el2);
         assertEquals(2, subElements.size());
         assertElementArray(subElements, 
@@ -721,10 +728,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         FreeformProjectGenerator.putSourceFolders(helper, sfs, null);
         assertEquals("Project must have two java source groups", 2, ss.getSourceGroups("java").length);
         assertEquals("Project cannot have csharp source group", 0, ss.getSourceGroups("csharp").length);
-        // XXX still crude impl that does not try to fire a minimal number of changes:
-        /*
         assertEquals("Number of fired events does not match", 1, l.count);
-         */
         l.reset();
         
         sfs = new ArrayList();
@@ -1191,7 +1195,158 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         validate(p);
     }
 
+
+    public void testGuessExports() throws Exception {
+        FreeformProjectGenerator.TargetMapping tm = new FreeformProjectGenerator.TargetMapping();
+        tm.name = "build";
+        tm.script = "antScript";
+        tm.targets = new ArrayList();
+        tm.targets.add("target-1");
+        ArrayList targets = new ArrayList();
+        targets.add(tm);
+        
+        FreeformProjectGenerator.JavaCompilationUnit cu = new FreeformProjectGenerator.JavaCompilationUnit();
+        cu.output = new ArrayList();
+        cu.output.add("${outputfile}");
+        ArrayList units = new ArrayList();
+        units.add(cu);
+        
+        PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
+            PropertyUtils.fixedPropertyProvider(
+            Collections.singletonMap("outputfile", "out.jar"))});
+        
+        List exports = FreeformProjectGenerator.guessExports(evaluator, targets, units);
+        assertEquals("one export was created", 1, exports.size());
+        FreeformProjectGenerator.Export e = (FreeformProjectGenerator.Export)exports.get(0);
+        assertEquals("export is properly configured", "jar", e.type);
+        assertEquals("export is properly configured", "${outputfile}", e.location);
+        assertEquals("export is properly configured", "antScript", e.script);
+        assertEquals("export is properly configured", "target-1", e.buildTarget);
+        
+        tm.targets.add("target-2");
+        exports = FreeformProjectGenerator.guessExports(evaluator, targets, units);
+        assertEquals("no export was created when there are two targets", 0, exports.size());
+        
+        tm.targets.remove("target-2");
+        exports = FreeformProjectGenerator.guessExports(evaluator, targets, units);
+        assertEquals("one export was created", 1, exports.size());
+        
+        tm.name = "buildXX";
+        exports = FreeformProjectGenerator.guessExports(evaluator, targets, units);
+        assertEquals("no export was created when there is no action with build name", 0, exports.size());
+        
+        tm.name = "build";
+        exports = FreeformProjectGenerator.guessExports(evaluator, targets, units);
+        assertEquals("one export was created", 1, exports.size());
+
+        FreeformProjectGenerator.JavaCompilationUnit cu2 = new FreeformProjectGenerator.JavaCompilationUnit();
+        cu2.output = new ArrayList();
+        cu2.output.add("build/classes");
+        units.add(cu2);
+        exports = FreeformProjectGenerator.guessExports(evaluator, targets, units);
+        assertEquals("one export was created", 1, exports.size());
+        
+        cu2.output.add("dist/proj.jar");
+        exports = FreeformProjectGenerator.guessExports(evaluator, targets, units);
+        assertEquals("two exports were created", 2, exports.size());
+        e = (FreeformProjectGenerator.Export)exports.get(0);
+        assertEquals("export is properly configured", "jar", e.type);
+        assertEquals("export is properly configured", "${outputfile}", e.location);
+        assertEquals("export is properly configured", "antScript", e.script);
+        assertEquals("export is properly configured", "target-1", e.buildTarget);
+        e = (FreeformProjectGenerator.Export)exports.get(1);
+        assertEquals("export is properly configured", "jar", e.type);
+        assertEquals("export is properly configured", "dist/proj.jar", e.location);
+        assertEquals("export is properly configured", "antScript", e.script);
+        assertEquals("export is properly configured", "target-1", e.buildTarget);
+    }
     
+    public void testRawExports() throws Exception {
+        AntProjectHelper helper = createEmptyProject("proj", "proj", false);
+        FileObject base = helper.getProjectDirectory();
+        Project p = ProjectManager.getDefault().findProject(base);
+        assertNotNull("Project was not created", p);
+        assertEquals("Project folder is incorrect", base, p.getProjectDirectory());
+        
+        // check that all data are correctly persisted
+        
+        List exports = new ArrayList();
+        FreeformProjectGenerator.Export e = new FreeformProjectGenerator.Export();
+        e.type = "jar";
+        e.location = "path/smth.jar";
+        e.script = "someScript";
+        e.buildTarget = "build_target";
+        e.cleanTarget = "clean_target";
+        exports.add(e);
+        e = new FreeformProjectGenerator.Export();
+        e.type = "jar";
+        e.location = "something/else.jar";
+        e.buildTarget = "bldtrg";
+        exports.add(e);
+        
+        FreeformProjectGenerator.putExports(helper, exports);
+        Element el = helper.getPrimaryConfigurationData(true);
+        List subElements = Util.findSubElements(el);
+        // 4, i.e. name, two exports and one view of build.xml file
+        assertEquals(4, subElements.size());
+        // compare first compilation unit
+        Element el2 = (Element)subElements.get(0);
+        assertElement(el2, "name", null);
+        el2 = (Element)subElements.get(1);
+        assertElement(el2, "export", null);
+        List l1 = Util.findSubElements(el2);
+        assertEquals(5, l1.size());
+        assertElementArray(l1, 
+            new String[]{"type", "location", "script", "build-target", "clean-target"}, 
+            new String[]{"jar", "path/smth.jar", "someScript", "build_target", "clean_target"});
+        // compare second compilation unit
+        el2 = (Element)subElements.get(2);
+        assertElement(el2, "export", null);
+        l1 = Util.findSubElements(el2);
+        assertEquals(3, l1.size());
+        assertElementArray(l1, 
+            new String[]{"type", "location", "build-target"}, 
+            new String[]{"jar", "something/else.jar", "bldtrg"});
+        el2 = (Element)subElements.get(3);
+        assertElement(el2, "view", null);
+        // validate against schema:
+        ProjectManager.getDefault().saveAllProjects();
+        validate(p);
+            
+        
+        // now test updating
+        
+        exports = new ArrayList();
+        e = new FreeformProjectGenerator.Export();
+        e.type = "jar";
+        e.location = "aaa/bbb.jar";
+        e.buildTarget = "ccc";
+        exports.add(e);
+        
+        FreeformProjectGenerator.putExports(helper, exports);
+        el = helper.getPrimaryConfigurationData(true);
+        subElements = Util.findSubElements(el);
+        // 3, i.e. name, export and one view of build.xml file
+        assertEquals(3, subElements.size());
+        // compare first compilation unit
+        el2 = (Element)subElements.get(0);
+        assertElement(el2, "name", null);
+        el2 = (Element)subElements.get(1);
+        assertElement(el2, "export", null);
+        l1 = Util.findSubElements(el2);
+        assertEquals(3, l1.size());
+        assertElementArray(l1, 
+            new String[]{"type", "location", "build-target"}, 
+            new String[]{"jar", "aaa/bbb.jar", "ccc"});
+        el2 = (Element)subElements.get(2);
+        assertElement(el2, "view", null);
+        // validate against schema:
+        ProjectManager.getDefault().saveAllProjects();
+        validate(p);
+            
+    }
+
+
     private static class Listener implements ChangeListener {
         int count = 0;
         public void stateChanged(ChangeEvent ev) {
