@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -55,6 +55,7 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
      * If you don't cache it, MountIterator in core flickers and behaves weirdly,
      * because apparently PropertyPanel will call getCustomEditor repeatedly and
      * refresh the display each time.
+     * XXX MountIterator is dead so is this still necessary? -jglick
      */
     private JFileChooser chooser;
     

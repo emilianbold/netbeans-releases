@@ -417,26 +417,10 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Mount">
             <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
             <attr name="simple" boolvalue="false" />
-            <attr name="org-netbeans-core-ExLocalFileSystem.settings/org-netbeans-core-ExJarFileSystem.settings" boolvalue="true" />
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/core/resources/templatesFileSystems.html"/>
             <attr name="helpID" stringvalue="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeFilesystems"/>
-
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
-            <file name="org-netbeans-core-ExLocalFileSystem.settings" url="ExLocalFileSystem.settings">
-                <attr name="template" boolvalue="true" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/localFS.gif" />
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.MountNode.createIterator" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/core/resources/templatesLocalFS.html"/>
-            </file>
-            <file name="org-netbeans-core-ExJarFileSystem.settings" url="ExJarFileSystem.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/jarFS.gif" />
-                <attr name="template" boolvalue="true" />
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.MountNode.createIterator" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/core/resources/templatesJarFS.html"/>
-            </file>
         </folder>
         
      </folder>
