@@ -388,8 +388,8 @@ public final class DesktopImpl {
             if ((curSlideIn != null) && curSlideIn.getComponent().isVisible()) {
                 String side = curSlideIn.getSide();
                 SlidingView curView = findView(side);
-                // #43865 - sliding wiew could be removed by closing
-                if (curView != null) {
+                // #43865, #49320 - sliding wiew or viewcomponent could be removed by closing
+                if (curView != null && viewComponent != null) {
                     Component slidedComp = curSlideIn.getComponent();
                     Rectangle result = slidedComp.getBounds();
                     Rectangle viewRect = curView.getComponent().getBounds();
