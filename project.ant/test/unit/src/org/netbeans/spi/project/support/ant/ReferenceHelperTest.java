@@ -30,7 +30,6 @@ import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -104,14 +103,13 @@ public class ReferenceHelperTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        scratch = TestUtil.makeScratchDir(this);
-        Repository.getDefault().addFileSystem(scratch.getFileSystem()); // so FileUtil.fromFile works
-        projdir = scratch.createFolder("proj");
-        TestUtil.createFileFromContent(ReferenceHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");
         TestUtil.setLookup(new Object[] {
             AntBasedTestUtil.testAntBasedProjectType(),
-            AntBasedTestUtil.testCollocationQueryImplementation(FileUtil.toFile(scratch)),
+            AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir()),
         }, ReferenceHelperTest.class.getClassLoader());
+        scratch = TestUtil.makeScratchDir(this);
+        projdir = scratch.createFolder("proj");
+        TestUtil.createFileFromContent(ReferenceHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");
         pm = ProjectManager.getDefault();
         p = pm.findProject(projdir);
         assertNotNull("found project in " + projdir, p);
@@ -157,7 +155,6 @@ public class ReferenceHelperTest extends NbTestCase {
     }
     
     protected void tearDown() throws Exception {
-        Repository.getDefault().removeFileSystem(scratch.getFileSystem());
         scratch = null;
         projdir = null;
         sisterprojdir = null;

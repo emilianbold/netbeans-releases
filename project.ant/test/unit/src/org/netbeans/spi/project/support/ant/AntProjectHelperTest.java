@@ -92,7 +92,6 @@ public class AntProjectHelperTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
-        Repository.getDefault().addFileSystem(scratch.getFileSystem()); // so FileUtil.fromFile works
         projdir = scratch.createFolder("proj");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/private.xml"), projdir, "nbproject/private/private.xml");
@@ -110,7 +109,6 @@ public class AntProjectHelperTest extends NbTestCase {
     }
     
     protected void tearDown() throws Exception {
-        Repository.getDefault().removeFileSystem(scratch.getFileSystem());
         scratch = null;
         projdir = null;
         pm = null;

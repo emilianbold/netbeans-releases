@@ -32,6 +32,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -82,13 +83,21 @@ public final class TestUtil extends ProxyLookup {
         test.clearWorkDir();
         File root = test.getWorkDir();
         assert root.isDirectory() && root.list().length == 0;
-        LocalFileSystem lfs = new LocalFileSystem();
-        try {
-            lfs.setRootDirectory(root);
-        } catch (PropertyVetoException e) {
-            assert false : e;
+        FileObject fo = FileUtil.toFileObject(root);
+        if (fo != null) {
+            // Presumably using masterfs.
+            return fo;
+        } else {
+            // For the benefit of those not using masterfs.
+            LocalFileSystem lfs = new LocalFileSystem();
+            try {
+                lfs.setRootDirectory(root);
+            } catch (PropertyVetoException e) {
+                assert false : e;
+            }
+            Repository.getDefault().addFileSystem(lfs);
+            return lfs.getRoot();
         }
-        return lfs.getRoot();
     }
     
     /**
