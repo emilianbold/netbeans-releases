@@ -759,17 +759,16 @@ is divided into following sections:
                 <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
                 <!-- copy libraries into ear  -->
                 <xsl:for-each select="//webproject3:web-module-libraries/webproject3:library[webproject3:path-in-war]">
-                    <xsl:variable name="included.prop.name">
-                        <xsl:value-of select="webproject3:file"/>
-                    </xsl:variable>
                     <xsl:variable name="base.prop.name">
                         <xsl:value-of select="concat('included.lib.', substring-before(substring-after(webproject3:file,'{'),'}'), '')"/>
                     </xsl:variable>
-                    <basename>
-                        <xsl:attribute name="property"><xsl:value-of select="$base.prop.name"/></xsl:attribute>
-                        <xsl:attribute name="file"><xsl:value-of select="$included.prop.name"/></xsl:attribute>
-                     </basename>
-                     
+                    <xsl:if test="//webproject3:web-module-libraries/webproject3:library[@files]">
+                        <xsl:call-template name="manifestBasenameIterateFiles">
+                            <xsl:with-param name="property" select="$base.prop.name"/>
+                            <xsl:with-param name="files" select="@files"/>
+                            <xsl:with-param name="libfile" select="webproject3:file"/>
+                        </xsl:call-template>
+                    </xsl:if>
                     <xsl:if test="//webproject3:web-module-libraries/webproject3:library[@files]">
                         <xsl:call-template name="copyIterateFiles">
                             <xsl:with-param name="files" select="@files"/>
@@ -811,11 +810,16 @@ is divided into following sections:
                             <xsl:attribute name="name">Class-Path</xsl:attribute>
                             <xsl:attribute name="value">
                                 <xsl:for-each select="//webproject3:web-module-libraries/webproject3:library[webproject3:path-in-war]">
-                                    <xsl:variable name="base.prop.name">
-                                        <xsl:value-of select="concat('${included.lib.', substring-before(substring-after(webproject3:file,'{'),'}'), '}')"/>
-                                    </xsl:variable>
-                                    <xsl:if test="position()>1"><xsl:text> </xsl:text></xsl:if>
-                                    <xsl:value-of select="$base.prop.name"/>
+                                   <xsl:if test="//webproject3:web-module-libraries/webproject3:library[@files]">
+                                        <xsl:variable name="base.prop.name">
+                                            <xsl:value-of select="concat('included.lib.', substring-before(substring-after(webproject3:file,'{'),'}'), '')"/>
+                                        </xsl:variable>
+                                        <xsl:call-template name="manifestPrintEntriesIterateFiles">
+                                            <xsl:with-param name="property" select="$base.prop.name"/>
+                                            <xsl:with-param name="files" select="@files"/>
+                                            <xsl:with-param name="libfile" select="webproject3:file"/>
+                                        </xsl:call-template>
+                                    </xsl:if>
                                 </xsl:for-each>  
                             </xsl:attribute>
                          </attribute>
@@ -1521,7 +1525,42 @@ to simulate
 		    <xsl:text>}</xsl:text>
 		</xsl:for-each>						
 	</xsl:template>
+
+        <xsl:template name="manifestBasenameIterateFiles" >
+            <xsl:param name="property"/>
+            <xsl:param name="files" /><!-- number of files in the libfile property -->
+            <xsl:param name="libfile"/>
+            <xsl:if test="$files &gt; 0">
+                <xsl:variable name="fileNo" select="$files+(-1)"/>
+                <xsl:variable name="lib" select="concat(substring-before($libfile,'}'),'.libfile.',$files,'}')"/>
+                <xsl:variable name="propertyName" select="concat($property, '.', $fileNo+1)"/>
+                <basename property="{$propertyName}" file="{$lib}"/>
+                <xsl:call-template name="manifestBasenameIterateFiles">
+                    <xsl:with-param name="files" select="$fileNo"/>
+                    <xsl:with-param name="libfile" select="$libfile"/>
+                    <xsl:with-param name="property" select="$property"/>
+                </xsl:call-template>
+            </xsl:if>
+        </xsl:template>
         
+        <xsl:template name="manifestPrintEntriesIterateFiles" >
+            <xsl:param name="property"/>
+            <xsl:param name="files" /><!-- number of files in the libfile property -->
+            <xsl:param name="libfile"/>
+            <xsl:if test="$files &gt; 0">
+                <xsl:variable name="fileNo" select="$files+(-1)"/>
+                <xsl:variable name="lib" select="concat(substring-before($libfile,'}'),'.libfile.',$files,'}')"/>
+                <xsl:variable name="propertyName" select="concat($property, '.', $fileNo+1)"/>
+                <xsl:text>${</xsl:text><xsl:value-of select="$propertyName"/><xsl:text>} </xsl:text>
+                <xsl:call-template name="manifestPrintEntriesIterateFiles">
+                    <xsl:with-param name="files" select="$fileNo"/>
+                    <xsl:with-param name="libfile" select="$libfile"/>
+                    <xsl:with-param name="property" select="$property"/>
+                </xsl:call-template>
+            </xsl:if>
+        </xsl:template>
+
+                
         <xsl:template name="copyIterateFiles" >
             <xsl:param name="files" />
             <xsl:param name="target"/>
