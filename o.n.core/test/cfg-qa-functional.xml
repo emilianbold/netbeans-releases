@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="core qa-functional test config">
 
 <!-- Start Property Editors testbag -->
-    <testbag testattribs="validation or full or ide or pe" executor="ide" name="Property Editors tests">
+    <testbag testattribs="full or ide or pe" executor="ide" name="Property Editors tests">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_BooleanO.class"/>
@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="validation or full or ide or pe" executor="ide" name="Property Customizers tests">
+    <testbag testattribs="full or ide or pe" executor="ide" name="Property Customizers tests">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_Color.class"/>
@@ -70,7 +70,7 @@ Microsystems, Inc. All Rights Reserved.
 
 
 <!-- START javahelp testbag -->
-    <testbag testattribs="full or validation or javahelp" executor="ide" name="Javahelp tests">
+    <testbag testattribs="full or javahelp" executor="ide" name="Javahelp tests">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/javahelp/JavaHelpDialogTest.class"/>
@@ -78,6 +78,17 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 <!-- END javahelp testbag -->
+
+<!-- START TEMP -->
+    <testbag testattribs="temp" executor="ide" name="Temp">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/propertyeditors/PropertyType_Properties.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+<!-- END TEMP -->
+
     
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
