@@ -293,7 +293,7 @@ public class Arch extends Task implements ErrorHandler {
             w.write(elementToString(n));
             
             w.write("\n-->\n");
-            w.write("<answer id=\"" + s + "\">\nXXX no answer for " + s + "\n</answer>\n\n");
+            w.write(" <answer id=\"" + s + "\">\n  <p>\n   XXX no answer for " + s + "\n  </p>\n </answer>\n\n");
         }
     }
         
@@ -325,7 +325,19 @@ public class Arch extends Task implements ErrorHandler {
         
         Writer w = new FileWriter (questionsFile);
         
-        w.write ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        w.write ("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!-- -*- sgml-indent-step: 1 -*- -->\n");
+        w.write ("<!--\n");
+        w.write ("                Sun Public License Notice\n");
+        w.write ("\n");
+        w.write ("The contents of this file are subject to the Sun Public License\n");
+        w.write ("Version 1.0 (the \"License\"). You may not use this file except in\n");
+        w.write ("compliance with the License. A copy of the License is available at\n");
+        w.write ("http://www.sun.com/\n");
+        w.write ("\n");
+        w.write ("The Original Code is NetBeans. The Initial Developer of the Original\n");
+        w.write ("Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun\n");
+        w.write ("Microsystems, Inc. All Rights Reserved.\n");
+        w.write ("-->\n");
         w.write ("<!DOCTYPE api-answers PUBLIC \"-//NetBeans//DTD Arch Answers//EN\" \""); w.write (nbRoot); w.write ("nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd\" [\n");
         w.write ("  <!ENTITY api-questions SYSTEM \""); w.write (nbRoot); w.write ("nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml\">\n");
         w.write ("]>\n");
