@@ -35,11 +35,10 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="failing" executor="ide" name="testbag_2" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="ide" name="testbag_2" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/windows/layers/*.class"/>
-                <include name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -63,6 +62,14 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <!-- Under investigation why it fails (probably "as designed"): -->
                 <include name="org/netbeans/core/lookup/InstanceDataObjectModuleTest4.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="failing" executor="ide" name="testbag_5" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
             </patternset>
         </testset>
     </testbag>
