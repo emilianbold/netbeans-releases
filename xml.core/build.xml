@@ -123,6 +123,7 @@ Microsystems, Inc. All Rights Reserved.
         </delete>
         <delete file="manifest-subst.mf"/>
         <delete file="xml-core.nbm"/>
+        <delete dir="src/org/w3c"/> <!-- TMP DOM3 -->
     </target>
 
     <target name="real-clean" depends="clean">
