@@ -8,7 +8,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -93,6 +93,11 @@ public class XMLReporter implements JUnitTestListener {
             saveCurrentSuite();
             return;
         }
+        // check whether result was already set (it can be when XTestErrorManager is registered)
+        if(currentTestCase.xmlat_result == UnitTestCase.TEST_FAIL) {
+            // error takes precedens before fail
+            testsFailed--;
+        }
         currentTestCase.xml_cdata = stackTraceToString(throwable);
         currentTestCase.xmlat_message = throwable.getMessage();
         currentTestCase.xmlat_result = UnitTestCase.TEST_ERROR;
@@ -101,6 +106,11 @@ public class XMLReporter implements JUnitTestListener {
     
         
     public void addFailure(junit.framework.Test test, junit.framework.AssertionFailedError assertionFailedError) {
+        // check whether result was already set (it can be when XTestErrorManager is registered)
+        if(currentTestCase.xmlat_result == UnitTestCase.TEST_ERROR) {
+            // error takes precedens before fail
+            return;
+        }
         currentTestCase.xml_cdata = stackTraceToString(assertionFailedError);
         currentTestCase.xmlat_message = assertionFailedError.getMessage();
         currentTestCase.xmlat_result = UnitTestCase.TEST_FAIL;
