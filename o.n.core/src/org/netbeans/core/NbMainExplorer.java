@@ -495,8 +495,6 @@ public final class NbMainExplorer extends CloneableTopComponent
             setConfirmDelete(ideS.getConfirmDelete());
             // attach listener to the changes of IDE settings
             weakIdeL = WeakListener.propertyChange(rcListener(), ideS);
-            // instruct winsys to save state of this top component only if opened
-            putClientProperty("PersistenceType", "OnlyOpened");
         }
 
         /** Initializes gui of this component. Subclasses can override
