@@ -101,6 +101,7 @@ Microsystems, Inc. All Rights Reserved.
         <path refid="ismp.cp"/>
       </classpath>
     </java>
+    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
   </target>
 
   <target name="build-unix" depends="init, compile, xsl-unix">
@@ -118,14 +119,13 @@ Microsystems, Inc. All Rights Reserved.
         <path refid="ismp.cp"/>
       </classpath>
     </java>
+    <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
+    <move file="build/disk1/setupsolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
+    <move file="build/disk1/setupsolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
   </target>
   
   <target name="build" depends="init, build-win32, build-unix" description="build the installers">
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
-    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
-    <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
-    <move file="build/disk1/setupsolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
-    <move file="build/disk1/setupsolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
   </target>
 
   <target name="compile" depends="init, build-library" description="compile custom beans and panels">
