@@ -45,6 +45,7 @@
 
 
         <target name="stop" depends="bootstrap">
+	        <property file="${xtest.userdata.propertyfile}"/>
         	<java classname="org.netbeans.db.antext.StopPointBaseServer" fork="true">
                 	<classpath>
                         	<pathelement location="${srcext-dir}" />
