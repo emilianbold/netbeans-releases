@@ -199,11 +199,11 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   * @param s a list of {@link PasteType}s that will have added to it all types
   *    valid for this node
   */
-  protected void createPasteTypes (Transferable t, List s) {
+/*  protected void createPasteTypes (Transferable t, List s) {
     if (t.isDataFlavorSupported (NodeTransfer.nodePasteFlavor)) {
       s.add (pasteType);
     }
-  }
+  } */
 
 // -----------------------------------------------------------------------------
 // RADComponentCookie implementation
@@ -216,6 +216,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  12   Gandalf   1.11        6/1/99   Ian Formanek    Fixed last change
  *  11   Gandalf   1.10        6/1/99   Ian Formanek    Rename implemented 
  *       correctly, actions provided according to component type (Rename, 
  *       Delete, Paste)
