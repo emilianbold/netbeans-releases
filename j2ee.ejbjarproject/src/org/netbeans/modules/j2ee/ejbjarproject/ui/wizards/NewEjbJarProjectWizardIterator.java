@@ -35,6 +35,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectGenerator;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.openide.util.NbBundle;
 
 /**
@@ -70,8 +71,15 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Instanti
         String serverInstanceID = (String) wiz.getProperty(WizardProperties.SERVER_INSTANCE_ID);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         
-        EjbJarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID);
+        AntProjectHelper helper = EjbJarProjectGenerator.createProject(dirF, name, j2eeLevel, serverInstanceID);
         FileObject dir = FileUtil.toFileObject(dirF);
+        
+        String srcDir = helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.SRC_DIR);
+        if (srcDir != null) {
+            FileObject srcDirFo = dir.getFileObject(srcDir);
+            if (srcDirFo != null)
+                resultSet.add(srcDirFo);
+        }
         
         Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
         EjbJarProject createdEjbJarProject = (EjbJarProject) ProjectManager.getDefault().findProject(dir);

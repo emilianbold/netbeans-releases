@@ -32,8 +32,10 @@ import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.xml.XMLUtil;
 
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -46,8 +48,10 @@ import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.util.lookup.Lookups;
+
 
 import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
@@ -85,7 +89,27 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
     }
     
     public Node findPath( Node root, Object target ) {
-        // XXX implement
+        Project project = (Project)root.getLookup().lookup( Project.class );
+        if ( project == null ) {
+            return null;
+        }
+        
+        if ( target instanceof FileObject ) {
+            FileObject fo = (FileObject)target;
+            Project owner = FileOwnerQuery.getOwner( fo );
+            if ( !project.equals( owner ) ) {
+                return null; // Don't waste time if project does not own the fo
+            }
+            
+            Node[] nodes = root.getChildren().getNodes( true );
+            for ( int i = 0; i < nodes.length; i++ ) {
+                Node result = PackageView.findPath( nodes[i], target );
+                if ( result != null ) {
+                    return result;
+                }
+            }
+        }
+
         return null;
     }
             
