@@ -16,10 +16,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 public class TestNode extends Node {
     
     private static final Action searchFilesystemsViewAction = new SearchFilesystemsViewAction();
-    private static final Action mountLocalAction = new MountLocalAction();
-    private static final Action mountArchiveAction = new MountArchiveAction();
-    private static final Action mountVersionControlCVSAction = new ActionNoBlock(null, "Mount|Version Control|CVS");
-    private static final Action mountVersionControlGenericVCSAction = new ActionNoBlock(null, "Mount|Version Control|Generic VCS");
+    private static final Action mountAction = new ActionNoBlock(null, "Mount");
     private static final Action changeOrderAction = new ChangeOrderAction();
     private static final Action testAction = new TestAction();
     private static final Action toolsJUnitTestsRunAction = new ActionNoBlock(null, "Tools|JUnit Tests|Run", new Action.Shortcut(KeyEvent.CTRL_MASK|KeyEvent.ALT_MASK, KeyEvent.VK_L));
@@ -51,10 +48,7 @@ public class TestNode extends Node {
     public void verifyPopup() {
         verifyPopup(new Action[]{
             searchFilesystemsViewAction,
-            mountLocalAction,
-            mountArchiveAction,
-            mountVersionControlCVSAction,
-            mountVersionControlGenericVCSAction,
+            mountAction,
             changeOrderAction,
             testAction,
             toolsJUnitTestsRunAction,
@@ -68,24 +62,9 @@ public class TestNode extends Node {
         searchFilesystemsViewAction.perform(this);
     }
 
-    /** performs MountLocalAction with this node */
-    public void mountLocal() {
-        mountLocalAction.perform(this);
-    }
-
-    /** performs MountArchiveAction with this node */
-    public void mountArchive() {
-        mountArchiveAction.perform(this);
-    }
-
-    /** performs MountVersionControlCVSAction with this node */
-    public void mountVersionControlCVS() {
-        mountVersionControlCVSAction.perform(this);
-    }
-
-    /** performs MountVersionControlGenericVCSAction with this node */
-    public void mountVersionControlGenericVCS() {
-        mountVersionControlGenericVCSAction.perform(this);
+    /** performs MountAction with this node */
+    public void mount() {
+        mountAction.perform(this);
     }
 
     /** performs ChangeOrderAction with this node */

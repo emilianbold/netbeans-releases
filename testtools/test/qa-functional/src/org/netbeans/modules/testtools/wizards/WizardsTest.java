@@ -30,6 +30,7 @@ import org.netbeans.junit.NbTestSuite;
 
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.actions.NewTemplateAction;
 import org.netbeans.jellytools.modules.testtools.*;
 import org.netbeans.jellytools.nodes.*;
 import org.netbeans.jemmy.JemmyProperties;
@@ -119,9 +120,12 @@ public class WizardsTest extends JellyTestCase {
     /** simple test case
      *
      */
-    public void tstSimplePass() {
-        new FilesystemNode(ExplorerOperator.invoke().repositoryTab().tree(), "WizardsTest").newFromTemplate("Test Tools|Test Workspace");
+    public void tstSimplePass() throws Exception {
+        new NewTemplateAction().perform();
         NewWizardOperator wizard = new NewWizardOperator();
+        new ChooseTemplateStepOperator().selectTemplate("Test Tools|Test Workspace");
+        wizard.next();
+        new FilesystemNode(new TargetLocationStepOperator().tree(), "WizardsTest").select();
         wizard.next();
         new TestWorkspaceSettingsStepOperator().verify();
         wizard.next();
@@ -142,6 +146,7 @@ public class WizardsTest extends JellyTestCase {
         wizard.next();
         new TestCasesStepOperator().verify();
         wizard.finish();
+        Thread.sleep(2000);
         new FilesystemNode(ExplorerOperator.invoke().repositoryTab().tree(), "WizardsTest/test/qa-functional").unmount();
     }
     
@@ -219,8 +224,12 @@ public class WizardsTest extends JellyTestCase {
      *
      */
     public void tstAddTestType() {
-        new FolderNode(ExplorerOperator.invoke().repositoryTab().tree(), "WizardsTest|test").newFromTemplate("Test Tools|Unit Test Type");
-        NewObjectNameStepOperator nameStep = new NewObjectNameStepOperator();
+        new NewTemplateAction().perform();
+        NewWizardOperator wizard = new NewWizardOperator();
+        new ChooseTemplateStepOperator().selectTemplate("Test Tools|Unit Test Type");
+        wizard.next();
+        TargetLocationStepOperator nameStep = new TargetLocationStepOperator();
+        new FolderNode(nameStep.tree(), "WizardsTest|test").select();
         nameStep.setName("mytype");
         nameStep.next();
         TestTypeSettingsStepOperator ttSet = new TestTypeSettingsStepOperator();
@@ -264,8 +273,12 @@ public class WizardsTest extends JellyTestCase {
      *
      */
     public void tstNewTestSuite() throws IOException {
-        new FolderNode(ExplorerOperator.invoke().repositoryTab().tree(), "WizardsTest|test").newFromTemplate("Test Tools|Jemmy&Jelly Test Suite");
-        NewObjectNameStepOperator nameStep = new NewObjectNameStepOperator();
+        new NewTemplateAction().perform();
+        NewWizardOperator wizard = new NewWizardOperator();
+        new ChooseTemplateStepOperator().selectTemplate("Test Tools|Jemmy&Jelly Test Suite");
+        wizard.next();
+        TargetLocationStepOperator nameStep = new TargetLocationStepOperator();
+        new FolderNode(nameStep.tree(), "WizardsTest|test").select();
         nameStep.setName("myTestSuite");
         nameStep.next();
         TestCasesStepOperator step = new TestCasesStepOperator();

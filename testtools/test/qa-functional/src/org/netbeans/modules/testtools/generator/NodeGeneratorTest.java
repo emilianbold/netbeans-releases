@@ -130,6 +130,7 @@ public class NodeGeneratorTest extends JellyTestCase {
         new Node(editor.treeNodeAndActions(), "inline ActionNoBlock(null, \"Tools").select();
         Thread.sleep(1000);
         new ComboBoxProperty(editor.propertySheet(), "inline").setValue("False");
+        Thread.sleep(1000);
         new StringProperty(editor.propertySheet(), "name").setStringValue("TestAction");
         new Node(editor.treeNodeAndActions(), "new actions.TestAction").select();
         editor.verify();
