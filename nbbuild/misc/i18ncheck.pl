@@ -175,8 +175,9 @@ sub checkline {
 
     return (! m,NOI18N,
             && ! m,getString\s*\(,
-            && ! m,err\.print,
+            && ! m,err\. ?print,
             && ! m,getProperty,
+            && ! m,NbBundle\. ?getMessage,
             && m,".*", 
            ); 
 }
