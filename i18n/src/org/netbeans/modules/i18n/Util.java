@@ -102,10 +102,11 @@ public class Util {
 
         // now try resource owner
         ClassPath rcp = ClassPath.getClassPath( resFile, ClassPath.SOURCE);
-        // try to find  the resource on source class path
-        if (rcp.getResourceName( resFile, '.',false) != null) 
-            return rcp; 
-
+        if (rcp!=null) {
+            // try to find  the resource on source class path
+            if (rcp.getResourceName( resFile, '.',false) != null) 
+                return rcp; 
+        }
 
         return null;
     }
@@ -145,9 +146,11 @@ public class Util {
         if (ret!=null) return ret;
 
         ClassPath rcp = ClassPath.getClassPath( resFile, ClassPath.SOURCE );
-        ret = rcp.getResourceName( resFile, separator, bpar);
-        if (ret!=null) return ret;
-
+        if (rcp != null) {
+            ret = rcp.getResourceName( resFile, separator, bpar);
+            if (ret!=null) return ret;
+        }
+        
         return null;
         
     }
