@@ -61,6 +61,7 @@ public class Server implements Node.Cookie {
             if(factoryinstance == null) {
                 String msg = NbBundle.getMessage(Server.class, "MSG_NoFactoryInstanceClass", name);
                 ErrorManager.getDefault().log(ErrorManager.ERROR, msg);
+                factoryCls = null;
                 return;
             }
             DataObject dobj = DataObject.find(factoryinstance);
@@ -68,6 +69,7 @@ public class Server implements Node.Cookie {
             if(cookie == null) {
                 String msg = NbBundle.getMessage(Server.class, "MSG_FactoryFailed", name, cookie);
                 ErrorManager.getDefault().log(ErrorManager.ERROR, msg);
+                factoryCls = null;
                 return;
             }
             factoryCls = cookie.instanceClass();
