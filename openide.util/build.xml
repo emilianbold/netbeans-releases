@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile,patch">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="netbeans/lib"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="netbeans/lib/openide-util.jar"
@@ -67,16 +67,18 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars">
+    <!-- No! Not yet. Not until it is really a module.
     <genlist targetname="nbm" outputfiledir="${nbroot}/nbbuild/netbeans"/>
+    -->
   </target>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="openide-util.nbm"
              topdir="."
              module="netbeans/lib/openide-util.jar"
-	     homepage="http://treefs.${homepage.base}/"
+	     homepage="http://openide.${homepage.base}/"
              needsrestart="false"
-	     distribution="http://${dist.base}/openide.nbm">
+	     distribution="http://${dist.base}/openide-util.nbm">
       <license file="${license.file}"/>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
