@@ -242,8 +242,8 @@
 	<tocitem text="Configuring and Building Web Services" >
 	         <tocitem text="Configuring Web Service Compilation" >
 		      <tocitem text="About Configuring Web Service Compilation" target="select_wscompile_ws" />
-		      <tocitem text="Compiling a Document-Style Web Service" target="compile_doc" />
-		      <tocitem text="Compiling a RPC-Style Web Service" target="compile_rpc" />
+		      <tocitem text="Configuring a Document-Style Web Service" target="compile_doc" />
+		      <tocitem text="Configuring a RPC-Style Web Service" target="compile_rpc" />
 		 </tocitem>
  		 <tocitem text="Building a Web Service" target="build_ws" />
                  <tocitem text="Tweaking the WSDL File by Hand" target="tweak_wsdl" />
