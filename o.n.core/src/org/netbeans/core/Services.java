@@ -74,7 +74,7 @@ final class Services extends ServiceType.Registry implements Comparator {
     public Services() {
         name2Service = new HashMap();
         fillMap(name2Service);
-        klass2Instances = new HashMap();
+        klass2Instances = Collections.synchronizedMap(new HashMap());
     }
     
     private static void fillMap(Map map) {
@@ -124,9 +124,10 @@ final class Services extends ServiceType.Registry implements Comparator {
             
             // adds also default instance of this service
             current.add (s.getServiceType());
+            servicesChangedNotify();
         }
         supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
-        servicesChangedNotify();
+
     }
 
     /** Removes a section.
@@ -141,8 +142,8 @@ final class Services extends ServiceType.Registry implements Comparator {
             // removes the default service, if present
             ServiceType st = s.getServiceType();
             if (current.remove (st)) {
-                supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
                 servicesChangedNotify();
+                supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
             }
             getDefault().name2Service.remove(st.getName());
         }
@@ -246,8 +247,8 @@ final class Services extends ServiceType.Registry implements Comparator {
         fillMap(name2Service);
         current.clear ();
         current.addAll (arr);
-        supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
         servicesChangedNotify();
+        supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
     }
 
     /** all services */
@@ -301,8 +302,8 @@ final class Services extends ServiceType.Registry implements Comparator {
         uniquifyName (t);
         
         current.add (t);
-        supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
         servicesChangedNotify();
+        supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
     }
 
     /** Removes a service type.
@@ -310,8 +311,8 @@ final class Services extends ServiceType.Registry implements Comparator {
     public synchronized void removeServiceType (ServiceType t) {
         name2Service.remove(t.getName());
         current.remove (t);
-        supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
         servicesChangedNotify();
+        supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
     }
     
     /** Creates array of new types each for one section.
@@ -523,6 +524,9 @@ final class Services extends ServiceType.Registry implements Comparator {
 
 /*
 * $Log$
+* Revision 1.38  2000/11/30 10:57:02  anovak
+* #8671 - deadlock
+*
 * Revision 1.37  2000/11/30 10:46:22  anovak
 * #8671 - deadlock
 *
