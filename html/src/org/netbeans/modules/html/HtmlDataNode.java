@@ -27,6 +27,7 @@ import org.openide.util.actions.SystemAction;
  * @author  Radim Kubacki
  */
 public class HtmlDataNode extends org.openide.loaders.DataNode {
+    private Sheet sheet = null;
     
     /** Creates new HtmlDataNode */
     public HtmlDataNode (DataObject dobj, Children ch) {
@@ -54,5 +55,25 @@ public class HtmlDataNode extends org.openide.loaders.DataNode {
         catch (FileStateInvalidException exc) {
             return SystemAction.get (OpenAction.class);
         }
+    }
+    
+    public Node.PropertySet[] getPropertySets() {
+          if(sheet == null) {
+              System.out.println("vytvarim ppppp");
+            sheet = new Sheet();
+
+            Node.PropertySet[] tmp = super.getPropertySets();
+            for(int i = 0; i < tmp.length; i++) {
+              Sheet.Set set = new Sheet.Set();
+              set.setName(tmp[i].getName());
+              set.setShortDescription(tmp[i].getShortDescription());
+              set.setDisplayName(tmp[i].getDisplayName());
+              set.setValue("helpID", HtmlDataNode.class.getName() + ".PropertySheet");// NOI18N
+              set.put(tmp[i].getProperties());
+              sheet.put(set);
+              }
+          }
+          
+          return sheet.toArray();
     }
 }
