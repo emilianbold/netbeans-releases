@@ -683,9 +683,15 @@ public class TemplateWizard extends WizardDescriptor {
             Object property = ((JComponent)c).getClientProperty(PROP_CONTENT_DATA);
             if (property instanceof String[]) {
                 String[] cont = (String[])property;
-                cd = new String[cont.length + 1];
-                cd[0] = ((String[])((JComponent)first).getClientProperty(PROP_CONTENT_DATA))[0];
-                System.arraycopy(cont, 0, cd, 1, cont.length);
+                Object value = ((JComponent)first).getClientProperty(PROP_CONTENT_DATA);
+                if (value instanceof String[]) {
+                    cd = new String[cont.length + 1];
+                    cd[0] = ((String[])value)[0];
+                    System.arraycopy(cont, 0, cd, 1, cont.length);
+                } else {
+                    cd = new String[cont.length];
+                    System.arraycopy(cont, 0, cd, 0, cont.length);
+                }
             }
         }
         return cd;
