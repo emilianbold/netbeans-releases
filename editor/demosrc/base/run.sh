@@ -1,10 +1,13 @@
 #!/bin/sh
 
-CLASSPATH=.
-for i in *.jar
+INSTALATION_DIR=`dirname $0`;
+
+CLASSPATH=$INSTALATION_DIR:$CLASSPATH;
+
+for i in $INSTALATION_DIR/*.jar;
 do
   CLASSPATH=$CLASSPATH:$i
 done
 
-java -classpath $CLASSPATH org.netbeans.editor.example.Editor $@
+java -Dstandalone.distribution=$INSTALATION_DIR -classpath $CLASSPATH org.netbeans.editor.example.Editor $@
 

@@ -84,7 +84,7 @@ public class JavaKit extends ExtKit {
 
         if( jcPath != null ) {
             JCBaseFinder finder = new JCBaseFinder();
-            JCFileProvider provider = new JCFileProvider( jcPath );
+            JCFileProvider provider = new JCFileProvider( Editor.getDistributionDirectory().getPath() + File.separator + jcPath );
             finder.append( provider );
             JavaCompletion.setFinder( finder );
         }

@@ -14,6 +14,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.html.*;
+import org.netbeans.editor.ext.html.dtd.*;
 
 /**
 * Editor kit implementation for HTML content type
@@ -23,6 +24,9 @@ import org.netbeans.editor.ext.html.*;
 */
 
 public class HTMLKit extends ExtKit {
+
+    private static final String DEFAULT_DOCTYPE =
+        "-//W3C//DTD HTML 4.01 Transitional//EN";  // NOI18N
 
     static final long serialVersionUID =-1381945567613910297L;
 
@@ -34,11 +38,12 @@ public class HTMLKit extends ExtKit {
         Settings.addInitializer( new HTMLSettingsInitializer( HTMLKit.class ) );
         Settings.addInitializer( new SaHTMLSettingsInitializer() );
         Settings.reset();
+      SAReaderProvider.setupReaders();
     }
     
     public HTMLKit() {
         super();
-        DTD myDTD = new DTDcreator().createDTD( "My" );
+        DTD myDTD = org.netbeans.editor.ext.html.dtd.Registry.getDTD( DEFAULT_DOCTYPE, null );
     }
 
     public String getContentType() {

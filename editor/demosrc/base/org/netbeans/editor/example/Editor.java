@@ -34,6 +34,8 @@ import org.netbeans.editor.ext.*;
  * @version 0.2
  */
 public class Editor extends javax.swing.JFrame {
+
+    private static final File distributionDirectory = new File(System.getProperty("standalone.distribution"));
     
     private static final String SETTINGS =
         "settings";
@@ -419,11 +421,19 @@ public class Editor extends javax.swing.JFrame {
     
     
     
+    public static File getDistributionDirectory() {
+       return distributionDirectory;
+    }
     
     /**
      * @param args the command line arguments
      */
     public static void main (String args[]) {
+      if (!getDistributionDirectory().canRead()) {
+         System.err.println("Fatal error while startup - can read from distribution directory.");
+         System.exit(0);
+      }
+      
         Editor editor = new Editor ();
         editor.show ();
         
@@ -450,7 +460,7 @@ public class Editor extends javax.swing.JFrame {
 
     
     private void readSettings() throws MissingResourceException {
-        File currentPath = new File( System.getProperty( "user.dir" ) ).getAbsoluteFile();
+        File currentPath = new File( System.getProperty( "user.dir" ) ).getAbsoluteFile(); //??should not this be re-written for distributionDirectory?
         fileChooser = new JFileChooser( currentPath );
         
         fileChooser.setFileView( new FileView() {
