@@ -148,6 +148,10 @@ public class GenericSources {
             // XXX
         }
         
+        public String toString() {
+            return "GenericSources.Group[name=" + name + ",rootFolder=" + rootFolder + "]"; // NOI18N
+        }
+        
     }
     
 }
