@@ -189,40 +189,26 @@ public final class BeanInstaller extends Object {
       try {
         category = paletteFolder.createFolder (pal);
       } catch (IOException e) {
+        if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
         /* ignore */
         return;
       }
     }
 
-    
-/*    progress.setLabel(MessageFormat.format(progressLabel, new Object[] { "" }));
-    progress.center();
-    progress.show(); */
-    
-          ClassLoader loader = TopManager.getDefault().currentClassLoader();
-          Iterator it = list.iterator();
-          LinkedList paletteNodes = new LinkedList();
+    ClassLoader loader = TopManager.getDefault().currentClassLoader();
+    Iterator it = list.iterator();
+    LinkedList paletteNodes = new LinkedList();
 
-          while (it.hasNext()) {
-            Object obj = it.next();
-            String name = null;
-            if (obj instanceof FileObject) {
-              name = ((FileObject)obj).getPackageName('.');
-            } else if (obj instanceof InstanceCookie) {
-              name = ((InstanceCookie)obj).instanceName ();
-            } 
-            if (name != null) createInstance(category, name, null);
-          }
-//            progress.setLabel(MessageFormat.format(progressLabel, new Object[] { fo.getName() }));
-//            progress.inc();
-
-//        }
-//        finally {
-//          progress.setVisible (false);
-//          progress.dispose();
-//        }
-//      }
-//    };
+    while (it.hasNext()) {
+      Object obj = it.next();
+      String name = null;
+      if (obj instanceof FileObject) {
+        name = ((FileObject)obj).getPackageName('.');
+      } else if (obj instanceof InstanceCookie) {
+        name = ((InstanceCookie)obj).instanceName ();
+      } 
+      if (name != null) createInstance(category, name, null);
+    }
   }
 
 
@@ -263,6 +249,7 @@ public final class BeanInstaller extends Object {
       }
     }
     catch (java.io.IOException e) {
+      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
       /* ignore */
     }
     finally {
@@ -288,7 +275,7 @@ public final class BeanInstaller extends Object {
       null
     );
     desc.setHelpCtx (new HelpCtx (BeanInstaller.class.getName () + ".selectPaletteCategory"));
-    ; // ???
+
     TopManager.getDefault ().createDialog (desc).show ();
     if (desc.getValue () == NotifyDescriptor.OK_OPTION) {
       return sel.getSelectedCategory();
@@ -342,9 +329,11 @@ public final class BeanInstaller extends Object {
       return jar;
     }
     catch (PropertyVetoException e) {
+      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
       return null;
     }
     catch (IOException e) {
+      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
       /* ignore */
       return null;
     }
@@ -361,14 +350,18 @@ public final class BeanInstaller extends Object {
     File globalFolder = new File(System.getProperty("netbeans.home") + File.separator + "beans");
     try {
       globalFolder = new File(globalFolder.getCanonicalPath());
+    } catch (IOException e) { 
+      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
+      /* ignore */ 
     }
-    catch (IOException e) { /* ignore */ }
 
     File localFolder = new File(System.getProperty("netbeans.user") + File.separator + "beans");
     try {
       localFolder = new File(localFolder.getCanonicalPath());
+    } catch (IOException e) { 
+      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
+      /* ignore */ 
     }
-    catch (IOException e) { /* ignore */ }
     
     autoLoadFolder(globalFolder);
     if (!globalFolder.equals(localFolder))
@@ -397,6 +390,7 @@ public final class BeanInstaller extends Object {
     try {
       details.load(fis = new FileInputStream(base + "beans.properties"));
     } catch (IOException e) {
+      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
       // ignore in this case
     } finally {
       if (fis != null) try { fis.close (); } catch (IOException e) { /* ignore */ };
@@ -407,7 +401,7 @@ public final class BeanInstaller extends Object {
     try {
       alreadyInstalled.load(fis2 = new FileInputStream(base + "installed.properties"));
     } catch (IOException e) {
-      /* ignore */
+      /* ignore - the file just does not exist */
     } finally {
       if (fis2 != null) try { fis2.close (); } catch (IOException e) { /* ignore */ };
     }
@@ -433,6 +427,7 @@ public final class BeanInstaller extends Object {
       fos = new FileOutputStream(base + "installed.properties");
       alreadyInstalled.store(fos, "Installed Archives");
     } catch (IOException e) {
+      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
       // ignore 
     } finally {
       if (fos != null) try { fos.close (); } catch (IOException e) { /* ignore */ };
@@ -499,7 +494,7 @@ public final class BeanInstaller extends Object {
   static class PaletteSelector extends JPanel {
     private JList list;
 
-static final long serialVersionUID =936459317386043582L;
+    static final long serialVersionUID =936459317386043582L;
     /** Creates a new ExceptionBox for given exception descriptor. */
     public PaletteSelector() {
       super(null);
@@ -594,7 +589,7 @@ static final long serialVersionUID =-6038414545631774041L;
   } 
   
   static class FileObjectRenderer extends JLabel implements ListCellRenderer {
-static final long serialVersionUID =832555965217675765L;
+    static final long serialVersionUID =832555965217675765L;
     /** Creates a new NetbeansListCellRenderer */
     public FileObjectRenderer() {
       setOpaque(true);
@@ -628,6 +623,7 @@ static final long serialVersionUID =832555965217675765L;
 
 /*
  * Log
+ *  16   Gandalf   1.15        9/9/99   Ian Formanek    Exceptions notification
  *  15   Gandalf   1.14        8/10/99  Ian Formanek    Generated Serial Version
  *       UID
  *  14   Gandalf   1.13        8/9/99   Ian Formanek    Fixed bug which cused 
