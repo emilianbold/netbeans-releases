@@ -59,7 +59,7 @@ public class LocMakeNBM extends Task {
   public void setFile( String s) {
     fileName = s ;
     if( !fileName.substring( fileName.length() - 4).equals( ".nbm")) { //NOI18N
-      throw new BuildException( "NBM file name must end in '.nbm'") ;
+      throw new BuildException( "Incorrect NBM file name \""+ s+"\". NBM file name must end in '.nbm'") ;
     }
     baseFileName = fileName.substring( 0, fileName.length() - 4) ;
   }
