@@ -1,0 +1,9 @@
+public class Foo {
+    public String getString() {
+        return "Test";
+    }
+    
+    public void concat(String s) {
+        s=s.concat(getString()).substring(1);
+    }
+}

@@ -1,0 +1,15 @@
+if () {
+    try {
+        File f = new File("/tmp/out.tmp");
+    } catch (Exception ex) {
+        ex.printStackTrace();
+    }
+}
+while () {
+    if () {
+        for (int i=0;i < array.length;i++) {
+            if () {
+            }
+        }
+    }
+}
