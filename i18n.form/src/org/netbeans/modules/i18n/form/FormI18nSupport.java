@@ -45,8 +45,10 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 
@@ -1051,10 +1053,13 @@ public class FormI18nSupport extends JavaI18nSupport {
         }
     } // End of FormInfoPanel inner class.
 
-    
     /** Factory for <code>FormI18nSupport</code>. */
     public static class Factory extends I18nSupport.Factory {
-        
+
+        /** Instantiated from layer */
+        Factory() {
+        }
+
         /** Gets <code>I18nSupport</code> instance for specified data object and document. Overrides superclass method.
          * @exception IOException when the document could not be loaded */
         public I18nSupport create(DataObject dataObject) throws IOException {
@@ -1079,6 +1084,13 @@ public class FormI18nSupport extends JavaI18nSupport {
          * @return <code>FormDataObject</code> class or <code>null</code> */
         public Class getDataObjectClass() {
             return FormDataObject.class;
+//            try {
+//                // FIXME remove reflection with system classloader. what's wrong missing implementaion dependency?
+//                return Class.forName("org.netbeans.modules.form..FormDataObject", false, (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class));  // NOI18N
+//            } catch (ClassNotFoundException e) {
+//                ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot enable I18N support: " + e.getMessage());  //NOI18N
+//                return null;
+//            }
         }
 
     } // End of class Factory.
