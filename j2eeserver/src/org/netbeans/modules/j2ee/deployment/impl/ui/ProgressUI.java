@@ -277,7 +277,7 @@ public class ProgressUI extends JPanel {
     public void addError (final String msg) {
 	SwingUtilities.invokeLater (new Runnable () {
 	    public void run () {
-	  	errorText.setText ("<html>" + msg + "</html>");
+	  	errorText.setText ("<html>" + msg.replaceAll("<", "&lt;").replaceAll(">", "&gt;") + "</html>"); // NOI18N
                 adjustWindowHeight();
 	    }
 	});
