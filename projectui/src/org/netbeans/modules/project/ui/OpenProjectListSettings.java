@@ -108,13 +108,7 @@ public class OpenProjectListSettings extends SystemOption {
 
     public File getProjectsFolder () {
         String result = (String) this.getProperty (PROP_PROJECTS_FOLDER);
-        if (result == null) {
-            if ( org.openide.util.Utilities.isWindows() ) { // HACK for 50143 - Default project location on Windows should be in My Documents
-                File myDocuments = FileSystemView.getFileSystemView().getDefaultDirectory();
-                if ( myDocuments != null && myDocuments.exists() && myDocuments.isDirectory() ) {
-                    return myDocuments;
-                }
-            }
+        if (result == null) {            
             result = System.getProperty("user.home");   //NOI18N
         }
         return new File(result);
