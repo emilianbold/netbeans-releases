@@ -33,6 +33,7 @@ import org.openide.*;
 import org.openide.actions.*;
 import org.openide.awt.SplittedPanel;
 import org.openide.awt.ToolbarToggleButton;
+import org.openide.loaders.*;
 import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
@@ -44,6 +45,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.io.NbMarshalledObject;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Workspace;
 import org.openide.windows.Mode;
@@ -276,7 +278,9 @@ public final class NbMainExplorer extends CloneableTopComponent
     if (rc.equals(NbProjectOperation.getProjectDesktop())) {
       // projects tab
       panel = new ProjectsTab();
-    } else if (rc.equals(ns.repository()) || rc.equals(ns.environment())) {
+    } else if (rc.equals(ns.repository())) {
+      panel = new RepositoryTab ();
+    } else if (rc.equals(ns.environment())) {
       // default tabs
       panel = new MainTab();
     } else {
@@ -568,6 +572,125 @@ public final class NbMainExplorer extends CloneableTopComponent
     
   } // end of MainTab inner class
 
+  /** Repository tab implements operation listener and 
+  * if createFromTemplate is performed it selects the 
+  * created node.
+  */
+  public static class RepositoryTab extends MainTab 
+  implements OperationListener {
+    static final long serialVersionUID =4233454980309064344L;
+
+    /** previous task */
+    private RequestProcessor.Task previousTask;
+    
+    /** attaches itself to as a listener.
+    */
+    public RepositoryTab () {
+      DataLoaderPool pool = TopManager.getDefault ().getLoaderPool ();
+      pool.addOperationListener (
+        WeakListener.operation (this, pool)
+      );
+    }
+    
+    /** Object has been recognized by
+     * {@link DataLoaderPool#findDataObject}.
+     * This allows listeners
+     * to attach additional cookies, etc.
+     *
+     * @param ev event describing the action
+     */
+    public void operationPostCreate (OperationEvent ev) {
+    }
+    /** Object has been successfully copied.
+     * @param ev event describing the action
+     */
+    public void operationCopy (OperationEvent.Copy ev) {
+    }
+    /** Object has been successfully moved.
+     * @param ev event describing the action
+     */
+    public void operationMove (OperationEvent.Move ev) {
+    }
+    /** Object has been successfully deleted.
+     * @param ev event describing the action
+     */
+    public void operationDelete (OperationEvent ev) {
+    }
+    /** Object has been successfully renamed.
+     * @param ev event describing the action
+     */
+    public void operationRename (OperationEvent.Rename ev) {
+    }
+    /** A shadow of a data object has been created.
+     * @param ev event describing the action
+     */
+    public void operationCreateShadow (OperationEvent.Copy ev) {
+    }
+    /** New instance of an object has been created.
+     * @param ev event describing the action
+     */
+    public void operationCreateFromTemplate (final OperationEvent.Copy ev) {
+      RequestProcessor.Task t = previousTask;
+      if (t != null) {
+        t.cancel ();
+      }
+      
+      previousTask = RequestProcessor.postRequest (new Runnable () {
+        public void run () {
+          previousTask = null;
+          
+          selectNode (ev.getObject ());
+        }
+      }, 2000);
+    }
+    
+    
+    /** Finds a node for given data object.
+    */
+    private void selectNode (DataObject obj) {
+      Stack stack = new Stack ();
+      
+      while (obj != null) {
+        stack.push (obj);
+        obj = obj.getFolder ();
+      }
+      
+      Node current = getExplorerManager ().getRootContext ();
+      while (!stack.isEmpty ()) {
+        Node n = findDataObject (current, (DataObject)stack.pop ());
+        if (n == null) {
+          break;
+        }
+        current = n;
+      }
+
+      try {
+        getExplorerManager ().setSelectedNodes (new Node[] { current });
+      } catch (PropertyVetoException e) {
+        // you are out of luck!
+        throw new InternalError ();
+      }
+    }
+    
+    /** Finds a data object in given node.
+    * @param node the node to search in
+    * @param obj the object to look for
+    */
+    private static Node findDataObject (Node node, DataObject obj) {
+      Node n = node.getChildren ().findChild (obj.getNodeDelegate ().getName ());
+      if (n != null) return n;
+
+      Node[] arr = node.getChildren ().getNodes ();
+      for (int i = 0; i < arr.length; i++) {
+        if (obj == arr[i].getCookie (DataObject.class)) {
+          return arr[i];
+        }
+      }
+
+      return null;
+    }
+  }
+  
   /** Special class for projects tab in main explorer */
   public static class ProjectsTab extends MainTab {
     static final long serialVersionUID =-8178367548546385799L;
@@ -656,6 +779,8 @@ public final class NbMainExplorer extends CloneableTopComponent
 
 /*
 * Log
+*  49   Gandalf   1.48        1/5/00   Jaroslav Tulach Newly created objects are
+*       selected in explorer
 *  48   Gandalf   1.47        12/23/99 David Simonek   special tabs for projects
 *       and module tabs
 *  47   Gandalf   1.46        12/21/99 David Simonek   minor fixes
