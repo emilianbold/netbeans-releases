@@ -626,11 +626,12 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
 
             //One a double click, preserve the tab that was initially clicked, in case
             //a re-layout happened.  We'll pass that to the action.
-            long time = System.currentTimeMillis();
-            if (time - pressTime > 400) {
+            long time = e.getWhen();
+            if (time - pressTime > 200) {
                 lastPressedTab = idx;
             }
             pressTime = time;
+            lastPressedTab = idx;
             if (idx != -1) {
                 TabCellRenderer tcr = getTabCellRenderer(idx);
                 getTabRect(idx, scratch);
