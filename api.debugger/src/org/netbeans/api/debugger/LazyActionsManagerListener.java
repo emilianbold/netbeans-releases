@@ -15,8 +15,16 @@ package org.netbeans.api.debugger;
 
 
 /**
- * This {@link DebuggerEngineListener} modification is designed to be 
+ * This {@link ActionsManagerListener} modification is designed to be 
  * registerred in "META-INF/debugger/".
+ * LazyActionsManagerListener should be registerred for some concrete 
+ * {@link DebuggerEngine} (use 
+ * "META-INF/debugger/<DebuggerEngine-id>/LazyActionsManagerListener"), or 
+ * for global {@link ActionsManager} (use 
+ * "META-INF/debugger/LazyActionsManagerListener").
+ * New instance of LazyActionsManagerListener implementation is loaded
+ * when the new instance of {@link ActionsManager} is created, and its registerred
+ * automatically to all properties returned by {@link #getProperties}. 
  *
  * @author   Jan Jancura
  */

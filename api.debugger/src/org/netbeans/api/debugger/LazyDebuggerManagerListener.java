@@ -16,7 +16,11 @@ package org.netbeans.api.debugger;
 
 /**
  * This {@link DebuggerManagerListener} modification is designed to be 
- * registerred in "META-INF/debugger/".
+ * registerred in 
+ * "META-INF/debugger/org.netbeans.api.debugger.LazyDebuggerManagerListener".
+ * New instance of LazyDebuggerManagerListener implementation is loaded
+ * when the new instance of {@link DebuggerManager} is created, and its registerred
+ * automatically to all properties returned by {@link #getProperties}. 
  *
  * @author   Jan Jancura
  */
