@@ -42,7 +42,11 @@ import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
+import org.openidex.search.SearchInfoFactory;
 
 
 /** Node displaying a packages in given SourceGroup
@@ -57,7 +61,14 @@ final class PackageRootNode extends AbstractNode {
     private SourceGroup group;
         
     PackageRootNode( SourceGroup group ) {
-        super( new PackageViewChildren( group.getRootFolder() ), createLookup( group ) );                
+        this( group, new InstanceContent() );
+    }
+    
+    private PackageRootNode( SourceGroup group, InstanceContent ic ) {
+        super( new PackageViewChildren( group.getRootFolder() ),
+               new ProxyLookup( new Lookup[] { createLookup ( group ),
+                                               new AbstractLookup( ic )} ) );
+        ic.add( SearchInfoFactory.createSearchInfoBySubnodes( this ) );
         this.group = group;
         setName( group.getName() );
         setDisplayName( group.getDisplayName() );

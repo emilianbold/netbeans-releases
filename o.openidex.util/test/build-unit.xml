@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="all" name="build-unit">
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
+
+    <property name="xtest.ide.use.classloader" value="org.openidex.util"/>
+
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <target name="runidetest">
+        <executeTests pluginName="ide">
+            <classpath/>
+        </executeTests>
+    </target>
+    
+</project>

@@ -23,18 +23,13 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -45,8 +40,7 @@ import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.xml.XMLUtil;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SimpleSearchInfo;
+import org.openidex.search.SearchInfoFactory;
 
 /** Root node for list of open projects
  * @author Petr Hrebejk
@@ -229,7 +223,8 @@ public class ProjectsRootNode extends AbstractNode {
                     badgedNodes[i] = nodes[i];
                 }
                 else {
-                    badgedNodes[i] = new BadgingNode( nodes[i] );
+                    badgedNodes[i] = new BadgingNode( nodes[i],
+                                                      type == LOGICAL_VIEW );
                 }
             }
                         
@@ -259,11 +254,15 @@ public class ProjectsRootNode extends AbstractNode {
 
         private static String badgedNamePattern = NbBundle.getMessage( ProjectsRootNode.class, "LBL_MainProject_BadgedNamePattern" );
         
-        public BadgingNode( Node n) {
+        public BadgingNode( Node n, boolean addSearchInfo ) {
             super( n,
-                   null,
-                   new ProxyLookup(new Lookup[] {n.getLookup(), Lookups.singleton(new ProjectNodeSearchInfo(n))}) );
-            OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
+                   null,                //default children
+                   addSearchInfo
+                   ? new ProxyLookup( new Lookup[] {
+                         n.getLookup(),
+                         Lookups.singleton( SearchInfoFactory
+                                            .createSearchInfoBySubnodes( n ))} )
+                   : n.getLookup() );
         }
         
         public String getDisplayName() {
@@ -294,63 +293,6 @@ public class ProjectsRootNode extends AbstractNode {
         private boolean isMain() {
             Project p = (Project)getLookup().lookup( Project.class );
             return p != null && OpenProjectList.getDefault().isMainProject( p );
-        }
-
-        /**
-         * SearchInfo object for project nodes.
-         *
-         * @see  SearchInfo
-         */
-        static final class ProjectNodeSearchInfo implements SearchInfo {
-
-            /** */
-            private final Node projectNode;
-
-            /**
-             */
-            ProjectNodeSearchInfo(Node n) {
-                projectNode = n;
-            }
-
-            /**
-             */
-            public boolean canSearch() {
-                return true;
-            }
-
-            /**
-             */
-            public Iterator objectsToSearch() {
-                return createIterator();
-            }
-
-            /**
-             */
-            private Iterator createIterator() {
-                /* get the project: */
-                Project project = (Project) projectNode.getLookup().lookup(Project.class);
-                assert project != null;
-
-                /* get the Sources object: */
-                Sources sources = ProjectUtils.getSources(project);
-
-                /* build a delegated SearchInfo object: */
-                SourceGroup[] sourceGroups
-                        = sources.getSourceGroups(Sources.TYPE_GENERIC);
-                if (sourceGroups.length == 0) {
-                    return Collections.EMPTY_LIST.iterator();
-                }
-                SimpleSearchInfo searchInfo = new SimpleSearchInfo();
-                for (int i = 0; i < sourceGroups.length; i++) {
-                    FileObject sourceRoot = sourceGroups[i].getRootFolder();
-                    DataFolder dataFolder = DataFolder.findFolder(sourceRoot);
-                    searchInfo.add(new SimpleSearchInfo(dataFolder, true));
-                }
-
-                /* return the SearchInfo's iterator: */
-                return searchInfo.objectsToSearch();
-            }
-
         }
         
     }

@@ -24,39 +24,22 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <mconfig name="openidex unit test config">
-    
-    <testbag testattribs="stable" executor="ide" name="testbag_1" resultsprocessor="unit">
-        <testset dir="unit/src">
-            <patternset>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="failing" executor="ide" name="testbag_2" resultsprocessor="unit">
-        <testset dir="unit/src">
-            <patternset>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
-    <!-- (either on cmd line or in the script) to explicitly define which test       -->
-    <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
-    <testbag testattribs="empty" executor="code" name="testbag_empty" resultsprocessor="unit">
-        <testset dir="unit/src"/>
-    </testbag>
 
-    <testbag testattribs="dev" executor="code" name="testbag_dev" resultsprocessor="unit">
+    <!-- Tests which should be run before commit to validate IDE. -->
+   
+    
+    <testbag testattribs="stable" executor="ide" name="Unit tests running in the IDE">
         <testset dir="unit/src">
             <patternset>
-                <!-- Add your own code tests -->
+                <include name="org/openidex/search/*Test.class"/>
             </patternset>
         </testset>
     </testbag>
     
-    <executor name="code" antfile="build.xml" target="runcodetest"/>
-    <executor name="ide" antfile="build.xml" target="runidetest"/>
     
-    <resultsprocessor name="unit" antfile="build.xml" target="test_report"/>
-
+    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
+    <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
+    
+    <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+    
 </mconfig>

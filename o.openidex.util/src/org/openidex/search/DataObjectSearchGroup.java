@@ -85,7 +85,7 @@ public class DataObjectSearchGroup extends SearchGroup {
 
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
-            SearchInfo info = getSearchInfo(node);
+            SearchInfo info = Utils.getSearchInfo(node);
             if (info != null) {
                 for (Iterator j = info.objectsToSearch(); j.hasNext(); ) {
                     if (stopped) return;
@@ -143,23 +143,6 @@ public class DataObjectSearchGroup extends SearchGroup {
         String msg = NbBundle.getMessage(DataObjectSearchGroup.class, "EX_memory");
         ErrorManager.getDefault().annotate(ex, ErrorManager.USER, null, msg, null, null);
         throw ex;
-    }
-
-    /**
-     */
-    private static SearchInfo getSearchInfo(Node node) {
-        /* 1st try - is the SearchInfo object in the node's lookup? */
-        SearchInfo info = (SearchInfo)
-                          node.getLookup().lookup(SearchInfo.class);
-        if (info != null && info.canSearch()) {
-            return info;
-        }
-
-        /* 2nd try - does the node represent a DataObject.Container? */
-        Object container = node.getLookup().lookup(DataObject.Container.class);
-        return (container != null)
-               ? new SimpleSearchInfo((DataObject.Container) container, true)
-               : SimpleSearchInfo.EMPTY_SEARCH_INFO;
     }
 
 //    /**

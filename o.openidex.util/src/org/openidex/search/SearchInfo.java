@@ -20,8 +20,8 @@ import java.util.Iterator;
  * Iterator returned by this interface's method enumerates
  * <code>DataObject</code>s that should be searched.
  *
+ * @see  SearchInfoFactory
  * @see  DataObject
- * @see  SimpleSearchInfo
  * @author  Marian Petras
  */
 public interface SearchInfo {

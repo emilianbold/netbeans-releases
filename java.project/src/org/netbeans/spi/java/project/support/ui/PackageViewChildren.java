@@ -54,7 +54,8 @@ import org.openide.util.datatransfer.PasteType;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.openidex.search.SimpleSearchInfo;
+import org.openidex.search.FileObjectFilter;
+import org.openidex.search.SearchInfoFactory;
 
 /**
  * Display of Java sources in a package structure rather than folder structure.
@@ -445,14 +446,19 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         private boolean isDefaultPackage;
         
         private static Action actions[];
-
+        
         public PackageNode( FileObject root, DataFolder dataFolder ) {
             super( dataFolder.getNodeDelegate(), 
                    isEmpty( dataFolder ) ? Children.LEAF : dataFolder.createNodeChildren( NO_FOLDERS_FILTER ),
                    new ProxyLookup(new Lookup[] {
                         Lookups.singleton(new NoFoldersContainer (dataFolder)),
                         dataFolder.getNodeDelegate().getLookup(),
-                        Lookups.singleton(new SimpleSearchInfo(dataFolder, false)),
+                        Lookups.singleton(SearchInfoFactory.createSearchInfo(
+                                                  dataFolder.getPrimaryFile(),
+                                                  false,      //not recursive
+                                                  new FileObjectFilter[] {
+                                                          SearchInfoFactory.VISIBILITY_FILTER,
+                                                          SearchInfoFactory.SHARABILITY_FILTER}))
                    })
             );
             this.root = root;

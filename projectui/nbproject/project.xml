@@ -78,7 +78,7 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>3.2</specification-version>
+                        <specification-version>3.3</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
