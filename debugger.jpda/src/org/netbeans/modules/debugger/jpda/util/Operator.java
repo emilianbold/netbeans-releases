@@ -17,6 +17,7 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequest;
+import org.netbeans.modules.debugger.jpda.JPDADebugger;
 
 /**
  * Listens for events coming from a remove VM and notifies registered objects.
@@ -62,6 +63,7 @@ public class Operator {
     */
     public Operator (
         final VirtualMachine virtualMachine,
+        final JPDADebugger debugger,
         final Runnable starter,
         final Runnable finalizer
     ) {
@@ -71,51 +73,54 @@ public class Operator {
              try {
                  for (;;) {
                      EventSet set = queue.remove ();
-                     resume = false;
-                     stopRequest = false;
-                     EventIterator i = set.eventIterator ();
-                     while (i.hasNext ()) {
-                         Event e = i.nextEvent ();
-                         if ((e instanceof VMDeathEvent) ||
-                                 (e instanceof VMDisconnectEvent)
-                            ) {
-                             disconnected = true;
-                             if (finalizer != null) finalizer.run ();
-                             //S ystem.out.println ("EVENT: " + e); // NOI18N
-                             //S ystem.out.println ("Operator end"); // NOI18N
-                             return;
-                         }
-                         if ((e instanceof VMStartEvent) && (starter != null)) {
-                             starter.run ();
-                             //S ystem.out.println ("Operator.start VM"); // NOI18N
-                             continue;
-                         }
-                         Executor exec = null;
-                         if (e.request () == null) {
-                             //S ystem.out.println ("EVENT: " + e + " REQUEST: null"); // NOI18N
-                         } else
-                             exec = (Executor) e.request ().getProperty ("executor");
-
-                         // printEvent (e, exec);
-
-                         // safe invocation of user action
-                         if (exec != null)
-                             try {
-                                 exec.exec (e);
-                             } catch (VMDisconnectedException exc) {   
+                     synchronized (debugger) {
+                         resume = false;
+                         stopRequest = false;
+                         EventIterator i = set.eventIterator ();
+                         while (i.hasNext ()) {
+                             Event e = i.nextEvent ();
+                             if ((e instanceof VMDeathEvent) ||
+                                     (e instanceof VMDisconnectEvent)
+                                ) {
                                  disconnected = true;
                                  if (finalizer != null) finalizer.run ();
                                  //S ystem.out.println ("EVENT: " + e); // NOI18N
                                  //S ystem.out.println ("Operator end"); // NOI18N
                                  return;
-                             } catch (Exception ex) {
-                                 ex.printStackTrace ();
                              }
+                             if ((e instanceof VMStartEvent) && (starter != null)) {
+                                 starter.run ();
+                                 //S ystem.out.println ("Operator.start VM"); // NOI18N
+                                 continue;
+                             }
+                             Executor exec = null;
+                             if (e.request () == null) {
+                                 //S ystem.out.println ("EVENT: " + e + " REQUEST: null"); // NOI18N
+                             } else
+                                 exec = (Executor) e.request ().getProperty ("executor");
+
+                             // printEvent (e, exec);
+
+                             // safe invocation of user action
+                             if (exec != null)
+                                 try {
+                                     exec.exec (e);
+                                 } catch (VMDisconnectedException exc) {   
+                                     disconnected = true;
+                                     if (finalizer != null) finalizer.run ();
+                                     //S ystem.out.println ("EVENT: " + e); // NOI18N
+                                     //S ystem.out.println ("Operator end"); // NOI18N
+                                     return;
+                                 } catch (Exception ex) {
+                                     ex.printStackTrace ();
+                                 }
+                         } // while
+                         //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
+                         //S ystem.err.println("Operator end - resume " + resume + " : stopRequest " + stopRequest);
+                         if (resume && !stopRequest)
+                             virtualMachine.resume ();
                      }
-                     //            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
-                     if (resume && !stopRequest)
-                         virtualMachine.resume ();
-                 }
+                 }// for
              } catch (VMDisconnectedException e) {   
              } catch (InterruptedException e) {
              } catch (Exception e) {
