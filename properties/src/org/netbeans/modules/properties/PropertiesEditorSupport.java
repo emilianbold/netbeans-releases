@@ -59,7 +59,7 @@ import org.openide.util.WeakListener;
 import org.openide.util.Utilities;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
-
+import org.openide.filesystems.FileUtil;
 
 /** 
  * Support for viewing .properties files (EditCookie) by opening them in a text editor.
@@ -354,22 +354,20 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
      * @return text to show to the user
      */
     protected String messageToolTip () {
-        // update tooltip
+        // copied from DataEditorSupport, more or less
         FileObject fo = myEntry.getFile();
         
         try {
-            return NbBundle.getMessage (PropertiesEditorSupport.class, "LBL_EditorToolTip_Valid", new Object[] {
-                fo.getPackageName ('.'),
-                fo.getName (),
-                fo.getExt (),
-                fo.getFileSystem ().getDisplayName ()
-            });
+            File f = FileUtil.toFile(fo);
+            if (f != null) {
+                return f.getAbsolutePath();
+            } else {
+                return NbBundle.getMessage(PropertiesEditorSupport.class, "LAB_EditorToolTip",
+                                           fo.getPackageNameExt('/', '.'),
+                                           fo.getFileSystem().getDisplayName());
+            }            
         } catch (FileStateInvalidException fsie) {
-            return NbBundle.getMessage (PropertiesEditorSupport.class, "LBL_EditorToolTip_Invalid", new Object[] {
-                fo.getPackageName ('.'),
-                fo.getName (),
-                fo.getExt ()
-            });
+            return fo.getPackageNameExt('/', '.');
         }
     }
     

@@ -53,6 +53,8 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.*;
 import org.openide.windows.*;
 import org.openide.util.Utilities;
+import java.io.File;
+import org.openide.filesystems.FileUtil;
 
 
 /** 
@@ -613,18 +615,16 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
             FileObject fo = propDataObject.getPrimaryFile();
             
             try {
-                return NbBundle.getMessage(PropertiesOpen.class, "LBL_EditorToolTip_Valid", new Object[] {
-                    fo.getPackageName('.'),
-                    fo.getName(),
-                    fo.getExt(),
-                    fo.getFileSystem().getDisplayName()
-                });
+                File f = FileUtil.toFile(fo);
+                if (f != null) {
+                    return f.getAbsolutePath();
+                } else {
+                    return NbBundle.getMessage(PropertiesOpen.class, "LAB_EditorToolTip",
+                                               fo.getPackageNameExt('/', '.'),
+                                               fo.getFileSystem().getDisplayName());
+                }            
             } catch(FileStateInvalidException fsie) {
-                return NbBundle.getMessage(PropertiesOpen.class, "LBL_EditorToolTip_Invalid", new Object[] {
-                    fo.getPackageName('.'),
-                    fo.getName(),
-                    fo.getExt()
-                });
+                return fo.getPackageNameExt('/', '.');
             }
         }
 
