@@ -120,15 +120,21 @@ public abstract class NbBaseServlet extends HttpServlet {
         }
         if (pathI.length() == 0) return false;
         if (pathI.charAt(0) == '/') pathI = pathI.substring(1);
+        if (pathI.length() == 0) return false;
         InputStream is = TopManager.getDefault().systemClassLoader().getResourceAsStream(pathI);
         if (is == null) return false;
 
+        String encoding = null;
         int ind = pathI.lastIndexOf("."); // NOI18N
-        String ext = pathI.substring(ind + 1);
-        String encoding = FileUtil.getMIMEType(ext);
+        if (ind != -1) {
+            String ext = pathI.substring(ind + 1);
+            encoding = FileUtil.getMIMEType(ext);
+        }
         // PENDING - URL com/ behaves incorrectly
-        if (encoding == null)
-            encoding = "thisisabug/inclassloader"; // NOI18N
+        if (encoding == null) {
+            // encoding = "thisisabug/inclassloader"; // NOI18N
+            return false;
+        }
         response.setContentType(encoding);
         // don't know content length
         ServletOutputStream os = response.getOutputStream();
