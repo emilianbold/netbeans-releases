@@ -575,15 +575,14 @@ public class JTreeOperator extends JComponentOperator
 	times.setTimeout("Waiter.WaitingTime", timeouts.getTimeout("JTreeOperator.WaitNextNodeTimeout"));
 	Waiter loadedWaiter = new Waiter(new Waitable() {
 	    public Object actionProduced(Object obj) {
-		int count = 0;
 		TreePathChooser chsr = (TreePathChooser)((Object[])obj)[0];
 		TreePath path = (TreePath)((Object[])obj)[1];
-		TreeModel model = getModel();
 		Object[] result = new Object[2];
-		for(int j = 0; j < model.getChildCount(path.getLastPathComponent()); j++) {
+                int count = getChildCount(path.getLastPathComponent());
+		for(int j = 0; j < count; j++) {
                     Object child = null;
                     try {
-                        child = model.getChild(path.getLastPathComponent(), j);
+                        child = getChild(path.getLastPathComponent(), j);
                     } catch(IndexOutOfBoundsException e) {
                         return(null);
                     }
