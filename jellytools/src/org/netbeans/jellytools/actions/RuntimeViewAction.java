@@ -22,7 +22,7 @@ import org.netbeans.jellytools.Bundle;
 public class RuntimeViewAction extends Action {
     private static final String runtimeMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/View")
                                            + "|"
-                                           + Bundle.getString("org.netbeans.core.actions.Bundle", "CTL_ViewRuntimeTabAction");
+                                           + Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle", "CTL_ViewRuntimeTabAction");
 //    private static final Shortcut explorerShortcut = new Shortcut(KeyEvent.VK_2, KeyEvent.CTRL_MASK);
 
     /** creates new RuntimeViewAction instance */    

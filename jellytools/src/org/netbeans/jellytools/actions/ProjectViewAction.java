@@ -21,7 +21,7 @@ import org.netbeans.jellytools.Bundle;
 public class ProjectViewAction extends Action {
     private static final String projectMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/View")
                                            + "|"
-                                           + Bundle.getString("org.netbeans.modules.projects.Bundle", "CTL_ViewProjectsTabAction");
+                                           + Bundle.getStringTrimmed("org.netbeans.modules.projects.Bundle", "CTL_ViewProjectsTabAction");
 //    private static final Shortcut explorerShortcut = new Shortcut(KeyEvent.VK_2, KeyEvent.CTRL_MASK);
 
     /** creates new ProjectViewAction instance */    
