@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,7 +27,9 @@ final class DocSearchIcons extends Object {
     public static final int ICON_PACKAGE = ICON_NOTRESOLVED + 1 ;
     public static final int ICON_CLASS = ICON_PACKAGE + 1 ;
     public static final int ICON_INTERFACE = ICON_CLASS + 1;
-    public static final int ICON_EXCEPTION = ICON_INTERFACE + 1;
+    public static final int ICON_ENUM = ICON_INTERFACE + 1;
+    public static final int ICON_ANNTYPE = ICON_ENUM + 1;
+    public static final int ICON_EXCEPTION = ICON_ANNTYPE + 1;
     public static final int ICON_ERROR = ICON_EXCEPTION + 1;
     public static final int ICON_CONSTRUCTOR = ICON_ERROR + 1;
     public static final int ICON_METHOD = ICON_CONSTRUCTOR + 1;
@@ -45,6 +47,8 @@ final class DocSearchIcons extends Object {
             icons[ ICON_PACKAGE ] = new ImageIcon (Utilities.loadImage ("org/netbeans/modules/javadoc/comments/resources/package.gif")); // NOI18N                                    
             icons[ ICON_CLASS ] = new ImageIcon (Utilities.loadImage ("org/openide/src/resources/class.gif")); // NOI18N
             icons[ ICON_INTERFACE ] = new ImageIcon (Utilities.loadImage ("org/openide/src/resources/interface.gif")); // NOI18N
+            icons[ ICON_ENUM ] = new ImageIcon (Utilities.loadImage ("org/netbeans/modules/javadoc/resources/enum.gif")); // NOI18N
+            icons[ ICON_ANNTYPE ] = new ImageIcon (Utilities.loadImage ("org/netbeans/modules/javadoc/resources/annotation_type.gif")); // NOI18N
             icons[ ICON_EXCEPTION ] = new ImageIcon (Utilities.loadImage ("org/netbeans/modules/javadoc/resources/exception.gif")); // NOI18N
             icons[ ICON_ERROR ] = new ImageIcon (Utilities.loadImage ("org/netbeans/modules/javadoc/resources/error.gif")); // NOI18N
             icons[ ICON_CONSTRUCTOR ] = new ImageIcon (Utilities.loadImage ("org/openide/src/resources/constructorPublic.gif")); // NOI18N

@@ -25,6 +25,7 @@ import javax.swing.text.html.HTML;
 import javax.swing.text.MutableAttributeSet;
 
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
 /** This class implements the index search through documenation
@@ -224,6 +225,8 @@ class SearchThreadJdk12 extends IndexSearchThread {
     static private final String STR_STATIC = ResourceUtils.getBundledString( "JDK12_STATIC" );   //NOI18N
     static private final String STR_DASH = ResourceUtils.getBundledString( "JDK12_DASH" );   //NOI18N
     static private final String STR_PACKAGE = ResourceUtils.getBundledString( "JDK12_PACKAGE" );   //NOI18N
+    private static final String STR_ENUM = NbBundle.getMessage(SearchThreadJdk12.class, "JDK15_ENUM"); //NOI18N
+    private static final String STR_ANNTYPE = NbBundle.getMessage(SearchThreadJdk12.class, "JDK15_ANNOTATION_TYPE"); //NOI18N
 
     static private final int IN_BALAST = 0;
     static private final int IN_DT = 1;
@@ -352,6 +355,10 @@ class SearchThreadJdk12 extends IndexSearchThread {
                     currentDii.setIconIndex( DocSearchIcons.ICON_CLASS );
                 else if ( token.equalsIgnoreCase( STR_INTERFACE ) )
                     currentDii.setIconIndex( DocSearchIcons.ICON_INTERFACE );
+                else if ( token.equalsIgnoreCase( STR_ENUM ) )
+                    currentDii.setIconIndex( DocSearchIcons.ICON_ENUM );
+                else if ( token.equalsIgnoreCase( STR_ANNTYPE ) )
+                    currentDii.setIconIndex( DocSearchIcons.ICON_ANNTYPE );
                 else if ( token.equalsIgnoreCase( STR_EXCEPTION ) )
                     currentDii.setIconIndex( DocSearchIcons.ICON_EXCEPTION );
                 else if ( token.equalsIgnoreCase( STR_ERROR ) )
