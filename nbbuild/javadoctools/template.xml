@@ -23,13 +23,14 @@ ${javadoc.name}       name of docs folder, e.g. "FooAPI"
 ${javadoc.title}      display title of docs, e.g. "Foo API"
 ${javadoc.packages}   list of packages to build, e.g. "org.netbeans.api.foo,org.netbeans.spi.foo"
 ${javadoc.classpath}  classpath for source files (probably same as what you use for <javac>)
-${javadoc.arch}       architecture summary of the module
 Optional:
 ${javadoc.main.page}  link to main page, e.g. org/netbeans/api/foo/doc-files/api.html
-${javadoc.docfiles}   set to some dummy dir like nbbuild/dummy if you have no doc-files; default ${javadoc.base}/api/doc
+${javadoc.docfiles}   doc-files directory such as ${javadoc.base}/api/doc; default none
 ${javadoc.apichanges} API change list XML file; default no change list
+${javadoc.arch}       architecture summary of the module; default a dummy summary
 ${javadoc.overview}   Overview HTML file; default a generic page
 ${javadoc.check.external.links}  set to "true" to check external HTTP links
+${javadoc.header}     Special header text.
 
 To call this script you MUST use the form of <ant> with the 'dir' attribute. This
 script expects that its basedir is the directory containing it. If you use only
@@ -51,9 +52,10 @@ cause it to fail.
         <!-- Source files: -->
         <property name="javadoc.src" location="${javadoc.base}/src"/>
         <!-- Extra HTML files, normally in **/doc-files/*.html: -->
-        <property name="javadoc.docfiles" location="${javadoc.base}/api/doc"/>
+        <property name="javadoc.docfiles" location="../dummy"/>
         <property name="javadoc.overview" location="overview-generic.html"/>
         <property name="javadoc.apichanges" location="apichanges-empty.xml"/>
+        <property name="javadoc.arch" location="arch-empty.xml"/>
         <!-- Docs to link to: -->
         <property name="javadoc.docs.jdk" value="http://java.sun.com/j2se/1.4.1/docs/api"/>
         <property name="javadoc.docs.openide" value="http://www.netbeans.org/download/dev/javadoc/OpenAPIs"/>
@@ -62,6 +64,7 @@ cause it to fail.
         <property name="javadoc.docs.openide/compiler" value="http://www.netbeans.org/download/dev/javadoc/CompilerAPI"/>
         <property name="javadoc.docs.openide/deprecated" value="http://www.netbeans.org/download/dev/javadoc/DeprecatedAPIs"/>
         <property name="javadoc.docs.core/javahelp" value="http://www.netbeans.org/download/dev/javadoc/JavaHelpAPI"/>
+        <property name="javadoc.docs.java/api" value="http://www.netbeans.org/download/dev/javadoc/JavaSupportAPIs"/>
         <!-- add more here as needed... -->
         <property name="javadoc.css.dir" location="."/>
         <property name="javadoc.css.main" location="${javadoc.css.dir}/javadoc.css"/>
@@ -69,24 +72,33 @@ cause it to fail.
             <include name="*.css"/>
         </fileset>
         <property name="javadoc.check.external.links" value="false"/>
+        <property name="javadoc.header" value=""/>
+        <mkdir dir="${javadoc.out.dir}"/>
     </target>
 
     <target name="javadoc-check-timestamps" depends="javadoc-init">
-        <uptodate property="javadoc.up.to.date" targetfile="${javadoc.out.zip}">
-            <srcfiles dir="${javadoc.src}">
-                <include name="**/*.java"/>
-            </srcfiles>
-            <srcfiles dir="${javadoc.docfiles}"/>
-            <srcfiles refid="javadoc.css.files"/>
-            <srcfiles dir=".">
-                <include name="apichanges.xsl"/>
-            </srcfiles>
-            <!-- These should already be absolute paths, so dir does not matter: -->
-            <srcfiles dir="../dummy">
-                <include name="${javadoc.apichanges}"/>
-                <include name="${javadoc.arch}"/>
-            </srcfiles>
-        </uptodate>
+        <!-- XXX under Ant 1.5.1, you can just use <srcfiles file="abspath"/> -->
+        <!-- However Ant 1.4.1 has several problems: -->
+        <!-- 1. <uptodate> only accepts one srcfile, of course -->
+        <!-- 2. Specifying a regular <srcfiles> with a random dir and absolute includes does not work -->
+        <!-- 3. <fileset> does not accept the file attr -->
+        <!-- So in order to express a dep on *two* absolute files, you need <condition>. Sigh. -->
+        <condition property="javadoc.up.to.date">
+            <and>
+                <uptodate targetfile="${javadoc.out.zip}">
+                    <srcfiles dir="${javadoc.src}">
+                        <include name="**/*.java"/>
+                    </srcfiles>
+                    <srcfiles dir="${javadoc.docfiles}"/>
+                    <srcfiles refid="javadoc.css.files"/>
+                    <srcfiles dir=".">
+                        <include name="apichanges.xsl"/>
+                    </srcfiles>
+                </uptodate>
+                <uptodate targetfile="${javadoc.out.zip}" srcfile="${javadoc.apichanges}"/>
+                <uptodate targetfile="${javadoc.out.zip}" srcfile="${javadoc.arch}"/>
+            </and>
+        </condition>
     </target>
 
     <target name="javadoc-make-plain-title" unless="javadoc.main.page">
@@ -96,11 +108,10 @@ cause it to fail.
     <target name="javadoc-make-hyperlinked-title" if="javadoc.main.page">
         <property name="javadoc.hyperlinked.title" value='&lt;a href="@TOP@${javadoc.main.page}"&gt;${javadoc.title}&lt;/a&gt;'/>
     </target>
-
-    <target name="javadoc" description="Build Javadoc and associated documentation for a module." depends="javadoc-init,javadoc-check-timestamps,javadoc-make-plain-title,javadoc-make-hyperlinked-title" unless="javadoc.up.to.date">
+    
+    <target name="javadoc-stage-main" depends="javadoc-init,javadoc-check-timestamps,javadoc-make-plain-title,javadoc-make-hyperlinked-title" unless="javadoc.up.to.date">
         <tstamp/>
         <property name="javadoc.footer" value='&lt;span class="footnote"&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/span&gt;'/>
-        <mkdir dir="${javadoc.out.dir}"/>
         <javadoc author="false" destdir="${javadoc.out.dir}" packagenames="${javadoc.packages}" stylesheetfile="${javadoc.css.main}" windowtitle="NetBeans ${javadoc.title}" overview="${javadoc.overview}" splitindex="true" use="true" version="false">
             <sourcepath>
                 <pathelement location="${javadoc.docfiles}"/>
@@ -117,18 +128,26 @@ cause it to fail.
             <link href="${javadoc.docs.openide/execution}" offline="true" packagelistloc="../../openide/execution/javadoc/ExecutionAPI"/>
             <link href="${javadoc.docs.openide/compiler}" offline="true" packagelistloc="../../openide/compiler/javadoc/CompilerAPI"/>
             <link href="${javadoc.docs.core/javahelp}" offline="true" packagelistloc="../../core/javahelp/javadoc/JavaHelpAPI"/>
+            <link href="${javadoc.docs.java/api}" offline="true" packagelistloc="../../java/api/javadoc/JavaSupportAPIs"/>
             <doctitle>NetBeans ${javadoc.title}</doctitle>
+            <header>${javadoc.header}</header>
             <bottom>${javadoc.footer}</bottom>
             <!-- XXX in Ant 1.5.1 add: <tag name="beaninfo" scope="methods" description="Bean info:"/> -->
         </javadoc>
         <copy todir="${javadoc.out.dir}">
             <fileset refid="javadoc.css.files"/>
         </copy>
+    </target>
+
+    <target name="javadoc-stage-apichanges" depends="javadoc-init,javadoc-check-timestamps" unless="javadoc.up.to.date">
         <ant dir="../../libs/external" target="unscramble"/>
         <xmlvalidate file="${javadoc.apichanges}" failonerror="true"/>
         <style in="${javadoc.apichanges}" out="${javadoc.out.dir}/apichanges.html" style="apichanges.xsl">
             <param name="javadoc-url-base" expression="http://www.netbeans.org/download/dev/javadoc/${javadoc.name}"/>
         </style>
+    </target>
+
+    <target name="javadoc-stage-arch" depends="javadoc-init,javadoc-check-timestamps" unless="javadoc.up.to.date">
         <taskdef name="arch" classname="org.netbeans.nbbuild.Arch">
             <classpath>
                 <pathelement location="../nbantext.jar"/>
@@ -137,6 +156,9 @@ cause it to fail.
         <!-- Warn about incorrect question version, but do not make build fail: -->
         <property name="arch.warn" value="true"/>
         <arch answers="${javadoc.arch}" output="${javadoc.out.dir}/architecture-summary.html" stylesheet="prose.css" overviewlink="overview-summary.html" footer="@FOOTER@"/>
+    </target>
+    
+    <target name="javadoc-stage-replace" depends="javadoc-stage-main,javadoc-stage-apichanges,javadoc-stage-arch" unless="javadoc.up.to.date">
         <replace dir="${javadoc.out.dir}">
             <include name="**/doc-files/*.html"/>
             <include name="**/package-summary.html"/>
@@ -149,6 +171,7 @@ cause it to fail.
             <replacefilter token="@OPENIDE/COMPILER@" value="${javadoc.docs.openide/compiler}"/>
             <replacefilter token="@OPENIDE/DEPRECATED@" value="${javadoc.docs.openide/deprecated}"/>
             <replacefilter token="@CORE/JAVAHELP@" value="${javadoc.docs.core/javahelp}"/>
+            <replacefilter token="@JAVA/API@" value="${javadoc.docs.java/api}"/>
             <replacefilter token="@FOOTER@" value="${javadoc.footer}"/>
         </replace>
         <replace dir="${javadoc.out.dir}" token="@TOP@" value="">
@@ -172,6 +195,9 @@ cause it to fail.
         <replace dir="${javadoc.out.dir}" token="@TOP@" value="../../../../../../">
             <include name="*/*/*/*/*/*/*.html"/>
         </replace>
+    </target>
+    
+    <target name="javadoc-stage-check" depends="javadoc-stage-replace" unless="javadoc.up.to.date">
         <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks">
             <classpath>
                 <pathelement location="../nbantext.jar"/>
@@ -193,6 +219,9 @@ cause it to fail.
             <mapper type="glob" from="${javadoc.out.dir}/architecture-summary.html" to="${javadoc.arch}"/>
             <mapper type="glob" from="${javadoc.out.dir}/*.html" to="${javadoc.docfiles}/*.html"/>
         </checklinks>
+    </target>
+    
+    <target name="javadoc" depends="javadoc-stage-check" unless="javadoc.up.to.date" description="Build Javadoc and associated documentation for a module.">
         <zip zipfile="${javadoc.out.zip}" basedir="${javadoc.out.dir}"/>
     </target>
 

@@ -99,6 +99,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="javadoc.main.page" value="org/netbeans/spi/settings/doc-files/api.html"/>
             <property name="javadoc.apichanges" location="api/doc/changes/apichanges.xml"/>
             <property name="javadoc.arch" location="../../openide/arch/arch-openide-settings.xml"/>
+            <property name="javadoc.docfiles" location="api/doc"/>
         </ant>
     </target>
     

@@ -88,6 +88,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="javadoc.packages" value="org.openide.windows"/>
             <property name="javadoc.classpath" value="${_cp}"/>
             <property name="javadoc.arch" location="../arch/arch-openide-io.xml"/>
+            <property name="javadoc.docfiles" location="api/doc"/>
         </ant>
     </target>
   

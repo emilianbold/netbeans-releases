@@ -76,6 +76,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="javadoc.classpath" value="${_cp}"/>
             <property name="javadoc.main.page" value="org/openide/execution/doc-files/api.html"/>
             <property name="javadoc.arch" location="../arch/arch-openide-execution.xml"/>
+            <property name="javadoc.docfiles" location="api/doc"/>
         </ant>
     </target>
   
