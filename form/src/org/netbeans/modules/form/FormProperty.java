@@ -204,8 +204,26 @@ public abstract class FormProperty extends Node.Property {
 //                lastRealValue = getTargetValue();
 
             lastRealValue = getTargetValue();
-            if (value == realValue)
-                value = lastRealValue;
+
+            // Some bad properties of bad beans return another value than the
+            // one just set - and which one should be used as the valid
+            // property value? (i.e. for presentation, code generation, etc)
+            // The one just set, or the one returned from getter immediately?
+            // (1) When the value just set is taken, then e.g. NONE_OPTION 
+            // set to debugGraphicsOption of JComponent will be used and code
+            // generated, altough it is converted to 0 which is the default
+            // value, so no code should be generated (NONE_OPTION != 0).
+            // (2) When oppositely the value from getter after performing
+            // setter is taken, then e.g. setting "text/xml" to contentType of
+            // JEditorPane may fail at design time (editor kit is not found),
+            // so the value reverts to "text/plain" (default) and no code is
+            // generated, however it could work at runtime...
+            //
+            // See also bug 12413.
+
+            // commenting out the following code we choose (1) 
+//            if (value == realValue)
+//                value = lastRealValue;
         }
 
         propertyValue = value; // cache the value for later...
