@@ -212,7 +212,7 @@ public final class TargetExecutor implements Runnable {
             out = io.getOut();
             err = io.getErr();
         } else {
-            throw new RuntimeException("XXX No support for outputStream currently!");
+            throw new RuntimeException("XXX No support for outputStream currently!"); // NOI18N
         }
         
         File buildFile = pcookie.getFile ();
