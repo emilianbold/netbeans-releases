@@ -41,6 +41,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.NbBundle;
 
 /**
  * This class is a lightweight component to be included in HTML content within
@@ -103,6 +104,8 @@ public class BrowserDisplayer extends JButton implements ActionListener, ViewAwa
 	createLinkLabel();
 	addActionListener(this);
 	origCursor = getCursor();
+        getAccessibleContext().setAccessibleDescription
+        (NbBundle.getMessage(BrowserDisplayer.class,"ACSD_Label"));
 	addMouseListener(new MouseListener() {
 	    public void mouseClicked(MouseEvent e) {
 	    }
