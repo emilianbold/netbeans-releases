@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-support-actions-FinishAction.instance"/>
             
             <file name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance"/>
-            <file name="org-netbeans-modules-debugger-support-actions--ContinueAction.instance"/>
+            <file name="org-netbeans-modules-debugger-support-actions-ContinueAction.instance"/>
             <file name="org-netbeans-modules-debugger-support-actions-StartAction.instance"/>
             <file name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance"/>
             <file name="org-netbeans-modules-debugger-support-actions-StepOutAction.instance"/>
