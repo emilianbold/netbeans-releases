@@ -69,7 +69,7 @@ public class AddAction extends NodeAction {
     }
 
     public JMenuItem getPopupPresenter() {
-        JMenuItem menu = new CPComponent.PaletteMenuView(
+        JMenuItem menu = new PaletteMenuView(
             PaletteNode.getPaletteNode(),
             new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {

@@ -42,21 +42,26 @@ class FormLAF {
             else
                 return Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
                     public Object run() throws Exception {
-                        boolean restoreAfter = true;
-                        try {
-                            if (lafBlockEntered)
-                                restoreAfter = false;
-                            else {
-                                lafBlockEntered = true;
-                                useDefaultLookAndFeel();
-                                restoreAfter = true;
+                        // FIXME(-ttran) needs to hold a lock on UIDefaults to
+                        // prevent other threads from creating Swing components
+                        // in the mean time
+                        synchronized (UIManager.getDefaults()) {
+                            boolean restoreAfter = true;
+                            try {
+                                if (lafBlockEntered)
+                                    restoreAfter = false;
+                                else {
+                                    lafBlockEntered = true;
+                                    useDefaultLookAndFeel();
+                                    restoreAfter = true;
+                                }
+                                return act.run();
                             }
-                            return act.run();
-                        }
-                        finally {
-                            if (restoreAfter) {
-                                useIDELookAndFeel();
-                                lafBlockEntered = false;
+                            finally {
+                                if (restoreAfter) {
+                                    useIDELookAndFeel();
+                                    lafBlockEntered = false;
+                                }
                             }
                         }
                     }
@@ -73,21 +78,26 @@ class FormLAF {
                 if (checkUseIdeLaf())
                     run.run();
                 else {
-                    boolean restoreAfter = true;
-                    try {
-                        if (lafBlockEntered)
-                            restoreAfter = false;
-                        else {
-                            lafBlockEntered = true;
-                            useDefaultLookAndFeel();
-                            restoreAfter = true;
+                    // FIXME(-ttran) needs to hold a lock on UIDefaults to
+                    // prevent other threads from creating Swing components
+                    // in the mean time
+                    synchronized (UIManager.getDefaults()) {
+                        boolean restoreAfter = true;
+                        try {
+                            if (lafBlockEntered)
+                                restoreAfter = false;
+                            else {
+                                lafBlockEntered = true;
+                                useDefaultLookAndFeel();
+                                restoreAfter = true;
+                            }
+                            run.run();
                         }
-                        run.run();
-                    }
-                    finally {
-                        if (restoreAfter) {
-                            useIDELookAndFeel();
-                            lafBlockEntered = false;
+                        finally {
+                            if (restoreAfter) {
+                                useIDELookAndFeel();
+                                lafBlockEntered = false;
+                            }
                         }
                     }
                 }

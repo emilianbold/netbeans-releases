@@ -16,6 +16,7 @@ package org.netbeans.modules.form;
 import java.util.*;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
+import org.openide.util.SharedClassObject;
 import org.netbeans.modules.form.codestructure.*;
 
 /**
@@ -76,8 +77,8 @@ public class FormLoaderSettings extends SystemOption {
     /** Property name of the registeredEditors property */
     public static final String PROP_REGISTERED_EDITORS = "registeredEditors"; // NOI18N
 
-    /** Property name of the selectedPalette property */
-    public static final String PROP_SELECTED_PALETTE = "selectedPalette"; // NOI18N
+    /** Property name of the toolBarPalette property */
+    public static final String PROP_PALETTE_IN_TOOLBAR = "toolBarPalette"; // NOI18N
     /** Property name of the showComponentsNames property */
     public static final String PROP_SHOW_COMPONENTS_NAMES = "showComponentsNames"; // NOI18N
 
@@ -139,7 +140,7 @@ public class FormLoaderSettings extends SystemOption {
     /** Array of items [Class Name, Editor1, Editor2, ...] */
     private static String [][] registeredEditors = new String [][] {{}};
 
-    private static int selectedPalette = 0;
+    private static boolean toolBarPalette = false;
     private static boolean showComponentsNames = false;
 
     private static final int MIN_SELECTION_BORDER_SIZE = 1;
@@ -149,6 +150,13 @@ public class FormLoaderSettings extends SystemOption {
     private static final int MIN_GRID_Y = 2;
 
     private static Map containerBeans;
+
+    // --------
+
+    public static FormLoaderSettings getInstance() {
+        return (FormLoaderSettings)
+            SharedClassObject.findObject(FormLoaderSettings.class, true);
+    }
 
     // ------------------------------------------
     // property access methods
@@ -445,20 +453,22 @@ public class FormLoaderSettings extends SystemOption {
         firePropertyChange(PROP_REGISTERED_EDITORS, null, null);
     }
 
-    public int getSelectedPalette() {
-        return selectedPalette;
+    public boolean isPaletteInToolBar() {
+        return toolBarPalette;
     }
 
-    public void setSelectedPalette(int index) {
-        if (index == selectedPalette) return;
-        int oldValue = selectedPalette;
-        selectedPalette = index;
-        // fire the PropertyChange
-        firePropertyChange(PROP_SELECTED_PALETTE,
-                           new Integer(oldValue),
-                           new Integer(selectedPalette));
+    public void setPaletteInToolBar(boolean value) {
+        if (toolBarPalette == value)
+            return;
+
+        boolean oldValue = toolBarPalette;
+        toolBarPalette = value;
+
+        firePropertyChange(PROP_PALETTE_IN_TOOLBAR,
+                           oldValue ? Boolean.TRUE : Boolean.FALSE,
+                           value ?  Boolean.TRUE : Boolean.FALSE);
     }
-    
+
     public boolean getShowComponentsNames() {
         return showComponentsNames;
     }

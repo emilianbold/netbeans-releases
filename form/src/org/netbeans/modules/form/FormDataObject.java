@@ -125,6 +125,7 @@ public class FormDataObject extends JavaDataObject {
     }
 
     FileEntry getFormEntry() {
+        files(); // XXX Forces to create the secondary entries.
         return formEntry;
     }
 

@@ -26,8 +26,8 @@ import org.openide.*;
 import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.explorer.*;
-import org.openide.explorer.propertysheet.*;
-import org.openide.awt.SplittedPanel;
+//import org.openide.explorer.propertysheet.*; // TEMP
+//import org.openide.awt.SplittedPanel; // TEMP
 import org.openide.awt.UndoRedo;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.windows.*;
@@ -39,7 +39,7 @@ import org.netbeans.modules.form.actions.*;
 import org.netbeans.modules.form.palette.*;
 
 /**
- * The ComponentInspector - explorer and property sheet.
+ * The ComponentInspector - special explorer.
  *
  * @author Tomas Pavek
  */
@@ -81,8 +81,8 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
 
     private boolean dontSynchronizeSelectedNodes = false;
 
-    private SplittedPanel split;
-    private PropertySheetView sheet;
+//    private SplittedPanel split; // TEMP
+//    private PropertySheetView sheet; // TEMP
 
     private static EmptyInspectorNode emptyInspectorNode;
 
@@ -115,7 +115,8 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
 
         setLayout(new BorderLayout());
 
-        createSplit();
+//        createSplit(); 
+        createComponents(); // TEMP
 
         setIcon(Utilities.loadImage(iconURL));
         if (INSPECTOR_TITLE == null)
@@ -129,20 +130,22 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         manager.addPropertyChangeListener(new NodeSelectionListener());
     }
 
-    private void createSplit() {
-        split = new SplittedPanel();
+//    private void createSplit() {
+    private void createComponents() { // TEMP
+//        split = new SplittedPanel();
         BeanTreeView treeView = new BeanTreeView();
-        sheet = new PropertySheetView();
-        split.add(treeView, SplittedPanel.ADD_FIRST);
-        split.add(sheet, SplittedPanel.ADD_SECOND);
-        split.setSplitType(SplittedPanel.VERTICAL);
-        split.setSplitPosition(30);
+//        sheet = new PropertySheetView();
+//        split.add(treeView, SplittedPanel.ADD_FIRST);
+//        split.add(sheet, SplittedPanel.ADD_SECOND);
+//        split.setSplitType(SplittedPanel.VERTICAL);
+//        split.setSplitPosition(30);
 
-        sheet.setDisplayWritableOnly(
-            FormEditor.getFormSettings().getDisplayWritableOnly());
-        sheet.addPropertyChangeListener(new PropertiesDisplayListener());
+//        sheet.setDisplayWritableOnly(
+//            FormEditor.getFormSettings().getDisplayWritableOnly());
+//        sheet.addPropertyChangeListener(new PropertiesDisplayListener()); // TEMP
 
-        add(BorderLayout.CENTER, split);
+//        add(BorderLayout.CENTER, split);
+        add(BorderLayout.CENTER, treeView); // TEMP
 
         treeView.getAccessibleContext().setAccessibleName(
             FormUtils.getBundleString("ACS_ComponentTree")); // NOI18N
@@ -237,8 +240,10 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
             reloadAction.setForm(null);
 
             // swing memory leak workaround
-            remove(split);
-            createSplit();
+//            remove(split);
+//            createSplit();
+            removeAll();
+            createComponents(); // TEMP
 
             getExplorerManager().setRootContext(emptyInspectorNode);
         }
@@ -254,8 +259,8 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
                 getExplorerManager().setRootContext(emptyInspectorNode);
             }
             else {
-                sheet.setDisplayWritableOnly(!form.getFormModel().isReadOnly()
-                     && FormEditor.getFormSettings().getDisplayWritableOnly());
+//                sheet.setDisplayWritableOnly(!form.getFormModel().isReadOnly()
+//                     && FormEditor.getFormSettings().getDisplayWritableOnly()); // TEMP
 
                 dontSynchronizeSelectedNodes = true;
                 getExplorerManager().setRootContext(formNode);
@@ -496,7 +501,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
 
             Node[] selected = getExplorerManager().getSelectedNodes();
 
-            if (CPManager.getDefault().getMode() == PaletteAction.MODE_CONNECTION) {
+            if (designer.getDesignerMode() == FormDesigner.MODE_CONNECT) {
                 // handle connection mode
                 if (selected.length == 0)
                     return;
@@ -543,17 +548,17 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         }
     }
 
-    // listener on PropertySheet.PROPERTY_DISPLAY_WRITABLE_ONLY flag
-    private class PropertiesDisplayListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (PropertySheet.PROPERTY_DISPLAY_WRITABLE_ONLY.equals(
-                                              evt.getPropertyName()))
-            {
-                FormEditor.getFormSettings().setDisplayWritableOnly(
-                                               sheet.getDisplayWritableOnly());
-            }
-        }
-    }
+//    // listener on PropertySheet.PROPERTY_DISPLAY_WRITABLE_ONLY flag
+//    private class PropertiesDisplayListener implements PropertyChangeListener {
+//        public void propertyChange(PropertyChangeEvent evt) {
+//            if (PropertySheet.PROPERTY_DISPLAY_WRITABLE_ONLY.equals(
+//                                              evt.getPropertyName()))
+//            {
+//                FormEditor.getFormSettings().setDisplayWritableOnly(
+//                                               sheet.getDisplayWritableOnly());
+//            }
+//        }
+//    } // TEMP
 
     // performer for DeleteAction
     private class DeleteActionPerformer implements ActionPerformer,

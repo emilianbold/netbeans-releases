@@ -111,13 +111,19 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- run text package tests -->
                 <include name="org/openide/text/*Test.class"/>
 		
-                <!-- run also window system tests -->
-                <include name="org/openide/windows/*Test.class"/>
-		
                 <!-- run also wizard's tests -->
                 <include name="org/openide/WizardDescTest.class"/>
             </patternset>
         </testset>      
+    </testbag>
+
+    <testbag testattribs="stable" executor="code" name="testbag_windows" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <!-- run also window system tests -->
+                <include name="org/openide/windows/*Test.class"/>
+            </patternset>
+        </testset>
     </testbag>
   
     <testbag testattribs="stable" executor="ide" name="testbag_2" resultsprocessor="unit">

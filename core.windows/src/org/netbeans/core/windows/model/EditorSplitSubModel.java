@@ -1,0 +1,151 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+
+package org.netbeans.core.windows.model;
+
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.ModeStructureSnapshot;
+import org.netbeans.core.windows.SplitConstraint;
+
+
+/**
+ * Model whidh represents sub model of split modes. It adds special notion
+ * of positioning of editor area. The editor area itself is represented
+ * by exact instance of SplitSubModel.
+ *
+ * @author  Peter Zavadsky
+ */
+final class EditorSplitSubModel extends SplitSubModel {
+
+    /** Only instance of EditorNode representing position
+     * of editor area in this sub model. */
+    private final EditorNode editorNode;
+
+
+    public EditorSplitSubModel(Model parentModel, SplitSubModel editorArea) {
+        super(parentModel);
+        
+        this.editorNode = new EditorNode(editorArea);
+        
+        // XXX The editor node has to be always present.
+        addNodeToTree(editorNode, new SplitConstraint[0], false);
+    }
+    
+
+    /** Overrides superclass method to prevent removing of editor node. */
+    protected boolean removeNodeFromTree(Node node) {
+        if(node == editorNode) {
+            // XXX Prevents removing of editor node.
+            return false;
+        }
+        
+        return super.removeNodeFromTree(node);
+    }
+
+    public boolean setEditorNodeConstraints(SplitConstraint[] editorNodeConstraints) {
+        super.removeNodeFromTree(editorNode);
+        return addNodeToTree(editorNode, editorNodeConstraints, false);
+    }
+    
+    public SplitConstraint[] getEditorNodeConstraints() {
+        return editorNode.getNodeConstraints();
+    }
+    
+    public SplitSubModel getEditorArea() {
+        return editorNode.getEditorArea();
+    }
+
+    public boolean setSplitWeights(ModelElement firstElement, double firstSplitWeight,
+    ModelElement secondElement, double secondSplitWeight) {
+        if(super.setSplitWeights(firstElement, firstSplitWeight,
+                                secondElement, secondSplitWeight)) {
+            return true;
+        }
+        
+        return getEditorArea().setSplitWeights(firstElement, firstSplitWeight,
+                                                secondElement, secondSplitWeight);
+    }
+    
+    
+    /** Class which represents editor area position in EditorSplitSubModel. */
+    private static class EditorNode extends SplitSubModel.Node {
+        /** Ref to editor area. */
+        private final SplitSubModel editorArea;
+        
+        /** Creates a new instance of EditorNode */
+        public EditorNode(SplitSubModel editorArea) {
+            this.editorArea = editorArea;
+        }
+
+        public boolean isVisibleInSplit() {
+            return true;
+        }
+        
+        public SplitSubModel getEditorArea() {
+            return editorArea;
+        }
+        
+        public double getResizeWeight() {
+            return 1D;
+        }
+        
+        public ModeStructureSnapshot.ElementSnapshot createSnapshot() {
+            return new ModeStructureSnapshot.EditorSnapshot(this, null,
+                editorArea.createSplitSnapshot(), getResizeWeight());
+        }
+    } // End of nested EditorNode class.
+    
+    
+    // XXX
+    protected boolean addNodeToTreeAroundEditor(Node addingNode, String side) {
+        // Update
+        Node attachNode = editorNode;
+        if(attachNode == root) {
+            int addingIndex = (side == Constants.TOP || side == Constants.LEFT) ? 0 : -1;
+            int oldIndex = addingIndex == 0 ? -1 : 0;
+            // Create new branch.
+            int orientation = (side == Constants.TOP || side == Constants.BOTTOM) ? Constants.VERTICAL : Constants.HORIZONTAL;
+            SplitNode newSplit = new SplitNode(orientation);
+            newSplit.setChildAt(addingIndex, Constants.DROP_TO_SIDE_RATIO, addingNode);
+            newSplit.setChildAt(oldIndex, 1D - Constants.DROP_TO_SIDE_RATIO, attachNode);
+            root = newSplit;
+        } else {
+            SplitNode parent = attachNode.getParent();
+            if(parent == null) {
+                return false;
+            }
+
+            int attachIndex = parent.getChildIndex(attachNode);
+            double attachWeight = parent.getChildSplitWeight(attachNode);
+            // Create new branch.
+            int orientation = (side == Constants.TOP || side == Constants.BOTTOM) ? Constants.VERTICAL : Constants.HORIZONTAL;
+            SplitNode newSplit = new SplitNode(orientation);
+            parent.removeChild(attachNode);
+            int addingIndex = (side == Constants.TOP || side == Constants.LEFT) ? 0 : -1;
+            int oldIndex = addingIndex == 0 ? -1 : 0;
+            newSplit.setChildAt(addingIndex, Constants.DROP_AROUND_RATIO, addingNode);
+            newSplit.setChildAt(oldIndex, 1D - Constants.DROP_AROUND_RATIO, attachNode);
+            parent.setChildAt(attachIndex, attachWeight, newSplit);
+        }
+        
+        return true;
+    }
+
+}
+

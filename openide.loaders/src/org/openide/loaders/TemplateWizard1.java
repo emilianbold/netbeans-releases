@@ -22,8 +22,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.JComponent;
 import java.awt.Component;
 import java.awt.Graphics;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
+import javax.swing.plaf.basic.BasicBorders;
 
 import org.openide.awt.HtmlBrowser;
 import org.openide.loaders.*;
@@ -545,11 +547,16 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
             return obj == null || obj.isTemplate ();
         }
     }
-    
+
+    /** Specialized tree view for templates, non editable and with proper
+     * border */
     private static final class TemplatesTreeView extends BeanTreeView {
         TemplatesTreeView() {
             tree.setEditable(false);
+            // install proper border
+            setBorder((Border)UIManager.get("Netbeans.ScrollPane.border")); // NOI18N
         }
+        
         protected NodeTreeModel createModel() {
             return new TemplatesModel();
         }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE tc-ref PUBLIC
+          "-//NetBeans//DTD Top Component in Mode Properties 2.0//EN"
+          "http://www.netbeans.org/dtds/tc-ref2_0.dtd">
+
+<tc-ref version="2.0" >
+    <module name="org.netbeans.modules.form/2" spec="1.7" />
+    <tc-id id="ComponentPalette" />
+    <state opened="false" />
+</tc-ref>

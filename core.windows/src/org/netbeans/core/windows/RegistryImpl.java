@@ -13,55 +13,47 @@
 
 package org.netbeans.core.windows;
 
+
+import java.awt.Window;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.Arrays;
 
+import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
 import javax.swing.SwingUtilities;
-import javax.swing.MenuElement;
 
-import org.openide.windows.TopComponent;
-import org.openide.windows.Workspace;
 import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
+import org.openide.util.WeakSet;
 
-import org.netbeans.core.NbTopManager;
-import org.openide.windows.WindowManager;
 
 /** Implementstion of registry of top components. This implementation
  * receives information about top component changes from the window
  * manager implementation, to which is listening to.
  *
- * @author Dafe Simonek
+ * @author Peter Zavadsky
  */
-public final class RegistryImpl extends Object
-implements TopComponent.Registry, TopComponentListener, StateManager.StateListener {
+public final class RegistryImpl extends Object implements TopComponent.Registry {
     
     // fields
     /** Activated top component */
     private TopComponent activatedTopComponent;
     /** Set of opened TopComponents */
-    private HashSet openSet;
+    private final Set openSet = new WeakSet(30);
     /** Currently selected nodes. */
-    private Node[] current;
-    /** Last non-null value of current nodes */
-    private Node[] activated;
+    private Node[] currentNodes;
+    /** Last non-null value of current nodes. (If null -> it means they are
+     * not initialized and weren't fired yet. */
+    private Node[] activatedNodes;
     /** PropertyChange support */
-    private PropertyChangeSupport support;
-    /** Flag indicating whether listener was set on StateManager */
-    private boolean listenerInited;
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     
 
     /** Creates new RegistryImpl */
     public RegistryImpl() {
-        support = new PropertyChangeSupport(this);
-        openSet = new HashSet(30);
-        activated = new Node[0];
-        
-        // force registry to listen to top components' events
-        WindowManagerImpl.getInstance().addTopComponentListener(this);
     }
     
     /** Get all opened componets in the system.
@@ -80,15 +72,9 @@ implements TopComponent.Registry, TopComponentListener, StateManager.StateListen
     }
     
     /** Getter for the currently selected nodes.
-     * @return array of nodes or null if no component activated or it returns
-     *   null from getActivatedNodes ().
-     */
+     * @return array of nodes or null if no component activated. */
     public Node[] getCurrentNodes() {
-        if (activatedTopComponent == null) {
-            return NbTopManager.getUninitialized().getDefaultNodes(false);
-        }
-        
-        return current;
+        return currentNodes;
     }
     
     /** Getter for the lastly activated nodes. Comparing
@@ -98,11 +84,7 @@ implements TopComponent.Registry, TopComponentListener, StateManager.StateListen
      * @return array of nodes (not null)
      */
     public Node[] getActivatedNodes() {
-        if (activatedTopComponent == null) {
-            return NbTopManager.getUninitialized().getDefaultNodes(true);
-        }
-        
-        return activated;
+        return activatedNodes == null ? new Node[0] : activatedNodes;
     }
     
     /** Add a property change listener.
@@ -118,109 +100,82 @@ implements TopComponent.Registry, TopComponentListener, StateManager.StateListen
     public void removePropertyChangeListener(PropertyChangeListener l) {
         support.removePropertyChangeListener(l);
     }
+
     
+    //////////////////////////////////////////////////////
+    /// notifications of changes from window manager >>>>>
     /** Called when a TopComponent is activated.
      *
      * @param ev TopComponentChangedEvent
      */
-    public void topComponentActivated(TopComponentChangedEvent ev) {
+    void topComponentActivated(TopComponent tc) {
+        if(activatedTopComponent == tc
+        && activatedNodes != null) { // When null it means were not inited yet.
+            return;
+        }
+        
         TopComponent old = activatedTopComponent;
-        activatedTopComponent = ev.topComponent;
+        activatedTopComponent = tc;
         
-        java.awt.Window w = ev.topComponent == null ?
-        null : SwingUtilities.windowForComponent(ev.topComponent);
-        
+        Window w = tc == null ? null : SwingUtilities.windowForComponent(tc);
         cancelMenu(w);
         
-        
-        if (old == activatedTopComponent) {
-            return;
-        }
-        
-        support.firePropertyChange(PROP_ACTIVATED, old, activatedTopComponent);
-        
-        // XXX #23113. Inform also about activated nodes change, getActivatedNodes
-        // method return different values after these cases of change.
-        if(old == null && activatedTopComponent != null) {
-            support.firePropertyChange(PROP_ACTIVATED_NODES, new Node[0], activated);
-        } else if(old != null && activatedTopComponent == null) {
-            support.firePropertyChange(PROP_ACTIVATED_NODES, activated, new Node[0]);
-        }
+        doFirePropertyChange(PROP_ACTIVATED, old, activatedTopComponent);
+
+        selectedNodesChanged(activatedTopComponent,
+            activatedTopComponent == null ? null : activatedTopComponent.getActivatedNodes());
     }
     
     
     
-    /** Called when a TopComponent is opened.
-     *
-     * @param ev TopComponentChangedEvent
-     */
-    public synchronized void topComponentOpened(TopComponentChangedEvent ev) {
-        if (openSet.contains(ev.topComponent)) {
+    /** Called when a TopComponent is opened. */
+    synchronized void topComponentOpened(TopComponent tc) {
+        if (openSet.contains(tc)) {
             return;
         }
-        Set old = (Set) openSet.clone();
-        openSet.add(ev.topComponent);
-        support.firePropertyChange(PROP_OPENED, old, openSet);
+        Set old = new HashSet(openSet);
+        openSet.add(tc);
+        doFirePropertyChange(PROP_OPENED, old, new HashSet(openSet));
     }
     
-    /** Called when a TopComponent is closed.
-     *
-     * @param ev TopComponentChangedEvent
-     */
-    public synchronized void topComponentClosed(TopComponentChangedEvent ev) {
-        if (! openSet.contains(ev.topComponent)) {
+    /** Called when a TopComponent is closed. */
+    synchronized void topComponentClosed(TopComponent tc) {
+        if (!openSet.contains(tc)) {
             return;
         }
-        // we should remove it from the set only if it is closed
-        // on all workspaces
-        WindowManagerImpl wm = (WindowManagerImpl)WindowManager.getDefault();
-        Workspace[] workspaces = wm.getWorkspaces();
-        for (int i = 0; i < workspaces.length; i++) {
-            if (wm.findManager(ev.topComponent).isOpened(workspaces[i]))
-                return;
-        }
-        // conditions satisfied, now remove...
-        Set old = (Set) openSet.clone();
-        openSet.remove(ev.topComponent);
-        support.firePropertyChange(PROP_OPENED, old, openSet);
+
+        Set old = new HashSet(openSet);
+        openSet.remove(tc);
+        doFirePropertyChange(PROP_OPENED, old, new HashSet(openSet));
     }
     
-    /** Called when selected nodes change..
-     *
-     * @param ev TopComponentChangedEvent
-     */
-    public void selectedNodesChanged(SelectedNodesChangedEvent ev) {
-        Node[] old = current;
-        Node[] c = ev.getSelectedNodes();
+    /** Called when selected nodes changed. */
+    public void selectedNodesChanged(TopComponent tc, Node[] newNodes) {
+        Node[] oldNodes = currentNodes;
         
         //Fixed bug #8933 27 Mar 2001 by Marek Slama
         //Selected nodes event was processed for other than activated component.
         //Check if activatedTopComponent is the same as event source top component
         //If not ignore event
-        if (activatedTopComponent != null) {
-            if (!activatedTopComponent.equals(ev.topComponent)) {
-                return;
-            }
+        if(tc != activatedTopComponent
+        && activatedNodes != null) { // When null it means were not inited yet.
+            return;
         }
         //End of bugfix #8933
         
-        if (Arrays.equals(old, c)) {
+        if(Arrays.equals(oldNodes, newNodes)
+        && activatedNodes != null) { // When null it means were not inited yet.
             return;
         }
-        if (!listenerInited) {
-            // initialize and start to listen to state changes
-            listenerInited = true;
-            StateManager.getDefault().addStateListener(this);
-        }
-        current = c == null ? null : (Node[])c.clone();
+
+        currentNodes = newNodes == null ? null : (Node[])newNodes.clone();
         // fire immediatelly only if window manager in proper state
-        tryFireChanges(StateManager.getDefault().getState(), old, current);
+        tryFireChanges(oldNodes, currentNodes);
     }
+    /// notifications of changes from window manager <<<<<
+    //////////////////////////////////////////////////////
+
     
-    /** called when state of window manager changes */
-    public void stateChanged(int state) {
-        tryFireChanges(state, null, current);
-    }
     
     /** Cancels the menu if it is not assigned to specified window.
      * @param window window that the menu should be checked against
@@ -228,14 +183,14 @@ implements TopComponent.Registry, TopComponentListener, StateManager.StateListen
      */
     /** Closes popup menu.
      */
-    static void cancelMenu(java.awt.Window window) {
+    public static void cancelMenu(Window window) {
         MenuSelectionManager msm = MenuSelectionManager.defaultManager();
         MenuElement[] path = msm.getSelectedPath();
         
         for (int i = 0; i < path.length; i++) {
             //      if (newPath[i] != path[i]) return;
             java.awt.Window w = SwingUtilities.windowForComponent(
-            path[i].getComponent()
+                path[i].getComponent()
             );
             
             // we must check for null because windowForComponent above can return null
@@ -252,17 +207,38 @@ implements TopComponent.Registry, TopComponentListener, StateManager.StateListen
     
     /** If window manager in proper state, fire selected and
      * activated node changes */
-    private void tryFireChanges(int state, Node[] oldNodes, Node[] newNodes) {
-        if (state == (StateManager.READY | StateManager.VISIBLE)) {
-            support.firePropertyChange(PROP_CURRENT_NODES, oldNodes, newNodes);
-            if (newNodes != null) {
-                oldNodes = activated;
-                activated = newNodes;
-                support.firePropertyChange(PROP_ACTIVATED_NODES, oldNodes, activated);
-            }
-        } else {
-            // defer firing, do nothing now
+    private void tryFireChanges(Node[] oldNodes, Node[] newNodes) {
+        doFirePropertyChange(PROP_CURRENT_NODES, oldNodes, newNodes);
+        
+        if(newNodes == null && activatedNodes == null) {
+            // Ensure activated nodes are going to be fired first time in session for this case.
+            newNodes = new Node[0];
         }
+        
+        if (newNodes != null) {
+            oldNodes = activatedNodes;
+            activatedNodes = newNodes;
+            doFirePropertyChange(PROP_ACTIVATED_NODES, oldNodes, activatedNodes);
+        }
+    }
+    
+    
+    private void doFirePropertyChange(final String propName,
+    final Object oldValue, final Object newValue) {
+        debugLog(""); // NOI18N
+        debugLog("Scheduling event firing: propName=" + propName); // NOI18N
+        debugLog("\toldValue=" + (oldValue instanceof Object[] ? Arrays.asList((Object[])oldValue) : oldValue)); // NOI18N
+        debugLog("\tnewValue=" + (newValue instanceof Object[] ? Arrays.asList((Object[])newValue) : newValue)); // NOI18N
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                support.firePropertyChange(propName, oldValue, newValue);
+            }
+        });
+    }
+    
+    private static void debugLog(String message) {
+        Debug.log(RegistryImpl.class, message);
     }
     
 }

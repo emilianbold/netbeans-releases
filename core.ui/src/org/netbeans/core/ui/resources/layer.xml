@@ -78,20 +78,14 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-CloseViewAction.instance"/>
             <file name="org-openide-actions-CustomizeAction.instance"/>
-            <file name="org-netbeans-core-windows-actions-EditorViewAction.instance"/>
             <file name="org-openide-actions-OpenLocalExplorerAction.instance"/>
-            <file name="org-netbeans-core-actions-ViewFilesystemsTabAction.instance"/>
+            <file name="org-netbeans-core-actions-ViewFilesystemsTabAction.shadow">
+                <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-actions-ViewFilesystemsTabAction.instance"/>
+            </file>
             <file name="org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
-            <file name="org-netbeans-core-windows-actions-FocusPreviousWorkspaceAction.instance"/>            
-            <file name="org-netbeans-core-windows-actions-PreviousWorkspaceAction.instance"/>
-            <file name="org-netbeans-core-windows-actions-FocusNextWorkspaceAction.instance"/>
-            <file name="org-netbeans-core-windows-actions-NextWorkspaceAction.instance"/>
-            <file name="org-netbeans-core-windows-actions-WorkspaceExplorerAction.instance"/>
             <file name="org-openide-actions-PropertiesAction.instance"/>
-            <file name="org-netbeans-core-windows-actions-StatusLineAction.instance"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
-            <file name="org-openide-actions-WorkspaceSwitchAction.instance"/>
         </folder>        
         
         <folder name="Help">
@@ -173,7 +167,8 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="Edit/View" boolvalue="true" />
         <folder name="View">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-OpenLocalExplorerAction.instance"/>
+            <!-- Moving the view actions to window menu -->
+            <!--<file name="org-openide-actions-OpenLocalExplorerAction.instance"/>
             <attr name="org-openide-actions-OpenLocalExplorerAction.instance/Separator1.instance" boolvalue="true" />
             <file name="Separator1.instance">
 		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -185,13 +180,11 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-core-actions-ViewFilesystemsTabAction.instance/org-netbeans-core-actions-ViewRuntimeTabAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
             <attr name="org-netbeans-core-actions-ViewRuntimeTabAction.instance/oldRootsStart.txt" boolvalue="true" />
-            <file name="oldRootsStart.txt"/>
+            <file name="oldRootsStart.txt"/>-->
             <!-- #22758 Just a placeholder for old roots menu items -->
-            <attr name="oldRootsStart.txt/oldRootsEnd.txt" boolvalue="true" />
+            <!--<attr name="oldRootsStart.txt/oldRootsEnd.txt" boolvalue="true" />
             <file name="oldRootsEnd.txt"/>
-            <attr name="oldRootsEnd.txt/org-netbeans-core-windows-actions-EditorViewAction.instance" boolvalue="true" />            
-            <file name="org-netbeans-core-windows-actions-EditorViewAction.instance"/>
-            <attr name="org-netbeans-core-windows-actions-EditorViewAction.instance/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true"/>
+            <attr name="oldRootsEnd.txt/org-netbeans-core-actions-HTMLViewAction.instance" boolvalue="true" />-->
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
         </folder>
         
@@ -215,7 +208,25 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-core-actions-ConfigureShortcutsAction.instance/org-netbeans-core-actions-OptionsAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-OptionsAction.instance"/>
         </folder> 
-       
+
+        <folder name="Window">
+            <!--<file name="org-openide-actions-OpenLocalExplorerAction.instance"/>
+            <attr name="org-openide-actions-OpenLocalExplorerAction.instance/Separator1.instance" boolvalue="true" />
+            <file name="Separator1.instance">
+		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+	    </file>
+            <attr name="Separator1.instance/org-netbeans-core-actions-GlobalPropertiesAction.instance" boolvalue="true" />-->
+            <file name="org-netbeans-core-actions-ViewFilesystemsTabAction.instance"/>
+            <attr name="org-netbeans-core-actions-ViewFilesystemsTabAction.instance/org-netbeans-core-actions-ViewRuntimeTabAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
+            <attr name="org-netbeans-core-actions-ViewRuntimeTabAction.instance/org-netbeans-core-actions-GlobalPropertiesAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
+            <attr name="org-netbeans-core-actions-GlobalPropertiesAction.instance/oldRootsStart.txt" boolvalue="true" />
+            <file name="oldRootsStart.txt"/>
+            <!-- #22758 Just a placeholder for old roots menu items -->
+            <attr name="oldRootsStart.txt/oldRootsEnd.txt" boolvalue="true" />
+            <file name="oldRootsEnd.txt"/>
+        </folder>
         <attr name="Window/Help" boolvalue="true" />
         <folder name="Help">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
@@ -278,19 +289,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-core-actions-MemoryMeterAction.instance/org-openide-actions-GarbageCollectAction.instance" boolvalue="true" />
             <file name="org-openide-actions-GarbageCollectAction.instance"/>
         </folder>
-        <folder name="WorkspaceSwitcher">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-netbeans-core-windows-WorkspaceSwitcher.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.core.windows.awt.TabControl" />
-                <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.WorkspaceSwitcher.createSwitcher" />
-            </file>
-        </folder>
-        <folder name="StatusLine">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-netbeans-core-windows-actions-StatusLineAction.instance">
-                 <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.StatusLineAction"/>
-            </file>
-        </folder>
 
         <!-- specify toolbar configuration for platform ui. -->
         <file name="Standard.xml" url="Standard.xml">
@@ -327,13 +325,18 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="instanceClass" stringvalue="org.openide.actions.GotoAction"/>
 	</file>
 
-        <file name="C-7.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.HTMLViewAction"/>
+        <file name="C-5.shadow">
+	    <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
 	</file>
 
-        <file name="A-RIGHT.instance">
+        
+        <!--<file name="C-7.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.HTMLViewAction"/>
+	</file>-->
+
+        <!--<file name="A-RIGHT.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.NextTabAction"/>
-	</file>
+	</file>-->
 
         <file name="C-V.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
@@ -351,9 +354,9 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
 	</file>
     
-        <file name="A-LEFT.instance"> 
+<!--        <file name="A-LEFT.instance"> 
 	    <attr name="instanceClass" stringvalue="org.openide.actions.PreviousTabAction"/>
-	</file>
+	</file>-->
 
         <file name="C-F4.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.CloseViewAction"/>
@@ -371,16 +374,12 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
 	</file>
     
-        <file name="C-3.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.EditorViewAction"/>
-	</file>
-
         <file name="C-H.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.ReplaceAction"/>
 	</file>
 
-        <file name="C-2.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.ViewFilesystemsTabAction"/>
+        <file name="C-2.shadow">
+	    <attr name="originalFile" stringvalue="Menu/Window/org-netbeans-core-actions-ViewFilesystemsTabAction.instance"/>
 	</file>
 
         <file name="C-1.instance">
@@ -391,9 +390,9 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="instanceClass" stringvalue="org.openide.actions.PrintAction"/>
 	</file>
 
-        <file name="C-0.instance">
+        <!--Switch to editor action has this now. <file name="C-0.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.OpenLocalExplorerAction"/>
-	</file>
+	</file>-->
 
         <file name="C-N.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.NewTemplateCallableAction"/>
@@ -401,18 +400,6 @@ Microsystems, Inc. All Rights Reserved.
 
         <file name="S-F10.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.PopupAction"/>
-	</file>
-
-        <file name="CS-DOWN.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.FocusNextWorkspaceAction"/>
-	</file>
-
-        <file name="CS-UP.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.FocusPreviousWorkspaceAction"/>
-	</file>
-
-        <file name="CS-F12.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.windows.actions.WorkspaceExplorerAction"/>
 	</file>
     </folder>
     
@@ -534,7 +521,7 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
 
                     <file name="Menu.instance">
-                        <attr name="instanceCreate" newvalue="org.netbeans.core.windows.MenuFolderNode" />
+                        <attr name="instanceCreate" newvalue="org.netbeans.core.windows.services.MenuFolderNode" />
                         <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
                     </file>
 
@@ -543,15 +530,9 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
 
                     <file name="Toolbar.instance">
-                        <attr name="instanceCreate" newvalue="org.netbeans.core.windows.ToolbarFolderNode" />
+                        <attr name="instanceCreate" newvalue="org.netbeans.core.windows.services.ToolbarFolderNode" />
                         <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
                     </file>
-
-                    <file name="Workspace.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.core.windows.nodes.WorkspacePoolContext.getDefault" />
-                        <attr name="instanceClass" stringvalue="org.netbeans.core.windows.nodes.WorkspacePoolContext" />
-                    </file>
-
                 </folder> <!-- LookAndFeel -->
 
                 <folder name="System">
@@ -616,47 +597,51 @@ Microsystems, Inc. All Rights Reserved.
         </file>
     </folder>
 	
-    <folder name="Windows">
+    <folder name="Windows2">
         <!--
         <attr name="SystemFileSystem.layer" stringvalue="project"/>
         <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
 	-->
-        <folder name="WindowManager">
-            <attr name="Editing/Visual" boolvalue="true" />
-            <attr name="Editing/Debugging" boolvalue="true" />
-            <file name="Editing.wswksp" url="windowmanager/Editing.wswksp" />
-            <folder name="Editing">
-                <file name="explorer.wsmode" url="windowmanager/Editing/explorer.wsmode" />
-                <folder name="explorer">
-                    <file name="filesystems.wstcref" url="windowmanager/Editing/explorer/filesystems.wstcref" />
-                    <file name="properties.wstcref" url="windowmanager/Editing/explorer/properties.wstcref" />
-                </folder>
+        <folder name="Modes">
+            <file name="explorer.wsmode" url="windowmanager/explorer.wsmode" />
+            <folder name="explorer">
+                <file name="filesystems.wstcref" url="windowmanager/explorer/filesystems.wstcref" />
+            </folder>
                 
-                <file name="editor.wsmode" url="windowmanager/Editing/editor.wsmode" />
-                <folder name="editor">
-                </folder>
+            <file name="editor.wsmode" url="windowmanager/editor.wsmode" />
+            <folder name="editor">
+            </folder>
                 
-                <file name="properties.wsmode" url="windowmanager/Editing/properties.wsmode" />
-                <folder name="properties">
-                    <file name="properties.wstcref" url="windowmanager/Editing/properties/properties.wstcref" />
-                </folder>
+            <file name="output.wsmode" url="windowmanager/output.wsmode" />
+            <folder name="output">
+                <file name="output.wstcref" url="windowmanager/output/output.wstcref" />
+            </folder>
+
+            <file name="properties.wsmode" url="windowmanager/properties.wsmode" />
+            <folder name="properties">
+                <file name="properties.wstcref" url="windowmanager/properties/properties.wstcref" />
+            </folder>
                 
-                <file name="output.wsmode" url="windowmanager/Editing/output.wsmode" />
-                <folder name="output">
-                    <file name="output.wstcref" url="windowmanager/Editing/output/output.wstcref" />
-                </folder>
-                
+        </folder>
+        
+        <folder name="Groups">
+            <folder name="debugger">
+                <file name="output.wstcgrp" url="groups/debugger/output.wstcgrp" />
+            </folder>
+            <folder name="execution">
+                <file name="output.wstcgrp" url="groups/execution/output.wstcgrp" />
+            </folder>
+            <folder name="form">
+                <file name="properties.wstcgrp" url="groups/form/properties.wstcgrp" />
             </folder>
         </folder>
 
         <folder name="Components">
-            <file name="filesystems.settings" url="components/filesystems.settings" >
-            </file>
-            <file name="output.settings" url="components/output.settings" >
-            </file>
-            <file name="properties.settings" url="components/properties.settings" >
-            </file>
+            <file name="filesystems.settings" url="components/filesystems.settings" />
+            <file name="output.settings" url="components/output.settings" />
+            <file name="properties.settings" url="components/properties.settings" />
         </folder>
+
     </folder>
      
 </filesystem>

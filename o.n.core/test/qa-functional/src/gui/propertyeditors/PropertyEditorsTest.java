@@ -29,6 +29,7 @@ import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TestOut;
+import org.netbeans.jemmy.operators.DialogOperator;
 
 import org.netbeans.jemmy.operators.FrameOperator;
 import org.netbeans.jemmy.operators.Operator;
@@ -49,7 +50,7 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     
     protected static NbDialogOperator propertyCustomizer;
     
-    protected static FrameOperator propertiesWindow = null;
+    protected static NbDialogOperator propertiesWindow = null;
     
     private static final String CAPTION = "\n===========================";
     
@@ -287,27 +288,27 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     
     
     /** Reinitialize Workplace. */
-    public static FrameOperator reInitializeWorkplace() {
+    public static NbDialogOperator reInitializeWorkplace() {
         propertiesWindow = null;
         return openPropertySheet();
     }
     
     /** Initialize Workplace. */
-    public static FrameOperator initializeWorkplace() {
+    public static NbDialogOperator initializeWorkplace() {
         return openPropertySheet();
     }
     
     /** Open property sheet (bean customizer). */
-    private static FrameOperator openPropertySheet() {
+    private static NbDialogOperator openPropertySheet() {
         String waitFrameTimeout = "FrameWaiter.WaitFrameTimeout";
         long findTimeout = JemmyProperties.getCurrentTimeout(waitFrameTimeout);
         JemmyProperties.setCurrentTimeout(waitFrameTimeout, 3000);
 
         try{
-            propertiesWindow = new FrameOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", new Object[]{new Integer(1),"TestNode"}));
+            propertiesWindow = new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", new Object[]{new Integer(1),"TestNode"}));
         }catch(org.netbeans.jemmy.TimeoutExpiredException exception){
             new PropertiesTest();
-            propertiesWindow = new FrameOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", new Object[]{new Integer(1),"TestNode"}));
+            propertiesWindow = new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.core.Bundle", "CTL_FMT_LocalProperties", new Object[]{new Integer(1),"TestNode"}));
         }
         
         JemmyProperties.setCurrentTimeout(waitFrameTimeout, findTimeout);

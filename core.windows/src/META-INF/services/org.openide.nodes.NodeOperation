@@ -2,4 +2,4 @@
 #-org.netbeans.modules.openide.explorer.NodeOperationImpl
 
 # and add your own
-org.netbeans.core.windows.NodeOperationImpl
+org.netbeans.core.windows.services.NodeOperationImpl

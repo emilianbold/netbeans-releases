@@ -20,13 +20,14 @@ Microsystems, Inc. All Rights Reserved.
     <Toolbar name="Edit" />
     <Toolbar name="Data" />
     <Toolbar name="Build" />
-    <Toolbar name="Debug" />
+    <Toolbar name="Debug" visible="false" />
+    <Toolbar name="DebugFull" />
     <Toolbar name="Memory" visible="false" />
   </Row>
   <Row>
     <Toolbar name="Versioning" visible="false" />
-    <Toolbar name="DebugFull" visible="false" />
     <Toolbar name="View" visible="false" />
+    <Toolbar name="Window" visible="false" />
   </Row>
   <Row>
     <Toolbar name="WorkspaceSwitcher" visible="true" />

@@ -16,6 +16,9 @@ package org.netbeans.core.actions;
 import java.io.ObjectStreamException;
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import javax.swing.JButton;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
@@ -25,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicBorders;
 
 import org.openide.util.*;
 import org.openide.util.actions.CallableSystemAction;
@@ -44,6 +49,8 @@ import org.netbeans.core.projects.SettingChildren;
 import org.netbeans.core.projects.SessionManager;
 import org.netbeans.core.NbMainExplorer;
 import org.netbeans.core.NbPlaces;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.windows.Mode;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -56,39 +63,41 @@ import org.openide.awt.StatusDisplayer;
 public class OptionsAction extends CallableSystemAction {
 
     private static final String HELP_ID = "org.netbeans.core.actions.OptionsAction"; // NOI18N 
+    
+    /** Weak reference to the dialog showing singleton options. */
+    private Reference dialogWRef = new WeakReference(null);
+    
 
     public void performAction () {
         final OptionsPanel singleton = OptionsPanel.singleton();
         singleton.prepareNodes();
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                
-        // dock Options into its mode if needed
-        final Workspace w = WindowManager.getDefault().getCurrentWorkspace();
-        
-        Mode m = w.findMode(singleton);
-        boolean center = false;
-        if (m == null) {
-            m = w.createMode(OptionsPanel.MODE_NAME, singleton.getName(), null);
-            //Center only new window
-            center = true;
-        }
-        
         final OptionsPanel optionPanel = singleton;
-        final Mode mo = m;
-        final boolean centerLoc = center;
-                //Center only TOP_FRAME
-                if (centerLoc ) {
-                    //Bugfix #33888: Initialize GUI of optionPanel here to get correct
-                    //preferred size of Options window.
-                    optionPanel.componentShowing();
-                    mo.setBounds(Utilities.findCenterBounds(optionPanel.getPreferredSize()));
-                }
-                mo.dockInto(optionPanel);
+        Mutex.EVENT.readAccess(new Runnable() {
+            public void run() {
+                Dialog dialog = (Dialog)dialogWRef.get();
 
-                optionPanel.open();
-                optionPanel.requestFocus();
-                optionPanel.requestDefaultFocus();
+                if(dialog == null || !dialog.isShowing()) {
+                    JButton closeButton = new JButton(NbBundle.getMessage(OptionsAction.class, "CTL_close_button"));
+                    closeButton.setMnemonic(NbBundle.getMessage(OptionsAction.class, "CTL_close_button_mnemonic").charAt(0));
+                    closeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OptionsAction.class, "ACSD_close_button"));
+                    DialogDescriptor dd = new DialogDescriptor(
+                        optionPanel,
+                        optionPanel.getName(),
+                        false,
+                        new Object[] {closeButton},
+                        closeButton,
+                        DialogDescriptor.DEFAULT_ALIGN,
+                        null,
+                        null);
+                    
+                    dialog = DialogDisplayer.getDefault().createDialog(dd);
+                    dialog.show();
+                    dialogWRef = new WeakReference(dialog);
+                } else {
+                    dialog.toFront();
+                }
+                
+                org.openide.awt.StatusDisplayer.getDefault ().setStatusText (""); // NOI18N
             }
         }); // EQ.iL
     }
@@ -184,6 +193,8 @@ public class OptionsAction extends CallableSystemAction {
             
             split.setLeftComponent(view);
             split.setRightComponent(propertyView);
+            // install proper border for split pane
+            split.setBorder((Border)UIManager.get("Netbeans.ScrollPane.border")); // NOI18N
 
             setLayout (new java.awt.GridBagLayout ());
 
@@ -194,51 +205,51 @@ public class OptionsAction extends CallableSystemAction {
             gridBagConstraints.gridwidth = 2;
             add (split, gridBagConstraints);
 
-            javax.swing.JButton close = new javax.swing.JButton (NbBundle.getMessage (OptionsAction.class, "CTL_close_button"));
-            close.setMnemonic(NbBundle.getMessage (OptionsAction.class, "CTL_close_button_mnemonic").charAt(0));
-            close.setDefaultCapable (true);
-            gridBagConstraints = new GridBagConstraints ();
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 1;
-            gridBagConstraints.weightx = 1.0;
-            gridBagConstraints.weighty = 0;
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-            gridBagConstraints.insets.bottom = 11;
-            gridBagConstraints.insets.top = 11;
-            gridBagConstraints.insets.right = 0;
-            close.addActionListener (new ActionListener () {
-                public void actionPerformed (ActionEvent e) {
-                    singleton ().close ();
-                }
-            });
-            add (close, gridBagConstraints);
-
-            javax.swing.JButton help = new javax.swing.JButton (NbBundle.getMessage (OptionsAction.class, "CTL_help_button"));
-            help.setMnemonic(NbBundle.getMessage (OptionsAction.class, "CTL_help_button_mnemonic").charAt(0));
-            help.setMinimumSize (close.getMinimumSize ());
-            help.setMaximumSize (close.getMaximumSize ());
-            help.setPreferredSize (close.getPreferredSize ());
-            help.setSize (close.getSize ());
-            gridBagConstraints = new GridBagConstraints ();
-            gridBagConstraints.gridx = 1;
-            gridBagConstraints.gridy = 1;
-            gridBagConstraints.weightx = 0;
-            gridBagConstraints.weighty = 0;
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-            gridBagConstraints.insets.bottom = 11;
-            gridBagConstraints.insets.top = 11;
-            gridBagConstraints.insets.right = 11;
-            gridBagConstraints.insets.left = 5;
-            help.addActionListener (new ActionListener () {
-                public void actionPerformed (ActionEvent e) {
-                    org.netbeans.core.NbTopManager.get().showHelp (
-                            OptionsPanel.this.getHelpCtx ());
-                }
-            });
-            add (help, gridBagConstraints);
-            
-            close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (OptionsAction.class, "ACSD_close_button"));
-            help.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (OptionsAction.class, "ACSD_help_button"));
+//            javax.swing.JButton close = new javax.swing.JButton (NbBundle.getMessage (OptionsAction.class, "CTL_close_button"));
+//            close.setMnemonic(NbBundle.getMessage (OptionsAction.class, "CTL_close_button_mnemonic").charAt(0));
+//            close.setDefaultCapable (true);
+//            gridBagConstraints = new GridBagConstraints ();
+//            gridBagConstraints.gridx = 0;
+//            gridBagConstraints.gridy = 1;
+//            gridBagConstraints.weightx = 1.0;
+//            gridBagConstraints.weighty = 0;
+//            gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+//            gridBagConstraints.insets.bottom = 11;
+//            gridBagConstraints.insets.top = 11;
+//            gridBagConstraints.insets.right = 0;
+//            close.addActionListener (new ActionListener () {
+//                public void actionPerformed (ActionEvent e) {
+//                    singleton ().close ();
+//                }
+//            });
+//            add (close, gridBagConstraints);
+//
+//            javax.swing.JButton help = new javax.swing.JButton (NbBundle.getMessage (OptionsAction.class, "CTL_help_button"));
+//            help.setMnemonic(NbBundle.getMessage (OptionsAction.class, "CTL_help_button_mnemonic").charAt(0));
+//            help.setMinimumSize (close.getMinimumSize ());
+//            help.setMaximumSize (close.getMaximumSize ());
+//            help.setPreferredSize (close.getPreferredSize ());
+//            help.setSize (close.getSize ());
+//            gridBagConstraints = new GridBagConstraints ();
+//            gridBagConstraints.gridx = 1;
+//            gridBagConstraints.gridy = 1;
+//            gridBagConstraints.weightx = 0;
+//            gridBagConstraints.weighty = 0;
+//            gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+//            gridBagConstraints.insets.bottom = 11;
+//            gridBagConstraints.insets.top = 11;
+//            gridBagConstraints.insets.right = 11;
+//            gridBagConstraints.insets.left = 5;
+//            help.addActionListener (new ActionListener () {
+//                public void actionPerformed (ActionEvent e) {
+//                    org.netbeans.core.NbTopManager.get().showHelp (
+//                            OptionsPanel.this.getHelpCtx ());
+//                }
+//            });
+//            add (help, gridBagConstraints);
+//            
+//            close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (OptionsAction.class, "ACSD_close_button"));
+//            help.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (OptionsAction.class, "ACSD_help_button"));
             
             return view;
         }

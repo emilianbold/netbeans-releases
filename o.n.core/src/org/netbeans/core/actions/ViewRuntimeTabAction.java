@@ -14,38 +14,42 @@
 package org.netbeans.core.actions;
 
 import java.awt.event.ActionEvent;
+import java.awt.Image;
+import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 
-import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 import org.netbeans.core.NbMainExplorer;
 
 /**
- * Action which opend <code>CurrentProjectNode.ProjectsTab</code> default component.
+ * Action which opens <code>CurrentProjectNode.ProjectsTab</code> default (runtime tab) component.
  *
  * @author  Peter Zavadsky
  */
-public class ViewRuntimeTabAction extends SystemAction {
+public class ViewRuntimeTabAction extends AbstractAction
+implements HelpCtx.Provider {
+    
+
+    public ViewRuntimeTabAction() {
+        putValue(NAME, NbBundle.getMessage(ViewRuntimeTabAction.class,
+                "CTL_ViewRuntimeTabAction"));
+        Image image = Utilities.loadImage("org/netbeans/core/resources/environment.gif"); // NOI18N
+        putValue(SMALL_ICON, image != null ? new ImageIcon(image) : null);
+    }
+    
     
     public void actionPerformed(ActionEvent evt) {
         final TopComponent runtimeTab = NbMainExplorer.MainTab.createEnvironmentTab();
         runtimeTab.open();
-        runtimeTab.requestFocus();
+        runtimeTab.requestActive();
     }
     
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ViewRuntimeTabAction.class);
-    }
-
-    public String getName() {
-        return NbBundle.getMessage(ViewRuntimeTabAction.class,
-                "CTL_ViewRuntimeTabAction");
-    }
-    
-    protected String iconResource () {
-        return "org/netbeans/core/resources/environment.gif"; // NOI18N
     }
 
 }

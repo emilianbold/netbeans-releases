@@ -240,18 +240,17 @@ class HandleLayer extends JPanel
                 if (it.hasNext()) {
                     RADComponent comp = (RADComponent)it.next();
                     if (!it.hasNext()) { // just one component is selected
-                        CPManager palette = CPManager.getDefault();
-                        if (palette.getMode() == PaletteAction.MODE_SELECTION) {
+                        if (formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT) {
                             // in selection mode SPACE starts in-place editing
                             formDesigner.startInPlaceEditing(comp);
                         }
-                        else if (palette.getMode() == PaletteAction.MODE_ADD) {
+                        else if (formDesigner.getDesignerMode() == FormDesigner.MODE_ADD) {
                             // in add mode SPACE adds selected item as component
-                            PaletteItem item = palette.getSelectedItem();
+                            PaletteItem item = CPManager.getDefault().getSelectedItem();
                             formDesigner.getModel().getComponentCreator()
                                 .createComponent(item.getInstanceCookie(),
                                                  comp, null);
-                            palette.setMode(PaletteAction.MODE_SELECTION);
+                            formDesigner.toggleSelectionMode();
                         }
                     }
                 }
@@ -1006,7 +1005,7 @@ class HandleLayer extends JPanel
 
     private void showAddHint(RADComponent metacomp, Point p, PaletteItem item) {
         if ((!(metacomp instanceof RADVisualComponent) && metacomp != null)
-            || item.getItemClass() == null)
+            || item == null || item.getItemClass() == null)
         {
             StatusDisplayer.getDefault().setStatusText(""); // NOI18N
             return;
@@ -1090,8 +1089,7 @@ class HandleLayer extends JPanel
                 return;
 
             if (MouseUtils.isLeftMouseButton(e)) {
-                CPManager palette = CPManager.getDefault();
-                if (palette.getMode() == PaletteAction.MODE_SELECTION
+                if (formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT
                     && !endDragging(e.getPoint()))
                 {
                     if (draggingCanceled) {
@@ -1165,10 +1163,8 @@ class HandleLayer extends JPanel
                 lastLeftMousePoint = e.getPoint();
 
                 boolean modifier = e.isControlDown() || e.isAltDown() || e.isShiftDown();
-                CPManager palette = CPManager.getDefault();
-                int paletteMode = palette.getMode();
 
-                if (paletteMode == PaletteAction.MODE_SELECTION) {
+                if (formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT) {
                     checkResizing(e);
 
                     if (!e.isShiftDown() || e.isAltDown() || e.isControlDown()) {
@@ -1197,15 +1193,15 @@ class HandleLayer extends JPanel
                     draggingCanceled = false;
                 }
                 else if (!viewOnly) {
-                    if (paletteMode == PaletteAction.MODE_CONNECTION) {
+                    if (formDesigner.getDesignerMode() == FormDesigner.MODE_CONNECT) {
                         selectComponent(e);
                     }
-                    else if (paletteMode == PaletteAction.MODE_ADD) {
+                    else if (formDesigner.getDesignerMode() == FormDesigner.MODE_ADD) {
                         RADComponent hitMetaComp = getMetaComponentAt(
                             lastLeftMousePoint,
                             e.isAltDown() ? COMP_SELECTED : COMP_DEEPEST);
 
-                        PaletteItem item = palette.getSelectedItem();
+                        PaletteItem item = CPManager.getDefault().getSelectedItem();
                         Object constraints;
 
                         if (!item.isMenu() && item.isVisual()) {
@@ -1227,7 +1223,7 @@ class HandleLayer extends JPanel
                         }
 
                         if (!e.isShiftDown()) {
-                            palette.setMode(PaletteAction.MODE_SELECTION);
+                            formDesigner.toggleSelectionMode();
                             draggingCanceled = true;
                         }
                     }
@@ -1247,8 +1243,7 @@ class HandleLayer extends JPanel
             if (designerResizer != null) {
                 designerResizer.drag(e.getPoint());
             }
-            else if (CPManager.getDefault().getMode()
-                              == PaletteAction.MODE_SELECTION
+            else if (formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT
                      && !anyDragger()
                      && !draggingCanceled)
             {
@@ -1284,17 +1279,16 @@ class HandleLayer extends JPanel
         }
 
         public void mouseMoved(MouseEvent e) {
-            CPManager palette = CPManager.getDefault();
-            if (palette.getMode() == PaletteAction.MODE_ADD) {
+            if (formDesigner.getDesignerMode() == FormDesigner.MODE_ADD) {
                 RADComponent hitMetaComp =
                     getMetaComponentAt(e.getPoint(),
                                        e.isControlDown() || e.isAltDown() ?
                                            COMP_SELECTED : COMP_DEEPEST);
                 showAddHint(hitMetaComp,
                             e.getPoint(),
-                            palette.getSelectedItem());
+                            CPManager.getDefault().getSelectedItem());
             }
-            else if (palette.getMode() == PaletteAction.MODE_SELECTION)
+            else if (formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT)
                 checkResizing(e);
         }
     }

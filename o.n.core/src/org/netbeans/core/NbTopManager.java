@@ -241,17 +241,18 @@ public abstract class NbTopManager /*extends TopManager*/ {
     */
     public abstract boolean isInteractive (int il);
     
-    /** Allows subclasses to override this method and return different default set of nodes
-    * the should be "selected". If no top component is active then this method is called to
-    * allow the top manager to decide which nodes should be pointed as selected.
-    *
-    * @param activated true if the result cannot be null
-    * @return the array of nodes to return from TopComponent.getRegistry ().getSelectedNodes or
-    *    getActivatedNodes ()
-    */
-    public Node[] getDefaultNodes (boolean activated) {
-        return activated ? new Node[0] : null;
-    }
+    // XXX Seems to be needless, was used in RegistryImpl, but was dummy.
+//    /** Allows subclasses to override this method and return different default set of nodes
+//    * the should be "selected". If no top component is active then this method is called to
+//    * allow the top manager to decide which nodes should be pointed as selected.
+//    *
+//    * @param activated true if the result cannot be null
+//    * @return the array of nodes to return from TopComponent.getRegistry ().getSelectedNodes or
+//    *    getActivatedNodes ()
+//    */
+//    public Node[] getDefaultNodes (boolean activated) {
+//        return activated ? new Node[0] : null;
+//    }
     
     //
     // The main method allows access to registration service
@@ -437,6 +438,26 @@ public abstract class NbTopManager /*extends TopManager*/ {
         public void load();
         public void save();
     } // End of WindowSystem interface.
+    
+    public static boolean isModalDialogPresent() {
+        return hasModalDialog(WindowManager.getDefault().getMainWindow())
+            // XXX Trick to get the shared frame instance.
+            || hasModalDialog(new JDialog().getOwner());
+    }
+    
+    private static boolean hasModalDialog(Window w) {
+        Window[] ws = w.getOwnedWindows();
+        for(int i = 0; i < ws.length; i++) {
+            if(ws[i] instanceof Dialog && ((Dialog)ws[i]).isModal()) {
+                return true;
+            } else if(hasModalDialog(ws[i])) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
 
     
     private boolean doingExit=false;
@@ -457,8 +478,8 @@ public abstract class NbTopManager /*extends TopManager*/ {
                 Runnable hideFrames = new Runnable() {
                     public void run() {
                         if(windowSystem != null) {
-                            //Need to check if save can be called before hide - due to subjective performance
                             windowSystem.hide();
+                            windowSystem.save();
                         }
                         if (Boolean.getBoolean("netbeans.close.when.invisible")) {
                             // hook to permit perf testing of time to *apparently* shut down
@@ -624,54 +645,10 @@ public abstract class NbTopManager /*extends TopManager*/ {
 	 * @param url URL to be shown 
 	 */
 	private void showUrl (URL url) {
-	    if (Boolean.TRUE.equals (getClientProperty ("InternalBrowser"))) { // NOI18N
-                // XXX Ugly hack.
-                Dialog d = findTopModalDialog(WindowManager.getDefault().getMainWindow());
-                if(d == null) {
-                    // Try find out one from shared frame.
-                    // XXX Trick to get the shared frame instance.
-                    d = findTopModalDialog(new JDialog().getOwner());
-                }
-		if (d != null) {
-                    org.openide.awt.HtmlBrowser htmlViewer = new org.openide.awt.HtmlBrowser ();
-                    htmlViewer.setURL (url);
-                    JDialog d1 = new JDialog (d);
-                    d1.getContentPane ().add ("Center", htmlViewer); // NOI18N
-                    // [PENDING] if nonmodal, better for the dialog to be reused...
-                    // (but better nonmodal than modal here)
-                    d1.setModal (false);
-                    d1.setTitle (Main.getString ("CTL_Help"));
-                    d1.pack ();
-                    d1.show ();
-                    return;
-		}
-	    }
             open ();
             requestFocus ();
             setURL (url);
 	}
-
-        /** Finds top level modal dialog in the specified window hierarchy. */
-        private static Dialog findTopModalDialog(Window window) {
-            if(window == null) {
-                return null;
-            }
-            Window[] ownedWindows = window.getOwnedWindows();
-            for(int i = 0; i < ownedWindows.length; i++) {
-                Window w = ownedWindows[i];
-                if(w instanceof Dialog && ((Dialog)w).isModal()) {
-                    // Try find out whether the modal dialog doesn't own another one.
-                    Dialog d = findTopModalDialog(w);
-                    if(d != null) {
-                        return d;
-                    } else {
-                        return (Dialog)w;
-                    }
-                }
-            }
-            
-            return null;
-        }
         
         /* Deserialize this top component.
         * @param in the stream to deserialize from

@@ -40,6 +40,10 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+//import org.netbeans.core.windows.ModeImpl; // TEMP
+//import org.netbeans.core.windows.WellKnownModeNames; // TEMP
+//import org.netbeans.core.windows.WindowManagerImpl; // TEMP
+
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
@@ -113,9 +117,12 @@ public final class NbSheet extends TopComponent {
         // is docked in this mode
         // it's workaround, should be solved throgh some Mode API in future
         // # 16888. Properties sheet is in single mode in SDI only.
+//            putClientProperty(ModeImpl.NAMING_TYPE, ModeImpl.SDI_ONLY_COMP_NAME); // TEMP
         //Bugfix #36087: Fix naming type
         putClientProperty("NamingType", "BothOnlyCompName"); // NOI18N
         // Force winsys to not show tab when this comp will be alone
+//            putClientProperty(WindowManagerImpl.TopComponentManager.TAB_POLICY, 
+//                              WindowManagerImpl.TopComponentManager.HIDE_WHEN_ALONE); // TEMP
         putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
 
 
@@ -123,6 +130,9 @@ public final class NbSheet extends TopComponent {
         add(propertySheet, BorderLayout.CENTER);
 
         setIcon (Utilities.loadImage("org/netbeans/core/resources/frames/properties.gif")); // NOI18N
+
+        // #36738 Component has to have a name from begining.
+        updateTitle();
 
         // name listener and node listener
         listener = new Listener ();

@@ -33,61 +33,21 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-  
+
+<!--  
     <testbag testattribs="stable" executor="ide" name="testbag_1" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/windows/*.class"/>
-                <exclude name="org/netbeans/core/windows/LazyLoadingTest.class"/>
-                <exclude name="org/netbeans/core/windows/UIModeManagerTest.class"/>
-                <exclude name="org/netbeans/core/windows/APITests1.class"/>
             </patternset>
         </testset>
     </testbag>
+-->
 
     <testbag testattribs="stable" executor="ide" name="testbag_2" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/core/windows/layers/*.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-
-    <testbag testattribs="stable" executor="code" name="testbag_3" resultsprocessor="unit">
-        <testset dir="unit/src">
-            <patternset>
-            </patternset>
-        </testset>
-    </testbag>
-
-    <testbag testattribs="failing" executor="code" name="testbag_4" resultsprocessor="unit">
-        <testset dir="unit/src">
-            <patternset>
-            </patternset>
-        </testset>
-    </testbag>
-
-    <testbag testattribs="failing" executor="ide" name="testbag_5" resultsprocessor="unit">
-        <testset dir="unit/src">
-            <patternset>
-            </patternset>
-        </testset>
-    </testbag>
-
-    <testbag testattribs="stable" executor="ide" name="testbag_6" resultsprocessor="unit">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="org/netbeans/core/windows/LazyLoadingTest.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-
-    <testbag testattribs="stable" executor="ide" name="JellyTools_compatibility" resultsprocessor="unit">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="org/netbeans/core/windows/awt/TabControlTest.class"/>
-                <include name="org/netbeans/core/windows/frames/PerimeterPaneTest.class"/>
-                <include name="org/netbeans/core/windows/UIModeManagerTest.class"/>
+                <include name="org/netbeans/core/windows/persistence/*.class"/>
             </patternset>
         </testset>
     </testbag>

@@ -68,10 +68,16 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Menu">
-        <folder name="View">
-            <attr name="org-netbeans-core-actions-HTMLViewAction.instance/org-netbeans-modules-form-actions-FormEditorAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-form-actions-FormEditorAction.instance" />
-            <attr name="org-netbeans-modules-form-actions-FormEditorAction.instance/Separator2.instance" boolvalue="true" />
+        <folder name="Window">
+            <attr name="oldRootsEnd.txt/Form" boolvalue="true" />
+            <folder name="Form">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+                <file name="org-netbeans-modules-form-actions-PaletteAction.instance" />
+                <file name="org-netbeans-modules-form-actions-InspectorAction.instance" />
+                <attr name="org-netbeans-modules-form-actions-PaletteAction.instance/org-netbeans-modules-form-actions-InspectorAction.instance" boolvalue="true" />
+            </folder>
+            <attr name="Form/Debugger" boolvalue="true" />
         </folder>
 
         <folder name="Tools">
@@ -512,10 +518,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.palette.Bundle" />
             <attr name="defaultDisplayName" stringvalue="Large Palette" />
         </file>
-        <file name="org-netbeans-modules-form-palette-CPComponentSmall.instance">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.palette.Bundle" />
-            <attr name="defaultDisplayName" stringvalue="Small Palette" />
-        </file>
     </folder>
 
     <folder name="Templates">
@@ -707,64 +709,49 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Shortcuts">
+        <!--XXX Will be used by CVS Filesystems action
         <file name="C-8.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.form.actions.FormEditorAction"/>
-	</file>
+	</file>-->
         <file name="C-R.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.form.actions.ReloadAction"/>
+        </file>
+        
+        <file name="CS-1.shadow">
+            <attr name="originalFile" stringvalue="Menu/Window/Form/org-netbeans-modules-form-actions-PaletteAction.instance"/>
+        </file>
+        <file name="CS-2.shadow">
+            <attr name="originalFile" stringvalue="Menu/Window/Form/org-netbeans-modules-form-actions-InspectorAction.instance"/>
         </file>
     </folder>
 
 
     <!-- default workspaces, frames and their layout defined by core-->
-    <folder name="Windows">
-        <folder name="WindowManager">
-            <attr name="Visual/Debugging" boolvalue="true" />
-            <file name="Visual.wswksp" url="windowmanager/Visual.wswksp" />
-            <folder name="Visual">
-                <file name="explorer.wsmode" url="windowmanager/Visual/explorer.wsmode" />
-                <folder name="explorer">
-                    <attr name="filesystems.wstcref/runtime.wstcref" boolvalue="true" />
-                    <file name="filesystems.wstcref" url="windowmanager/Visual/explorer/filesystems.wstcref" />
-                    <file name="runtime.wstcref" url="windowmanager/Visual/explorer/runtime.wstcref" />
-                </folder>
-                <file name="properties.wsmode" url="windowmanager/Visual/properties.wsmode" />
-                <folder name="properties">
-                    <file name="properties.wstcref" url="windowmanager/Visual/properties/properties.wstcref" />
-                </folder>
-                <file name="output.wsmode" url="windowmanager/Visual/output.wsmode" />
-                <folder name="output">
-                    <file name="output.wstcref" url="windowmanager/Visual/output/output.wstcref" />
-                    <file name="execution.wstcref" url="windowmanager/Visual/output/execution.wstcref" />
-                </folder>
-                <file name="Form.wsmode" url="windowmanager/Visual/Form.wsmode" />
-                <folder name="Form">
-                    <file name="ComponentInspector.wstcref" url="windowmanager/Visual/Form/ComponentInspector.wstcref" />
-                    <file name="ComponentPalette.wstcref" url="windowmanager/Visual/Form/ComponentPalette.wstcref" />
-                </folder>
-                <file name="editor.wsmode" url="windowmanager/Visual/editor.wsmode" />
-                <folder name="editor">
-                </folder>
+    <folder name="Windows2">
+        <folder name="Modes">
+            <file name="inspector.wsmode" url="windowmanager/inspector.wsmode" />
+            <folder name="inspector">
+                <file name="ComponentInspector.wstcref" url="windowmanager/inspector/ComponentInspector.wstcref" />
             </folder>
-            <folder name="Editing">
-                <file name="Form.wsmode" url="windowmanager/Editing/Form.wsmode" />
-                <folder name="Form">
-                    <file name="ComponentInspector.wstcref" url="windowmanager/Editing/Form/ComponentInspector.wstcref" />
-                    <file name="ComponentPalette.wstcref" url="windowmanager/Editing/Form/ComponentPalette.wstcref" />
-                </folder>
-            </folder>
-            <folder name="Debugging">
-                <file name="Form.wsmode" url="windowmanager/Debugging/Form.wsmode" />
-                <folder name="Form">
-                    <file name="ComponentInspector.wstcref" url="windowmanager/Debugging/Form/ComponentInspector.wstcref" />
-                    <file name="ComponentPalette.wstcref" url="windowmanager/Debugging/Form/ComponentPalette.wstcref" />
-                </folder>
+            <file name="palette.wsmode" url="windowmanager/palette.wsmode" />
+            <folder name="palette">
+                <file name="ComponentPalette.wstcref" url="windowmanager/palette/ComponentPalette.wstcref" />
             </folder>
         </folder>
+
         <folder name="Components">
             <file name="ComponentInspector.settings" url="components/ComponentInspector.settings" />
             <file name="ComponentPalette.settings" url="components/ComponentPalette.settings" />
         </folder>
+
+        <folder name="Groups">
+            <file name="form.wsgrp" url="groups/form.wsgrp" />
+            <folder name="form">
+                <file name="ComponentInspector.wstcgrp" url="groups/form/ComponentInspector.wstcgrp" />
+                <file name="ComponentPalette.wstcgrp" url="groups/form/ComponentPalette.wstcgrp" />
+            </folder>
+        </folder>
+
     </folder>
 
 </filesystem>

@@ -1,0 +1,95 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+
+package org.netbeans.core.windows;
+
+
+import javax.swing.JSplitPane;
+
+/**
+ * Constants in window system.
+ *
+ * @author  Peter Zavadsky
+ */
+public abstract class Constants {
+    
+    /** Constant that identifies state of editor area */
+    public static final int EDITOR_AREA_JOINED    = 0;
+    public static final int EDITOR_AREA_SEPARATED = 1;
+    
+    /** Constant that identifies mode state. */
+    public static final int MODE_STATE_JOINED    = 0;
+    public static final int MODE_STATE_SEPARATED = 1;
+    
+    /** Constant that identifies mode kind */
+    public static final int MODE_KIND_EDITOR = 0;
+    public static final int MODE_KIND_VIEW   = 1;
+
+    /** Vertical orientation constant used in constraint. */
+    public static final int VERTICAL   = JSplitPane.VERTICAL_SPLIT;
+    /** Horizontal orientation constant used in constraint. */
+    public static final int HORIZONTAL = JSplitPane.HORIZONTAL_SPLIT;
+    
+    public static final String TOP    = JSplitPane.TOP;
+    public static final String BOTTOM = JSplitPane.BOTTOM;
+    public static final String LEFT   = JSplitPane.LEFT;
+    public static final String RIGHT  = JSplitPane.RIGHT;
+    
+    /** Sets size of divider */
+    public static final int DIVIDER_SIZE = 6;
+    
+    /** Sets size of drop area (when splitting mode and around area). */
+    public static final int DROP_AREA_SIZE = 20;
+    
+    /** How many pixels is necessary to drag to start the DnD. */ 
+    public static final int DRAG_GESTURE_START_DISTANCE = 10;
+    
+    // DnD drop ratios.
+    /** How big portion of the original mode has to be taken (range from 0.0 to 1.0). */
+    public static final double DROP_TO_SIDE_RATIO = 0.5D;
+    /** How big portion should take the new mode from each one (between which is dropped) (range from 0.0 to 1.0). */
+    public static final double DROP_BETWEEN_RATIO = 1.0D/3;
+    /** How big portion of entire area should take the dropped mode (range from 0.0 to 1.0). */
+    public static final double DROP_AROUND_RATIO = 0.25D;
+
+    
+    /** Name of client property (of Boolean type) which says whether the TopComponent is allowed
+     * to be docked anywhere (even crossing view-editor border). */
+    public static final String TOPCOMPONENT_ALLOW_DOCK_ANYWHERE = "TopComponentAllowDockAnywhere"; // NOI18N
+
+
+    // System properties (switches):
+    /** Allows user to move <code>TopComponent</code>S between document and view modes, 
+     * which is restricted otherwise. */
+    public static final boolean SWITCH_MODE_ADD_NO_RESTRICT = Boolean.getBoolean("netbeans.winsys.allow.dock.anywhere"); // NOI18N
+    /** Disables DnD of <code>TopComponent</code>S. */
+    public static final boolean SWITCH_DND_DISABLE          = Boolean.getBoolean("netbeans.winsys.disable_dnd"); // NOI18N
+    /** During DnD it provides nicer feedback (fading of possible drop), however performance is worsen in that case. */
+    public static final boolean SWITCH_DROP_INDICATION_FADE = Boolean.getBoolean("netbeans.winsys.dndfade.on"); //NOI18N
+    /** Uses the old tabbed components as container. */
+    public static final boolean SWITCH_OLD_TABS             = Boolean.getBoolean("netbeans.winsys.oldtabs"); // NOI18N
+    /** Uses the old tabbed components as copntainers for view modes. */
+    public static final boolean SWITCH_OLD_TABS_VIEW        = Boolean.getBoolean("netbeans.winsys.oldtabs.view"); // NOI18N
+    /** Uses the old tabbed components as copntainers for editor modes. */
+    public static final boolean SWITCH_OLD_TABS_EDITOR      = Boolean.getBoolean("netbeans.winsys.oldtabs.editor"); // NOI18N
+    /** Enables close button on old tabbed component, relevant only together with switches enabling the old tabs.. */
+    public static final boolean SWITCH_CLOSE_BUTTON_TAB     =  System.getProperty("netbeans.tab.close.button.enabled") == null // NOI18N
+                                                               ? true : Boolean.getBoolean("netbeans.tab.close.button.enabled"); // NOI18N
+    /** Gets the image resource to be used in the empty editor area. */
+    public static final String  SWITCH_IMAGE_SOURCE         = System.getProperty("netbeans.winsys.imageSource"); // NOI18N
+    
+    
+    private Constants() {}
+}
+

@@ -75,5 +75,7 @@ public class FormEditorModule extends ModuleInstall
         paths.remove(BEANINFO_PATH_AWT);
         paths.remove(BEANINFO_PATH_SWING);
         Introspector.setBeanInfoSearchPath((String[])paths.toArray(new String[paths.size()]));
+        
+        FormGroupActivator.uninstall();
     }
 }

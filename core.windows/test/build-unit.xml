@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -51,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Arguments which will be added into commandline of starting IDE. 
                  example: <property name="xtest.ide.commandline.suffix" value="-J-Dxtest.useclassloader=org.openidex.util"/>
           -->
-        <property name="xtest.ide.commandline.suffix" value=""/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Dxtest.useclassloader=org.netbeans.core.windows"/>
   	
         <!-- =========================== -->
         <!-- Setting avanced classpathes -->

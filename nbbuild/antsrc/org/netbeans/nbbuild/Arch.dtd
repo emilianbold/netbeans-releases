@@ -49,7 +49,7 @@ HTML contents of the document, with substitutions.
 
 <!ELEMENT api %Flow; >
 <!ATTLIST api
-          group (java|property|dtd|layer|java.io.File) 'java'
+          group (java|property|dtd|layer|java.io.File|javax.swing.UIManager) 'java'
           name NMTOKEN #REQUIRED
           type (import|export) #REQUIRED
           category %category; #REQUIRED

@@ -14,18 +14,22 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.beans.*;
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
+import javax.swing.border.*;
 
 import org.openide.*;
 import org.openide.windows.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.awt.UndoRedo;
+import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.form.palette.*;
+import org.netbeans.modules.form.actions.TestAction;
 import org.netbeans.modules.form.wizard.ConnectionWizard;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 
@@ -35,6 +39,7 @@ import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
  * ComponentLayer (presenting the components, not accessible to the user).
  *
  * FormDesigner
+ *  +- FormToolBar
  *  +- JScrollPane
  *      +- JLayeredPane
  *          +- HandleLayer
@@ -52,6 +57,8 @@ public class FormDesigner extends TopComponent
 
     private ComponentLayer componentLayer;
     private HandleLayer handleLayer;
+
+    private FormToolBar formToolBar;
 
     private InPlaceEditLayer textEditLayer;
     private FormProperty editedProperty;
@@ -72,6 +79,11 @@ public class FormDesigner extends TopComponent
 
     private final ArrayList selectedComponents = new ArrayList();
 
+    private int designerMode;
+    static final int MODE_SELECT = 0;
+    static final int MODE_CONNECT = 1;
+    static final int MODE_ADD = 2;
+
     private RADComponent connectionSource;
     private RADComponent connectionTarget;
 
@@ -88,12 +100,15 @@ public class FormDesigner extends TopComponent
     }
 
     FormDesigner(FormModel formModel) {
+        // XXX PENDING core/windows link
         // instruct winsys to save state of this top component only if opened
         putClientProperty("PersistenceType", "OnlyOpened"); // NOI18N
 
         setIcon(Utilities.loadImage(iconURL));
 
         formModelListener = new FormListener();
+
+        formToolBar = new FormToolBar(this);
 
         componentLayer = new ComponentLayer();
         handleLayer = new HandleLayer(this);
@@ -104,9 +119,12 @@ public class FormDesigner extends TopComponent
         layeredPane.add(handleLayer, new Integer(1001));
 
         setLayout(new BorderLayout());
+        add(formToolBar, BorderLayout.NORTH);
         add(new JScrollPane(layeredPane), BorderLayout.CENTER);
 
         setModel(formModel);
+        
+        FormGroupActivator.install();
     }
 
     public void initialize() {
@@ -209,6 +227,45 @@ public class FormDesigner extends TopComponent
                 }
             }
         );
+    }
+
+    // -------
+    // designer mode
+
+    void setDesignerMode(int mode) {
+        formToolBar.updateDesignerMode(mode);
+
+        if (mode == designerMode)
+            return;
+
+        designerMode = mode;
+
+        resetConnection();
+        if (mode == MODE_CONNECT)
+            clearSelection();
+    }
+
+    int getDesignerMode() {
+        return designerMode;
+    }
+
+    void toggleSelectionMode() {
+        setDesignerMode(MODE_SELECT);
+        CPManager.getDefault().setSelectedItem(null);
+    }
+
+    void toggleConnectionMode() {
+        setDesignerMode(MODE_CONNECT);
+        CPManager.getDefault().setSelectedItem(null);
+    }
+
+    void toggleAddMode() {
+        setDesignerMode(MODE_ADD);
+        CPManager.getDefault().setSelectedItem(null);
+    }
+
+    FormToolBar getFormToolBar() {
+        return formToolBar;
     }
 
     // -------
@@ -444,17 +501,19 @@ public class FormDesigner extends TopComponent
         catch (PropertyVetoException ex) {
             ex.printStackTrace();
         }
-            
+
         setActivatedNodes(selectedNodes);
     }
 
     void updateName(String name) {
+        setName(name);
+
         if (topDesignComponent != null
                 && topDesignComponent != formModel.getTopRADComponent())
             name += " / " + topDesignComponent.getName(); // NOI18N
-        if (formModel.isReadOnly())
-            name += " " + FormUtils.getBundleString("CTL_FormTitle_RO"); // NOI18N
-        setName(name);
+        String format = formModel.isReadOnly() ? "FMT_FormTitle_RO" : "FMT_FormTitle"; // NOI18N
+        name = FormUtils.getFormattedBundleString(format, new Object[] { name });
+        setDisplayName(name);
         setToolTipText(name);
     }
 
@@ -514,7 +573,7 @@ public class FormDesigner extends TopComponent
             if (metacomp == connectionSource) {
                 if (connectionTarget != null) {
                     resetConnection();
-                    CPManager.getDefault().setMode(PaletteAction.MODE_SELECTION);                    
+                    toggleSelectionMode();
                 }
                 return;
             }
@@ -524,7 +583,7 @@ public class FormDesigner extends TopComponent
                 if (connectionTarget != null) 
                     createConnection(connectionSource, connectionTarget);
 //                resetConnection();
-                CPManager.getDefault().setMode(PaletteAction.MODE_SELECTION);
+                toggleSelectionMode();
             }
         }
     }
@@ -702,9 +761,6 @@ public class FormDesigner extends TopComponent
                             initialize();
                             ComponentInspector.getInstance()
                                 .focusForm(formEditorSupport);
-
-                            if (formEditorSupport.getOpenedPanes() == null)
-                                formEditorSupport.open();
                         }
                     }
                 });
@@ -741,7 +797,7 @@ public class FormDesigner extends TopComponent
         ComponentInspector ci = ComponentInspector.getInstance();
         if (ci.getFocusedForm() != formEditorSupport) {
             ComponentInspector.getInstance().focusForm(formEditorSupport);
-            if (CPManager.getDefault().getMode() == PaletteAction.MODE_CONNECTION)
+            if (getDesignerMode() == MODE_CONNECT)
                 clearSelection();
             else
                 updateActivatedNodes();

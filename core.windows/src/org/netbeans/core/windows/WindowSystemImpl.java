@@ -15,16 +15,11 @@
 package org.netbeans.core.windows;
 
 
-import java.io.IOException;
-
 import org.netbeans.core.NbTopManager;
-import org.netbeans.core.windows.frames.ShortcutAndMenuKeyEventProcessor;
-import org.netbeans.core.windows.util.WindowUtils;
-
-import org.openide.ErrorManager;
 
 
 /**
+ * Implementation of WindowSystem interface (declared in core NbTopManager).
  *
  * @author  Peter Zavadsky
  */
@@ -35,29 +30,31 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
     }
     
     
-    public void show() {
-        ShortcutAndMenuKeyEventProcessor.install();
-        MainWindow.getDefault().showWindow();
+    // Persistence
+    /** Implements <code>NbTopManager.WindowSystem</code> interface method.
+     * Loads window system persistent data. */
+    public void load() {
+        PersistenceHandler.getDefault().load();
+    }
+    /** Implements <code>NbTopManager.WindowSystem</code> interface method. 
+     * Saves window system persistent data. */
+    public void save() {
+        PersistenceHandler.getDefault().save();
     }
     
+    // GUI
+    /** Implements <code>NbTopManager.WindowSystem</code> interface method. 
+     * Shows window system. */
+    public void show() {
+        ShortcutAndMenuKeyEventProcessor.install();
+        WindowManagerImpl.getInstance().setVisible(true);
+    }
+    /** Implements <code>NbTopManager.WindowSystem</code> interface method. 
+     * Hides window system. */
     public void hide() {
-        WindowManagerImpl wmi = WindowManagerImpl.getInstance();
-        //Bugfix #30281
-        wmi.setExitingIDE(true);
-        WindowUtils.hideAllFrames();
+        WindowManagerImpl.getInstance().setVisible(false);
         ShortcutAndMenuKeyEventProcessor.uninstall();
     }
     
-    public void load() {
-        MainWindow.getDefault().initialize();
-    }
-    
-    public void save() {
-        try {
-            PersistenceManager.getDefault().writeXMLWaiting ();
-        } catch(IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-        }
-    }
-   
 }
+

@@ -38,6 +38,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 
+
 /** Global IDE settings.
 *
 * @author Ian Formanek

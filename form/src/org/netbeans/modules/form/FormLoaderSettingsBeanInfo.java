@@ -105,10 +105,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                 new PropertyDescriptor(FormLoaderSettings.PROP_WORKSPACE,
                                        FormLoaderSettings.class,
                                        "getWorkspace", "setWorkspace"), // NOI18N
-                new PropertyDescriptor(FormLoaderSettings.PROP_SELECTED_PALETTE,
+                new PropertyDescriptor(FormLoaderSettings.PROP_PALETTE_IN_TOOLBAR,
                                        FormLoaderSettings.class,
-                                       "getSelectedPalette", // NOI18N
-                                       "setSelectedPalette"), // NOI18N
+                                       "isPaletteInToolBar", // NOI18N
+                                       "setPaletteInToolBar"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_CONTAINER_BEANS,
                                        FormLoaderSettings.class,
                                        "getContainerBeans", // NOI18N
@@ -198,9 +198,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[15].setPropertyEditorClass(WorkspaceEditor.class);
             desc[15].setExpert(true);
 
-            desc[16].setDisplayName(bundle.getString("PROP_SELECTED_PALETTE")); // NOI18N
-            desc[16].setShortDescription(bundle.getString("HINT_SELECTED_PALETTE")); // NOI18N
-            desc[16].setPropertyEditorClass(PalettesEditor.class);
+            desc[16].setDisplayName(bundle.getString("PROP_PALETTE_IN_TOOLBAR")); // NOI18N
+            desc[16].setShortDescription(bundle.getString("HINT_PALETTE_IN_TOOLBAR")); // NOI18N
 
             desc[17].setHidden(true);
 
