@@ -25,7 +25,6 @@ Microsystems, Inc. All Rights Reserved.
       <include name="${nb.system.dir}/ParserDB/servlet24.jc?"/>
     </patternset>
     <path id="cp">
-      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
       <pathelement location="${web/servletapi24.dir}/${nb.modules/autoload.dir}/ext/servlet-api-2.4.jar"/>

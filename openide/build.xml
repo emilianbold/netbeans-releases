@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="iso-8859-1"?><!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?><!-- -*- sgml-indent-step: 2 -*- -->
 <!--
                 Sun Public License Notice
 
@@ -12,10 +12,6 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!-- ToDo: modern compile can fail even within openide/src for the same -->
-<!-- reasons other modules need openide-13javac-workaround.jar! -->
-<!-- Not clear how to solve this. Try rerunning build if it happens. -->
-
 <project name="openide" default="netbeans" basedir=".">
   <import file="../nbbuild/default.xml"/>
 
@@ -28,94 +24,11 @@ Microsystems, Inc. All Rights Reserved.
     <path id="openide-cp">
       <!-- nothing -->
     </path>
-    <path id="openide-boot-cp">
-      <!-- XXX not nice to use undocumented property here: -->
-      <pathelement path="${sun.boot.class.path}"/>
-      <pathelement location="openide-13javac-workaround.jar"/>
-    </path>
-  </target>
-
-  <target name="compile-regular" depends="init">
-    <javac destdir="build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-      <src path="src" />
-      <src path="util/src" />
-      <src path="awt/src" />
-      
-      <bootclasspath refid="openide-boot-cp"/>
-      <classpath refid="openide-cp"/>
-    </javac>
-    <javac srcdir="windows/src" destdir="windows/build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-      <bootclasspath refid="openide-boot-cp"/>
-      <classpath refid="openide-cp"/>
-      <classpath>
-        <pathelement location="build/classes" />
-      </classpath>
-    </javac>
-    <javac srcdir="explorer/src" destdir="explorer/build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-      <bootclasspath refid="openide-boot-cp"/>
-      <classpath refid="openide-cp"/>
-      <classpath>
-        <pathelement location="build/classes" />
-      </classpath>
-    </javac>
-    <javac srcdir="windows/src" destdir="windows/build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4"> 
-      <bootclasspath refid="openide-boot-cp"/>
-      <classpath refid="openide-cp"/>
-      <classpath>
-        <pathelement location="build/classes" />
-      </classpath>
-    </javac>
-    <javac srcdir="explorer/src" destdir="explorer/build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-      <bootclasspath refid="openide-boot-cp"/>
-      <classpath refid="openide-cp"/>
-      <classpath>
-        <pathelement location="build/classes" />
-      </classpath>
-    </javac>
-  </target>
-
-  <target name="compile" depends="13javac-workaround,compile-regular"
-          description="Compile all source files but do not package them."/>
-
-  <target name="13javac-workaround" unless="usingAjc">
-    <!-- JDK 1.3 Javac at least on Linux has a serious bug as regards -->
-    <!-- situations where one package contains a public class and a public -->
-    <!-- inner class of the same name: though the inner class should be qualified -->
-    <!-- by its outer class, something gets confused and the compiler thinks -->
-    <!-- it cannot find the simple class whenever it is used. -->
-    <!-- Forcing use of 1.2 compiler is possible with -Dbuild.compiler=classic, -->
-    <!-- but this slows down builds, messes up Jikes users, and is not apparently -->
-    <!-- needed for all 1.3 Javac versions. Easier to ensure that the outer classes -->
-    <!-- appear in a separate JAR file at compile time, this assuages the compiler. -->
-    <!-- Cf. #4401373. -->
-    <!-- XXX this seems to be fixed in 1.4.2's javac, so delete this hack now -->
-    <mkdir dir="build/classes"/>
-    <javac srcdir="src" destdir="build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <!-- Compare inner classes of Actions: -->
-      <include name="org/openide/awt/ToolbarButton.java"/>
-      <include name="org/openide/awt/ToolbarToggleButton.java"/>
-      <!-- Compare inner class of RequestProcessor: -->
-      <include name="org/openide/util/Task.java"/>
-      <!-- Included because Task imports it: -->
-      <include name="org/openide/util/TaskListener.java"/>
-    </javac>
-    <jar jarfile="openide-13javac-workaround.jar"
-         basedir="build/classes"
-         compress="false">
-      <include name="org/openide/awt/ToolbarButton.class"/>
-      <include name="org/openide/awt/ToolbarButton$*.class"/>
-      <include name="org/openide/awt/ToolbarToggleButton.class"/>
-      <include name="org/openide/awt/ToolbarToggleButton$*.class"/>
-      <include name="org/openide/util/Task.class"/>
-      <include name="org/openide/util/Task$*.class"/>
-      <include name="org/openide/util/TaskListener.class"/>
-      <include name="org/openide/util/TaskListener$*.class"/>
-    </jar>
   </target>
 
   <!-- See #11746. -->
   <target name="vers-prep-1">
-    <uptodate targetfile="manifest-subst.mf" property="spec-vers-up-to-date">
+    <uptodate targetfile="build/manifest-subst.mf" property="spec-vers-up-to-date">
       <srcfiles dir=".">
         <include name="openide-spec-vers.properties"/>
       </srcfiles>
@@ -125,7 +38,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Either manifest-subst.mf is missing or openide-spec-vers.properties is newer. -->
     <delete>
       <fileset dir=".">
-        <include name="*-subst.mf"/>
+        <include name="build/*-subst.mf"/>
       </fileset>
     </delete>
   </target>
@@ -151,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="nbm" depends="netbeans">
-    <makenbm file="openide.nbm"
+    <makenbm file="build/openide.nbm"
              productdir="${netbeans.dest.dir}/${cluster.dir}"
              module="${nb.lib.dir}/openide.jar"
 	     homepage="http://openide.${homepage.base}/"
@@ -381,9 +294,9 @@ Microsystems, Inc. All Rights Reserved.
   <target name="jars-from-libs" depends="init,libs,vers-prep" description="Create JAR files from copied directories." unless="no-openide.jar">
     <property name="openide.jar" value="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openide.jar" />
     <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <copy file="manifest.mf" tofile="build/manifest-subst.mf" filtering="on"/>
     <!-- To find overlaps, use: zipinfo netbeans/lib/openide.jar|fgrep stor|cut -c21-29,54-|sort -k2|uniq|uniq -d -s9 -->
-    <jar jarfile="${openide.jar}" manifest="manifest-subst.mf" compress="false" duplicate="fail" >
+    <jar jarfile="${openide.jar}" manifest="build/manifest-subst.mf" compress="false" duplicate="fail" >
       <fileset dir="actions/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="awt/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <fileset dir="dialogs/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt" />
@@ -468,7 +381,7 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="text" />
   </target>        
 
-  <target name="lib-util" depends="13javac-workaround" >
+  <target name="lib-util">
         <ant dir="util" />
   </target>        
   
@@ -484,13 +397,13 @@ Microsystems, Inc. All Rights Reserved.
   <!-- JST-PENDING: Separate lookup as well and remove WeakSet, ErrorManager
         logging
         -->
-  <target name="lib-lookup" > <!--depends="compile,13javac-workaround,vers-prep,lookup-src" -->
+  <target name="lib-lookup" > <!--depends="vers-prep,lookup-src" -->
   <!-- JST-PENDING: Separate lookup or not?
-	<mkdir dir="standalone"/>
-        <copy file="openide-lookup.mf" tofile="openide-lookup-subst.mf" filtering="on"/>
+	<mkdir dir="build/standalone"/>
+        <copy file="openide-lookup.mf" tofile="build/openide-lookup-subst.mf" filtering="on"/>
         
-  	<jar jarfile="standalone/openide-lookup.jar"
-	     manifest="openide-lookup-subst.mf"
+  	<jar jarfile="build/standalone/openide-lookup.jar"
+	     manifest="build/openide-lookup-subst.mf"
 	     compress="false">
              <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
                   <include name="org/openide/ErrorManager*class"/>
@@ -506,8 +419,8 @@ Microsystems, Inc. All Rights Reserved.
   
   <!-- PENDING
   <target  name="lookup-src" description="Creates zip file with lookup sources.">
-    <mkdir dir="standalone"/>
-    <zip compress="true" zipfile="standalone/lookup-src.zip">
+    <mkdir dir="build/standalone"/>
+    <zip compress="true" zipfile="build/standalone/lookup-src.zip">
         <fileset dir="src">
             <include name="org/openide/ErrorManager.java"/>
             <include name="org/openide/util/lookup/*"/>
@@ -624,8 +537,6 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <property name="javadoc.web.root" value="http://www.netbeans.org/download/dev/javadoc"/>
     <property name="execution-docs-location" value="${javadoc.web.root}/ExecutionAPI"/>
     <property name="io-docs-location" value="${javadoc.web.root}/InputOutputAPI"/>
-    <!-- XXX delete (and @COMPILER@ token below too) when deprecated by Projects: -->
-    <property name="compiler-docs-location" value="${javadoc.web.root}/CompilerAPI"/>
     <property name="loaders-docs-location" value="${javadoc.web.root}/LoadersAPI"/>
     <property name="javahelp-docs-location" value="${javadoc.web.root}/JavaHelpAPI"/>
     <property name="java-api-docs-location" value="${javadoc.web.root}/JavaSupportAPIs"/>
@@ -706,7 +617,6 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       <replacefilter token="@JDK@" value="${jdk-docs-location}"/>
       <replacefilter token="@OPENIDE/EXECUTION@" value="${execution-docs-location}"/>
       <replacefilter token="@OPENIDE/IO@" value="${io-docs-location}"/>
-      <replacefilter token="@OPENIDE/COMPILER@" value="${compiler-docs-location}"/>
       <replacefilter token="@OPENIDE/LOADERS@" value="${loaders-docs-location}"/>
       <replacefilter token="@CORE/JAVAHELP@" value="${javahelp-docs-location}"/>
       <replacefilter token="@JAVA/API@" value="${java-api-docs-location}"/>
@@ -796,7 +706,8 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
   </target>
 
   <target name="nb-api-tutorial" description="Make Open APIs Getting Started Tutorial.">
-    <zip zipfile="nb-api-tutorial.zip">
+    <mkdir dir="build"/>
+    <zip zipfile="build/nb-api-tutorial.zip">
       <fileset dir="api/doc/tutorial">
         <exclude name="README.txt"/>
       </fileset>
@@ -806,26 +717,17 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
   <target name="clean" description="Remove all build products." depends="init,libs-clean">
     <delete dir="build"/>
     <delete>
-      <fileset dir=".">
-        <include name="*-subst.mf"/>
-      </fileset>
       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
         <patternset refID="openide.files"/>
       </fileset>
     </delete>
-    <delete file="openide-13javac-workaround.jar"/>
     <delete dir="javadoc"/>
-    <delete file="nb-api-tutorial.zip"/>
-    <!-- PENDING
-    <delete dir="standalone"/>
-    -->
-    <delete file="openide.nbm"/>
     <ant dir="api/examples" target="clean"/>
   </target>
 
     <target  name="standalone-fs" depends="standalone-fs-prepare" description="Creates ZIP file suitable for download. ZIP file contains all JARs necessary for using standalone filesystems (excluding a JAXP implementation).">
-        <zip compress="true" zipfile="standalone/nbfilesystems.zip">
-            <fileset dir="standalone">
+        <zip compress="true" zipfile="build/standalone/nbfilesystems.zip">
+            <fileset dir="build/standalone">
                 <include name="openide-fs.jar"/>
                 <include name="openide-util.jar"/>
                 <include name="openide-lookup.jar"/>
@@ -841,8 +743,8 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     </target>
 
     <target name="standalone-fs-prepare" depends="lib-util,lib-fs">
-        <mkdir dir="standalone"/>
-        <echo file="standalone/README-FS.txt"><![CDATA[Filesystems Library
+        <mkdir dir="build/standalone"/>
+        <echo file="build/standalone/README-FS.txt"><![CDATA[Filesystems Library
 ===================
 
 Please visit the documentation at http://openide.netbeans.org/fs/

@@ -23,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
 
             <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
             <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
-            <pathelement location="../../openide/openide-13javac-workaround.jar"/>
             <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
             <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
             <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>
@@ -41,7 +40,6 @@ Microsystems, Inc. All Rights Reserved.
 
             <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
             <pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
-            <pathelement location="../../openide/openide-13javac-workaround.jar"/>
             <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
             <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
             <pathelement location="${java/srcmodel.dir}/${nb.modules.dir}/org-openide-src.jar"/>

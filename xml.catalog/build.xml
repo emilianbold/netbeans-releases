@@ -27,7 +27,6 @@ Microsystems, Inc. All Rights Reserved.
           <include name="${nb.modules.dir}/ext/resolver-1_1_nb.jar"/>
         </patternset>
         <path id="cp">
-          <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
           <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
           <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
           <pathelement location="${xml/api.dir}/${nb.modules/autoload.dir}/xml-api.jar"/>

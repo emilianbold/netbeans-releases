@@ -175,7 +175,6 @@ Microsystems, Inc. All Rights Reserved.
 	         If you need e.g. your tested module, write this:
 	           <pathelement location="${netbeans.home}/modules/somemodule.jar"/>
  	      -->
-            <pathelement location="../../xtest/lib/openide-13javac-workaround.jar"/>  
 	    <pathelement location="${netbeans.home}/modules/editor.jar"/>
 	    <pathelement location="${netbeans.home}/modules/ext/nb-editor.jar"/>
             <pathelement location="${netbeans.home}/lib/openide.jar"/>

@@ -23,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
     </patternset>
     <path id="cp">
         <pathelement location="${jdkhome}/lib/tools.jar"/>
-        <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${openide/io.dir}/${nb.modules.dir}/org-openide-io.jar"/>
         <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
         <pathelement location="${openide/execution/deprecated.dir}/${nb.modules.dir}/org-openide-execution-deprecated.jar"/>

@@ -21,7 +21,6 @@ Microsystems, Inc. All Rights Reserved.
       <include name="${nb.modules/bin.dir}/extbrowser.dll"/>
     </patternset>
     <path id="cp">
-      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
       <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
     </path>

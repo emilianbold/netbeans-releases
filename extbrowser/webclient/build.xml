@@ -32,7 +32,6 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/netbeans/modules/webclient/"/>
       <classpath>
         <!--<pathelement location="patches"/>-->
-	<pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
         <fileset dir="../../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>

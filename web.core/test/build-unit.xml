@@ -64,7 +64,6 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.ide.commandline.suffix" value=""/>
 
     	<path id="compiletest.classpath">        
-    		<pathelement location="${xtest.home}/lib/openide-13javac-workaround.jar"/>
 	        <pathelement location="${netbeans.home}/lib/core.jar"/>
 	        <fileset dir="${netbeans.home}/lib">
                     <include name="openide*.jar"/>

@@ -21,7 +21,6 @@ Microsystems, Inc. All Rights Reserved.
       <include name="${nb.modules.dir}/jspdebug.jar"/>
     </patternset>
     <path id="cp">
-        <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
         <pathelement location="${openidex.dir}/${nb.modules.dir}/org-openidex-util.jar"/>
         <pathelement location="${editor.dir}/${nb.modules.dir}/editor.jar"/>

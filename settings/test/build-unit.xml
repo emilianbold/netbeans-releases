@@ -148,7 +148,6 @@ Microsystems, Inc. All Rights Reserved.
 	    <!-- If you need e.g. openide.jar, write this:
 	           <pathelement location="../netbeans/lib/openide.jar"/>
  	      -->
-            <pathelement location="../../../openide/openide-13javac-workaround.jar"/>
             <fileset dir="../../../openide/netbeans/lib">
               <include name="openide*.jar" />
             </fileset>
@@ -167,7 +166,6 @@ Microsystems, Inc. All Rights Reserved.
 	           <pathelement location="../src"/>
  	      -->
 	    <pathelement location="../src"/>
-            <pathelement location="../../../openide/openide-13javac-workaround.jar"/>
             <fileset dir="../../../openide/netbeans/lib">
               <include name="openide*.jar" />
             </fileset>
@@ -186,7 +184,6 @@ Microsystems, Inc. All Rights Reserved.
 	           <pathelement location="${netbeans.home}/modules/somemodule.jar"/>
  	      -->
             <pathelement location="../netbeans/modules/org-netbeans-modules-settings.jar"/>
-            <pathelement location="../../../openide/openide-13javac-workaround.jar"/>
             <fileset dir="../../../openide/netbeans/lib">
               <include name="openide*.jar" />
             </fileset>

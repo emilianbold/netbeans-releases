@@ -22,7 +22,6 @@ Microsystems, Inc. All Rights Reserved.
       <include name="${nb.modules.dir}/ext/httpmonitor.jar"/>
     </patternset>
     <path id="core-cp">
-      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
       <pathelement location="${schema2beans/rt.dir}/${nb.modules/autoload.dir}/schema2beans.jar"/>

@@ -147,7 +147,6 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Using srcs classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against sources -->
     	<path id="compiletest.classpath">        
-	        <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
 	        <pathelement location="../../src"/>
                 <pathelement location="../src"/>
                 <pathelement location="../../libsrc"/>
@@ -170,7 +169,6 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Using IDE classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against installed IDE -->
     	<path id="compiletest.classpath">        
-    		<pathelement location="${xtest.home}/lib/openide-13javac-workaround.jar"/>
 	        <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
 		<pathelement location="${core.dir}/${nb.lib/ext.dir}/boot.jar"/>
                 <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>

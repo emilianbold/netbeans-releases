@@ -37,7 +37,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
-        <pathelement location="../openide/openide-13javac-workaround.jar"/>
         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar" />
         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar" />
         <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar" />

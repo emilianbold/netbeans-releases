@@ -22,11 +22,6 @@ Microsystems, Inc. All Rights Reserved.
       <include name="${nb.beans.dir}/TimerBean.jar"/>
       <include name="${nb.sources.dir}/org/netbeans/examples/lib/timerbean/**"/>
     </patternset>
-    <path id="cp">
-      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
-      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-    </path>
   </target>
 
   <target name="jars" depends="init">

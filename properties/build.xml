@@ -31,12 +31,10 @@ Microsystems, Inc. All Rights Reserved.
       <include name="${nb.modules/eager.dir}/properties-syntax.jar"/>
     </patternset>
     <path id="properties-nosyntax-cp">
-      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
     </path>
     <path id="properties-syntax-cp">
-      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
       <pathelement location="${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
       <pathelement location="${editor.dir}/${nb.modules.dir}/editor.jar"/>

@@ -138,8 +138,6 @@ ToDo:
         <pathelement location="src"/>
       </sourcepath>
       <classpath>
-
-	<pathelement location="../../openide/openide-13javac-workaround.jar"/>
         <pathelement location="${jdkhome}/lib/tools.jar"/>
         <pathelement location="../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
         <fileset dir="../../openide/netbeans/lib">

@@ -24,7 +24,6 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="external" target="unscramble"/>
 
     <path id="cp">
-      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
       <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
       <fileset dir="external">
