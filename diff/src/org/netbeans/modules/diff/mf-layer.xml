@@ -13,14 +13,15 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
-  <folder name="Services"> 
-    <!--
-    <file name="org-netbeans-modules-diff-DiffSettings.settings" url="DiffSettings.settings">
-      <attr name="SystemFileSystem.layer" stringValue="project"/>
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
-      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
-    </file>
-    -->
+  <folder name="Services">
+    <folder name="Hidden"> 
+      <file name="org-netbeans-modules-diff-DiffSettings.settings" url="DiffSettings.settings">
+        <attr name="SystemFileSystem.layer" stringValue="project"/>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
+      </file>
+    </folder>
+
     <file name="org-netbeans-modules-diff-DiffSettingsNode.instance">
       <attr name="SystemFileSystem.layer" stringValue="project"/>
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
