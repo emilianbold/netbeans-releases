@@ -167,6 +167,10 @@
 <mapID target="editor.quickref" url="editing/editor_quickref.html" />
 <mapID target="editor.navigation" url="editing/editor_navigation.html" />
 <mapID target="editor.smart-brackets" url="editing/editor_smart-brackets.html" />
+
+<!--also CSH for Print Fonts and Colors dialog box (called from Print Fonts and Colors properties of the various editors 
+under Print Settings in the Options window) and for Fonts and Colors dialog box
+(called from Fonts and Colors properties of the various editors under Editor Settings)-->
 <mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
 <!--also CSH for edit keybindings dialog box (called from Key Bindings properties of the various editors in 
 the Options window:-->
