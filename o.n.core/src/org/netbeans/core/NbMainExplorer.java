@@ -282,10 +282,15 @@ public final class NbMainExplorer extends CloneableTopComponent
         return result;
     }
 
+    //Temporary solution for bugfix #9352. There is currently
+    //no way how to select given tab other than focused in splitted container.
+    //It requires better solution.
+    //Method changed from private to public so it can be used in DefaultCreator.
+    
     /** @return List of "root" nodes which has following structure:<br>
     * First goes repository, than root nodes added by modules and at last
     * runtime root node */
-    private static List getRoots () {
+    public static List getRoots () {
         Places.Nodes ns = TopManager.getDefault().getPlaces().nodes();
         // build the list of roots
         LinkedList result = new LinkedList();
@@ -362,10 +367,15 @@ public final class NbMainExplorer extends CloneableTopComponent
         in.readInt();
     }
 
+    //Temporary solution for bugfix #9352. There is currently
+    //no way how to select given tab other than focused in splitted container.
+    //It requires better solution.
+    //Method changed from package to public so it can be used in DefaultCreator.
+    
     /** Finds the right panel for given node.
     * @return the panel or null if no such panel exists
     */
-    final ExplorerTab getRootPanel (Node root) {
+    public final ExplorerTab getRootPanel (Node root) {
         return (ExplorerTab)rootsToTCs().get(root);
     }
 
