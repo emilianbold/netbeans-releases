@@ -49,8 +49,9 @@ Microsystems, Inc. All Rights Reserved.
     </target>
         
     <target name="version" description="Shows version of XTest">
+        <property name="xtest.jar" value="${xtest.home}/lib/xtest.jar"/>
         <taskdef name="version" classname="org.netbeans.xtest.XTestVersion" 
-                 classpath="${xtest.home}/lib/xtest.jar"/>
+                 classpath="${xtest.jar}"/>
         <version/>
     </target>    
     
