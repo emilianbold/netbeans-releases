@@ -96,7 +96,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
 	throws BadLocationException {	   
 	    // TODO - replanning to the other thread. Now it's in awt thread
 	    TokenItem token = getTokenChain(offset, offset+1);
-            
+            TokenItem tokenOnOffset = token;
             // if the carret is after HTML tag ( after char '>' ), ship inside the tag
             if (token != null && token.getTokenID().getNumericID() == HTMLTokenContext.TAG_CLOSE_SYMBOL_ID)
                 token = token.getPrevious();
@@ -209,7 +209,42 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
 		    }
 		}
 	    }
-	    return null;
+            
+            //match html comments
+            if(tokenOnOffset.getTokenID() == HTMLTokenContext.BLOCK_COMMENT) {
+                String tokenImage = tokenOnOffset.getImage();
+                TokenItem toki = tokenOnOffset;
+                if(tokenImage.startsWith("<!--") && (offset < (tokenOnOffset.getOffset()) + "<!--".length())) { //NOI18N
+                    //start html token - we need to find the end token of the html comment
+                    while(toki != null) {
+                        if((toki.getTokenID() == HTMLTokenContext.BLOCK_COMMENT)) {
+                            if(toki.getImage().endsWith("-->")) { //NOI18N
+                                //found end token
+                                int start = toki.getOffset() + toki.getImage().length() - "-->".length(); //NOI18N
+				int end = toki.getOffset() + toki.getImage().length();
+                                return new int[] {start, end};
+                            }
+                        } else break;
+                        toki = toki.getNext();
+                    }
+                }
+                if(tokenImage.endsWith("-->") && (offset >= (tokenOnOffset.getOffset()) + tokenOnOffset.getImage().length() - "-->".length())) { //NOI18N
+                    //end html token - we need to find the start token of the html comment
+                    while(toki != null) {
+                        if((toki.getTokenID() == HTMLTokenContext.BLOCK_COMMENT)) {
+                            if(toki.getImage().startsWith("<!--")) { //NOI18N
+                                //found end token
+                                int start = toki.getOffset();
+				int end = toki.getOffset() + "<!--".length(); //NOI18N
+                                return new int[] {start, end};
+                            }
+                        } else break;
+                        toki = toki.getPrevious();
+                    }
+                }
+            } //eof match html comments
+
+            return null;
     }
     
     /** Finds out whether the given tagTokenItem is a part of a singleton tag (e.g. <div style=""/>).
