@@ -41,7 +41,7 @@ class MetaLayout extends RADComponent {
         setBeanInstance(lmInstance);
     }
 
-    protected void createCodeExpressionElement() {
+    protected void createCodeExpression() {
     }
 
     protected void createPropertySets(java.util.List propSets) {
