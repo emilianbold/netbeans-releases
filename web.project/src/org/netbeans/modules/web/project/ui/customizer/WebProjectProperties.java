@@ -61,7 +61,7 @@ import org.w3c.dom.Text;
 public class WebProjectProperties {
     
     // Special properties of the project
-    public static final String J2SE_PROJECT_NAME = "j2se.project.name";
+    public static final String WEB_PROJECT_NAME = "web.project.name";
     public static final String JAVA_PLATFORM = "platform.active";
     public static final String J2EE_PLATFORM = "j2ee.platform";
     
@@ -129,7 +129,7 @@ public class WebProjectProperties {
     
     // Info about the property destination
     private PropertyDescriptor PROPERTY_DESCRIPTORS[] = {
-        new PropertyDescriptor( J2SE_PROJECT_NAME, null, STRING_PARSER ),
+        new PropertyDescriptor( WEB_PROJECT_NAME, null, STRING_PARSER ),
         new PropertyDescriptor( J2EE_PLATFORM, PROJECT, STRING_PARSER ),
                 
         new PropertyDescriptor( SOURCE_ROOT, PROJECT, STRING_PARSER ),
@@ -297,8 +297,8 @@ public class WebProjectProperties {
             PropertyDescriptor pd = PROPERTY_DESCRIPTORS[i];
             if ( pd.dest == null ) {
                 // Specialy handled properties
-                if ( J2SE_PROJECT_NAME.equals( pd.name ) ) {
-                    String projectName = antProjectHelper.getDisplayName();
+                if ( WEB_PROJECT_NAME.equals( pd.name ) ) {
+                    String projectName = ProjectUtils.getInformation(project).getDisplayName();
                     properties.put( pd.name, new PropertyInfo( pd, projectName, projectName ) );            
                 }
             }
@@ -331,8 +331,10 @@ public class WebProjectProperties {
                         String newValueEncoded = pi.getNewValueEncoded();
                         if( pd.dest == null && newValueEncoded != null ) {
                             // Specialy handled properties
-                            if (J2SE_PROJECT_NAME.equals(pd.name))
-                                antProjectHelper.setDisplayName(newValueEncoded);
+                            if (WEB_PROJECT_NAME.equals(pd.name)) {
+                                String newName = newValueEncoded;
+                                assert false : "No support yet for changing name of J2SEProject; cf. J2SEProject.setName";
+                            }
                         }   
                         if ( JAVA_PLATFORM.equals( pd.name) && newValueEncoded != null ) {
                             setPlatform( pi.getNewValueEncoded().equals(

@@ -18,6 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <xsd:element name="data">
         <xsd:complexType>
             <xsd:sequence>
+                <xsd:element name="name" type="xsd:token"/>
                 <xsd:element name="minimum-ant-version" minOccurs="0">
                     <xsd:simpleType>
                         <xsd:restriction base="xsd:NMTOKEN">

@@ -179,8 +179,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         String name = projectNameTextField.getText().trim();
         
         d.putProperty(WizardProperties.PROJECT_DIR, new File(createdFolderTextField.getText().trim()));
-        d.putProperty(WizardProperties.DISPLAY_NAME, name);
-        d.putProperty(WizardProperties.CODE_NAME, PropertyUtils.getUsablePropertyName(name));
+        d.putProperty(WizardProperties.NAME, name);
         
         File projectsDir = new File(this.projectLocationTextField.getText());
         if (projectsDir.isDirectory()) {
@@ -197,7 +196,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         
         projectLocationTextField.setText(projectLocation.getAbsolutePath());
         
-        String projectName = (String) settings.getProperty(WizardProperties.DISPLAY_NAME);
+        String projectName = (String) settings.getProperty(WizardProperties.NAME);
         if (projectName == null) {
             int baseCount = FoldersListSettings.getDefault().getNewProjectCount() + 1;
             String formater = NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NPW1_DefaultProjectName");

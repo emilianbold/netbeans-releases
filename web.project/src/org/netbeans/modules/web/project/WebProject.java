@@ -64,7 +64,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -73,10 +72,15 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 import org.netbeans.modules.web.project.queries.SourceLevelQueryImpl;
+import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  * Represents one plain Web project.
@@ -283,6 +287,50 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             });
     }
     
+    /** Return configured project name. */
+    public String getName() {
+        return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
+            public Object run() {
+                Element data = helper.getPrimaryConfigurationData(true);
+                // XXX replace by XMLUtil when that has findElement, findText, etc.
+                NodeList nl = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                if (nl.getLength() == 1) {
+                    nl = nl.item(0).getChildNodes();
+                    if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
+                        return ((Text) nl.item(0)).getNodeValue();
+                    }
+                }
+                return "???"; // NOI18N
+            }
+        });
+    }
+    
+    /** Store configured project name. * /
+    public void setName(final String name) {
+        ProjectManager.mutex().writeAccess(new Mutex.Action() {
+            public Object run() {
+                Element data = helper.getPrimaryConfigurationData(true);
+                // XXX replace by XMLUtil when that has findElement, findText, etc.
+                NodeList nl = data.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                Element nameEl;
+                if (nl.getLength() == 1) {
+                    nameEl = (Element) nl.item(0);
+                    NodeList deadKids = nameEl.getChildNodes();
+                    while (deadKids.getLength() > 0) {
+                        nameEl.removeChild(deadKids.item(0));
+                    }
+                } else {
+                    nameEl = data.getOwnerDocument().createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                    data.insertBefore(nameEl, / * OK if null * /data.getChildNodes().item(0));
+                }
+                nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
+                helper.putPrimaryConfigurationData(data, true);
+                return null;
+            }
+        });
+    }
+     */
+    
     // Private innerclasses ----------------------------------------------------
     
     private final class Info implements ProjectInformation {
@@ -296,11 +344,11 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         }
         
         public String getName() {
-            return helper.getName();
+            return WebProject.this.getName();
         }
         
         public String getDisplayName() {
-            return helper.getDisplayName();
+            return WebProject.this.getName();
         }
         
         public Icon getIcon() {
@@ -425,8 +473,8 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                     return null;
                 }
             });
-            if (WebPhysicalViewProvider.hasBrokenLinks(evaluator())) {
-                showBrokenReferencesAlert();
+            if (WebPhysicalViewProvider.hasBrokenLinks(helper, refHelper)) {
+                BrokenReferencesSupport.showAlert();
             }
         }
         

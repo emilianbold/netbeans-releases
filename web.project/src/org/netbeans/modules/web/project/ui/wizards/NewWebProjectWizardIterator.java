@@ -67,12 +67,11 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
     public Set instantiate() throws IOException {
         Set resultSet = new HashSet();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
-        String codename = (String) wiz.getProperty(WizardProperties.CODE_NAME);
-        String displayName = (String) wiz.getProperty(WizardProperties.DISPLAY_NAME);
+        String name = (String) wiz.getProperty(WizardProperties.NAME);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
         
-        AntProjectHelper h = WebProjectGenerator.createProject(dirF, codename, displayName, j2eeLevel, contextPath);
+        AntProjectHelper h = WebProjectGenerator.createProject(dirF, name, j2eeLevel, contextPath);
         try {
             FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
             FileObject indexJSPFo = getIndexJSPFO(webRoot, "index"); //NOI18N
@@ -125,8 +124,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
     }
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty(WizardProperties.PROJECT_DIR,null);
-        this.wiz.putProperty(WizardProperties.CODE_NAME,null);
-        this.wiz.putProperty(WizardProperties.DISPLAY_NAME,null);
+        this.wiz.putProperty(WizardProperties.NAME,null);
         this.wiz = null;
         panels = null;
     }

@@ -38,7 +38,7 @@ is divided into following sections:
 
 ]]></xsl:comment>
 
-        <xsl:variable name="name" select="/p:project/p:name"/>
+        <xsl:variable name="name" select="/p:project/p:configuration/web:data/web:name"/>
         <project name="{$name}-impl">
             <xsl:attribute name="default">build</xsl:attribute>
             <xsl:attribute name="basedir">..</xsl:attribute>

@@ -90,8 +90,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         File dirSrcF = (File) wiz.getProperty (WizardProperties.SOURCE_ROOT);
-        String codename = (String) wiz.getProperty(WizardProperties.CODE_NAME);
-        String displayName = (String) wiz.getProperty(WizardProperties.DISPLAY_NAME);
+        String name = (String) wiz.getProperty(WizardProperties.NAME);
         String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
         String docBaseName = (String) wiz.getProperty(WizardProperties.DOC_BASE);
         String javaRootName = (String) wiz.getProperty(WizardProperties.JAVA_ROOT);
@@ -125,7 +124,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         
         String buildfile = getBuildfile();
         
-        WebProjectGenerator.importProject (dirF, codename, displayName, wmFO, javaRoot, docBase, libFolder, WebModule.J2EE_14_LEVEL, buildfile); //PENDING detect spec level
+        WebProjectGenerator.importProject (dirF, name, wmFO, javaRoot, docBase, libFolder, WebModule.J2EE_14_LEVEL, buildfile); //PENDING detect spec level
         FileObject dir = FileUtil.toFileObject (dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
         
@@ -413,8 +412,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
 
             d.putProperty(WizardProperties.PROJECT_DIR, new File(panel.createdFolderTextField.getText()));
             d.putProperty(WizardProperties.SOURCE_ROOT, new File(moduleLoc));
-            d.putProperty(WizardProperties.DISPLAY_NAME, name);
-            d.putProperty(WizardProperties.CODE_NAME, name.replace(' ', '-')); //NOI18N
+            d.putProperty(WizardProperties.NAME, name);
             d.putProperty(WizardProperties.CONTEXT_PATH, contextPath);
 
             if (moduleLoc.length() > 0) {
