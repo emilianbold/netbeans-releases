@@ -17,6 +17,10 @@ Microsystems, Inc. All Rights Reserved.
 <!-- -Djdkdocs=.../api (optional) -->
 <!-- Special targets: apiexamples, open-apis -->
 
+<!-- ToDo: modern compile can fail even within openide/src for the same -->
+<!-- reasons other modules need openide-13javac-workaround.jar! -->
+<!-- Not clear how to solve this. Try rerunning build if it happens. -->
+
 <project name="openide" default="netbeans" basedir=".">
 
   <property name="jdkdocs" value="public"/>
