@@ -1391,6 +1391,15 @@ public class MonitorFilter extends Logger implements Filter {
             try {
                 if(value == null) {
                     valueRep = ResourceBundle.getBundle("org.netbeans.modules.web.monitor.server.Bundle").getString("MON_Warning_attributes"); //NOI18N
+                } else if (value.getClass().isArray()) {
+                    Object[] valueItems = (Object[])value;
+                    StringBuffer sb = new StringBuffer(valueItems.length * 16);
+                    if (valueItems.length > 0) sb.append(valueItems[0]);
+                    for(int i=1; i < valueItems.length; i++) {
+                        sb.append(", "); // NOI18N
+                        sb.append(valueItems[i]);
+                    }
+                    valueRep = sb.toString();
                 } else {
                     valueRep = value.toString();
                     if (valueRep == null) {
