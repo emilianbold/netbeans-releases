@@ -656,7 +656,11 @@ public class MetaComponentCreator {
             return null;
         }
 
-        getDesigner().setSelectedNode(metacont.getLayoutNodeReference());
+        FormNode node = metacont.getLayoutNodeReference();
+        if (node != null) {
+            getDesigner().setSelectedNode(node);
+        }
+        else getDesigner().setSelectedComponent(metacont);
 
         return metacont;
     }
