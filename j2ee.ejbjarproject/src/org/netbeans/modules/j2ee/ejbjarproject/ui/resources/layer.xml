@@ -54,6 +54,18 @@ Microsystems, Inc. All Rights Reserved.
                       urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/logicalview/ejb/entity/EntityNodeIcon.gif"/>
             
         </file>
+         <file name="Entity">
+         <attr name="template" boolvalue="true"/>
+         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.entity.EntityEJBWizard.create" />
+         <attr name="templateCategory" stringvalue="ejb-types"/>
+         <attr name="templateWizardURL"
+                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/EntityEJB.html"/>
+         <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.entity.Bundle"/>
+         <attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/logicalview/ejb/entity/EntityNodeIcon.gif"/>
+            
+        </file>
         </folder>
     
         <folder name="Project">
