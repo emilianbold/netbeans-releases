@@ -27,6 +27,7 @@ import javax.swing.filechooser.FileView;
 
 import org.openide.*;
 import org.openide.explorer.*;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.editors.*;
 import org.openide.explorer.view.*;
 import org.openide.filesystems.FileObject;
@@ -54,8 +55,8 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
      * node hierarchy up. */
     private Node filteredRootNode;
     
-    public DataObjectListView (PropertyEditorSupport my) {
-        super(my);
+    public DataObjectListView (PropertyEditorSupport my, PropertyEnv env) {
+        super(my, env);
     }
     
     public void addNotify() {
@@ -486,7 +487,6 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             }
             
             DataObject [] dObjArray = (DataObject []) dObjList.toArray(new DataObject[dObjList.size()]);
-            
             boolean enableOK = false;
             if (dObjArray.length > 0) {
                 enableOK = true;
