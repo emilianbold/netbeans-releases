@@ -109,12 +109,19 @@ public class TomcatManager implements DeploymentManager {
      */
     
     /** Returns URI of TomcatManager.
-     * @return URI
+     * @return URI including home and base specification
      */
     public String getUri () {
         return ((catalinaHome != null)? "home="+catalinaHome + ":": "") +// NOI18N
             ((catalinaBase != null)? "base="+catalinaHome + ":": "") +   // NOI18N
             uri;
+    }
+    
+    /** Returns URI of TomcatManager.
+     * @return URI without home and base specification
+     */
+    public String getPlainUri () {
+        return uri;
     }
     
     /** Returns catalinaHome.
@@ -132,14 +139,14 @@ public class TomcatManager implements DeploymentManager {
     }
     
     /** Returns username.
-     * @return uri or <CODE>null</CODE> when not connected.
+     * @return username or <CODE>null</CODE> when not connected.
      */
     public String getUsername () {
         return username;
     }
     
     /** Returns password.
-     * @return uri or <CODE>null</CODE> when not connected.
+     * @return password or <CODE>null</CODE> when not connected.
      */
     public String getPassword () {
         return password;
