@@ -1780,21 +1780,21 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
 
   <target name="clean-cluster-flags" unless="do-not-rebuild-clusters">
-    <delete>
-      <fileset dir=".">
+    <mkdir dir="${netbeans.dest.dir}"/>
+    <delete includeEmptyDirs="true">
+      <fileset dir="${netbeans.dest.dir}">
         <include name="${netbeans.dest.dir}/*.built"/>
       </fileset>
     </delete>
   </target>
 
   <target name="localclean" depends="clean-cluster-flags,init">
-    <delete dir="${netbeans.dest}"/>
     <delete dir="${test.user.dir}"/>
     <delete dir="modules_javadoc"/>
     <delete file="moduledefs-tmp.properties"/>
     <delete dir="nbms" />
     <delete dir="modules_exported_interfaces"/>
-    <delete dir="${netbeans.dest}"/>
+    <delete dir="${netbeans.dest.dir}"/>
     <delete file="moduleCluster.properties"/>
   </target>
 
