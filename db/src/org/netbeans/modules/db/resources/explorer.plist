@@ -80,6 +80,21 @@
 		options = {};
 		defaultdriverlist = (
 			{
+				name = "IBM DB2 (local)";
+				driver = "COM.ibm.db2.jdbc.app.DB2Driver";
+				prefix = "jdbc:db2:<DB>";
+			},
+			{
+				name = "IBM DB2 (net)";
+				driver = "COM.ibm.db2.jdbc.net.DB2Driver";
+				prefix = "jdbc:db2://<HOST>:<PORT>/<DB>";
+			},
+			{
+				name = "JDBC-ODBC Bridge";
+				driver = "sun.jdbc.odbc.JdbcOdbcDriver";
+				prefix = "jdbc:odbc:<DB>";
+			},
+			{
 				name = "Microsoft SQL Server (Weblogic driver)";
 				driver = "weblogic.jdbc.mssqlserver4.Driver";
 				prefix = "jdbc:weblogic:mssqlserver4:<DB>@<HOST>:<PORT>";
@@ -113,16 +128,6 @@
 				name = "Cloudscape RMI";
 				driver = "RmiJdbc.RJDriver";
 				prefix = "jdbc:rmi://<HOST>:<PORT>/jdbc:cloudscape:<DB>";
-			},
-			{
-				name = "IBM DB2 (local)";
-				driver = "COM.ibm.db2.jdbc.app.DB2Driver";
-				prefix = "jdbc:db2:<DB>";
-			},
-			{
-				name = "IBM DB2 (net)";
-				driver = "COM.ibm.db2.jdbc.net.DB2Driver";
-				prefix = "jdbc:db2://<HOST>:<PORT>/<DB>";
 			},
 			{
 				name = "IDS Server";
@@ -173,11 +178,6 @@
 				name = "MySQL (MM.MySQL driver)";
 				driver = "org.gjt.mm.mysql.Driver";
 				prefix = "jdbc:mysql://<HOST>:<PORT>/<DB>";
-			},
-			{
-				name = "JDBC-ODBC Bridge";
-				driver = "sun.jdbc.odbc.JdbcOdbcDriver";
-				prefix = "jdbc:odbc:<DB>";
 			},
 			{
 				name = "Oracle";
