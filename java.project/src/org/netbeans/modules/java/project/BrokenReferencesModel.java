@@ -275,7 +275,8 @@ public class BrokenReferencesModel extends AbstractListModel {
         JavaPlatform plats[] = JavaPlatformManager.getDefault().getInstalledPlatforms();
         for (int i=0; i<plats.length; i++) {
             // XXX: this should be defined as PROPERTY somewhere
-            if (platform.equals(plats[i].getProperties().get("platform.ant.name"))) { // NOI18N
+            if (platform.equals(plats[i].getProperties().get("platform.ant.name")) &&
+                plats[i].getInstallFolders().size()>0) { // NOI18N
                 return true;
             }
         }

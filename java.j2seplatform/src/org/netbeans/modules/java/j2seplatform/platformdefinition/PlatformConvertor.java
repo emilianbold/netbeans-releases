@@ -279,34 +279,37 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             throw (IllegalStateException)ErrorManager.getDefault().annotate(
                     new IllegalStateException(msg), ErrorManager.USER, null, msg,null, null);
         }
-        File jdkHome = FileUtil.toFile ((FileObject)platform.getInstallFolders().iterator().next());
-        props.setProperty(homePropName, jdkHome.getAbsolutePath());
-        ClassPath bootCP = platform.getBootstrapLibraries();
-        StringBuffer sbootcp = new StringBuffer();
-        for (Iterator it = bootCP.entries().iterator(); it.hasNext();) {
-            ClassPath.Entry entry = (ClassPath.Entry) it.next();
-            URL url = entry.getURL();
-            if ("jar".equals(url.getProtocol())) {              //NOI18N
-                url = FileUtil.getArchiveFile(url);
-            }
-            File root = new File (URI.create(url.toExternalForm()));
-            if (sbootcp.length()>0) {
-                sbootcp.append(File.pathSeparator);
-            }
-            sbootcp.append(normalizePath(root, jdkHome, homePropName));
-        }
-        props.setProperty(bootClassPathPropName,sbootcp.toString());   //NOI18N
-        props.setProperty(compilerType,getCompilerType(platform));
-        for (int i = 0; i < IMPORTANT_TOOLS.length; i++) {
-            String name = IMPORTANT_TOOLS[i];
-            FileObject tool = platform.findTool(name);
-            if (tool != null) {
-                if (!isDefaultLocation(tool, platform.getInstallFolders())) {
-                    String toolName = createName(systemName, name);
-                    props.setProperty(toolName, normalizePath(getToolPath(tool), jdkHome, homePropName));
+        Collection installFolders = platform.getInstallFolders();
+        if (installFolders.size()>0) {
+            File jdkHome = FileUtil.toFile ((FileObject)installFolders.iterator().next());
+            props.setProperty(homePropName, jdkHome.getAbsolutePath());
+            ClassPath bootCP = platform.getBootstrapLibraries();
+            StringBuffer sbootcp = new StringBuffer();
+            for (Iterator it = bootCP.entries().iterator(); it.hasNext();) {
+                ClassPath.Entry entry = (ClassPath.Entry) it.next();
+                URL url = entry.getURL();
+                if ("jar".equals(url.getProtocol())) {              //NOI18N
+                    url = FileUtil.getArchiveFile(url);
                 }
-            } else {
-                throw new IOException("Cannot locate " + name + " command"); // NOI18N
+                File root = new File (URI.create(url.toExternalForm()));
+                if (sbootcp.length()>0) {
+                    sbootcp.append(File.pathSeparator);
+                }
+                sbootcp.append(normalizePath(root, jdkHome, homePropName));
+            }
+            props.setProperty(bootClassPathPropName,sbootcp.toString());   //NOI18N
+            props.setProperty(compilerType,getCompilerType(platform));
+            for (int i = 0; i < IMPORTANT_TOOLS.length; i++) {
+                String name = IMPORTANT_TOOLS[i];
+                FileObject tool = platform.findTool(name);
+                if (tool != null) {
+                    if (!isDefaultLocation(tool, platform.getInstallFolders())) {
+                        String toolName = createName(systemName, name);
+                        props.setProperty(toolName, normalizePath(getToolPath(tool), jdkHome, homePropName));
+                    }
+                } else {
+                    throw new IOException("Cannot locate " + name + " command"); // NOI18N
+                }
             }
         }
     }
