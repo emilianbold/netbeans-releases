@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,11 +26,6 @@ import org.openide.util.Utilities;
  */
 public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
     
-    /** The icons for Form */
-    private static String iconURL = "org/netbeans/modules/form/resources/form.gif"; // NOI18N
-    private static String icon32URL = "org/netbeans/modules/form/resources/form32.gif"; // NOI18N    
-
-    
     public BeanInfo[] getAdditionalBeanInfo() {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo(JavaDataLoader.class) };
@@ -47,9 +42,9 @@ public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
     public Image getIcon(final int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
             (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-            return Utilities.loadImage(iconURL);
+            return Utilities.loadImage("org/netbeans/modules/form/resources/form.gif"); // NOI18N
         } else {
-            return Utilities.loadImage(icon32URL);
+            return Utilities.loadImage("org/netbeans/modules/form/resources/form32.gif"); // NOI18N
         }
     }
 
