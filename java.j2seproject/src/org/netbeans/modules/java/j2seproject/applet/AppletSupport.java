@@ -43,6 +43,10 @@ public class AppletSupport {
     /** constant for class extension */
     private static final String CLASS_EXT = "class"; // NOI18N
 
+    // JDK issue #6193279: Appletviewer does not accept encoded URLs
+    //Package private and non final to make it testable
+    /*private*/ static /*final*/ boolean workAround6193279 = System.getProperty("java.version").startsWith("1.5");
+
     private AppletSupport() {}
 
     // Used only from unit tests to suppress detection of applet. If value
@@ -128,7 +132,18 @@ public class AppletSupport {
         URL url = null;
         try {
             if (ex == null) {
-                url = html.getURL();
+                // JDK issue #6193279: Appletviewer does not accept encoded URLs
+                if (workAround6193279) {
+                    File f = FileUtil.toFile(html);
+                    try {
+                        url = new URL ("file",null,f.getAbsolutePath());
+                    } catch (MalformedURLException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                }
+                else {
+                    url = html.getURL();
+                }
             }
         } catch (FileStateInvalidException f) {
             throw new FileStateInvalidException();
