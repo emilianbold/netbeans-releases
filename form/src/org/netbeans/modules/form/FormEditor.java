@@ -120,6 +120,19 @@ final public class FormEditor extends Object {
     }
     return componentInspector;
   }
+  
+  public static PropertyEditor createPropertyEditor (Class editorClass, Class propertyType, RADComponent radComponent) throws InstantiationException, IllegalAccessException {
+    PropertyEditor ed;
+    if (editorClass.equals (RADConnectionPropertyEditor.class)) {
+      ed = new RADConnectionPropertyEditor (propertyType);
+    } else {
+      ed = (PropertyEditor)editorClass.newInstance ();
+    }
+    if (ed instanceof FormAwareEditor) {
+      ((FormAwareEditor)ed).setRADComponent (radComponent);
+    }
+    return ed;
+  }
 
   public static java.awt.Image getGridImage (Container gridCont) {
     Image gridImage = gridCont.createImage(100, 100);
@@ -422,6 +435,7 @@ final public class FormEditor extends Object {
         }
       ); 
       setIcon (inspectorIcon);
+      setName (formBundle.getString ("CTL_NoSelection"));
     }
 
     public void focusForm (FormManager2 formManager) {
@@ -574,6 +588,8 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  28   Gandalf   1.27        8/1/99   Ian Formanek    createPropertyEditor 
+ *       method, fixed title of COmponentInspector after deserialization
  *  27   Gandalf   1.26        7/20/99  Jesse Glick     Context help.
  *  26   Gandalf   1.25        7/12/99  Ian Formanek    Fixed to compile
  *  25   Gandalf   1.24        7/9/99   Ian Formanek    Menu editor improvements
