@@ -207,7 +207,7 @@ public class JellyTestCase extends NbTestCase {
     
     /** private variable for holding state whether test was finished
      */
-    private boolean testStatus = true;
+    private static boolean testStatus = true;
     
     /** Checks whether previus test finished correctly and
      *  sets test status to 'not finished' state
