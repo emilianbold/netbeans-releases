@@ -36,17 +36,14 @@ import org.openide.modules.InstalledFileLocator;
 import org.w3c.dom.Document;
 import org.xml.sax.*;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
-
-import org.netbeans.modules.tomcat5.config.Server;
-
 import org.openide.xml.XMLUtil;
+
+import org.netbeans.modules.tomcat5.config.*;
+
+import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 
 /** DeploymentManager that can deploy to 
  * Tomcat 5 using manager application.
@@ -64,6 +61,9 @@ public class TomcatManager implements DeploymentManager {
     /** Enum value for get*Modules methods. */
     static final int ENUM_NONRUNNING = 2;
     
+    /** server.xml check timestamp */
+    public static final String TIMESTAMP = "timestamp";
+
     /** debugger port property */
     public static final String DEBUG_PORT = "debugger_port";
     
@@ -71,11 +71,15 @@ public class TomcatManager implements DeploymentManager {
     public static final String SERVER_PORT = "server_port";
 
     /** default value for property for debugger port */
-    public static final String DEFAULT_DEBUG_PORT = "11555";
+    public static final Integer DEFAULT_DEBUG_PORT = new Integer(11555);
+    
 
     /** default value for property for debugger port */
-    public static final String DEFAULT_SERVER_PORT = "8080";
+    public static final Integer DEFAULT_SERVER_PORT = new Integer(8080);
 
+    /** path to server xml */
+    public static final String SERVERXML_PATH = "/conf/server.xml";  // NOI18N
+    
     /** Manager state. */
     private boolean connected;
     
@@ -95,10 +99,10 @@ public class TomcatManager implements DeploymentManager {
     private FileSystem catalinaFS;
     
     /** storage for HTTP connector port */
-    private Integer serverPort;
+//    private Integer serverPort;
     
     /** storage debug port */
-    private Integer debugPort;
+//    private Integer debugPort;
 
     private Server root = null;
     
@@ -472,28 +476,139 @@ public class TomcatManager implements DeploymentManager {
         return "Tomcat manager ["+uri+", home "+catalinaHome+", base "+catalinaBase+(connected?"conneceted":"disconnected")+"]";    // NOI18N
     }
 
-    public Integer getServerPort() {
-        if (serverPort == null) {
-            String url = TomcatFactory.tomcatUriPrefix + getUri();
-            FileObject instanceFO = ServerRegistry.getInstance().getInstanceFileObject(url);
-            if (instanceFO == null) { 
-                return null;
-            }
-            Object o = instanceFO.getAttribute(SERVER_PORT);
-            String serverPortStr;
-            if (o != null) {
-                serverPortStr = (String)o;
-            } else { 
-                return null;
-            }
-            serverPort = new Integer(Integer.parseInt(serverPortStr));
+    /**
+     * Getter for property debugPort.
+     * @return Value of property debugPort.
+     */
+    public java.lang.Integer getDebugPort() {
+        String url = TomcatFactory.tomcatUriPrefix + getUri();
+        FileObject instanceFO = ServerRegistry.getInstance().getInstanceFileObject(url);
+        if (instanceFO == null) {
+            return null;
         }
-        return serverPort;
+        Object o = instanceFO.getAttribute(DEBUG_PORT);
+        if ((o != null) && (o instanceof Integer)) {
+            return (Integer)o;
+        }
+        return DEFAULT_DEBUG_PORT;
+    }
+    
+    /**
+     * Setter for property debugPort.
+     * @param port New value of property debugPort.
+     */
+    public void setDebugPort(java.lang.Integer port) {
+        String url = TomcatFactory.tomcatUriPrefix + getUri();
+        FileObject instanceFO = ServerRegistry.getInstance().getInstanceFileObject(url);
+        if (instanceFO == null) {
+            return;
+        }
+        try {
+            instanceFO.setAttribute(DEBUG_PORT, port);
+        } catch (IOException e) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.toString());
+        }
+    }    
+    
+    public Integer getServerPort() {
+        String url = TomcatFactory.tomcatUriPrefix + getUri();
+        FileObject instanceFO = ServerRegistry.getInstance().getInstanceFileObject(url);
+        if (instanceFO == null) { 
+            return null;
+        }
+        boolean upToDate = false;
+        Object timeO = instanceFO.getAttribute(TIMESTAMP);
+        if (timeO != null) {
+            Long t = (Long)timeO;
+            upToDate = isPortUpToDate(t);
+        }
+        if (upToDate) {
+            Object o = instanceFO.getAttribute(SERVER_PORT);
+            if ((o != null) && (o instanceof Integer)) {
+                return (Integer)o;
+            } 
+        } else {
+            if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                TomcatFactory.getEM ().log ("server port not uptodate, gonna read from file"); // NOI18N 
+            }
+            Integer p = readPortFromFile(instanceFO);
+            return p;
+        }
+        return null;
+    }
+    
+    private Integer readPortFromFile(FileObject inst) {
+        try {
+            FileInputStream inputStream;
+            File f;
+            if (catalinaBase != null) {
+                f = new File(catalinaBase + SERVERXML_PATH);
+            } else {
+                f = new File(catalinaHome + SERVERXML_PATH);
+            }
+            if (!f.isAbsolute ()) {
+                InstalledFileLocator ifl = InstalledFileLocator.getDefault ();
+                f = ifl.locate (f.getPath(), null, false);
+                if (f == null) { 
+                    return DEFAULT_SERVER_PORT;
+                }
+            }
+            
+            inputStream = new FileInputStream(f);            
+            
+            Long t;
+            if (f.exists()) {
+                t = new Long(f.lastModified());
+            } else {
+                return null;
+            }
+            
+            Document doc = XMLUtil.parse(new InputSource(inputStream), false, false, null,org.openide.xml.EntityCatalog.getDefault());
+            Server server = Server.createGraph(doc);
+            Service service = server.getService(0);
+            Integer i = new Integer(TomcatInstallUtil.getPort(service));
+            inst.setAttribute(TIMESTAMP, t);
+            inst.setAttribute(SERVER_PORT, i);
+            return i;
+
+        } catch (Exception e) {
+            if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                TomcatFactory.getEM ().log (e.toString());
+            }
+        }
+        return null;
+    }
+    
+    private boolean isPortUpToDate(Long timestamp) {
+        String serverXml;
+        if (catalinaBase == null) {
+            serverXml = catalinaHome + SERVERXML_PATH;
+        } else {
+            serverXml = catalinaBase + SERVERXML_PATH;
+        }
+        File serverXmlFile = new File(serverXml);
+        if (serverXmlFile.exists()) {
+            long l = serverXmlFile.lastModified();
+            if (l <= timestamp.longValue()) {
+                return true;
+            }
+        }
+        return false;
     }
     
     public void setServerPort(Integer port) {
         // TODO - port needs to be updated everywhere
-        this.serverPort = port;
+        //this.serverPort = port;
+        String url = TomcatFactory.tomcatUriPrefix + getUri();
+        FileObject instanceFO = ServerRegistry.getInstance().getInstanceFileObject(url);
+        if (instanceFO == null) {
+            return;
+        }
+        try {
+            instanceFO.setAttribute(SERVER_PORT, port);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ioe.toString());
+        }
     }
 
     public Server getRoot() {
@@ -527,37 +642,6 @@ public class TomcatManager implements DeploymentManager {
             }
             return null;
         }
-    }
-
-    /**
-     * Getter for property debugPort.
-     * @return Value of property debugPort.
-     */
-    public java.lang.Integer getDebugPort() {
-        if (serverPort == null) {
-            String url = TomcatFactory.tomcatUriPrefix + getUri();
-            FileObject instanceFO = ServerRegistry.getInstance().getInstanceFileObject(url);
-            if (instanceFO == null) {
-                return null;
-            }
-            Object o = instanceFO.getAttribute(DEBUG_PORT);
-            String debugPortStr;
-            if (o != null) {
-                debugPortStr = (String)o;
-            } else {
-                return null;
-            }
-            debugPort = new Integer(Integer.parseInt(debugPortStr));
-        }
-        return serverPort;
-    }
-    
-    /**
-     * Setter for property debugPort.
-     * @param port New value of property debugPort.
-     */
-    public void setDebugPort(java.lang.Integer port) {
-        this.debugPort = port;
     }
     
 }

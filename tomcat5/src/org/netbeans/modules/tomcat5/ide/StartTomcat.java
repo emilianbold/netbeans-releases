@@ -229,7 +229,15 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     }
 
     public DebuggerInfo getDebugInfo(Target target) { 
-        RemoteDebuggerInfo rdi = new RemoteDebuggerInfo("localhost", 8000); // TODO - this must be taken from some sort of customizer of Tomcat node
+        Integer dbgPort = tm.getDebugPort();
+        RemoteDebuggerInfo rdi;
+        
+        if (dbgPort != null) {
+            rdi = new RemoteDebuggerInfo("localhost", dbgPort.intValue()); // NOI18N
+        } else {
+            rdi = new RemoteDebuggerInfo("localhost", tm.DEFAULT_DEBUG_PORT.intValue());  // NOI18N
+        }
+       
         return rdi;
     }
     
@@ -300,7 +308,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
                     new String[] { 
                         "JAVA_HOME="+System.getProperty ("jdk.home"),  // NOI18N 
 //                        "JPDA_TRANSPORT=" + "dt_socket",               // NOI18N  TODO - this must be taken from customizer of Tomcat node
-//                        "JPDA_ADDRESS="+"8000",                        // NOI18N  TODO - same as above
+                        "JPDA_ADDRESS=" + tm.getDebugPort().toString(),                        // NOI18N
                         "CATALINA_HOME="+homeDir.getAbsolutePath (),   // NOI18N
                         "CATALINA_BASE="+baseDir.getAbsolutePath ()    // NOI18N
                     },

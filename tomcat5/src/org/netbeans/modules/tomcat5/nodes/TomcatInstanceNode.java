@@ -63,7 +63,6 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     public String getDisplayName(){
         Integer port = getServerPort();
         String portStr = "";
-        System.out.println("getDisplayName() port: "+  getServerPort());
         if (port != null) { 
             portStr = port.toString();
         }
@@ -85,6 +84,31 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         return new Integer(8080);
     }
     
+    private void setServerPort (Integer port) {
+        DeploymentManager m = (DeploymentManager)lkp.lookup(DeploymentManager.class);
+        if (m instanceof TomcatManager){
+            ((TomcatManager)m).setServerPort(port);
+            setDisplayName(NbBundle.getMessage(TomcatInstanceNode.class, "LBL_TomcatInstanceNode",  // NOI18N
+            new Object []{"" + iPort}));
+        };
+    }
+    
+    private Integer getDebugPort () {
+        DeploymentManager m = (DeploymentManager)lkp.lookup(DeploymentManager.class);
+        if (m instanceof TomcatManager){
+            Integer port = ((TomcatManager)m).getDebugPort();
+            return port;
+        };
+        return null;
+    }
+    
+    private void setDebugPort (Integer port) {
+        DeploymentManager m = (DeploymentManager)lkp.lookup(DeploymentManager.class);
+        if (m instanceof TomcatManager){
+            ((TomcatManager)m).setDebugPort(port);
+        };
+    }
+
     public javax.swing.Action[] getActions(boolean context) {
         return new SystemAction[] {
                    SystemAction.get (AccessLogAction.class),
@@ -205,12 +229,11 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    NbBundle.getMessage (TomcatInstanceNode.class, "HINT_debuggerPort")  // NOI18N
                ) {
                    public Object getValue () {
-                       // TODO obtain debugger port
-                       return new Integer(11555);  // NOI18N
+                       return getDebugPort(); // NOI18N
                    }
                    
                    public void setValue (Object val){
-                       // TODO set debugger port
+                       setDebugPort((Integer)val);
                    }                   
                };      
         ssDebug.put(p);
