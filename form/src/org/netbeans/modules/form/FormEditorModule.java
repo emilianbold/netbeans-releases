@@ -66,7 +66,6 @@ public class FormEditorModule implements ModuleInstall {
     } catch (Exception e) {
       // uses the border editor from impl, so we must survive when it is not present
     }
-    FormPropertyEditorManager.registerEditor (javax.swing.ListModel.class, com.netbeans.developer.modules.loaders.form.editors.ListModelFormAwareEditor.class);
     BeanInstaller.autoLoadBeans ();
 
     // register standard persistence managers
@@ -522,6 +521,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  31   Gandalf   1.30        8/15/99  Ian Formanek    Removed 
+ *       ListModelFormAware editor
  *  30   Gandalf   1.29        8/9/99   Ian Formanek    Used currentClassLoader 
  *       to fix problems with loading beans only present in repository
  *  29   Gandalf   1.28        7/31/99  Ian Formanek    Fixed registration of 
