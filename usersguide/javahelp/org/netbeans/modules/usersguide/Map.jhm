@@ -689,6 +689,10 @@
 
 <!--CSH-->
 
+<!-- To Do window help -->
+<mapID target="org.netbeans.modules.tasklist.core.TaskNode" url="editing/tasks_viewing.html" />
+<!--TODO To Do Options node CSH - org.openide.options.SystemOption  -->
+
 <!-- Ant CSH -->
 
 <mapID target="ant.wizard.shortcut" url="ant/shortcut.html" />
@@ -1309,9 +1313,9 @@
 <!--PENDING - map the following, which appears as a category node for JAR options-->
    <mapID target="org.netbeans.modules.jarpackager.options.JarOptionNode" url="jarpackager/jarpackager_options.html" />
 
-   <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeMainNode" url="vcs-nb/vcs_output.html" />
-   <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode" url="vcs-nb/vcs_output.html" />
-   <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeCommandNode" url="vcs-nb/vcs_output.html" />
+   <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeMainNode" url="vcs-nb/vcs_commands_node.html" />
+   <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode" url="vcs-nb/vcs_commands_node.html" />
+   <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeCommandNode" url="vcs-nb/vcs_commands_node.html" />
    <mapID target="org.netbeans.modules.vcscore.versioning.impl.RootFolderNode" url="vcs-nb/vcs_revexplorer.html" />
    <mapID target="org.netbeans.modules.vcscore.versioning.impl.VersioningDataNode" url="vcs-nb/vcs_revexplorer.html" />
    <mapID target="org.netbeans.modules.vcscore.versioning.RevisionNode" url="vcs-nb/vcs_revexplorer.html" />
@@ -1344,9 +1348,9 @@
 
    <!--Begin helpIDs for VCS Commands nodes in Runtime tab-->
    <!--helpID for the properties sheet of FS nodes in Runtime tab-->
-   <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode_properties" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode_properties" url="vcs_commands_node.html" />
    <!--helpID for the properties sheet of Generic VCS commands on Runtime tab-->
-   <mapID target="org.netbeans.modules.vcscore.runtime.VcsRuntimeCommand_properties" url="pending.html" />
+   <mapID target="org.netbeans.modules.vcscore.runtime.VcsRuntimeCommand_properties" url="vcs_commands_node.html" />
    
    <!--Mount CVS Wizard; Versioning | Mount CVS; on all wizard panes-->
    <mapID target="org.netbeans.modules.vcscore.wizard.mountcvs.WDPanel" url="vcs-nb/cvs-nb/cvs_wizard.html" />
