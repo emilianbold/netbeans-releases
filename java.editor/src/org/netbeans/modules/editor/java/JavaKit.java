@@ -362,6 +362,7 @@ public class JavaKit extends NbEditorKit {
                     if (item instanceof NbJMIResultItem.VarResultItem) {
                         int pos = nbJavaSup.findLocalDeclarationPosition(((NbJMIResultItem.VarResultItem)item).getItemText(), target.getCaretPosition());
                         target.setCaretPosition(pos);
+                        JumpList.checkAddEntry(target);
                     } else {
                         if (item instanceof ClassDefinition)
                             item = JMIUtils.getSourceElementIfExists((ClassDefinition)item);
