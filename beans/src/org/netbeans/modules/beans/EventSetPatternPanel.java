@@ -15,12 +15,14 @@ package com.netbeans.developer.modules.beans;
 
 import java.awt.Dialog;
 import java.util.ResourceBundle;
+import java.text.MessageFormat;
+import javax.swing.border.TitledBorder;
 
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
-
+import org.openide.src.Type;
 /** Customizer for new Multicast Event Set
  *
  * @author Petr Hrebejk
@@ -28,12 +30,18 @@ import org.openide.NotifyDescriptor;
 public class EventSetPatternPanel extends javax.swing.JPanel 
                       implements java.awt.event.ActionListener {
 
+  /** The resource bundle */                            
   private static final ResourceBundle bundle = NbBundle.getBundle( EventSetPatternPanel.class );
+  
+  /** Dialog for displaiyng this panel */
+  private Dialog dialog;  
+  /** Group node under which the new pattern will below */
+  private PatternGroupNode groupNode;
+  /** Geneartion for interface/class */
   private boolean forInterface; 
   
-  private Dialog dialog;  
-
-static final long serialVersionUID =-6439362166672698327L;
+  static final long serialVersionUID =-6439362166672698327L;
+  
   /** Initializes the Form */
   public EventSetPatternPanel() {
     initComponents ();
@@ -47,7 +55,20 @@ static final long serialVersionUID =-6439362166672698327L;
     bg.add( emptyRadioButton );
     bg.add( alRadioButton );
     bg.add( ellRadioButton );
-  
+    
+    // i18n
+    
+    ((TitledBorder)eventSetPanel.getBorder()).setTitle( 
+      bundle.getString( "CTL_EventSetPanel_eventSetPanel" ));
+    ((TitledBorder)optionsPanel.getBorder()).setTitle( 
+      bundle.getString( "CTL_EventSetPanel_optionsPanel" ) );    
+    typeLabel.setText( bundle.getString( "CTL_EventSetPanel_typeLabel" ) );
+    textLabel.setText( bundle.getString( "CTL_EventSetPanel_textLabel" ) );
+    emptyRadioButton.setText( bundle.getString( "CTL_EventSetPanel_emptyRadioButton" ) );
+    alRadioButton.setText( bundle.getString( "CTL_EventSetPanel_alRadioButton" ) );
+    ellRadioButton.setText( bundle.getString( "CTL_EventSetPanel_ellRadioButton" ) );
+    fireCheckBox.setText( bundle.getString( "CTL_EventSetPanel_fireCheckBox" ) );
+    passEventCheckBox.setText( bundle.getString( "CTL_EventSetPanel_passEventCheckBox" ) );
   }
 
   /** This method is called from within the constructor to
@@ -63,20 +84,20 @@ static final long serialVersionUID =-6439362166672698327L;
       java.awt.GridBagConstraints gridBagConstraints1;
       mainPanel.setBorder (new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
 
-      propertyPanel = new javax.swing.JPanel ();
-      propertyPanel.setLayout (new java.awt.GridBagLayout ());
+      eventSetPanel = new javax.swing.JPanel ();
+      eventSetPanel.setLayout (new java.awt.GridBagLayout ());
       java.awt.GridBagConstraints gridBagConstraints2;
-      propertyPanel.setBorder (new javax.swing.border.TitledBorder(
-      new javax.swing.border.EtchedBorder(), "Event Set"));
+      eventSetPanel.setBorder (new javax.swing.border.TitledBorder(
+      new javax.swing.border.EtchedBorder(), "eventSetPanel"));
 
-      jLabel1 = new javax.swing.JLabel ();
-      jLabel1.setText ("Type:");
+      typeLabel = new javax.swing.JLabel ();
+      typeLabel.setText ("typeLabel");
 
       gridBagConstraints2 = new java.awt.GridBagConstraints ();
       gridBagConstraints2.insets = new java.awt.Insets (2, 4, 2, 2);
       gridBagConstraints2.anchor = java.awt.GridBagConstraints.EAST;
       gridBagConstraints2.weighty = 1.0;
-      propertyPanel.add (jLabel1, gridBagConstraints2);
+      eventSetPanel.add (typeLabel, gridBagConstraints2);
 
       typeComboBox = new javax.swing.JComboBox ();
       typeComboBox.setEditable (true);
@@ -86,34 +107,35 @@ static final long serialVersionUID =-6439362166672698327L;
       gridBagConstraints2.fill = java.awt.GridBagConstraints.HORIZONTAL;
       gridBagConstraints2.insets = new java.awt.Insets (2, 2, 2, 2);
       gridBagConstraints2.weightx = 1.0;
-      propertyPanel.add (typeComboBox, gridBagConstraints2);
+      eventSetPanel.add (typeComboBox, gridBagConstraints2);
 
-      jLabel2 = new javax.swing.JLabel ();
-      jLabel2.setText ("(Fully qualified listener interface name)");
+      textLabel = new javax.swing.JLabel ();
+      textLabel.setText ("textLabel");
 
       gridBagConstraints2 = new java.awt.GridBagConstraints ();
       gridBagConstraints2.gridwidth = 0;
       gridBagConstraints2.insets = new java.awt.Insets (0, 4, 2, 2);
       gridBagConstraints2.weightx = 1.0;
       gridBagConstraints2.weighty = 1.0;
-      propertyPanel.add (jLabel2, gridBagConstraints2);
+      eventSetPanel.add (textLabel, gridBagConstraints2);
 
       gridBagConstraints1 = new java.awt.GridBagConstraints ();
       gridBagConstraints1.gridwidth = 0;
       gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
       gridBagConstraints1.weightx = 1.0;
       gridBagConstraints1.weighty = 1.0;
-      mainPanel.add (propertyPanel, gridBagConstraints1);
+      mainPanel.add (eventSetPanel, gridBagConstraints1);
 
       optionsPanel = new javax.swing.JPanel ();
       optionsPanel.setLayout (new java.awt.GridBagLayout ());
       java.awt.GridBagConstraints gridBagConstraints3;
       optionsPanel.setBorder (new javax.swing.border.TitledBorder(
-      new javax.swing.border.EtchedBorder(), "Options"));
+      new javax.swing.border.EtchedBorder(), "optionsPanel"));
 
       emptyRadioButton = new javax.swing.JRadioButton ();
       emptyRadioButton.setSelected (true);
-      emptyRadioButton.setText ("Generate empty");
+      emptyRadioButton.setLabel ("emptyRadioButton");
+      emptyRadioButton.setText ("emptyRadioButton");
       emptyRadioButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           emptyRadioButtonActionPerformed (evt);
@@ -130,7 +152,8 @@ static final long serialVersionUID =-6439362166672698327L;
       optionsPanel.add (emptyRadioButton, gridBagConstraints3);
 
       alRadioButton = new javax.swing.JRadioButton ();
-      alRadioButton.setText ("Generate ArrayList implementation");
+      alRadioButton.setLabel ("alRadioButton");
+      alRadioButton.setText ("alRadioButton");
       alRadioButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           alRadioButtonActionPerformed (evt);
@@ -147,7 +170,8 @@ static final long serialVersionUID =-6439362166672698327L;
       optionsPanel.add (alRadioButton, gridBagConstraints3);
 
       ellRadioButton = new javax.swing.JRadioButton ();
-      ellRadioButton.setText ("Generate EventListenerList implementation");
+      ellRadioButton.setLabel ("ellRadioButton");
+      ellRadioButton.setText ("ellradioButton");
       ellRadioButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           ellRadioButtonActionPerformed (evt);
@@ -165,7 +189,7 @@ static final long serialVersionUID =-6439362166672698327L;
 
       fireCheckBox = new javax.swing.JCheckBox ();
       fireCheckBox.setEnabled (false);
-      fireCheckBox.setText ("Generate event firing methods ");
+      fireCheckBox.setText ("fireCheckBox");
       fireCheckBox.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           fireCheckBoxActionPerformed (evt);
@@ -183,7 +207,7 @@ static final long serialVersionUID =-6439362166672698327L;
 
       passEventCheckBox = new javax.swing.JCheckBox ();
       passEventCheckBox.setEnabled (false);
-      passEventCheckBox.setText ("Pass event as parameter");
+      passEventCheckBox.setText ("passEventCheckBox");
       passEventCheckBox.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
           passEventCheckBoxActionPerformed (evt);
@@ -237,10 +261,10 @@ static final long serialVersionUID =-6439362166672698327L;
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JPanel mainPanel;
-  private javax.swing.JPanel propertyPanel;
-  private javax.swing.JLabel jLabel1;
+  private javax.swing.JPanel eventSetPanel;
+  private javax.swing.JLabel typeLabel;
   private javax.swing.JComboBox typeComboBox;
-  private javax.swing.JLabel jLabel2;
+  private javax.swing.JLabel textLabel;
   private javax.swing.JPanel optionsPanel;
   private javax.swing.JRadioButton emptyRadioButton;
   private javax.swing.JRadioButton alRadioButton;
@@ -296,14 +320,29 @@ static final long serialVersionUID =-6439362166672698327L;
     this.forInterface = forInterface;
     protectControls();
   }
+  
+  void setGroupNode( PatternGroupNode groupNode ) {
+    this.groupNode = groupNode;
+  }
 
   public void actionPerformed( java.awt.event.ActionEvent e ) {
     if ( dialog != null ) {
       
-       if ( e.getActionCommand().equals( "OK" ) ) { 
-
+       if ( e.getActionCommand().equals( "OK" ) ) {
+                 
          try {
-          org.openide.src.Type.parse( typeComboBox.getEditor().getItem().toString() );
+          Type type = Type.parse( typeComboBox.getEditor().getItem().toString() );
+          // Test wheter property with this name already exists 
+           if ( groupNode.eventSetExists( type ) ) {
+             String msg = MessageFormat.format( bundle.getString("MSG_EventSet_Exists"),
+                                                new Object[] { type.toString() } );
+             TopManager.getDefault().notify(
+               new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) ); 
+
+             typeComboBox.requestFocus();
+             return;          
+           } 
+
          } 
          catch ( IllegalArgumentException ex ) {
            TopManager.getDefault().notify(

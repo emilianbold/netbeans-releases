@@ -211,12 +211,6 @@ public class EventSetPattern extends Pattern {
     this.name = Introspector.decapitalize( name );
   }
 
-  /** Tests if the pattern is public i.e. all needed parts are public */
-  public boolean isPublic() {
-    return  ( addListenerMethod == null || ( addListenerMethod.getModifiers() & Modifier.PUBLIC ) != 0) &&
-            ( removeListenerMethod == null || ( removeListenerMethod.getModifiers() & Modifier.PUBLIC ) != 0 );
-  }
-
   /** Test if the name is valid for given pattern */
   protected static boolean isValidName( String str ) {
     if ( Utilities.isJavaIdentifier(str) == false )
@@ -556,6 +550,8 @@ public class EventSetPattern extends Pattern {
 
 /* 
  * Log
+ *  10   Gandalf   1.9         9/13/99  Petr Hrebejk    Creating multiple 
+ *       Properties/EventSet with the same name vorbiden. Forms made i18n
  *  9    Gandalf   1.8         8/17/99  Petr Hrebejk    Combo box with well 
  *       known Listener interfaces
  *  8    Gandalf   1.7         8/2/99   Petr Hrebejk    EventSetNode chilfren & 

@@ -35,35 +35,40 @@ import org.openide.util.NbBundle;
 
 //import com.netbeans.developer.modules.loaders.java.support.AutoCommenter;
 
-/** PropertyPattern: This class holds the information about used property pattern 
- * in code.
+/** Class representing a JavaBeans Property 
  * @author Petr Hrebejk
- *
- * 
- *  PENDING: Add Pattern class hierarchy (abstract classes || interfaces )
  */
 public class PropertyPattern extends Pattern {
-
-
+  
+  /** ResourceBundle */
   private static final ResourceBundle bundle = NbBundle.getBundle( PropertyPattern.class );
 
+  /** Constant for READ/WRITE mode of properties */
   public static final int READ_WRITE = 1;
+  /** Constant for READ ONLY mode of properties */
   public static final int READ_ONLY = 2;
+  /** Constant for WRITE ONLY mode of properties */
   public static final int WRITE_ONLY = 4;
 
+  /** Getter method of this property */
   protected MethodElement getterMethod = null;
+  /** Setter method of this property */
   protected MethodElement setterMethod = null;
+  /** Field which probably belongs to this property */
   protected FieldElement  estimatedField = null;
 
-  
   /** Holds the type of the property resolved from methods. */
   protected Type type;
   /** Holds the decapitalized name. */
   protected String name;
   
-  // Constructors & static creators ----------------------------------------------------------------------------
-
-  /** Creates new PropertyPattern one of the methods may be null */
+  
+  /** Creates new PropertyPattern one of the methods may be null. 
+   * @param patternAnalyser patternAnalyser which creates this Property.
+   * @param getterMethod getterMethod of the property or <CODE>null</CODE>.
+   * @param setterMethod setterMethod of the property or <CODE>null</CODE>.
+   * @throws IntrospectionException If specified methods do not follow beans Property rules.
+   */
   public PropertyPattern( PatternAnalyser patternAnalyser, 
                           MethodElement getterMethod, MethodElement setterMethod ) 
     throws IntrospectionException {
@@ -77,10 +82,20 @@ public class PropertyPattern extends Pattern {
     name = findPropertyName();
   }
 
+  /** Creates new PropertyPattern.
+   * @param patternAnalyser patternAnalyser which creates this Property.
+   */
   PropertyPattern( PatternAnalyser patternAnalyser ) {
     super( patternAnalyser );
   }
 
+  /** Creates new PropertyPattern.
+   * @param patternAnalyser patternAnalyser which creates this Property.
+   * @param name Name of the Property.
+   * @param type Type of the Property.
+   * @throws SourceException If the Property can't be created in the source.
+   * @return Newly created PropertyPattern.
+   */
   static PropertyPattern create( PatternAnalyser patternAnalyser, 
                                  String name, String type ) throws SourceException {
 
@@ -95,8 +110,20 @@ public class PropertyPattern extends Pattern {
     return pp;
   }
 
-  /** Creates new property pattern with extended options */
-  
+  /** Creates new property pattern with extended options
+   * @param patternAnalyser patternAnalyser which creates this Property.
+   * @param name Name of the Property.
+   * @param type Type of the Property.
+   * @param mode {@link #READ_WRITE Mode} of the new property.
+   * @param bound Is the Property bound?
+   * @param constrained Is the property constrained?
+   * @param withField Should be the private field for this property genareted?
+   * @param withReturn Generate return statement in getter?
+   * @param withSet Generate seter statement for private field in setter.
+   * @param withSupport Generate PropertyChange support?
+   * @throws SourceException If the Property can't be created in the source.
+   * @return Newly created PropertyPattern.
+   */
   static PropertyPattern create( PatternAnalyser patternAnalyser, 
                                  String name, String type,
                                  int mode, boolean bound, boolean constrained,
@@ -108,12 +135,12 @@ public class PropertyPattern extends Pattern {
     pp.name = name;
     pp.type = Type.parse( type );
 
-    /** Generate field */ 
+    // Generate field
     if ( withField || withSupport ) {
       pp.generateField( true );
     }
 
-    /** Ensure property change support field and methods exist */
+    // Ensure property change support field and methods exist
     String supportName = null;
     String vetoSupportName = null;
 
@@ -139,14 +166,17 @@ public class PropertyPattern extends Pattern {
     return pp;
   }
 
-  // Getter and Setter methods ----------------------------------------------------------------------------
-  
-  /** Gets the name of PropertyPattern */
+  /** Gets the name of PropertyPattern
+   * @return Name of the Property
+   */
   public String getName() {
     return name;
   }
   
-  /** Sets the name of PropertyPattern */
+  /** Sets the name of PropertyPattern
+   * @param name New name of the property.
+   * @throws SourceException If the modification of source code is impossible.
+   */
   public void setName( String name ) throws SourceException {
   
     if ( !Utilities.isJavaIdentifier( name )  )
@@ -167,8 +197,7 @@ public class PropertyPattern extends Pattern {
 
     this.name = Introspector.decapitalize( name );
 
-    // Ask if to set the estimated field
-    
+    // Ask if to set the estimated field    
     if ( estimatedField != null ) {
        ElementFormat fmt = new ElementFormat ("{m} {t} {n}");
        String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_ChangeFieldName" ), 
@@ -181,7 +210,10 @@ public class PropertyPattern extends Pattern {
     
   }
   
-  /** Returns the mode of the property READ_WRITE, READ_ONLY or WRITE_ONLY */
+  /** Returns the mode of the property {@link #READ_WRITE READ_WRITE}, {@link #READ_ONLY READ_ONLY}
+   *  or {@link #WRITE_ONLY WRITE_ONLY}
+   * @return Mode of the property
+   */
   public int getMode() {
 
     if ( setterMethod != null && getterMethod != null )
@@ -194,7 +226,11 @@ public class PropertyPattern extends Pattern {
       return 0;
   }
 
-  /** Sets the property to be writable */
+  /** Sets the property to be writable
+   * @param mode New Mode {@link #READ_WRITE READ_WRITE}, {@link #READ_ONLY READ_ONLY}
+   *  or {@link #WRITE_ONLY WRITE_ONLY}
+   * @throws SourceException If the modification of source code is impossible.
+   */
   public void setMode( int mode ) throws SourceException {
     
     if ( getMode() == mode )
@@ -220,32 +256,33 @@ public class PropertyPattern extends Pattern {
         deleteGetterMethod();
       break;
     }
-  
-    /*
-    System.out.println ( "Mode setted "  + this );
-    System.out.println ( "Getter " + getterMethod );
-    System.out.println ( "Setter " + setterMethod );
-    */
   }
   
-  /** Returns the getter method */
+  /** Returns the getter method
+   * @return Getter method of the property
+   */
   public MethodElement getGetterMethod() {
     return getterMethod;
   }
   
-  /** Returns the setter method */
+  /** Returns the setter method
+   * @return Setter method of the property
+   */
   public MethodElement getSetterMethod() {
     return setterMethod;
   }
   
-  /** Resets getter and setter and checks for changed properties */
-
-  /** Gets the type of property */
+  /** Gets the type of property
+   * @return Type of the property
+   */
   public Type getType() {
     return type;
   }
 
-  /** Sets the type of propertyPattern */
+  /** Sets the type of propertyPattern
+   * @param type New type of the property
+   * @throws SourceException If the modification of source code is impossible
+   */
   public void setType(Type type) throws SourceException {
 
     if ( this.type.compareTo( type, true ) )
@@ -290,8 +327,11 @@ public class PropertyPattern extends Pattern {
     }
     
   }
-  /** Gets the cookie of the first available method */
-
+  
+  /** Gets the cookie of the first available method
+   * @param cookieType Class of the Cookie
+   * @return Cookie of Getter or Setter MethodElement
+   */
   public Node.Cookie getCookie( Class cookieType ) {
     if ( getterMethod != null )
       return getterMethod.getCookie( cookieType );
@@ -302,29 +342,24 @@ public class PropertyPattern extends Pattern {
     return null;
   }
 
-  /** Gets the estimated field */
-
+  /** Gets the estimated field
+   * @return Field which (probably) belongs to the property.
+   */
   public FieldElement getEstimatedField( ) {
     return estimatedField;
   }
 
-  /** Sets the estimated field */
-
+  /** Sets the estimated field
+   * @param field Field for the property
+   */
   void setEstimatedField( FieldElement field ) {
     estimatedField = field;
   }
 
-  /** Tests if the pattern is public i.e. all needed parts are public */
-  public boolean isPublic() {
-    return  (getterMethod == null || ( getterMethod.getModifiers() & Modifier.PUBLIC ) != 0) &&
-            (setterMethod == null || ( setterMethod.getModifiers() & Modifier.PUBLIC ) != 0);
-  }
-    
-  /** Destroys the pattern and the associated methods in source */
-
-  public void destroy() throws SourceException {
-    //System.out.println ( " Destroing property pattern" );
-    
+  /** Destroys methods associated methods with the pattern in source
+   * @throws SourceException If modification of source is impossible
+   */
+  public void destroy() throws SourceException {    
     if ( estimatedField != null ) {
       ElementFormat fmt = new ElementFormat ("{m} {t} {n}");
       String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_DeleteField" ), 
@@ -339,15 +374,13 @@ public class PropertyPattern extends Pattern {
     deleteSetterMethod();
   }
 
-  // Utility methods --------------------------------------------------------------------
+  // UTILITY METHODS ----------------------------------------------------------
 
   /** Package private constructor. Merges two property descriptors. Where they
    * conflict, gives the second argument (y) priority over the first argumnet (x).
-   *
    * @param x The first (lower priority) PropertyPattern.
    * @param y The second (higher priority) PropertyPattern.
    */
-
   PropertyPattern( PropertyPattern x, PropertyPattern y ) {
     super( y.patternAnalyser );
 
@@ -394,10 +427,10 @@ public class PropertyPattern extends Pattern {
     name = findPropertyName();
   }
 
-  /** Finds the Type of property.
+  /** Resolves the type of the property from type of getter and setter.
    * @throws IntrospectionException if the property doesnt folow the design patterns
+   * @return The type of the property.
    */
-
   Type findPropertyType() throws IntrospectionException {
     Type resolvedType = null;
 
@@ -424,8 +457,9 @@ public class PropertyPattern extends Pattern {
     return resolvedType;
   }    
 
-  /** Decides about the name of the property from names of the methods */
-  
+  /** Based on names of getter and setter resolves the name of the property.
+   * @return Name of the property
+   */
   String findPropertyName() {
     
     String methodName = null;
@@ -443,12 +477,20 @@ public class PropertyPattern extends Pattern {
       Introspector.decapitalize( methodName.substring(3) );
   }
   
-  // Methods for generating / dleting methods -------------------------------------------
-
-  void generateGetterMethod( ) throws SourceException {
+  // METHODS FOR GENERATING AND DELETING METHODS AND FIELDS--------------------
+  
+  /** Generates getter method without body and without Javadoc comment.
+   * @throws SourceException If modification of source code is impossible.
+   */
+  void generateGetterMethod() throws SourceException {
     generateGetterMethod( null, false );
   }
-
+  
+  /** Generates getter method with body and optionaly with Javadoc comment.
+   * @param body Body of the method
+   * @param javadoc Generate Javadoc comment?
+   * @throws SourceException If modification of source code is impossible.
+   */
   void generateGetterMethod( String body, boolean javadoc ) throws SourceException {
 
     ClassElement declaringClass = getDeclaringClass();
@@ -482,10 +524,19 @@ public class PropertyPattern extends Pattern {
 
   }
 
+  /** Generates setter method without body and without Javadoc comment.
+   * @throws SourceException If modification of source code is impossible.
+   */
   void generateSetterMethod() throws SourceException {
     generateSetterMethod( null, false, false );
   }
 
+  /** Generates setter method with body and optionaly with Javadoc comment.
+   * @param body Body of the method
+   * @param javadoc Generate Javadoc comment?
+   * @param constrained Is the property constrained?
+   * @throws SourceException If modification of source code is impossible.
+   */
   void generateSetterMethod( String body, boolean constrained, boolean javadoc ) throws SourceException {
     ClassElement declaringClass = getDeclaringClass();
     MethodElement newSetter = new MethodElement();
@@ -523,10 +574,17 @@ public class PropertyPattern extends Pattern {
       }
   }
 
+  /** Generates fied for the property. No javadoc comment is generated.
+   * @throws SourceException If modification of source code is impossible.
+   */
   void generateField() throws SourceException {
     generateField( false );
   }
 
+  /** Generates fied for the property.
+   * @param javadoc Generate javadoc comment?
+   * @throws SourceException If modification of source code is impossible.
+   */
   void generateField( boolean javadoc ) throws SourceException {
     ClassElement declaringClass = getDeclaringClass();
     FieldElement newField = new FieldElement();
@@ -550,8 +608,9 @@ public class PropertyPattern extends Pattern {
       }
   }
 
-  /** Deletes the estimated field in source */
-  
+  /** Deletes the estimated field in source
+   * @throws SourceException If modification of source code is impossible.
+   */ 
   void deleteEstimatedField() throws SourceException {
     
     if ( estimatedField == null )
@@ -570,8 +629,9 @@ public class PropertyPattern extends Pattern {
   }
 
 
-  /** Deletes the setter method in source */
-  
+  /** Deletes the setter method in source 
+   * @throws SourceException If modification of source code is impossible.
+   */
   void deleteGetterMethod() throws SourceException {
     
     if ( getterMethod == null )
@@ -589,8 +649,9 @@ public class PropertyPattern extends Pattern {
       }
   }
 
-  /** Deletes the setter method in source */
-
+  /** Deletes the setter method in source 
+   * @throws SourceException If modification of source code is impossible.
+   */
   void deleteSetterMethod() throws SourceException {
 
     if ( setterMethod == null )
@@ -609,8 +670,12 @@ public class PropertyPattern extends Pattern {
 
   }
 
-  /** Utility method resturns array of types of parameters of a method */
-
+  // UTILITY METHODS ----------------------------------------------------------
+  
+  /** Utility method resturns array of types of parameters of a method
+   * @param methodElement Method which parameter types should be resolved
+   * @return Array of types of parameters
+   */
   static Type[] getParameterTypes( MethodElement methodElement ) {
     MethodParameter[] params = methodElement.getParameters();
     Type[] types = new Type[ params == null ? 0 : params.length ];
@@ -621,9 +686,11 @@ public class PropertyPattern extends Pattern {
 
     return types;
   }
-  
-  // Property change support -------------------------------------------------------------------------
-  
+    
+  /** Sets the properties to values of other property pattern. If the 
+   * properties change fires PropertyChange event.
+   * @param src Source PropertyPattern it's properties will be copied.
+   */
   void copyProperties( PropertyPattern src ) {
     
     boolean changed = !src.getType().equals( getType() ) ||
@@ -653,6 +720,8 @@ public class PropertyPattern extends Pattern {
 
 /* 
  * Log
+ *  7    Gandalf   1.6         9/13/99  Petr Hrebejk    Creating multiple 
+ *       Properties/EventSet with the same name vorbiden. Forms made i18n
  *  6    Gandalf   1.5         7/29/99  Petr Hrebejk    Fix - change 
  *       ReadOnly/WriteOnly to ReadWrite mode diddn't registered the added 
  *       methods properly

@@ -73,7 +73,7 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
     SystemAction.get(DeleteAction.class),
     SystemAction.get(RenameAction.class),
     null,
-    SystemAction.get(ToolsAction.class),
+    //SystemAction.get(ToolsAction.class),
     SystemAction.get(PropertiesAction.class),
   };
 

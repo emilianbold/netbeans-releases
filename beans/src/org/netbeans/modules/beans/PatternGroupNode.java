@@ -17,9 +17,12 @@ import java.awt.Dialog;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ResourceBundle;
+import java.util.Collection;
+import java.util.Iterator;
 import java.beans.Introspector;
 
 import org.openide.src.SourceException;
+import org.openide.src.Type;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -49,6 +52,12 @@ public class  PatternGroupNode extends AbstractNode {
   private static final String MENU_CREATE_IDXPROPERTY;
   private static final String MENU_CREATE_UNICASTSE;
   private static final String MENU_CREATE_MULTICASTSE;
+  
+  /** Pattern types */
+  static final int PATTERN_KIND_PROPERTY = 0;
+  static final int PATTERN_KIND_IDX_PROPERTY = 1;
+  static final int PATTERN_KIND_UC_EVENT_SET = 2;
+  static final int PATTERN_KIND_MC_EVENT_SET = 3;
 
   // Panel and dialog for new Property Pattern
   private PropertyPatternPanel newPropertyPanel = null;
@@ -139,10 +148,10 @@ public class  PatternGroupNode extends AbstractNode {
   public NewType[] getNewTypes() {
     //if (writeable) {
       return new NewType[] {
-        createNewType(MENU_CREATE_PROPERTY, 0),
-        createNewType(MENU_CREATE_IDXPROPERTY, 1),
-        createNewType(MENU_CREATE_UNICASTSE, 2),
-        createNewType(MENU_CREATE_MULTICASTSE, 3),
+        createNewType(MENU_CREATE_PROPERTY, PATTERN_KIND_PROPERTY ),
+        createNewType(MENU_CREATE_IDXPROPERTY, PATTERN_KIND_IDX_PROPERTY ),
+        createNewType(MENU_CREATE_UNICASTSE, PATTERN_KIND_UC_EVENT_SET ),
+        createNewType(MENU_CREATE_MULTICASTSE, PATTERN_KIND_MC_EVENT_SET  ),
         };
     /*
     }
@@ -197,7 +206,7 @@ public class  PatternGroupNode extends AbstractNode {
       forInterface = pa.getClassElement() == null ? false : pa.getClassElement().isInterface();
     
     switch (kind) {
-    case 0: 
+    case PATTERN_KIND_PROPERTY: 
       PropertyPatternPanel propertyPanel;
       
       dd = new DialogDescriptor( (propertyPanel = new PropertyPatternPanel()),
@@ -212,10 +221,12 @@ public class  PatternGroupNode extends AbstractNode {
       dialog = TopManager.getDefault().createDialog( dd );
       propertyPanel.setDialog( dialog ); 
       propertyPanel.setForInterface( forInterface );
+      propertyPanel.setGroupNode( this );
       dialog.show ();
       
       if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
         PropertyPatternPanel.Result result = propertyPanel.getResult();
+        
         PropertyPattern.create( ((PatternChildren)getChildren()).getPatternAnalyser(), 
                                   Introspector.decapitalize( result.name ),
                                   result.type, result.mode,
@@ -224,7 +235,7 @@ public class  PatternGroupNode extends AbstractNode {
                                   result.withSupport);
       }
       return;      
-    case 1:
+    case PATTERN_KIND_IDX_PROPERTY:
       IdxPropertyPatternPanel idxPropertyPanel;
       
       dd = new DialogDescriptor( (idxPropertyPanel = new IdxPropertyPatternPanel()),
@@ -239,9 +250,13 @@ public class  PatternGroupNode extends AbstractNode {
       dialog = TopManager.getDefault().createDialog( dd );
       idxPropertyPanel.setDialog( dialog ); 
       idxPropertyPanel.setForInterface( forInterface );
+      idxPropertyPanel.setGroupNode( this );
       dialog.show ();
 
       if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
+        
+        
+        
         IdxPropertyPatternPanel.Result result = idxPropertyPanel.getResult();
         IdxPropertyPattern.create( ((PatternChildren)getChildren()).getPatternAnalyser(), 
                                   Introspector.decapitalize( result.name ),
@@ -253,7 +268,7 @@ public class  PatternGroupNode extends AbstractNode {
                                   result.niSetter, result.niWithSet );
       }
       return;
-    case 2:
+    case PATTERN_KIND_UC_EVENT_SET:
       UEventSetPatternPanel uEventSetPanel;
 
       dd = new DialogDescriptor( (uEventSetPanel = new UEventSetPatternPanel()),
@@ -268,6 +283,7 @@ public class  PatternGroupNode extends AbstractNode {
       dialog = TopManager.getDefault().createDialog( dd );
       uEventSetPanel.setDialog( dialog ); 
       uEventSetPanel.setForInterface( forInterface );
+      uEventSetPanel.setGroupNode( this );
       dialog.show ();
 
       if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
@@ -277,7 +293,7 @@ public class  PatternGroupNode extends AbstractNode {
                                  result.passEvent, true ); 
       }
       return;
-    case 3:
+    case PATTERN_KIND_MC_EVENT_SET:
       EventSetPatternPanel eventSetPanel;
 
       dd = new DialogDescriptor( (eventSetPanel = new EventSetPatternPanel()),
@@ -292,6 +308,7 @@ public class  PatternGroupNode extends AbstractNode {
       dialog = TopManager.getDefault().createDialog( dd );
       eventSetPanel.setDialog( dialog ); 
       eventSetPanel.setForInterface( forInterface );
+      eventSetPanel.setGroupNode( this );
       dialog.show ();
 
       if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
@@ -305,13 +322,54 @@ public class  PatternGroupNode extends AbstractNode {
     }
   }
 
-  public static void main( String[] args ) {
-  }
+  /** Checks if there exists a pattern with given name in the class 
+   * @param kind The kind of the pattern as in CreateElement method.
+   * @param name The name of the pattern
+   * @return True if pattern with given name exists otherwise false.
+   */
+  boolean propertyExists( String name  ) {
+    Collection[] patterns = new Collection[2];
+    String decapName = Introspector.decapitalize( name );
   
+    patterns[0] = ((PatternChildren)getChildren()).getPatternAnalyser().getPropertyPatterns();
+    patterns[1] = ((PatternChildren)getChildren()).getPatternAnalyser().getIdxPropertyPatterns();
+
+    for ( int i = 0; i < patterns.length && patterns[i] != null; i++ ) {
+      Iterator it = patterns[i].iterator();
+      while( it.hasNext() ) {
+        if ( ((Pattern)it.next()).getName().equals( decapName ) ) {
+          return true;
+        }
+      }
+    }
+    
+  return false;    
+  }
+
+  /** Checks if there exists a pattern with given name in the class 
+   * @param kind The kind of the pattern as in CreateElement method.
+   * @param name The name of the pattern
+   * @return True if pattern with given name exists otherwise false.
+   */
+  boolean eventSetExists( Type type ) {
+    
+    Collection eventSets = ((PatternChildren)getChildren()).getPatternAnalyser().getEventSetPatterns();
+     
+    Iterator it = eventSets.iterator();
+    while( it.hasNext() ) {
+      if ( ((EventSetPattern)it.next()).getType().compareTo( type, false ) ) {
+        return true;
+      }
+    }
+    
+    return false;    
+  }
 }
 
 /* 
  * Log
+ *  6    Gandalf   1.5         9/13/99  Petr Hrebejk    Creating multiple 
+ *       Properties/EventSet with the same name vorbiden. Forms made i18n
  *  5    Gandalf   1.4         8/9/99   Petr Hrebejk    Decapitalization of 
  *       property name
  *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of

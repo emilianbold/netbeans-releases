@@ -29,23 +29,31 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 
-/** IdxPropertyPattern: This class holds the information about used indexed 
- * property pattern in code.
+/** Class representing JavaBeans IndexedProperty.
  * @author Petr Hrebejk
- *
- * 
- *  PENDING: Add Pattern class hierarchy (abstract classes || interfaces )
  */
 public class IdxPropertyPattern extends PropertyPattern {
 
+  /** ResourceBundle */
   private static final ResourceBundle bundle = NbBundle.getBundle( IdxPropertyPattern.class );
 
+  /** Getter method of this indexed property */
   protected MethodElement indexedGetterMethod = null;
+  /** Setter method of this indexed property */
   protected MethodElement indexedSetterMethod = null;
 
+  /** Holds the indexed type of the property resolved from methods. */  
   protected Type indexedType;
 
-  /** Creates new PropertyPattern one of the methods may be null */
+  /** Creates new IndexedPropertyPattern just one of the methods indexedGetterMethod
+   * and indexedSetterMethod may be null. 
+   * @param patternAnalyser patternAnalyser which creates this Property.
+   * @param getterMethod getterMethod may be <CODE>null</CODE>.
+   * @param setterMethod setterMethod may be <CODE>null</CODE>.
+   * @param indexedGetterMethod getterMethod of the property or <CODE>null</CODE>.
+   * @param indexedSetterMethod setterMethod of the property or <CODE>null</CODE>.
+   * @throws IntrospectionException If specified methods do not follow beans Property rules.
+   */  
   public IdxPropertyPattern( PatternAnalyser patternAnalyser, 
                              MethodElement getterMethod, MethodElement setterMethod,
                              MethodElement indexedGetterMethod, MethodElement indexedSetterMethod )
@@ -60,28 +68,21 @@ public class IdxPropertyPattern extends PropertyPattern {
     name = findIndexedPropertyName();
   }
 
-
-  /*
-  public boolean equals( Object o ) {
-    if ( ! (o instanceof IdxPropertyPattern ) )
-      return false;
-    
-    return super.equals( o ) &&
-           ((IdxPropertyPattern)o).indexedGetterMethod == getterMethod &&
-           ((IdxPropertyPattern)o).indexedSetterMethod == setterMethod ;
-  }
-
-  public int hashCode( ) {
-    return super.hashCode() + 
-      ( indexedGetterMethod != null ? indexedGetterMethod.hashCode() : 0 ) + 
-      ( indexedSetterMethod != null ? indexedSetterMethod.hashCode() : 0 );
-  }
-  */
-
+  /** Creates new IndexedPropertyPattern.
+   * @param patternAnalyser patternAnalyser which creates this IndexedProperty.
+   */
   private IdxPropertyPattern( PatternAnalyser patternAnalyser ) {
     super( patternAnalyser );
   }
 
+  /** Creates new IdxPropertyPattern.
+   * @param patternAnalyser patternAnalyser which creates this Property.
+   * @param name Name of the Property.
+   * @param type Type of the Property ( i.e. Array or Collection )
+   * @param indexedType Indexed type of the property.
+   * @throws SourceException If the Property can't be created in the source.
+   * @return Newly created IdxPropertyPattern.
+   */
   static IdxPropertyPattern create( PatternAnalyser patternAnalyser, 
                                  String name, String type, String indexedType ) throws SourceException {
 
@@ -99,8 +100,24 @@ public class IdxPropertyPattern extends PropertyPattern {
     return ipp;
   }
 
-  /** Creates new indexed property pattern with extended options */
-
+  /** Creates new indexed property pattern with extended options
+   * @param patternAnalyser patternAnalyser which creates this Property.
+   * @param name Name of the Property.
+   * @param type Type of the Property.
+   * @param mode {@link #READ_WRITE Mode} of the new property.
+   * @param bound Is the Property bound?
+   * @param constrained Is the property constrained?
+   * @param withField Should be the private field for this property genareted?
+   * @param withReturn Generate return statement in getter?
+   * @param withSet Generate seter statement for private field in setter.
+   * @param withSupport Generate PropertyChange support?
+   * @param niGetter Non-indexed getter method
+   * @param niWithReturn Generate return statement in non-indexed getter?
+   * @param niSetter Non-indexed setter method
+   * @param niWithSet Generate set field statement in non-indexed setter?
+   * @throws SourceException If the Property can't be created in the source.
+   * @return Newly created PropertyPattern.
+   */
   static IdxPropertyPattern create( PatternAnalyser patternAnalyser, 
                                  String name, String type,
                                  int mode, boolean bound, boolean constrained,
@@ -115,16 +132,14 @@ public class IdxPropertyPattern extends PropertyPattern {
     ipp.type = null;
     ipp.indexedType = Type.parse( type );
 
-    
-
-    /** Generate field */ 
+    // Generate field  
     if ( withField || withSupport ) {
       ipp.type = Type.createArray( ipp.indexedType );
       if ( ipp.type != null ) 
         ipp.generateField( true );
     }
 
-    /** Ensure property change support field and methods exist */
+    // Ensure property change support field and methods exist
     String supportName = null;
     String vetoSupportName = null;
 
@@ -157,19 +172,17 @@ public class IdxPropertyPattern extends PropertyPattern {
 
 
   
-  /** Getter for indexed type */
-  
+  /** Gets the name of IdxPropertyPattern
+   * @return Name of the Indexed Property
+   */
   public Type getIndexedType() {
     return indexedType;
   }
 
-  /** Getter for indexedGetter method */
-
-  public MethodElement getIndexedGetterMethod() {
-    return indexedGetterMethod; 
-	}
-
-
+  /** Sets the name of IdxPropertyPattern
+   * @param name New name of the property.
+   * @throws SourceException If the modification of source code is impossible.
+   */
   public void setName(String name) throws  SourceException {
     super.setName( name );
 
@@ -186,21 +199,27 @@ public class IdxPropertyPattern extends PropertyPattern {
     }
   }
 
-  /** Getter for indexedSetter method */
+  
+  
+  
+  /** Returns the indexed getter method
+   * @return Getter method of the property
+   */
+  public MethodElement getIndexedGetterMethod() {
+    return indexedGetterMethod; 
+  }
 
+  /** Returns the indexed setter method
+   * @return Getter method of the property
+   */
   public MethodElement getIndexedSetterMethod() {
     return indexedSetterMethod; 
 	}
 
-  /** Tests if the pattern is public i.e. all needed parts are public */
-  public boolean isPublic() {
-    return  super.isPublic() &&
-            (indexedGetterMethod == null || ( indexedGetterMethod.getModifiers() & Modifier.PUBLIC ) != 0 ) &&
-            (indexedSetterMethod == null || ( indexedSetterMethod.getModifiers() & Modifier.PUBLIC ) != 0 );
-  }
-
-  /** Sets the type of property */
-
+  /** Sets the non-indexed type of IdxPropertyPattern
+   * @param type New non-indexed type of the indexed property
+   * @throws SourceException If the modification of source code is impossible
+   */
   public void setType( Type type ) throws SourceException {
     
     if ( this.type != null && this.type.compareTo( type, true ) )
@@ -224,7 +243,6 @@ public class IdxPropertyPattern extends PropertyPattern {
       super.setType( type );
 
     // Test if the idexedType is the type of array and change it if so
-
     if ( type.isArray() && oldType.isArray() && oldType.getElementType().compareTo( oldIndexedType, false ) ) {
       Type newType = type.getElementType();
 
@@ -241,19 +259,20 @@ public class IdxPropertyPattern extends PropertyPattern {
     }
   }
 
-  /** Sets the type of propertyPattern */
+  /** Sets the indexed type of IdxPropertyPattern
+   * @param type New indexed type of the indexed property
+   * @throws SourceException If the modification of source code is impossible
+   */
   public void setIndexedType(Type type) throws SourceException {
     
     if ( this.indexedType.compareTo( type, true ) )
       return;
 
     // Remember the old type & old indexed type
-
     Type oldIndexedType = this.indexedType; 
     Type oldType = this.type;
 
     // Change the indexed type
-
     if (indexedGetterMethod != null ) {
       indexedGetterMethod.setReturn( type );      
     }
@@ -267,7 +286,6 @@ public class IdxPropertyPattern extends PropertyPattern {
 
     // Test if the old type of getter and seter was an array of indexedType
     // if so change the type of that array.
-
     if ( oldType != null && oldType.isArray() && oldType.getElementType().compareTo( oldIndexedType, false ) ) {
       Type newArrayType = Type.createArray( type );
       super.setType( newArrayType );
@@ -276,7 +294,10 @@ public class IdxPropertyPattern extends PropertyPattern {
     indexedType = type;
   }
 
-  /** Returns the mode of the property READ_WRITE, READ_ONLY or WRITE_ONLY */
+  /** Returns the mode of the property {@link PropertPattern#READ_WRITE READ_WRITE}, 
+   * {@link PropertPattern#READ_ONLY READ_ONLY} or {@link PropertPattern#WRITE_ONLY WRITE_ONLY}
+   * @return Mode of the property
+   */
   public int getMode() {
     if ( indexedSetterMethod != null && indexedGetterMethod != null )
       return READ_WRITE;
@@ -288,7 +309,11 @@ public class IdxPropertyPattern extends PropertyPattern {
       return super.getMode();
   }
 
-    /** Sets the property to be writable */
+  /** Sets the property to be writable
+   * @param mode New Mode {@link PropertPattern#READ_WRITE READ_WRITE}, 
+   *   {@link PropertPattern#READ_ONLY READ_ONLY} or {@link PropertPattern#WRITE_ONLY WRITE_ONLY}
+   * @throws SourceException If the modification of source code is impossible.
+   */
   public void setMode( int mode ) throws SourceException {
     if ( getMode() == mode )
       return;
@@ -328,8 +353,10 @@ public class IdxPropertyPattern extends PropertyPattern {
     
   }
 
-  /** Gets the cookie of the first available method */
-
+  /** Gets the cookie of the first available inderxed method
+   * @param cookieType Class of the Cookie
+   * @return Cookie of indexedGetter or indexedSetter MethodElement
+   */
   public Node.Cookie getCookie( Class cookieType ) {
     if ( indexedGetterMethod != null )
       return indexedGetterMethod.getCookie( cookieType );
@@ -340,8 +367,9 @@ public class IdxPropertyPattern extends PropertyPattern {
     return super.getCookie( cookieType );
   }
 
-  /** Destroys this pattern */
-
+  /** Destroys methods associated methods with the pattern in source
+   * @throws SourceException If modification of source is impossible
+   */
   public void destroy() throws SourceException {
     deleteIndexedSetterMethod();
     deleteIndexedGetterMethod();
@@ -352,11 +380,9 @@ public class IdxPropertyPattern extends PropertyPattern {
 
   /** Package private constructor. Merges two property descriptors. Where they
    * conflict, gives the second argument (y) priority over the first argumnet (x).
-   *
    * @param x The first (lower priority) PropertyPattern.
    * @param y The second (higher priority) PropertyPattern.
    */
-
   IdxPropertyPattern( PropertyPattern x, PropertyPattern y ) {
     super( x, y );
     if ( x instanceof IdxPropertyPattern ) {
@@ -376,11 +402,10 @@ public class IdxPropertyPattern extends PropertyPattern {
     name  = findIndexedPropertyName();
   }
 
-
-  /** Resolves the type of indexed property. Chcecks for conformance to 
-   * design patterns.
+  /** Resolves the indexed type of the property from type of getter and setter.
+   * Chcecks for conformance to Beans design patterns.
+   * @throws IntrospectionException if the property doesnt folow the design patterns
    */
-
   private void findIndexedPropertyType() throws IntrospectionException {
     
     indexedType = null;
@@ -423,8 +448,10 @@ public class IdxPropertyPattern extends PropertyPattern {
     }
   }
 
-  /** Decides about the name of the property from names of the methods */
-  
+  /** Based on names of indexedGetter and indexedSetter resolves the name 
+   * of the indexed property.
+   * @return Name of the indexed property
+   */ 
   String findIndexedPropertyName() {
 
     String superName = findPropertyName();
@@ -447,23 +474,37 @@ public class IdxPropertyPattern extends PropertyPattern {
       return superName;
   }
 
-  // Methods for generating / dleting methods -------------------------------------------
+  // METHODS FOR GENERATING AND DELETING METHODS AND FIELDS--------------------
 
 
+  /** Generates non-indexed getter method without body and without Javadoc comment.
+   * @throws SourceException If modification of source code is impossible.
+   */
   void generateGetterMethod() throws SourceException {
     if ( type != null )
       super.generateGetterMethod();   
   }
 
+  /** Generates non-indexed setter method without body and without Javadoc comment.
+   * @throws SourceException If modification of source code is impossible.
+   */
   void generateSetterMethod() throws SourceException {
     if ( type != null )
       super.generateSetterMethod();
   }
  
+  /** Generates indexed getter method without body and without Javadoc comment.
+   * @throws SourceException If modification of source code is impossible.
+   */
   void generateIndexedGetterMethod() throws SourceException {
     generateIndexedGetterMethod( null, false );
   }
 
+  /** Generates indexed getter method with body and optionaly with Javadoc comment.
+   * @param body Body of the method
+   * @param javadoc Generate Javadoc comment?
+   * @throws SourceException If modification of source code is impossible.
+   */
   void generateIndexedGetterMethod( String body, boolean javadoc ) throws SourceException {
 
     ClassElement declaringClass = getDeclaringClass();
@@ -497,10 +538,19 @@ public class IdxPropertyPattern extends PropertyPattern {
       }
   }
 
+  /** Generates indexed setter method without body and without Javadoc comment.
+   * @throws SourceException If modification of source code is impossible.
+   */
   void generateIndexedSetterMethod() throws SourceException {
     generateIndexedSetterMethod(null, false, false );
   }
 
+  /** Generates indexed setter method with body and optionaly with Javadoc comment.
+   * @param body Body of the method
+   * @param javadoc Generate Javadoc comment?
+   * @param constrained Is the property constrained?
+   * @throws SourceException If modification of source code is impossible.
+   */
   void generateIndexedSetterMethod( String body, boolean constrained, boolean javadoc ) throws SourceException {
 
     ClassElement declaringClass = getDeclaringClass();
@@ -538,8 +588,9 @@ public class IdxPropertyPattern extends PropertyPattern {
   }
 
  
-  /** Delete indexedGetter form source */
-
+  /** Deletes the indexed getter method in source 
+   * @throws SourceException If modification of source code is impossible.
+   */
   void deleteIndexedGetterMethod() throws SourceException {
     
     if ( indexedGetterMethod == null )
@@ -556,8 +607,9 @@ public class IdxPropertyPattern extends PropertyPattern {
     }
   }
   
-  /** Delete indexedSetter form source */
-
+  /** Deletes the indexed setter method in source 
+   * @throws SourceException If modification of source code is impossible.
+   */
   void deleteIndexedSetterMethod() throws SourceException {
     
     if ( indexedSetterMethod == null )
@@ -576,8 +628,12 @@ public class IdxPropertyPattern extends PropertyPattern {
     
   }
 
-  // Property change support -------------------------------------------------------------------------
+  // Property change support ----------------------------------
   
+  /** Sets the properties to values of other indexed property pattern. If the 
+   * properties change fires PropertyChange event.
+   * @param src Source IdxPropertyPattern it's properties will be copied.
+   */
   void copyProperties( IdxPropertyPattern src ) {
 
     boolean changed = !src.getIndexedType().equals( getIndexedType() ) || 
@@ -620,6 +676,8 @@ public class IdxPropertyPattern extends PropertyPattern {
 
 /* 
  * Log
+ *  7    Gandalf   1.6         9/13/99  Petr Hrebejk    Creating multiple 
+ *       Properties/EventSet with the same name vorbiden. Forms made i18n
  *  6    Gandalf   1.5         7/29/99  Petr Hrebejk    Fix - change 
  *       ReadOnly/WriteOnly to ReadWrite mode diddn't registered the added 
  *       methods properly

@@ -22,39 +22,54 @@ import org.openide.util.NbBundle;
 import org.openide.src.*;
 
 /** Singleton with static methods for generating bodies of and 
- * additional elements for bean patterns
+ * additional elements for bean patterns.
  * @author Petr Hrebejk
  */
 class BeanPatternGenerator extends Object {
 
+  /** The ResourceBundle */
   private static final ResourceBundle bundle = NbBundle.getBundle( BeanPatternGenerator.class );
 
+  
+  /** Constant for one Tab */
   private static final String TAB = "  ";
+  /** Constant for two Tabs */
   private static final String TABx2 = TAB + TAB;
+  /** Constant for three Tabs */
   private static final String TABx3 = TABx2 + TAB;
 
-  static String propertySetterBody( String name, Type type,
-                                    boolean bound, boolean constrained,
-                                    boolean withSet, boolean withSupport,
-                                    String supportName,
-                                    String vetoSupportName ) {
- 
+  /** Generates the body of the setter method of Property.
+   * @param name Name of the property
+   * @param type Type of the property
+   * @param bound Is the property bound?
+   * @param constrained Is the property constrained?
+   * @param withSet Should be the set command of property private field generated.
+   * @param withSupport Generate the firing of (Veto|Property)Change Events?
+   * @param supportName Name of field containing <CODE>PropertyChangeListeners</CODE>.
+   * @param vetoSupportName Name of field containing <CODE>VetoableChangeListeners</CODE>.
+   * @return Sring containing the body of the setter method.
+   */
+  static String propertySetterBody(String name, Type type, 
+        boolean bound, boolean constrained, 
+        boolean withSet, boolean withSupport,
+        String supportName, String vetoSupportName) {
+
     StringBuffer setterBody = new StringBuffer( 200 );
     setterBody.append( "\n" );
     if ( withSupport ) {
       /* Generates body in the form:
-        PropType oldPropName = this.propName;
-        this.propName = propName;
-        changes.firePropertyChange(propName, oldPropName, propName ); 
+         PropType oldPropName = this.propName;
+         this.propName = propName;
+         changes.firePropertyChange(propName, oldPropName, propName );
       */
 
       setterBody.append( TAB + type.toString() );
       setterBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) );
-      setterBody.append( " = this." ).append( name ).append( ";\n");  
+      setterBody.append( " = this." ).append( name ).append( ";\n");
 
       if ( constrained ) {
         setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange(\"").append( name ).append( "\" , " );
-      
+
         if ( type.isPrimitive() ) {
           setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" );
           setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) );
@@ -71,7 +86,7 @@ class BeanPatternGenerator extends Object {
         setterBody.append( TAB + "this." ).append( name );
         setterBody.append( " = " ).append( name ).append( ";\n");
         setterBody.append( TAB + supportName ).append( ".firePropertyChange (\"").append( name ).append( "\" , " );
-      
+
         if ( type.isPrimitive() ) {
           setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" );
           setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) );
@@ -88,7 +103,7 @@ class BeanPatternGenerator extends Object {
     else if ( withSet ) {
       /* Generates body in the form:
          this.propName = propName;
-      */
+       */
       setterBody.append( TAB + "this." );
       setterBody.append( name );
       setterBody.append( " = " ).append( name ).append( ";\n" );
@@ -96,7 +111,17 @@ class BeanPatternGenerator extends Object {
     return setterBody.toString();
   }
 
-
+  /** Generates the body of the setter method of IndexedProperty.
+   * @param name Name of the property
+   * @param type Type of the property
+   * @param bound Is the property bound?
+   * @param constrained Is the property constrained?
+   * @param withSet Should be the set command of property private field generated.
+   * @param withSupport Generate the firing of (Veto|Property)Change Events?
+   * @param supportName Name of field containing <CODE>PropertyChangeListeners</CODE>.
+   * @param vetoSupportName Name of field containing <CODE>VetoableChangeListeners</CODE>.
+   * @return Sring containing the body of the setter method.
+   */
   static String idxPropertySetterBody( String name, Type type,
                                     boolean bound, boolean constrained,
                                     boolean withSet, boolean withSupport,
@@ -126,6 +151,11 @@ class BeanPatternGenerator extends Object {
     return setterBody.toString();
   }
 
+  /** Generates the body of the getter method of Property.
+   * @param name Name of the property.
+   * @param withReturn Should be the return command with property private field generated?
+   * @return Sring containing the body of the getter method.
+   */
   static String propertyGetterBody( String name, boolean withReturn ) {
     StringBuffer getterBody = new StringBuffer( 50 );
     getterBody.append( "\n");
@@ -139,6 +169,11 @@ class BeanPatternGenerator extends Object {
     return getterBody.toString();
   }
 
+  /** Generates the body of the getter method of IndexedProperty.
+   * @param name Name of the property.
+   * @param withReturn Should be the return command with property private field generated?
+   * @return Sring containing the body of the getter method.
+   */
   static String idxPropertyGetterBody( String name, boolean withReturn ) {
     StringBuffer getterBody = new StringBuffer( 50 );
     getterBody.append( "\n");
@@ -152,37 +187,22 @@ class BeanPatternGenerator extends Object {
     return getterBody.toString();
   }
 
-  static String getWrapperClassName( Type type ) {
-    if ( type.isClass() )
-      return type.getClassName().getName();
-    else if ( type == Type.BOOLEAN )
-      return "Boolean";
-    else if ( type == Type.BYTE )
-      return "Byte";
-    else if ( type == Type.DOUBLE )
-      return "Double";
-    else if ( type == Type.FLOAT )
-      return "Float"; 
-    else if ( type == Type.CHAR ) 
-      return "Character";
-    else if ( type == Type.INT ) 
-      return "Integer"; 
-    else if ( type == Type.LONG ) 
-      return "Long";
-    else if ( type == Type.SHORT ) 
-      return "Short";
-    else
-      return "Object";
-  }
-
-  static String supportField( ClassElement ce ) throws SourceException {
+  
+  /** Gets the <CODE>PropertyChangeSupport</CODE> field in Class. Tryes to find
+   * a field of type <CODE>PropertyChangeSupport</CODE>. If such field doesn't
+   * exist creates a new one with name <CODE>propertyChangeSupport</CODE>.
+   * @param ce Class to operate on.
+   * @throws SourceException If the modification of the source is impossible.
+   * @return Name of foun or newly created <CODE>PropertyChangeSupport</CODE> field.
+   */
+  static String supportField(ClassElement ce) throws SourceException {
     String supportName = null;
-    Identifier supportId = Identifier.create( "java.beans.PropertyChangeSupport" ); 
+    Identifier supportId = Identifier.create( "java.beans.PropertyChangeSupport" );
     FieldElement[] fields = ce.getFields();
 
     for( int i = 0; i < fields.length; i++ ) {      // Try to find suitable field
-      if ( fields[i].getType().isClass() && 
-           fields[i].getType().getClassName().compareTo( supportId, false ) ) {
+      if ( fields[i].getType().isClass() &&
+      fields[i].getType().getClassName().compareTo( supportId, false ) ) {
         supportName = fields[i].getName().getName();
         break;
       }
@@ -202,7 +222,13 @@ class BeanPatternGenerator extends Object {
     return supportName;
   }
 
-    
+  /** Gets the <CODE>VetoableChangeSupport</CODE> field in Class. Tryes to find
+   * a field of type <CODE>VetoableChangeSupport</CODE>. If such field doesn't
+   * exist creates a new one with name <CODE>vetoableChangeSupport</CODE>.
+   * @param ce Class to operate on.
+   * @throws SourceException If the modification of the source is impossible.
+   * @return Name of foun or newly created <CODE>vetoableChangeSupport</CODE> field.
+   */  
   static String vetoSupportField( ClassElement ce ) throws SourceException {
     String vetoSupportName = null;
     Identifier vetoSupportId = Identifier.create( "java.beans.VetoableChangeSupport" ); 
@@ -230,7 +256,12 @@ class BeanPatternGenerator extends Object {
     return vetoSupportName;
   }
 
-
+  /** If in the class don't exists methods for adding/removing PropertyChangeListeners
+   * for given field adds them.
+   * @param classElement Class to operate on.
+   * @param supportName The <CODE>PropertyChangeSupport</CODE> field the methods will be generated for.
+   * @throws SourceException If the modification of the source is impossible.
+   */
   static void supportListenerMethods( ClassElement classElement, String supportName )
     throws SourceException {
     
@@ -281,6 +312,13 @@ class BeanPatternGenerator extends Object {
     }
   }
     
+  
+  /** If in the class don't exists methods for adding/removing VetoableChangeListeners
+   * for given field adds them.
+   * @param classElement Class to operate on.
+   * @param supportName The <CODE>vetoableChangeSupport</CODE> field the methods will be generated for.
+   * @throws SourceException If the modification of the source is impossible.
+   */
   static void vetoSupportListenerMethods( ClassElement classElement, String supportName )
     throws SourceException {
     
@@ -324,7 +362,15 @@ class BeanPatternGenerator extends Object {
     }
   }
 
-  /** Ensure the listeners array list exists */
+  /** Ensures that the listeners array list exists. Used for generating
+   * multicast event source support implemented by java.util.ArrayList.
+   * Searches the source for suitable field. If the field does not exists
+   * creates new one.
+   * @param ce Class to operate on.
+   * @param type Type of the Event Listener.
+   * @throws SourceException If the modification of the source is impossible.
+   * @return Name of found or newly created field.
+   */
   static String listenersArrayListField( ClassElement ce, Type type ) throws SourceException {
     
     String fieldName = null;
@@ -340,7 +386,6 @@ class BeanPatternGenerator extends Object {
         fieldName = fields[i].getName().getName();
         break;
       }
-
     }
 
     if ( fieldName == null ) { // Field not found we create new
@@ -359,7 +404,15 @@ class BeanPatternGenerator extends Object {
     return fieldName;
   }
 
-  /** Ensure the listenersList  exists */
+  /** Ensure the listenersList  exists. Used for generating
+   * multicast event source support implemented by javax.swing.event.EventListenerList.
+   * Searches the source for suitable field. If the field does not exists
+   * creates new one.
+   * @param ce Class to operate on.
+   * @param type Type of the Event Listener.
+   * @throws SourceException If the modification of the source is impossible.
+   * @return Name of found or newly created field.
+   */
   static String eventListenerListField( ClassElement ce, Type type ) throws SourceException {
     
     String fieldName = null;
@@ -391,7 +444,14 @@ class BeanPatternGenerator extends Object {
     return fieldName;
   }
 
-  /** Ensure that listener field for unicast exists */
+  /** Ensure that listener field for unicast exists. Used for generating
+   * unicast event source support.
+   * Searches the source for suitable field. If the field does not exists
+   * creates new one.
+   * @param ce Class to operate on.
+   * @param type Type of the Event Listener.
+   * @throws SourceException If the modification of the source is impossible.
+   */
   static void unicastListenerField( ClassElement ce, Type type ) throws SourceException {
      
     String fieldName = null;
@@ -500,7 +560,6 @@ class BeanPatternGenerator extends Object {
     if ( fieldName.equals( type.getClassName().getName() ) ) {
       fieldName = new String( "listener" + fieldName  );
     }
-
 
     StringBuffer body = new StringBuffer( 50 );
     body.append( "\n");
@@ -745,10 +804,42 @@ class BeanPatternGenerator extends Object {
 
     return buffer.toString();
   }
+  
+  // UTILITY METHODS ----------------------------------------------------------
+  
+  /** For primitive {@link org.openide.src.Type type} finds class for wrapping it into object.
+   * E.g. <CODE>Type.BOOLEAN -> Boolean</CODE>
+   * @param type Primitive type.
+   * @return Class which wraps the primitive type.
+   */
+  private static String getWrapperClassName(Type type) {
+    if ( type.isClass() )
+    return type.getClassName().getName();
+    else if ( type == Type.BOOLEAN )
+    return "Boolean";
+    else if ( type == Type.BYTE )
+    return "Byte";
+    else if ( type == Type.DOUBLE )
+    return "Double";
+    else if ( type == Type.FLOAT )
+    return "Float";
+    else if ( type == Type.CHAR )
+    return "Character";
+    else if ( type == Type.INT )
+    return "Integer";
+    else if ( type == Type.LONG )
+    return "Long";
+    else if ( type == Type.SHORT )
+    return "Short";
+    else
+    return "Object";
+}
 
 }
 /* 
  * Log
+ *  3    Gandalf   1.2         9/13/99  Petr Hrebejk    Creating multiple 
+ *       Properties/EventSet with the same name vorbiden. Forms made i18n
  *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
  *       generation fix
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    

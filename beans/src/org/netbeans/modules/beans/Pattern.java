@@ -17,76 +17,93 @@ import org.openide.src.ClassElement;
 import org.openide.src.SourceException;
 import org.openide.nodes.Node;
 
-/** This is base class for patterns object. These objects hold information
+/** Base class for patterns object. These objects hold information
  * about progarammatic patterns i.e. Properties and Events in the source code
- * 
- * PENDING: Write some common abstract methods
- * 
  * @author Petr Hrebejk
  */
 public abstract class  Pattern extends Object {
 
+  /** PatternAnalyser which created this pattern */
   PatternAnalyser patternAnalyser;
   
+  /** Constructor of Pattern. The patternAnalyser is the only connetion
+   * to class which created this pattern.
+   * @param patternAnalyser The patern analayser which created this pattern.
+   */
   public Pattern( PatternAnalyser patternAnalyser ) {
     this.patternAnalyser = patternAnalyser;
   }
 
-  /** Every pattern knows it's own name */
-  public abstract String getName();
-
-  /** Every pattern should know if it is public. i.e. all methods
-   * are public. Only these patterns are usable in BeanInfo
+  /** Gets the name of pattern.
+   * @return Name of the pattern.
    */
-  public abstract boolean isPublic();
+  public abstract String getName();
   
-  /** Default behavior - do nothing */
+  /** Sets the name of the pattern
+   * @param name New name of the pattern.
+   * @throws SourceException If the change of source code is not possible.
+   */
   public abstract void setName( String name ) throws SourceException;
   
-
-  /** Gets the class which declares this property */
+  /** Gets the class which declares this Pattern.
+   * @return Class in which this pattern is defined.
+   */
   public ClassElement getDeclaringClass() {
     return patternAnalyser.getClassElement();
   }
 
-  /** Temporary implementation of getCookie */
-
+  /** Temporary implementation of getCookie
+   * @param type Type of the Cookie.
+   * @return The Cookie.
+   */
   Node.Cookie getCookie( Class type ) {
     return null;
   }
 
-  /** Default behavior for destroying pattern is to do nothing */
+  /** Default behavior for destroying pattern is to do nothing
+   * @throws SourceException If the modification of source code is impossible.
+   */
   public void destroy() throws SourceException {
   }
 
+  // UTILITY METHODS ----------------------------------------------------------
+  
   /** Utility method capitalizes the first letter of string, used to
    * generate method names for patterns
+   * @param str The string for capitalization.
+   * @return String with the first letter capitalized.
    */
   static String capitalizeFirstLetter( String str ) {
     if ( str == null || str.length() <= 0 )
       return str;
     
     char chars[] = str.toCharArray();
-	  chars[0] = Character.toUpperCase(chars[0]);
-	  return new String(chars);
+    chars[0] = Character.toUpperCase(chars[0]);
+    return new String(chars);
   }
   
-  // Property change support ----------------------------------------------------------
+  // IMPLEMENTATION OF PropertyChangeSupport ----------------------------------
   
   /** Utility field used by bound properties. */
   private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport( this );
   
   /** Add a PropertyChangeListener to the listener list.
-   *@param l the listener to add. */
+   * @param l the listener to add. 
+   */
   public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
       propertyChangeSupport.addPropertyChangeListener( l );
   }
+  
   /** Removes a PropertyChangeListener from the listener list.
-   *@param l the listener to remove. */
+   * @param l the listener to remove. 
+   */
   public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
     propertyChangeSupport.removePropertyChangeListener( l );
   }
   
+  /** Fires the <CODE>PropertyChangeEvent</CODE> to listeners.
+   * @param evt The event to fire.
+   */
   protected void firePropertyChange( java.beans.PropertyChangeEvent evt ) {
     propertyChangeSupport.firePropertyChange( evt );
   }
@@ -95,6 +112,8 @@ public abstract class  Pattern extends Object {
 
 /* 
  * Log
+ *  4    Gandalf   1.3         9/13/99  Petr Hrebejk    Creating multiple 
+ *       Properties/EventSet with the same name vorbiden. Forms made i18n
  *  3    Gandalf   1.2         7/26/99  Petr Hrebejk    Better implementation of
  *       patterns resolving
  *  2    Gandalf   1.1         7/20/99  Petr Hrebejk    
