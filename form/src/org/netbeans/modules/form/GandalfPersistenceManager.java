@@ -555,7 +555,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         if (comp instanceof RADVisualContainer) {
             org.w3c.dom.Node layoutNode = findSubNode(node, XML_LAYOUT);
-            if (layoutNode != null) {
+            if (layoutNode != null
+                    && LayoutSupportRegistry.getLayoutSupportForContainer(
+                                                comp.getBeanClass()) == null) {
                 String className = findAttribute(layoutNode, ATTR_LAYOUT_CLASS);
                 try {
                     DesignLayout dl =(DesignLayout)
@@ -589,7 +591,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     return false; // [PENDING - notify]
                 }
             }
-            else { // no layout saved, initialize the default
+            else { // no layout saved, or it is a dedicated layout support
                 ((RADVisualContainer)comp).initLayoutSupport();
             }
         }

@@ -206,6 +206,9 @@ public class LayoutSupportRegistry {
             containerToLayoutSupport.put(
                 "javax.swing.JLayeredPane",
                 "org.netbeans.modules.form.layoutsupport.dedicated.JLayeredPaneSupport");
+            containerToLayoutSupport.put(
+                "javax.swing.JToolBar",
+                "org.netbeans.modules.form.layoutsupport.dedicated.JToolBarSupport");
         }
         return containerToLayoutSupport;
     }
