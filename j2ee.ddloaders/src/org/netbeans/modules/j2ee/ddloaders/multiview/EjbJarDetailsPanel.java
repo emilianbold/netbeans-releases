@@ -16,6 +16,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbDetailForm;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 import java.awt.event.ActionEvent;
@@ -28,35 +29,10 @@ class EjbJarDetailsPanel extends EjbDetailForm {
     private final EjbJar ejbJar;
     private EjbJarMultiViewDataObject dataObject;
 
-    private abstract class EditorModel extends ItemEditorHelper.ItemEditorModel {
-
-        protected boolean validate(String value) {
-            return true;
+    private class LargeIconEditorModel extends TextItemEditorModel {
+        public LargeIconEditorModel(XmlMultiViewDataObject dataObject) {
+            super(dataObject);
         }
-
-        protected abstract void setValue(String value);
-
-        protected abstract String getValue();
-
-        public final boolean setItemValue(String value) {
-            if (validate(value)) {
-                setValue(value);
-                dataObject.modelUpdatedFromUI();
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        public final String getItemValue() {
-            return getValue();
-        }
-
-        public void documentUpdated() {
-        }
-    }
-
-    private class LargeIconEditorModel extends EditorModel {
 
         protected String getValue() {
             return ejbJar.getLargeIcon();
@@ -67,7 +43,10 @@ class EjbJarDetailsPanel extends EjbDetailForm {
         }
     }
 
-    private class SmallIconEditorModel extends EditorModel {
+    private class SmallIconEditorModel extends TextItemEditorModel {
+        public SmallIconEditorModel(XmlMultiViewDataObject dataObject) {
+            super(dataObject);
+        }
 
         protected boolean validate(String value) {
             return value.length() > 0;
@@ -82,7 +61,10 @@ class EjbJarDetailsPanel extends EjbDetailForm {
         }
     }
 
-    private class DescriptionEditorModel extends EditorModel {
+    private class DescriptionEditorModel extends TextItemEditorModel {
+        public DescriptionEditorModel(XmlMultiViewDataObject dataObject) {
+            super(dataObject);
+        }
 
         protected boolean validate(String value) {
             return value.length() > 0;
@@ -97,7 +79,10 @@ class EjbJarDetailsPanel extends EjbDetailForm {
         }
     }
 
-    private class DisplayNameEditorModel extends EditorModel {
+    private class DisplayNameEditorModel extends TextItemEditorModel {
+        public DisplayNameEditorModel(XmlMultiViewDataObject dataObject) {
+            super(dataObject);
+        }
 
         protected boolean validate(String value) {
             if (value.length() > 0) {
@@ -121,10 +106,10 @@ class EjbJarDetailsPanel extends EjbDetailForm {
         super(sectionNodeView);
         this.dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
         this.ejbJar = ejbJar;
-        new ItemEditorHelper(getDisplayNameTextField(), new DisplayNameEditorModel());
-        new ItemEditorHelper(getDescriptionTextArea(), new DescriptionEditorModel());
-        new ItemEditorHelper(getSmallIconTextField(), new SmallIconEditorModel());
-        new ItemEditorHelper(getLargeIconTextField(), new LargeIconEditorModel());
+        new ItemEditorHelper(getDisplayNameTextField(), new DisplayNameEditorModel(dataObject));
+        new ItemEditorHelper(getDescriptionTextArea(), new DescriptionEditorModel(dataObject));
+        new ItemEditorHelper(getSmallIconTextField(), new SmallIconEditorModel(dataObject));
+        new ItemEditorHelper(getLargeIconTextField(), new LargeIconEditorModel(dataObject));
         getBrowseLargeIconButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 //TODO: open browser for the icon

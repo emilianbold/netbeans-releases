@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Arrays;
 
 /**
  * @author pfiala
@@ -30,21 +31,18 @@ public class EnterpriseBeansNode extends SectionNode {
     public EnterpriseBeansNode(SectionNodeView sectionNodeView, EnterpriseBeans enterpriseBeans) {
         super(sectionNodeView, enterpriseBeans, "Enterprise Bean", Utils.ICON_BASE_ENTERPRISE_JAVA_BEANS_NODE);
         setExpanded(true);
-        // The TreeSet helps to sort beans according to their display name 
-        Set ejbSet = new TreeSet(new Comparator() {
+
+        final Ejb[] ejbs = enterpriseBeans.getEjbs();
+        
+        // sort beans according to their display name
+        Arrays.sort(ejbs, new Comparator() {
             public int compare(Object o1, Object o2) {
                 return ((Ejb) o1).getDefaultDisplayName().compareTo(((Ejb) o2).getDefaultDisplayName());
             }
         });
-        final Ejb[] ejbs = enterpriseBeans.getEjbs();
-        // sort beans
+
         for (int i = 0; i < ejbs.length; i++) {
-            ejbSet.add(ejbs[i]);
-        }
-        for (Iterator it = ejbSet.iterator(); it.hasNext();) {
-            Ejb ejb = (Ejb) it.next();
-            final EjbNode ejbNode = new EjbNode(sectionNodeView, ejb);
-            addChild(ejbNode);
+            addChild(new EjbNode(sectionNodeView, ejbs[i]));
         }
     }
 }
