@@ -84,7 +84,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   /** Minimal initial height of this top component */
   public static final int MIN_HEIGHT = 150;
   /** Default width of main explorer */
-  public static final int DEFAULT_WIDTH = 300;
+  public static final int DEFAULT_WIDTH = 350;
 
   /** Default constructor
   */
@@ -353,6 +353,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  8    Gandalf   1.7         3/25/99  David Simonek   another small changes in 
+*       window system
 *  7    Gandalf   1.6         3/25/99  David Simonek   changes in window system,
 *       initial positions, bugfixes
 *  6    Gandalf   1.5         3/18/99  Ian Formanek    The title now updates 
