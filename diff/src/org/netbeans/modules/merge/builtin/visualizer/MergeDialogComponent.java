@@ -229,7 +229,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     /** @return Preferred size of editor top component  */
     public Dimension getPreferredSize() {
         Rectangle bounds = org.openide.TopManager.getDefault().getWindowManager().getCurrentWorkspace().getBounds();
-        return new Dimension(bounds.width / 2, bounds.height / 2);
+        return new Dimension(bounds.width / 2, (int) (bounds.height / 1.25));
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
