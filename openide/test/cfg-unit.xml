@@ -67,6 +67,9 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- But if #6 is seen failing, please file a bug report, that is more serious. -->
                 <include name="org/openide/nodes/*.class"/>
                 <include name="org/openide/util/*.class"/>
+                <!-- XXX #17333: something in XTest forces TopManager to be precreated:
+                <include name="org/openide/util/actions/*Test.class"/>
+                -->
                 <include name="org/openide/xml/*.class"/>
             </patternset>
         </testset>      
