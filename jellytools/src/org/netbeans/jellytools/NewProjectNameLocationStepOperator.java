@@ -201,7 +201,7 @@ public class NewProjectNameLocationStepOperator extends NewProjectWizardOperator
      */
     public JButtonOperator btBrowseProjectLocation() {
         if ( _btBrowseLocation==null ) {
-             _btBrowseLocation = new JButtonOperator(this,Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
+             _btBrowseLocation = new JButtonOperator(this,Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
                                         "LBL_NWP1_BrowseLocation_Button"));
         }
         return _btBrowseLocation;

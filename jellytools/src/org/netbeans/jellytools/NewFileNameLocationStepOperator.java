@@ -77,7 +77,8 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
      */
     public JLabelOperator lblProject() {
         if(_lblProject == null) {
-            _lblProject = new JLabelOperator(this,Bundle.getString("org.netbeans.modules.java.project.Bundle.properties","LBL_JavaTargetChooser_PanelGUI_jLabel5"));
+            _lblProject = new JLabelOperator(this, Bundle.getString("org.netbeans.modules.project.ui.Bundle", 
+                                                                    "LBL_TemplateChooserPanelGUI_jLabel1"));
         }
         return _lblProject;
     }
@@ -102,7 +103,7 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
      */
     public JLabelOperator lblCreatedFile() {
         if(_lblCreatedFile == null) {
-            _lblCreatedFile = new JLabelOperator(this,Bundle.getString("org.netbeans.modules.java.project.Bundle.properties","LBL_JavaTargetChooser_CreatedFile_Label"));
+            _lblCreatedFile = new JLabelOperator(this, Bundle.getString("org.netbeans.modules.java.project.Bundle","LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
         }
         return _lblCreatedFile;
     }
@@ -142,11 +143,6 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
         return _cboPackage;
     }
     
-    /** Selects location in combo box Location: */
-    public void selectLocation(String location) {
-        cboLocation().selectItem(location);
-    }
-    
     /** Selects given package in combo box Package.
      * @param packageName name of package to be selected
      */
@@ -158,6 +154,7 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
      * @param packageName name of package
      */
     public void setPackage(String packageName) {
+        cboPackage().clearText();
         cboPackage().typeText(packageName);
     }
 
@@ -166,6 +163,22 @@ public class NewFileNameLocationStepOperator extends NewFileWizardOperator {
      */
     public void setObjectName(String objectName) {
         txtObjectName().setText(objectName);
+    }
+    
+    /** Selects Source Packages in combo box Location:.
+     * Cannot set location directly by string because combo box has a model
+     * with objects and not visible strings.
+     */
+    public void selectSourcePackagesLocation() {
+        cboLocation().selectItem(0);
+    }
+    
+    /** Selects Test Packages in combo box Location:
+     * Cannot set location directly by string because combo box has a model
+     * with objects and not visible strings.
+     */
+    public void selectTestPackagesLocation() {
+        cboLocation().selectItem(1);
     }
     
     /** Performs verification by accessing all sub-components */    
