@@ -25,6 +25,11 @@ public class URLEditor extends PropertyEditorSupport implements org.openide.expl
 
     /** sets new value */
     public void setAsText(String s) {
+        if ("null".equals(s)) { // NOI18N
+            setValue(null);
+            return;
+        }
+
         try {
             URL url = new URL (s);
             setValue(url);
@@ -35,8 +40,8 @@ public class URLEditor extends PropertyEditorSupport implements org.openide.expl
 
     /** @return the current value as String */
     public String getAsText() {
-        URL url = (URL)getValue ();
-        return url.toString ();
+        URL url = (URL)getValue();
+        return url != null ? url.toString() : "null"; // NOI18N
     }
 
     public String getJavaInitializationString () {
