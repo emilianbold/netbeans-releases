@@ -261,6 +261,13 @@ final class Services extends ServiceType.Registry {
       
       return getNodesCount () == 0;
     }
+    
+    /** Reorder of children.
+    */
+    public void reorder (int[] perm) {
+      super.reorder (perm);
+      firePropertyChange ();
+    }
 
     /** Method to obtain all ServiceType(s) presented in this level and
     * in all sublevels.
@@ -598,6 +605,8 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  4    Gandalf   1.3         9/21/99  Jaroslav Tulach Updates the list of 
+*       services when reorder is performed.
 *  3    Gandalf   1.2         9/19/99  Jaroslav Tulach Read/write external 
 *       remembers order of services.
 *  2    Gandalf   1.1         9/17/99  Jaroslav Tulach Reorder of nodes works.
