@@ -494,9 +494,6 @@ public class NonGui extends NbTopManager implements Runnable {
                 userModuleDirectory
             );
         }
-        
-        // autoload directories
-        org.openide.util.Task automount = AutomountSupport.initialize ();
 
         // -----------------------------------------------------------------------------------------------------
         // 10. Initialization of project (because it can change loader pool and it influences main window menu)
@@ -530,9 +527,6 @@ public class NonGui extends NbTopManager implements Runnable {
         } catch (Exception e) {
             TopManager.getDefault().getErrorManager().notify(e);
         }
-
-        // wait until mounting really occurs
-        automount.waitFinished ();
         
         //---------------------------------------------------------------------------------------------------------
         // initialize main window AFTER the setup wizard is finished
