@@ -55,7 +55,6 @@ Microsystems, Inc. All Rights Reserved.
 	  validate="true"
 	  attrProp="true"
 	  rootDir="src"/>
-<!--	  
 	<schema2beans schema="${s2b_res_root}/web-app_2_4.xsd"
 	  mddFile="${s2b_res_root}/web-app_2_4.mdd"
 	  package="org.netbeans.modules.web.dd.model_2_4"
@@ -65,7 +64,6 @@ Microsystems, Inc. All Rights Reserved.
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/>
--->	  
 	  <delete file="${s2b_root_2_4}/WebAppType.java"/>
   </target>
 
