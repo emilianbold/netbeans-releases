@@ -83,7 +83,7 @@ public class TestBagInfoTask extends Task{
                 if (!tb.xmlat_name.equals(UNKNOWN)) {
                     loadedTestBag.xmlat_name=tb.xmlat_name;
                 }
-                if (!tb.xmlat_module.equals(UNKNOWN)) {
+                if (!tb.xmlat_module.equals(UNKNOWN)|(loadedTestBag.xmlat_module==null)) {
                     loadedTestBag.xmlat_module=tb.xmlat_module;
                 }
                 if (!tb.xmlat_testType.equals(UNKNOWN)) {
