@@ -14,7 +14,6 @@
 package org.netbeans.beaninfo.editors;
 
 import java.util.*;
-//import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
@@ -43,6 +42,12 @@ public class ServiceTypePanel extends ExplorerPanel {
 
     /** @see ServiceTypeEditor#none */
     private ServiceType none;
+    
+    /** 
+     * False - we are selecting from the registered service types, true - creating
+     * new instances of the services
+     */
+    private boolean createNew = false;
 
     static final long serialVersionUID =861345226525021334L;
     /** Creates new Panel PropertyEditor
@@ -50,9 +55,10 @@ public class ServiceTypePanel extends ExplorerPanel {
     * @param name string to name the panel with
     * @param none no-op type, or null
     */
-    public ServiceTypePanel(Class clazz, String name, ServiceType none) {
+    public ServiceTypePanel(Class clazz, String name, ServiceType none, boolean createNew) {
         this.clazz = clazz;
         this.none = none;
+        this.createNew = createNew;
         update ();
 
         initComponents ();
@@ -74,10 +80,27 @@ public class ServiceTypePanel extends ExplorerPanel {
     /** Sets the selected value of the component.
     */
     public void setServiceType (ServiceType s) {
+        if (s == null) {
+            return;
+        }
+        
         int i = services.indexOf (s);
 
-        if (i < 0) i = 0;
+        if (i < 0) {
+            // if s is not found try to add s to the nodes by temporarily 
+            // assigning the value to the none var (none value is added to the list of services)
+            ServiceType oldNone = none;
+            none = s;
+            update(); // recreates the nodes
+            none = oldNone;
+            i = services.indexOf (s);
+        }
 
+        if (i < 0) {
+            TopManager.getDefault().getErrorManager().log(ErrorManager.INFORMATIONAL, "ServiceTypePanel: Unable to add service " + s.getName()); // NOI18N
+            i = 0;
+        }
+        
         Node[] nodes = getExplorerManager ().getRootContext ().getChildren ().getNodes ();
         if (i >= nodes.length) return;
 
@@ -86,7 +109,7 @@ public class ServiceTypePanel extends ExplorerPanel {
                                                         nodes[i]
                                                     });
         } catch (java.beans.PropertyVetoException ex) {
-            throw new InternalError();
+            TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
         }
 
         firePropertyChange ();
@@ -118,6 +141,7 @@ public class ServiceTypePanel extends ExplorerPanel {
         ch.add ((Node[])nodes ().toArray (new Node[0]));
 
         getExplorerManager ().setRootContext (n);
+        setActivatedNodes(new Node[0]);
     }
 
     /** Computes the list of nodes that should represent all services classes
@@ -132,10 +156,21 @@ public class ServiceTypePanel extends ExplorerPanel {
         while (en.hasMoreElements ()) {
             try {
                 Object service = en.nextElement ();
-                l.add (new MN ((ServiceType)service));
-
-                services.add (service);
+                if (createNew) {
+                    // in this case create a new instance for all types
+                    Object newObject = service.getClass().newInstance();
+                    l.add(new MN((ServiceType)newObject));
+                    services.add(newObject);
+                } else {
+                    l.add (new MN ((ServiceType)service));
+                    services.add (service);
+                }
             } catch (java.beans.IntrospectionException ex) {
+                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+            } catch (InstantiationException ex) {
+                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+            } catch (IllegalAccessException ex) {
+                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
         try {
@@ -144,6 +179,7 @@ public class ServiceTypePanel extends ExplorerPanel {
                 services.add (none);
             }
         } catch (java.beans.IntrospectionException ex) {
+            TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
         }
         return l;
     }
@@ -227,7 +263,8 @@ public class ServiceTypePanel extends ExplorerPanel {
     private org.openide.explorer.propertysheet.PropertySheetView propertySheetView1;
     // End of variables declaration//GEN-END:variables
 
-    private static final class MN extends BeanNode {
+    /** Node for displaying services */
+    private final class MN extends BeanNode {
         public MN (ServiceType t) throws java.beans.IntrospectionException {
             super (t);
         }
@@ -239,6 +276,9 @@ public class ServiceTypePanel extends ExplorerPanel {
         // Prevent folks from changing the name here!
         public Node.PropertySet[] getPropertySets () {
             final Node.PropertySet[] sets = super.getPropertySets ();
+            if (createNew) {
+                return sets; // when creating new copies user can change the name
+            }
             Node.PropertySet[] nue = new Node.PropertySet[sets.length];
             for (int i = 0; i < sets.length; i++) {
                 final int ii = i;
@@ -260,7 +300,5 @@ public class ServiceTypePanel extends ExplorerPanel {
             }
             return nue;
         }
-
     }
-
 }
