@@ -131,6 +131,9 @@ ToDo:
 
       <!-- config for javadoc -->
       <config name="javadoc" modules="${config.javadoc}"/>
+
+      <!-- config for API signature test builds -->
+      <config name="sigtest" modules="${config.sigtest}"/>
     </configmods>
 
   </target>
