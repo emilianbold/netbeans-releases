@@ -29,7 +29,7 @@ import org.xml.sax.SAXException;
  *
  * @author Ivan Bradac, refactored by Jaroslav Tulach
  */
-public final class Issue extends Object {
+public final class Issue extends Object implements Comparable {
     //static final String ENHANCEMENT = "ENHANCEMENT";
     static final String ISSUE_TYPE = "issue_type"; 
     static final String SHORT_DESC = "short_desc";
@@ -287,6 +287,13 @@ public final class Issue extends Object {
             buffer.append("VALUE : " + entry.getValue() + "\n");      
         }
         return buffer.toString();
+    }
+
+    /** Compares issues by their ID
+     */
+    public int compareTo (Object o) {
+        Issue i = (Issue)o;
+        return getId () - i.getId ();
     }
 
     /** 
