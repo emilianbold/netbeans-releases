@@ -189,7 +189,8 @@ public class ModeView extends ViewElement {
             //size, as that is often expensive and we're not interested in the
             //result anyway
             Dimension d = (Dimension) ((JComponent) comp).getClientProperty ("lastAvailableSpace"); //NOI18N
-            if (!availableSpace.equals(d)) {
+            Dimension currDim = comp.getPreferredSize();
+            if (!availableSpace.equals(d) || !availableSpace.equals(currDim)) {
                 //We will only return true if we actually did something
                 ((JComponent)comp).setPreferredSize(availableSpace);
                 ((JComponent)comp).putClientProperty("lastAvailableSpace", availableSpace); //NOI18N

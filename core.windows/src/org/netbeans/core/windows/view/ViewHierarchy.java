@@ -29,6 +29,8 @@ import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 
+import org.netbeans.core.windows.Debug;
+
 /**
  * Class which manages GUI components.
  *
@@ -546,17 +548,19 @@ final class ViewHierarchy {
     
     private void setSplitRootIntoDesktop(ViewElement root) {
         boolean revalidate = false;
-        if (root != null) {
-            revalidate = root.updateAWTHierarchy(desktop.getInnerPaneDimension());
-        }
         desktop.setSplitRoot(root);
-
+        if (root != null) {
+            Dimension dim = desktop.getInnerPaneDimension();
+//            debugLog("innerpanedidim=" + dim + " currentsize=" + root.getComponent().getSize());
+            revalidate = root.updateAWTHierarchy(dim);
+        }
+        
         if (revalidate) {
-
             desktop.getDesktopComponent().invalidate();
             ((JComponent)desktop.getDesktopComponent()).revalidate();
             desktop.getDesktopComponent().repaint();
-        }
+//            debugLog("revalidating..size=" + desktop.getDesktopComponent().getSize() + "innerpane=" + desktop.getInnerPaneDimension());
+        } 
     }
 
     // PENDING Revise, updating desktop and editor area, bounds... separate this method.
@@ -940,5 +944,9 @@ final class ViewHierarchy {
         }
     } // End of main window listener.
     
+    
+    private static void debugLog(String message) {
+        Debug.log(ViewHierarchy.class, message);
+    }
 }
 

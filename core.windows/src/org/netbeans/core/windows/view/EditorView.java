@@ -103,16 +103,18 @@ public class EditorView extends ViewElement {
         boolean result = false;
         EditorAreaComponent comp = getEditorAreaComponent();
         Dimension d = (Dimension) comp.getClientProperty ("lastAvailableSpace"); //NOI18N
-        if (!availableSpace.equals(d)) {
+        Dimension currDim = comp.getPreferredSize();
+        if (!availableSpace.equals(d) || !availableSpace.equals(currDim)) {
             //We will only return true if we actually did something
             comp.setPreferredSize(availableSpace);
+//            comp.setMinimumSize(availableSpace);
             comp.putClientProperty("lastAvailableSpace", availableSpace); //NOI18N
             result = true;
         }
-        if (editorArea != null) {
-            result |= editorArea.updateAWTHierarchy(new Dimension(availableSpace.width - 1, availableSpace.height - 1));
-        }
         assureComponentInEditorArea();      
+        if (editorArea != null) {
+            result |= editorArea.updateAWTHierarchy(new Dimension(availableSpace.width - 5, availableSpace.height - 5));
+        }
         return result;
     }
     

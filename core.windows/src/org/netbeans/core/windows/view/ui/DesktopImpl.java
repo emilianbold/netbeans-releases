@@ -133,8 +133,8 @@ public final class DesktopImpl {
 //            System.out.println("desktopimpl : adding compl");
             desktop.add(component, BorderLayout.CENTER);
         }
-        layeredPane.revalidate();
-        layeredPane.repaint();
+//        layeredPane.revalidate();
+//        layeredPane.repaint();
     }    
     
     public ViewElement getSplitRoot () {
@@ -152,7 +152,7 @@ public final class DesktopImpl {
         if (constraint == BorderLayout.WEST || constraint == BorderLayout.SOUTH) {
             redefineBorderForSouthBar();
         }
-        layeredPane.revalidate();
+        layeredPane.invalidate();
     }
     
     public void removeSlidingView (SlidingView view) {
@@ -167,7 +167,10 @@ public final class DesktopImpl {
             redefineBorderForSouthBar();
         }
         checkCurSlide();
-        layeredPane.revalidate();
+        layeredPane.invalidate();
+//        System.out.println("removeSlidingViewrevalidating");
+//        layeredPane.repaint();
+///        System.out.println("removeSlidingViewrepaining");
     }
     
     private void checkCurSlide() {

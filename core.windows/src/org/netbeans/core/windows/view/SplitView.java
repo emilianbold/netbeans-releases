@@ -100,52 +100,55 @@ public class SplitView extends ViewElement {
     
     public boolean updateAWTHierarchy(Dimension availableSpace) {
         boolean result = false;
+//        debugLog(this.hashCode() + " available width=" + availableSpace.width);
+        //this is neccesary because of thge way resettoPreffereSize() is implemented.
+        // if the split has wrong size, the preffered sizing fails and minimumsizes are used
+        // as fallback -> resulting in weirdo resizing, editor eating all space..
+        if (!availableSpace.equals(getSplitPane().getSize())) {
+            getSplitPane().setSize(availableSpace);
+            result = true;
+        }
         
         Dimension firstDim;
         Dimension secondDim;
         double location = getLocation();
         int dividerSize = getDividerSize();
         if (getOrientation() == javax.swing.JSplitPane.VERTICAL_SPLIT) {
-                firstDim = new Dimension(availableSpace.width, (int)(availableSpace.height * location) - dividerSize);
-                secondDim = new Dimension(availableSpace.width, (int)(availableSpace.height * (1D - location)) - dividerSize);
+            firstDim = new Dimension(availableSpace.width, (int)(availableSpace.height  * location - dividerSize));
+            secondDim = new Dimension(availableSpace.width, (int)(availableSpace.height * (1D - location) - dividerSize));
         } else {
-                firstDim = new Dimension((int)(availableSpace.width * location) - dividerSize, availableSpace.height);
-                secondDim = new Dimension((int)(availableSpace.width * (1D - location)) - dividerSize, availableSpace.height);
+            firstDim = new Dimension((int)(availableSpace.width * location - dividerSize), availableSpace.height);
+            secondDim = new Dimension((int)(availableSpace.width * (1D - location) - dividerSize), availableSpace.height);
         }
-//        debugLog("left=" + firstDim.width + " " + first.getClass());
-//        debugLog("right=" + secondDim.width + " " + second.getClass());
+//        debugLog(this.hashCode() + " left=" + firstDim.width + " " + first.getClass());
+//        debugLog(this.hashCode() + " right=" + secondDim.width + " " + second.getClass());
         
         //First check if we really need to do anything.  Use a client property
         //so we don't force the component to calculate its preferred size, which
         //is pointless (we will ignore it) and expensive
         Dimension d = (Dimension) getSplitPane().getClientProperty ("lastAvailableSpace"); //NOI18N
-        if (!availableSpace.equals(d)) {
+        Dimension currDim = getSplitPane().getPreferredSize();
+        if (!availableSpace.equals(d) || !availableSpace.equals(currDim)) {
             getSplitPane().setPreferredSize(availableSpace);
             getSplitPane().putClientProperty("lastAvailableSpace", availableSpace); //NOI18N
             result = true;
         }
+        result |= resetResizeWeight();
+        
+        result |= assureComponentInSplit(first.getComponent(), true);
+        result |= assureComponentInSplit(second.getComponent(), false);
+//        debugLog(this.hashCode() + " update left=" + first.getClass());
         result |= first.updateAWTHierarchy(firstDim);
+//        debugLog(this.hashCode() + " update right=" + second.getClass());
         result |= second.updateAWTHierarchy(secondDim);
-        assureComponentInSplit(first.getComponent(), true);
-        assureComponentInSplit(second.getComponent(), false);
+//        assureComponentInSplit(first.getComponent(), true);
+//        assureComponentInSplit(second.getComponent(), false);
         if (first.getComponent() == null || second.getComponent() == null) {
 //            debugLog("setting divider");
             result = true;
             splitPane.setDividerLocation(location);
         } else if (result) { //Check result value - resetToPreferredSizes() will *always* cause a full repaint
-//            debugLog("reset to preffered sizes");
             splitPane.resetToPreferredSizes();
-            // need to reset child splitpanes after resetting the parent.
-            // not sure why but otherwise one gets strange resize effects..
-            //
-            if (first instanceof SplitView) {
-//                debugLog("reseting left..");
-                ((JSplitPane)first.getComponent()).resetToPreferredSizes();
-            }
-            if (second instanceof SplitView) {
-//                debugLog("reseting right..");
-                ((JSplitPane)second.getComponent()).resetToPreferredSizes();
-            }
         }
         return result;
     }
@@ -159,17 +162,47 @@ public class SplitView extends ViewElement {
             return false;
         }
         if(parent != null) {
+//            debugLog(this.hashCode() + " removing from previous..");
             parent.remove(comp);
         }
         
-        int location = getSplitPane().getDividerLocation(); // keep split position
+//        int location = getSplitPane().getDividerLocation(); // keep split position
         if(left) {
+//            debugLog(this.hashCode() + " set left..");
             splitPane.setLeftComponent(comp);
         } else {
+//            debugLog(this.hashCode() + "set right..");
             splitPane.setRightComponent(comp);
         }
         return true;
-//        splitPane.setDividerLocation(location);
+    }
+    
+    private boolean resetResizeWeight() {
+        // Set resize weight.
+        double myWeight = getSplitPane().getResizeWeight();
+        double firstResize  = first.getResizeWeight();
+        double secondResize = second.getResizeWeight();
+        double resize;
+        if(firstResize == 0D && secondResize == 0.D) {
+//                            debugLog("creating splitpane - equal resize");
+            resize = 0.5D;
+        } else if(firstResize == 0D) {
+//                            debugLog("creating splitpane - right wins" + second.getClass());
+            resize = 0D;
+        } else if(secondResize == 0D) {
+//                            debugLog("creating splitpane - left wins" + first.getClass());
+            resize = 1D;
+        } else {
+            resize = firstResize / (firstResize + secondResize);
+//                            debugLog("creating splitpane - splitting weight=" + resize);
+        }
+        boolean resized = myWeight != resize;
+        if (resized) {
+            getSplitPane().setResizeWeight(resize);
+        }
+        debugLog("result of reweight is="+ (myWeight != resize));
+        return resized;
+        
     }
     
     private JSplitPane getSplitPane() {
@@ -177,24 +210,6 @@ public class SplitView extends ViewElement {
             splitPane = new NestedSplitPane(this, orientation,
                 first.getComponent(), second.getComponent());
 
-            // Set resize weight.
-            double firstResize  = first.getResizeWeight();
-            double secondResize = second.getResizeWeight();
-            double resize;
-            if(firstResize == 0D && secondResize == 0.D) {
-//                debugLog("creating splitpane - equal resize");
-                resize = 0.5D;
-            } else if(firstResize == 0D) {
-//                debugLog("creating splitpane - right wins" + second.getClass());
-                resize = 0D;
-            } else if(secondResize == 0D) {
-//                debugLog("creating splitpane - left wins" + first.getClass());
-                resize = 1D;
-            } else {
-                resize = firstResize / (firstResize + secondResize);
-//                debugLog("creating splitpane - splitting weight=" + resize);
-            }
-            splitPane.setResizeWeight(resize);
             
             splitPane.setDividerSize(orientation == JSplitPane.VERTICAL_SPLIT
                 ? Constants.DIVIDER_SIZE_VERTICAL
