@@ -31,7 +31,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   /** True, if the design form has been loaded from the form file */
   transient private boolean formLoaded;
   /** The DesignForm of this form */
-  transient private DesignForm designForm;
+//  transient private DesignForm designForm;
   
   /** lock for opening form */
   private static final Object OPEN_FORM_LOCK = new Object ();
@@ -133,7 +133,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     ObjectInputStream ois = null;
     try {
       ois = new BCObjectInputStream(is); 
-      designForm = (DesignForm) ois.readObject ();
+      Object deserializedForm = ois.readObject ();
+//      designForm = (DesignForm) deserializedForm;
 //      FormEditor.displayErrorLog ();
 
       formLoaded = true;
@@ -219,6 +220,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  3    Gandalf   1.2         3/27/99  Ian Formanek    
  *  2    Gandalf   1.1         3/26/99  Ian Formanek    
  *  1    Gandalf   1.0         3/24/99  Ian Formanek    
  * $
