@@ -516,7 +516,8 @@ public final class MainWindow extends JFrame {
 
         int prevState = getExtendedState();
 
-        releaseWaitingForPaintDummyGraphic();
+        if( !System.getProperty("os.name").startsWith("Windows") )
+            releaseWaitingForPaintDummyGraphic();
 
         super.setExtendedState(state);
         
