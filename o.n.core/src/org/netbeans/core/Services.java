@@ -181,6 +181,11 @@ final class Services extends ServiceType.Registry {
         if (debug ()) ex.printStackTrace();
       } catch (ClassNotFoundException ex) {
         if (debug ()) ex.printStackTrace();
+      } catch (RuntimeException e) {
+        if ((e.getClass() != RuntimeException.class) ||
+            (e.getMessage().indexOf("java.lang.RuntimeException: Platform") < 0)) {
+          throw e;
+        } // else ignore
       }
     }
     
@@ -686,6 +691,8 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  13   Gandalf   1.12        11/16/99 Ales Novak      RuntimeException Platform
+*       catched
 *  12   Gandalf   1.11        11/10/99 Ales Novak      InstanceLevel.add - 
 *       default is properly handled
 *  11   Gandalf   1.10        10/29/99 Jesse Glick     Added "(no compiler)" 
