@@ -139,6 +139,11 @@ public abstract class NbTopManager extends TopManager {
     /** status text */
     private String statusText;
 
+    /** the debugger listener listening on adding/removing debugger*/
+    private static LookupListener debuggerLsnr = null;
+    /** the lookup query finding all registered debuggers */
+    private static Lookup.Result debuggerLkpRes = null;
+    
     /** initializes properties about builds etc. */
     static {
         // Set up module-versioning properties, which logger prints.
@@ -552,11 +557,38 @@ public abstract class NbTopManager extends TopManager {
     * @return currently installed  debugger.
     */
     public Debugger getDebugger () throws DebuggerNotFoundException {
-        Debugger d = (Debugger) Lookup.getDefault().lookup(Debugger.class);
-        if (d == null) {
-            throw new DebuggerNotFoundException();
+        Iterator it = getDebuggerResult().allInstances().iterator();
+        if (it.hasNext()) return (Debugger) it.next();
+        throw new DebuggerNotFoundException();
+    }
+    
+    /** get the lookup query finding all registered debuggers */
+    private synchronized Lookup.Result getDebuggerResult() {
+        if (debuggerLkpRes == null) {
+            debuggerLkpRes = Lookup.getDefault().lookup(new Lookup.Template(Debugger.class));
         }
-        return d;
+        return debuggerLkpRes;
+    }
+    
+    /** fire property change PROP_DEBUGGER */
+    private void fireDebuggerChange() {
+        firePropertyChange (PROP_DEBUGGER, null, null);
+    }
+    
+    /** initialize listening on adding/removing debugger. */
+    private void initDebuggerListener() {
+        Lookup.Result res;
+        synchronized (this) {
+            if (debuggerLsnr != null) return;
+            res = getDebuggerResult();
+            debuggerLsnr = new LookupListener() {
+                public void resultChanged(LookupEvent ev) {
+                    fireDebuggerChange();
+                }
+            };
+            res.addLookupListener(debuggerLsnr);
+        }
+        res.allClasses();
     }
 
     /**
@@ -758,6 +790,7 @@ public abstract class NbTopManager extends TopManager {
 
     /** Add listener */
     public void addPropertyChangeListener (PropertyChangeListener l) {
+        initDebuggerListener();
         change.addPropertyChangeListener (l);
     }
 
