@@ -52,6 +52,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                                                "getProxyPort", "setProxyPort"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_SHOW_FILE_EXTENSIONS, IDESettings.class,
                                                "getShowFileExtensions", "setShowFileExtensions"), // NOI18N
+                       new PropertyDescriptor (IDESettings.PROP_MODULES_SORT_MODE, IDESettings.class,
+                                               "getModulesSortMode", "setModulesSortMode"), // NOI18N
                    };
 
             desc[0].setDisplayName (Main.getString ("PROP_SHOW_TIPS_ON_STARTUP"));
@@ -79,6 +81,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             desc[8].setDisplayName (Main.getString ("PROP_SHOW_FILE_EXTENSIONS"));
             desc[8].setShortDescription (Main.getString ("HINT_SHOW_FILE_EXTENSIONS"));
 
+            desc[9].setHidden (true);
+
         } catch (IntrospectionException ex) {
             if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace();
         }
@@ -102,32 +106,3 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
     }
 
 }
-
-
-/*
- * Log
- *  15   Jaga      1.13.1.0    2/29/00  Jesse Glick     User option to show file
- *       extensions.
- *  14   Gandalf   1.13        1/13/00  Jaroslav Tulach I18N
- *  13   Gandalf   1.12        1/10/00  Ian Formanek    Removed Look&Feel 
- *       property
- *  12   Gandalf   1.11        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  11   Gandalf   1.10        8/7/99   Ian Formanek    Cleaned loading of icons
- *  10   Gandalf   1.9         8/1/99   Ian Formanek    Got rid of Output 
- *       Details property
- *  9    Gandalf   1.8         7/24/99  Ian Formanek    Printing stack trace on 
- *       netbeans.debug.exceptions property only
- *  8    Gandalf   1.7         7/21/99  Ian Formanek    Fixed last change
- *  7    Gandalf   1.6         7/21/99  Ian Formanek    settings for proxy, 
- *       property output detail level hidden
- *  6    Gandalf   1.5         7/20/99  Ian Formanek    Removed 
- *       PropertyEditorSearchPath and BeanInfoSearchPath properties
- *  5    Gandalf   1.4         7/19/99  Jan Jancura     
- *  4    Gandalf   1.3         4/8/99   Ian Formanek    Undone last change
- *  3    Gandalf   1.2         4/8/99   Ian Formanek    Removed SearchPath 
- *       properties
- *  2    Gandalf   1.1         1/7/99   Ian Formanek    fixed resource names
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- */

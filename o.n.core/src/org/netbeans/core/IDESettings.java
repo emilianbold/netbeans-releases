@@ -53,6 +53,14 @@ public class IDESettings extends SystemOption {
     public static final String PROP_PROXY_PORT = "proxyPort"; // NOI18N
     /** show file extensions property name */
     public static final String PROP_SHOW_FILE_EXTENSIONS = "showFileExtensions"; // NOI18N
+    /** sorting style of Modules node */
+    public static final String PROP_MODULES_SORT_MODE = "modulesSortMode"; // NOI18N
+
+    public static final int MODULES_SORT_UNSORTED = 0;
+    public static final int MODULES_SORT_DISPLAYNAME = 1;
+    public static final int MODULES_SORT_CODENAME = 2;
+    public static final int MODULES_SORT_ENABLED = 3;
+    public static final int MODULES_SORT_URL = 4;
 
     // ------------------------------------------
     // properties
@@ -60,6 +68,7 @@ public class IDESettings extends SystemOption {
     private static boolean showTips = true;
     private static int lastTip = 1;
     private static boolean confirmDelete = true;
+    private static int modulesSortMode = MODULES_SORT_UNSORTED;
 
     private static Hashtable alreadyLoadedBeans = new Hashtable();
 
@@ -69,6 +78,16 @@ public class IDESettings extends SystemOption {
     /** A utility method to avoid unnecessary creation of second URL */
     public static URL getRealHomeURL () {
         return NetworkOptions.getStaticHomeURL();
+    }
+
+    public int getModulesSortMode () {
+        return modulesSortMode;
+    }
+
+    public void setModulesSortMode (int nue) {
+        int oldValue = modulesSortMode;
+        modulesSortMode = nue;
+        firePropertyChange (PROP_MODULES_SORT_MODE, new Integer (oldValue), new Integer (nue));
     }
 
     /** Getter for ShowTipsOnStartup
@@ -176,7 +195,7 @@ public class IDESettings extends SystemOption {
         } else {
             System.setProperty ("proxySet", "false"); // NOI18N
         }
-        // [PENDING] property change
+        firePropertyChange (PROP_USE_PROXY, null, null);
     }
 
     /** Getter for proxy host.
@@ -191,7 +210,7 @@ public class IDESettings extends SystemOption {
     */
     public void setProxyHost (String value) {
         System.setProperty ("proxyHost", value); // NOI18N
-        // [PENDING] property change
+        firePropertyChange (PROP_PROXY_HOST, null, null);
     }
 
     /** Getter for proxy port.
@@ -206,7 +225,7 @@ public class IDESettings extends SystemOption {
     */
     public void setProxyPort (String value) {
         System.setProperty ("proxyPort", value); // NOI18N
-        // [PENDING] property change
+        firePropertyChange (PROP_PROXY_PORT, null, null);
     }
 
     /** Getter for showing file extensions.
@@ -232,36 +251,3 @@ public class IDESettings extends SystemOption {
     }
 
 }
-
-/*
- * Log
- *  16   Jaga      1.14.1.0    2/29/00  Jesse Glick     User option to show file
- *       extensions.
- *  15   Gandalf   1.14        1/13/00  Jaroslav Tulach I18N
- *  14   Gandalf   1.13        1/10/00  Ian Formanek    Look&Feel property 
- *       removed
- *  13   Gandalf   1.12        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  12   Gandalf   1.11        9/20/99  Jaroslav Tulach #1603
- *  11   Gandalf   1.10        8/1/99   Ian Formanek    Got rid of Output 
- *       Details property
- *  10   Gandalf   1.9         7/28/99  Jan Jancura     Bug in useProxy property
- *  9    Gandalf   1.8         7/21/99  Ian Formanek    settings for proxy, 
- *       property output detail level hidden
- *  8    Gandalf   1.7         7/20/99  Ian Formanek    Removed 
- *       PropertyEditorSearchPath and BeanInfoSearchPath properties
- *  7    Gandalf   1.6         7/19/99  Jan Jancura     
- *  6    Gandalf   1.5         7/2/99   Jesse Glick     More help IDs.
- *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  4    Gandalf   1.3         4/8/99   Ian Formanek    Undone last change
- *  3    Gandalf   1.2         4/8/99   Ian Formanek    Removed SearchPath 
- *       properties
- *  2    Gandalf   1.1         3/26/99  Ian Formanek    Fixed use of obsoleted 
- *       NbBundle.getBundle (this)
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- * Beta Change History:
- *  0    Tuborg    0.11        --/--/98 Jan Palka       add ShowTipsOnStartup property and LastTip property
- *  0    Tuborg    0.12        --/--/98 Jan Formanek    improved
- */
