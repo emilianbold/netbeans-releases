@@ -60,31 +60,22 @@
 <h3>Servers in the IDE</h3>
 <p>Before you can deploy an enterprise application, web application, JSP, servlet, 
   or EJB module, the server to which you are going to deploy needs to be <a href="server_register.html">registered</a> 
-  with the IDE. For versions of the IDE that are bundled only with the Tomcat 
+  with the IDE. When a server is registered with the IDE, its libraries are available for 
+production, or deployment, or both. For versions of the IDE that are bundled only with the Tomcat 
   Web Server, the Tomcat Web Server is automatically registered in the IDE. For 
-  versions <br>
-  of the IDE that are bundled with both the Tomcat Web Server and SJS Application 
-  Server, <br>
-  both servers are automatically registered in the IDE.<br>
+  versions of the IDE that are bundled with both the Tomcat Web Server and SJS Application 
+  Server, both servers are automatically registered in the IDE.
   You must register all other servers yourself.</p>
 <table cellpadding="3" cellspacing="0" border="0">
   <tr valign="top"> 
     <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
     <td> Only once you have a registered SJS Application Server can you begin 
-      developing enterprise applications. </td>
+	    developing <a href="../enterprise/general/about_ent_apps.html">enterprise applications</a>. </td>
   </tr>
 </table>
-<p>When you register a server with the IDE, you make its libraries available for 
-  production, or deployment, or both. If you deploy your applications to a remote 
-  instance of the SJS Application Server, its libraries are available at runtime. 
-  However, during development, you might need a local instance of this server. 
-  You can have multiple instances of the SJS Application Server registered with 
-  the IDE. Once you have registered your local instance, you can register remote 
-  instances, but you always have to specify the local folder that contains the 
-  local installation of the SJS Application Server.</p>
 <p>When a server is registered with the IDE, you can see its node in the Runtime 
   window under the the Servers node. When you create a project in the New Project 
-  wizard, you select the server to which you want to deploy your application. 
+  wizard, you must select the server to which you want to deploy your application. 
   After you create the application, you can change the server by right-clicking 
   the project, choosing Properties, clicking Run, and selecting a different server.</p>
 <table>

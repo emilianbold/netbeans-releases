@@ -19,10 +19,10 @@
 
     <tocitem text="Servers">
 	<tocitem text="About Servers" target="about_server"/>
+	<tocitem text="About Connection Pools" target="server_aboutdbconnect"/>
 	<tocitem text="Registering a Server" target="server_register" />
 	<tocitem text="Starting and Stopping a Server" target="server_start" />
-        <tocitem text="Setting a Context Path" target="server_context" />
-        <tocitem text="About Connection Pools" target="server_aboutdbconnect"/>
+	<tocitem text="Deploying a Web Application" target="deploy_webapp" />
 	<tocitem text="Removing an Application from a Server" target="server_remove" />
     </tocitem>
 
@@ -165,7 +165,8 @@
    <tocitem text="Deploying Web Applications"> 
             <tocitem text="About Deploying Web Applications" target="about_deploy" />
 	    <tocitem text="Web Application Deployment Tasks: Quick Reference" target="deploy_quickref" />
-            <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
+	    <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
+	    <tocitem text="Setting a Context Path" target="server_context" />
             <tocitem text="Authenticating the Tomcat Web Server" target="deploy_tomcat_manager" />
             <tocitem text="Deploying a Web Application" target="deploy_webapp" />
 	    <tocitem text="Changing the Target Server" target="deploy_changeserver" />
