@@ -118,6 +118,7 @@ public class BaseOptions extends OptionSupport {
     public static final String FIND_SMART_CASE_PROP = "findSmartCase"; // NOI18N
     public static final String FIND_WHOLE_WORDS_PROP = "findWholeWords"; // NOI18N
     public static final String FIND_WRAP_SEARCH_PROP = "findWrapSearch"; // NOI18N
+    public static final String FIND_BLOCK_SEARCH_PROP = "findBlockSearch"; // NOI18N    
     public static final String FONT_SIZE_PROP = "fontSize"; // NOI18N
     public static final String HIGHLIGHT_CARET_ROW_PROP = "highlightCaretRow"; // NOI18N
     public static final String HIGHLIGHT_MATCHING_BRACKET_PROP = "highlightMatchingBracket"; // NOI18N
@@ -987,6 +988,14 @@ public class BaseOptions extends OptionSupport {
     public void setFindHighlightSearch(boolean b) {
         setSettingBoolean(SettingsNames.FIND_HIGHLIGHT_SEARCH, b,
         FIND_HIGHLIGHT_SEARCH_PROP);
+    }
+
+    public boolean getFindBlockSearch() {
+        return getSettingBoolean(SettingsNames.FIND_BLOCK_SEARCH);
+    }
+    
+    public void setFindBlockSearch(boolean b) {
+        setSettingBoolean(SettingsNames.FIND_BLOCK_SEARCH, b, FIND_BLOCK_SEARCH_PROP);
     }
     
     public boolean getFindIncSearch() {
