@@ -264,10 +264,9 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
             ((ChangeListener) it.next ()).stateChanged (ev);
         }
     }
-    private Object readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject ();
         listeners = new HashSet (1);
-        return this;
     }
 
 }
