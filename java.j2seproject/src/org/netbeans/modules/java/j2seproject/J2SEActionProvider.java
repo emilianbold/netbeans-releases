@@ -50,6 +50,9 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
+import org.openide.filesystems.FileStateInvalidException;
+import java.net.URL;
 
 /** Action provider of the J2SE project. This is the place where to do
  * strange things to J2SE actions. E.g. compile-single.
@@ -179,7 +182,6 @@ class J2SEActionProvider implements ActionProvider {
                 mainClass = (String)ep.get ("main.class"); // NOI18N
                 antProjectHelper.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             }
-            
 
             p = new Properties();
             p.setProperty("main.class", mainClass); // NOI18N
@@ -197,17 +199,51 @@ class J2SEActionProvider implements ActionProvider {
                 clazz = clazz.substring(0, clazz.length() - 5);
             }
             clazz = clazz.replace('/','.');
+            
             if (!MainClassChooser.hasMainMethod(file)) {
-                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(J2SEActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-                DialogDisplayer.getDefault().notify(nd);
-                return;
-            }
-            if (command.equals (COMMAND_RUN_SINGLE)) {
-                p.setProperty("run.class", clazz); // NOI18N
-                targetNames = (String[])commands.get(COMMAND_RUN_SINGLE);
+                if (AppletSupport.isApplet(file)) {
+                    URL url = null;
+                    try {
+                        String buildDirProp = project.evaluator().getProperty("build.dir"); //NOI18N
+                        String classesDirProp = project.evaluator().getProperty("build.classes.dir"); //NOI18N
+                        FileObject buildDir = antProjectHelper.resolveFileObject(buildDirProp);
+                        FileObject classesDir = antProjectHelper.resolveFileObject(classesDirProp);
+                        
+                        if (buildDir == null) {
+                            buildDir = FileUtil.createFolder(project.getProjectDirectory(), buildDirProp);
+                        }
+                            
+                        if (classesDir == null) {
+                            classesDir = FileUtil.createFolder(project.getProjectDirectory(), classesDirProp);
+                        }
+                        url = AppletSupport.generateHtmlFileURL(file, buildDir, classesDir);
+                    } catch (FileStateInvalidException fe) {
+                        //ingore
+                    } catch (IOException ioe) {
+                        ErrorManager.getDefault().notify(ioe);
+                        return;
+                    }
+                    if (command.equals (COMMAND_RUN_SINGLE)) {
+                        targetNames = new String[] {"run-applet"}; // NOI18N
+                    } else {
+                        targetNames = new String[] {"debug-applet"}; // NOI18N
+                    }
+                    if (url != null) {
+                        p.setProperty("applet.url", url.toString()); // NOI18N
+                    }
+                } else {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(J2SEActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+                    DialogDisplayer.getDefault().notify(nd);
+                    return;
+                }
             } else {
-                p.setProperty("debug.class", clazz); // NOI18N
-                targetNames = (String[])commands.get(COMMAND_DEBUG_SINGLE);
+                if (command.equals (COMMAND_RUN_SINGLE)) {
+                    p.setProperty("run.class", clazz); // NOI18N
+                    targetNames = (String[])commands.get(COMMAND_RUN_SINGLE);
+                } else {
+                    p.setProperty("debug.class", clazz); // NOI18N
+                    targetNames = (String[])commands.get(COMMAND_DEBUG_SINGLE);
+                }
             }
         } else {
             p = null;
@@ -216,7 +252,6 @@ class J2SEActionProvider implements ActionProvider {
                 throw new IllegalArgumentException(command);
             }
         }
-        
         
         try {
             ActionUtils.runTarget(findBuildXml(), targetNames, p);

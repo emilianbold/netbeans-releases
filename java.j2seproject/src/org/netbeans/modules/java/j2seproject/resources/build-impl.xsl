@@ -763,7 +763,68 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,-pre-debug-fix,-do-debug-fix-test</xsl:attribute>
             </target>
 
-            <xsl:comment>
+            
+    <xsl:comment>
+    =========================
+    APPLET EXECUTION SECTION
+    =========================
+    </xsl:comment>
+                    
+            <target name="run-applet">
+                <xsl:attribute name="depends">init,compile-single</xsl:attribute>
+                <fail unless="applet.url">Must select one file in the IDE or set applet.url</fail>
+                <sequential>
+                    <java fork="true" classname="sun.applet.AppletViewer">
+                        <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+                            <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                            <bootclasspath>
+                                <path path="${{platform.bootcp}}"/>
+                            </bootclasspath>
+                        </xsl:if>
+                        <classpath>
+                            <path path="${{classpath}}"/>
+                        </classpath>
+                        <arg line="${{applet.url}}"/>
+                    </java>
+                </sequential>
+            </target>
+
+    <xsl:comment>
+    =========================
+    APPLET DEBUGGING  SECTION
+    =========================
+    </xsl:comment>
+            
+            <target name="-debug-start-debuggee-applet">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-single</xsl:attribute>
+                <fail unless="applet.url">Must select one file in the IDE or set applet.url</fail>
+                <sequential>
+                    <java fork="true" classname="sun.applet.AppletViewer">
+                        <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+                            <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                            <bootclasspath>
+                                <path path="${{platform.bootcp}}"/>
+                            </bootclasspath>
+                        </xsl:if>
+                        <jvmarg value="-Xdebug"/>
+                        <jvmarg value="-Xnoagent"/>
+                        <jvmarg value="-Djava.compiler=none"/>
+                        <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
+                        <classpath>
+                            <path path="${{classpath}}"/>
+                        </classpath>
+                        <arg line="${{applet.url}}"/>
+                    </java>
+                </sequential>
+            </target>
+
+            <target name="debug-applet">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-single,-debug-start-debugger,-debug-start-debuggee-applet</xsl:attribute>
+            </target>
+
+    <xsl:comment>
     ===============
     CLEANUP SECTION
     ===============
