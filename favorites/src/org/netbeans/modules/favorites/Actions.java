@@ -45,6 +45,7 @@ public final class Actions extends Object {
     private static final View VIEW = new View ();
     private static final Select SELECT = new Select ();
     private static final Add ADD = new Add ();
+    private static final AddOnFavoritesNode ADD_ON_FAVORITES_NODE = new AddOnFavoritesNode ();
     private static final Remove REMOVE = new Remove ();
     
     private Actions () {
@@ -54,6 +55,7 @@ public final class Actions extends Object {
     
     public static Action view () { return VIEW; }
     public static Action add () { return ADD; }
+    public static Action addOnFavoritesNode () { return ADD_ON_FAVORITES_NODE; }
     public static Action remove () { return REMOVE; }
     public static Action select () { return SELECT; }
     
@@ -439,5 +441,21 @@ public final class Actions extends Object {
 
     } // end of Add
     
+    /** Subclass of Add. Only its display name is different otherwise the same as Add.
+    *
+    * @author   Marek Slama
+    */
+    public static class AddOnFavoritesNode extends Add {
+        static final long serialVersionUID =-6471284573153172312L;
+        
+        /** Human presentable name of the action. This should be
+        * presented as an item in a menu.
+        * @return the name of the action
+        */
+        public String getName() {
+            return org.openide.util.NbBundle.getMessage (
+                    Actions.class, "ACT_AddOnFavoritesNode"); // NOI18N
+        }
+    }
     
 }

@@ -144,7 +144,7 @@ final class Favorites extends FilterNode {
     }
     
     public javax.swing.Action[] getActions(boolean context) {
-        return new Action[] {Actions.add()};
+        return new Action[] {Actions.addOnFavoritesNode()};
     }
     
     private static class RootHandle implements Node.Handle {
