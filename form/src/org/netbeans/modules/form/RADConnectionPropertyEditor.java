@@ -124,8 +124,8 @@ public class RADConnectionPropertyEditor
             else if (designValue.type == RADConnectionDesignValue.TYPE_CODE)
                 return designValue.userCode;
             else {
-                if (designValue.radComponent != null
-                        && designValue.radComponent.getCodeExpression() == null)
+                if (designValue.radComponent == null
+                        || designValue.radComponent.getCodeExpression() == null)
                     return null; // invalid component (probably deleted)
 
                 if (designValue.type ==  RADConnectionDesignValue.TYPE_PROPERTY) {
@@ -293,7 +293,7 @@ public class RADConnectionPropertyEditor
             else if (type == TYPE_CODE)
                 return FormEditor.getFormBundle().getString("CTL_CODE_CONN");
             else {
-                if (radComponent != null && radComponent.getCodeExpression() == null)
+                if (radComponent == null || radComponent.getCodeExpression() == null)
                     return FormEditor.getFormBundle().getString("CTL_CONNECTION_INVALID"); // NOI18N
 
                 if (radComponent == null)
