@@ -191,4 +191,60 @@ public class NbErrorManagerTest extends NbTestCase {
         // could do more here...
     }
     
+    /**
+     * Check that UNKNOWN works.
+     * @see "#30947"
+     */
+    public void testUnknownSeverity() throws Exception {
+        
+        // Simple exception is EXCEPTION.
+        Throwable t = new IOException("unloc msg");
+        NbErrorManager.Exc x = err.createExc(t, ErrorManager.UNKNOWN);
+        assertEquals(ErrorManager.EXCEPTION, x.getSeverity());
+        assertEquals("unloc msg", x.getMessage());
+        assertEquals("unloc msg", x.getLocalizedMessage());
+        assertTrue(!x.isLocalized());
+        
+        // Same when there is unloc debug info attached.
+        t = new IOException("unloc msg");
+        err.annotate(t, ErrorManager.UNKNOWN, "some debug info", null, null, null);
+        x = err.createExc(t, ErrorManager.UNKNOWN);
+        assertEquals(ErrorManager.EXCEPTION, x.getSeverity());
+        assertEquals("unloc msg", x.getMessage());
+        assertEquals("unloc msg", x.getLocalizedMessage());
+        assertTrue(!x.isLocalized());
+        
+        // Nested exceptions don't necessarily change anything severity-wise.
+        t = new IOException("unloc msg");
+        Throwable t2 = new IOException("unloc msg #2");
+        err.annotate(t, ErrorManager.UNKNOWN, null, null, t2, null);
+        x = err.createExc(t, ErrorManager.UNKNOWN);
+        assertEquals(ErrorManager.EXCEPTION, x.getSeverity());
+        assertEquals("unloc msg", x.getMessage());
+        assertEquals("unloc msg", x.getLocalizedMessage());
+        assertTrue(!x.isLocalized());
+        
+        // But annotations at a particular severity level (usually localized) do
+        // set the severity for the exception.
+        t = new IOException("unloc msg");
+        err.annotate(t, ErrorManager.USER, null, "loc msg", null, null);
+        x = err.createExc(t, ErrorManager.UNKNOWN);
+        assertEquals(ErrorManager.USER, x.getSeverity());
+        assertEquals("unloc msg", x.getMessage());
+        assertEquals("loc msg", x.getLocalizedMessage());
+        assertTrue(x.isLocalized());
+        
+        // And that works even if you are just rethrowing someone else's exception.
+        t = new IOException("unloc msg");
+        t2 = new IOException("unloc msg #2");
+        err.annotate(t2, ErrorManager.USER, null, "loc msg", null, null);
+        err.annotate(t, ErrorManager.UNKNOWN, null, null, t2, null);
+        x = err.createExc(t, ErrorManager.UNKNOWN);
+        assertEquals(ErrorManager.USER, x.getSeverity());
+        assertEquals("unloc msg", x.getMessage());
+        assertEquals("loc msg", x.getLocalizedMessage());
+        assertTrue(x.isLocalized());
+        
+    }
+    
 }

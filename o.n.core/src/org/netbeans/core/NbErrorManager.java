@@ -179,11 +179,11 @@ public final class NbErrorManager extends ErrorManager {
         // synchronized to ensure that only one exception is
         // written to the thread
         
-        if (!isNotifiable(severity)) {
+        Exc ex = createExc(t, severity);
+        
+        if (!isNotifiable(ex.getSeverity())) {
             return;
         }
-
-        Exc ex = createExc(t, severity);
 
         PrintStream log = getLogWriter ();
         
@@ -503,6 +503,11 @@ public final class NbErrorManager extends ErrorManager {
         public int getSeverity() {
             return severity;
         }
+        
+        public String toString() {
+            return "NbEM.Ann[severity=" + severity + ",message=" + message + ",localizedMessage=" + localizedMessage + ",stackTrace=" + stackTrace + ",date=" + date + "]"; // NOI18N
+        }
+        
     } // end of Ann
 
     /**
@@ -530,11 +535,19 @@ public final class NbErrorManager extends ErrorManager {
 
         /** @return message */
         String getMessage () {
+            String m = t.getMessage();
+            if (m != null) {
+                return m;
+            }
             return (String)find (1);
         }
 
         /** @return localized message */
         String getLocalizedMessage () {
+            String m = t.getLocalizedMessage();
+            if (m != null && !m.equals(t.getMessage())) {
+                return m;
+            }
             if (arrAll == null) {
                 // arrAll not filled --> use the old non recursive variant
                 return (String)find(2);
@@ -545,16 +558,25 @@ public final class NbErrorManager extends ErrorManager {
                     return s;
                 }
             }
-            return t.getLocalizedMessage();
+            return m;
         }
 	
         boolean isLocalized() {
-	    if (find(2, false) == null) {
-		String locMsg = getLocalizedMessage();
-		return locMsg != null && !locMsg.equals(getMessage());
-	    } 
-	    else
-		return true;	
+            String m = t.getLocalizedMessage();
+            if (m != null && !m.equals(t.getMessage())) {
+                return true;
+            }
+            if (arrAll == null) {
+                // arrAll not filled --> use the old non recursive variant
+                return (String)find(2) != null;
+            }
+            for (int i = 0; i < arrAll.length; i++) {
+                String s = arrAll[i].getLocalizedMessage ();
+                if (s != null) {
+                    return true;
+                }
+            }
+            return false;
 	}
 
         /** @return class name of the exception */
@@ -568,8 +590,9 @@ public final class NbErrorManager extends ErrorManager {
                 return severity;
             }
 
-            for (int i = 0; i < arr.length; i++) {
-                int s = arr[i].getSeverity ();
+            Annotation[] anns = (arrAll != null) ? arrAll : arr;
+            for (int i = 0; i < anns.length; i++) {
+                int s = anns[i].getSeverity ();
                 if (s > severity) {
                     severity = s;
                 }
