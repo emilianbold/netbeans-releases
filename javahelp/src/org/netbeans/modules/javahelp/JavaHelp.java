@@ -379,6 +379,12 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         if (w instanceof Dialog) {
             Dialog d = (Dialog)w;
             if ((d.isModal() && !(d instanceof ProgressDialog)) || d == dialogViewer) {
+                if ("sun.awt.windows.WPageDialog".equals(d.getClass().getName()) || // NOI18N
+                    "sun.awt.windows.WPrintDialog".equals(d.getClass().getName()) || // NOI18N
+                    "sun.print.ServiceDialog".equals(d.getClass().getName())) { // NOI18N
+                    //It is the print or print settings dialog for javahelp, do nothing
+                    return;
+                }
                 if (Installer.err.isLoggable(ErrorManager.INFORMATIONAL)) {
                     Installer.err.log("modal (or viewer) dialog event: " + ev + " [" + d.getTitle() + "]");
                 }
