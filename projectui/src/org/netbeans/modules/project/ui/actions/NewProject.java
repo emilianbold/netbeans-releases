@@ -34,21 +34,23 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
-public class NewProject extends BasicAction implements Runnable {
+public class NewProject extends BasicAction {
         
     private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newProject.gif" ) ); //NOI18N    
     private static final String NAME = NbBundle.getMessage( NewProject.class, "LBL_NewProjectAction_Name" ); // NOI18N
     
     private boolean isWelcome = false;
     
-    private static NewProjectWizard wizard;
-    
     private RequestProcessor.Task bodyTask;
 
     public NewProject() {
         super( NAME, ICON );
         putValue("iconBase","org/netbeans/modules/project/ui/resources/newProject.gif"); //NOI18N
-        bodyTask = new RequestProcessor( "NewProjectBody" ).create( this ); // NOI18N
+        bodyTask = new RequestProcessor( "NewProjectBody" ).create( new Runnable () { // NOI18N
+            public void run () {
+                doPerform ();
+            }
+        });
     }
     
     public static NewProject newSample() {
@@ -66,17 +68,11 @@ public class NewProject extends BasicAction implements Runnable {
         }
     }    
         
-    public void run() {
+    private void doPerform () {
         
-        if ( wizard == null ) {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Project" ); //NOI18N                
-            wizard = new NewProjectWizard(fo);
-        }
-        else {
-            //Reset the inline message
-            wizard.putProperty( "WizardPanel_errorMessage", "");  //NOI18N
-        }
-        
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Project" ); //NOI18N                
+        NewProjectWizard wizard = new NewProjectWizard(fo);
+            
         if ( isWelcome ) {
             wizard.putProperty( "PRESELECT_CATEGORY", "Samples/Standard"); 
         }

@@ -78,6 +78,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     private Builder firer;
 
     private static final RequestProcessor RP = new RequestProcessor();
+    
+    private String presetTemplateName = null;
 
     /** Creates new form TemplatesPanelGUI */
     public TemplatesPanelGUI (Builder firer) {
@@ -108,6 +110,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     }
     
     public void setSelectedTemplateByName (final String templateName) {
+        presetTemplateName = templateName;
         final TemplatesPanel tempExplorer = ((TemplatesPanel)this.projectsPanel);
     
         SwingUtilities.invokeLater (new Runnable () {
@@ -115,6 +118,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 if (templateName != null) {
                     tempExplorer.setSelectedNode (templateName);
                     if (tempExplorer.getSelectionPath () == null) {
+                        // null presetTemplateName if cannot be set
+                        presetTemplateName = null;
                         tempExplorer.selectFirstTemplate ();                        
                     }
                 } else {
@@ -148,7 +153,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             if (ExplorerManager.PROP_SELECTED_NODES.equals (event.getPropertyName ())) {
                 Node[] selectedNodes = (Node[]) event.getNewValue();
                 if (selectedNodes != null && selectedNodes.length == 1) {
-                    String lastSelectedTemplate = getSelectedTemplateName ();
                     try {
                         ((ExplorerProviderPanel)this.projectsPanel).setSelectedNodes(new Node[0]);
                     } catch (PropertyVetoException e) {
@@ -160,7 +164,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                         ((ExplorerProviderPanel)this.projectsPanel).setRootNode(
                             new FilterNode (selectedNodes[0], this.firer.createTemplatesChildren((DataFolder)template)));
                         // after change of root select the first template to make easy move in wizard
-                        this.setSelectedTemplateByName (lastSelectedTemplate);
+                        this.setSelectedTemplateByName (presetTemplateName);
                     }
                 }
             }
