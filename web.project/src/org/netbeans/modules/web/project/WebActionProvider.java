@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -561,14 +562,15 @@ class WebActionProvider implements ActionProvider {
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] sourceRoots = project.getSourceRoots().getRoots();
             FileObject[] files = findJavaSourcesAndPackages( context, sourceRoots);
+            boolean recursive = (context.lookup(NonRecursiveFolder.class) == null);
             p = new Properties();
             if (files != null) {
-                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots, files[0]))); // NOI18N
+                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots, files[0]), recursive)); // NOI18N
             } else {
                 FileObject[] testRoots = project.getTestSourceRoots().getRoots();
                 files = findJavaSourcesAndPackages(context, testRoots);
                 if (files != null) {
-                    p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(testRoots,files[0]))); // NOI18N
+                    p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(testRoots,files[0]), recursive)); // NOI18N
                     targetNames = new String[] {"compile-test-single"}; // NOI18N
                 } else {
                     files = findJsps (context);
@@ -1177,7 +1179,7 @@ class WebActionProvider implements ActionProvider {
     private FileObject getRoot (FileObject[] roots, FileObject file) {
         FileObject srcDir = null;
         for (int i=0; i< roots.length; i++) {
-            if (FileUtil.isParentOf(roots[i],file)) {
+            if (FileUtil.isParentOf(roots[i],file) || roots[i].equals(file)) {
                 srcDir = roots[i];
                 break;
             }
