@@ -30,14 +30,12 @@ import org.openide.NotifyDescriptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/*import com.sun.web.core.Container;
-import com.sun.web.core.Context;
-import com.sun.web.core.HttpServletRequestFacade;
-import com.sun.web.core.SecurityModule;
-import com.sun.web.server.EndpointManager;
-import com.sun.web.server.HttpServer;
-import com.sun.web.server.HttpServerException;
-*/
+import org.apache.tomcat.core.ContextManager;
+import org.apache.tomcat.core.ServerConnector;
+import org.apache.tomcat.core.ServletWrapper;
+import org.apache.tomcat.core.Context;
+import org.apache.tomcat.context.*;
+import org.apache.tomcat.service.SimpleTcpConnector;
 
 /**
 * Module installation class for Http Server
@@ -47,13 +45,13 @@ import com.sun.web.server.HttpServerException;
 public class HttpServerModule extends ModuleInstall implements Externalizable {
 
   
-//  private static HttpServer server;
+  private static ContextManager server;
   private static Thread serverThread;
   private static boolean inSetRunning = false;
   
   static final long serialVersionUID =8562026516563511530L;
+
   /** Module installed again.
-  * Add applet executor
   */
   public void restored() {            
     try {
@@ -102,9 +100,8 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
           serverThread = new Thread("HTTPServer") { // NOI18N
             public void run() {
               try {                   
-                // PENDING
-                //server = buildServer();
-                //server.start();
+                server = buildServer();
+                server.start();
                 HttpServerSettings.OPTIONS.runSuccess();
                 // this is not a debug message, this is a server startup message
                 if (HttpServerSettings.OPTIONS.isStartStopMessages())
@@ -115,6 +112,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                 throw td;
               }
               catch (Throwable ex) {
+ex.printStackTrace();
                 // couldn't start
                 serverThread = null;
                 inSetRunning = false;
@@ -149,9 +147,9 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         return;
       inSetRunning = true;
       try {
-        if ((serverThread != null) /*&& (server != null) PENDING */ ) {
+        if ((serverThread != null) && (server != null)) {
           try {
-            //server.stop(); PENDING
+            server.stop();
             serverThread.join();
           }
           catch (InterruptedException e) {
@@ -159,7 +157,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
             /* deprecated, but this really is the last resort,
                only if everything else failed */
           } 
-          catch (/*HttpServer PENDING */Exception e) {
+          catch (Exception e) {
 //e.printStackTrace();
             serverThread.stop(); 
             /* deprecated, but this really is the last resort,
@@ -176,6 +174,52 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         inSetRunning = false;
       }  
     }
+  }
+
+  private static ContextManager buildServer() throws Exception {
+    HttpServerSettings op = HttpServerSettings.OPTIONS;
+
+    ContextManager cm = new ContextManager();
+cm.setDebug(10);
+
+    /*ServerConnector sc = new SimpleTcpConnector();
+    sc.setProperty(SimpleTcpConnector.HANDLER, "org.apache.tomcat.service.http.HttpConnectionHandler");
+    sc.setProperty(SimpleTcpConnector.PORT, "" + op.getPort());
+    cm.addServerConnector(sc);*/
+
+    cm.addContextInterceptor(new LogEvents());
+    //cm.addContextInterceptor(new AutoSetup());
+    cm.addContextInterceptor(new NbCMSetter());
+    cm.addContextInterceptor(new WorkDirInterceptor());
+    //cm.addContextInterceptor(new WebXmlReader());
+    cm.addContextInterceptor(new LoadOnStartupInterceptor());
+
+    cm.setDefaults();
+    // set the HTTP connector port
+    SimpleTcpConnector con = (SimpleTcpConnector)cm.getConnectors().nextElement();
+    con.setPort(op.getPort());
+
+    Context ctxt = new Context();
+    ctxt.setContextManager(cm);
+
+    ServletWrapper repo = new ServletWrapper();
+    repo.setServletClass("com.netbeans.developer.modules.httpserver.RepositoryServlet");
+    repo.setServletName("RepositoryServlet");
+    ctxt.addServlet(repo);
+    ctxt.addServletMapping(op.getRepositoryBaseURL(), "RepositoryServlet");
+    
+    ServletWrapper claz = new ServletWrapper();
+    claz.setServletClass("com.netbeans.developer.modules.httpserver.ClasspathServlet");
+    claz.setServletName("ClasspathServlet");
+    ctxt.addServlet(claz);
+    ctxt.addServletMapping(op.getClasspathBaseURL(), "ClasspathServlet");
+
+    cm.addContext(ctxt);
+
+System.out.println("workdir " + cm.getWorkDir());
+System.out.println("tomcat home " + cm.getTomcatHome());
+    cm.init();
+    return cm;
   }
   
   
@@ -302,6 +346,8 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
 
 /*
  * Log
+ *  40   Jaga      1.37.1.1    3/24/00  Petr Jiricka    Implemented 
+ *       Jakarta-based webserver
  *  39   Jaga      1.37.1.0    3/22/00  Petr Jiricka    Fixed compilation 
  *       errors.
  *  38   Gandalf   1.37        1/13/00  Petr Jiricka    More i18n
