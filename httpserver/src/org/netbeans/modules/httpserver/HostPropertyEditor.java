@@ -53,12 +53,13 @@ public class HostPropertyEditor extends PropertyEditorSupport {
         if (anyhost ().equals (text)) {
             setValue (new HttpServerSettings.HostProperty ("", HttpServerSettings.ANYHOST));    // NOI18N
             return;
-        }
-        else if (text != null && text.startsWith (localhost ())) {
+        } else if (text != null && text.startsWith(localhost())) {
             setValue (new HttpServerSettings.HostProperty (text.substring (localhost ().length ()), HttpServerSettings.LOCALHOST));
             return;
+        } else if (text != null) {
+            setValue (new HttpServerSettings.HostProperty (text, HttpServerSettings.LOCALHOST));
+            return;
         }
-        
         throw new IllegalArgumentException (text);
     }
 
