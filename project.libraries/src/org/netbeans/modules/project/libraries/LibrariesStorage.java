@@ -117,8 +117,8 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
                 ErrorManager.getDefault().notify (e);
             } catch (java.io.IOException e) {
                 ErrorManager.getDefault().notify (e);
-            }
-            catch (IllegalStateException e) {
+            } catch (RuntimeException e) {
+                // Other problem.
                 ErrorManager.getDefault().notify (e);
             }
         }
