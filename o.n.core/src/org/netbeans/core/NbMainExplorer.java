@@ -155,11 +155,11 @@ implements ItemListener, Runnable {
   }
   */
   
-  /** Rarely used, only when fresh Expl created & no components selected. */
-  public org.openide.util.HelpCtx getHelpCtx () {
-    return new HelpCtx (NbMainExplorer.class);
+  public HelpCtx getHelpCtx () {
+    return ExplorerPanel.getHelpCtx (getActivatedNodes (),
+                                     new HelpCtx (NbMainExplorer.class));
   }
-  
+
   /** Attaches all listeners.
   */
   public void addNotify () {
@@ -718,6 +718,7 @@ implements ItemListener, Runnable {
 
 /*
 * Log
+*  43   Gandalf   1.42        11/5/99  Jesse Glick     Context help jumbo patch.
 *  42   Gandalf   1.41        11/5/99  Jaroslav Tulach WeakListener has now 
 *       registration methods.
 *  41   Gandalf   1.40        10/25/99 Ian Formanek    Fixed title of Main 

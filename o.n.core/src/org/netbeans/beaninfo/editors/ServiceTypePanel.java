@@ -23,6 +23,7 @@ import org.openide.compiler.CompilerType;
 import org.openide.explorer.*;
 import org.openide.execution.*;
 import org.openide.nodes.*;
+import org.openide.util.HelpCtx;
 
 /** Service type panel for viewing, selecting and configuring 
 * of executors and other services.
@@ -61,6 +62,11 @@ public class ServiceTypePanel extends ExplorerPanel {
     });
   }
   
+  public HelpCtx getHelpCtx () {
+    return getHelpCtx (getExplorerManager ().getSelectedNodes (),
+                       new HelpCtx (ServiceTypePanel.class));
+  }
+
   /** Sets the selected value of the component.
   */
   public void setServiceType (ServiceType s) {
@@ -215,6 +221,8 @@ public class ServiceTypePanel extends ExplorerPanel {
 
 /*
  * Log
+ *  5    Gandalf   1.4         11/5/99  Jesse Glick     Context help jumbo 
+ *       patch.
  *  4    Gandalf   1.3         10/29/99 Jesse Glick     Added "(no compiler)" 
  *       etc. to service type selection panel.
  *  3    Gandalf   1.2         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

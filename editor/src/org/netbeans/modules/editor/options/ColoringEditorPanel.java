@@ -34,6 +34,7 @@ import com.netbeans.editor.ColoringManager;
 import com.netbeans.editor.DefaultSettings;
 import org.openide.TopManager;
 import org.openide.DialogDescriptor;
+import org.openide.util.HelpCtx;
 
 /** 
  *
@@ -73,6 +74,7 @@ static final long serialVersionUID =-1215879026462786721L;
     fontPreview.setBackground(Color.white);
     canFire = true;
     addListeners();
+    HelpCtx.setHelpIDString (this, ColoringEditorPanel.class.getName ());
   }
   
   public Coloring getColoring() {
@@ -569,6 +571,8 @@ private javax.swing.JLabel preview;
 
 /*
  * Log
+ *  7    Gandalf   1.6         11/5/99  Jesse Glick     Context help jumbo 
+ *       patch.
  *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  5    Gandalf   1.4         8/9/99   Ian Formanek    Generated Serial Version

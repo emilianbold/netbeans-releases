@@ -183,9 +183,12 @@ public final class BorderEditor extends PropertyEditorSupport { // implements or
 
       add(BorderLayout.CENTER, split);
 
-      HelpCtx.setHelpIDString (this, BorderPanel.class.getName ());
     }
 
+    public HelpCtx getHelpCtx () {
+      return new HelpCtx (BorderPanel.class);
+    }
+    
     public Dimension getPreferredSize () {
       return new Dimension (360, 440);
     }
@@ -427,6 +430,8 @@ public final class BorderEditor extends PropertyEditorSupport { // implements or
 
 /*
  * Log
+ *  11   Gandalf   1.10        11/5/99  Jesse Glick     Context help jumbo 
+ *       patch.
  *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         8/13/99  Jaroslav Tulach ExplorerManager change

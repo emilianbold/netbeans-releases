@@ -15,6 +15,7 @@ package com.netbeans.developer.modules.loaders.form;
 
 import org.openide.*;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
 import java.awt.BorderLayout;
@@ -90,6 +91,7 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
       
     } else {
       tabs = new JTabbedPane ();
+      HelpCtx.setHelpIDString (tabs, FormCustomEditor.class.getName () + ".tabbedPane");
       int indexToSelect = -1;
       for (int i = 0; i < allEditors.length; i++) {
         if (allEditors[i] instanceof FormAwareEditor) {
@@ -180,12 +182,12 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
   private void showAdvancedSettings () {
     FormCustomEditorAdvanced fcea = new FormCustomEditorAdvanced (preCode, postCode);
-    DialogDescriptor dd;
-    TopManager.getDefault ().createDialog (dd = new DialogDescriptor (
-        fcea,
-        "Advanced Initialization Code"
-      )
-    ).show ();
+    DialogDescriptor dd = new DialogDescriptor (
+      fcea,
+      "Advanced Initialization Code"
+    );
+    dd.setHelpCtx (new HelpCtx (FormCustomEditorAdvanced.class));
+    TopManager.getDefault ().createDialog (dd).show ();
     
     if (dd.getValue () == DialogDescriptor.OK_OPTION) {
       preCode = fcea.getPreCode ();
@@ -245,6 +247,8 @@ public class FormCustomEditor extends JPanel implements EnhancedCustomPropertyEd
 
 /*
  * Log
+ *  18   Gandalf   1.17        11/5/99  Jesse Glick     Context help jumbo 
+ *       patch.
  *  17   Gandalf   1.16        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  16   Gandalf   1.15        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent

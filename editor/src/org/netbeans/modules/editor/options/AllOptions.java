@@ -15,6 +15,7 @@ package com.netbeans.developer.modules.text.options;
 
 import java.util.List;
 import org.openide.options.ContextSystemOption;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.text.PrintSettings;
 
@@ -45,6 +46,10 @@ public class AllOptions extends ContextSystemOption {
     return NbBundle.getBundle(AllOptions.class).getString("OPTIONS_all");
   }
 
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (AllOptions.class);
+  }
+  
   public List getKeyBindingList() {
     return baseOptions.getKeyBindingList();
   }
@@ -57,6 +62,8 @@ public class AllOptions extends ContextSystemOption {
 
 /*
  * Log
+ *  9    Gandalf   1.8         11/5/99  Jesse Glick     Context help jumbo 
+ *       patch.
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         9/15/99  Miloslav Metelka 

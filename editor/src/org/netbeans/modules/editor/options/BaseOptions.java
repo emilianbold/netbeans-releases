@@ -28,6 +28,7 @@ import com.netbeans.editor.Syntax;
 import com.netbeans.editor.MultiKeyBinding;
 
 import org.openide.options.SystemOption;
+import org.openide.util.HelpCtx;
 
 /**
 * Options for the base editor kit
@@ -145,6 +146,10 @@ public class BaseOptions extends OptionSupport {
 
   public BaseOptions(Class kitClass, String typeName) {
     super(kitClass, typeName);
+  }
+  
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (BaseOptions.class);
   }
   
   public int getTabSize() {
@@ -394,6 +399,8 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  11   Gandalf   1.10        11/5/99  Jesse Glick     Context help jumbo 
+ *       patch.
  *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         9/15/99  Miloslav Metelka 

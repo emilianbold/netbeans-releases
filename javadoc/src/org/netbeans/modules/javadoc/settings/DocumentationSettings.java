@@ -17,6 +17,7 @@ import java.io.File;
 import java.lang.reflect.Modifier;
 
 import org.openide.options.ContextSystemOption;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import com.netbeans.developer.modules.javadoc.comments.AutoCommenter;
@@ -78,6 +79,10 @@ public class DocumentationSettings extends ContextSystemOption //implements View
     return NbBundle.getBundle(JavadocSettings.class).getString("CTL_Documentation_settings");
   }
 
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (DocumentationSettings.class);
+  }
+  
   /** getter for type of generation 
   */
   
@@ -191,6 +196,8 @@ public class DocumentationSettings extends ContextSystemOption //implements View
 
 /*
  * Log
+ *  8    Gandalf   1.7         11/5/99  Jesse Glick     Context help jumbo 
+ *       patch.
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  6    Gandalf   1.5         8/17/99  Petr Hrebejk    IndexSearch window 

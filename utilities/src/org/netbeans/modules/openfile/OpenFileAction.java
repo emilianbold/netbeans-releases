@@ -41,6 +41,7 @@ static final long serialVersionUID =-3424129228987962529L;
   private static File currDir = null;
   public void performAction () {
     JFileChooser chooser = new JFileChooser ();
+    HelpCtx.setHelpIDString (chooser, getHelpCtx ().getHelpID ());
     chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
     if (currDir != null) chooser.setCurrentDirectory (currDir);
     if (chooser.showOpenDialog (null) == JFileChooser.APPROVE_OPTION) {
@@ -53,6 +54,8 @@ static final long serialVersionUID =-3424129228987962529L;
 
 /*
  * Log
+ *  9    Gandalf   1.8         11/5/99  Jesse Glick     Context help jumbo 
+ *       patch.
  *  8    Gandalf   1.7         11/2/99  Jesse Glick     Commented out testing 
  *       code.
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

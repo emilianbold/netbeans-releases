@@ -260,7 +260,12 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
     public java.awt.Component getCustomEditor() {
       kbPanel = new KeyBindingsPanel();
       kbPanel.setPropertyEditor(this);
+      HelpCtx.setHelpIDString (kbPanel, getHelpCtx ().getHelpID ());
       return kbPanel;
+    }
+    
+    protected HelpCtx getHelpCtx () {
+      return HelpCtx.DEFAULT_HELP;
     }
 
   }
@@ -268,6 +273,10 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
   // ------------------------- key bindings ------------------------
   public static class KeyBindingListPropertyEditor extends PairPropertyEditor {
 
+    protected HelpCtx getHelpCtx () {
+      return new HelpCtx (KeyBindingListPropertyEditor.class);
+    }
+    
     protected int getLayoutSize() {
       return ((List) getValue()).size();
     }
@@ -428,6 +437,10 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
   // ------------------------- abbrevs ------------------------
   public static class AbbrevMapEditor extends PairPropertyEditor {
 
+    protected HelpCtx getHelpCtx () {
+      return new HelpCtx (AbbrevMapEditor.class);
+    }
+    
     protected String[] getTexts() {
       Map map = (Map) getValue();
       Iterator iter = map.entrySet().iterator();
@@ -493,6 +506,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  7    Gandalf   1.6         11/5/99  Jesse Glick     Context help jumbo patch.
 *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  5    Gandalf   1.4         9/15/99  Miloslav Metelka 

@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 import org.openide.TopManager;
+import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
 /** The PropertyPicker is a form which allows user to choose from property set
@@ -92,6 +93,8 @@ public class PropertyPicker extends javax.swing.JDialog {
 
     pack ();
     FormUtils.centerWindow (this);
+    
+    HelpCtx.setHelpIDString (getRootPane (), PropertyPicker.class.getName ());
   }
 
   public java.awt.Dimension getPreferredSize () {
@@ -309,6 +312,8 @@ public class PropertyPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  13   Gandalf   1.12        11/5/99  Jesse Glick     Context help jumbo 
+ *       patch.
  *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  11   Gandalf   1.10        10/9/99  Ian Formanek    Fixed bug 4151 - Menus, 

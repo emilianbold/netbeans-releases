@@ -99,6 +99,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
     FakeNode fn = new FakeNode(cps);
     PropertySheet psheet = new PropertySheet();
     psheet.setNodes(new Node[] {fn});
+    HelpCtx.setHelpIDString (psheet, FakeNode.class.getName ());
     return psheet;
   }
 
@@ -180,6 +181,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
 
 /*
 * Log
+*  9    Gandalf   1.8         11/5/99  Jesse Glick     Context help jumbo patch.
 *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  7    Gandalf   1.6         8/27/99  Miloslav Metelka 

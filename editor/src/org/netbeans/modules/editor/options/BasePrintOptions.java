@@ -21,6 +21,8 @@ import com.netbeans.editor.Settings;
 import com.netbeans.editor.ColoringManager;
 import com.netbeans.editor.BaseKit;
 
+import org.openide.util.HelpCtx;
+
 /**
 * Options for the plain editor kit
 *
@@ -59,6 +61,10 @@ public class BasePrintOptions extends OptionSupport {
     return getString(OPTIONS_PREFIX + PRINT_PREFIX + getTypeName());
   }
 
+  public HelpCtx getHelpCtx () {
+    return new HelpCtx (BasePrintOptions.class);
+  }
+  
   public boolean getPrintLineNumberVisible() {
     return ((Boolean)getSettingValue(Settings.PRINT_LINE_NUMBER_VISIBLE)).booleanValue();
   }
@@ -77,6 +83,8 @@ public class BasePrintOptions extends OptionSupport {
 
 /*
  * Log
+ *  7    Gandalf   1.6         11/5/99  Jesse Glick     Context help jumbo 
+ *       patch.
  *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  5    Gandalf   1.4         8/27/99  Miloslav Metelka 

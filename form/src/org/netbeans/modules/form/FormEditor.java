@@ -27,6 +27,7 @@ import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import com.netbeans.developer.util.NbVersion;
 import com.netbeans.developer.modules.loaders.form.actions.*;
 import com.netbeans.developer.modules.loaders.form.FormDataObject;
@@ -446,6 +447,11 @@ static final long serialVersionUID =4248268998485315927L;
       setName (formBundle.getString ("CTL_NoSelection"));
     }
 
+    public HelpCtx getHelpCtx () {
+      return getHelpCtx (getExplorerManager ().getSelectedNodes (),
+                         new HelpCtx (ComponentInspector.class));
+    }
+
     public void focusForm (FormManager2 formManager) {
       //System.out.println("Focus Form: "+formManager);
       this.formManager = formManager;
@@ -613,6 +619,8 @@ static final long serialVersionUID =7424646018839457544L;
 
 /*
  * Log
+ *  39   Gandalf   1.38        11/5/99  Jesse Glick     Context help jumbo 
+ *       patch.
  *  38   Gandalf   1.37        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  37   Gandalf   1.36        9/24/99  Ian Formanek    sortProperties is back
