@@ -485,6 +485,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
     private void updateState(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_updateState
         fireStateChange();
+        codeArea.getCaret().setVisible(codeButton.isSelected() && codeArea.hasFocus());
     }//GEN-LAST:event_updateState
 
     private void propertyDetailsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_propertyDetailsButtonActionPerformed
@@ -518,6 +519,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
             propertyDetailsButton.requestFocus();
         } else if (methodButton.isSelected()) {
             methodDetailsButton.requestFocus();
+        } else if (valueButton.isSelected()) {
+            valueField.requestFocus();
         }
     }//GEN-LAST:event_typeButtonPressed
 
@@ -538,6 +541,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         methodLabel.repaint();
         methodDetailsButton.setEnabled(methodButton.isSelected());
         codeArea.setEditable(codeButton.isSelected());
+        codeArea.getCaret().setVisible(codeButton.isSelected() && codeArea.hasFocus());
         fireStateChange();
     }
 
