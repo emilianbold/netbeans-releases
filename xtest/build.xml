@@ -225,7 +225,7 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="external/xalan-2.3.1.jar" tofile="lib/xalan.jar"/>
   </target>
   
-  <target name="makedist-pes" depends="compile-dependend-modules,jar-pes">
+  <target name="makedist-pes" depends="jar-pes">
     <zip zipfile="xtest-pes-distribution.zip">
      	<zipfileset dir="lib" prefix="lib" includes="**/*.jar,**/*.xsl"/>
      	<zipfileset dir="bin" prefix="bin" includes="xtest-pes.sh"/>
