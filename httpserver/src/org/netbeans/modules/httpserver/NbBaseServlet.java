@@ -117,7 +117,9 @@ public abstract class NbBaseServlet extends HttpServlet {
     }
     if (pathI.length() == 0) return false;
     if (pathI.charAt(0) == '/') pathI = pathI.substring(1);
+System.out.println("resource " + pathI);    
     InputStream is = TopManager.getDefault().systemClassLoader().getResourceAsStream(pathI);
+System.out.println("is " + is);    
     if (is == null) return false;
 
     int ind = pathI.lastIndexOf(".");
@@ -307,6 +309,7 @@ public abstract class NbBaseServlet extends HttpServlet {
 
 /*
  * Log
+ *  5    Gandalf   1.4         1/3/00   Petr Jiricka    
  *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  3    Gandalf   1.2         10/7/99  Petr Jiricka    Removed debug println
