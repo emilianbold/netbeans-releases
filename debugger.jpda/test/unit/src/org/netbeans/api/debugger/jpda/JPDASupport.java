@@ -19,7 +19,6 @@ import java.io.*;
 import java.util.*;
 import java.net.URLClassLoader;
 import java.net.URL;
-import java.net.ServerSocket;
 import java.beans.PropertyChangeEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -148,8 +147,9 @@ public class JPDASupport implements DebuggerManagerListener {
 
     private void attachImpl(String mainClass) throws IOException, DebuggerStartException {
 
-        int port = getFreePort();
-        Process process = launchVM(mainClass, Integer.toString(port), true);
+        Process process = launchVM(mainClass, "", true);
+        String line = readLine(process.getInputStream());
+        int port = Integer.parseInt(line.substring(line.lastIndexOf(':') + 1).trim());
         pio = new ProcessIO(process);
         pio.go();
 
@@ -175,6 +175,20 @@ public class JPDASupport implements DebuggerManagerListener {
         waitDebuggerStarted();
     }
 
+    private String readLine(InputStream in) throws IOException {
+        StringBuffer sb = new StringBuffer();
+        for (;;) {
+            int c = in.read();
+            if (c == -1) throw new EOFException();
+            if (c == 0x0D) {
+                c = in.read();
+                if (c != 0x0A) sb.append((char)0x0D);
+            }
+            if (c == 0x0A) return sb.toString();
+            sb.append((char)c);
+        }
+    }
+
     private void waitDebuggerStarted() throws DebuggerStartException {
         synchronized(debuggerStartLock) {
             try {
@@ -185,14 +199,6 @@ public class JPDASupport implements DebuggerManagerListener {
                 throw new DebuggerStartException(e);
             }
         }
-    }
-
-    private int getFreePort() throws IOException {
-        ServerSocket ss = new ServerSocket(0);
-        int portNumber = ss.getLocalPort();
-        ss.setReuseAddress(false);
-        ss.close();
-        return portNumber;
     }
 
     public static JPDASupport listen(String mainClass) throws IOException, IllegalConnectorArgumentsException,
