@@ -30,13 +30,16 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
     private static final TabPainter leftClip = new WinClassicLeftClipPainter();
     private static final TabPainter rightClip = new WinClassicRightClipPainter();
     private static final TabPainter normal = new WinClassicPainter();
+    
+    private static boolean isGenericUI = !"Windows".equals(
+        UIManager.getLookAndFeel().getID());
 
     /**
      * Creates a new instance of WinClassicEditorTabCellRenderer
      */
     public WinClassicEditorTabCellRenderer() {
-        super(leftClip, normal, rightClip, new Dimension (28, 32));//new Dimension(28, 32));
-    }
+          super(leftClip, normal, rightClip, new Dimension (28, 32));
+      }
 
     public Color getSelectedForeground() {
         return UIManager.getColor("textText"); //NOI18N
@@ -75,12 +78,12 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
             Insets ins = getBorderInsets(c);
             Polygon p = new Polygon();
             int x = ren.isLeftmost() ? 1 : 0;
-            int y = 1;
+            int y = isGenericUI ? 0 : 1;
 
             int width = ren.isLeftmost() ? c.getWidth() - 1 : c.getWidth();
             int height = ren.isSelected() ?
                     c.getHeight() + 2 : c.getHeight() - 1;
-
+                    
             p.addPoint(x, y + ins.top + 2);
             p.addPoint(x + 2, y + ins.top);
             p.addPoint(x + width - 3, y + ins.top);
@@ -205,7 +208,7 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
             Insets ins = getBorderInsets(c);
             Polygon p = new Polygon();
             int x = -3;
-            int y = 1;
+            int y = isGenericUI ? 0 : 1;
 
             int width = c.getWidth() + 3;
             int height = ren.isSelected() ?
@@ -296,7 +299,7 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
             Insets ins = getBorderInsets(c);
             Polygon p = new Polygon();
             int x = 0;
-            int y = 1;
+            int y = isGenericUI ? 0 : 1;
 
             int width = c.getWidth();
             int height = ren.isSelected() ?

@@ -579,4 +579,10 @@ final class ColorUtil {
         i.setRGB(0, 0, up.getRGB());
         return new ImageIcon(i);
     }
+    
+    public boolean isBlueprintTheme() {
+            return ("blueprint".equals(//NOI18N
+                Toolkit.getDefaultToolkit().getDesktopProperty(
+                "gnome.Net/ThemeName"))); //NOI18N
+    }
 }

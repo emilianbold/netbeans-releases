@@ -127,6 +127,12 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         //all standard toolbar buttons are also available via the keyboard
         if (c instanceof AbstractButton) {
             c.setFocusable(false);
+            ((JComponent) c).setOpaque(false);
+            if (!(c instanceof JToggleButton)) {
+                //JDK 1.5 metal/ocean resets borders, so fix it this way
+                ((AbstractButton) c).setBorderPainted(false);
+                ((AbstractButton) c).setOpaque(false);
+            }
         }
         super.addImpl (c, constraints, idx);
     }

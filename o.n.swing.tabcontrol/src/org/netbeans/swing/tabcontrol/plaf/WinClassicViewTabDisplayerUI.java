@@ -26,14 +26,16 @@ import java.awt.*;
  * @author Dafe Simonek
  */
 public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
+    private static final boolean isGenericUI = 
+        !"Windows".equals(UIManager.getLookAndFeel().getID()); //NOI18N
 
     /**
      * ******** constants ************
      */
 
-    private static final int BUMP_X_PAD = 3;
-    private static final int BUMP_WIDTH = 3;
-    private static final int TXT_X_PAD = BUMP_X_PAD + BUMP_WIDTH + 5;
+    private static final int BUMP_X_PAD = isGenericUI ? 0 : 3;
+    private static final int BUMP_WIDTH = isGenericUI ? 0 : 3;
+    private static final int TXT_X_PAD = isGenericUI ? 3 : BUMP_X_PAD + BUMP_WIDTH + 5;
     private static final int TXT_Y_PAD = 3;
 
     private static final int ICON_X_PAD = 1;
@@ -96,10 +98,23 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
      * Paints lower border, bottom line, separating tabs from content
      */
     protected void paintOverallBorder(Graphics g, JComponent c) {
+        if (isGenericUI) {
+            return;
+        }
         Rectangle r = c.getBounds();
         g.setColor(UIManager.getColor("InternalFrame.borderDarkShadow")); //NOI18N
         g.drawLine(0, r.height - 1, r.width - 1, r.height - 1);
     }
+    
+    protected Font getTxtFont() {
+        if (isGenericUI) {
+            Font result = UIManager.getFont("controlFont");
+            if (result != null) {
+                return result;
+            }
+        }
+        return super.getTxtFont();
+    }     
 
     protected void paintTabContent(Graphics g, int index, String text, int x,
                                    int y, int width, int height) {
@@ -141,7 +156,8 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
 
     protected void paintTabBorder(Graphics g, int index, int x, int y,
                                   int width, int height) {
-        // substract lower border
+                                      
+        // subtract lower border
         height--;
         boolean isSelected = isSelected(index);
         boolean isLast = index == getDataModel().size() - 1;
@@ -225,6 +241,12 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
      */
     private void drawBump(Graphics g, int index, int x, int y, int width,
                           int height) {
+        if (isGenericUI) {
+            //This look and feel is also used as the default UI on non-JDS
+            //GTK L&F
+            return;
+        }
+                              
         // prepare colors
         Color highlightC, bodyC, shadowC;
         if (isFocused(index)) {

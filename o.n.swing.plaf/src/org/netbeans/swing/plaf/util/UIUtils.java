@@ -167,4 +167,10 @@ public final class UIUtils {
         }
         return dif > 0;
     }    
+    
+    public static boolean isBlueprintTheme() {
+            return ("blueprint".equals(//NOI18N
+                Toolkit.getDefaultToolkit().getDesktopProperty(
+                "gnome.Net/ThemeName"))); //NOI18N
+    }    
 }

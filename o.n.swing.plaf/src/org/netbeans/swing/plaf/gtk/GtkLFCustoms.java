@@ -26,6 +26,7 @@ import javax.swing.border.Border;
 import javax.swing.plaf.FontUIResource;
 import java.awt.*;
 import org.netbeans.swing.plaf.util.UIBootstrapValue;
+import org.netbeans.swing.plaf.util.UIUtils;
 
 /** UI customizations for GTK look and feel
  *
@@ -43,6 +44,7 @@ public class GtkLFCustoms extends LFCustoms {
     public Object[] createApplicationSpecificKeysAndValues () {
         
         Border lowerBorder = new AdaptiveMatteBorder (false, true, true, true, 4);
+        boolean blueprint = UIUtils.isBlueprintTheme();
 
         //Avoid using ThemeValue if it can't work - mainly due to testing issues when trying to run GTK UI customizations
         //on the Mac, which doesn't have a GTKLookAndFeel
@@ -78,6 +80,13 @@ public class GtkLFCustoms extends LFCustoms {
             VIEW_TAB_CONTENT_BORDER, lowerBorder,
             EDITOR_TAB_OUTER_BORDER, BorderFactory.createEmptyBorder(),
             EDITOR_TAB_CONTENT_BORDER, lowerBorder,
+            EDITOR_TAB_TABS_BORDER, BorderFactory.createEmptyBorder(),
+            
+            EDITOR_STATUS_LEFT_BORDER, new InsetBorder (false, true),
+            EDITOR_STATUS_RIGHT_BORDER, new InsetBorder (true, false),
+            EDITOR_STATUS_ONLYONEBORDER, new InsetBorder (true, true),
+            EDITOR_STATUS_INNER_BORDER, BorderFactory.createEmptyBorder(),
+            
             
             OUTPUT_BACKGROUND, control,
             OUTPUT_HYPERLINK_FOREGROUND, selFg,
@@ -90,8 +99,10 @@ public class GtkLFCustoms extends LFCustoms {
             "gtkColorsFailover", new UIDefaults.ProxyLazyValue("org.netbeans.swing.plaf.gtk.GtkLFCustoms$ChicletDefaults"), //NOI18N
 
             //UI Delegates for the tab control
-            EDITOR_TAB_DISPLAYER_UI, "org.netbeans.swing.tabcontrol.plaf.GtkEditorTabDisplayerUI", //NOI18N
-            VIEW_TAB_DISPLAYER_UI, "org.netbeans.swing.tabcontrol.plaf.GtkViewTabDisplayerUI", //NOI18N
+            EDITOR_TAB_DISPLAYER_UI, blueprint ? "org.netbeans.swing.tabcontrol.plaf.GtkEditorTabDisplayerUI" :
+                "org.netbeans.swing.tabcontrol.plaf.WinClassicEditorTabDisplayerUI", //NOI18N
+            VIEW_TAB_DISPLAYER_UI, blueprint ? "org.netbeans.swing.tabcontrol.plaf.GtkViewTabDisplayerUI" :
+                "org.netbeans.swing.tabcontrol.plaf.WinClassicViewTabDisplayerUI", //NOI18N
             SLIDING_TAB_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.SlidingTabDisplayerButtonUI", //NOI18N
 
             DESKTOP_BACKGROUND, ThemeValue.functioning() ? new ThemeValue (ThemeValue.REGION_BUTTON, ThemeValue.LIGHT, Color.GRAY) : (Object) Color.GRAY,
@@ -104,6 +115,8 @@ public class GtkLFCustoms extends LFCustoms {
     }
     
     public Object[] createLookAndFeelCustomizationKeysAndValues() {
+        boolean blueprint = UIUtils.isBlueprintTheme();
+        
         if (ThemeValue.functioning()) {
             return new Object[] {
                 //XXX once the JDK team has integrated support for standard
@@ -116,6 +129,8 @@ public class GtkLFCustoms extends LFCustoms {
                 "controlLtHighlight", new ThemeValue (ThemeValue.REGION_PANEL, ThemeValue.WHITE, Color.WHITE), //NOI18N
                 "textText", new ThemeValue (ThemeValue.REGION_PANEL, ThemeValue.TEXT_FOREGROUND, Color.BLACK), //NOI18N
                 "text", new ThemeValue (ThemeValue.REGION_PANEL, ThemeValue.TEXT_BACKGROUND, Color.GRAY), //NOI18N
+                
+                "tab_unsel_fill", control,
                  
                 "SplitPane.dividerSize", new Integer (2),
                 

@@ -33,6 +33,9 @@ public final class WinClassicEditorTabDisplayerUI extends BasicScrollingTabDispl
     private static final int[] xpoints = new int[20];
     private static final int[] ypoints = new int[20];
     private static final Rectangle scratch5 = new Rectangle();
+    
+    private static boolean isGenericUI = !"Windows".equals( //NOI18N
+        UIManager.getLookAndFeel().getID());
 
     /**
      * Creates a new instance of WinClassicEditorTabDisplayerUI
@@ -58,8 +61,10 @@ public final class WinClassicEditorTabDisplayerUI extends BasicScrollingTabDispl
         super.install();
         Color dark = UIManager.getColor("controlShadow"); //NOI18N
         Color light = UIManager.getColor("control"); //NOI18N
-        displayer.setBackground(ColorUtil.adjustTowards(dark, 35, light));
-        displayer.setOpaque(true);
+        if (!isGenericUI) {
+            displayer.setBackground(ColorUtil.adjustTowards(dark, 35, light));
+            displayer.setOpaque(true);
+        }
     }
 
     public Dimension getPreferredSize(JComponent c) {
@@ -68,7 +73,7 @@ public final class WinClassicEditorTabDisplayerUI extends BasicScrollingTabDispl
         if (g != null) {
             FontMetrics fm = g.getFontMetrics(displayer.getFont());
             Insets ins = getTabAreaInsets();
-            prefHeight = fm.getHeight() + ins.top + ins.bottom + 6;
+            prefHeight = fm.getHeight() + ins.top + ins.bottom + (isGenericUI ? 5 : 6);
         }
         return new Dimension(displayer.getWidth(), prefHeight);
     }
@@ -100,7 +105,77 @@ public final class WinClassicEditorTabDisplayerUI extends BasicScrollingTabDispl
         button.setFocusable(false);
     }
 
+    private void genericPaintAfterTabs (Graphics g) {
+        g.setColor (UIManager.getColor("controlShadow")); //NOI18N
+        Insets ins = displayer.getInsets();
+//        g.drawLine (ins.left, displayer.getHeight()-1, displayer.getWidth() - (ins.right + ins.left),
+//            displayer.getHeight()-1);  
+        Rectangle r = new Rectangle();
+        getTabsVisibleArea(r);
+        r.width = displayer.getWidth();
+        int selEnd = 0;
+        int last = getLastVisibleTab();
+        if (last > -1) {
+            getTabRect (last, scratch5);
+            g.drawLine (scratch5.x + scratch5.width, displayer.getHeight() -1, 
+                displayer.getWidth() - (ins.left + ins.right) - 4, 
+                displayer.getHeight() - 1);
+            g.drawLine (0, displayer.getHeight() - 2, 2, displayer.getHeight() -2);
+            if ("GTK".equals(UIManager.getLookAndFeel().getID())) {
+                boolean sel = last == displayer.getSelectionModel().getSelectedIndex();
+                //paint a fading shadow to match the view tabs
+                int x = scratch5.x + scratch5.width;
+                g.setColor (sel ? UIManager.getColor("controlShadow") :
+                    ColorUtil.adjustTowards(g.getColor(), 20,
+                    UIManager.getColor("control"))); //NOI18N
+                g.drawLine (x, 
+                    scratch5.y + 5, x,
+                    scratch5.y + scratch5.height -2);
+                g.setColor (ColorUtil.adjustTowards(g.getColor(), 20,
+                    UIManager.getColor("control"))); //NOI18N
+                g.drawLine (x + 1, 
+                    scratch5.y + 6, x + 1,
+                    scratch5.y + scratch5.height -2);
+            }
+            if ((tabState.getState(getFirstVisibleTab()) & TabState.CLIP_LEFT)
+                !=0 && getFirstVisibleTab() != 
+                displayer.getSelectionModel().getSelectedIndex()) {
+                    //Draw a small gradient line continuing the left edge of
+                    //the displayer up the left side of a left clipped tab
+                GradientPaint gp = ColorUtil.getGradientPaint(
+                    0, displayer.getHeight() / 2, UIManager.getColor("control"),
+                    0, displayer.getHeight(), UIManager.getColor("controlShadow"));
+                ((Graphics2D) g).setPaint(gp);
+                g.drawLine (0, displayer.getHeight() / 2, 0, displayer.getHeight());
+            } else {
+                //Fill the small gap between the top of the content displayer
+                //and the bottom of the tabs, caused by the tab area bottom inset
+                g.setColor (UIManager.getColor("controlShadow"));
+                g.drawLine (0, displayer.getHeight(), 0, displayer.getHeight() - 2);
+            }
+            if ((tabState.getState(getLastVisibleTab()) & TabState.CLIP_RIGHT) != 0
+                && getLastVisibleTab() != 
+                displayer.getSelectionModel().getSelectedIndex()) {
+                GradientPaint gp = ColorUtil.getGradientPaint(
+                    0, displayer.getHeight() / 2, UIManager.getColor("control"),
+                    0, displayer.getHeight(), UIManager.getColor("controlShadow"));
+                ((Graphics2D) g).setPaint(gp);
+                getTabRect (getLastVisibleTab(), scratch5);
+                g.drawLine (scratch5.x + scratch5.width, displayer.getHeight() / 2, 
+                    scratch5.x + scratch5.width, displayer.getHeight());
+            }
+            
+        } else {
+            g.drawLine(r.x, displayer.getHeight() - ins.bottom, r.x + r.width - 4,
+                       displayer.getHeight() - ins.bottom);
+        }
+    }
+    
     protected void paintAfterTabs(Graphics g) {
+        if (isGenericUI) {
+            genericPaintAfterTabs(g);
+            return;
+        }
         Rectangle r = new Rectangle();
         getTabsVisibleArea(r);
         r.width = displayer.getWidth();

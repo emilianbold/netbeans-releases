@@ -140,6 +140,7 @@ final class GtkEditorTabCellRenderer extends AbstractTabCellRenderer {
                     & TabState.ARMED) != 0) {
                 paintCloseButton(g, (JComponent) c);
             }
+            
             boolean leftClip = ((GtkEditorTabCellRenderer) c).isClipLeft();
             boolean leftmost = ((GtkEditorTabCellRenderer) c).isLeftmost();
             boolean active = ((GtkEditorTabCellRenderer) c).isActive();
