@@ -49,6 +49,11 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
     
     private File rootFile;
     
+    /** We must keep created filtered root node because rootNode can be reset any time
+     * eg. when setOkButtonEnabled() is called and we need filtered root node to traverse
+     * node hierarchy up. */
+    private Node filteredRootNode;
+    
     public DataObjectListView (PropertyEditorSupport my) {
         super(my);
     }
@@ -74,7 +79,8 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             add(l, BorderLayout.NORTH);
         }*/
         
-        if (rootNode == null) {
+        filteredRootNode = rootNode;
+        if (filteredRootNode == null) {
             if (dataFilter != null) {
                 if (folderFilter != null) {
                     DataFilter dFilter = new DataFilter() {
@@ -85,29 +91,28 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
                             return dataFilter.acceptDataObject(obj);
                         }
                     };
-                    rootNode = RepositoryNodeFactory.getDefault().repository(dFilter);
+                    filteredRootNode = RepositoryNodeFactory.getDefault().repository(dFilter);
                 } else {
-                    rootNode = RepositoryNodeFactory.getDefault().repository(dataFilter);
+                    filteredRootNode = RepositoryNodeFactory.getDefault().repository(dataFilter);
                 }
             } else {
                 if (folderFilter != null) {
-                    rootNode = RepositoryNodeFactory.getDefault().repository(folderFilter);
+                    filteredRootNode = RepositoryNodeFactory.getDefault().repository(folderFilter);
                 } else {
-                    rootNode = RepositoryNodeFactory.getDefault().repository(DataFilter.ALL);
+                    filteredRootNode = RepositoryNodeFactory.getDefault().repository(DataFilter.ALL);
                 }
             }
         }
 
         if (nodeFilter != null) {
             FilteredChildren children = 
-                new FilteredChildren(rootNode, nodeFilter, dataFilter);
-            FilterNode n = new FilterNode(rootNode, children);
-            rootNode = n;
+                new FilteredChildren(filteredRootNode, nodeFilter, dataFilter);
+            FilterNode n = new FilterNode(filteredRootNode, children);
+            filteredRootNode = n;
         }
         
-        Node rNode = rootNode;
         if (rootObject != null) {
-            Node n = findNodeForObj(rootNode, rootObject);
+            Node n = findNodeForObj(filteredRootNode, rootObject);
             if (n != null) {
                 NodeAcceptor naccep = nodeFilter;
                 if (naccep == null) {
@@ -120,11 +125,11 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
                 FilteredChildren children =
                     new FilteredChildren(n, naccep, dataFilter);
                 FilterNode filtNode = new FilterNode(n, children);
-                rNode = filtNode;
+                filteredRootNode = filtNode;
             }
         }
         
-        rootFile = new NodeFile(getFileName(rNode), rNode);
+        rootFile = new NodeFile(getFileName(filteredRootNode), filteredRootNode);
         
         //Create instance AFTER root file is set!!!
         chooser = new NodeFileChooser(rootFile, new NodeFileSystemView());
@@ -206,7 +211,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
      */
     private Node findNode (String path) {
         //Find node corresponding to given path
-        Node n = rootNode;
+        Node n = filteredRootNode;
         String p = path;
         String fileName;
         int ind = p.indexOf('/');
@@ -243,26 +248,12 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
                 }
             }
         }
-        //Check if node path corresponds to parameter path.
-        /*Node backNode = n;
-        StringBuffer nodePath = new StringBuffer(100);
-        nodePath.append(backNode.getDisplayName().replace('/','#'));
-        backNode = backNode.getParentNode();
-        while (backNode != null) {
-            nodePath.insert(0, "/");
-            nodePath.insert(0, backNode.getDisplayName().replace('/','#'));
-            backNode = backNode.getParentNode();
-        }
-        if (!path.equals(nodePath.toString())) {
-            System.out.println("#######################################");
-            System.out.println("ERROR PATH IS NOT EQUAL TO NODE PATH");
-            System.out.println("#######################################");
-        }*/
         
         //Check if node was found
         if (!fileName.equals(getFileName(n))) {
             return null;
         }
+        
         return n;
     }
     
@@ -272,7 +263,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
      */
     private Node createNode (String path) {
         //Find node corresponding to given path
-        Node n = rootNode;
+        Node n = filteredRootNode;
         Node parent = null;
         String p = path;
         String fileName;
@@ -323,21 +314,6 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             parent.getChildren().add(new Node [] { n });
         }*/
         
-        //Check if node path corresponds to parameter path.
-        /*Node backNode = n;
-        StringBuffer nodePath = new StringBuffer(100);
-        nodePath.append(backNode.getDisplayName().replace('/','#'));
-        backNode = backNode.getParentNode();
-        while (backNode != null) {
-            nodePath.insert(0, "/");
-            nodePath.insert(0, backNode.getDisplayName().replace('/','#'));
-            backNode = backNode.getParentNode();
-        }
-        if (!path.equals(nodePath.toString())) {
-            System.out.println("#######################################");
-            System.out.println("ERROR PATH IS NOT EQUAL TO NODE PATH");
-            System.out.println("#######################################");
-        }*/
         return n;
     }
     
@@ -569,7 +545,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             if (n == null) {
                 return null;
             }
-            Node parent = n.getParentNode();
+            Node parent = findNode(p);
             if (parent == null) {
                 return null;
             }
@@ -597,7 +573,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
                 p = p.substring(0, ind);
             }
             p = p.replace('#','/');
-            if (p.equals(getFileName(rootNode))) {
+            if (p.equals(getFileName(filteredRootNode))) {
                 return true;
             } else {
                 return false;
@@ -608,6 +584,15 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             if (n == null) {
                 return false;
             }
+            /*Node [] nodes = n.getChildren().getNodes(true);
+            System.out.println("NodeFile.isDirectory sz:" + nodes.length);
+            if (nodes.length > 0) {
+                System.out.println("NodeFile.isDirectory LEAVE 2 true f:" + this);
+                return true;
+            } else {
+                System.out.println("NodeFile.isDirectory LEAVE 2 false f:" + this);
+                return false;
+            }*/
             DataObject dObj = (DataObject) n.getCookie(DataObject.class);
             if (dObj != null) {
                 if (dObj instanceof DataFolder) {
@@ -625,6 +610,15 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             if (n == null) {
                 return true;
             }
+            /*Node [] nodes = n.getChildren().getNodes(true);
+            System.out.println("NodeFile.isFile sz:" + nodes.length);
+            if (nodes.length > 0) {
+                System.out.println("NodeFile.isFile LEAVE 2 false f:" + this);
+                return false;
+            } else {
+                System.out.println("NodeFile.isFile LEAVE 3 true f:" + this);
+                return true;
+            }*/
             DataObject dObj = (DataObject) n.getCookie(DataObject.class);
             if (dObj != null) {
                 if (dObj instanceof DataFolder) {
