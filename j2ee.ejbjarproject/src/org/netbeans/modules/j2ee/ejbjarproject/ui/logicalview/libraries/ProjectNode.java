@@ -157,7 +157,7 @@ class ProjectNode extends AbstractNode {
                 if (artifacts.length==0) {
                     return false;
                 }
-                URI artifactLocation = artifacts[0].getArtifactLocation();
+                URI artifactLocation = artifacts[0].getArtifactLocations()[0];
                 File scriptLocation = artifacts[0].getScriptLocation();
                 URL artifactURL = scriptLocation.toURI().resolve(artifactLocation).normalize().toURL();
                 if (FileUtil.isArchiveFile(artifactURL)) {
@@ -175,7 +175,7 @@ class ProjectNode extends AbstractNode {
                 AntArtifactProvider provider = (AntArtifactProvider) project.getLookup().lookup(AntArtifactProvider.class);
                 AntArtifact[] artifacts = provider.getBuildArtifacts();
                 //XXX: EjbJarProject has a single artifact, if changed must return FileObject[]
-                URI artifactLocation = artifacts[0].getArtifactLocation();
+                URI artifactLocation = artifacts[0].getArtifactLocations()[0];
                 File scriptLocation = artifacts[0].getScriptLocation();
                 URL artifactURL = scriptLocation.toURI().resolve(artifactLocation).normalize().toURL();
                 if (FileUtil.isArchiveFile(artifactURL)) {
@@ -284,7 +284,7 @@ class ProjectNode extends AbstractNode {
                                     if (!RemoveClassPathRootAction.isReferenced (new EditableProperties[] {
                                         props,
                                         helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH)}, ref)) {
-                                        refHelper.destroyForeignFileReference (ref);
+                                        refHelper.destroyReference (ref);
                                     }
                                     
                                     ProjectManager.getDefault().saveProject(project);

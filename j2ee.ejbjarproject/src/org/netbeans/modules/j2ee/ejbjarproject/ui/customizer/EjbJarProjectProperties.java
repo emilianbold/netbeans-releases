@@ -504,7 +504,8 @@ public class EjbJarProjectProperties {
         removed.removeAll( newArtifacts );
         for( Iterator it = removed.iterator(); it.hasNext(); ) {
             VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
-            refHelper.destroyForeignFileReference( vcpi.getRaw() );
+            //refHelper.destroyForeignFileReference( vcpi.getRaw() );
+            refHelper.destroyReference( vcpi.getRaw() );
         }
     }
         
@@ -697,10 +698,10 @@ public class EjbJarProjectProperties {
                         cpItem = new VisualClassPathItem(null, VisualClassPathItem.TYPE_LIBRARY, pe[i], eval, inDeployment);
                     }
                 } else if (pe[i].startsWith(ANT_ARTIFACT_PREFIX)) {
-                    AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact(pe[i]);
+                    AntArtifact artifact = (AntArtifact) refHelper.findArtifactAndLocation(pe[i])[0];
                     if ( artifact != null ) {
                         // Sub project artifact
-                        String eval = artifact.getArtifactLocation().toString();
+                        String eval = artifact.getArtifactLocations()[0].toString();
                         cpItem = new VisualClassPathItem( artifact, VisualClassPathItem.TYPE_ARTIFACT, pe[i], eval, inDeployment );
                     } else {
                         cpItem = new VisualClassPathItem(null, VisualClassPathItem.TYPE_ARTIFACT, pe[i], null, inDeployment);
@@ -766,7 +767,7 @@ public class EjbJarProjectProperties {
                         break;
                     case VisualClassPathItem.TYPE_ARTIFACT:
                         AntArtifact aa = (AntArtifact)vcpi.getObject();
-                        String reference = refHelper.createForeignFileReference( aa );
+                        String reference = refHelper.addReference( aa, aa.getArtifactLocations()[0]);
                         library_tag_value = reference;
                         break;
                     case VisualClassPathItem.TYPE_CLASSPATH:

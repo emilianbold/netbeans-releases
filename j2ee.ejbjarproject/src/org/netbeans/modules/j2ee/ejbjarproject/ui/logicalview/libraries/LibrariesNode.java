@@ -357,7 +357,7 @@ public final class LibrariesNode extends AbstractNode {
                 }
                 else if (prop.startsWith(ANT_ARTIFACT_PREFIX)) {
                     //Project reference
-                    AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact(prop);
+                    AntArtifact artifact = (AntArtifact) refHelper.findArtifactAndLocation(prop)[0];
                     if ( artifact != null ) {
                         Project project = artifact.getProject();
                         result.add (new Key(project,currentClassPath, propName));

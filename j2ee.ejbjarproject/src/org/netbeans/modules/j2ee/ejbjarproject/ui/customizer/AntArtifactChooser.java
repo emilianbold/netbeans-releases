@@ -249,7 +249,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         }
         
         public String toString() {
-            return artifact.getArtifactLocation().toString();
+            return artifact.getArtifactLocations()[0].toString();
         }
         
     }
