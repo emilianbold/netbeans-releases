@@ -80,7 +80,7 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     return true;
   }
 
-  /** Wherher mirror search sesults in output window. 
+  /** Whether mirror search sesults in output window. 
   * @return new state
   */
   synchronized boolean fillOutput (boolean fill) {
@@ -93,7 +93,30 @@ public class ResultModel implements NodeAcceptor, TaskListener {
     
     return true;
   }
-  
+
+  /** Does used criteria allow filling output window? 
+  * Currently it check for presence of StructuredDetail.
+  * @return true it it can be used.
+  */
+  synchronized boolean canFillOutput() {
+
+    SearchType[] crs = getCriteriaModel().getCustomizedCriteria();
+
+    for (int i=0; i < crs.length; i++) {
+
+      Class[] detCls = crs[i].getDetailClasses();
+      //we support just AND critera relation
+      //so if one of them support a detail then
+      //all search results (matched nodes) will do.
+      if (detCls == null) continue;
+      for (int x=0; x < detCls.length; x++) {
+        if (StructuredDetail.class == detCls[x])
+          return true;
+      }
+    }
+    return false;
+  }
+
   /** Is search engine still running?  */
   public boolean isDone() {
     return done;
@@ -202,6 +225,8 @@ public class ResultModel implements NodeAcceptor, TaskListener {
 
 /* 
 * Log
+*  11   Gandalf-post-FCS1.8.2.1     4/4/00   Petr Kuzel      Comments + output window 
+*       fix
 *  10   Gandalf-post-FCS1.8.2.0     2/24/00  Ian Formanek    Post FCS changes
 *  9    Gandalf   1.8         1/13/00  Radko Najman    I18N
 *  8    Gandalf   1.7         1/5/00   Petr Kuzel      Margins used. Help 

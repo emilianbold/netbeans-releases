@@ -34,6 +34,8 @@ import org.openidex.search.*;
 
 import com.netbeans.developer.modules.search.res.*;
 
+import com.netbeans.editor.*;
+
 /** 
  *
  * @author  pkuzel
@@ -156,7 +158,7 @@ public class SearchDisplayer extends Object implements NodeAcceptor {
     public void outputLineAction (OutputEvent ev) {
       try {
         xline.markCurrentLine();
-        xline.show(Line.SHOW_GOTO, column);
+        xline.show(Line.SHOW_GOTO, column);        
       } catch (IndexOutOfBoundsException ex) {
       }
     }
@@ -166,6 +168,30 @@ public class SearchDisplayer extends Object implements NodeAcceptor {
         xline.unmarkCurrentLine();
       } catch (IndexOutOfBoundsException ex) {
       }
+    }
+    
+    /** Select the resu;t in editor such as Find action does. */
+    //TODO
+    private void select() {
+/*      
+      // check existence of suitable editor.
+      try {
+        Class.forName(FindSupport.class.getName());
+      } catch (Exception ex) {
+        return;
+      }
+    
+      // the actual parameters should be obtained from criterion that produced it
+      FindSupport supp = FindSupport.getFindSupport();
+      Map props = new HashMap();
+      props.put(SettingNames.FIND_MATCH_CASE, new Boolean(true));
+      props.put(SettingNames.FIND_SMART_CASE, new Boolean(false));
+      props.put(SettingNames.FIND_WHOLE_WORDS, new Boolean(false));
+      props.put(SettingNames.FIND_REG_EXP, new Boolean(false));      
+      props.put(SettingNames.FIND_WHAT, "com");
+      supp.putFindProperties(props);
+      supp.find(null, false);
+*/      
     }
   } 
   
