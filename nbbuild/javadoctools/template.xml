@@ -74,7 +74,7 @@ cause it to fail.
             <include name="*.css"/>
         </fileset>
         <property name="javadoc.check.external.links" value="false"/>
-        <property name="javadoc.header" value="&nbsp;"/>
+        <property name="javadoc.header" value="&amp;nbsp;"/>
         <mkdir dir="${javadoc.out.dir}"/>
     </target>
 
