@@ -24,6 +24,7 @@ import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.editor.plain.PlainKit;
 import org.netbeans.modules.editor.java.JCStorage;
 import org.netbeans.modules.editor.java.JCUpdateAction;
+import org.netbeans.modules.editor.options.AllOptions;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.TopManager;
@@ -64,6 +65,7 @@ public class EditorModule extends ModuleInstall {
     public void restored () {
 
         LocaleSupport.addLocalizer(new NbLocalizer(NbEditorSettingsInitializer.class));
+        LocaleSupport.addLocalizer(new NbLocalizer(AllOptions.class));
 
         // Initializations
 
