@@ -59,8 +59,19 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+
+    <testbag testattribs="stable OR sheet" executor="code" name="property sheet blinking tests">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/openide/explorer/propertysheet/*"/>
+                <exclude name="org/openide/explorer/propertysheet/DefaultPropertyModelTest.class"/>
+                <exclude name="org/openide/explorer/propertysheet/PropertySheetTest.class"/>
+        		</patternset>
+    		</testset>
+    </testbag>
+        
     
-    <testbag testattribs="stable" executor="code" name="testbag_1">
+    <testbag testattribs="stable" executor="code" name="all openide code unit tests">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/actions/*Test.class"/>
@@ -75,7 +86,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/explorer/FindHelpTest.class"/>
                 <!-- filesystems tests should be stable. If not file a bug: -->                
                 <include name="org/openide/filesystems/*.class"/>
-                <exclude  name="org/openide/filesystems/SystemFileSystemTest.class"/>                                         
                 <exclude name="org/openide/filesystems/JarFileSystemTest.class/testForSpaces"/>
                 <!-- Under development: -->
                 <exclude  name="org/openide/filesystems/MultiFileSystemMaskTest.class"/>                                         
@@ -120,10 +130,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/explorer/FindHelpTest.class"/>
                 -->                
                 
-                <include name="org/openide/explorer/propertysheet/*"/>
-                <exclude name="org/openide/explorer/propertysheet/DefaultPropertyModelTest.class"/>
-                <exclude name="org/openide/explorer/propertysheet/PropertySheetTest.class"/>
-                
                 <include name="org/openide/compiler/*Test.class"/>
                 
                 <!-- run text package tests -->
@@ -132,22 +138,11 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- run also wizard's tests -->
                 <include name="org/openide/WizardDescTest.class"/>
                 <include name="org/openide/InstantiatingIteratorTest.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="stable" executor="code" name="testbag_windows">
-        <testset dir="unit/src">
-            <patternset>
+                
                 <!-- run also window system tests -->
                 <include name="org/openide/windows/*Test.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="stable" executor="ide" name="testbag_2">
-        <testset dir="unit/src">
-            <patternset>
+                
+                <!-- originally part of ide mode -->
                 <include name="org/openide/explorer/propertysheet/DefaultPropertyModelTest.class"/>
                 <include name="org/openide/explorer/propertysheet/PropertySheetTest.class"/>
                 <include name="org/openide/explorer/view/*.class"/>
@@ -157,14 +152,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- excluded, a problem in infrastructure, the component is not showed -->
                 <exclude name="org/openide/explorer/view/DefaultActionTest.class"/>
                 <include name="org/openide/explorer/view/TTVTest.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="stable,fs" executor="ide" name="testbag_fs_ide">
-        <testset dir="unit/src">
-            <patternset>
-                <include  name="org/openide/filesystems/SystemFileSystemTest.class"/>
+                
             </patternset>
         </testset>
     </testbag>
