@@ -8,161 +8,114 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="QA functional tests" basedir="." default="all">
-
-<!-- =================== -->
+    
+    <!-- Imports jemmy.and.jelly.path and default qa-functional-compiler and
+         runidetest executor -->
+    <import file="${xtest.home}/lib/default-build-qa-functional.xml"/>
+    
+    <!-- =================== -->
     <!-- Setting classpathes -->
     <!-- =================== -->
     
-    <target name="set_classpath" depends="prepare-compile-classpath,prepare-codetest-classpath">
-    
-        <!-- During filling classpathes remember that only <module>/test 
-             is checked out during automated test execution so <module>/src 
-             or <module>/netbeans isn't available. If you need to add something 
-	     from <module>/src or <module>/netbeans to classpath, 
-	     look below to "setting advanced claspathes" part of this target.
-          -->
-        <property name="nbextra.dir" location="../../../nbextra"/>
-        <!-- List of directories where jars will be searched. -->
-        <property name="jemmy.home" location="../../jemmy/builds"/>
-        <property name="jelly.home" location="../../jellytools/builds"/>
-        <property name="xtest.extra.jars.path" location="${jemmy.home};${jelly.home};${netbeans.home}/lib/"/>
-    
-        <!-- This jars is used for compilation, execution codetests and also for
-             execution ide tests (it means this classpath will be mounted in repository).
-             You can also write only name of jar or zip file, not in which directory it is and 
-             this file will be searched in directories specified by property xtest.extra.jars.path 
-                 example: <property name="xtest.extra.jars" value="jemmy.jar;jelly2-nb.jar"/>
-          -->
-        <property name="xtest.extra.jars"     value=""/>
-   
-        <!-- These jars will be copied to directory ${netebans.home}/lib/ext.
-	     Again you can write only name of jar or zip file, not in which directory it is and 
-             this file will be searched in directories specified by property xtest.extra.jars.path 
-                 example: <property name="xtest.extra.jars.ide" value="jdbc_driver1.zip;jdbcd_river2.jar"/>
-          -->
-        <property name="xtest.extra.jars.ide" value="jemmy.jar;jelly2-nb.jar;jelly-nb.jar"/>
-
-
-        <!-- Arguments which will be added into commandline of starting IDE. 
-                 example: <property name="xtest.ide.commandline.suffix" value="-J-Dxtest.useclassloader=org.openidex.util"/>
-          -->
-        <property name="xtest.ide.commandline.suffix" value=""/>
-  	
-        <!-- =========================== -->
-        <!-- Setting avanced classpathes -->
-        <!-- =========================== -->
-    
-        <!-- If you need to add something from <module>/src or <module>/netbeans
-             to classpath use target prepare-compile-classpath or prepare-codetest-classpath
-             which fills path according to property xtest.source.location. This property
-             can have values "src" (compilation and execution against sources), "jar" (compil.
-             and execut. against jars) or "ide" (compil. and execut. against installed IDE).
-             "ide" mode is used during automated test execution so it has to be always supported. 
-          -->
-    
-	<!-- This classpath is beside jars in xtest.extra.jars also used for compilation, 
-	     but it depends on property xtest.source.location which classpath will be used.
-	     Fill apropriate classpathes in targets "${xtest.source.location}compile-classath". -->
-	<property name="compiletest.classpath" refid="compiletest.classpath"/>
-            
-	<!-- This classpath is beside jars in xtest.extra.jars also used for execution codetests,
-	     but it depends on property xtest.source.location which classpath will be used.
-	     Fill apropriate classpathes in targets "${xtest.source.location}test-classath". -->
-	<property name="codetest.classpath" refid="codetest.classpath"/>
+    <path id="compiletest.classpath">
+        <pathelement location="${xtest.home}/lib/openide-13javac-workaround.jar"/>
+	<pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+	<fileset dir="${openide.dir}/${nb.lib.dir}">
+            <include name="openide*.jar"/> <!-- is it needed? -->
+        </fileset>
+        <!-- XXX -->
+        <fileset dir="${openide/execution.dir}/${nb.modules/autoload.dir}">
+            <include name="openide-*.jar"/> <!-- is it needed? -->
+            <include name="core-*.jar"/>
+        </fileset>
+        <pathelement location="../../jemmy/builds/jemmy.jar"/>
+        <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>
         
-    </target>
+	<pathelement path="${junit.path}"/> <!-- XXX ??? -->
+        <pathelement path="${xerces.path}"/> <!-- XXX ??? -->
+    </path>
+    
+    <path id="codetest.classpath">
+        <fileset dir="${core.dir}/${nb.lib.dir}/">
+            <include name="core.jar"/>
+            <include name="ext/*.jar"/>
+        </fileset>
+        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+        <!-- XXX -->
+        <fileset dir="${openide.dir}/${nb.modules/autoload.dir}">
+            <include name="openide-*.jar"/>
+            <include name="core-*.jar"/>
+        </fileset>
+    </path>
     
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
     
-    <target name="QAcompiler" depends="set_classpath">
-       <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="buildtests">
-           <!-- This property contains directories to compile.
-    	        These directories will be compiled separately. 
-                   example: <property name="compile.srcdir" value="unit/src1;unit/src2"/>
-             -->
-           <property name="compile.srcdir" value="qa-functional/src"/>
-	   <!-- 
-	       <property name="compile.excludes" value="**/data/**"/>
-	   -->              
-       </ant>
+    <target name="QAcompiler">
+        <buildTests srcDir="qa-functional/src"> <!-- compileexcludes="**/data/**" -->
+            <classpath refid="compiletest.classpath"/>
+        </buildTests>
     </target>
 
     <!-- ================ -->
     <!-- Global Executors -->
     <!-- ================ -->
     
-    <!-- This target is executed from test-executor in newly created Project -->
-    <!-- Name of this task is defined in cfg-xxx.xml -->
-    <!-- This target executes tests inside IDE -->
-    <target name="runidetest" depends="set_classpath">
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="test">
-           <property name="xtest.exectype" value="ide"/>
-        </ant>
-    </target>
-    
-    <!-- This target executes tests inside IDE-->
-    <target name="runidetest_firststart_mdi" depends="set_classpath">
-        <property name="xtest.ide.winsys" value="mdi"/>
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="test">
-           <property name="xtest.exectype" value="ide"/>
-        </ant>
+    <target name="runidetest">
+        <executeTests  pluginName="ide">
+            <classpath refid="jemmy.and.jelly.path"/>
+        </executeTests>
     </target>
 
-    <!-- This target executes tests inside IDE-->
-    <target name="runidetest_firststart_sdi" depends="set_classpath">
-        <property name="xtest.ide.winsys" value="sdi"/>
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="test">
-           <property name="xtest.exectype" value="ide"/>
-        </ant>
-    </target>
-        
-    <!-- This target executes tests inside IDE and will reuse userdir from previous testbag-->
-    <target name="runidetest_secondstart_mdi" depends="set_classpath">
+    <target name="runidetest_firststart_mdi">
         <property name="xtest.ide.winsys" value="mdi"/>
-        <!-- to achieve execution on previous directory -->
-        <property name="xtest.reuse.ide" value="true"/>    
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="test">
-           <property name="xtest.exectype" value="ide"/>
-        </ant>
+        <executeTests  pluginName="ide">
+            <classpath refid="jemmy.and.jelly.path"/>
+        </executeTests>
     </target>
     
-    <!-- This target executes tests inside IDE and will reuse userdir from previous testbag-->
-    <target name="runidetest_secondstart_sdi" depends="set_classpath">
+    <!-- This target executes tests inside IDE-->
+    <target name="runidetest_firststart_sdi">
         <property name="xtest.ide.winsys" value="sdi"/>
-        <!-- to achieve execution on previous directory -->
-        <property name="xtest.reuse.ide" value="true"/>    
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="test">
-           <property name="xtest.exectype" value="ide"/>
-        </ant>
+        <executeTests  pluginName="ide">
+            <classpath refid="jemmy.and.jelly.path"/>
+        </executeTests>
     </target>
     
-    <!-- This target is executed from test-executor in newly created Project -->
-    <!-- Name of this task is defined in cfg-xxx.xml -->
-    <!-- This target executes standalone tests -->
-    <target name="runcodetest" depends="set_classpath">
-        <ant dir="." antfile="${xtest.module_harness.antfile}"
-             target="test">
-           <property name="xtest.exectype" value="code"/>
-        </ant>
+    <!-- This target executes tests inside IDE-->
+    <target name="runidetest_secondstart_mdi">
+        <property name="xtest.ide.winsys" value="mdi"/>
+        <property name="xtest.ide.reuse.userdir" value="true"/><!--<property name="xtest.reuse.ide" value="true"/>-->
+        <executeTests  pluginName="ide">
+            <classpath refid="jemmy.and.jelly.path"/>
+        </executeTests>
+    </target>
+    
+    <!-- This target executes tests inside IDE and will reuse userdir from previous testbag-->    
+    <target name="runidetest_secondstart_sdi">
+        <property name="xtest.ide.winsys" value="sdi"/>
+        <property name="xtest.ide.reuse.userdir" value="true"/><!--<property name="xtest.reuse.ide" value="true"/>-->
+        <executeTests  pluginName="ide">
+            <classpath refid="jemmy.and.jelly.path"/>
+        </executeTests>
+    </target>
+    
+    <target name="runcodetest">
+        <executeTests  pluginName="jvm">
+            <classpath refid="codetest.classpath"/>
+        </executeTests>
     </target>
 
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
-    <target name="runplatformtest" depends="set_classpath">
+    <target name="runplatformtest">
         <mkdir dir="${netbeans.home}/modules/ext"/>
         <copy todir="${netbeans.home}/modules/ext" >
              <fileset dir="../../ant/external">
@@ -172,154 +125,4 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="runidetest"/>
     </target>
     
-    <!-- =============================================================
-        Following targets are for "advanced" users who needs more 
-        compilacated classpathes, which depends on way of execution.
-        ============================================================= -->
-
-    <!-- this "switch" will decide how to create classpath -->
-    <target name="which-classpath">
-        <condition property="jarcode.classpath">
-            <equals arg1="${xtest.source.location}" arg2="jar"/>
-        </condition>
-        <condition property="srccode.classpath">
-            <equals arg1="${xtest.source.location}" arg2="src"/>
-        </condition>
-        <condition property="idecode.classpath">
-            <equals arg1="${xtest.source.location}" arg2="ide"/>
-        </condition>
-    </target>
-
-    <!-- ========================= -->
-    <!-- Classpath for compilation -->
-    <!-- ========================= -->
-    
-    <target name="prepare-compile-classpath"
-         depends="jarcompile-classpath,srccompile-classpath,idecompile-classpath"/>
-    
-    <target name="jarcompile-classpath" depends="which-classpath" if="jarcode.classpath">
-        <echo message="Using jars classpath for compilation."/>
-    	<!-- this classpath will be used for compiling tests against jars -->
-	<path id="compiletest.classpath">        
-	    	<pathelement location="../../openide/openide-13javac-workaround.jar"/>
-	    	<pathelement location="../netbeans/lib/core.jar"/>
-	    	<fileset dir="../../openide/netbeans/lib">
-                    <include name="openide*.jar"/>
-             	</fileset>
-                <!-- XXX -->
-                <pathelement location="../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-                <pathelement location="../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-                <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-                <pathelement location="../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-
-             	<pathelement path="${junit.path}"/>
-	    	<pathelement path="${xerces.path}"/>
-	</path>
-    </target>
-        
-    <target name="srccompile-classpath" depends="which-classpath" if="srccode.classpath">
-        <echo message="Using srcs classpath for compilation."/>
-    	<!-- this classpath will be used for compiling tests against sources -->
-    	<path id="compiletest.classpath">        
-	        <pathelement location="../../openide/openide-13javac-workaround.jar"/>
-	        <pathelement location="../src"/>
-	        <fileset dir="../../openide/netbeans/lib">
-                    <include name="openide*.jar"/>
-                </fileset>
-                <!-- XXX -->
-                <pathelement location="../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-                <pathelement location="../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-                <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-                <pathelement location="../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-
-	        <pathelement path="${junit.path}"/>
-		<pathelement path="${xerces.path}"/>
-	</path>
-    </target>
-    
-    <target name="idecompile-classpath" depends="which-classpath" if="idecode.classpath">
-        <echo message="Using IDE classpath for compilation."/>
-    	<!-- this classpath will be used for compiling tests against installed IDE -->
-    	<path id="compiletest.classpath">        
-    		<pathelement location="${xtest.home}/lib/openide-13javac-workaround.jar"/>
-	        <pathelement location="${netbeans.home}/lib/core.jar"/>
-	        <fileset dir="${netbeans.home}/lib">
-                    <include name="openide*.jar"/>
-                </fileset>
-                <!-- XXX -->
-                <fileset dir="${netbeans.home}/modules/autoload">
-                    <include name="openide-*.jar"/>
-                    <include name="core-*.jar"/>
-                </fileset>
-
-	        <pathelement path="${junit.path}"/>
-		<pathelement path="${xerces.path}"/>
-    	</path>
-    </target>
-    
-    <!-- ================================== -->
-    <!-- Classpath for execution code tests -->
-    <!-- ================================== -->
-    
-    <target name="prepare-codetest-classpath" 
-            depends="jartest-classpath,srctest-classpath,idetest-classpath"/>
-    
-    <target name="jartest-classpath" depends="which-classpath" if="jarcode.classpath">
-        <echo message="Using jars classpath."/>
-        <!-- this classpath will be used for executing tests against jars -->
-	<path id="codetest.classpath">
-        	<fileset dir="../netbeans/lib">
-            		<include name="core.jar"/>
-            		<include name="ext/*.jar"/>
-        	</fileset>
-        	<pathelement location="../../openide/netbeans/lib/openide.jar"/>
-                <!-- XXX -->
-                <pathelement location="../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-                <pathelement location="../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-                <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-                <pathelement location="../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-
-    	</path>
-    </target>
-        
-    <target name="srctest-classpath" depends="which-classpath" if="srccode.classpath">
-        <echo message="Using srcs classpath."/>
-        <!-- this classpath will be used for executing tests against sources -->
-    	<path id="codetest.classpath">
-        <!-- Working sources should take precedence over core.jar: -->
-           <pathelement location="../src"/>
-        	<fileset dir="../netbeans/lib">
-              	    <!-- But loading core.jar means its manifest is available to module system: -->
-           	    <include name="core.jar"/>
-           	    <include name="ext/*.jar"/>
-        	</fileset>
-           <pathelement location="../../openide/netbeans/lib/openide.jar"/>
-            <!-- XXX -->
-            <pathelement location="../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
-            <pathelement location="../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-            <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
-            <pathelement location="../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-
-    	</path>
-    </target>
-    
-    <target name="idetest-classpath" depends="which-classpath" if="idecode.classpath">
-        <echo message="Using IDE classpath."/>
-        <!-- this classpath will be used for executing tests against installed IDE -->
-    	<path id="codetest.classpath">
-        	<fileset dir="${netbeans.home}/lib">
-            		<include name="core.jar"/>
-            		<include name="ext/*.jar"/>
-        	</fileset>
-        	<pathelement location="${netbeans.home}/lib/openide.jar"/>     
-                <!-- XXX -->
-                <fileset dir="${netbeans.home}/modules/autoload">
-                    <include name="openide-*.jar"/>
-                    <include name="core-*.jar"/>
-                </fileset>
-                   
-    	</path>
-    </target>
-    
-
 </project>
