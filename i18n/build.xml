@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../editor/netbeans/modules/editor.jar"/>
         <pathelement location="../form/netbeans/modules/form.jar"/>
         <pathelement location="../java/netbeans/modules/java.jar"/>
-        <pathelement location="../core/release/lib/ext/regexp.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
       </classpath>
     </javac>
   </target>
