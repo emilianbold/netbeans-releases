@@ -43,6 +43,18 @@
                 <action name="test">
                     <target>test-nb</target>
                 </action>
+                <action name="debug.fix">
+                    <target>debug-fix-nb</target>
+                    <context>
+                        <property>fix.file</property>
+                        <folder>src</folder>
+                        <pattern>\.java$</pattern>
+                        <format>relative-path-noext</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
+                </action>
             </ide-actions>
             <view>
                 <items>

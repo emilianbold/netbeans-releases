@@ -126,6 +126,18 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="do-debug"/>
     </target>
     
+    <target name="debug-fix-nb">
+        <javac srcdir="src" destdir="${build.classes.dir}" debug="true" deprecation="true" source="1.4">
+            <classpath path="${build.cp}"/>
+            <include name="${fix.file}.java"/>
+        </javac>
+        <nbjpdareload>
+            <fileset dir="${build.classes.dir}">
+                <include name="${fix.file}.class"/>
+            </fileset>
+        </nbjpdareload>
+    </target>
+    
     <target name="optit" depends="build">
         <java classname="intuitive.audit.Audit" fork="true" failonerror="true">
             <classpath>
