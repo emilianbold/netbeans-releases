@@ -544,7 +544,7 @@ public final class TestCreator {
         Method ret = pkg.getMethod().createMethod();
         ret.setName("suite");
         ret.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
-        ret.setTypeName(TestUtil.getTypeReference(pkg,"junit.framework.Test"));
+        ret.setTypeName(TestUtil.getTypeReference(pkg, "Test"));        //NOI18N
         return ret;
     }
     
@@ -561,7 +561,7 @@ public final class TestCreator {
         Method method = createSuiteMethod(pkg);
         
         StringBuffer body = new StringBuffer(1024);
-        body.append("junit.framework.TestSuite suite = new junit.framework.TestSuite(");
+        body.append("TestSuite suite = new TestSuite(");                //NOI18N
         body.append(tgtClass.getSimpleName());
         body.append(".class);\n");
         
