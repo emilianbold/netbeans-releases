@@ -37,6 +37,7 @@ public class DatabaseModule extends ModuleInstall {
     static final long serialVersionUID =5426465356344170725L;
     
     public void installed() {
+        System.out.println("INSTALLED!!!!!!!!!!");
 
         TopManager tm = TopManager.getDefault();
 
@@ -63,10 +64,31 @@ public class DatabaseModule extends ModuleInstall {
     }
     
     public void uninstalled() {
-        close();
+        TopManager tm = TopManager.getDefault();
+
+        try {
+            FileSystem rfs = tm.getRepository().getDefaultFileSystem();
+            FileObject rootFolder = rfs.getRoot();
+            FileObject databaseFileObject = rootFolder.getFileObject("Database"); //NOI18N
+            if (databaseFileObject != null) {
+                FileObject adaptorsFileObject = databaseFileObject.getFileObject("Adaptors"); //NOI18N
+                FileLock l = adaptorsFileObject.lock();
+                try {
+                    adaptorsFileObject.delete(l);
+                } catch (Exception e) {
+                    if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
+                        System.out.println("DBExplorer: Uninstalled: "+e.getMessage()); //NOI18N
+                }
+            }
+        } catch (Exception ex) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
+                System.out.println("DBExplorer: Uninstalled: "+ex.getMessage()); //NOI18N
+        }
+
         // closing all open connection
+        //close();
         
-       Children.MUTEX.writeAccess (new Runnable () {
+       /*Children.MUTEX.writeAccess (new Runnable () {
             public void run () {
                 try {
                     Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
@@ -76,7 +98,8 @@ public class DatabaseModule extends ModuleInstall {
                         System.out.println("DBExplorer: Uninstalled: "+exc.getMessage()); //NOI18N
                 }
             }
-        });
+        });*/
+        
 
     }
     
