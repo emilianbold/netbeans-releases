@@ -820,7 +820,7 @@ public class MakeLNBM extends MatchingTask {
 			       PrintWriter ps) {
     boolean ret = false ;
     if( val != null) {
-      ps.println( name + "=" + val) ;
+      ps.println( name + "=\"" + val + "\"") ;
       ret = true ;
     }
     return( ret) ;
