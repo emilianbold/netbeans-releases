@@ -16,6 +16,7 @@ package org.netbeans.modules.project.ui;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.WeakHashMap;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Sources;
@@ -170,9 +171,7 @@ public class ProjectsRootNode extends AbstractNode {
         }
         
     }
-    
-    
-    private static RequestProcessor rp = new RequestProcessor();
+       
     
     // XXX Needs to listen to project rename
     // However project rename is currently disabled so it is not a big deal
@@ -277,7 +276,7 @@ public class ProjectsRootNode extends AbstractNode {
             }
             
             // Fix for 50259, callers sometimes hold locks
-            rp.post( new Runnable() {
+            SwingUtilities.invokeLater( new Runnable() {
                 public void run() {
                     refreshKey( project );
                 }
