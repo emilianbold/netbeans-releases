@@ -269,6 +269,9 @@ public class FormDesigner extends TopComponent
     ////////////////
     
     FormDesigner(FormModel formModel) {
+        // instruct winsys to save state of this top component only if opened
+        putClientProperty("PersistenceType", "OnlyOpened");
+        
         setIcon(Utilities.loadImage(iconURL));
         
         formModelListener = new FormListener();
