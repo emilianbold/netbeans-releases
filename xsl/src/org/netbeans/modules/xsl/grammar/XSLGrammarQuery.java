@@ -32,7 +32,7 @@ import org.netbeans.modules.xml.api.model.*;
 import org.openide.util.enum.*;
 import org.netbeans.modules.xml.dtd.grammar.*;
 import org.netbeans.modules.xml.spi.dom.*;
-import org.netbeans.api.xml.cookies.ScenarioCookie;
+import org.netbeans.modules.xml.api.cookies.ScenarioCookie;
 import org.netbeans.modules.xsl.scenario.XSLScenario;
 import org.openide.TopManager;
 import org.openide.filesystems.Repository;
