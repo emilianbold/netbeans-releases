@@ -812,8 +812,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                             sun.io.CharToByteConverter.getConverter(encoding);
                         } catch (IOException ex) {
                             IOException t = new IOException(
-                                java.text.MessageFormat.format(NbBundle.getBundle(JspNode.class).getString("FMT_UnsupportedEncoding"), // NOI18N
-                                new Object[] { encoding } )
+                                NbBundle.getMessage(JspDataObject.class, "FMT_UnsupportedEncoding", encoding)
                             );
                             ErrorManager.getDefault().annotate(t, ex);
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
