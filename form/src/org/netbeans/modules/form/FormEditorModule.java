@@ -27,6 +27,8 @@ import org.openidex.util.Utilities2;
 import com.netbeans.developer.modules.loaders.form.actions.*;
 import com.netbeans.developer.modules.loaders.form.palette.*;
 
+import java.beans.*;
+
 /**
 * Module installation class for Form Editor
 *
@@ -59,6 +61,22 @@ public class FormEditorModule extends ModuleInstall {
     // register standard persistence managers
     PersistenceManager.registerManager (new TuborgPersistenceManager ());
     PersistenceManager.registerManager (new GandalfPersistenceManager ());
+
+    // XXX(-tdt) JDK "forgets" to provide a PropertyEditor for char and Character
+
+    PropertyEditor charEditor;
+    
+    charEditor = PropertyEditorManager.findEditor(Character.TYPE);
+    if (charEditor == null)
+      FormPropertyEditorManager.registerEditor(
+          Character.TYPE,
+          com.netbeans.developer.modules.loaders.form.editors.CharacterEditor.class);
+    
+    charEditor = PropertyEditorManager.findEditor(Character.class);
+    if (charEditor == null)
+      FormPropertyEditorManager.registerEditor(
+          Character.class,
+          com.netbeans.developer.modules.loaders.form.editors.CharacterEditor.class);
   }
 
   /** Module was uninstalled. */
@@ -461,6 +479,9 @@ public class FormEditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  44   Gandalf   1.43        2/29/00  Tran Duc Trung  JDK "forgets" to provide
+ *       a PropertyEditor for char and Character. We need to implement one 
+ *       ourselves
  *  43   Gandalf   1.42        1/19/00  Jesse Glick     Localized filenames.
  *  42   Gandalf   1.41        1/17/00  Jesse Glick     Localized filenames.
  *  41   Gandalf   1.40        1/16/00  Jesse Glick     Actions pool; localized 
