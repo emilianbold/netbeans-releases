@@ -15,17 +15,21 @@
 package org.netbeans.core.windows.view.ui;
 
 
+import java.io.CharConversionException;
+import javax.swing.plaf.basic.BasicHTML;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ModeView;
 import org.netbeans.core.windows.view.ViewElement;
 import org.netbeans.core.windows.view.dnd.TopComponentDroppable;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import org.openide.xml.XMLUtil;
 
 
 /** 
@@ -107,6 +111,29 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
     }
     
     protected void updateTitle(String title) {
+        if (BasicHTML.isHTMLString(title)) {
+            //Output window (and soon others) use HTML - looks
+            //nasty in window frame titles
+            char[] c = title.toCharArray();
+            StringBuffer sb = new StringBuffer(title.length());
+            boolean inTag = false;
+            boolean inEntity = false;
+            for (int i=0; i < c.length; i++) {
+                if (inTag && c[i] == '>') { //NOI18N
+                    inTag = false;
+                    continue;
+                }
+                if (!inTag && c[i] == '<') { //NOI18N
+                    inTag = true;
+                    continue;
+                }
+                if (!inTag) {
+                    sb.append(c[i]);
+                }
+            }
+            //XXX, would be nicer to support the full complement of entities...
+            title = Utilities.replaceString(sb.toString(), "&nbsp;", " "); //NOI18N
+        }
         frame.setTitle(title);
     }
     
