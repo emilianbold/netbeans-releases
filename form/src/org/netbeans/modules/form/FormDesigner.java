@@ -911,7 +911,7 @@ public class FormDesigner extends TopComponent
 
             if (updateDone) {
                 Component comp = (Component) getComponent(topDesignComponent);
-                if (comp != null) {
+                if (comp != null && (comp=comp.getParent()) != null) {
                     comp.invalidate();
                     comp.validate();
                     comp.repaint();
