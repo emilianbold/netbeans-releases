@@ -107,6 +107,19 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.settings.Bundle"/>
         </file>
 
+        <!-- register helpset -->
+        <folder name="JavaHelp">
+
+            <file name="org-netbeans-modules-xml-core-docs-helpset.xml">
+                <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE helpsetref PUBLIC
+          "-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN"
+          "http://www.netbeans.org/dtds/helpsetref-1_0.dtd">
+
+<helpsetref url="nbresloc:/org/netbeans/modules/xml/core/docs/helpset.hs"/>
+]]></file>
+        </folder> <!-- JavaHelp -->
+
     </folder> <!-- Services -->
 
     <folder name="UI">
@@ -122,12 +135,54 @@ SystemFileSystem
         </folder> <!-- Settings -->
     </folder> <!-- UI -->
 
+
+    <!-- Menu -->
+    <folder name="Menu">
+        <!-- Help -->
+        <folder name="Help">
+            <!-- HelpShortcuts -->
+            <folder name="HelpShortcuts">
+
+                <file name="org-netbeans-modules-xml-core-docs-mainpage.xml">
+                    <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE helpctx PUBLIC
+          "-//NetBeans//DTD Help Context 1.0//EN"
+          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
+
+<helpctx id="org.netbeans.modules.xml.core.docs.HOMEID"/>
+]]>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif"/>
+                </file>
+
+            </folder> <!-- HelpShortcuts -->
+        </folder> <!-- Help -->
+    </folder> <!-- Menu -->
+
+
     <!-- register actions to action pool -->
     <folder name="Actions">
         <folder name="XML">
             <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance" />
             <file name="org-netbeans-modules-xml-core-actions-CollectDTDAction.instance" />
         </folder>
-    </folder>
+
+        <!-- Help -->
+        <folder name="Help">
+
+            <file name="org-netbeans-modules-xml-core-docs-mainpage.xml">
+                <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE helpctx PUBLIC
+          "-//NetBeans//DTD Help Context 1.0//EN"
+          "http://www.netbeans.org/dtds/helpcontext-1_0.dtd">
+
+<helpctx id="org.netbeans.modules.xml.core.docs.HOMEID"/>
+]]>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif"/>
+            </file>
+
+        </folder> <!-- Help -->
+    </folder> <!-- Actions -->
   
 </filesystem>

@@ -32,9 +32,15 @@ Microsystems, Inc. All Rights Reserved.
         <summary>XML module API</summary>
         <description>When we will have xml-api module (see core's <a href="#core">TODO</a>), than we can guarantee TAX, XML-API with Looks as API around xml.</description>
     </item>
-    <item>
+
+    <item priority="2">
         <summary>Javahelp</summary>
         <description>What about javahelp?</description>
+    </item>
+
+    <item priority="2">
+        <summary>Upgrade modules to use 3.3 implementation.</summary>
+        <description>Upgrade modules to use 3.3 implementation, especially mf-layer advantages -- see <a href="http://www.netbeans.org/unbranded-source/browse/~checkout~/openide/api/doc/org/openide/doc-files/upgrade.html">3.2 -> 3.3 Upgrade Guide</a> for more info.</description>
     </item>
 
     &catalog_todo.xml;
