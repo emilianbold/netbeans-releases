@@ -644,6 +644,7 @@
 <mapID target="shortcuts.editor" url="shortcuts/editorcuts.html" />
 <mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
 <mapID target="shortcuts.menus" url="shortcuts/menucuts.html" />
+<mapID target="shortcuts.window" url="shortcuts/window-navcuts.html" />
 <mapID target="shortcuts.menucuts-setting" url="shortcuts/menucuts-setting.html" />
 
 <mapID target="accessibility.home" url="accessibility/accessibility_home.html" />
