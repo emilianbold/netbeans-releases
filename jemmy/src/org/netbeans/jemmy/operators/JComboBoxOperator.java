@@ -19,17 +19,14 @@ package org.netbeans.jemmy.operators;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
-import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Outputable;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.Timeoutable;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.WindowWaiter;
-
 import org.netbeans.jemmy.util.EmptyVisualizer;
-
 import org.netbeans.jemmy.drivers.ListDriver;
 import org.netbeans.jemmy.drivers.DriverManager;
 
@@ -444,6 +441,48 @@ implements Timeoutable, Outputable {
     }
     
     /**
+     * Waits for an item available between list items.
+     * @param item a text pattern.
+     * @param comparator a searching criteria.
+     * @return an item index or throws TimeoutExpiredException if item not found.
+     */
+    public int waitItem(final String item, final StringComparator comparator) {
+	getOutput().printLine("Wait item \"" + item + "\" available in combo box \n    : "+
+			      toStringSource());
+	getOutput().printGolden("Wait item \"" + item + "\" available in combo box.");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+                    return findItemIndex(item, comparator) > -1;
+		}
+		public String getDescription() {
+                    return "Item \"" + item + "\" available in combo box.";
+		}
+	    });
+       return findItemIndex(item, comparator);
+    }
+    
+    /**
+     * Waits for an item of given index available between list items.
+     * @param itemIndex index of desired item
+     * @return an item index or throws TimeoutExpiredException if item not found.
+     */
+    public int waitItem(final int itemIndex) {
+	getOutput().printLine("Wait item of index \"" + itemIndex + "\" available in combo box \n    : "+
+			      toStringSource());
+	getOutput().printGolden("Wait item of index \"" + itemIndex + "\" available in combo box.");
+	waitState(new ComponentChooser() {
+		public boolean checkComponent(Component comp) {
+                    // given itemIndex is within size of combo box
+                    return getModel().getSize() > itemIndex;
+		}
+		public String getDescription() {
+                    return "Item \"" + itemIndex + "\" available in combo box.";
+		}
+	    });
+       return itemIndex;
+    }
+
+    /**
      * Selects an item by text.
      * @param item a text pattern.
      * @param comparator a searching criteria.
@@ -452,7 +491,7 @@ implements Timeoutable, Outputable {
 	output.printLine("Select \"" + item + "\" item in combobox\n    : " +
 			 toStringSource());
 	output.printGolden("Select \"" + item + "\" item in combobox");
-	selectItem(findItemIndex(item, comparator));
+        selectItem(waitItem(item, comparator));
     }
 
     /**
@@ -488,8 +527,13 @@ implements Timeoutable, Outputable {
 	output.printLine("Select " + Integer.toString(index) + "\'th item in combobox\n    : " +
 			 toStringSource());
 	output.printGolden("Select " + Integer.toString(index) + "\'th item in combobox");
+        try {
+            waitComponentEnabled();
+        } catch(InterruptedException e) {
+            throw new JemmyException("Interrupted", e);
+        }
 
-	driver.selectItem(this, index);
+	driver.selectItem(this, waitItem(index));
 
 	if(getVerification()) {
 	    waitItemSelected(index);
