@@ -69,6 +69,7 @@ public class JspLoader extends UniFileLoader {
     protected SystemAction[] defaultActions () {
         return new SystemAction[] {
                         SystemAction.get (OpenAction.class),
+                        SystemAction.get (ValidateAction.class),
                         SystemAction.get (EditServletAction.class),
                         SystemAction.get (FileSystemAction.class),
                         null,

@@ -66,15 +66,8 @@ public class JspContextInfoImpl extends JspContextInfo {
     }
     
     public URLClassLoader getModuleClassLoader(Document doc, FileObject fo){
-        try{
-            FileObject wmRoot = fo.getFileSystem().getRoot();
-            return JspCompileUtil.getJspParser().getModuleClassLoader(WebModule.getJspParserWM (wmRoot));
-        }
-        catch (FileStateInvalidException ex){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-        return null;
-
+        FileObject wmRoot = JspCompileUtil.getContextRoot(fo);
+        return JspCompileUtil.getJspParser().getModuleClassLoader(WebModule.getJspParserWM (wmRoot));
     }
     
     /** Returns the root of the web module containing the given file object.
@@ -89,15 +82,7 @@ public class JspContextInfoImpl extends JspContextInfo {
      *   is not on the path from resource to the root
      */
     public FileObject guessWebModuleRoot (Document doc, FileObject fo){
-        FileObject value = null;
-        try {
-            value = fo.getFileSystem().getRoot();
-        }
-        catch (org.openide.filesystems.FileStateInvalidException e){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }
-        
-        return value;
+        return JspCompileUtil.getContextRoot(fo);
     }
     
     /** Returns the taglib map as returned by the parser, taking data from the editor as parameters.

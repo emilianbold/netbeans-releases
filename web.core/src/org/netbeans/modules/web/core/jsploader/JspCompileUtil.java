@@ -55,6 +55,7 @@ import org.netbeans.modules.web.webdata.WebDataFactory;
 import org.netbeans.modules.web.webdata.WebResourceImpl;
 
 import org.netbeans.modules.web.jsps.parserapi.*;
+import org.openide.filesystems.FileUtil;
 
 /** JSP compilation utilities
 *
@@ -180,11 +181,96 @@ public class JspCompileUtil {
 
     /** Gets the folder which is at the root of the context into which fo belongs
     */
-    public static final FileObject getContextRoot(FileObject fo) throws FileStateInvalidException {
+    public static final FileObject getContextRoot(FileObject fo) {
         // pending
-        return fo.getFileSystem().getRoot();
+        try {
+            return fo.getFileSystem().getRoot();
+        }
+        catch (FileStateInvalidException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            FileObject par;
+            while ((par = fo.getParent()) != null) {
+                fo = par;
+            }
+            return fo;
+        }
+    }
+    
+    /** Decides whether a given file is in the subtree defined by the given folder.
+     * Similar to <code>org.openide.filesystems.FileUtil.isParentOf (FileObject folder, FileObject fo)</code>, 
+     * but also accepts the case that <code>fo == folder</code>
+     */
+    public static boolean isInSubTree(FileObject folder, FileObject fo) {
+        if (fo == folder) {
+            return true;
+        }
+        else return FileUtil.isParentOf(folder, fo);
     }
 
+    /** Finds a relative resource path between rootFolder and relativeObject.
+     * @return relative path between rootFolder and relativeObject. The returned path
+     * never starts with a '/'. It never ends with a '/'.
+     * @exception IllegalArgumentException if relativeObject is not in rootFolder's tree.
+     */
+    public static String findRelativePath(FileObject rootFolder, FileObject relativeObject) {
+        String rfp = rootFolder.getPath();
+        String rop = relativeObject.getPath();
+        // check that they share the start of the path
+        if (!isInSubTree(rootFolder, relativeObject)) {
+            throw new IllegalArgumentException("" + rootFolder + " / " + relativeObject); // NOI18N
+        }
+        // now really return the result
+        String result = rop.substring(rfp.length());
+        if (result.startsWith("/")) { // NOI18N
+            result = result.substring(1);
+        }
+        return result;
+    }
+    
+    /** Finds a relative context path between rootFolder and relativeObject.
+     * Similar to <code>findRelativePath(FileObject, FileObject)</code>, only
+     * different slash '/' conventions.
+     * @return relative context path between rootFolder and relativeObject. The returned path
+     * always starts with a '/'. It ends with a '/' if the relative object is a directory.
+     * @exception IllegalArgumentException if relativeObject is not in rootFolder's tree.
+     */
+    public static String findRelativeContextPath(FileObject rootFolder, FileObject relativeObject) {
+        String result = "/" + findRelativePath(rootFolder, relativeObject); // NOI18N
+        return relativeObject.isFolder() ? (result + "/") : result; // NOI18N
+    }
+    
+    /** Returns whether a given file is a JSP file, or possibly a JSP segment.
+     * The recognition happens based on file extension (not on actual inclusion in other files).
+     * @param fo the file to examine
+     * @param acceptSegment whether segments should be accepted
+     */
+    public static boolean isJspFile(FileObject fo, boolean acceptSegment) {
+        String ext = fo.getExt().toLowerCase();
+        if ("jsp".equals(ext) || "jspx".equals(ext)) { // NOI18N
+            return true;
+        }
+        if ("jspf".equals(ext) && acceptSegment) { // NOI18N
+            return true;
+        }
+        return false;
+    }
+    
+    /** Returns whether a given file is a tag file, or possibly a tag segment.
+     * The recognition happens based on file extension (not on actual inclusion in other files).
+     * @param fo the file to examine
+     * @param acceptSegment whether segments should be accepted
+     */
+    public static boolean isTagFile(FileObject fo, boolean acceptSegment) {
+        String ext = fo.getExt().toLowerCase();
+        if ("tag".equals(ext) || "tagx".equals(ext)) { // NOI18N
+            return true;
+        }
+        if ("tagf".equals(ext) && acceptSegment) { // NOI18N
+            return true;
+        }
+        return false;
+    }
+    
     public static final String getContextPath(FileObject fo) {
         return "/" + fo.getPackageNameExt('/','.'); // NOI18N
     }

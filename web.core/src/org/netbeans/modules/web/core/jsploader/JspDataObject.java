@@ -373,9 +373,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         catch (DataObjectNotFoundException e) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
         }
-        catch (FileStateInvalidException e) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-        }
     }
     
     /** Updates classFileData, servletDataObject, servletEdit 
