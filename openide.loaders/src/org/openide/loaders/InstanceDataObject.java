@@ -219,7 +219,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         if (newFile == null) {
             final FileObject[] fos = new FileObject[1];
 
-            fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            DataObjectPool.getPOOL().runAtomicAction (fo.getFileSystem(), new FileSystem.AtomicAction() {
                 public void run () throws IOException {
                     String fileName;
                     if (name == null) {
@@ -1375,7 +1375,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                 me.name = name;
                 me.create = create;
 
-                folder.getPrimaryFile().getFileSystem().runAtomicAction(me);
+                DataObjectPool.getPOOL().runAtomicAction (folder.getPrimaryFile().getFileSystem(), me);
                 me.mi = null;
                 me.folder = null;
                 me.instance = null;

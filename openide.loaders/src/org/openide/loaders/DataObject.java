@@ -503,7 +503,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     public final DataObject copy (final DataFolder f) throws IOException {
         final DataObject[] result = new DataObject[1];
         FileSystem fs = f.getPrimaryFile ().getFileSystem ();
-        fs.runAtomicAction (new FileSystem.AtomicAction () {
+        invokeAtomicAction (fs, new FileSystem.AtomicAction () {
                                 public void run () throws IOException {
                                     result[0] = handleCopy (f);
                                 }
@@ -529,7 +529,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
         synchronized ( synchObject() ) {
             // the object is ready to be closed
             FileSystem fs = getPrimaryFile ().getFileSystem ();
-            fs.runAtomicAction (new FileSystem.AtomicAction () {
+            invokeAtomicAction (fs, new FileSystem.AtomicAction () {
                     public void run () throws IOException {
                         handleDelete ();
                         item.deregister(false);
@@ -574,7 +574,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
             
             // executes atomic action with renaming
             FileSystem fs = files[0].getFileSystem ();
-            fs.runAtomicAction (new FileSystem.AtomicAction () {
+            invokeAtomicAction (fs, new FileSystem.AtomicAction () {
                     public void run () throws IOException {
                         files[1] = handleRename (name);
                         if (files[0] != files[1])
@@ -610,7 +610,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
             // executes atomic action for moving
             old = getPrimaryFile ();
             FileSystem fs = old.getFileSystem ();
-            fs.runAtomicAction (new FileSystem.AtomicAction () {
+            invokeAtomicAction (fs, new FileSystem.AtomicAction () {
                                     public void run () throws IOException {
                                         FileObject mf = handleMove (df);
                                         item.changePrimaryFile (mf);
@@ -654,7 +654,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
         final DataShadow[] result = new DataShadow[1];
 
         FileSystem fs = f.getPrimaryFile ().getFileSystem ();
-        fs.runAtomicAction (new FileSystem.AtomicAction () {
+        invokeAtomicAction (fs, new FileSystem.AtomicAction () {
                                 public void run () throws IOException {
                                     result[0] =  handleCreateShadow (f);
                                 }
@@ -692,7 +692,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
         final DataObject[] result = new DataObject[1];
 
         FileSystem fs = f.getPrimaryFile ().getFileSystem ();
-        fs.runAtomicAction (new FileSystem.AtomicAction () {
+        invokeAtomicAction (fs, new FileSystem.AtomicAction () {
                                 public void run () throws IOException {
                                     result[0] = handleCreateFromTemplate (f, name);
                                 }
@@ -736,6 +736,19 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     Object synchObject() {
         return nodeCreationLock;
     }
+    
+    /** Invokes atomic action. 
+     */
+    private void invokeAtomicAction (FileSystem fs, FileSystem.AtomicAction action) throws IOException {
+        if (this instanceof DataFolder) {
+            // action is slow
+            fs.runAtomicAction(action);
+        } else {
+            // it is quick, make it block DataObject recognition
+            DataObjectPool.getPOOL ().runAtomicAction (fs, action);
+        }
+    }
+     
     
     //
     // Property change support

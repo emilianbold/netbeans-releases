@@ -79,6 +79,9 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         
         Object prev = FIND.get ();
         try {
+            // make sure this thread is allowed to recognize
+            getPOOL ().enterRecognition();
+            
             FIND.set (loader);
             
             ret = loader.handleFindDataObject (fo, rec);
@@ -142,6 +145,82 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         return ret;
     }
     
+    
+    //
+    // Support for running really atomic actions
+    //
+    private Thread atomic;
+    private RequestProcessor priviledged;
+    public void runAtomicAction (FileSystem fs, FileSystem.AtomicAction action) 
+    throws java.io.IOException {
+        Thread prev;
+        synchronized (this) {
+            // make sure that we are the ones that own 
+            // the recognition process
+            enterRecognition ();
+            prev = atomic;
+            atomic = Thread.currentThread ();
+        }
+        
+        try {
+            fs.runAtomicAction(action);
+        } finally {
+            synchronized (this) {
+                atomic = prev;
+                notifyAll ();
+            }
+        }
+    }
+    
+    /** The thread that runs in atomic action wants to delegate its priviledia
+     * to somebody else. Used in DataFolder.getChildren that blocks on 
+     * Folder Recognizer thread.
+     *
+     * @param delegate the priviledged processor
+     */
+    public synchronized void enterPriviledgedProcessor (RequestProcessor delegate) {
+        if (atomic == Thread.currentThread()) {
+            if (priviledged != null) throw new IllegalStateException ("Previous priviledged is not null: " + priviledged + " now: " + delegate); // NOI18N
+            priviledged = delegate;
+        }
+    }
+    
+    /** Exits the priviledged processor.
+     */
+    public synchronized void exitPriviledgedProcessor (RequestProcessor delegate) {
+        if (atomic == Thread.currentThread ()) {
+            if (priviledged != delegate) throw new IllegalStateException ("Trying to unregister wrong priviledged. Prev: " + priviledged + " now: " + delegate); // NOI18N
+            priviledged = null;
+        }
+    }
+    
+    /** Checks whether it is safe to enter the recognition. 
+     */
+    private synchronized void enterRecognition () {
+        // wait till nobody else stops the recognition
+        for (;;) {
+            if (atomic == null) {
+                // ok, I am the one who can enter
+                return;
+            }
+            if (atomic == Thread.currentThread()) {
+                // ok, reentering again
+                return;
+            }
+            
+            if (priviledged != null && priviledged.isRequestProcessorThread()) {
+                // ok, we have priviledged request processor thread
+                return;
+            }
+            
+            try {
+                wait ();
+            } catch (InterruptedException ex) {
+                // means nothing, go on
+            }
+        } 
+    }
+    
     /** Collection of all objects that has been created but their
     * creation has not been yet notified to OperationListener.postCreate
     * method.
@@ -183,7 +262,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     private DataObjectPool () {
     }
 
-
+    
 
     /** Checks whether there is a data object with primary file
     * passed thru the parameter.
@@ -193,6 +272,8 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     */
     public DataObject find (FileObject fo) {
         synchronized (this) {
+            enterRecognition();
+            
             Item doh = (Item)map.get (fo);
             if (doh == null) {
                 return null;
@@ -313,6 +394,8 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     public void waitNotified (DataObject obj) {
         try {
             synchronized (this) {
+                enterRecognition ();
+                
                 if (toNotify.isEmpty()) {
                     return;
                 }

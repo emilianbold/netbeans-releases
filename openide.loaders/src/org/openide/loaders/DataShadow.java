@@ -231,7 +231,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         final FileObject fo = folder.getPrimaryFile ();
         final DataShadow[] arr = new DataShadow[1];
 
-        fo.getFileSystem ().runAtomicAction (new FileSystem.AtomicAction () {
+        DataObjectPool.getPOOL().runAtomicAction (fo.getFileSystem (), new FileSystem.AtomicAction () {
                                                  public void run () throws IOException {
                                                      FileObject file = writeOriginal (name, ext, fo, original);
                                                      DataObject obj = DataObject.find (file);
