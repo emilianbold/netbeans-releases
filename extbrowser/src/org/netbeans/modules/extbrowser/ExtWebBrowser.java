@@ -88,7 +88,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     protected NbProcessDescriptor browserExecutable;
     
     protected transient PropertyChangeSupport pcs;
-    
+
     /** Creates new Browser */
     public ExtWebBrowser () {
         init();
@@ -101,7 +101,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
             pcs.addPropertyChangeListener(this);
         }
     }
-                
+
     /**
      * Gets DDE server name
      * @return server name of DDEserver.
@@ -184,6 +184,11 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
         }
     }
 
+    // getter for browser name - should be overriden in subclasses
+    public String getName() {
+        return name;
+    }
+    
     /** Setter for browser name
      */
     public void setName(String name) {
@@ -386,13 +391,18 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     /**
      * @param l new PropertyChangeListener */    
     public void addPropertyChangeListener (PropertyChangeListener l) {
+        if (pcs == null) {
+            pcs = new PropertyChangeSupport(this);
+        }
         pcs.addPropertyChangeListener (l);
     }
     
     /**
      * @param l PropertyChangeListener to be removed */    
     public void removePropertyChangeListener (PropertyChangeListener l) {
-        pcs.removePropertyChangeListener (l);
+        if (pcs != null) {
+            pcs.removePropertyChangeListener (l);
+        }
     }
     
     private void readObject (java.io.ObjectInputStream ois) 

@@ -66,6 +66,12 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
         return name;
     }
     
+    /** Setter for browser name
+     */
+    public void setName(String name) {
+        // system default browser name shouldn't be changed
+    }
+
     /** Default command for browser execution.
      * Can be overriden to return browser that suits to platform and settings.
      *

@@ -94,12 +94,6 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
         return name;
     }
 
-    /** Setter for browser name
-     */
-    public void setName(String name) {
-        return; // do not allow renaming of pre-steup browsers
-    }    
-
     /**
      * Returns a new instance of BrowserImpl implementation.
      * @throws UnsupportedOperationException when method is called and OS is not Windows.

@@ -64,12 +64,6 @@ public class MozillaBrowser extends ExtWebBrowser {
         return name;
     }
     
-    /** Setter for browser name
-     */
-    public void setName(String name) {
-        return; // do not allow renaming of pre-setup browsers
-    }    
-    
     /**
      * Returns a new instance of BrowserImpl implementation.
      * @throws UnsupportedOperationException when method is called and OS is not Windows.
