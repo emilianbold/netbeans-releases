@@ -630,7 +630,9 @@ public class NodeGenerator {
                             
                         }
                     }
-                } catch (Exception e) {
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable t) {
 //                    e.printStackTrace();
                 }
             }

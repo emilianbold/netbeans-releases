@@ -37,6 +37,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.xml.EntityCatalog;
 
 import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.netbeans.modules.testtools.XTestProjectSupport;
 import org.xml.sax.SAXException;
 
 /**
@@ -54,6 +55,9 @@ class XMLDocument {
     XMLDocument(DataObject o) {
         dob=o;
         AntProjectCookie cookie=(AntProjectCookie)o.getCookie(AntProjectCookie.class);
+        if (cookie==null) cookie=new XTestProjectSupport(dob.getPrimaryFile());
+        doc=cookie.getDocument();
+/* 
         if (cookie!=null) {
             doc=cookie.getDocument();
         } else try {
@@ -67,6 +71,7 @@ class XMLDocument {
         } catch (ParserConfigurationException pce) {
             fail(pce);
         }
+ */
     }
     
     void setProperty(String name, String valueName, Object valueValue) {

@@ -42,6 +42,7 @@ import org.openide.util.WeakListener;
 
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.openide.filesystems.Repository;
+import org.openide.xml.EntityCatalog;
 
 public class XTestProjectSupport implements AntProjectCookie.ParseStatus, DocumentListener, FileChangeListener, org.w3c.dom.events.EventListener, Runnable, ChangeListener {
   
@@ -243,6 +244,7 @@ public class XTestProjectSupport implements AntProjectCookie.ParseStatus, Docume
         ErrorManager.getDefault().log ("XTestProjectSupport.parseDocument: fo=" + fo);
         try {
             DOMParser parser = new DOMParser ();
+            parser.setEntityResolver(EntityCatalog.getDefault());
             // Xerces 1.2.3 has an apparent bug that when lazy node expansion is turned on,
             // when the node finally is expanded (in response to some getter method), the
             // DOM tree fires a mutation event (though in fact the tree has not been changed).

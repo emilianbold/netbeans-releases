@@ -500,7 +500,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         
         public String errorMessage() {
             return super.errorMessage()+(getTestAttributes().length()==0?"testAttributes are required<br>":"")+(containsChild(TestSet.class)?"":"TestSet element is required<br>")+
-            (findElement("executor",getExecutor())?"":"wrong Executor name<br>")+(getCompiler().length()==0||findElement("compiler",getCompiler())?"":"wrong Compiler name<br>")+(findElement("resultsprocessor",getResultsProcessor())?"":"wrong ResultsProcessor name");
+            (findElement("executor",getExecutor())?"":"wrong Executor name<br>")+(getCompiler().length()==0||findElement("compiler",getCompiler())?"":"wrong Compiler name<br>")+(getResultsProcessor().length()==0||findElement("resultsprocessor",getResultsProcessor())?"":"wrong ResultsProcessor name");
         }
         public Icon getIcon() {
             return testbagIcon;
