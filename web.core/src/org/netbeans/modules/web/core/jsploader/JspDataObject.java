@@ -103,6 +103,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
 //    public static final String PROP_ENCODING = "encoding"; // NOI18N
     public static final String PROP_SERVER_CHANGE = "PROP_SERVER_CHANGE";// NOI18N
 
+    public static final String CLEAN_COMPILE = "CLEAN_COMPILE"; //NOI18N
     
     transient private EditorCookie servletEdit;
     transient protected JspServletDataObject servletDataObject;
