@@ -6,7 +6,8 @@
     version="2.0">
 
     <tlib-version>1.0</tlib-version>
-    <short-name>MyTaglib</short-name>
+    <short-name>__SHORT-NAME__</short-name>
+    <uri>__URI__</uri>
     
     <!-- A validator verifies that the tags are used correctly at JSP
          translation time. Validator entries look like this: 

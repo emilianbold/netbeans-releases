@@ -25,6 +25,8 @@ import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.spi.xml.cookies.*;
 
+import org.netbeans.modules.web.taglib.model.Taglib;
+
 /** Object that provides main functionality for TLDLoader(data loader).
  * This class is final only for performance reasons,
  * can be unfinaled if desired.
@@ -92,5 +94,41 @@ public final class TLDDataObject extends XMLDataObject {
      */
     protected synchronized Node createNodeDelegate () {
 	return new TLDNode(this);
+    }
+    
+    public Taglib getTaglib() throws java.io.IOException {
+        java.io.InputStream is = getPrimaryFile().getInputStream();
+        try {
+            return Taglib.createGraph(is);
+        } catch (RuntimeException ex) {
+            throw new java.io.IOException(ex.getMessage());
+        }
+    }
+    
+    public void write(Taglib taglib) throws java.io.IOException {
+        java.io.File file = org.openide.filesystems.FileUtil.toFile(getPrimaryFile());
+        org.openide.filesystems.FileObject tldFO = getPrimaryFile();
+        try {
+            org.openide.filesystems.FileLock lock = tldFO.lock();
+            try {
+                java.io.OutputStream os = tldFO.getOutputStream(lock);
+                try {
+                    String version=taglib.getAttributeValue("version"); //NOI18N
+                    if (version==null) { //JSP1.2 version
+                        taglib.changeDocType("-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN", //NOI18N
+                                             "http://java.sun.com/dtd/web-jsptaglibrary_1_2.dtd"); //NOI18N
+                        taglib.setAttributeValue("xmlns",null); //NOI18N
+                    }
+                    taglib.write(os);
+                } finally {
+                    os.close();
+                }
+            } 
+            finally {
+                lock.releaseLock();
+            }
+        } catch (org.openide.filesystems.FileAlreadyLockedException ex) {
+            // PENDING should write a message
+        }
     }
 }
