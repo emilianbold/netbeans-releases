@@ -16,6 +16,7 @@ package org.netbeans.modules.web.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -70,13 +71,13 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public FileObject getDocumentBase () {
-        return getFile("web.docbase.dir"); // NOI18N
+        return getFileObject("web.docbase.dir"); // NOI18N
     }
     
     public ClassPath getJavaSources () {
         ClassPathProvider cpp = (ClassPathProvider) project.getLookup ().lookup (ClassPathProvider.class);
         if (cpp != null) {
-            return cpp.findClassPath (getFile ("src.dir"), ClassPath.SOURCE);
+            return cpp.findClassPath (getFileObject ("src.dir"), ClassPath.SOURCE);
         }
         return null;
     }
@@ -90,13 +91,22 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public FileObject getArchive () {
-        return getFile ("dist.war"); //NOI18N
+        return getFileObject ("dist.war"); //NOI18N
     }
     
-    private FileObject getFile(String propname) {
+    private FileObject getFileObject(String propname) {
         String prop = helper.getStandardPropertyEvaluator().getProperty(propname);
         if (prop != null) {
             return helper.resolveFileObject(prop);
+        } else {
+            return null;
+        }
+    }
+    
+    private File getFile(String propname) {
+        String prop = helper.getStandardPropertyEvaluator().getProperty(propname);
+        if (prop != null) {
+            return helper.resolveFile(prop);
         } else {
             return null;
         }
@@ -131,6 +141,10 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     public FileObject getContentDirectory() throws java.io.IOException {
+        return getFileObject ("build.web.dir"); //NOI18N
+    }
+
+    public File getContentDirectoryAsFile() {
         return getFile ("build.web.dir"); //NOI18N
     }
 

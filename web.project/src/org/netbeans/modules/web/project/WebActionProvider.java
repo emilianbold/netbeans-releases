@@ -15,6 +15,7 @@ package org.netbeans.modules.web.project;
 
 import java.awt.Dialog;
 import java.io.IOException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -276,7 +277,7 @@ class WebActionProvider implements ActionProvider {
             } else {
                 files = findJsps (context);
                 if (files != null) {
-                    p.setProperty("jsp.includes", ActionUtils.antIncludesList(files, project.getWebModule ().getDocumentBase ())); // NOI18N
+                    p.setProperty("jsp.includes", getBuiltJspFileNamesAsPath(files) /*ActionUtils.antIncludesList(files, project.getWebModule ().getDocumentBase ())*/); // NOI18N
                     targetNames = new String [] {"compile-single-jsp"};
                 } else {
                     return;
@@ -295,6 +296,26 @@ class WebActionProvider implements ActionProvider {
         catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
+    }
+    
+    public File getBuiltJsp(FileObject jsp) {
+        ProjectWebModule pwm = project.getWebModule ();
+        FileObject webDir = pwm.getDocumentBase ();
+        String relFile = FileUtil.getRelativePath(webDir, jsp).replace('/', File.separatorChar);
+        File webBuildDir = pwm.getContentDirectoryAsFile();
+        return new File(webBuildDir, relFile);
+    }
+    
+    public String getBuiltJspFileNamesAsPath(FileObject[] files) {
+        StringBuffer b = new StringBuffer();
+        for (int i = 0; i < files.length; i++) {
+            String path = getBuiltJsp(files[i]).getAbsolutePath();
+            if (i > 0) {
+                b.append(File.pathSeparator);
+            }
+            b.append(path);
+        }
+        return b.toString();
     }
     
     public boolean isActionEnabled( String command, Lookup context ) {
