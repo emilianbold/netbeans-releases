@@ -92,15 +92,18 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
 
     // feature mode asociated to this node
     protected BiFeature  biFeature = null;
-
+    
+    //analyser
+    protected BiAnalyser  biAnalyser = null;
     // constructors .......................................................................
 
     /**
     * Creates empty BreakpointContext.
     */
-    public BiFeatureNode (final BiFeature biFeature) {
+    public BiFeatureNode (final BiFeature biFeature, BiAnalyser biAnalyser) {
         super (Children.LEAF);
         this.biFeature = biFeature;
+        this.biAnalyser = biAnalyser;
         setDisplayName (getName ());
         setShortDescription(biFeature.getToolTip());
         setIconBase( biFeature.getIconBase() );
@@ -532,17 +535,17 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         SystemAction [] staticActions = null;
         //if (staticActions == null) {
             if( ! (biFeature instanceof BiFeature.Descriptor) ){
-            staticActions = new SystemAction[] {
-                                SystemAction.get (BiToggleAction.class),
-                                null
-                                /*
-                                SystemAction.get (DeleteAction.class),
-                                null,
-                                SystemAction.get (ToolsAction.class),
-                                SystemAction.get (PropertiesAction.class),
-                                */
-                            };
-        }
+                staticActions = new SystemAction[] {
+                                    SystemAction.get (BiToggleAction.class),
+                                    null
+                                    /*
+                                    SystemAction.get (DeleteAction.class),
+                                    null,
+                                    SystemAction.get (ToolsAction.class),
+                                    SystemAction.get (PropertiesAction.class),
+                                    */
+                                };
+            }
             else {                
                 staticActions = new SystemAction[0];
             }
@@ -608,6 +611,10 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
     */
     BiFeature getBiFeature () {
         return biFeature;
+    }
+
+    BiAnalyser getBiAnalyser () {
+        return biAnalyser;
     }
 
     /**

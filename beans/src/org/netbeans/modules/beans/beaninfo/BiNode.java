@@ -383,14 +383,16 @@ public final class BiNode extends AbstractNode {
     static class SubNode extends AbstractNode implements Node.Cookie {
 
         //private static SystemAction[] staticActions;
-
+        private BiAnalyser biAnalyser;
+        
         SubNode ( BiAnalyser biAnalyser, Class[] keys, String titleKey, String iconBase,
                   PropertySupport[] properties ) {
             super ( new BiChildren (  biAnalyser, keys ) );
             setDisplayName (NbBundle.getBundle(BiNode.class).
                             getString (titleKey));
             setIconBase ( iconBase );
-
+                
+            this.biAnalyser = biAnalyser;
 
             Sheet sheet = Sheet.createDefault();
             Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
@@ -425,7 +427,7 @@ public final class BiNode extends AbstractNode {
 
             if( nodes[0] != null && ((BiFeatureNode)nodes[0]).getBiFeature() instanceof BiFeature.Descriptor )
                 return new SystemAction[0];
-
+            
             return new SystemAction[] {
                                     SystemAction.get (BiIncludeAllAction.class),
                                     SystemAction.get (BiExcludeAllAction.class),

@@ -107,7 +107,7 @@ public class BiChildren extends Children.Keys {
         Node[] nodes = new Node[ col.size() ];
 
         for ( int i = 0; it.hasNext() && i < nodes.length; i++ )
-            nodes[i] = new BiFeatureNode( (BiFeature) it.next() );
+            nodes[i] = new BiFeatureNode( (BiFeature) it.next(), biAnalyser );
 
         return nodes;
     }

@@ -56,6 +56,28 @@ public class BiIncludeAllAction extends NodeAction  {
     }
 
     protected boolean enable( Node[] activatedNodes ) {
+        activatedNodes = BiPanel.getSelectedNodes();
+
+        if ( activatedNodes.length < 1 )
+            return false;
+
+        for(int i = 0; i < activatedNodes.length; i++ ) {
+            BiNode.SubNode bis = ((BiNode.SubNode)activatedNodes[i].getCookie( BiNode.SubNode.class ));
+            if ( bis == null )
+                return false;
+            Node[] nodes = bis.getChildren().getNodes();
+            if ( nodes == null )
+                return false;
+            BiFeature biFeature = ((BiFeatureNode)nodes[0]).getBiFeature();
+            BiAnalyser biAnalyser = ((BiFeatureNode)nodes[0]).getBiAnalyser();
+            if( ( biFeature instanceof BiFeature.Property || biFeature instanceof BiFeature.IdxProperty ) && biAnalyser.isNullProperties() )
+                return false;
+            if( biFeature instanceof BiFeature.EventSet && biAnalyser.isNullEventSets() )
+                return false;
+            if( biFeature instanceof BiFeature.Method && biAnalyser.isNullMethods() )
+                return false;
+        }
+            
         return true;
     }
 
@@ -73,7 +95,8 @@ public class BiIncludeAllAction extends NodeAction  {
             return;
 
         for(int i = 0; i < nodes.length; i++ ) {
-            ((BiNode.SubNode)nodes[i].getCookie( BiNode.SubNode.class )).includeAll( true );
+            if( nodes[i].getCookie( BiNode.SubNode.class ) != null )
+                ((BiNode.SubNode)nodes[i].getCookie( BiNode.SubNode.class )).includeAll( true );
         }
 
     }
