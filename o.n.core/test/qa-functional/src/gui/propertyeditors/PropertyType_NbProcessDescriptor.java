@@ -17,6 +17,9 @@ import org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.NbProcessDescr
 
 import org.netbeans.junit.NbTestSuite;
 import gui.propertyeditors.utilities.PropertyEditorsSupport;
+import org.netbeans.test.oo.gui.jam.JamButton;
+import org.netbeans.test.oo.gui.jam.JamTextArea;
+import org.netbeans.test.oo.gui.jam.JamTextField;
 
 
 
@@ -83,7 +86,7 @@ public class PropertyType_NbProcessDescriptor extends PropertyEditorsTest {
     }
     
     public void setCustomizerValue() {
-        NbProcessDescriptorCustomizer customizer = new NbProcessDescriptorCustomizer(propertyCustomizer);
+        HackedNbProcessDescriptorCustomizer customizer = new HackedNbProcessDescriptorCustomizer(propertyCustomizer);
         
         int index = propertyValue_L.indexOf(DELIM);
         String process = propertyValue_L.substring(0,index);
@@ -105,6 +108,35 @@ public class PropertyType_NbProcessDescriptor extends PropertyEditorsTest {
         //junit.textui.TestRunner.run(new NbTestSuite(PropertyType_NbProcessDescriptor.class));
         junit.textui.TestRunner.run(suite());
     }
+    
+    
+}
+
+
+class HackedNbProcessDescriptorCustomizer extends org.netbeans.test.oo.gui.jelly.propertyEditors.customizers.NbProcessDescriptorCustomizer {
+    
+    JamTextField processTextField;
+    JamButton browseButton;
+    
+    public HackedNbProcessDescriptorCustomizer(org.netbeans.test.oo.gui.jelly.propertyEditors.PropertyCustomizer propertyCustomizer) {
+        super(propertyCustomizer);
+    }
+
+    /** Set process.
+     * @param path path to preocess to be set
+     * @param byFileChooser if true - use JFileChooser, false - type path to textfield. */
+    public void setProcess(String path, boolean byFileChooser) {
+        if(byFileChooser){
+            browseButton = getJamButton("...");
+            browseButton.doClickNoBlock();
+            setByDialog(path, "Open");          // NOI18N
+        } else {
+            processTextField = getJamTextField(0);
+            processTextField.setText(path);
+            //processTextField.enter();
+        }
+    }
+    
     
     
 }

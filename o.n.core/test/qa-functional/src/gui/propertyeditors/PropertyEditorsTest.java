@@ -103,7 +103,10 @@ public abstract class PropertyEditorsTest extends NbTestCase {
             openAndGetPropertyCustomizer(propertyName);
             setCustomizerValue();
             //JamUtilities.waitEventQueueEmpty(500);
-            propertyCustomizer.ok();
+            
+            if(propertyCustomizer.isShowing())
+                propertyCustomizer.ok();
+            
             err.println("=========================== Trying to set value by customizer-ok {name="+propertyName+" / value="+propertyValue+"} - finished.");
             verifyPropertyValue(expectance);
             
