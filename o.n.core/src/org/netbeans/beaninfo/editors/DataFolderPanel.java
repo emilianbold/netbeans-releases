@@ -51,8 +51,6 @@ class DataFolderPanel extends TopComponent implements
     static java.awt.Dimension PREF_DIM = new java.awt.Dimension (450, 250);
                     
     /** format to for default package */
-    private static MessageFormat defaultFolderName;
-
     /** listener to changes in the panel */
     private ChangeListener listener;
 
@@ -706,22 +704,6 @@ class DataFolderPanel extends TopComponent implements
         return closest == null;
     }
 
-    /** Creates default package name for given file system.
-    * @param fs the file system
-    * @return localized name of default package
-    */
-    private static String defaultFolderName (FileSystem fs) {
-        if (defaultFolderName == null) {
-            defaultFolderName = new MessageFormat(
-                getString ("FMT_TemplateDefaultFolderName")
-            );
-        }
-
-        String n = fs == null ? "" : fs.getDisplayName (); // NOI18N
-
-        return defaultFolderName.format (new Object[] { n });
-    }
-
     /** Updates directory name
     */
     private void updateDirectory () {
@@ -732,9 +714,6 @@ class DataFolderPanel extends TopComponent implements
             return;
         }
         String name = packageName.getText ();
-        if (name.equals (defaultFolderName (fs))) {
-            name = ""; // NOI18N
-        }
         FileObject folder = fs.findResource(name);
         if (folder != null) {
             File f = FileUtil.toFile(folder);
@@ -747,7 +726,7 @@ class DataFolderPanel extends TopComponent implements
             }
         } else {
             FileObject fo = fs.getRoot();
-            if (fo != null) {
+            assert fo != null : fs;
             File f = FileUtil.toFile(fo);
             if (f != null) {
                     // The folder does not really exist, but the FS root does
@@ -761,10 +740,6 @@ class DataFolderPanel extends TopComponent implements
                     // root is not on disk anyway. Leave it blank.
                     directoryName.setText(""); // NOI18N
                 }
-            } else {
-                //issue 34896, for whatever reason the root is sometimes null
-                directoryName.setText(""); //NOI18N
-            }
         }
     }
     
