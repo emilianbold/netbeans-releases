@@ -39,7 +39,6 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${core_root}/src/"/>
         <pathelement location="../external/servlet-2.3.jar"/>
         <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
-        <pathelement location="${nb_root}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
       </classpath>
     </javac>
 

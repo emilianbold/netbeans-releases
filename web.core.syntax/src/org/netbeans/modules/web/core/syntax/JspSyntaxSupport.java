@@ -26,7 +26,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 
 import org.netbeans.modules.web.core.jsploader.JspDataObject;
 import org.netbeans.modules.web.core.jsploader.JspInfo;
@@ -435,7 +434,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         try {
             JspParserAPI parser = JspCompileUtil.getJspParser();
             if (parser == null) {
-                TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, 
+                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, 
                 new NullPointerException());
             }
             else {
@@ -443,7 +442,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
         }
         catch (IOException e) {
-            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, e);
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
         }
         return null;
     }
