@@ -142,14 +142,15 @@ public class DiffPresenter extends javax.swing.JPanel {
         FileSystem dfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
         FileObject services = dfs.findResource("Services");
         DataFolder df = DataFolder.findFolder(services);
-        if (diffInfo.isChooseProviders()) {
+        Object editor = PropertyEditorManager.findEditor (Object.class);
+        if (diffInfo.isChooseProviders() && editor != null) {
             try {
                 pd = new PropertyDescriptor (PROP_PROVIDER, getClass ());
             } catch (java.beans.IntrospectionException intrex) {
                 return ;
             }
             pd.setDisplayName(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "LBL_ProvidersPropEditorTitle"));
-            pd.setPropertyEditorClass (PropertyEditorManager.findEditor (Object.class).getClass());
+            pd.setPropertyEditorClass (editor.getClass());
             // special attributes to the property editor
             pd.setValue ("superClass", DiffProvider.class);
             FileObject providersFO = services.getFileObject("DiffProviders");
@@ -173,14 +174,14 @@ public class DiffPresenter extends javax.swing.JPanel {
             panel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "ACS_ProviderPropertyPanelA11yName"));  // NOI18N
             panel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "ACS_ProviderPropertyPanelA11yDesc"));  // NOI18N
         }
-        if (diffInfo.isChooseVisualizers()) {
+        if (diffInfo.isChooseVisualizers() && editor != null) {
             try {
                 pd = new PropertyDescriptor (PROP_VISUALIZER, getClass ());
             } catch (java.beans.IntrospectionException intrex) {
                 return ;
             }
             pd.setDisplayName(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "LBL_VisualizersPropEditorTitle"));
-            pd.setPropertyEditorClass (PropertyEditorManager.findEditor (Object.class).getClass());
+            pd.setPropertyEditorClass (editor.getClass());
             // special attributes to the property editor
             pd.setValue ("superClass", DiffVisualizer.class);
             FileObject visualizersFO = services.getFileObject("DiffVisualizers");
@@ -204,9 +205,9 @@ public class DiffPresenter extends javax.swing.JPanel {
             servicesPanel.add(panel, gridBagConstraints);
             visualizerLabel.setLabelFor(panel);
         }
-        providerLabel.setVisible(diffInfo.isChooseProviders());
-        visualizerLabel.setVisible(diffInfo.isChooseVisualizers());
-        servicesPanel.setVisible(diffInfo.isChooseProviders() || diffInfo.isChooseVisualizers());
+        providerLabel.setVisible(diffInfo.isChooseProviders() && editor != null);
+        visualizerLabel.setVisible(diffInfo.isChooseVisualizers() && editor != null);
+        servicesPanel.setVisible((diffInfo.isChooseProviders() || diffInfo.isChooseVisualizers()) && editor != null);
     }
     
     public DiffProvider getProvider() {
