@@ -154,13 +154,13 @@ Microsystems, Inc. All Rights Reserved.
                     </div>
                 </xsl:if>
 
-                <p/><table CELLPADDING="1" CELLSPACING="0" BORDER="0" class="tablebg" width="100%"><tr><td>
-                  <table BORDER="0" CELLPADDING="3" CELLSPACING="1" WIDTH="100%">
+                <p/><table cellpadding="1" cellspacing="0" border="0" class="tablebg" width="100%"><tr><td>
+                  <table border="0" cellpadding="3" cellspacing="1" width="100%">
 <!--                    <tr><td COLSPAN="5" class="tablecbg" ALIGN="CENTER"><font CLASS="titlectable">Do not duplicate any files</font></td></tr> -->
                     <tr class="tablersh">
-                      <td ALIGN="CENTER" width="30%"><font CLASS="titlectable">Interface Name</font></td>
-                      <td ALIGN="CENTER" width="15%"><font CLASS="titlectable">Stability Classification</font></td>
-                      <td ALIGN="CENTER" ><font CLASS="titlectable">Specified in What Document?</font></td>
+                      <td align="CENTER" width="30%"><span class="titlectable">Interface Name</span></td>
+                      <td align="CENTER" width="15%"><span class="titlectable">Stability Classification</span></td>
+                      <td align="CENTER" ><span class="titlectable">Specified in What Document?</span></td>
                     </tr>
 
                     <xsl:for-each select="$interfaces">
