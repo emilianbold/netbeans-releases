@@ -13,6 +13,7 @@
 
 package org.openide.loaders;
 
+import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.beans.*;
 import java.io.IOException;
@@ -21,6 +22,7 @@ import java.lang.ref.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import javax.swing.Action;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import org.openide.DialogDisplayer;
 
@@ -1087,6 +1089,60 @@ implements Serializable, DataObject.Container {
         protected FolderNode () {
             super (DataFolder.this, new FolderChildren (DataFolder.this));
             setIconBase(FOLDER_ICON_BASE);
+        }
+
+        /** Overrides folder icon to search for icon in UIManager table for
+         * BeanInfo.ICON_COLOR_16x16 type, to allow for different icons
+         * across Look and Feels.
+         * Keeps possibility of icon annotations.
+         */
+        public Image getIcon (int type) {
+            Image img = null;
+            if (type == BeanInfo.ICON_COLOR_16x16) {
+                // search for proper folder icon installed by core/windows module
+                img = (Image)UIManager.get("Nb.Explorer.Folder.icon");
+            }
+            if (img == null) {
+                img = super.getIcon(type);
+            } else {
+                // give chance to annotate icon returned from UIManeger
+                // copied from DataNode to keep the contract
+                try {
+                    DataObject obj = getDataObject();
+                    img = obj.getPrimaryFile().getFileSystem().
+                          getStatus().annotateIcon(img, type, obj.files());
+                } catch (FileStateInvalidException e) {
+                    // no fs, do nothing
+                }
+            }
+            return img;
+        }
+        
+        /** Overrides folder icon to search for icon in UIManager table for
+         * BeanInfo.ICON_COLOR_16x16 type, to allow for different icons
+         * across Look and Feels.
+         * Keeps possibility of icon annotations.
+         */
+        public Image getOpenedIcon (int type) {
+            Image img = null;
+            if (type == BeanInfo.ICON_COLOR_16x16) {
+                // search for proper folder icon installed by core/windows module
+                img = (Image)UIManager.get("Nb.Explorer.Folder.openedIcon");
+            }
+            if (img == null) {
+                img = super.getIcon(type);
+            } else {
+                // give chance to annotate icon returned from UIManeger
+                // copied from DataNode to keep the contract
+                try {
+                    DataObject obj = getDataObject();
+                    img = obj.getPrimaryFile().getFileSystem().
+                    getStatus().annotateIcon(img, type, obj.files());
+                } catch (FileStateInvalidException e) {
+                    // no fs, do nothing
+                }
+            }
+            return img;
         }
 
         public Node.Cookie getCookie (Class clazz) {
