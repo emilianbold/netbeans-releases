@@ -48,6 +48,7 @@ public class OverrideMethods extends testUtilities.PerformanceTestCase {
         
         // open a java file in the editor
         editor = gui.Utilities.openJavaFile();
+        waitNoEvent(5000);  // annotations, folds, toolbars, ...
     }
     
     public void prepare() {

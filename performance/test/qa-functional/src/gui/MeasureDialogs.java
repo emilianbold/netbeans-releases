@@ -90,6 +90,13 @@ public class MeasureDialogs  {
         suite.addTest(new FindInSourceEditor("measureTime", "Find in Source Editor dialog open"));
         suite.addTest(new InternationalizeDialog("measureTime", "Internationalize dialog open"));
         
+        suite.addTest(new RefactorFindUsagesDialog("measureTime", "Refactor find usages dialog open"));
+        suite.addTest(new RefactorRenameDialog("measureTime", "Refactor rename dialog open"));
+        suite.addTest(new RefactorMoveClassDialog("measureTime", "Refactor move class dialog open"));
+        
+        suite.addTest(new DeleteFileDialog("measureTime", "Delete Object dialog open"));
+        
+        
 /* TEMPORARY commented -> try to solve never finixhed tests
 
         suite.addTest(new DocumentsDialog("measureTime", "Documents dialog open"));
