@@ -382,21 +382,18 @@ public final class BeanInstaller
         }
 
         chooser.setDialogTitle(bundle.getString("CTL_SelectJar"));
-        if (chooser.showDialog(TopManager.getDefault().getWindowManager().getMainWindow(),
+        while (chooser.showDialog(TopManager.getDefault().getWindowManager().getMainWindow(),
                                bundle.getString("CTL_Select_Approve_Button"))
-            == JFileChooser.APPROVE_OPTION)
+               == JFileChooser.APPROVE_OPTION)
         {
             File f = chooser.getSelectedFile();
             lastDirectory = chooser.getCurrentDirectory();
-            if ((f != null) && f.isFile()) {
-                if (f.getName().endsWith(JAR_EXT)) {
-                    return f;
-                } else {
-                    TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                        bundle.getString("MSG_noBeansInJar"), NotifyDescriptor.INFORMATION_MESSAGE)
-                                                   );
-                }
+            if (f != null && f.isFile() && f.getName().endsWith(JAR_EXT)) {
+                return f;
             }
+            
+            TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                bundle.getString("MSG_noValidFile"), NotifyDescriptor.WARNING_MESSAGE));
         }
         return null;
     }
