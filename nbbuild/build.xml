@@ -291,7 +291,7 @@ workspaceswitcher
     <echo message="Building module utilities..."/>
     <ant dir="../utilities" target="netbeans"/>
   </target>
-  <target name="all-vcscvs" depends="all-openide,all-openidex,all-editor,all-utilities,all-vcscore">
+  <target name="all-vcscvs" depends="all-openide,all-openidex,all-editor,all-vcscore">
     <echo message="Building module vcscvs..."/>
     <ant dir="../vcscvs" target="netbeans"/>
   </target>
@@ -299,8 +299,8 @@ workspaceswitcher
     <echo message="Building module vcsgeneric..."/>
     <ant dir="../vcsgeneric" target="netbeans"/>
   </target>
-  <!-- XXX check dependecies, it's just simple copy from all-vcscvs! -->
-  <target name="all-vcscore" depends="all-openide,all-openidex,all-editor,all-utilities">
+  <!-- XXX check editor dependecy -->
+  <target name="all-vcscore" depends="all-openide,all-openidex,all-editor">
     <echo message="Building module vcscore..."/>
     <ant dir="../vcscore" target="netbeans"/>
   </target>
