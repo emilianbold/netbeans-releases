@@ -861,23 +861,36 @@ public class FormDesigner extends TopComponent
             FormModelEvent[] events = this.events;
             this.events = null;
 
+            int prevType = 0;
+            ComponentContainer prevContainer = null;
             boolean updateDone = false;
 
             for (int i=0; i < events.length; i++) {
                 FormModelEvent ev = events[i];
                 int type = ev.getChangeType();
+                ComponentContainer metacont = ev.getContainer();
 
                 if (type == FormModelEvent.CONTAINER_LAYOUT_EXCHANGED
                     || type == FormModelEvent.CONTAINER_LAYOUT_CHANGED
                     || type == FormModelEvent.COMPONENT_LAYOUT_CHANGED)
                 {
-                    replicator.updateContainerLayout((RADVisualContainer)
-                                                     ev.getContainer());
-                    updateDone = true;
+                    if ((prevType != FormModelEvent.CONTAINER_LAYOUT_EXCHANGED
+                         && prevType != FormModelEvent.CONTAINER_LAYOUT_CHANGED
+                         && prevType != FormModelEvent.COMPONENT_LAYOUT_CHANGED)
+                        || prevContainer != metacont)
+                    {
+                        replicator.updateContainerLayout((RADVisualContainer)
+                                                         metacont);
+                        updateDone = true;
+                    }
                 }
                 else if (type == FormModelEvent.COMPONENT_ADDED) {
-                    replicator.updateAddedComponents(ev.getContainer());
-                    updateDone = true;
+                    if (prevType != FormModelEvent.COMPONENT_ADDED
+                        || prevContainer != metacont)
+                    {
+                        replicator.updateAddedComponents(metacont);
+                        updateDone = true;
+                    }
                 }
                 else if (type == FormModelEvent.COMPONENT_REMOVED) {
                     RADComponent removed = ev.getComponent();
@@ -899,8 +912,12 @@ public class FormDesigner extends TopComponent
                     }
                 }
                 else if (type == FormModelEvent.COMPONENTS_REORDERED) {
-                    replicator.reorderComponents(ev.getContainer());
-                    updateDone = true;
+                    if (prevType != FormModelEvent.COMPONENTS_REORDERED
+                        || prevContainer != metacont)
+                    {
+                        replicator.reorderComponents(metacont);
+                        updateDone = true;
+                    }
                 }
                 else if (type == FormModelEvent.COMPONENT_PROPERTY_CHANGED) {
                     replicator.updateComponentProperty(
@@ -910,11 +927,14 @@ public class FormDesigner extends TopComponent
                 else if (type == FormModelEvent.SYNTHETIC_PROPERTY_CHANGED
                          && PROP_DESIGNER_SIZE.equals(ev.getPropertyName()))
                     fdPanel.updatePanel(getDesignerSize());
+
+                prevType = type;
+                prevContainer = metacont;
             }
 
             if (updateDone) {
-                revalidate();
-                repaint();
+                componentLayer.revalidate();
+                componentLayer.repaint();
             }
         }
     }
