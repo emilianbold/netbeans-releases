@@ -235,6 +235,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         jRadioButtonOperator.push();
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_EventSetPanel_fireCheckBox"));
         jCheckBoxOperator.push();
+        new EventTool().waitNoEvent(100);
         jCheckBoxOperator = new JCheckBoxOperator(nbDialogOperator, Bundle.getString("org.netbeans.modules.beans.Bundle","CTL_EventSetPanel_passEventCheckBox"));
         jCheckBoxOperator.push();
         //new EventTool().waitNoEvent(1500);
@@ -657,8 +658,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         javaNode.select();
         javaNode.performPopupActionNoBlock("Compile");
         
-        MainWindowOperator.getDefault().waitStatusText("TestFileBeanInfo.");
-        new EventTool().waitNoEvent(DELAY);
+        MainWindowOperator.getDefault().waitStatusText("Finished TestFileBeanInfo");
         assertNotNull("Generated BeanInfo is not compilable", Repository.getDefault().findResource("TestFileBeanInfo.class"));
     }
     
