@@ -306,7 +306,6 @@
     <tocitem text="Debugger Types" target="debug.debugger.jump">
     <tocitem text="Default Debugger" target="debug.debugger.default"/>
     <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
-    <tocitem text="JDK 1.1 Debugger" target="debug.debugger.jdk"/>
     <tocitem text="J2EE Server Debugger" target="debug.debugger.j2ee"/>
     <tocitem text="Specifying the Default Debugger" target="debug.debugger.project_default"/>
     <tocitem text="Defining a New Debugger Type" target="debug.service.new"/>
@@ -407,6 +406,7 @@
   </tocitem>
 
 <tocitem text="Working With Javadoc Documentation" target="javadoc.jump">
+   <tocitem text="The Javadoc Environment" target="javadoc.windows.all"/>
    <tocitem text="Showing Javadoc Documentation" target="javadoc.source_editor"/>
    <tocitem text="Adding a Javadoc Comment" target="javadoc.addcomment"/>
    <tocitem text="Searching Through Javadoc Documentation" target="javadoc.search"/>

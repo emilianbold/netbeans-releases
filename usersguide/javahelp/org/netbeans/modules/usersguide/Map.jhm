@@ -442,7 +442,6 @@
 
 <mapID target="debug.debugger.jump" url="debug/debugger/debugger_jump.html" />
 <mapID target="debug.debugger.default" url="debug/debugger/default.html" />
-<mapID target="debug.debugger.jdk" url="debug/debugger/jdk.html" />
 <mapID target="debug.debugger.applet" url="debug/debugger/applet.html" />
 <mapID target="debug.debugger.j2ee" url="debug/debugger/j2ee_debugger.html" />
 <mapID target="debug.debugger.project_default" url="debug/debugger/project_default.html" />
@@ -472,6 +471,7 @@
 <mapID target="javadoc.search.window" url="javadoc/search_window.html" />
 <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
 <mapID target="javadoc.doc.window" url="javadoc/doc_comment_window.html" />
+<mapID target="javadoc.windows.all" url="javadoc/javadoc_windows.html" />
 
 <mapID target="jarpackager" url="jarpackager/jarpackager.html" />
 <mapID target="jarpackager.creating" url="jarpackager/jarpackager_creating.html" />
@@ -1057,7 +1057,7 @@
 
    <mapID target="org.netbeans.modules.debugger.jpda.JPDADebuggerType" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.debug.ToolsDebuggerType" url="pending.html" />
-   <mapID target="org.netbeans.modules.debugger.debug.ToolsDebugger11Type" url="debug/debugger/jdk.html" />
+   <mapID target="org.netbeans.modules.debugger.debug.ToolsDebugger11Type" url="debug/debugger/pending.html" />
    <mapID target="org.netbeans.modules.debugger.delegator.DefaultDebuggerType" url="debug/debugger/default.html" />
 
    <mapID target="org.netbeans.beaninfo.editors.NbProcessDescriptorCustomEditor" url="compile/process_descriptor.html" />
