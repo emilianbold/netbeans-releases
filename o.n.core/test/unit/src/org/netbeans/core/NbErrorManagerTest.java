@@ -244,6 +244,19 @@ public class NbErrorManagerTest extends NbTestCase {
         assertEquals("unloc msg", x.getMessage());
         assertEquals("loc msg", x.getLocalizedMessage());
         assertTrue(x.isLocalized());
+
+        // Almost the same test, but to mimic #31254 message == localizedMessage:
+        t2 = new IOException("loc msg");
+        err.annotate(t2, ErrorManager.USER, null, "loc msg", null, null);
+        t = new IOException("loc msg");
+        err.annotate(t, ErrorManager.USER, null, null, t2, null);
+        x = err.createExc(t, ErrorManager.UNKNOWN);
+        assertEquals(ErrorManager.USER, x.getSeverity());
+        assertEquals("loc msg", x.getMessage());
+        assertEquals("loc msg", x.getLocalizedMessage());
+        // Note that it is stil considered localized even though the messages
+        // are equals: there is a localized annotation.
+        assertTrue(x.isLocalized());
         
     }
     
