@@ -44,10 +44,6 @@ Microsystems, Inc. All Rights Reserved.
 
    <target name="dd2beansgen" depends="s2binit">
      <echo message="generating code generation input file information" />
-	<schema2beans schema="${nb_root}/web/core/src/org/netbeans/modules/web/core/resources/web-app_2_3.dtd"
-	  mddFile="src/org/netbeans/modules/web/dd/webapp/webapp.mdd"
-	  package="org.netbeans.modules.web.dd.model"
-	  rootDir="src"/>
 	<schema2beans schema="${s2b_res_root}/web-app_2_3.dtd"
 	  mddFile="${s2b_res_root}/web-app_2_3.mdd"
 	  package="org.netbeans.modules.web.dd.model_2_3"
