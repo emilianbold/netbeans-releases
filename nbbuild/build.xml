@@ -278,7 +278,7 @@ workspaceswitcher
     <ant dir="../javacvs" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-web" depends="all-openide,all-openidex,all-java,all-core,all-editor">
+  <target name="all-web" depends="all-openide,all-java,all-core,all-editor">
     <echo message="Building module web..."/>
     <ant dir="../web" target="netbeans"/>
   </target>

@@ -19,6 +19,16 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <exclude name="org/netbeans/modules/properties/syntax/"/>
+      <classpath>
+        <pathelement location="../openide/openide-13javac-workaround.jar"/>
+        <fileset dir="../openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
+      </classpath>
+    </javac>
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <include name="org/netbeans/modules/properties/syntax/"/>
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
         <fileset dir="../openide/netbeans/lib">
@@ -39,6 +49,16 @@ Microsystems, Inc. All Rights Reserved.
             basedir="src"
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
+      <exclude name="org/netbeans/modules/properties/syntax/"/>
+      <locale name="ja"/>
+    </locjar>
+    <copy file="manifest-syntax.mf" tofile="manifest-syntax-subst.mf" filtering="on"/>
+    <locjar jarfile="netbeans/modules/properties-syntax.jar"
+            manifest="manifest-syntax-subst.mf"
+            basedir="src"
+            excludesfile="../nbbuild/standard-jar-excludes.txt"
+            compress="false">
+      <include name="org/netbeans/modules/properties/syntax/"/>
       <locale name="ja"/>
     </locjar>
   </target>
@@ -46,6 +66,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="netbeans" depends="jars"/>
 
   <target name="nbm" depends="netbeans">
+    <!-- Make one NBM with both module JARs. -->
     <makenbm file="properties.nbm"
              topdir="."
 	     manifest="manifest-subst.mf"
@@ -64,10 +85,10 @@ Microsystems, Inc. All Rights Reserved.
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
-        <include name="**/*.jar"/>
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
+    <delete file="manifest-syntax-subst.mf"/>
     <delete file="properties.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>

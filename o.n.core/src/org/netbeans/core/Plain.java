@@ -93,7 +93,7 @@ public class Plain extends NbTopManager implements Runnable {
       // and autoload modules
       ModuleInstaller.autoLoadModules ();
     } else {
-        ModuleClassLoader.initialize (new URL[] { });
+        //ModuleClassLoader.initialize (new URL[] { });
     }
   }
   
@@ -108,14 +108,3 @@ public class Plain extends NbTopManager implements Runnable {
 */
 
 }
-
-/* 
-* $Log: 
-*  3    Jaga      1.2         03/24/00 Martin Ryzl     implemented
-*       setStatusText(), notify(), added code for setting of version,
-*       initialization of NbBundle.loaderFinder
-*  2    Jaga      1.1         03/17/00 Jaroslav Tulach Compiles with 1.2 compiler
-*  1    Jaga      1.0         03/17/00 Jaroslav Tulach 
-* $ 
-*/ 
-  

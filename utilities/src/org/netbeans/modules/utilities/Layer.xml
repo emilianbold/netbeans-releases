@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
         </file>
         <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/docs-tutorial-link.url" boolvalue="true" />
         <file name="docs-tutorial-link.url">
-            <![CDATA[nbresloc:/Tutorial/index.htm]]>
+            <![CDATA[nbdocs:/Tutorial/index.htm]]>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webHelpLink.gif"/>
             <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/modules/url/info-docs-tutorial-link.html"/>
@@ -106,10 +106,8 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="Help">
             <attr name="Separator1[javax-swing-JSeparator].instance/docs-tutorial-link.url" boolvalue="true"/>
-            <!-- [PENDING] may be killed at some point... -->
-            <!-- [PENDING] this URL does not work if no module has installed documentation to docs/ folder -->
             <file name="docs-tutorial-link.url">
-                <![CDATA[nbresloc:/Tutorial/index.htm]]>
+                <![CDATA[nbdocs:/Tutorial/index.htm]]>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webHelpLink.gif"/>
             </file>

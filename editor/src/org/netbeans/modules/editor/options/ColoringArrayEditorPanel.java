@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.MissingResourceException;
 import java.lang.reflect.InvocationTargetException;
 
+import org.openide.TopManager;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.explorer.propertysheet.PropertyModel;
 import org.openide.util.HelpCtx;
@@ -117,7 +118,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
 
         // Obtain name of the kits type
         try {
-            Class kitClass = Class.forName( (String)map.get( null ) );
+            Class kitClass = Class.forName( (String)map.get( null ), true, TopManager.getDefault ().systemClassLoader () );
             typeName = OptionSupport.getTypeName( kitClass );
         } catch( ClassNotFoundException e ) {
             if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )

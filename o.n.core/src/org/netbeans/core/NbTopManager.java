@@ -738,11 +738,7 @@ public abstract class NbTopManager extends TopManager {
     /** Obtains current up-to system classloader
     */
     public ClassLoader systemClassLoader () {
-        ClassLoader l = ModuleClassLoader.systemClassLoader ();
-        if (l == null) {
-            l = getClass ().getClassLoader();
-        }
-        return l;
+        return ModuleInstaller.getModuleClassLoader ();
     }
 
     /** Obtains current up-to data te classloader
