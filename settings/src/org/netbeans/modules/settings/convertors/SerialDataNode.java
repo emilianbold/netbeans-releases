@@ -71,6 +71,8 @@ public final class SerialDataNode extends DataNode {
      */
     private final Boolean isAfterNodeConstruction;
 
+    static final String ATTR_DISPLAY_NAME = "SerialDataNode_DisplayName";//NOI18N
+            
     /** used by general setting objects */
     public SerialDataNode(DataObject dobj) {
         this(null, dobj,  Boolean.FALSE.equals(dobj.
@@ -356,6 +358,7 @@ public final class SerialDataNode extends DataNode {
                 setSettingsInstance(bean);
                 nameSetter.invoke(bean, new Object[] {name});
                 isNameChanged = true;
+                getDataObject().getPrimaryFile().setAttribute(ATTR_DISPLAY_NAME, name);                
                 resolvePropertyChange();
                 return;
             } catch (IOException ex) {
@@ -403,8 +406,9 @@ public final class SerialDataNode extends DataNode {
             }
         }
         
+        
         name = (String) getDataObject().getPrimaryFile().
-            getAttribute(SerialDataConvertor.EA_NAME);
+            getAttribute(SerialDataNode.ATTR_DISPLAY_NAME);
         if (name == null) {
             try {
                 String def = "\b"; // NOI18N

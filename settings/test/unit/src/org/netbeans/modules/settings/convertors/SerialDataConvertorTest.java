@@ -13,18 +13,20 @@
 
 package org.netbeans.modules.settings.convertors;
 
+import org.netbeans.core.projects.SystemFileSystem;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.loaders.*;
 import org.openide.cookies.*;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.*;
-
-import java.beans.*;
 import java.io.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.*;
 
 import org.netbeans.junit.*;
+import org.openide.nodes.Node;
 
 /**
  * @author Jan Pokorsky
@@ -69,6 +71,102 @@ public class SerialDataConvertorTest extends NbTestCase {
         assertTrue("Destination folder is not valid.", dest.isValid ());
         
         folder = DataFolder.findFolder (bb);
+    }
+    
+    public void test50177ProblemSimulation () throws Exception {
+        FileObject testFolder = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot (), "Services");
+        assertNotNull(testFolder);
+        
+        InstanceDataObject ido = InstanceDataObject.create(DataFolder.findFolder(testFolder), "test50177ProblemSimulation", new Ex50177(),null);
+        
+        Lookup.Item item = Lookup.getDefault().lookupItem(new Lookup.Template (Ex50177.class, null, null));    
+        assertNotNull(item);        
+        String id = item.getId();
+        
+        Ex50177 exObj = (Ex50177)item.getInstance();
+        assertNotNull(exObj);
+        
+        exObj.setSomething("set any value shouldn't cause #50177");
+        SerialDataConvertorTest.waitUntilIsSaved (ido);
+
+        //!!! this is the failing line causing #50177
+        assertNotNull(Lookup.getDefault().lookupItem(new Lookup.Template (null, id, null)));
+    }
+
+    public void test50177Cause () throws Exception {
+        FileObject testFolder = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot (), "Services");
+        assertNotNull(testFolder);
+        
+        InstanceDataObject ido = InstanceDataObject.create(DataFolder.findFolder(testFolder), "test50177Cause", new Ex50177(),null);
+        String idoName = ido.getName();
+        
+        Ex50177 exObj = (Ex50177)ido.instanceCreate();
+        assertNotNull(exObj);
+        assertEquals(idoName, ido.getName());
+        
+        exObj.setSomething("any value");//set any value shouldn't cause #50177
+        SerialDataConvertorTest.waitUntilIsSaved (ido);
+        //!!! this is the failing line causing #50177
+        assertEquals(idoName, ido.getName());
+    }
+
+    private static void waitUntilIsSaved (InstanceDataObject ido) throws InterruptedException {
+            SaveCookie sc = (SaveCookie)ido.getCookie(SaveCookie.class);         
+            for (int i = 0; i < 5 && sc != null; i++) {
+                Thread.sleep (3000);            
+                sc = (SaveCookie)ido.getCookie(SaveCookie.class);
+            }
+            assertNull(sc);        
+    }
+    
+    public void test50177SideEffectsAfterRename () throws Exception {
+        FileObject testFolder = FileUtil.createFolder(Repository.getDefault().getDefaultFileSystem().getRoot (), "Services");
+        assertNotNull(testFolder);
+        
+        InstanceDataObject ido = InstanceDataObject.create(DataFolder.findFolder(testFolder), "test50177SideEffectsAfterRename", new Ex50177(),null);
+        FileObject fo = ido.getPrimaryFile();
+        fo.setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.settings.convertors.data.Bundle");
+        
+        String newName = "newName";
+        ido.getNodeDelegate().setName(newName);
+        SerialDataConvertorTest.waitUntilIsSaved (ido);
+        assertEquals(newName, ido.getNodeDelegate().getDisplayName());
+        
+        /// simulates recretaion of instance e.g. after IDE restart
+        fo = FileUtil.copyFile(fo, fo.getParent(),"copiedPeer", fo.getExt());
+        fo.setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.settings.convertors.data.Bundle");        
+        ido = (InstanceDataObject)DataObject.find(fo);
+        
+        assertEquals(newName, ido.getNodeDelegate().getDisplayName());        
+    }
+    
+    public static final class Ex50177 extends org.openide.ServiceType {
+    /** generated Serialized Version UID */
+        private static final long serialVersionUID = -7572487174423654252L;
+        private String name = "My Own Ex";
+        
+        protected String displayName() {
+            return name;
+        }
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+        
+        
+        private String something;
+        public String getSomething () {
+            return something;
+        }
+        public void setSomething (String s) {
+            String old = something;
+            something = s;
+            firePropertyChange("Something", old, s);
+        }
+
+        public void setName(String name) {
+            this.name = name;
+            firePropertyChange(name, null, name);
+        }
     }
     
     /** Checks whether the instance is the same.

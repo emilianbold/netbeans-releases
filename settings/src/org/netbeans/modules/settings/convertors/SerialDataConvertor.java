@@ -769,35 +769,8 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             buf = b;
             file.getFileSystem().runAtomicAction(this);
             buf = null;
-            synchronizeName(inst);
             if (!isChanged) firePropertyChange(PROP_SAVE);
-        }
-        
-        /** try to synchronize file name with instance name */
-        private void synchronizeName(Object inst) {
-            java.lang.reflect.Method getter;
-            try {
-                try {
-                    getter = inst.getClass().getMethod("getDisplayName", null); // NOI18N
-                } catch (NoSuchMethodException me) {
-                    getter = inst.getClass().getMethod("getName", null); // NOI18N
-                }
-            } catch (Exception ex) { // do nothing
-                return;
-            }
-            
-            try {
-                String name = (String) getter.invoke(inst, null);
-                String oldName = (String) dobj.getPrimaryFile().getAttribute(EA_NAME);
-                if (name != null && !name.equals(oldName)) {
-                    dobj.rename(name);
-                }
-            } catch (Exception ex) {
-                err.annotate(ex, dobj.getPrimaryFile().toString());
-        	inform(ex);
-            }
-        }
-        
+        }                
     }
 
 ////////////////////////////////////////////////////////////////////////////
