@@ -222,7 +222,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
 
                 public boolean supportsDefaultValue() {
-                    return true;
+                    return component.getAuxValue(AUX_VARIABLE_LOCAL) == null;
                 }
 
                 public void restoreDefaultValue() {
