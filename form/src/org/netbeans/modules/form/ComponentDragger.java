@@ -211,7 +211,6 @@ class ComponentDragger
                         index = 0;
 
                 newComponents.set(index, selectedComponents[i]);
-//                newConstraints.set(index, constraints.get(i));
             }
         }
 
@@ -261,10 +260,6 @@ class ComponentDragger
 
                     formModel.removeComponentFromContainer(metacomp);
                 }
-
-                if (newConstraints.get(i) == null)
-                    newConstraints.set(i, parentCont.getLayoutSupport()
-                                            .getStoredConstraints(metacomp));
             }
             else { // remove empty space
                 newComponents.remove(i);

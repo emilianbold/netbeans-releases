@@ -477,21 +477,23 @@ public class VisualReplicator {
 
             // copy subcomponents
             RADVisualComponent[] metacomps = metacont.getSubComponents();
-            final Component[] comps = new Component[metacomps.length];
-            for (int i = 0; i < metacomps.length; i++)
-                comps[i] = (Component) cloneComponent(metacomps[i],
-                                                      relativeProperties);
+            if (metacomps.length > 0) {
+                final Component[] comps = new Component[metacomps.length];
+                for (int i=0; i < metacomps.length; i++)
+                    comps[i] = (Component) cloneComponent(metacomps[i],
+                                                          relativeProperties);
 
-            // add cloned subcomponents to container
-            if (!(clone instanceof JToolBar))
-                laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
-            else { // a L&F workaround for JToolBar (MetalToobarUI)
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        laysup.addComponentsToContainer(cont, contDelegate,
-                                                        comps, 0);
-                    }
-                });
+                // add cloned subcomponents to container
+                if (!(clone instanceof JToolBar))
+                    laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
+                else { // a L&F workaround for JToolBar (MetalToobarUI)
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            laysup.addComponentsToContainer(cont, contDelegate,
+                                                            comps, 0);
+                        }
+                    });
+                }
             }
 
             laysup.arrangeContainer(cont, contDelegate);

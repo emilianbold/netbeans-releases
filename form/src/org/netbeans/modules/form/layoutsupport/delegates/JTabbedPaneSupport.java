@@ -102,14 +102,16 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
 
         JTabbedPane tabbedPane = (JTabbedPane) container;
         if (selectedTab >= 0) {
-            // select the tab
-            tabbedPane.setSelectedIndex(selectedTab);
+            if (tabbedPane.getComponentCount() > selectedTab) {
+                // select the tab
+                tabbedPane.setSelectedIndex(selectedTab);
 
-            // workaround for JTabbedPane bug 4190719
-            Component comp = tabbedPane.getSelectedComponent();
-            if (comp != null)
-                comp.setVisible(true);
-            tabbedPane.repaint();
+                // workaround for JTabbedPane bug 4190719
+                Component comp = tabbedPane.getSelectedComponent();
+                if (comp != null)
+                    comp.setVisible(true);
+                tabbedPane.repaint();
+            }
         }
         else if (tabbedPane.getComponentCount() > 0) {
             // workaround for JTabbedPane bug 4190719

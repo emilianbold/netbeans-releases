@@ -347,8 +347,15 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
     FormDesigner getFormDesigner() {
         if (!formLoaded)
             return null;
-        if (formDesigner == null)
+        if (formDesigner == null) {
             formDesigner = new FormDesigner(formModel);
+            // not very nice hack - it's better FormEditorSupport has its
+            // listener registered after FormDesigner
+            if (formListener != null) {
+                formModel.removeFormModelListener(formListener);
+                formModel.addFormModelListener(formListener);
+            }
+        }
         return formDesigner;
     }
 
