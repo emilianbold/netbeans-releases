@@ -19,10 +19,6 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 import org.openide.util.Utilities;
-import org.openide.windows.Workspace;
-import org.openide.windows.WindowManager;
-
-import org.netbeans.modules.form.palette.*;
 
 /**
  * A BeanInfo for FormLoaderSettings.
@@ -238,98 +234,6 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             super(Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE
                   | Modifier.STATIC | Modifier.FINAL | Modifier.TRANSIENT
                   | Modifier.VOLATILE);
-        }
-    }
-
-
-    final public static class PalettesEditor extends PropertyEditorSupport {
-        private boolean initialized = false;
-        private CPElements.Palette[] registeredPalettes;
-
-        /*
-         * @return The property value as a human editable string.
-         * <p> Returns null if the value can't be expressed as an editable string.
-         * <p> If a non-null value is returned, then the PropertyEditor should
-         *     be prepared to parse that string back in setAsText().
-         */
-        public String getAsText() {
-            if (!initialized) {
-                initializePalettes();
-                initialized = true;
-            }
-
-            if (registeredPalettes.length < 1)
-                return FormUtils.getBundleString("VALUE_SELECTED_PALETTE_NONE"); // NOI18N
-
-            Object value = getValue();
-            int index = 0;
-            if (value instanceof Integer)
-                index = ((Integer)value).intValue();
-
-            if (index < registeredPalettes.length)
-                return registeredPalettes[index].getPaletteName();
-            else return null;
-        }
-
-        /* Set the property value by parsing a given String. May raise
-         * java.lang.IllegalArgumentException if either the String is
-         * badly formatted or if this kind of property can't be expressed
-         * as text.
-         * @param text The string to be parsed.
-         */
-        public void setAsText(String text) throws java.lang.IllegalArgumentException {
-            if (!initialized) {
-                initializePalettes();
-                initialized = true;
-            }
-
-            int index = getIndexOfPalette(text);
-            setValue(new Integer(index));
-        }
-
-        /*
-         * If the property value must be one of a set of known tagged values,
-         * then this method should return an array of the tag values. This can
-         * be used to represent(for example) enum values. If a PropertyEditor
-         * supports tags, then it should support the use of setAsText with
-         * a tag value as a way of setting the value.
-         * @return The tag values for this property. May be null if this
-         *   property cannot be represented as a tagged value.
-         *
-         */
-        public String[] getTags() {
-            if (!initialized) {
-                initializePalettes();
-                initialized = true;
-            }
-
-            String[] names;
-
-            if (registeredPalettes.length > 0) {
-                names = new String [registeredPalettes.length];
-
-                for (int i=0; i<registeredPalettes.length; i++) {
-                    names[i] = registeredPalettes[i].getPaletteName();
-                }
-            }
-            else names = new String[] {
-                FormUtils.getBundleString("VALUE_SELECTED_PALETTE_NONE") }; // NOI18N
-
-            return names;
-        }
-
-        /** gets array of available palettes from CPManager */
-        private void initializePalettes() {
-            registeredPalettes = CPManager.getDefault().getRegisteredPalettes();
-        }
-
-        /** gets index of palette given by name */
-        private int getIndexOfPalette(String name) {
-            for (int i=0; i<registeredPalettes.length; i++) {
-                if (registeredPalettes[i].getPaletteName().equals(name))
-                    return i;
-            }
-            return -1;
         }
     }
 

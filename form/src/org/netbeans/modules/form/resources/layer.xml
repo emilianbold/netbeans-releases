@@ -181,26 +181,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JPopupMenuColor16.gif" />
                 <attr name="beaninfo" boolvalue="false"/>
             </file>
-
-            <attr name="javax-swing-JLabel.instance/javax-swing-JButton.instance" boolvalue="true" />
-            <attr name="javax-swing-JButton.instance/javax-swing-JToggleButton.instance" boolvalue="true" />
-            <attr name="javax-swing-JToggleButton.instance/javax-swing-JCheckBox.instance" boolvalue="true" />
-            <attr name="javax-swing-JCheckBox.instance/javax-swing-JRadioButton.instance" boolvalue="true" />
-            <attr name="javax-swing-JRadioButton.instance/javax-swing-ButtonGroup.instance" boolvalue="true" />
-            <attr name="javax-swing-ButtonGroup.instance/javax-swing-JComboBox.instance" boolvalue="true" />
-            <attr name="javax-swing-JComboBox.instance/javax-swing-JList.instance" boolvalue="true" />
-            <attr name="javax-swing-JList.instance/javax-swing-JTextField.instance" boolvalue="true" />
-            <attr name="javax-swing-JTextField.instance/javax-swing-JTextArea.instance" boolvalue="true" />
-            <attr name="javax-swing-JTextArea.instance/javax-swing-JPanel.instance" boolvalue="true" />
-            <attr name="javax-swing-JPanel.instance/javax-swing-JTabbedPane.instance" boolvalue="true" />
-            <attr name="javax-swing-JTabbedPane.instance/javax-swing-JScrollBar.instance" boolvalue="true" />
-            <attr name="javax-swing-JScrollBar.instance/javax-swing-JScrollPane.instance" boolvalue="true" />
-            <attr name="javax-swing-JScrollPane.instance/javax-swing-JMenuBar.instance" boolvalue="true" />
-            <attr name="javax-swing-JMenuBar.instance/javax-swing-JPopupMenu.instance" boolvalue="true" />
-        </folder>
-        <folder name="Swing2">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-
             <file name="javax-swing-JSlider.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/javax/swing/beaninfo/images/JSliderColor16.gif" />
@@ -303,6 +283,22 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="beaninfo" boolvalue="false"/>
             </file>
 
+            <attr name="javax-swing-JLabel.instance/javax-swing-JButton.instance" boolvalue="true" />
+            <attr name="javax-swing-JButton.instance/javax-swing-JToggleButton.instance" boolvalue="true" />
+            <attr name="javax-swing-JToggleButton.instance/javax-swing-JCheckBox.instance" boolvalue="true" />
+            <attr name="javax-swing-JCheckBox.instance/javax-swing-JRadioButton.instance" boolvalue="true" />
+            <attr name="javax-swing-JRadioButton.instance/javax-swing-ButtonGroup.instance" boolvalue="true" />
+            <attr name="javax-swing-ButtonGroup.instance/javax-swing-JComboBox.instance" boolvalue="true" />
+            <attr name="javax-swing-JComboBox.instance/javax-swing-JList.instance" boolvalue="true" />
+            <attr name="javax-swing-JList.instance/javax-swing-JTextField.instance" boolvalue="true" />
+            <attr name="javax-swing-JTextField.instance/javax-swing-JTextArea.instance" boolvalue="true" />
+            <attr name="javax-swing-JTextArea.instance/javax-swing-JPanel.instance" boolvalue="true" />
+            <attr name="javax-swing-JPanel.instance/javax-swing-JTabbedPane.instance" boolvalue="true" />
+            <attr name="javax-swing-JTabbedPane.instance/javax-swing-JScrollBar.instance" boolvalue="true" />
+            <attr name="javax-swing-JScrollBar.instance/javax-swing-JScrollPane.instance" boolvalue="true" />
+            <attr name="javax-swing-JScrollPane.instance/javax-swing-JMenuBar.instance" boolvalue="true" />
+            <attr name="javax-swing-JMenuBar.instance/javax-swing-JPopupMenu.instance" boolvalue="true" />
+            <attr name="javax-swing-JPopupMenu.instance/javax-swing-JSlider.instance" boolvalue="true" />
             <attr name="javax-swing-JSlider.instance/javax-swing-JProgressBar.instance" boolvalue="true" />
             <attr name="javax-swing-JProgressBar.instance/javax-swing-JSplitPane.instance" boolvalue="true" />
             <attr name="javax-swing-JSplitPane.instance/javax-swing-JFormattedTextField.instance" boolvalue="true" />
@@ -407,9 +403,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="java-awt-MenuBar.instance/java-awt-PopupMenu.instance" boolvalue="true" />
         </folder>
 
-        <folder name="Beans">
-        </folder>
-
         <folder name="Layouts">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
 
@@ -465,6 +458,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Borders">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+            <attr name="hidden_category" boolvalue="true"/>
 
             <file name="javax-swing-border-EmptyBorder.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle" />
@@ -516,18 +510,13 @@ Microsystems, Inc. All Rights Reserved.
             <attr name= "javax-swing-border-SoftBevelBorder.instance/javax-swing-border-CompoundBorder.instance" boolvalue="true"/>
         </folder>
 
-        <attr name="Swing/Swing2" boolvalue="true" />
-        <attr name="Swing2/AWT" boolvalue="true" />
-        <attr name="AWT/Beans" boolvalue="true" />
-        <attr name="Beans/Layouts" boolvalue="true" />
-        <attr name="Layouts/Borders" boolvalue="true" />
-    </folder>
+        <folder name="Beans">
+        </folder>
 
-    <folder name="PaletteUI">
-        <file name="org-netbeans-modules-form-palette-CPComponentLarge.instance">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.palette.Bundle" />
-            <attr name="defaultDisplayName" stringvalue="Large Palette" />
-        </file>
+        <attr name="Swing/AWT" boolvalue="true" />
+        <attr name="AWT/Layouts" boolvalue="true" />
+        <attr name="Layouts/Borders" boolvalue="true" />
+        <attr name="Borders/Beans" boolvalue="true" />
     </folder>
 
     <folder name="Templates">
@@ -609,7 +598,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/BeanForm.html"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.singleton"/>
             </file>
             <file name="BeanForm.form" url="templates/SwingForms/BeanForm_form">
                 <attr name="template" boolvalue="true" />
