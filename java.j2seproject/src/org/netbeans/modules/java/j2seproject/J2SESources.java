@@ -76,7 +76,7 @@ public class J2SESources implements Sources, PropertyChangeListener  {
             if (displayName.length() ==0) {
                 //If the prop is src.dir use the default name
                 if ("src.dir".equals(propNames[i])) {   //NOI18N
-                    displayName = NbBundle.getMessage(J2SESources.class,"NAME_src.dir");
+                    displayName = SourceRoots.defaultSourceLabel;
                 }
                 else {
                     //If the name is not given, it should be either a relative path in the project dir
@@ -93,7 +93,7 @@ public class J2SESources implements Sources, PropertyChangeListener  {
                         }
                     }
                     else {
-                        displayName = NbBundle.getMessage(J2SEProject.class, "NAME_src.dir");
+                        displayName = SourceRoots.defaultSourceLabel;
                     }
                 }
             }
@@ -108,7 +108,7 @@ public class J2SESources implements Sources, PropertyChangeListener  {
             if (displayName.length() ==0) {
                 //If the prop is test.src.dir use the default name
                 if ("test.src.dir".equals(propNames[i])) {   //NOI18N
-                    displayName = NbBundle.getMessage(J2SESources.class,"NAME_test.src.dir");
+                    displayName = SourceRoots.defaultTestLabel;
                 }
                 else {
                     //If the name is not given, it should be either a relative path in the project dir
@@ -125,7 +125,7 @@ public class J2SESources implements Sources, PropertyChangeListener  {
                         }
                     }
                     else {
-                        displayName = NbBundle.getMessage(J2SEProject.class, "NAME_test.src.dir");
+                        displayName = SourceRoots.defaultTestLabel;
                     }
                 }
             }

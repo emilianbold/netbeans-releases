@@ -55,8 +55,8 @@ public final class SourceRoots {
     public static final String PROP_ROOT_PROPERTIES = "rootProperties";    //NOI18N
     public static final String PROP_ROOTS = "roots";   //NOI18N
 
-    private static final String defaultSourceLabel = NbBundle.getMessage(SourceRoots.class,"NAME_src.dir");
-    private static final String defaultTestLabel = NbBundle.getMessage(SourceRoots.class,"NAME_test.src.dir");
+    public static final String defaultSourceLabel = NbBundle.getMessage(SourceRoots.class,"NAME_src.dir");
+    public static final String defaultTestLabel = NbBundle.getMessage(SourceRoots.class,"NAME_test.src.dir");
 
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;

@@ -895,10 +895,10 @@ public class J2SEProjectProperties {
                     data[i][1] = rootLabels[i];
                 }
                 else if (!tests && "src.dir".equals(rootProps[i])) {   //NOI18N
-                    data[i][1] = NbBundle.getMessage(J2SEProjectProperties.class,"NAME_src.dir");
+                    data[i][1] = SourceRoots.defaultSourceLabel;
                 }
                 else if (tests && "test.src.dir".equals(rootProps[i])) { //NOI18N
-                    data[i][1] = data[i][1] = NbBundle.getMessage(J2SEProjectProperties.class,"NAME_test.src.dir");;
+                    data[i][1] = SourceRoots.defaultTestLabel;
                 }
                 else {
                     data[i][1] = "";    //NOI18N
