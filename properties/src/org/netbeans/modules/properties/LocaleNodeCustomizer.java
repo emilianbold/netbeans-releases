@@ -1,3 +1,8 @@
+
+
+
+
+
 /*
  *                 Sun Public License Notice
  * 
@@ -37,6 +42,7 @@ import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -121,6 +127,10 @@ public class LocaleNodeCustomizer extends JPanel {
      * @param entry entry which keys to get */
     private static String[] retrieveKeys(PropertiesFileEntry entry) {
         ArrayList keysList = new ArrayList();
+        
+        if(entry == null) {
+            return new String[0];
+        }
         
         for (Iterator it = entry.getHandler().getStructure().allItems(); it.hasNext(); ) {
             String key = ((Element.ItemElem)it.next()).getKey();
@@ -319,32 +329,37 @@ public class LocaleNodeCustomizer extends JPanel {
             ps.deleteItem((String)selectedValues[i]);
         }
         
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                // Update keys.
-                keyList.setListData(retrieveKeys(entry));
-            }
-        });
+        updateKeyList();
     }//GEN-LAST:event_removeKeyButtonActionPerformed
 
     private void addKeyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addKeyButtonActionPerformed
         try {
             entry.getNodeDelegate().getNewTypes()[0].create();
-            
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    // Update keys.
-                    keyList.setListData(retrieveKeys(entry));
-                }
-            });
+
+            updateKeyList();
         } catch(IOException ioe) {
             if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                 ioe.printStackTrace();
         }
     }//GEN-LAST:event_addKeyButtonActionPerformed
 
+    /** Updates keys. Utility method. */
+    private void updateKeyList() {
+        // Very ugly, but now there is incosistency gap in the properties structure.
+        // REmove threads when changed parsing.
+        RequestProcessor.postRequest(new Runnable() {
+            public void run() {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        // Update keys.
+                        keyList.setListData(retrieveKeys(entry));
+                    }
+                });
+            }
+        });
+    }
 
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel nameLabel;
     private javax.swing.JLabel keyLabel;
