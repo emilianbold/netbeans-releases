@@ -95,11 +95,9 @@ final class WebProject implements Project, AntProjectListener {
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(new String[] {
-            "${src.dir}/*.java", // NOI18N
-            "${test.src.dir}/*.java", // NOI18N
+            "${src.dir}/*.java" // NOI18N
         }, new String[] {
-            "${build.classes.dir}/*.class", // NOI18N
-            "${build.test.classes.dir}/*.class", // NOI18N
+            "${build.classes.dir}/*.class" // NOI18N
         });
         return Lookups.fixed(new Object[] {
             new Info(),
@@ -144,15 +142,6 @@ final class WebProject implements Project, AntProjectListener {
         return helper.resolveFileObject(srcDir);
     }
     
-    FileObject getTestSourceDirectory() {
-        String testSrcDir = helper.evaluate("test.src.dir"); // NOI18N
-        return helper.resolveFileObject(testSrcDir);
-    }
-    
-    File getTestClassesDirectory() {
-        String testClassesDir = helper.evaluate("build.test.classes.dir"); // NOI18N
-        return helper.resolveFile(testClassesDir);
-    }
     
     // Private innerclasses ----------------------------------------------------
     

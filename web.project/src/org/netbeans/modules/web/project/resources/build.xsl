@@ -36,11 +36,11 @@ Microsystems, Inc. All Rights Reserved.
     <xsl:attribute name="default">default</xsl:attribute>
     <xsl:attribute name="basedir">.</xsl:attribute>
     <description>
-        Builds, tests, and runs the project <xsl:value-of select="/project:project/project:display-name"/>.
+        Builds, and runs the project <xsl:value-of select="/project:project/project:display-name"/>.
     </description>
     <target name="default">
-        <xsl:attribute name="depends">test,jar,javadoc</xsl:attribute>
-        <xsl:attribute name="description">Build and test whole project.</xsl:attribute>
+        <xsl:attribute name="depends">jar,javadoc</xsl:attribute>
+        <xsl:attribute name="description">Build whole project.</xsl:attribute>
     </target>
     <target name="jar">
         <xsl:attribute name="description">Build JAR.</xsl:attribute>
@@ -70,14 +70,6 @@ Microsystems, Inc. All Rights Reserved.
             </property>
         </ant>
     </target>
-    <target name="compile-test-single">
-        <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">compile-single</xsl:attribute>
-            <property name="is.test">            
-                <xsl:attribute name="value">true</xsl:attribute>
-            </property>
-        </ant>
-    </target>
     <target name="run">
         <xsl:attribute name="description">Run a main class.</xsl:attribute>
         <ant antfile="nbproject/build-impl.xml">
@@ -94,22 +86,6 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:attribute name="description">Build Javadoc.</xsl:attribute>
         <ant antfile="nbproject/build-impl.xml">
             <xsl:attribute name="target">javadoc-nb</xsl:attribute>
-        </ant>
-    </target>
-    <target name="test">
-        <xsl:attribute name="description">Run unit tests.</xsl:attribute>
-        <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">test-nb</xsl:attribute>
-        </ant>
-    </target>
-    <target name="test-single">
-        <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">test-single-nb</xsl:attribute>
-        </ant>
-    </target>
-    <target name="debug-test-single">
-        <ant antfile="nbproject/build-impl.xml">
-            <xsl:attribute name="target">debug-test-single-nb</xsl:attribute>
         </ant>
     </target>
     <target name="debug-fix">

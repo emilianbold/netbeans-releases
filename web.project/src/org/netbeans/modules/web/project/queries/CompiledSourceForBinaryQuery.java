@@ -39,9 +39,6 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         result = getSources (binaryRoot,"dist.jar","src.dir");                             //NOI18N
         if (result != null)
             return new FileObject[] {result};
-        result = getSources (binaryRoot,"build.test.classes.dir","test.src.dir");           //NOI18N
-        if (result != null)
-            return new FileObject[] {result};
         return new FileObject[0];
     }
 

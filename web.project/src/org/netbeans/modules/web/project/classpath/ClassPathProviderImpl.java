@@ -59,20 +59,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         return getDir("src.dir"); // NOI18N
     }
     
-    private FileObject getTestSrcDir() {
-        return getDir("test.src.dir"); // NOI18N
-    }
-    
     private FileObject getBuildClassesDir() {
         return getDir("build.classes.dir");    //NOI18N
     }
     
     private FileObject getBuildJar() {
         return getDir("dist.jar");            //NOI18N
-    }
-    
-    private FileObject getBuildTestClassesDir() {
-        return getDir("build.test.classes.dir");   //NOI18N
     }
     
     private FileObject getDocumentBaseDir() {
@@ -83,10 +75,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         FileObject dir = getPrimarySrcDir();
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
             return 0;
-        }
-        dir = getTestSrcDir();
-        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
-            return 1;
         }
         dir = getDocumentBaseDir();
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
@@ -99,10 +87,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         dir = getBuildJar();
         if (dir != null && (dir.equals(file))) {     //TODO: When MasterFs check also isParentOf
             return 3;
-        }
-        dir = getBuildTestClassesDir();
-        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
-            return 4;
         }
         return -1;
     }
@@ -117,11 +101,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if (cache[3+type] == null || (cp = (ClassPath)cache[3+type].get()) == null) {
             if (type == 0) {    
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper,"javac.classpath"));      //NOI18N
-            }
-            else {
-                cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper,"javac.test.classpath")); //NOI18N
+                new ProjectClassPathImplementation(helper, "javac.classpath"));      //NOI18N
             }
             cache[3+type] = new SoftReference(cp);
         }
@@ -144,11 +124,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if (cache[6+type] == null || (cp = (ClassPath)cache[6+type].get())== null) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper,"run.classpath")); // NOI18N
-            }
-            else if (type == 1) {
-                cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper,"run.test.classpath")); // NOI18N
+                new ProjectClassPathImplementation(helper, "run.classpath")); // NOI18N
             }
             cache[6+type] = new SoftReference(cp);
         }
@@ -164,17 +140,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if (cache[type] == null || (cp = (ClassPath)cache[type].get()) == null) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper,"src.dir")); // NOI18N
+                new ProjectClassPathImplementation(helper, "src.dir")); // NOI18N
             }
             else {
                 if (type == 2){
                     // TODO We need in the classpath the src.dir as well. 
                     cp = ClassPathFactory.createClassPath(
-                    new ProjectClassPathImplementation(helper,"web.docbase.dir")); // NOI18N
-                }
-                else {
-                    cp = ClassPathFactory.createClassPath(
-                    new ProjectClassPathImplementation(helper,"test.src.dir")); // NOI18N
+                    new ProjectClassPathImplementation(helper, "web.docbase.dir")); // NOI18N
                 }
             }
             cache[type] = new SoftReference(cp);
@@ -219,19 +191,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
             if (d != null) {
                 l.add(getCompileTimeClasspath(d));
             }
-            d = getTestSrcDir();
-            if (d != null) {
-                l.add(getCompileTimeClasspath(d));
-            }
             return (ClassPath[])l.toArray(new ClassPath[l.size()]);
         }
         if (ClassPath.SOURCE.equals(type)) {
             List/*<ClassPath>*/ l = new ArrayList(2);
             FileObject d = getPrimarySrcDir();
-            if (d != null) {
-                l.add(getSourcepath(d));
-            }
-            d = getTestSrcDir();
             if (d != null) {
                 l.add(getSourcepath(d));
             }
@@ -243,6 +207,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
 
 
     public void configurationXmlChanged(AntProjectEvent ev) {
+        this.dirCache.clear();
     }
 
     public synchronized void propertiesChanged(AntProjectEvent ev) {

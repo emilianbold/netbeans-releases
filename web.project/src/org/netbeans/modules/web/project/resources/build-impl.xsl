@@ -27,6 +27,15 @@ Microsystems, Inc. All Rights Reserved.
 <project name="{$name}-impl" default="build" basedir="..">
 
     <target name="init">
+        <!--
+        <xsl:variable name="cp">
+            <xsl:for-each select="/p:project/p:configuration/web:data/web:web-module-libraries/web:library">
+                <xsl:value-of select="web:file"/>
+                <xsl:text>;</xsl:text>
+            </xsl:for-each>
+        </xsl:variable>
+        <property name="javac.classpath" value="{$cp}"/>
+        -->
         <property file="nbproject/private/private.properties"/>
         <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
         <property file="${{user.properties.file}}"/>
@@ -48,13 +57,10 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Note that if the properties were defined in project.xml that would be easy -->
         <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
         <fail unless="src.dir">Must set src.dir</fail>
-        <fail unless="test.src.dir">Must set test.src.dir</fail>
         <fail unless="build.dir">Must set build.dir</fail>
         <fail unless="dist.dir">Must set dist.dir</fail>
         <fail unless="build.classes.dir">Must set build.classes.dir</fail>
         <fail unless="dist.javadoc.dir">Must set dist.javadoc.dir</fail>
-        <fail unless="build.test.classes.dir">Must set build.test.classes.dir</fail>
-        <fail unless="build.test.results.dir">Must set build.test.results.dir</fail>
         <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
         <fail unless="dist.jar">Must set dist.jar</fail>
         <xsl:if test="/p:project/p:configuration/web:data/web:use-manifest">
@@ -98,6 +104,12 @@ Microsystems, Inc. All Rights Reserved.
         <copy todir="${{build.classes.dir}}">
             <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
         </copy>
+        <!-- copy libraries -->
+        <xsl:for-each select="/p:project/p:configuration/web:data/web:web-module-libraries/web:library[web:path-in-war]">
+            <xsl:variable name="copyto" select=" web:path-in-war"/>
+            <xsl:variable name="libfile" select="web:file"/>
+            <copy todir="${{build.dir}}/{$copyto}" file="{$libfile}"/>
+        </xsl:for-each>
     </target>
 
     <target name="validate-single" depends="init">
@@ -111,24 +123,12 @@ Microsystems, Inc. All Rights Reserved.
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
 
         <!-- XXX this block of <condition>s is pretty ugly; better to use a templated target, or <macrodef> -->
-        <condition property="task-tmp.src.dir" value="${{test.src.dir}}">
-            <istrue value="${{is.test}}"/>
-        </condition>
         <property name="task-tmp.src.dir" value="${{src.dir}}"/>
                                 
-        <condition property="task-tmp.out.dir" value="${{build.test.classes.dir}}">
-            <istrue value="${{is.test}}"/>
-        </condition>
         <property name="task-tmp.out.dir" value="${{build.classes.dir}}"/> 
         
-        <condition property="task-tmp.classpath" value="${{javac.test.classpath}}">
-            <istrue value="${{is.test}}"/>
-        </condition>
         <property name="task-tmp.classpath" value="${{javac.classpath}}"/>
         
-        <condition property="task-tmp.debug" value="true">
-            <istrue value="${{is.test}}"/>
-        </condition>
         <property name="task-tmp.debug" value="${{javac.debug}}"/>
         
         <property location="${{task-tmp.src.dir}}" name="tmp-task.src.dir.absolute"/>        
@@ -343,18 +343,6 @@ to simulate
         <classpath>
             <path path="${{debug.classpath}}"/>
         </classpath>
-        <arg line="${{application.args}}"/>
-    </xsl:template>
-
-    <xsl:template name="debug-test-single-java-body">
-        <jvmarg value="-Xdebug"/>
-        <jvmarg value="-Xnoagent"/>
-        <jvmarg value="-Djava.compiler=none"/>
-        <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
-        <classpath>
-            <path path="${{debug.test.classpath}}"/>
-        </classpath>
-        <arg line="${{test.class}}"/>
         <arg line="${{application.args}}"/>
     </xsl:template>
 

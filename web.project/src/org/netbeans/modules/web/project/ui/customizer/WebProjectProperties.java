@@ -38,14 +38,18 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.web.project.J2SEProjectType;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.w3c.dom.DOMException;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /** Helper class. Defines constants for properties. Knows the proper
  *  place where to store the properties.
@@ -67,17 +71,12 @@ public class WebProjectProperties {
     public static final String JAR_COMPRESS = "jar.compress";
     public static final String MAIN_CLASS = "main.class";
     public static final String JAVAC_SOURCE = "javac.source";
-    public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath";
     public static final String JAVAC_DEBUG = "javac.debug";
     public static final String JAVAC_DEPRECATION = "javac.deprecation";
-    public static final String RUN_TEST_CLASSPATH = "run.test.classpath";
     public static final String SRC_DIR = "src.dir";
     public static final String WEB_DOCBASE_DIR = "web.docbase.dir"; //TODO create property descriptor
-    public static final String TEST_SRC_DIR = "test.src.dir";
     public static final String BUILD_DIR = "build.dir";
     public static final String BUILD_CLASSES_DIR = "build.classes.dir";
-    public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir";
-    public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir";
     public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes";
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir";
     public static final String NO_DEPENDENCIES="no.dependencies";
@@ -127,16 +126,11 @@ public class WebProjectProperties {
         new PropertyDescriptor( JAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),
         new PropertyDescriptor( MAIN_CLASS, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_SOURCE, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( JAVAC_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( JAVAC_DEBUG, PROJECT, BOOLEAN_PARSER ),       
         new PropertyDescriptor( JAVAC_DEPRECATION, PROJECT, BOOLEAN_PARSER ),
-        new PropertyDescriptor( RUN_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( SRC_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( TEST_SRC_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_CLASSES_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( BUILD_TEST_CLASSES_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( BUILD_TEST_RESULTS_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_CLASSES_EXCLUDES, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_JAVADOC_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( APPLICATION_ARGS, PRIVATE, STRING_PARSER ),          
@@ -186,14 +180,21 @@ public class WebProjectProperties {
     }
     
     public void put( String propertyName, Object value ) {
-        PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
         assert propertyName != null : "Unknown property " + propertyName; // NOI18N
+        if (JAVAC_CLASSPATH.equals (propertyName)) {
+            assert value instanceof List : "Wrong format of property " + propertyName; //NOI18N
+            writeJavacClasspath ((List) value, antProjectHelper, refHelper);
+        }
+        PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
         pi.setValue( value );
     }
     
     public Object get( String propertyName ) {
-        PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
         assert propertyName != null : "Unknown property " + propertyName; // NOI18N
+        if (JAVAC_CLASSPATH.equals (propertyName)) {
+            return readJavacClasspath (antProjectHelper, refHelper);
+        }
+        PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
         return pi.getValue();
     }
     
@@ -357,7 +358,7 @@ public class WebProjectProperties {
      */
     private void resolveProjectDependencies() {
     
-        String allPaths[] = { JAVAC_CLASSPATH,  RUN_CLASSPATH, DEBUG_CLASSPATH, RUN_TEST_CLASSPATH };
+        String allPaths[] = { JAVAC_CLASSPATH,  RUN_CLASSPATH, DEBUG_CLASSPATH };
         
         // Create a set of old and new artifacts.
         Set oldArtifacts = new HashSet();
@@ -530,20 +531,16 @@ public class WebProjectProperties {
         
     }
     
+    // XXX Define in the LibraryManager
+    private static final String LIBRARY_PREFIX = "${libs."; // NOI18N
+    // Contains well known paths in the J2SEProject
+    private static final String[][] WELL_KNOWN_PATHS = new String[][] {
+        { JAVAC_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class, "LBL_JavacClasspath_DisplayName" ) },
+        { RUN_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class, "LBL_RunClasspath_DisplayName" ) },
+        { BUILD_CLASSES_DIR, NbBundle.getMessage( WebProjectProperties.class, "LBL_BuildClassesDir_DisplayName" ) }
+    };
+    
     private static class PathParser extends PropertyParser {
-        
-        // XXX Define in the LibraryManager
-        private static final String LIBRARY_PREFIX = "${libs."; // NOI18N
-        
-        // Contains well known paths in the J2SEProject
-        private static final String[][] WELL_KNOWN_PATHS = new String[][] {
-            { JAVAC_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class, "LBL_JavacClasspath_DisplayName" ) },
-            { RUN_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class, "LBL_RunClasspath_DisplayName" ) },
-            { RUN_TEST_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class, "LBL_RunTestClasspath_DisplayName" ) },
-            { BUILD_CLASSES_DIR, NbBundle.getMessage( WebProjectProperties.class, "LBL_BuildClassesDir_DisplayName" ) }
-        };
-        
-        
         public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
             
             String pe[] = PropertyUtils.tokenizePath( raw );
@@ -562,7 +559,7 @@ public class WebProjectProperties {
                 }
                 
                 if ( wellKnownPathIndex != - 1 ) {
-                    cpItem = new VisualClassPathItem( pe[i], VisualClassPathItem.TYPE_CLASSPATH, pe[i], WELL_KNOWN_PATHS[wellKnownPathIndex][1] );
+                    cpItem = new VisualClassPathItem( pe[i], VisualClassPathItem.TYPE_CLASSPATH, pe[i], WELL_KNOWN_PATHS[wellKnownPathIndex][1], VisualClassPathItem.PATH_IN_WAR_NONE );
                 }                
                 else if ( pe[i].startsWith( LIBRARY_PREFIX ) ) {
                     // Library from library manager
@@ -570,7 +567,7 @@ public class WebProjectProperties {
                     String eval = pe[i].substring( LIBRARY_PREFIX.length(), pe[i].lastIndexOf('.') ); //NOI18N
                     Library lib = LibraryManager.getDefault().getLibrary (eval);
                     if (lib != null) {
-                        cpItem = new VisualClassPathItem( lib, VisualClassPathItem.TYPE_LIBRARY, pe[i], eval );
+                        cpItem = new VisualClassPathItem( lib, VisualClassPathItem.TYPE_LIBRARY, pe[i], eval, VisualClassPathItem.PATH_IN_WAR_NONE );
                     }
                     else {
                         //Invalid library. The lbirary was probably removed from system.
@@ -582,20 +579,19 @@ public class WebProjectProperties {
                     if ( artifact != null ) {
                         // Sub project artifact
                         String eval = antProjectHelper.evaluate( getAntPropertyName( pe[i] ) );
-                        cpItem = new VisualClassPathItem( artifact, VisualClassPathItem.TYPE_ARTIFACT, pe[i], eval );
+                        cpItem = new VisualClassPathItem( artifact, VisualClassPathItem.TYPE_ARTIFACT, pe[i], eval, VisualClassPathItem.PATH_IN_WAR_NONE );
                     }
                     else {
                         // Standalone jar or property
                         String eval = antProjectHelper.evaluate( getAntPropertyName( pe[i] ) );
                         String[] tokenizedPath = PropertyUtils.tokenizePath( raw );                                                
-                        cpItem = new VisualClassPathItem( tokenizedPath, VisualClassPathItem.TYPE_JAR, pe[i], eval );
+                        cpItem = new VisualClassPathItem( tokenizedPath, VisualClassPathItem.TYPE_JAR, pe[i], eval, VisualClassPathItem.PATH_IN_WAR_NONE );
                     }
                 }
                 if (cpItem!=null) {
                     cpItems.add( cpItem );
                 }
-            }
-            
+            }            
             return cpItems;
         }
         
@@ -644,7 +640,23 @@ public class WebProjectProperties {
             
             return sb.toString();
         }
-        
+    }
+    
+    /**
+     * Extract nested text from an element.
+     * Currently does not handle coalescing text nodes, CDATA sections, etc.
+     * @param parent a parent element
+     * @return the nested text, or null if none was found
+     */
+    public static String findText(Element parent) {
+        NodeList l = parent.getChildNodes();
+        for (int i = 0; i < l.getLength(); i++) {
+            if (l.item(i).getNodeType() == Node.TEXT_NODE) {
+                Text text = (Text)l.item(i);
+                return text.getNodeValue();
+            }
+        }
+        return null;
     }
     
     private static class PlatformParser extends PropertyParser {
@@ -671,6 +683,129 @@ public class WebProjectProperties {
                 return (String) platforms[0].getProperties().get("platform.ant.name");  //NOI18N
         }
         
+    }
+    
+    public static List readJavacClasspath (AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+        Element data = antProjectHelper.getPrimaryConfigurationData (true);
+        Element webModuleLibs = (Element) data.getElementsByTagNameNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "web-module-libraries").item (0); //NOI18N
+        NodeList ch = webModuleLibs.getChildNodes ();
+        List cpItems = new ArrayList( ch.getLength () );
+        for (int i = 0; i < ch.getLength (); i++) {
+            if (ch.item (i).getNodeType () != Node.ELEMENT_NODE) continue;
+            Element library = (Element) ch.item (i);
+            Element webFile = (Element) library.getElementsByTagNameNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "file").item (0); //NOI18N
+            String file = findText (webFile);
+            NodeList pathInWarList = library.getElementsByTagNameNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "path-in-war"); //NOI18N
+            String pathInWar = VisualClassPathItem.PATH_IN_WAR_NONE;
+            if (pathInWarList.getLength () > 0) {
+                pathInWar = findText ((Element) pathInWarList.item (0));
+            }
+            VisualClassPathItem cpItem;
+
+            // First try to find out whether the item is well known classpath
+            // in the J2SE project type
+            int wellKnownPathIndex = -1;
+            for( int j = 0; j < WELL_KNOWN_PATHS.length; j++ ) {
+                if ( WELL_KNOWN_PATHS[j][0].equals( getAntPropertyName( file ) ) )  {
+                    wellKnownPathIndex = j;
+                    break;
+                }
+            }
+
+            if ( wellKnownPathIndex != - 1 ) {
+                cpItem = new VisualClassPathItem( file, VisualClassPathItem.TYPE_CLASSPATH, file, WELL_KNOWN_PATHS[wellKnownPathIndex][1], pathInWar );
+            }                
+            else if ( file.startsWith( LIBRARY_PREFIX ) ) {
+                // Library from library manager
+                //String eval = antProjectHelper.evaluate( getAntPropertyName( file ) );
+                String eval = file.substring( LIBRARY_PREFIX.length(), file.lastIndexOf('.') ); //NOI18N
+                Library lib = LibraryManager.getDefault().getLibrary (eval);
+                if (lib != null) {
+                    cpItem = new VisualClassPathItem( lib, VisualClassPathItem.TYPE_LIBRARY, file, eval, pathInWar );
+                }
+                else {
+                    //Invalid library. The lbirary was probably removed from system.
+                    cpItem = null;
+                }
+            }
+            else {
+                AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact( file );                     
+                if ( artifact != null ) {
+                    // Sub project artifact
+                    String eval = antProjectHelper.evaluate( getAntPropertyName( file ) );
+                    cpItem = new VisualClassPathItem( artifact, VisualClassPathItem.TYPE_ARTIFACT, file, eval, pathInWar );
+                }
+                else {
+                    // Standalone jar or property
+                    String eval = antProjectHelper.evaluate( getAntPropertyName( file ) );
+                    cpItem = new VisualClassPathItem( file, VisualClassPathItem.TYPE_JAR, file, eval, pathInWar );
+                }
+            }
+            if (cpItem!=null) {
+                cpItems.add( cpItem );
+            }
+        }
+
+        return cpItems;
+    }
+
+    public static void writeJavacClasspath ( List value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+        Element data = antProjectHelper.getPrimaryConfigurationData (true);
+        org.w3c.dom.Document doc = data.getOwnerDocument ();
+        Element webModuleLibs = (Element) data.getElementsByTagNameNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "web-module-libraries").item (0); //NOI18N
+        while (webModuleLibs.hasChildNodes ()) {
+            webModuleLibs.removeChild (webModuleLibs.getChildNodes ().item (0));
+        }
+
+        for ( Iterator it = ((List)value).iterator(); it.hasNext(); ) {
+
+            VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
+
+            String library_tag_value = "";
+
+            switch( vcpi.getType() ) {
+
+                case VisualClassPathItem.TYPE_JAR:
+                    String raw = vcpi.getRaw();
+
+                    if ( raw == null ) {
+                        // New file
+                        File file = (File)vcpi.getObject();
+                        // XXX Relativize using collocation query
+                        library_tag_value = file.getPath ();
+                    }
+                    else {
+                        // Existing property
+                        library_tag_value = raw;
+                    }
+
+                    break;
+                case VisualClassPathItem.TYPE_LIBRARY:
+                    library_tag_value = vcpi.getRaw();
+                    break;    
+                case VisualClassPathItem.TYPE_ARTIFACT:
+                    AntArtifact aa = (AntArtifact)vcpi.getObject();
+                    String reference = refHelper.createForeignFileReference( aa );
+                    library_tag_value = reference;
+                    break;
+                case VisualClassPathItem.TYPE_CLASSPATH:
+                    library_tag_value = vcpi.getRaw();
+                    break;
+            }
+
+            Element library = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "library"); //NOI18N
+            webModuleLibs.appendChild (library);
+            Element webFile = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "file"); //NOI18N
+            library.appendChild (webFile);
+            webFile.appendChild (doc.createTextNode (library_tag_value));
+
+            if (vcpi.getPathInWAR () != VisualClassPathItem.PATH_IN_WAR_NONE) {
+                Element pathInWar = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "path-in-war"); //NOI18N
+                pathInWar.appendChild (doc.createTextNode (vcpi.getPathInWAR ()));
+                library.appendChild (pathInWar);
+            }
+        }
+        antProjectHelper.putPrimaryConfigurationData (data, true);
     }
     
 }

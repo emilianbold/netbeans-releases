@@ -157,7 +157,6 @@ class WebActionProvider implements ActionProvider {
     
     
     private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
-    private static final String SUBST = "Test.java"; // NOI18N
     
     /** Find selected sources 
      */
