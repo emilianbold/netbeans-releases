@@ -41,6 +41,7 @@ public final class FolderList extends javax.swing.JPanel {
     public static final String PROP_FILES = "files";    //NOI18N
 
     private String fcMessage;
+    private File projectFolder;
 
     /** Creates new form FolderList */
     public FolderList (String label, char mnemonic, String accessibleDesc, String fcMessage,
@@ -65,6 +66,10 @@ public final class FolderList extends javax.swing.JPanel {
         this.removeButton.getAccessibleContext().setAccessibleDescription(removeButtonAccessibleDesc);
         this.removeButton.setMnemonic (removeButtonMnemonic);
         this.removeButton.setEnabled(false);
+    }
+    
+    public void setProjectFolder (File projectFolder) {
+        this.projectFolder = projectFolder;
     }
 
     public File[] getFiles () {
@@ -166,10 +171,15 @@ public final class FolderList extends javax.swing.JPanel {
         chooser.setDialogTitle(this.fcMessage);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(true);
-        File cd = FoldersListSettings.getDefault().getLastUsedSourceRootFolder();
-        if (cd != null && cd.isDirectory()) {
-            chooser.setCurrentDirectory(cd);
+        if (this.projectFolder != null && this.projectFolder.isDirectory()) {
+            chooser.setCurrentDirectory (this.projectFolder);            
         }
+        else {
+            File cd = FoldersListSettings.getDefault().getLastUsedSourceRootFolder();
+            if (cd != null && cd.isDirectory()) {
+                chooser.setCurrentDirectory(cd);
+            }
+        }                
         if (chooser.showOpenDialog(this)== JFileChooser.APPROVE_OPTION) {
             File[] files = chooser.getSelectedFiles();
             int[] indecesToSelect = new int[files.length];
@@ -188,8 +198,9 @@ public final class FolderList extends javax.swing.JPanel {
             }
             this.roots.setSelectedIndices(indecesToSelect);
             this.firePropertyChange(PROP_FILES, null, null);
-            cd = chooser.getCurrentDirectory();
+            File cd = chooser.getCurrentDirectory();
             if (cd != null) {
+                this.projectFolder = null;
                 FoldersListSettings.getDefault().setLastUsedSourceRootFolder(FileUtil.normalizeFile(cd));
             }
         }
