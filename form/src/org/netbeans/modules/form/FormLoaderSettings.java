@@ -60,9 +60,6 @@ public class FormLoaderSettings extends SystemOption {
   /** Property name of the registeredEditors property */
   public static final String PROP_REGISTERED_EDITORS = "registeredEditors";
 
-  /** Property name of the loadedBeans property */
-  public static final String PROP_LOADED_BEANS = "loadedBeans";
-
   /** A constant for "private" access modifier used in variablesModifier property */
   public static final int PRIVATE = 0;
   /** A constant for "package private" access modifier used in variablesModifier property */
@@ -128,8 +125,6 @@ public class FormLoaderSettings extends SystemOption {
     { "double", "sun.beans.editors.DoubleEditor" },
     { String[].class.getName (), "com.netbeans.developer.editors.StringArrayEditor.class"},
   };
-  /** ArrayList of already installed beans */
-  private static ArrayList loadedBeans = new ArrayList ();
 
   private static int emptyFormType = 0;
 
@@ -398,18 +393,6 @@ public class FormLoaderSettings extends SystemOption {
     firePropertyChange (PROP_REGISTERED_EDITORS, oldValue, registeredEditors);
   }
 
-  /** Getter for the loadedBeans option */
-  public ArrayList getLoadedBeans () {
-    return loadedBeans;
-  }
-
-  /** Setter for the loadedBeans option */
-  public void setLoadedBeans (ArrayList value) {
-    ArrayList oldValue = loadedBeans;
-    loadedBeans = value;
-    firePropertyChange (PROP_LOADED_BEANS, oldValue, loadedBeans);
-  }
-
   /** This method must be overriden. It returns display name of this options.
   */
   public String displayName () {
@@ -420,6 +403,8 @@ public class FormLoaderSettings extends SystemOption {
 
 /*
  * Log
+ *  9    Gandalf   1.8         6/10/99  Ian Formanek    loadedBeans -> 
+ *       properties rather than FormSettings
  *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  7    Gandalf   1.6         6/7/99   Ian Formanek    

@@ -317,7 +317,6 @@ public final class BeanInstaller extends Object {
   /** Auto loading all jars - beans */
   public static void autoLoadBeans() {
     FormLoaderSettings settings = new FormLoaderSettings();
-    java.util.ArrayList loadedBeans = settings.getLoadedBeans();
 
     File globalFolder = new File(System.getProperty("netbeans.home") + File.separator + "beans");
     try {
@@ -331,12 +330,10 @@ public final class BeanInstaller extends Object {
     }
     catch (IOException e) { }
     
-    autoLoadFolder(globalFolder, loadedBeans);
+    autoLoadFolder(globalFolder);
     if (!globalFolder.equals(localFolder))
-      autoLoadFolder(localFolder, loadedBeans);
+      autoLoadFolder(localFolder);
 
-    settings.setLoadedBeans(loadedBeans);
-    
     java.awt.EventQueue.invokeLater (
       new Runnable () {
         public void run () {
@@ -348,31 +345,51 @@ public final class BeanInstaller extends Object {
 
   /** Loads the beans stored in the given folder.
   * @param folder - where to find jars
-  * @param loadedBeans - names of jars already loaded (in previous NB sessions)
   */
-  private static void autoLoadFolder(File folder, ArrayList loadedBeans) {
+  private static void autoLoadFolder(File folder) {
     if (!folder.exists())
       return;
     
     final String[] list = folder.list();
     final String base = folder.getAbsolutePath() + File.separator;
     Properties details = new Properties();
+    FileInputStream fis = null;
     try {
-      details.load(new FileInputStream(base + "beans.properties"));
+      details.load(fis = new FileInputStream(base + "beans.properties"));
+    } catch (IOException e) {
+    } finally {
+      if (fis != null) try { fis.close (); } catch (IOException e) { };
     }
-    catch (IOException e) {
+
+    FileInputStream fis2 = null;
+    Properties alreadyInstalled = new Properties();
+    try {
+      alreadyInstalled.load(fis2 = new FileInputStream(base + "installed.properties"));
+    } catch (IOException e) {
+    } finally {
+      if (fis2 != null) try { fis2.close (); } catch (IOException e) { };
     }
 
     String[] categories = ComponentPalette.getDefault ().getPaletteCategories();
     for (int i = 0; i < list.length; i++) {
-      if (list[i].endsWith(JAR_EXT) && (!loadedBeans.contains(list[i]))) {
+      if (list[i].endsWith(JAR_EXT) && (alreadyInstalled.get(list[i]) == null)) {
         String withoutExt = list[i].substring(0, list[i].length() - JAR_EXT.length());
         String categoryName = details.getProperty(withoutExt, withoutExt);
         if (autoLoadJar(base + list[i], categoryName, details.getProperty(withoutExt + ".beans"))) {
-          loadedBeans.add(list[i]);
+          alreadyInstalled.put(list[i], "true");
         }
       }
     }
+
+    FileOutputStream fos = null;
+    try {
+      fos = new FileOutputStream(base + "installed.properties");
+      alreadyInstalled.store(fos, "Installed Archives");
+    } catch (IOException e) {
+    } finally {
+      if (fos != null) try { fos.close (); } catch (IOException e) { };
+    }
+
   }
 
   /** Loaded beans from the jar.
@@ -561,6 +578,8 @@ public final class BeanInstaller extends Object {
 
 /*
  * Log
+ *  9    Gandalf   1.8         6/10/99  Ian Formanek    loadedBeans -> 
+ *       properties rather than FormSettings
  *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  7    Gandalf   1.6         6/7/99   Ian Formanek    

@@ -68,8 +68,6 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                   "getEditorSearchPath", "setEditorSearchPath"),
           new PropertyDescriptor (FormLoaderSettings.PROP_REGISTERED_EDITORS, FormLoaderSettings.class, 
                                   "getRegisteredEditors", "setRegisteredEditors"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_LOADED_BEANS, FormLoaderSettings.class, 
-                                  "getLoadedBeans", "setLoadedBeans"),
         };
       } else {
         desc = new PropertyDescriptor[] {
@@ -105,8 +103,6 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                   "getEditorSearchPath", "setEditorSearchPath"),
           new PropertyDescriptor (FormLoaderSettings.PROP_REGISTERED_EDITORS, FormLoaderSettings.class, 
                                   "getRegisteredEditors", "setRegisteredEditors"),
-          new PropertyDescriptor (FormLoaderSettings.PROP_LOADED_BEANS, FormLoaderSettings.class, 
-                                  "getLoadedBeans", "setLoadedBeans"),
           new PropertyDescriptor ("emptyFormType", FormLoaderSettings.class, 
                                   "getEmptyFormType", "setEmptyFormType"),
         };
@@ -155,8 +151,6 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
       desc[14].setShortDescription (formBundle.getString ("HINT_EDITOR_SEARCH_PATH"));
       desc[15].setDisplayName (formBundle.getString ("PROP_REGISTERED_EDITORS"));
       desc[15].setShortDescription (formBundle.getString ("HINT_REGISTERED_EDITORS"));
-      desc[16].setHidden (true);
-      
 
     } catch (IntrospectionException ex) {
       throw new InternalError ();
@@ -226,6 +220,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  9    Gandalf   1.8         6/10/99  Ian Formanek    loadedBeans -> 
+ *       properties rather than FormSettings
  *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  7    Gandalf   1.6         6/7/99   Ian Formanek    
