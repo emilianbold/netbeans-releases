@@ -263,15 +263,23 @@ public class EditorModule extends ModuleInstall {
             DataObject dobj;
             try {
                 dobj = DataObject.find(fo);
-                InstanceCookie cookie = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
-                Class kitClass = cookie.instanceClass();
+                final InstanceCookie cookie = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
+                // #41968 - cookie.instanceClass() made as privileged
+                Class kitClass = (Class)java.security.AccessController.doPrivileged(
+                    new java.security.PrivilegedExceptionAction() {
+                        public Object run() throws Exception {
+                            return cookie.instanceClass();
+                        }
+                    }
+                );
+                    
                 if(EditorKit.class.isAssignableFrom(kitClass)) {
                     return BaseKit.getKit(kitClass);
                 }
             }
             catch (DataObjectNotFoundException e) {}
-            catch (IOException e) {}
-            catch (ClassNotFoundException e) {}
+            catch (java.security.PrivilegedActionException e) {
+            }
 
             return null;
         }
