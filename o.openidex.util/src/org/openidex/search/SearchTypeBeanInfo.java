@@ -15,8 +15,6 @@ package org.openidex.search;
 
 import java.beans.*;
 
-import org.netbeans.modules.search.res.*;
-
 public class SearchTypeBeanInfo extends SimpleBeanInfo {
 
     // Property identifiers //GEN-FIRST:Properties
@@ -68,10 +66,10 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
     private static java.awt.Image iconColor32 = null;
     private static java.awt.Image iconMono16 = null;
     private static java.awt.Image iconMono32 = null; //GEN-END:IconsDef
-    private static String iconNameC16 = "/org/netbeans/modules/filter/res/find.gif";//GEN-BEGIN:Icons // NOI18N
+    private static String iconNameC16 = "/org/openidex/search/res/find.gif";
     private static String iconNameC32 = null;
     private static String iconNameM16 = null;
-    private static String iconNameM32 = null;//GEN-END:Icons
+    private static String iconNameM32 = null;
 
     private static int defaultPropertyIndex = -1;//GEN-BEGIN:Idx
     private static int defaultEventIndex = -1;//GEN-END:Idx
@@ -151,7 +149,8 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
     public java.awt.Image getIcon(int iconKind) {
         switch ( iconKind ) {
         case ICON_COLOR_16x16:
-            return Res.image("SEARCH"); // NOI18N
+            return loadImage( iconNameC16 );
+
         case ICON_COLOR_32x32:
             if ( iconNameC32 == null )
                 return null;
