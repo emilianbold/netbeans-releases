@@ -2584,7 +2584,7 @@ the ${netbeans.dest}/bin/ directory.
     <echo>Cluster ${one.cluster.name} is :${test1.prop}:</echo>
   </target>
 
-  <target name="build-one-cluster" unless="${one.cluster.name}-is-built" depends="build-one-cluster-check">
+  <target name="build-one-cluster" unless="${one.cluster.name}-is-built" depends="init,build-one-cluster-check">
     <echo message="Building ${one.cluster.name} modules"/>
     <resolve name="one-cluster-modules" property="${one.cluster.name}"/>
     <resolve name="one-cluster-dependencies" property="${one.cluster.name}.depends"/>
@@ -3168,8 +3168,20 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="testbuild"/>
     <mkdir dir="testbuild"/>
     <unzip dest="testbuild" src="${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip"/>
-    <ant antfile="testbuild/nbbuild/build.xml" inheritall="false" target="build-platform">
-        <property name="scrambler2" value="${scrambler2}"/>
+    <echo>scrambler2=${scrambler2}</echo>
+    <property name="one.cluster.name" value="${cluster.name}"/>
+    <property name="scrambler2" value=""/>
+    <propertyset id="sanity-build">
+      <propertyref name="one.cluster.name"/>
+      <propertyref name="scrambler2"/>
+    </propertyset>
+    <echoproperties destfile="testbuild/nbbuild/user.properties">
+        <propertyset refid="sanity-build"/>
+    </echoproperties>
+
+    <!-- it should call build of the refered cluster and not just hardcoded platform -->
+    <ant antfile="testbuild/nbbuild/build.xml" inheritall="false" target="build-one-cluster">
+      <property file="testbuild/nbbuild/user.properties"/>
     </ant>
     <delete dir="testbuild"/>
   </target>
