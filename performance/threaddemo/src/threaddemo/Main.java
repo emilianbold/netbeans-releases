@@ -153,6 +153,7 @@ public final class Main extends JFrame {
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent ev) {
                 model.removePhadhailListener(l);
+                frame.removeWindowListener(this);
                 // Just to make sure the view is collected:
                 frame.getContentPane().removeAll();
             }

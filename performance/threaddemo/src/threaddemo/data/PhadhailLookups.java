@@ -13,12 +13,18 @@
 
 package threaddemo.data;
 
+import java.lang.ref.*;
 import java.util.*;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.*;
 import threaddemo.model.Phadhail;
+
+// XXX this is inefficient - e.g. LookNode.getIcon will force the PhadhailLookup
+// to be created! PhadhailLook should just ask for any special lookup items, e.g.
+// the SaveCookie, otherwise return a simple list with the editor support. There
+// should be a way to listen to any phadhails with one listener.
 
 /**
  * Serves "cookies" for phadhails.
@@ -29,14 +35,15 @@ public class PhadhailLookups {
     /** no instances */
     private PhadhailLookups() {}
     
-    private static final Map lookups = new WeakHashMap(); // Map<Phadhail,PhadhailLookup>
+    private static final Map lookups = new WeakHashMap(); // Map<Phadhail,Reference<PhadhailLookup>>
     
     // XXX rather than being synch, should be readAccess, and modified/saved should be writeAccess
     public static synchronized Lookup getLookup(Phadhail ph) {
-        Lookup l = (Lookup)lookups.get(ph);
+        Reference r = (Reference)lookups.get(ph);
+        Lookup l = (r != null) ? (Lookup)r.get() : null;
         if (l == null) {
             l = new PhadhailLookup(ph);
-            lookups.put(ph, l);
+            lookups.put(ph, new WeakReference(l));
         }
         return l;
     }

@@ -15,6 +15,7 @@ package threaddemo.views;
 
 import java.awt.EventQueue;
 import java.io.IOException;
+import java.lang.ref.*;
 import java.util.*;
 import javax.swing.Action;
 import javax.swing.event.*;
@@ -75,17 +76,20 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     }
     
     // XXX Look.getChildObjects should not be called off AWT, yet sometimes it is (by Children)
-    private static final Map children = new HashMap(); // Map<Phadhail,List<Object>>
+    private static final Map children = new WeakHashMap(); // Map<Phadhail,Reference<List<Object>>>
     public List getChildObjects(final Object o, Lookup e) {
         if (!EventQueue.isDispatchThread()) {
             // XXX see comment above... need to hack around threading of Children here
-            List l = (List)children.remove(o);
+            // keeping a strong hash map does not work 100% - there may be a couple
+            // entries left if the children are computed but never asked for
+            Reference r = (Reference)children.remove(o);
+            List l = (r != null) ? (List)r.get() : null;
             if (l != null) {
                 return l;
             } else {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        children.put(o, getChildObjects(o, null));
+                        children.put(o, new WeakReference(getChildObjects(o, null)));
                         refreshChildren(o);
                     }
                 });
