@@ -1,9 +1,3 @@
-/*
- * BookDataObject.java
- *
- * Created on March 9, 2005, 4:06 PM
- */
-
 package org.netbeans.modules.xml.multiview.test;
 
 import org.netbeans.modules.xml.multiview.*;
@@ -113,6 +107,25 @@ public class BookDataObject extends XmlMultiViewDataObject {
         
         public String preferredID() {
             return "book_multiview_design";
+        }
+    }
+    
+    /** Enable to focus specific object in Multiview Editor
+     *  The default implementation opens the XML View
+     */
+    public void showElement(Object element) {
+        Object target=null;
+        if (element instanceof Chapter) {
+            openView(0);
+            target=element;
+        }
+        if (target!=null) {
+            final Object key=target;
+            org.netbeans.modules.xml.multiview.Utils.runInAwtDispatchThread(new Runnable() {
+                public void run() {
+                    getActiveMultiViewElement().getSectionView().openPanel(key);
+                }
+            });
         }
     }
     
