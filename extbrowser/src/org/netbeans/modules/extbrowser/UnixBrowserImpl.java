@@ -289,6 +289,9 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             }
             if ((idx != -1) && (exec.length () > idx))
                 exec = exec.substring (idx+1);
+            
+            if (exec.length () > 0) 
+                exec = Character.toUpperCase (exec.charAt (0))+exec.substring (1);
         }
         return exec;
     }  
