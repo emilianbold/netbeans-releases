@@ -81,6 +81,12 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     return formInfo.getFormInstance ();
   }
 
+  /** Called to obtain a Java code to be used to generate code to access the container for adding subcomponents.
+  * It is expected that the returned code is either "" (in which case the form is the container) or is a name of variable
+  * or method call ending with "." (e.g. "container.getContentPane ().").
+  * This implementation simply delegates to FormInfo.getContainerGenName ().
+  * @return the prefix code for generating code to add subcomponents to this container
+  */
   public String getContainerGenName () {
     return formInfo.getContainerGenName ();
   }
@@ -451,6 +457,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  13   Gandalf   1.12        8/15/99  Ian Formanek    getContainerGenName 
+ *       usage clarified
  *  12   Gandalf   1.11        7/30/99  Ian Formanek    Fixed bugs 2915 - 
  *       Changing "viewport" property of the JScrollPane does not work - 
  *       "Property" and 2916 - Changing "viewport" property of the JScrollPane 

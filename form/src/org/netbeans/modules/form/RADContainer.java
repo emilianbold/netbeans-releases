@@ -68,6 +68,12 @@ public class RADContainer extends RADComponent implements ComponentContainer {
   }
 
 
+  /** Called to obtain a Java code to be used to generate code to access the container for adding subcomponents.
+  * It is expected that the returned code is either "" (in which case the form is the container) or is a name of variable
+  * or method call ending with "." (e.g. "container.getContentPane ().").
+  * This implementation returns "", as there is no sense to add visual components to non-visual containers
+  * @return the prefix code for generating code to add subcomponents to this container
+  */
   public String getContainerGenName () {
     return "";
   }
@@ -75,6 +81,8 @@ public class RADContainer extends RADComponent implements ComponentContainer {
 
 /*
  * Log
+ *  9    Gandalf   1.8         8/15/99  Ian Formanek    getContainerGenName 
+ *       usage clarified
  *  8    Gandalf   1.7         7/5/99   Ian Formanek    implemented additions to
  *       ComponentsContainer
  *  7    Gandalf   1.6         6/2/99   Ian Formanek    ToolsAction, Reorder

@@ -54,9 +54,14 @@ public class RADFormContainer extends RADContainer implements FormContainer {
   * @return the instance of the bean that will be used during design time 
   */
   protected Object createBeanInstance () {
-    return formInfo.getContainerGenName ();
+    return formInfo.getFormInstance ();
   }
 
+  /** Called to obtain a Java code to be used to generate code to access the container for adding subcomponents.
+  * It is expected that the returned code is either "" (in which case the form is the container) or is a name of variable
+  * or method call ending with "." (e.g. "container.getContentPane ().").
+  * @return the prefix code for generating code to add subcomponents to this container
+  */
   public String getContainerGenName () {
     return formInfo.getContainerGenName ();
   }
@@ -69,6 +74,8 @@ public class RADFormContainer extends RADContainer implements FormContainer {
 
 /*
  * Log
+ *  5    Gandalf   1.4         8/15/99  Ian Formanek    getContainerGenName 
+ *       usage clarified
  *  4    Gandalf   1.3         7/30/99  Ian Formanek    Fixed bugs 2915 - 
  *       Changing "viewport" property of the JScrollPane does not work - 
  *       "Property" and 2916 - Changing "viewport" property of the JScrollPane 
