@@ -110,7 +110,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="XML">
             <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance" />
             <file name="org-netbeans-modules-xml-core-actions-CollectDTDAction.instance" />
-            <file name="org-netbeans-modules-xml-core-actions-ScenarioAction.instance" />
+
         </folder>
 
         <!-- Help -->
@@ -133,14 +133,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="xml">    
                 <folder name="Toolbars">
                     <folder name="Default">
-                        <!--attr name="org-netbeans-modules-xml-tools-actions-ValidateAction.instance/XMLSeparator2.instance" boolvalue="true"/>
-                        <file name="XMLSeparator3.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        </file>
-                        <attr name="XMLSeparator3.instance/org-netbeans-modules-xml-core-actions-ScenarioAction.instance" boolvalue="true"/-->
-
-                        <!-- The scerios combo in editor -->
-                        <file name="org-netbeans-modules-xml-core-actions-ScenarioAction.instance"/>
+                        
                     </folder> <!-- Default -->
                 </folder> <!-- Toolbars -->
             </folder> <!-- xml -->
@@ -153,10 +146,6 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Hidden">            
             <file name="org.netbeans-modules-xml-core-cookies.xml" url="XMLCookies.xml" />
 
-            <!-- Edit scenarions... action on XML documents -->
-            <file name="org-netbeans-modules-xml-core-actions-ScenarioAction.instance">
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.core.actions.CollectXMLAction$XMLAction"/>
-            </file>
         </folder>
 
         <!-- Settings -->
@@ -176,9 +165,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder> <!-- Services -->          
 
     <folder name="Shortcuts">
-        <file name="A-S.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.core.actions.ScenarioAction"/>
-        </file>
+        
     </folder> <!-- Shortcuts -->
 
     <!-- Registrations accesible with dedicated FolderLookups -->        
