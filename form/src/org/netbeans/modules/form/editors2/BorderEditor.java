@@ -44,13 +44,13 @@ import org.netbeans.modules.form.PersistenceObjectRegistry;
 
 /**
  * A property editor for swing border class.
-*
-* This editor should be in some subpackage under developerx package,
-* but it is not possible now, because this package is only package where are
-* property editors searched.
-*
-* @author Petr Hamernik
-*/
+ *
+ * This editor should be in some subpackage under developerx package,
+ * but it is not possible now, because this package is only package where are
+ * property editors searched.
+ *
+ * @author Petr Hamernik
+ */
 public final class BorderEditor extends PropertyEditorSupport implements org.openide.explorer.propertysheet.editors.XMLPropertyEditor { // [PENDING - not for now]
 
     /** Icon bases for unknown border node. */
