@@ -470,7 +470,9 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
         AntModule.err.log ("AntProjectSupport.invalidate: fo=" + fo);
         parsed = false;
         synchronized (tofire) {
-            if (! runFiringProcessor) throw new IllegalStateException ();
+            if (! runFiringProcessor) {
+                startFiringProcessor ();
+            }
             if (tofire.put (this, new Date (System.currentTimeMillis () + REPARSE_DELAY)) == null) {
                 // Was not previously enqueued; make sure processor does not wait forever!
                 tofire.notify ();

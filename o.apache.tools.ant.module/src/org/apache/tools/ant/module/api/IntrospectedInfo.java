@@ -253,8 +253,8 @@ public final class IntrospectedInfo implements Serializable {
                         continue;
                     }
                     info.attrs.put (name, type);
-                } catch (BuildException be) {
-                    AntModule.err.notify (ErrorManager.INFORMATIONAL, be);
+                } catch (RuntimeException re) { // i.e. BuildException; but avoid loading this class
+                    AntModule.err.notify (ErrorManager.INFORMATIONAL, re);
                 }
             }
         } else {
@@ -273,8 +273,8 @@ public final class IntrospectedInfo implements Serializable {
                     //if (dbg) AntModule.err.log ("\ttype=" + subclazz.getName ());
                     info.subs.put (name, subclazz.getName ());
                     nueClazzes.add (subclazz);
-                } catch (BuildException be) {
-                    AntModule.err.notify (ErrorManager.INFORMATIONAL, be);
+                } catch (RuntimeException re) { // i.e. BuildException; but avoid loading this class
+                    AntModule.err.notify (ErrorManager.INFORMATIONAL, re);
                 }
             }
         } else {

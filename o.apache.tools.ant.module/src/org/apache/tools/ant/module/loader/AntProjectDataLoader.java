@@ -40,7 +40,15 @@ public class AntProjectDataLoader extends UniFileLoader {
     private static final long serialVersionUID = 3642056255958054115L;
 
     public AntProjectDataLoader () {
-        super (AntProjectDataObject.class);
+        super (dataObjectClass ());
+    }
+    private static Class dataObjectClass () {
+        try {
+            return Class.forName ("org.apache.tools.ant.module.loader.AntProjectDataObject", // NOI18N
+                                  false, AntProjectDataLoader.class.getClassLoader ());
+        } catch (ClassNotFoundException cnfe) {
+            throw new IllegalStateException (cnfe.toString ());
+        }
     }
 
     protected String defaultDisplayName () {

@@ -89,10 +89,7 @@ public class AntModule extends ModuleInstall {
                 err.log (ErrorManager.INFORMATIONAL, "Note: ant-api.zip not found to add to Javadoc, ignoring...");
             }
         }
-        // [PENDING] use Class.forName(...,false,...)
-        PropertyEditorManager.registerEditor (AntProjectCookie.class, AntProjectCookieEditor.class);
-        // [PENDING] do this more lazily...
-        AntProjectSupport.startFiringProcessor ();
+        //AntProjectSupport.startFiringProcessor ();
     }
 
     public void uninstalled () {
@@ -109,7 +106,7 @@ public class AntModule extends ModuleInstall {
     }
     
     public void close () {
-        AntProjectSupport.stopFiringProcessor ();
+        //AntProjectSupport.stopFiringProcessor ();
     }
 
     static File findAPIDocs () {
