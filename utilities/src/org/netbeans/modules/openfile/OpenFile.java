@@ -46,6 +46,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.ViewCookie;
 import org.openide.DialogDescriptor;
+import org.openide.execution.NbClassPath;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -170,7 +171,6 @@ class OpenFile extends Object {
                 // 4) If the default action is not FileSystemAction we assume text module
                 // is avilable and the default action is Convert to text.
                 // 5) Perform the action, find changed data object and open it.
-                // TEMP>>
                 Enumeration loaders = TopManager.getDefault().getLoaderPool().allLoaders();
                 DataLoader DDOLoader = null;
                 // get last data loader from enumeration which have to be default data loader
@@ -197,7 +197,7 @@ class OpenFile extends Object {
                                 opened = true;
                             }
                         } catch(DataObjectNotFoundException dnfe) {
-                            if(Boolean.getBoolean("netbeans.debug.exceptions")) // TEMP
+                            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                                 dnfe.printStackTrace();
                         }
                     }
@@ -255,61 +255,59 @@ class OpenFile extends Object {
     private static FileObject findInExistingFileSystems(File file) {
         String fileName = file.toString();
         String fileNameUpper = fileName.toUpperCase();
-        
+
         Enumeration mountedFileSystems = TopManager.getDefault().getRepository().getFileSystems();
 
         // Loop thru all mounted filesystems.
         while(mountedFileSystems.hasMoreElements()) {
             FileSystem fileSystem = (FileSystem)mountedFileSystems.nextElement ();
             
-            if(fileSystem instanceof LocalFileSystem) {
-                File root = ((LocalFileSystem)fileSystem).getRootDirectory();
-                String rootName = root.toString ().toUpperCase ();
-                
-                if (fileNameUpper.startsWith(rootName)) {
-                    // the filesystem can contain the file
-                    String resource = fileName.substring (rootName.length ()).replace(File.separatorChar, '/');
-                    if (resource.startsWith ("/")) // NOI18N
-                        resource = resource.substring(1);
-                    else if (resource.length () > 0)
-                        continue;           // e.g. root = /tmp/foo but file = /tmp/foobar
-                    
-                    FileObject fileObject = fileSystem.findResource(resource);
-                    
-                    if(fileObject != null) {
-                        return fileObject;
+            if(fileSystem.isHidden())
+                continue;
+
+            // Note: The below line isn't fullproof,  works for file systems supporting FileSystem.Environment only.
+            // At the moment supports all interested filesystems do but would make troubles if not.
+            File root = NbClassPath.toFile(fileSystem.getRoot());
+
+            String rootName = root.toString ().toUpperCase ();
+
+            if (!fileNameUpper.startsWith(rootName))
+                continue;
+            
+            // The filesystem can contain the file.
+            String resource = fileName.substring (rootName.length ()).replace(File.separatorChar, '/');
+
+            if (resource.startsWith ("/")) // NOI18N
+                resource = resource.substring(1);
+            else if (resource.length () > 0)
+                continue;           // e.g. root = /tmp/foo but file = /tmp/foobar
+
+            FileObject fileObject = fileSystem.findResource(resource);
+
+            if(fileObject != null) {
+                return fileObject;
+            } else {
+                // Most likely, file was just created and is not yet in folder cache. Refresh each segment.
+                FileObject currentPoint = fileSystem.getRoot ();
+                StringTokenizer resourceTok = new StringTokenizer (resource, "/"); // NOI18N
+                String currentResource = ""; // NOI18N
+
+                while (resourceTok.hasMoreTokens ()) {
+                    if (currentPoint == null || currentPoint.isData ()) {
+                        return null;
                     } else {
-                        // Most likely, file was just created and is not yet in folder cache. Refresh each segment.
-                        FileObject currentPoint = fileSystem.getRoot ();
-                        StringTokenizer resourceTok = new StringTokenizer (resource, "/"); // NOI18N
-                        String currentResource = ""; // NOI18N
-                        
-                        while (resourceTok.hasMoreTokens ()) {
-                            if (currentPoint == null || currentPoint.isData ()) {
-/*                                TopManager.getDefault ().notify (new NotifyDescriptor.Message
-                                    (MessageFormat.format (NbBundle.getBundle (OpenFile.class).getString("MSG_no_file_in_root_nondir_comp"),
-                                    new Object[] { fileName, root })));
- */ // TEMP silent
-                                return null;
-                            } else {
-                                currentPoint.refresh ();
-                                if (currentResource.length () > 0) currentResource += '/';
-                                currentResource += resourceTok.nextToken ();
-                                currentPoint = fileSystem.findResource (currentResource);
-                            }
-                        }
-                        if (currentPoint != null && currentPoint.isData ()) {
-                            return currentPoint;
-                        } else {
-/*                            TopManager.getDefault ().notify (new NotifyDescriptor.Message
-                                (MessageFormat.format (NbBundle.getBundle (OpenFile.class).getString ("MSG_no_file_in_root"),
-                                new Object[] { fileName, root })));
- */ // TEMP silent
-                            return null;
-                        }
+                        currentPoint.refresh ();
+                        if (currentResource.length () > 0) currentResource += '/';
+                        currentResource += resourceTok.nextToken ();
+                        currentPoint = fileSystem.findResource (currentResource);
                     }
-                } // End of if (fileNameUpper.startsWith (rootName))
-            } // End of if (fs instanceof LocalFileSystem)
+                }
+                if (currentPoint != null && currentPoint.isData ()) {
+                    return currentPoint;
+                } else {
+                    return null;
+                }
+            }
         }
         
         return null;
@@ -382,7 +380,7 @@ class OpenFile extends Object {
                         if (ok) {
                             pkg = theTok;
                             packageKnown = true;
-                            //break; // TEMP
+                            //break; 
                             return pkg;
                         } else {
                             // Keep on looking for valid package statement.
@@ -395,7 +393,7 @@ class OpenFile extends Object {
                         // Most likely we can stop if hit opening brace of class def.
                         // Usually people leave spaces around it.
                         packageKnown = true; // valid end of search, default pkg
-                        // break; // TEMP
+                        // break; 
                         return pkg;
                     }
                 }
@@ -430,6 +428,7 @@ class OpenFile extends Object {
         // Next see if it is present in an existing LocalFileSystem.
         // enumeration of file systems
         FileObject findFO = findInExistingFileSystems(f);
+        
         if(findFO != null)
             return findFO;
         
@@ -495,7 +494,7 @@ class OpenFile extends Object {
         if(!packageKnown) 
             pkgLevel = -1;
         
-        // PENDING This is just partial temp solution.
+        // PENDING This is just partial temporary solution.
         // All files except java will be mounted directly (like under default package).
         if(!fileNameUpper.endsWith(JAVA_EXT)) { // NOI18N
             // Text fiel mount to default package without asking.
