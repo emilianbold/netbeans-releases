@@ -65,6 +65,15 @@ public class BundleEditPanel extends javax.swing.JPanel {
         theTable.setDefaultEditor(PropertiesTableModel.StringPair.class,
                                   new PropertiesTableCellEditor(textField, textComment, textValue));
 
+        theTable.setDefaultRenderer(PropertiesTableModel.StringPair.class, new javax.swing.table.DefaultTableCellRenderer() {
+            public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table,
+                    Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                return super.getTableCellRendererComponent(table,
+                    UtilConvert.unicodesToChars(((PropertiesTableModel.StringPair)value).toString()),
+                    isSelected, hasFocus, row, column);
+            }
+        });
+
         // set the column widths
         TableColumn column = null;
         for (int i = 0; i < theTable.getColumnModel().getColumnCount(); i++) {
@@ -351,7 +360,6 @@ public class BundleEditPanel extends javax.swing.JPanel {
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints1.insets = new java.awt.Insets (8, 0, 0, 0);
         add (jPanel3, gridBagConstraints1);
-
     }//GEN-END:initComponents
 
     private void removeButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
@@ -388,12 +396,12 @@ public class BundleEditPanel extends javax.swing.JPanel {
         if (okPressed) {
             if (((PropertiesFileEntry)((MultiDataObject)dobj).getPrimaryEntry()).
                     getHandler().getStructure().addItem(
-                        Util.escapeKey(descr.getInputText()), "", ""));
+                        UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(descr.getInputText())), "", ""));
             else {
                 NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                                                    java.text.MessageFormat.format(
                                                        NbBundle.getBundle(BundleEditPanel.class).getString("MSG_KeyExists"),
-                                                       new Object[] {Util.escapeKey(descr.getInputText())}),
+                                                       new Object[] {UtilConvert.charsToUnicodes(UtilConvert.escapePropertiesSpecialChars(descr.getInputText()))}),
                                                    NotifyDescriptor.ERROR_MESSAGE);
                 TopManager.getDefault().notify(msg);
             }
