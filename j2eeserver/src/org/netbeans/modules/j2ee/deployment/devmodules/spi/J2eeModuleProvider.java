@@ -377,9 +377,16 @@ public abstract class J2eeModuleProvider {
     private final class IL implements InstanceListener {
         
         public void changeDefaultInstance (String oldInst, String newInst) {
-            ServerString oldInstance = new ServerString(ServerRegistry.getInstance().getServerInstance(oldInst));
-            ServerString newInstance = new ServerString(ServerRegistry.getInstance().getServerInstance(newInst));
-            if (useDefaultServer () && oldInstance == null || ((newInstance != null) && (oldInstance.getPlugin() != newInstance.getPlugin()))) {
+            ServerInstance oldServerInstance = ServerRegistry.getInstance().getServerInstance(oldInst);
+            ServerInstance newServerInstance = ServerRegistry.getInstance().getServerInstance(newInst);
+            ServerString oldInstance = oldServerInstance != null 
+                                            ? new ServerString(oldServerInstance) 
+                                            : null;
+            ServerString newInstance = newServerInstance != null 
+                                            ? new ServerString(newServerInstance) 
+                                            : null;
+            if (useDefaultServer () && newInstance != null 
+                    && (oldInstance == null || !oldInstance.getPlugin().equals(newInstance.getPlugin()))) {
                 if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
                     String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
                     oldCtxPath = "/"+J2eeModuleProvider.this.getDeploymentName(); //NOI18N
