@@ -18,7 +18,7 @@ import org.netbeans.tax.TreeAttribute;
 import org.netbeans.tax.TreeElement;
 import org.netbeans.tax.TreeException;
 
-//import org.netbeans.modules.xml.tax.util.TAXUtil;
+import org.netbeans.modules.xml.tax.util.TAXUtil;
 import org.netbeans.modules.xml.tax.beans.Lib;
 
 /**
@@ -101,7 +101,7 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
             }
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -123,7 +123,7 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("                       ::updateAttributeValue: ex = " + ex + "\n"); // NOI18N
             
             updateValueComponent ();
-            Util.THIS.notifyTreeException (ex);
+            TAXUtil.notifyTreeException (ex);
         }
     }
     

@@ -102,10 +102,10 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
             TopManager.getDefault().notifyException(e);
         } catch (TreeException e) {
             // can not get tree representaion
-            Util.THIS.notifyError(Util.THIS.getString("MSG_DOM_ERR_1"));
+            GuiUtil.notifyError(Util.THIS.getString("MSG_DOM_ERR_1"));
         } catch (IOException e) {
             // can not get tree representaion or write            
-            Util.THIS.notifyError(Util.THIS.getString("MSG_DOM_ERR_2"));
+            GuiUtil.notifyError(Util.THIS.getString("MSG_DOM_ERR_2"));
         }
     }
 

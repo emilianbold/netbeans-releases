@@ -23,6 +23,8 @@ import org.openide.util.RequestProcessor;
 import org.netbeans.modules.xml.core.actions.CollectXMLAction;
 import org.netbeans.modules.xml.core.actions.CollectDTDAction;
 
+import org.netbeans.modules.xml.tools.lib.GuiUtil;
+
 public abstract class XMLGenerateAction extends CookieAction {
 
     /** Stream serialVersionUID as of Build1099j. */
@@ -51,20 +53,20 @@ public abstract class XMLGenerateAction extends CookieAction {
      * This code is called from a "Module-actions" thread.
      */
     protected void performAction (final Node[] activatedNodes) {
-      try {
-          for (int i = 0; i < activatedNodes.length; i++) {
-              Class cake = getOwnCookieClass();
-              XMLGenerateCookie gc = (XMLGenerateCookie)activatedNodes[i].getCookie (cake);
-              if (gc != null) {
-                  gc.generate ();
-              } else {
-                  throw new IllegalStateException("Missing cookie " + cake);
-              }
-          }
-      } catch (RuntimeException ex) {
-          String msg = Util.THIS.getString("MSG_action_failed");  //NOI18N
-          Util.THIS.notifyException(msg, ex);
-      }
+        try {
+            for (int i = 0; i < activatedNodes.length; i++) {
+                Class cake = getOwnCookieClass();
+                XMLGenerateCookie gc = (XMLGenerateCookie)activatedNodes[i].getCookie (cake);
+                if (gc != null) {
+                    gc.generate ();
+                } else {
+                    throw new IllegalStateException("Missing cookie " + cake);
+                }
+            }
+        } catch (RuntimeException ex) {
+            String msg = Util.THIS.getString("MSG_action_failed");  //NOI18N
+            GuiUtil.notifyException(msg, ex);
+        }
     }
 
 

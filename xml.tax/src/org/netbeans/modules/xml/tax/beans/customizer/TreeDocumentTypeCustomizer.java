@@ -17,6 +17,8 @@ import java.beans.PropertyChangeEvent;
 import org.netbeans.tax.TreeException;
 import org.netbeans.tax.TreeDocumentType;
 
+import org.netbeans.modules.xml.tax.util.TAXUtil;
+
 /**
  *
  * @author  Libor Kramolis
@@ -79,7 +81,7 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
             getDocumentType ().setElementName (nameField.getText ());
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -96,7 +98,7 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
             getDocumentType ().setPublicId (text2null (publicField.getText ()));
         } catch (TreeException exc) {
             updatePublicIdComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -118,7 +120,7 @@ public class TreeDocumentTypeCustomizer extends AbstractTreeCustomizer {
             getDocumentType ().setSystemId (systemId);
         } catch (TreeException exc) {
             updateSystemIdComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     

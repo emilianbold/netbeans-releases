@@ -17,6 +17,8 @@ import java.beans.PropertyChangeEvent;
 import org.netbeans.tax.TreeException;
 import org.netbeans.tax.TreeConditionalSection;
 
+import org.netbeans.modules.xml.tax.util.TAXUtil;
+
 /**
  *
  * @author  Libor Kramolis
@@ -78,7 +80,7 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
             getConditionalSection ().setInclude (includeRadioButton.isSelected ());
         } catch (TreeException exc) {
             updateIncludeIgnoreComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -91,7 +93,7 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
             getConditionalSection ().setIgnoredContent (text2null (ignoredContentTextArea.getText ()));
         } catch (TreeException exc) {
             updateIgnoredContentComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     

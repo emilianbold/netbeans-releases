@@ -117,7 +117,7 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
 //          } catch (TreeException e) {
 //          } catch (IOException e) {
         } catch (Exception exc) {
-            Util.THIS.notifyException (exc);
+            GuiUtil.notifyException (exc);
         }
     }
 
@@ -130,7 +130,7 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
                     document.setDocumentType (newDoctype);
 //    		    ((XMLDataNode)DO.getNodeDelegate()).setDocumentType (newDoctype);
 		} catch (TreeException exc) {
-		    Util.THIS.notifyTreeException (exc);
+		    GuiUtil.notifyTreeException (exc);
 		}
 	    }
 	}

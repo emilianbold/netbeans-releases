@@ -12,10 +12,11 @@
  */
 package org.netbeans.spi.xml.cookies;
 
+import org.netbeans.spi.xml.utils.AbstractUtil;
+
 /**
  *
  * @author Libor Kramolis
- * @version 0.2
  */
 class Util extends AbstractUtil {
 

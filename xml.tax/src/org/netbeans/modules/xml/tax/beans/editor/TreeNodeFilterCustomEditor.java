@@ -25,6 +25,7 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 import org.netbeans.tax.*;
 import org.netbeans.tax.traversal.TreeNodeFilter;
+import org.netbeans.modules.xml.tax.util.TAXUtil;
 
 /**
  *
@@ -418,7 +419,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
             
             if ( ( type == null ) ||
                  ( TreeNodeFilter.isValidNodeType (type) == false ) ) {
-                Util.THIS.notifyWarning (Util.THIS.getString ("MSG_invalidNodeType", val));
+                TAXUtil.notifyWarning (Util.THIS.getString ("MSG_invalidNodeType", val));
                 return;
             }
             nodeTypesList.set (row, type);

@@ -22,6 +22,8 @@ import org.openide.DialogDescriptor;
 import org.netbeans.tax.*;
 import javax.swing.JComponent;
 
+import org.netbeans.modules.xml.tax.util.TAXUtil;
+
 /**
  *
  * @author Libor Kramolis
@@ -204,7 +206,7 @@ public class Lib {
 
 	    return (TreeAttribute)customNode (attr, customizer, Util.THIS.getString ("TITLE_new_attribute"), mode);
 	} catch (TreeException exc) {
-	    Util.THIS.notifyTreeException (exc);
+	    TAXUtil.notifyTreeException (exc);
             return null;
         }
     }

@@ -17,6 +17,8 @@ import java.beans.PropertyChangeEvent;
 import org.netbeans.tax.TreeNotationDecl;
 import org.netbeans.tax.TreeException;
 
+import org.netbeans.modules.xml.tax.util.TAXUtil;
+
 /**
  *
  * @author  Libor Kramolis
@@ -76,7 +78,7 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
             getNotationDecl ().setName (nameField.getText ());
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -93,7 +95,7 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
             getNotationDecl ().setPublicId (text2null (publicField.getText ()));
         } catch (TreeException exc) {
             updatePublicIdComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -110,7 +112,7 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
             getNotationDecl ().setSystemId (text2null (systemField.getText ()));
         } catch (TreeException exc) {
             updateSystemIdComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     

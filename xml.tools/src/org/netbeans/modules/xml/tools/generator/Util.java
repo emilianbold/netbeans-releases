@@ -12,7 +12,7 @@
  */
 package org.netbeans.modules.xml.tools.generator;
 
-import org.netbeans.modules.xml.tools.AbstractUtil;
+import org.netbeans.spi.xml.utils.AbstractUtil;
 
 /**
  *

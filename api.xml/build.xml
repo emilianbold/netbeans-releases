@@ -171,7 +171,7 @@ Microsystems, Inc. All Rights Reserved.
         <style  in="doc/changes/apichanges.xml" 
                 out="doc/doc-files/apichanges.html" 
                 destdir="doc/doc-files/" 
-                style="${basedir}/../../openide/api/doc/changes/apichanges.xsl"
+                style="${nbroot}/openide/api/doc/changes/apichanges.xsl"
         />    
         <echo message="done"/>
     </target>

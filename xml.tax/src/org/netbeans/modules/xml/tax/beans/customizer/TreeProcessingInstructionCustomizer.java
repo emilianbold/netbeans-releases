@@ -17,6 +17,8 @@ import java.beans.PropertyChangeEvent;
 import org.netbeans.tax.TreeProcessingInstruction;
 import org.netbeans.tax.TreeException;
 
+import org.netbeans.modules.xml.tax.util.TAXUtil;
+
 /**
  *
  * @author  Libor Kramolis
@@ -72,7 +74,7 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
             getProcessingInstruction ().setTarget (targetField.getText ());
         } catch (TreeException exc) {
             updateTargetComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -89,7 +91,7 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
             getProcessingInstruction ().setData (dataTextArea.getText ());
         } catch (TreeException exc) {
             updateDataComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     

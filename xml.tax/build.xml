@@ -16,6 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <property name="lib_root" location="lib"/>
     <property name="xml_root" location=".."/>
+    <property name="api_root" location="${xml_root}/api"/>
 
     <property name="nbroot" location="${xml_root}/.."/>
     <property name="binroot" location="${nbroot}/../nbextra"/>
@@ -45,6 +46,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="buildnumber = ${buildnumber}"/>
 
         <property file="${xml_root}/spec-vers.properties"/>
+        <filter token="API_SPEC_VERS_SUBST" value="${xml.api.specification.version}"/>
         <filter token="TAX_SPEC_VERS_SUBST" value="${xml.tax.specification.version}"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     </target>
@@ -59,6 +61,7 @@ Microsystems, Inc. All Rights Reserved.
                     <include name="openide*.jar"/>
                 </fileset>
                 <pathelement location="${lib_root}/src"/>
+                <pathelement location="${api_root}/src/"/>
             </classpath>
         </javac>
 

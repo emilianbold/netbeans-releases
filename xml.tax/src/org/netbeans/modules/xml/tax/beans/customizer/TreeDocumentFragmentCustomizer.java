@@ -17,6 +17,8 @@ import java.beans.PropertyChangeEvent;
 import org.netbeans.tax.TreeDocumentFragment;
 import org.netbeans.tax.TreeException;
 
+import org.netbeans.modules.xml.tax.util.TAXUtil;
+
 /**
  *
  * @author  Libor Kramolis
@@ -75,7 +77,7 @@ public class TreeDocumentFragmentCustomizer extends AbstractTreeCustomizer {
             getDocumentFragment ().setVersion (text2null ((String) cbVersion.getSelectedItem ()));
         } catch (TreeException exc) {
             updateVersionComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -96,7 +98,7 @@ public class TreeDocumentFragmentCustomizer extends AbstractTreeCustomizer {
             getDocumentFragment ().setEncoding (text2null ((String) cbEncoding.getSelectedItem ()));
         } catch (TreeException exc) {
             updateEncodingComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     

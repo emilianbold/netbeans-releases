@@ -18,6 +18,8 @@ import org.netbeans.tax.TreeException;
 import org.netbeans.tax.TreeComment;
 import org.netbeans.tax.TreeData;
 
+import org.netbeans.modules.xml.tax.util.TAXUtil;
+
 /**
  *
  * @author  Libor Kramolis
@@ -69,7 +71,7 @@ public class TreeCommentCustomizer extends AbstractTreeCustomizer {
             getComment ().setData (dataTextArea.getText ());
         } catch (TreeException exc) {
             updateDataComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     

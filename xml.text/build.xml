@@ -15,9 +15,10 @@ Microsystems, Inc. All Rights Reserved.
 <project name="xml/text-edit" default="netbeans" basedir=".">
 
     <property name="xml_root" location=".."/>
-    <property name="tax_root" location="../tax"/>
+    <property name="api_root" location="${xml_root}/api"/>
+    <property name="tax_root" location="${xml_root}/tax"/>
     <property name="tax_lib_root" location="${tax_root}/lib"/>
-    <property name="core_root" location="../core"/>
+    <property name="core_root" location="${xml_root}/core"/>
 
     <property name="nbroot" location="${xml_root}/.."/>
     <property name="binroot" location="${nbroot}/../nbextra"/>
@@ -46,6 +47,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="buildnumber = ${buildnumber}"/>
 
         <property file="${xml_root}/spec-vers.properties"/>
+        <filter  token="API_SPEC_VERS_SUBST" value="${xml.api.specification.version}"/>
         <filter token="TEXT_SPEC_VERS_SUBST" value="${xml.text-edit.specification.version}"/>
         <filter token="CORE_SPEC_VERS_SUBST" value="${xml.core.specification.version}"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
@@ -70,7 +72,7 @@ Microsystems, Inc. All Rights Reserved.
         	<pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>  <!-- same as above -->
                 <pathelement location="${tax_lib_root}/src/"/>
                 <pathelement location="${core_root}/src/"/>
-                <pathelement location="../api/src/"/>
+                <pathelement location="${api_root}/src/"/>
             </classpath>
         </javac>
 

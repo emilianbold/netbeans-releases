@@ -12,7 +12,7 @@
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
 
-import org.netbeans.modules.xml.tax.AbstractUtil;
+import org.netbeans.spi.xml.utils.AbstractUtil;
 
 /**
  *

@@ -21,6 +21,7 @@ import org.netbeans.tax.TreeElement;
 import org.netbeans.tax.TreeException;
 
 import org.netbeans.modules.xml.tax.beans.Lib;
+import org.netbeans.modules.xml.tax.util.TAXUtil;
 
 /**
  *
@@ -75,7 +76,7 @@ public class TreeElementCustomizer extends AbstractTreeCustomizer {
             getElement ().setQName (nameField.getText ());
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     

@@ -12,10 +12,12 @@
  */
 package org.netbeans.api.xml.parsers;
 
+import org.netbeans.spi.xml.utils.AbstractUtil;
+
 /**
  *
  * @author Libor Kramolis
- * @version 0.2
+ * @since  0.4
  */
 class Util extends AbstractUtil {
 

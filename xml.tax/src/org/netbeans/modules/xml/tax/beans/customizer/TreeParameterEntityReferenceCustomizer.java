@@ -18,6 +18,8 @@ import org.netbeans.tax.TreeEntityReference;
 import org.netbeans.tax.TreeParameterEntityReference;
 import org.netbeans.tax.TreeException;
 
+import org.netbeans.modules.xml.tax.util.TAXUtil;
+
 /**
  *
  * @author  Libor Kramolis
@@ -69,7 +71,7 @@ public class TreeParameterEntityReferenceCustomizer extends AbstractTreeCustomiz
             getParameterEntityReference ().setName (nameField.getText ());
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     

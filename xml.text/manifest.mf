@@ -5,5 +5,8 @@ OpenIDE-Module-Layer: org/netbeans/modules/xml/text/resources/mf-layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
 OpenIDE-Module-Specification-Version: @TEXT_SPEC_VERS_SUBST@
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.xml.core/1 > @CORE_SPEC_VERS_SUBST@, org.netbeans.modules.editor/1 > 1.7
+OpenIDE-Module-Module-Dependencies: 
+ org.netbeans.api.xml/1 > @API_SPEC_VERS_SUBST@,
+ org.netbeans.modules.xml.core/1 > @CORE_SPEC_VERS_SUBST@,
+ org.netbeans.modules.editor/1 > 1.7
 Class-Path: docs/xml-text-edit.jar

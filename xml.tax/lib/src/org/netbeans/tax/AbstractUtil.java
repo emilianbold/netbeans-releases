@@ -21,7 +21,13 @@ import java.text.MessageFormat;
  * @version 0.2
  */
 public abstract class AbstractUtil {
-    /** */
+    /** Cached package name. */
+    private String packageName;
+    /** Cached isLoggable value. */
+    private boolean loggable;
+    /** Has loggable already been initialized. */
+    private boolean loggableInit = false;
+    /** Package resource bundle. */
     private ResourceBundle bundle;
 
     
@@ -62,15 +68,22 @@ public abstract class AbstractUtil {
 
     /** Test if <code>debug (...)</code> will log something.
      */
-    public final boolean isLoggable () {
-        return ( Boolean.getBoolean (this.getPackageName()) );
+    public final synchronized boolean isLoggable () {
+        if ( loggableInit == false ) {
+            loggable = Boolean.getBoolean (this.getPackageName());
+            loggableInit = true;
+        }
+        return loggable;
     }
 
     /**
      * @return package name of this instance
      */
-    private final String getPackageName () {
-        return this.getClass().getPackage().getName();
+    private final synchronized String getPackageName () {
+        if ( packageName == null ) {
+            packageName = this.getClass().getPackage().getName().intern();
+        }
+        return packageName;
     }
 
 

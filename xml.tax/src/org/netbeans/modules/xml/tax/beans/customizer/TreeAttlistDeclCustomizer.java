@@ -21,6 +21,7 @@ import org.netbeans.tax.TreeAttlistDecl;
 import org.netbeans.tax.TreeException;
 
 import org.netbeans.modules.xml.tax.beans.Lib;
+import org.netbeans.modules.xml.tax.util.TAXUtil;
 
 /**
  *
@@ -82,7 +83,7 @@ public class TreeAttlistDeclCustomizer extends AbstractTreeCustomizer {
             getAttlistDecl ().setElementName (elemNameField.getText ());
         } catch (TreeException exc) {
             updateElementNameComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     

@@ -28,6 +28,8 @@ import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JTextField;
 import javax.swing.table.TableColumn;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.AbstractTableModel;
@@ -43,8 +45,7 @@ import org.netbeans.tax.TreeException;
 
 import org.netbeans.modules.xml.tax.beans.TreeObjectListProxyListener;
 import org.netbeans.modules.xml.tax.beans.Lib;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JTextField;
+import org.netbeans.modules.xml.tax.util.TAXUtil;
 
 /**
  * Table oriented customizer of TreeElement attribute list.
@@ -488,7 +489,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
               SortedColumn = -1;
               fireTableStructureChanged();
               } catch (TreeException exc) {
-              Util.THIS.notifyTreeException (exc);
+              TAXUtil.notifyTreeException (exc);
               }
             */
         }
@@ -509,7 +510,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
                 SortedColumn = -1;
                 fireTableStructureChanged();
             } catch (TreeException exc) {
-                Util.THIS.notifyTreeException (exc);
+                TAXUtil.notifyTreeException (exc);
             }
         };
         
@@ -552,7 +553,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
                     attr.setValue ((String) val);
                 }
             } catch (TreeException exc) {
-                Util.THIS.notifyTreeException (exc);
+                TAXUtil.notifyTreeException (exc);
             }
         }
         
@@ -603,7 +604,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
                 peer.reorder (indx);
                 fireTableChanged(new TableModelEvent(this));
             } catch (TreeException exc) {
-                Util.THIS.notifyTreeException (exc);
+                TAXUtil.notifyTreeException (exc);
             }
         }
         

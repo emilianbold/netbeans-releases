@@ -18,6 +18,8 @@ import java.beans.PropertyChangeEvent;
 import org.netbeans.tax.TreeEntityDecl;
 import org.netbeans.tax.TreeException;
 
+import org.netbeans.modules.xml.tax.util.TAXUtil;
+
 /**
  *
  * @author  Libor Kramolis, Vladimir Zboril
@@ -100,7 +102,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
             getEntityDecl ().setParameter (typeCombo.getSelectedItem () == TYPE_PARAMETER);
         } catch (TreeException exc) {
             updateParameterComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -121,7 +123,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
             getEntityDecl ().setName (nameField.getText ());
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -140,7 +142,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
             getEntityDecl ().setInternalText (text2null (internValueField.getText ()));
         } catch (TreeException exc) {
             updateInternalTextComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -161,7 +163,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
             }
         } catch (TreeException exc) {
             updatePublicIdComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -183,7 +185,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
             }
         } catch (TreeException exc) {
             updateSystemIdComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -202,7 +204,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
             getEntityDecl ().setNotationName (text2null (unparsedNotationField.getText ()));
         } catch (TreeException exc) {
             updateNotationComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     

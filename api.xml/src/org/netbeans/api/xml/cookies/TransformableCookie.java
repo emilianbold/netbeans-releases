@@ -27,8 +27,9 @@ import org.openide.nodes.Node;
  * It should be gracefully served by all data objects and explorer nodes
  * representing XML documents.
  *
- * @author Libor Kramolis
+ * @author     Libor Kramolis
  * @deprecated XML tools API candidate
+ * @see        javax.xml.transform.Transformer
  */
 public interface TransformableCookie extends Node.Cookie {
     

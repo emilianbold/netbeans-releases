@@ -16,9 +16,11 @@ import java.beans.PropertyChangeEvent;
 
 import org.netbeans.tax.TreeDocument;
 import org.netbeans.tax.TreeException;
+
 import org.netbeans.modules.xml.tax.beans.editor.VersionEditor;
 import org.netbeans.modules.xml.tax.beans.editor.EncodingEditor;
 import org.netbeans.modules.xml.tax.beans.editor.StandaloneEditor;
+import org.netbeans.modules.xml.tax.util.TAXUtil;
 
 /**
  *
@@ -87,7 +89,7 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
             getDocument ().setVersion (text2null ((String) cbVersion.getSelectedItem ()));
         } catch (TreeException exc) {
             updateVersionComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
         
     }
@@ -109,7 +111,7 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
             getDocument ().setEncoding (text2null ((String) cbEncoding.getSelectedItem ()));
         } catch (TreeException exc) {
             updateEncodingComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
         
     }
@@ -131,7 +133,7 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
             getDocument ().setStandalone (text2null ((String) cbStandalone.getSelectedItem ()));
         } catch (TreeException exc) {
             updateStandaloneComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     

@@ -13,8 +13,11 @@
 package org.netbeans.modules.xml.tax.util;
 
 import java.io.CharConversionException;
+import javax.swing.SwingUtilities;
 
 import org.openide.xml.XMLUtil;
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
 
 import org.netbeans.tax.*;
 
@@ -52,4 +55,60 @@ public final class TAXUtil {
         }
     }
     
+
+
+    /**
+     */
+    public static void notifyWarning (final String message) {
+        SwingUtilities.invokeLater (new Runnable () {
+                public void run () {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message
+                        (printableValue (message),
+                         NotifyDescriptor.WARNING_MESSAGE);
+                    TopManager.getDefault ().notify (nd);
+                }
+            });
+    }
+
+    /**
+     */
+    public static String printableValue (String value) {
+        if (value == null)
+            return new String ("<null>"); // NOI18N
+        
+        int ch;
+        int MAX_LENGTH = 33;
+        int len = Math.min (value.length (), MAX_LENGTH);
+        
+        StringBuffer sb = new StringBuffer (2 * len);
+        for (int i = 0; i < len; i++) {
+            ch = value.charAt (i);
+            if ('\r' == ch) {
+                sb.append ("\\r"); // NOI18N
+            } else if ('\n' == ch) {
+                sb.append ("\\n"); // NOI18N
+            } else if ('\t' == ch) {
+                sb.append ("\\t"); // NOI18N
+            } else if ('\b' == ch) {
+                sb.append ("\\b"); // NOI18N
+            } else if ('\f' == ch) {
+                sb.append ("\\f"); // NOI18N
+            } else {
+                sb.append ((char)ch);
+            }
+        }
+        if (value.length () > len)
+            sb.append ("..."); // NOI18N
+        
+        return sb.toString ();
+    }
+
+    /**
+     */
+    public static void notifyTreeException (TreeException exc) {
+        String message = exc.getMessage();
+	NotifyDescriptor nd = new NotifyDescriptor.Message (message, NotifyDescriptor.WARNING_MESSAGE);
+	TopManager.getDefault().notify (nd);
+    }
+
 }

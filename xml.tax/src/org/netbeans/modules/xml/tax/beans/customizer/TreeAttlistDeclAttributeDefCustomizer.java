@@ -17,6 +17,8 @@ import java.beans.PropertyChangeEvent;
 import org.netbeans.tax.TreeException;
 import org.netbeans.tax.TreeAttlistDeclAttributeDef;
 
+import org.netbeans.modules.xml.tax.util.TAXUtil;
+
 /**
  *
  * @author  Libor Kramolis
@@ -96,7 +98,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
             getAttributeDef ().setName (nameField.getText ());
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -115,7 +117,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
                  getAttributeDef ().getEnumeratedType ());
         } catch (TreeException exc) {
             updateTypeComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -134,7 +136,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
                  TreeAttlistDeclAttributeDef.createEnumeratedType (text2null (enumeratedField.getText ())));
         } catch (TreeException exc) {
             updateEnumeratedTypeComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -153,7 +155,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
                  getAttributeDef ().getDefaultValue ());
         } catch (TreeException exc) {
             updateDefaultTypeComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -178,7 +180,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
             getAttributeDef ().setDefaultType (defaultType, defaultValue);
         } catch (TreeException exc) {
             updateDefaultValueComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     

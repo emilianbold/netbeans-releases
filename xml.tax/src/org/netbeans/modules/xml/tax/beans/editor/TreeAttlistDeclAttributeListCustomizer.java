@@ -19,6 +19,8 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.JTextField;
+import javax.swing.DefaultCellEditor;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -28,8 +30,8 @@ import org.openide.util.WeakListener;
 import org.netbeans.tax.TreeNamedObjectMap;
 import org.netbeans.tax.TreeException;
 import org.netbeans.tax.TreeAttlistDeclAttributeDef;
-import javax.swing.JTextField;
-import javax.swing.DefaultCellEditor;
+
+import org.netbeans.modules.xml.tax.util.TAXUtil;
 
 /**
  * 
@@ -269,7 +271,7 @@ public class TreeAttlistDeclAttributeListCustomizer extends JPanel implements Cu
                     attr.setName ((String) val);
                 }
             } catch (TreeException exc) {
-                Util.THIS.notifyTreeException (exc);
+                TAXUtil.notifyTreeException (exc);
             }
         }
 

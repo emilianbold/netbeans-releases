@@ -17,6 +17,8 @@ import java.beans.PropertyChangeEvent;
 import org.netbeans.tax.TreeElementDecl;
 import org.netbeans.tax.TreeException;
 
+import org.netbeans.modules.xml.tax.util.TAXUtil;
+
 /**
  *
  * @author  Libor Kramolis
@@ -73,7 +75,7 @@ public class TreeElementDeclCustomizer extends AbstractTreeCustomizer {
             getElementDecl ().setName (nameField.getText ());
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     
@@ -90,7 +92,7 @@ public class TreeElementDeclCustomizer extends AbstractTreeCustomizer {
             getElementDecl ().setContentType (contentField.getText ());
         } catch (TreeException exc) {
             updateContentTypeComponent ();
-            Util.THIS.notifyTreeException (exc);
+            TAXUtil.notifyTreeException (exc);
         }
     }
     

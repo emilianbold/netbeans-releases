@@ -156,7 +156,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
         try {
             if (getDTD() == null) {
                 String msg = org.openide.util.NbBundle.getMessage(SAXGeneratorSupport.class, "MSG_invalid_dtd");
-                Util.THIS.notifyWarning(msg);
+                GuiUtil.notifyWarning(msg);
                 return;
             }
 
@@ -326,16 +326,16 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
         } catch (FileStateInvalidException e) {
             String msg = Util.THIS.getString("MSG_wizard_fail", e);
-            Util.THIS.notifyWarning(msg);
+            GuiUtil.notifyWarning(msg);
         } catch (SourceException e) {
             String msg = Util.THIS.getString("MSG_wizard_fail", e);
-            Util.THIS.notifyWarning(msg);
+            GuiUtil.notifyWarning(msg);
         } catch (TreeException e) {
             String msg = Util.THIS.getString("MSG_wizard_fail", e);
-            Util.THIS.notifyWarning(msg);
+            GuiUtil.notifyWarning(msg);
         } catch (IOException e) {
             String msg = Util.THIS.getString("MSG_wizard_fail", e);
-            Util.THIS.notifyWarning(msg);
+            GuiUtil.notifyWarning(msg);
         } finally {
             String msg = org.openide.util.NbBundle.getMessage(SAXGeneratorSupport.class, "MSG_sax_progress_done");
             GuiUtil.setStatusText(msg); // NOI18N
