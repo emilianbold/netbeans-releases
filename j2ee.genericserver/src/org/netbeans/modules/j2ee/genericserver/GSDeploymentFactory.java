@@ -18,6 +18,7 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -25,7 +26,7 @@ import org.openide.ErrorManager;
  */
 public class GSDeploymentFactory implements DeploymentFactory {
     
-    public static final String GENERIC_SERVER_PREFIX = "generic";
+    public static final String GENERIC_SERVER_PREFIX = "generic"; // NOI18N
     
     private static DeploymentFactory instance;
     
@@ -46,7 +47,7 @@ public class GSDeploymentFactory implements DeploymentFactory {
     
     public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) throws DeploymentManagerCreationException {
         if (!handlesURI(uri)) {
-            throw new DeploymentManagerCreationException("Invalid URI:" + uri);
+            throw new DeploymentManagerCreationException("Invalid URI:" + uri); // NOI18N
         }
         return new GSDeploymentManager();
     }
@@ -56,11 +57,11 @@ public class GSDeploymentFactory implements DeploymentFactory {
     }
     
     public String getProductVersion() {
-        return "0.1";
+        return "0.1"; // NOI18N
     }
     
     public String getDisplayName() {
-        return "Generic Server";
+        return NbBundle.getMessage(GSDeploymentFactory.class, "TXT_DisplayName"); // NOI18N
     }
     
 }
