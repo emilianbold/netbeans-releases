@@ -73,6 +73,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public static final String ATTR_CONSTRAINT_VALUE = "value";
 
   private static final String ONE_INDENT =  "  ";
+  private static final Object NO_VALUE = new Object ();
 
   private org.w3c.dom.Document topDocument = XMLDataObject.createDocument();
   
@@ -368,7 +369,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             try {
               Object propValue = getEncodedPropertyValue (propNodes[i], null);
               String propName = findAttribute (propNodes[i], ATTR_PROPERTY_NAME);
-              if ((propName != null) && (propValue != null)) {
+              if ((propName != null) && (propValue != null) && (propValue != NO_VALUE)) {
                 propsMap.put (propName, propValue);
               }
             } catch (Exception e) {
@@ -397,11 +398,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
         Object propValue;
         try {
           propValue = getEncodedPropertyValue (propNodes[i], comp);
+          if (propValue == NO_VALUE) {
+            // the value was not saved, just the pre/post code, which was already set inside the getEncodedPropertyValue method
+            continue; 
+          }
         } catch (Exception e) {
           if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
           // [PENDING - notify error]
           continue; // ignore this property
         }
+
         String propName = findAttribute (propNodes[i], ATTR_PROPERTY_NAME);
         String propType = findAttribute (propNodes[i], ATTR_PROPERTY_TYPE);
 
@@ -731,7 +737,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     boolean doSaveProps = false;
     RADComponent.RADProperty[] props = component.getAllProperties ();
     for (int i = 0; i < props.length; i++) {
-      if (props[i].isChanged ()) {
+      if (props[i].isChanged () || (props[i].getPreCode () != null) || (props[i].getPostCode () != null)) {
         doSaveProps = true;
         break;
       }
@@ -763,10 +769,31 @@ public class GandalfPersistenceManager extends PersistenceManager {
   private void saveProperties (RADComponent component, StringBuffer buf, String indent) {
     RADComponent.RADProperty[] props = component.getAllProperties ();
     for (int i = 0; i < props.length; i++) {
-      if (!props[i].isChanged ()) continue;
-
       RADComponent.RADProperty prop = (RADComponent.RADProperty) props[i];
       PropertyDescriptor desc = prop.getPropertyDescriptor ();
+
+      if (!props[i].isChanged ()) {
+        if ((props[i].getPreCode () != null) || (props[i].getPreCode () != null)) {
+          buf.append (indent); 
+          // in this case save only the pre/post code
+          addLeafElementOpenAttr (
+              buf, 
+              XML_PROPERTY, 
+              new String[] { 
+                ATTR_PROPERTY_NAME, 
+                ATTR_PROPERTY_PRE_CODE, 
+                ATTR_PROPERTY_POST_CODE, 
+                },
+              new String[] { 
+                desc.getName (), 
+                prop.getPreCode (),
+                prop.getPostCode (),
+              }
+          );
+        }
+        continue; // not changed, so do not save value
+      }
+
       Object value = null;
       try {
         value = prop.getValue ();
@@ -952,7 +979,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   /** Obtains value from given propertyNode for specified RADComponent.
   * @param propertyNode XML node where the property is stored
   * @param radComponent the RADComponent of which the property is to be loaded
-  * @return the property value decoded from the node or null if [PENDING]
+  * @return the property value decoded from the node
   */
   private Object getEncodedPropertyValue (org.w3c.dom.Node propertyNode, RADComponent radComponent) 
   throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException 
@@ -968,14 +995,28 @@ public class GandalfPersistenceManager extends PersistenceManager {
     org.w3c.dom.Node preCodeNode = attrs.getNamedItem (ATTR_PROPERTY_PRE_CODE);
     org.w3c.dom.Node postCodeNode = attrs.getNamedItem (ATTR_PROPERTY_POST_CODE);
 
-    if ((nameNode == null) || (typeNode == null)) {
+    if (nameNode == null) {
       throw new IOException (); // [PENDING - explanation of problem]
     }
 
-    Class propertyType = findPropertyType (typeNode.getNodeValue ());
     RADComponent.RADProperty prop = null;
     if (radComponent != null) prop = radComponent.getPropertyByName (nameNode.getNodeValue ());
 
+    if (typeNode == null) {
+      if ((preCodeNode == null) || (postCodeNode == null)) {
+        throw new IOException (); // [PENDING - explanation of problem]
+      } else {
+        if (preCodeNode != null) {
+          prop.setPreCode (preCodeNode.getNodeValue ());
+        }
+        if (postCodeNode != null) {
+          prop.setPostCode (postCodeNode.getNodeValue ());
+        }
+      }
+      return NO_VALUE; // value is not stored for this property, just the pre/post code
+    }
+
+    Class propertyType = findPropertyType (typeNode.getNodeValue ());
     PropertyEditor ed = null;
     if (editorNode != null) {
       Class editorClass = TopManager.getDefault ().currentClassLoader ().loadClass (editorNode.getNodeValue ());
@@ -1363,6 +1404,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  38   Gandalf   1.37        10/6/99  Ian Formanek    Fixed bug 4199 - 
+ *       Pre/Post initializer code not added to source code unless property 
+ *       editor that spawns Pre/Post code editor has something changed.
  *  37   Gandalf   1.36        9/30/99  Ian Formanek    reflecting XML changes
  *  36   Gandalf   1.35        9/24/99  Ian Formanek    New system of changed 
  *       properties in RADComponent - Fixes bug 3584 - Form Editor should try to

@@ -467,7 +467,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       // not serialized ==>> save
       RADComponent.RADProperty[] props = comp.getAllProperties ();
       for (int i = 0; i < props.length; i++) {
-        if (props[i].isChanged ()) {
+        if (props[i].isChanged () || (props[i].getPreCode () != null) || (props[i].getPostCode () != null)) {
   /*      if (desc instanceof IndexedPropertyDescriptor) { // [PENDING]
           generateIndexedPropertySetter (comp, rprop, initCodeWriter);
         } else { */
@@ -502,103 +502,97 @@ public class JavaCodeGenerator extends CodeGenerator {
 */
   
   private synchronized void generatePropertySetter (RADComponent comp, RADComponent.RADProperty prop, Writer initCodeWriter) throws IOException {
+    String javaInitializationString = null;
     PropertyDescriptor desc = prop.getPropertyDescriptor ();
     Method writeMethod = desc.getWriteMethod ();
-    PropertyEditor ed = null;
-    try {
-      if (prop.getCurrentEditor () instanceof RADConnectionPropertyEditor) {
-        ed = new RADConnectionPropertyEditor (prop.getPropertyDescriptor ().getPropertyType ());
-      } else {
-        ed = (PropertyEditor)prop.getCurrentEditor ().getClass ().newInstance ();
-      }
-    } catch (Exception e) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
-      return; // cannot generate code for this property without the property editor
-    }
-
-    Object value = null;
-    try {
-      value = prop.getValue ();
-    } catch (java.lang.reflect.InvocationTargetException e) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
-      return; // no code generated
-    } catch (IllegalAccessException e) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
-      return; // no code generated
-    }
-    
-    if (ed == null) { // cannot generate without property editor
-      return;
-    }
-    
-    // process FormAwareEditors
-    if (ed instanceof FormAwareEditor) {
-      ((FormAwareEditor)ed).setRADComponent (comp, prop);
-    }
-    if (ed instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
-      ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)ed).attach (new org.openide.nodes.Node[] { comp.getNodeReference () });
-    }
-
-    String javaInitializationString = null;
-    // null values are generated separately, as most property editors cannot cope with nulls
-    if (value != null) {
+    if (prop.isChanged ()) {
+      PropertyEditor ed = null;
       try {
-        ed.setValue (value);
+        if (prop.getCurrentEditor () instanceof RADConnectionPropertyEditor) {
+          ed = new RADConnectionPropertyEditor (prop.getPropertyDescriptor ().getPropertyType ());
+        } else {
+          ed = (PropertyEditor)prop.getCurrentEditor ().getClass ().newInstance ();
+        }
+  
+        if (ed != null) { // cannot generate without property editor
+        
+          Object value = prop.getValue ();
+
+          // process FormAwareEditors
+          if (ed instanceof FormAwareEditor) {
+            ((FormAwareEditor)ed).setRADComponent (comp, prop);
+          }
+          if (ed instanceof org.openide.explorer.propertysheet.editors.NodePropertyEditor) {
+            ((org.openide.explorer.propertysheet.editors.NodePropertyEditor)ed).attach (new org.openide.nodes.Node[] { comp.getNodeReference () });
+          }
+      
+          // null values are generated separately, as most property editors cannot cope with nulls
+          if (value != null) {
+            ed.setValue (value);
+
+            javaInitializationString = ed.getJavaInitializationString ();
+            if ("???".equals (javaInitializationString)) {
+              javaInitializationString = null; // cannot generate code for this property
+            }
+          } else {
+            // null values are generated separately, as most property editors cannot cope with nulls
+            javaInitializationString = "null";
+          }
+        }
       } catch (Exception e) {
         if (System.getProperty ("netbeans.debug.exceptions") != null) e.printStackTrace ();
-        return; // cannot generate
+        // cannot generate code for this property without the property editor
       }
-      javaInitializationString = ed.getJavaInitializationString ();
-      if ((javaInitializationString == null) || ("???".equals (javaInitializationString))) {
-        return; // cannot generate code for this property
-      }
-    } else {
-      // null values are generated separately, as most property editors cannot cope with nulls
-      javaInitializationString = "null";
     }
 
     String preCode = prop.getPreCode ();
     String postCode = prop.getPostCode ();
 
+    // 1. pre initialization code
     if (preCode != null) {
       initCodeWriter.write (preCode);
       if (!preCode.endsWith ("\n")) initCodeWriter.write ("\n");
     }
-    // if the setter throws checked exceptions, we must generate try/catch block around it.
-    Class[] exceptions = writeMethod.getExceptionTypes ();
-    if (exceptions.length > 0) {
-      initCodeWriter.write ("try {\n");
-    }
-          
-    initCodeWriter.write (getVariableGenString (comp, false));
-    initCodeWriter.write (writeMethod.getName ());
-    initCodeWriter.write (" (");
 
-    initCodeWriter.write (javaInitializationString);
-    
-    initCodeWriter.write (");\n");
-
-    int varCount = 1;
-    // add the catch for all checked exceptions
-    for (int j = 0; j < exceptions.length; j++) {
-      initCodeWriter.write ("} catch (");
-      initCodeWriter.write (exceptions[j].getName ());
-      initCodeWriter.write (" ");
-      String excName = "e"+varCount;
-      varCount++;
-      while (formManager.getVariablesPool ().isReserved (excName)) {
-        excName = "e"+varCount;
+    // 2. property setter code
+    if (javaInitializationString != null) {
+      // if the setter throws checked exceptions, we must generate try/catch block around it.
+      Class[] exceptions = writeMethod.getExceptionTypes ();
+      if (exceptions.length > 0) {
+        initCodeWriter.write ("try {\n");
+      }
+            
+      initCodeWriter.write (getVariableGenString (comp, false));
+      initCodeWriter.write (writeMethod.getName ());
+      initCodeWriter.write (" (");
+  
+      initCodeWriter.write (javaInitializationString);
+      
+      initCodeWriter.write (");\n");
+  
+      int varCount = 1;
+      // add the catch for all checked exceptions
+      for (int j = 0; j < exceptions.length; j++) {
+        initCodeWriter.write ("} catch (");
+        initCodeWriter.write (exceptions[j].getName ());
+        initCodeWriter.write (" ");
+        String excName = "e"+varCount;
         varCount++;
-      }
-      initCodeWriter.write (excName);
-      initCodeWriter.write (") {\n");
-      initCodeWriter.write (excName);
-      initCodeWriter.write (".printStackTrace ();\n");
-      if (j == exceptions.length - 1) {
-        initCodeWriter.write ("}\n");
+        while (formManager.getVariablesPool ().isReserved (excName)) {
+          excName = "e"+varCount;
+          varCount++;
+        }
+        initCodeWriter.write (excName);
+        initCodeWriter.write (") {\n");
+        initCodeWriter.write (excName);
+        initCodeWriter.write (".printStackTrace ();\n");
+        if (j == exceptions.length - 1) {
+          initCodeWriter.write ("}\n");
+        }
       }
     }
 
+    // 3. post initialization code
     if (postCode != null) {
       initCodeWriter.write (postCode);
       if (!postCode.endsWith ("\n")) initCodeWriter.write ("\n");
@@ -1249,6 +1243,9 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  54   Gandalf   1.53        10/6/99  Ian Formanek    Fixed bug 4199 - 
+ *       Pre/Post initializer code not added to source code unless property 
+ *       editor that spawns Pre/Post code editor has something changed.
  *  53   Gandalf   1.52        9/29/99  Ian Formanek    codeChanged added to 
  *       FormListener
  *  52   Gandalf   1.51        9/24/99  Ian Formanek    New system of changed 
