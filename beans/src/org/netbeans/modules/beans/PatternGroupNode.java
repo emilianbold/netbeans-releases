@@ -107,6 +107,7 @@ public class  PatternGroupNode extends AbstractNode {
   public PatternGroupNode( PatternChildren children ) {
     super( (Children)children );
     setName( PatternNode.bundle.getString( "Patterns" ) );
+    setShortDescription ( PatternNode.bundle.getString( "Patterns_HINT" ) );
     setIconBase( ICON_BASE );
     setActions(DEFAULT_ACTIONS);    
 
@@ -382,6 +383,7 @@ public class  PatternGroupNode extends AbstractNode {
 
 /* 
  * Log
+ *  10   Gandalf   1.9         11/11/99 Jesse Glick     Display miscellany.
  *  9    Gandalf   1.8         11/10/99 Petr Hrebejk    Canged to work with 
  *       DialogDescriptor.setClosingOptions()
  *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

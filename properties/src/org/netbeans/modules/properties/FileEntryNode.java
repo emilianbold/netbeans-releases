@@ -189,14 +189,6 @@ public class FileEntryNode extends AbstractNode {
       p.setDisplayName (PresentableFileEntry.getString("PROP_template"));
       p.setShortDescription (PresentableFileEntry.getString("HINT_template"));
       ss.put (p);
-
-      p = new PropertySupport.Reflection (
-        entry, HelpCtx.class, "getHelpCtx", null
-      );
-      p.setName (PresentableFileEntry.PROP_HELP);
-      p.setDisplayName (PresentableFileEntry.getString("PROP_help"));
-      p.setShortDescription (PresentableFileEntry.getString("HINT_help"));
-      ss.put (p);
     } catch (Exception ex) {
       throw new InternalError ();
     }
@@ -230,6 +222,7 @@ public class FileEntryNode extends AbstractNode {
 
 /*
  * <<Log>>
+ *  6    Gandalf   1.5         11/11/99 Jesse Glick     Display miscellany.
  *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 

@@ -70,9 +70,6 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
   /** Name of the name property. */
   public static final String PROP_NAME = DataObject.PROP_NAME;
 
-  /** Name of the help context property. */
-  public static final String PROP_HELP = DataObject.PROP_HELP;
-
   /** Name of the modified property. */
   public static final String PROP_MODIFIED = DataObject.PROP_MODIFIED;
 
@@ -387,6 +384,7 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
 }
 /*
  * <<Log>>
+ *  6    Gandalf   1.5         11/11/99 Jesse Glick     Display miscellany.
  *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  4    Gandalf   1.3         8/17/99  Petr Jiricka    Serialization
