@@ -42,32 +42,5 @@ interface IconBases {
 
   public static final String EVENTSET_UNICAST =
     "/com/netbeans/developer/modules/beans/resources/eventSetUnicast";
-
-  // Properties for Bean Info Features. There should be added S for selected features
-  // and N for non selected features at the end of the string.
-
-  public static final String BIF_PROPERTY_RW =
-    "/com/netbeans/developer/modules/beans/resources/bifPropertyRW_";
-
-  public static final String BIF_PROPERTY_RO =
-    "/com/netbeans/developer/modules/beans/resources/bifPropertyRO_";
-
-  public static final String BIF_PROPERTY_WO =
-    "/com/netbeans/developer/modules/beans/resources/bifPropertyWO_";
-    
-  public static final String BIF_IDXPROPERTY_RW =
-    "/com/netbeans/developer/modules/beans/resources/bifIndexedPropertyRW_";
-
-  public static final String BIF_IDXPROPERTY_RO =
-    "/com/netbeans/developer/modules/beans/resources/bifIndexedPropertyRO_";
-
-  public static final String BIF_IDXPROPERTY_WO =
-    "/com/netbeans/developer/modules/beans/resources/bifIndexedPropertyWO_";
-  
-  public static final String BIF_EVENTSET_MULTICAST =
-    "/com/netbeans/developer/modules/beans/resources/bifEventSetMC_";
-
-  public static final String BIF_EVENTSET_UNICAST =
-    "/com/netbeans/developer/modules/beans/resources/bifEventSetUC_";  
   
   }

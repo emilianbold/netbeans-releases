@@ -149,11 +149,14 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
 
   /** Sets the name of the node */
   public void setName( String name ) {
+    /*
     try {
       setPatternName( name );
     }
     catch (SourceException e) {
     }
+    */
+    super.setName( name );
   }
 
   /** Tests if the given string is valid name for associated pattern and if not, notifies
@@ -195,7 +198,9 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
           
        
         try {
+          pattern.patternAnalyser.setIgnore( true );
           ((PropertyPattern)pattern).setType((Type)val);
+          pattern.patternAnalyser.setIgnore( false );
         }
         catch (SourceException e) {
           throw new InvocationTargetException(e);
@@ -227,7 +232,9 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
           throw new IllegalArgumentException();
           
         try {
+          pattern.patternAnalyser.setIgnore( true );
           ((PropertyPattern)pattern).setMode(((Integer)val).intValue());
+          pattern.patternAnalyser.setIgnore( false );
         }
         catch (SourceException e) {
           throw new InvocationTargetException(e);
@@ -310,6 +317,8 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
 
 /*
 * Log
+*  3    Gandalf   1.2         7/26/99  Petr Hrebejk    Better implementation of 
+*       patterns resolving
 *  2    Gandalf   1.1         7/8/99   Jesse Glick     Context help.
 *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
 * $

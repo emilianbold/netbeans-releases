@@ -48,7 +48,7 @@ import org.openide.NotifyDescriptor;
 */
 
 
-public abstract class PatternNode extends AbstractNode implements IconBases, PatternProperties {
+public abstract class PatternNode extends AbstractNode implements IconBases, PatternProperties, PropertyChangeListener {
 
   /** Source of the localized human presentable strings. */
   static ResourceBundle bundle = NbBundle.getBundle(PatternNode.class);
@@ -80,9 +80,6 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
 
   /** Associated pattern. */
   protected Pattern pattern;
-  
-  /** Format for {@link java.beans.FeatureDescriptor#getDisplayName}. */
-  //protected ElementFormat elementFormat = new ElementFormat ("");
 
   /** Is this node read-only or are modifications permitted? */
   protected boolean writeable;
@@ -104,13 +101,8 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
     setIconBase(resolveIconBase());
     setDefaultAction(SystemAction.get(OpenAction.class));
     setActions(DEFAULT_ACTIONS);
-    // BHM
-    // setDisplayName(getElementFormat().format(element));
 
-    //setDisplayName( "A fucking property" );
-    listener = new ElementListener();
-    // BHM
-    //element.addPropertyChangeListener(new WeakListener.PropertyChange (listener));
+    this.pattern.addPropertyChangeListener(new WeakListener.PropertyChange (this));
     displayFormat = null;
   }
 
@@ -272,12 +264,12 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
       /** Sets the value */
       public void setValue(Object val) throws IllegalArgumentException,
       IllegalAccessException, InvocationTargetException {
-        super.setValue(val);
-        
+        super.setValue(val);       
         try {
-          
           String str = (String) val;
+          pattern.patternAnalyser.setIgnore( true );
           setPatternName( str );
+          pattern.patternAnalyser.setIgnore( false );
         }
         catch (SourceException e) {
           throw new InvocationTargetException(e);
@@ -302,65 +294,12 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
   }
 
 
-  // ================== Element listener =================================
-  
-  /** Listener for changes of the element's property changes.
-  * It listens and changes updates the iconBase and displayName
-  * if the changed property could affect them.
-  */
-  private class ElementListener implements PropertyChangeListener {
-    /** Called when any element's property changed.
-    */
-    public void propertyChange(PropertyChangeEvent evt) {
-      String propName = evt.getPropertyName();
-      if (propName == null) {
-        // BHM
-        //setDisplayName(getElementFormat().format(ElementNode.this.element));
-        setDisplayName("name changed");
-        //setIconBase(resolveIconBase());
-      }
-      else {
-        // display name
-        //BHM
-        /*
-        if (getElementFormat().dependsOnProperty(propName))
-           BHM
-           //setDisplayName(getElementFormat().format(ElementNode.this.element));
-           setDisplayName("name changed");
-        */
-        
-        /*
-        // icon
-        String[] iconProps = getIconAffectingProperties();
-        for (int i = 0; i < iconProps.length; i++) {
-          if (iconProps[i].equals(propName)) {
-            setIconBase(resolveIconBase());
-            break;
-          }
-        }
+  // ================== Pattern listener =================================
 
-        if (propName.equals(ElementProperties.PROP_NAME)) {
-          // set inherited name - this code should rather in MemberElementNode,
-          // but we safe one instance of listener for each node
-          // if it will be here. [Petr]
-          try {
-            superSetName(((MemberElement)ElementNode.this.element).getName().toString());
-          }
-          catch (ClassCastException e) {
-            // it is strange - PROP_NAME has only member element.
-          }
-        }
-        else
-          if (propName.equals(Node.PROP_COOKIE)) {
-          // Fires the changes of the cookies of the element.
-          superFireCookieChange();
-        }
-        */
-      }
-      
-      //ElementNode.this.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-
-    }
+  public void propertyChange(PropertyChangeEvent evt) {
+    setIconBase( resolveIconBase() );
+    setName( pattern.getName() );
+    firePropertyChange( null, null, null );  
   }
 
   // ================== Property support for element nodes =================
@@ -395,6 +334,6 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
       if (!canWrite())
         throw new IllegalAccessException(bundle.getString("MSG_Cannot_Write"));
     }
-    
+   
   }
 }

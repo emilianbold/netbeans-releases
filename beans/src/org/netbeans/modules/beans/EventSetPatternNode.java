@@ -147,8 +147,6 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
     catch (SourceException e) {
       throw new IOException(e.getMessage());
     }
-    *
-    System.out.println ("Pattern should be removed");
     super.destroy();
   }
   */
@@ -182,7 +180,9 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
           throw new IllegalArgumentException();
           
         try {
+          pattern.patternAnalyser.setIgnore( true );
           ((EventSetPattern)pattern).setType((Type)val);
+          pattern.patternAnalyser.setIgnore( false );
         }
         catch (SourceException e) {
           throw new InvocationTargetException(e);
@@ -215,7 +215,10 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
           throw new IllegalArgumentException();
           
         try {
+          pattern.patternAnalyser.setIgnore( true );
           ((EventSetPattern)pattern).setIsUnicast(((Boolean)val).booleanValue());
+          pattern.patternAnalyser.setIgnore( false );
+          setIconBase( resolveIconBase() );
         }
         catch (SourceException e) {
           throw new InvocationTargetException(e);
@@ -270,6 +273,8 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
 
 /*
 * Log
+*  3    Gandalf   1.2         7/26/99  Petr Hrebejk    Better implementation of 
+*       patterns resolving
 *  2    Gandalf   1.1         7/8/99   Jesse Glick     Context help.
 *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
 * $

@@ -183,6 +183,7 @@ public class EventSetPattern extends Pattern {
     addListenerMethod.setName( addMethodID );
     removeListenerMethod.setName( removeMethodID );
 
+    this.name = Introspector.decapitalize( name );
   }
 
   /** Tests if the pattern is public i.e. all needed parts are public */
@@ -232,6 +233,7 @@ public class EventSetPattern extends Pattern {
         addListenerMethod.setExceptions( nexs );
       }
     }
+    this.isUnicast = b;
   }
 
   /** Returns the getter method */
@@ -292,6 +294,8 @@ public class EventSetPattern extends Pattern {
     if ( TopManager.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
       setName( newType.getClassName().getName() );
     }
+
+    this.type = newType;
   }
 
   /** Gets the cookie of the first available method */
@@ -488,10 +492,43 @@ public class EventSetPattern extends Pattern {
       }
   }
 
+  // Property change support -------------------------------------------------------------------------
+  
+  void copyProperties( EventSetPattern src ) {
+    
+    boolean changed = !src.getType().equals( getType() ) ||
+                      !src.getName().equals( getName() ) ||
+                      !(src.isUnicast() == isUnicast());
+    
+    if ( src.getAddListenerMethod() != addListenerMethod ) 
+      addListenerMethod = src.getAddListenerMethod();
+    if ( src.getRemoveListenerMethod() != removeListenerMethod ) 
+      removeListenerMethod = src.getRemoveListenerMethod();
+    
+    if ( changed ) {
+      
+      isUnicast = testUnicast();
+
+      try {
+        findEventSetType();
+      }
+      catch ( java.beans.IntrospectionException e ) {
+        System.out.println("Bad property copy " + e );
+      }
+      isUnicast = testUnicast();
+      name = findEventSetName();
+      
+      firePropertyChange( new java.beans.PropertyChangeEvent( this, null, null, null ) );
+    }
+    
+  }
+
 }
 
 /* 
  * Log
+ *  5    Gandalf   1.4         7/26/99  Petr Hrebejk    Better implementation of
+ *       patterns resolving
  *  4    Gandalf   1.3         7/21/99  Petr Hrebejk    Debug messages removed
  *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
  *       bodies, is for boolean etc

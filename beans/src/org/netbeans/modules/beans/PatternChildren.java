@@ -25,15 +25,21 @@ import org.openide.cookies.FilterCookie;
 import org.openide.src.*;
 import org.openide.src.nodes.ClassChildren;
 import org.openide.src.nodes.ElementNodeFactory;
+import org.openide.util.WeakListener;
 
 /** Implements children for basic source code patterns 
 * 
 * @author Petr Hrebejk, Jan Jancura
 */
 public class PatternChildren extends ClassChildren {
+ 
+  private boolean wri = true;
 
   private MethodElementListener methodListener = new MethodElementListener();
   private FieldElementListener fieldListener = new FieldElementListener();
+
+  private WeakListener.PropertyChange weakMethodListener = new WeakListener.PropertyChange( methodListener );
+  private WeakListener.PropertyChange weakFieldListener = new WeakListener.PropertyChange( fieldListener );  
 
   static {
     Integer i = new Integer (PatternFilter.METHOD | PatternFilter.PROPERTY | 
@@ -58,8 +64,11 @@ public class PatternChildren extends ClassChildren {
   public PatternChildren (ClassElement classElement) {
     super (classElement);
     patternAnalyser = new PatternAnalyser( classElement );
-    // PENDING : Solve this cyclic references
-    //patternAnalyser.setPatternChildren( this );
+  }
+
+  public PatternChildren (ClassElement classElement, boolean isWritable ) {
+    this (classElement);
+    wri = isWritable;
   }
 
   /** Create pattern children. The children are initilay unfiltered. 
@@ -69,11 +78,21 @@ public class PatternChildren extends ClassChildren {
   public PatternChildren (ElementNodeFactory factory, ClassElement classElement) {
     super (factory, classElement);
     patternAnalyser = new PatternAnalyser( classElement );
-    // PENDING : Solve this cyclic references
-    //patternAnalyser.setPatternChildren( this );
   }
 
+  public PatternChildren (ElementNodeFactory factory, ClassElement classElement, boolean isWritable ) {
+    this (factory, classElement);
+    wri = isWritable;
+  }
   
+  /*
+  PatternChildren cloneChildren() {
+    return.clone();
+    System.out.println ( "CLONING CHILDREN" );
+    return new PatternChildren( patternAnalyser.getClassElement() );
+  }
+  */
+
   // FilterCookie implementation --------------------------------------------------------
 
   /** Updates all the keys (elements) according to the current filter &
@@ -117,11 +136,11 @@ public class PatternChildren extends ClassChildren {
   */
   protected Node[] createNodes (Object key ) {
     if (key instanceof IdxPropertyPattern)
-      return new Node[] { new IdxPropertyPatternNode((IdxPropertyPattern)key, true) };
+      return new Node[] { new IdxPropertyPatternNode((IdxPropertyPattern)key, wri) };
     if (key instanceof PropertyPattern) 
-      return new Node[] { new PropertyPatternNode((PropertyPattern)key, true) };
+      return new Node[] { new PropertyPatternNode((PropertyPattern)key, wri) };
     if (key instanceof EventSetPattern)
-      return new Node[] { new EventSetPatternNode((EventSetPattern)key, true) };
+      return new Node[] { new EventSetPatternNode((EventSetPattern)key, wri) };
     
     // Unknown pattern
     return super.createNodes (key);
@@ -149,8 +168,8 @@ public class PatternChildren extends ClassChildren {
   private void reassignMethodListener() {
     MethodElement[] methods = element.getMethods();
     for ( int i = 0; i < methods.length ; i++ ) {
-      methods[i].removePropertyChangeListener( methodListener );
-      methods[i].addPropertyChangeListener( methodListener );
+      methods[i].removePropertyChangeListener( weakMethodListener );
+      methods[i].addPropertyChangeListener( weakMethodListener );
     }
   }
 
@@ -159,8 +178,8 @@ public class PatternChildren extends ClassChildren {
   private void reassignFieldListener() {
     FieldElement[] fields = element.getFields();
     for ( int i = 0; i < fields.length ; i++ ) {
-      fields[i].removePropertyChangeListener( fieldListener );
-      fields[i].addPropertyChangeListener( fieldListener );
+      fields[i].removePropertyChangeListener( weakFieldListener );
+      fields[i].addPropertyChangeListener( weakFieldListener );
     }
   }
 
@@ -193,6 +212,8 @@ public class PatternChildren extends ClassChildren {
 
 /* 
  * Log
+ *  8    Gandalf   1.7         7/26/99  Petr Hrebejk    Better implementation of
+ *       patterns resolving
  *  7    Gandalf   1.6         7/21/99  Petr Hrebejk    Debug messages removed
  *  6    Gandalf   1.5         7/21/99  Petr Hrebejk    
  *  5    Gandalf   1.4         7/21/99  Petr Hamernik   some filter bugfix

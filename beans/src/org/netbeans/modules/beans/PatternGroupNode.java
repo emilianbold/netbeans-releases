@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ResourceBundle;
 
 import org.openide.src.SourceException;
+import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
@@ -32,6 +33,8 @@ import org.openide.actions.ToolsAction;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.TopManager;
+
+import com.netbeans.developer.modules.beans.beaninfo.GenerateBeanInfoAction;
 
 /** Subnodes of this node are nodes representing source code patterns i.e. 
  * PropertyPatternNode or EventSetPatternNode.
@@ -58,6 +61,8 @@ public class  PatternGroupNode extends AbstractNode {
   private EventSetPatternPanel newMcEventSetPanel = null;
   private static DialogDescriptor newMcEventSetDialog = null;
 
+  // Is the node writable?
+  private boolean wri = true;
 
   /** Array of the actions of the java methods, constructors and fields. */
   private static final SystemAction[] DEFAULT_ACTIONS = new SystemAction[] {
@@ -68,6 +73,15 @@ public class  PatternGroupNode extends AbstractNode {
     SystemAction.get(ToolsAction.class),
     SystemAction.get(PropertiesAction.class),
   };
+
+  /** Array of the actions of the java methods, constructors and fields. */
+  private static final SystemAction[] DEFAULT_ACTIONS_NON_WRITEABLE = new SystemAction[] {
+    SystemAction.get(GenerateBeanInfoAction.class),
+    null,
+    SystemAction.get(ToolsAction.class),
+    SystemAction.get(PropertiesAction.class),
+  };
+
 
   static {
     ResourceBundle bundle = PatternNode.bundle;
@@ -89,6 +103,20 @@ public class  PatternGroupNode extends AbstractNode {
     CookieSet cs = getCookieSet();
     cs.add( children.getPatternAnalyser() );
   }
+
+  public PatternGroupNode( PatternChildren children, boolean isWriteable ) {
+    this( children );
+    wri = isWriteable;
+    if ( !wri ) {
+      setActions(DEFAULT_ACTIONS_NON_WRITEABLE);    
+    }
+  }
+
+  /*
+  public Node cloneNode() {
+    return new PatternGroupNode( ((PatternChildren) getChildren()).cloneChildren() );
+  }
+  */
 
   public HelpCtx getHelpCtx () {
     return new HelpCtx (PatternGroupNode.class);
@@ -281,6 +309,8 @@ public class  PatternGroupNode extends AbstractNode {
 
 /* 
  * Log
+ *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of
+ *       patterns resolving
  *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
  *       bodies, is for boolean etc
  *  2    Gandalf   1.1         7/8/99   Jesse Glick     Context help.

@@ -55,10 +55,13 @@ public class PropertyPattern extends Pattern {
   protected MethodElement setterMethod = null;
   protected FieldElement  estimatedField = null;
 
+  
+  /** Holds the type of the property resolved from methods. */
   protected Type type;
-
-  /** holds the decapitalized name */
+  /** Holds the decapitalized name. */
   protected String name;
+  
+  // Constructors & static creators ----------------------------------------------------------------------------
 
   /** Creates new PropertyPattern one of the methods may be null */
   public PropertyPattern( PatternAnalyser patternAnalyser, 
@@ -78,21 +81,6 @@ public class PropertyPattern extends Pattern {
     super( patternAnalyser );
   }
 
-  /*
-  public boolean equals( Object o ) {
-    if ( ! (o instanceof PropertyPattern ) )
-      return false;
-    
-    return ((PropertyPattern)o).getterMethod == getterMethod &&
-           ((PropertyPattern)o).setterMethod == setterMethod ;
-  }
-
-  public int hashCode( ) {
-    return ( getterMethod != null ? getterMethod.hashCode() : 0 ) +
-           ( setterMethod != null ? setterMethod.hashCode() : 0 );
-  }
-  */
-
   static PropertyPattern create( PatternAnalyser patternAnalyser, 
                                  String name, String type ) throws SourceException {
 
@@ -108,7 +96,7 @@ public class PropertyPattern extends Pattern {
   }
 
   /** Creates new property pattern with extended options */
-
+  
   static PropertyPattern create( PatternAnalyser patternAnalyser, 
                                  String name, String type,
                                  int mode, boolean bound, boolean constrained,
@@ -151,21 +139,16 @@ public class PropertyPattern extends Pattern {
     return pp;
   }
 
+  // Getter and Setter methods ----------------------------------------------------------------------------
+  
   /** Gets the name of PropertyPattern */
   public String getName() {
     return name;
   }
-
-
-  /** Tests if the pattern is public i.e. all needed parts are public */
-  public boolean isPublic() {
-    return  (getterMethod == null || ( getterMethod.getModifiers() & Modifier.PUBLIC ) != 0) &&
-            (setterMethod == null || ( setterMethod.getModifiers() & Modifier.PUBLIC ) != 0);
-  }
   
   /** Sets the name of PropertyPattern */
   public void setName( String name ) throws SourceException {
- 
+  
     if ( !Utilities.isJavaIdentifier( name )  )
       throw new SourceException( "Invalid event source name" );
 
@@ -182,7 +165,10 @@ public class PropertyPattern extends Pattern {
       setterMethod.setName( setterMethodID );
       }
 
+    this.name = Introspector.decapitalize( name );
+
     // Ask if to set the estimated field
+    
     if ( estimatedField != null ) {
        ElementFormat fmt = new ElementFormat ("{m} {t} {n}");
        String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_ChangeFieldName" ), 
@@ -192,8 +178,9 @@ public class PropertyPattern extends Pattern {
         estimatedField.setName( Identifier.create( Introspector.decapitalize( name ) ) );
        }
     }
+    
   }
-
+  
   /** Returns the mode of the property READ_WRITE, READ_ONLY or WRITE_ONLY */
   public int getMode() {
     if ( setterMethod != null && getterMethod != null )
@@ -233,17 +220,18 @@ public class PropertyPattern extends Pattern {
     }
     
   }
-
-
+  
   /** Returns the getter method */
   public MethodElement getGetterMethod() {
     return getterMethod;
   }
-
+  
   /** Returns the setter method */
   public MethodElement getSetterMethod() {
     return setterMethod;
   }
+  
+  /** Resets getter and setter and checks for changed properties */
 
   /** Gets the type of property */
   public Type getType() {
@@ -280,7 +268,10 @@ public class PropertyPattern extends Pattern {
       }
     }
    
+    this.type = type;
+
     // Ask if to change estimated field Type
+    
     if ( estimatedField != null ) {
       ElementFormat fmt = new ElementFormat ("{m} {t} {n}");
       String mssg = MessageFormat.format( PatternNode.bundle.getString( "FMT_ChangeFieldType" ), 
@@ -290,6 +281,7 @@ public class PropertyPattern extends Pattern {
         estimatedField.setType(type);
       }
     }
+    
   }
   /** Gets the cookie of the first available method */
 
@@ -315,6 +307,12 @@ public class PropertyPattern extends Pattern {
     estimatedField = field;
   }
 
+  /** Tests if the pattern is public i.e. all needed parts are public */
+  public boolean isPublic() {
+    return  (getterMethod == null || ( getterMethod.getModifiers() & Modifier.PUBLIC ) != 0) &&
+            (setterMethod == null || ( setterMethod.getModifiers() & Modifier.PUBLIC ) != 0);
+  }
+    
   /** Destroys the pattern and the associated methods in source */
 
   public void destroy() throws SourceException {
@@ -393,7 +391,7 @@ public class PropertyPattern extends Pattern {
    * @throws IntrospectionException if the property doesnt folow the design patterns
    */
 
-  private Type findPropertyType() throws IntrospectionException {
+  Type findPropertyType() throws IntrospectionException {
     Type resolvedType = null;
 
     if ( getterMethod != null ) {
@@ -602,11 +600,41 @@ public class PropertyPattern extends Pattern {
       //System.out.println ("removing setter");
       }
   }
+  
+  // Property change support -------------------------------------------------------------------------
+  
+  void copyProperties( PropertyPattern src ) {
+    
+    boolean changed = !src.getType().equals( getType() ) ||
+                      !src.getName().equals( getName() ) ||
+                      !(src.getMode() == getMode()) ||
+                      !(src.getEstimatedField() == null ? estimatedField == null : src.getEstimatedField().equals( estimatedField ) );
+        
+    if ( src.getGetterMethod() != getterMethod ) 
+      getterMethod = src.getGetterMethod();
+    if ( src.getSetterMethod() != setterMethod ) 
+      setterMethod = src.getSetterMethod();
+    if ( src.getEstimatedField() != estimatedField ) 
+      estimatedField = src.getEstimatedField();
 
+    if ( changed ) {
+      try {
+        type = findPropertyType();
+      }
+      catch ( java.beans.IntrospectionException e ) {
+        System.out.println("Bad property copy " + e );
+      }
+      name = findPropertyName();
+
+      firePropertyChange( new java.beans.PropertyChangeEvent( this, null, null, null ) );
+    }
+  }
 }
 
 /* 
  * Log
+ *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of
+ *       patterns resolving
  *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
  *       bodies, is for boolean etc
  *  2    Gandalf   1.1         7/20/99  Petr Hrebejk    

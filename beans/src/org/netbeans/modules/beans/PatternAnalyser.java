@@ -15,7 +15,9 @@ package com.netbeans.developer.modules.beans;
 
 import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.Map;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Hashtable;
 import java.util.Enumeration;
@@ -44,12 +46,22 @@ public class PatternAnalyser extends Object implements Node.Cookie {
   private static final String GET_PREFIX = "get";
   private static final String SET_PREFIX = "set";
   private static final String IS_PREFIX = "is";
+  private static final String ADD_PREFIX = "add";
+  private static final String REMOVE_PREFIX = "remove";
 
+  /* Collections which are returned by getters/setters */
+  private ArrayList currentPropertyPatterns = new ArrayList(); 
+  private ArrayList currentIdxPropertyPatterns = new ArrayList(); 
+  private ArrayList currentEventSetPatterns =  new ArrayList(); 
+ 
+  /* Temporary collections used for analysing */
   private HashMap propertyPatterns; 
   private HashMap idxPropertyPatterns; 
   private HashMap eventSetPatterns; 
-
+  
   private ClassElement classElement;
+
+  private boolean ignore;
 
   /** Creates new analyser for ClassElement 
    */
@@ -59,27 +71,53 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
   public void analyzeAll() {
 
-    //System.out.println ( "PATTERN ANALYZING" ); 
+    if ( ignore ) {
+      return;
+    }
 
     int methodCount = classElement.getMethods().length;
     propertyPatterns = new HashMap( methodCount / 2 + PROPERTIES_RESERVE );
     idxPropertyPatterns = new HashMap();        // Initial size 11
     eventSetPatterns = new HashMap();           // Initial size 11
-
-    findPropertyPatterns();
-    findEventSetPatterns();
+    
+    // Analyse patterns
+    
+    resolveMethods();
+    resolveFields();
+    
+    // Compare old and new patterns to resolve changes
+    resolveChangesOfProperties();
+    resolveChangesOfIdxProperties();
+    resolveChangesOfEventSets();
   }
 
+  void setIgnore( boolean ignore ) {
+    this.ignore = ignore;
+  }
+
+  /*
+  void resolvePropertyChanges( ) {
+    HashMap oldPropertyPatterns = new HashMap( propertyPatterns );
+    HashMap newPropertyPatterns = new HashMap();  
+    
+    // All compare levels
+    for( int level = 0; true; level++ ) {
+      // Go through 
+    }
+    
+  }
+  */
+  
   public Collection getPropertyPatterns() {
-    return propertyPatterns.values();
+    return currentPropertyPatterns;
   }
 
   public Collection getIdxPropertyPatterns() {
-    return idxPropertyPatterns.values();
+    return currentIdxPropertyPatterns;
   }
 
   public Collection getEventSetPatterns() {
-    return eventSetPatterns.values();
+    return currentEventSetPatterns;
   }
 
   /** Gets the classelemnt of this pattern analyser */
@@ -91,24 +129,78 @@ public class PatternAnalyser extends Object implements Node.Cookie {
   * The method is analogous to JavaBean Introspector methods for classes
   * without a BeanInfo.
   */
-  public void findPropertyPatterns() {
+  public void resolveMethods() {
 
     // First get all methods in classElement
     MethodElement[] methods = classElement.getMethods();
 
+    // Temporary structures for analysing EventSets  
+    Hashtable adds = new Hashtable();
+    Hashtable removes = new Hashtable();
+    
     // Analyze each method
     for ( int i = 0; i < methods.length ; i++ ) {
       MethodElement method = methods[i];
+      
+      String name = method.getName().getName();  
+      
+      if ( name.startsWith( GET_PREFIX ) || name.startsWith( SET_PREFIX ) || name.startsWith( IS_PREFIX ) ) {
+        PropertyPattern pp = analyseMethodForProperties( method );
+        if ( pp != null )
+          addProperty( pp );
+      }
+      if ( name.startsWith( ADD_PREFIX ) || name.startsWith( REMOVE_PREFIX ) )  {
+        analyseMethodForEventSets( method, adds, removes );
+      }
+    }  
+    // Resolve the temporay structures of event sets
+      
+    // Now look for matching addFooListener+removeFooListener pairs.
+    Enumeration keys = adds.keys();
+    
+    while (keys.hasMoreElements()) {
+      String compound = (String) keys.nextElement();
+      // Skip any "add" which dosn't have a matching remove
+      if (removes.get (compound) == null ) {
+        continue;
+      }
+      // Method name has to end in Listener
+      if (compound.indexOf( "Listener:" ) <= 0 ) {
+        continue;
+      }
+      
+      /*  
+      String listenerName = compound.substring( 0, compound.indexOf( ':' ) );
+      String eventName = Introspector.decapitalize( listenerName.substring( 0, listenerName.length() - 8 ));
+      */
+      MethodElement addMethod = (MethodElement)adds.get(compound);
+      MethodElement removeMethod = (MethodElement)removes.get(compound);
+      Type argType = addMethod.getParameters()[0].getType();
 
-      PropertyPattern pp = analyseMethod( method );
-      if ( pp != null )
-        addProperty( pp );
-    }
+      // Check if the argument is a subtype of EventListener
+      try {
+        //if (!Introspector.isSubclass( argType.toClass(), java.util.EventListener.class ) ) {
+        if (!java.util.EventListener.class.isAssignableFrom( argType.toClass() ) ) {
+          continue;
+        }
+      }
+      catch ( java.lang.ClassNotFoundException ex ) {
+        continue;
+      }
+      
+      EventSetPattern esp; 
+      
+      try {
+        esp = new EventSetPattern( this, addMethod, removeMethod );
+      }
+      catch ( IntrospectionException ex ) {
+        esp = null;
+      }
 
-    // Analyze fields
-    resolveFields( );
+      if (esp != null)
+        addEventSet( esp );
+    }  
   }
-
 
   void resolveFields() {      
     // Analyze fields
@@ -130,10 +222,50 @@ public class PatternAnalyser extends Object implements Node.Cookie {
     }
   }    
 
+  private void resolveChangesOfProperties( ) {
+    currentPropertyPatterns = resolveChanges( currentPropertyPatterns, propertyPatterns, LevelComparator.PROPERTY );    
+  }
+  
+  private void resolveChangesOfIdxProperties( ) {
+    currentIdxPropertyPatterns = resolveChanges( currentIdxPropertyPatterns, idxPropertyPatterns, LevelComparator.IDX_PROPERTY );    
+  }
 
+  private void resolveChangesOfEventSets() {
+    currentEventSetPatterns = resolveChanges( currentEventSetPatterns, eventSetPatterns, LevelComparator.EVENT_SET );    
+  }
+  
+
+  static ArrayList resolveChanges( Collection current, Map created, LevelComparator comparator ) {
+    ArrayList old = new ArrayList( current );
+    ArrayList cre = new ArrayList( created.size() );
+    cre.addAll( created.values() );
+    ArrayList result = new ArrayList( created.size() + 5 );
+   
+
+    for ( int level = 0; level <= comparator.getLevels(); level ++ ) {     
+      Iterator itCre = cre.iterator();
+      while ( itCre.hasNext() ) {
+        Pattern crePattern = (Pattern) itCre.next();
+        Iterator itOld = old.iterator();  
+        while ( itOld.hasNext() ) {
+          Pattern oldPattern = (Pattern) itOld.next();
+          if ( comparator.compare( level, oldPattern, crePattern ) ) {
+            itOld.remove( );
+            itCre.remove( );
+            comparator.copyProperties(oldPattern, crePattern );
+            result.add( oldPattern );
+            break;
+          }
+        }
+      }
+    }   
+    result.addAll( cre ); 
+    return result;
+  }
+  
   /** Analyses one method for property charcteristics */
 
-  PropertyPattern analyseMethod( MethodElement method ) {
+  PropertyPattern analyseMethodForProperties( MethodElement method ) {
     // Skip static methods as Introspector does.
     int modifiers = method.getModifiers();
     if ( Modifier.isStatic( modifiers ) )
@@ -181,94 +313,25 @@ public class PatternAnalyser extends Object implements Node.Cookie {
    return pp;
   }
 
-
   /** Method analyses cass methods for EventSetPatterns 
    */
+  void analyseMethodForEventSets( MethodElement method, Map adds, Map removes ) {
+    // Skip static methods
+    int modifiers = method.getModifiers();
+    if ( Modifier.isStatic( modifiers ) )
+      return;
 
-  void findEventSetPatterns() {
+    String name = method.getName().getName();
+    MethodParameter params[] = method.getParameters();
+    Type returnType = method.getReturn();
 
-    // First get all methods in classElement
-
-    MethodElement[] methods = classElement.getMethods();
-
-    // Find all suitable "add" and "remove" methods
-    Hashtable adds = new Hashtable();
-    Hashtable removes = new Hashtable();
-    for ( int i = 0; i < methods.length ; i++ ) {
-
-      MethodElement method = methods[i];
-
-      // Start to listen to changes of this methods
-      //method.addPropertyChangeListener( metL );
-
-      // Skip static methods
-      int modifiers = method.getModifiers();
-      if ( Modifier.isStatic( modifiers ) )
-        continue;
-
-      String name = method.getName().getName();
-      MethodParameter params[] = method.getParameters();
-      Type returnType = method.getReturn();
-
-      if ( name.startsWith( "add" ) && params.length == 1 && returnType == Type.VOID ) {
-                                                    // !! MAY BE PROBLEM
-        String compound = name.substring(3) + ":" + params[0].getType(); 
-        //System.out.println ( method.getName() );
-        adds.put( compound, method );
-      }
-      else if ( name.startsWith( "remove" ) && params.length == 1 && returnType == Type.VOID ) {
-                                                    // !! MAY BE PROBLEM 
-        String compound = name.substring(6) + ":" + params[0].getType(); 
-        //System.out.println ( method.getName() );
-        removes.put( compound, method );
-      }
+    if ( name.startsWith( ADD_PREFIX ) && params.length == 1 && returnType == Type.VOID ) {
+      String compound = name.substring(3) + ":" + params[0].getType(); 
+      adds.put( compound, method );
     }
-
-    // Now look for matching addFooListener+removeFooListener pairs.
-    Enumeration keys = adds.keys();
-    
-    while (keys.hasMoreElements()) {
-      String compound = (String) keys.nextElement();
-      // Skip any "add" which dosn't have a matching remove
-      if (removes.get (compound) == null ) {
-        continue;
-      }
-      // Method name has to end in Listener
-      if (compound.indexOf( "Listener:" ) <= 0 ) {
-        continue;
-      }
-
-      String listenerName = compound.substring( 0, compound.indexOf( ':' ) );
-      String eventName = Introspector.decapitalize( listenerName.substring( 0, listenerName.length() - 8 ));
-      MethodElement addMethod = (MethodElement)adds.get(compound);
-      MethodElement removeMethod = (MethodElement)removes.get(compound);
-      Type argType = addMethod.getParameters()[0].getType();
-
-      // Check if the argument is a subtype of EventListener
-      try {
-        //if (!Introspector.isSubclass( argType.toClass(), java.util.EventListener.class ) ) {
-        if (!java.util.EventListener.class.isAssignableFrom( argType.toClass() ) ) {
-          continue;
-        }
-      }
-      catch ( java.lang.ClassNotFoundException ex ) {
-        continue;
-      }
-
-      // PENDING: add methods of listener to Pattern
-
-      
-      EventSetPattern esp; 
-      
-      try {
-        esp = new EventSetPattern( this, addMethod, removeMethod );
-      }
-      catch ( IntrospectionException ex ) {
-        esp = null;
-      }
-
-      if (esp != null)
-        addEventSet( esp );
+    else if ( name.startsWith( REMOVE_PREFIX ) && params.length == 1 && returnType == Type.VOID ) {
+      String compound = name.substring(6) + ":" + params[0].getType(); 
+      removes.put( compound, method );
     }
 
   }
@@ -351,10 +414,105 @@ public class PatternAnalyser extends Object implements Node.Cookie {
     eventSetPatterns.put( key, composite );
   }
 
+  // Inner Classes --- comparators for patterns -------------------------------------------------
+  
+  
+  abstract static class LevelComparator {
+    
+    abstract boolean compare( int level, Pattern p1, Pattern p2 );
+    abstract int getLevels();
+    abstract void copyProperties( Pattern p1, Pattern p2 );
+
+    static LevelComparator PROPERTY = new LevelComparator.Property();
+    static LevelComparator IDX_PROPERTY = new LevelComparator.IdxProperty();
+    static LevelComparator EVENT_SET = new LevelComparator.EventSet();
+
+    static class Property extends LevelComparator {
+      
+      boolean compare( int level, Pattern p1, Pattern p2 ) {
+
+        switch ( level ) {
+        case 0:
+          return ((PropertyPattern)p1).getGetterMethod() == ((PropertyPattern)p2).getGetterMethod() && 
+                 ((PropertyPattern)p1).getSetterMethod() == ((PropertyPattern)p2).getSetterMethod() ;
+        case 1:  
+          return ((PropertyPattern)p1).getGetterMethod() == ((PropertyPattern)p2).getGetterMethod();
+        case 2: 
+          return ((PropertyPattern)p1).getSetterMethod() == ((PropertyPattern)p2).getSetterMethod();
+        default:
+          return false;
+        }
+      }
+
+      int getLevels() {
+        return 2;
+      }
+
+      void copyProperties( Pattern p1, Pattern p2 ) {
+        ((PropertyPattern) p1).copyProperties( (PropertyPattern)p2 );
+      }
+    }
+
+    static class IdxProperty extends LevelComparator {
+      
+      boolean compare( int level, Pattern p1, Pattern p2 ) {
+
+        switch ( level ) {
+        case 0:
+          return ((IdxPropertyPattern)p1).getIndexedGetterMethod() == ((IdxPropertyPattern)p2).getIndexedGetterMethod() && 
+                 ((IdxPropertyPattern)p1).getIndexedSetterMethod() == ((IdxPropertyPattern)p2).getIndexedSetterMethod() ;
+        case 1:  
+          return ((IdxPropertyPattern)p1).getIndexedGetterMethod() == ((IdxPropertyPattern)p2).getIndexedGetterMethod();
+        case 2: 
+          return ((IdxPropertyPattern)p1).getIndexedSetterMethod() == ((IdxPropertyPattern)p2).getIndexedSetterMethod();
+        default:
+          return false;
+        }
+      }
+
+      int getLevels() {
+        return 2;
+      }
+
+      void copyProperties( Pattern p1, Pattern p2 ) {
+        ((IdxPropertyPattern) p1).copyProperties( (IdxPropertyPattern)p2 );
+      }
+    }
+
+    static class EventSet extends LevelComparator {
+      
+      boolean compare( int level, Pattern p1, Pattern p2 ) {
+      
+        switch ( level ) {
+        case 0:
+          return ((EventSetPattern)p1).getAddListenerMethod() == ((EventSetPattern)p2).getAddListenerMethod() ||
+                 ((EventSetPattern)p1).getRemoveListenerMethod() == ((EventSetPattern)p2).getRemoveListenerMethod() ;
+        /*
+        case 1:  
+          return ((EventSetPattern)p1).getAddListenerMethod() == ((EventSetPattern)p2).getAddListenerMethod();
+        case 2: 
+          return ((EventSetPattern)p1).getRemoveListenerMethod() == ((EventSetPattern)p2).getRemoveListenerMethod();
+        */
+        default:
+          return false;
+        }
+      }
+
+      int getLevels() {
+        return 0;
+      }
+
+      void copyProperties( Pattern p1, Pattern p2 ) {
+        ((EventSetPattern) p1).copyProperties( (EventSetPattern)p2 );
+      }
+    }
+  } 
 }
 
 /* 
  * Log
+ *  5    Gandalf   1.4         7/26/99  Petr Hrebejk    Better implementation of
+ *       patterns resolving
  *  4    Gandalf   1.3         7/21/99  Petr Hrebejk    Field and Method 
  *       listeners moved to PatternChildren
  *  3    Gandalf   1.2         7/20/99  Ian Formanek    compilable version

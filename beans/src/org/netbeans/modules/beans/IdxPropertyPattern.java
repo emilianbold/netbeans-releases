@@ -272,6 +272,8 @@ public class IdxPropertyPattern extends PropertyPattern {
       Type newArrayType = Type.createArray( type );
       super.setType( newArrayType );
     }
+
+    indexedType = type;
   }
 
   /** Returns the mode of the property READ_WRITE, READ_ONLY or WRITE_ONLY */
@@ -571,10 +573,53 @@ public class IdxPropertyPattern extends PropertyPattern {
     
   }
 
+  // Property change support -------------------------------------------------------------------------
+  
+  void copyProperties( IdxPropertyPattern src ) {
+
+    boolean changed = !src.getIndexedType().equals( getIndexedType() ) || 
+                      !( src.getType() == null ? getType() == null : src.getType().equals( getType() ) ) ||
+                      !src.getName().equals( getName() ) ||
+                      !(src.getMode() == getMode()) ||
+                      !(src.getEstimatedField() == null ? estimatedField == null : src.getEstimatedField().equals( estimatedField ) );
+    
+    
+    if ( src.getIndexedGetterMethod() != indexedGetterMethod ) 
+      indexedGetterMethod = src.getIndexedGetterMethod();
+    if ( src.getIndexedSetterMethod() != indexedSetterMethod ) 
+      indexedSetterMethod = src.getIndexedSetterMethod();
+
+    if ( src.getGetterMethod() != getterMethod ) {
+      changed = true;
+      getterMethod = src.getGetterMethod();
+    }
+    if ( src.getSetterMethod() != setterMethod ) {
+      changed = true;
+      setterMethod = src.getSetterMethod();
+    }
+    if ( src.getEstimatedField() != estimatedField ) 
+      estimatedField = src.getEstimatedField();
+
+    if ( changed ) {
+      try {
+        type = findPropertyType();
+        findIndexedPropertyType();
+      }
+      catch ( java.beans.IntrospectionException e ) {
+        System.out.println("Bad property copy " + e );
+      }
+      name = findIndexedPropertyName();
+
+      firePropertyChange( new java.beans.PropertyChangeEvent( this, null, null, null ) );
+    }
+  }
+
 }
 
 /* 
  * Log
+ *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of
+ *       patterns resolving
  *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
  *       bodies, is for boolean etc
  *  2    Gandalf   1.1         7/20/99  Petr Hrebejk    

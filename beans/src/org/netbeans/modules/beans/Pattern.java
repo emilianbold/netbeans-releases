@@ -70,11 +70,33 @@ public abstract class  Pattern extends Object {
 	  chars[0] = Character.toUpperCase(chars[0]);
 	  return new String(chars);
   }
+  
+  // Property change support ----------------------------------------------------------
+  
+  /** Utility field used by bound properties. */
+  private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport( this );
+  
+  /** Add a PropertyChangeListener to the listener list.
+   *@param l the listener to add. */
+  public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+      propertyChangeSupport.addPropertyChangeListener( l );
+  }
+  /** Removes a PropertyChangeListener from the listener list.
+   *@param l the listener to remove. */
+  public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+    propertyChangeSupport.removePropertyChangeListener( l );
+  }
+  
+  protected void firePropertyChange( java.beans.PropertyChangeEvent evt ) {
+    propertyChangeSupport.firePropertyChange( evt );
+  }
 
 }
 
 /* 
  * Log
+ *  3    Gandalf   1.2         7/26/99  Petr Hrebejk    Better implementation of
+ *       patterns resolving
  *  2    Gandalf   1.1         7/20/99  Petr Hrebejk    
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
  * $ 

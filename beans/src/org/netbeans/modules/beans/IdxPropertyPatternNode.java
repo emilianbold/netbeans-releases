@@ -69,7 +69,7 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
     Sheet sheet = super.createSheet();
     Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
 
-    ps.put(createIndexedTypeProperty( true ));
+    ps.put(createIndexedTypeProperty( writeable ));
     ps.put(createIndexGetterProperty( false ));
     ps.put(createIndexSetterProperty( false ));
 
@@ -131,7 +131,9 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
           throw new IllegalArgumentException();
           
         try {
+          pattern.patternAnalyser.setIgnore( true );
           ((IdxPropertyPattern)pattern).setIndexedType((Type)val);
+          pattern.patternAnalyser.setIgnore( false );
         }
         catch (SourceException e) {
           throw new InvocationTargetException(e);
@@ -196,6 +198,8 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
 
 /*
 * Log
+*  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of 
+*       patterns resolving
 *  3    Gandalf   1.2         7/8/99   Jesse Glick     Context help.
 *  2    Gandalf   1.1         6/30/99  Ian Formanek    Reflecting package 
 *       changes of some property editors
