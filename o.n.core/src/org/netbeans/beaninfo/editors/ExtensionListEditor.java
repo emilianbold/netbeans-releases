@@ -17,6 +17,7 @@ import java.beans.*;
 import java.util.*;
 
 import org.openide.loaders.ExtensionList;
+import org.openide.util.enum.ArrayEnumeration;
 import org.openide.explorer.propertysheet.editors.*;
 
 /** Property editor for {@link ExtensionList}s.
@@ -122,13 +123,7 @@ public class ExtensionListEditor extends Object implements PropertyEditor, Strin
     */
     public void setAsText (String text) throws java.lang.IllegalArgumentException {
         StringTokenizer st = new StringTokenizer (text, ",. \n\t"); // NOI18N
-
-        ExtensionList list = new ExtensionList ();
-
-        while (st.hasMoreTokens ()) {
-            list.addExtension (st.nextToken ());
-        }
-        value = list;
+        setAs (st);
     }
 
     /*
@@ -204,6 +199,12 @@ public class ExtensionListEditor extends Object implements PropertyEditor, Strin
         Enumeration e = value.extensions ();
         while (e.hasMoreElements ())
             l.add (e.nextElement ());
+        
+        
+        e = value.mimeTypes ();
+        while (e.hasMoreElements ())
+            l.add (e.nextElement ());
+        
         Collections.sort (l);
         return (String[]) l.toArray (new String[l.size ()]);
     }
@@ -212,13 +213,30 @@ public class ExtensionListEditor extends Object implements PropertyEditor, Strin
      * @param value the new value of the property
      */
     public void setStringArray(String[] nue) {
-        ExtensionList exts = new ExtensionList ();
-        for (int i = 0; i < nue.length; i++)
-            exts.addExtension (nue[i]);
-        value = exts;
-        support.firePropertyChange (null, null, null);
+        setAs (new ArrayEnumeration (nue));
     }
 
+    
+    /** Sets the value as enumeration.
+     * @param en enumeration of strings
+     */
+    private void setAs (Enumeration en) {
+        ExtensionList list = new ExtensionList ();
+
+        while (en.hasMoreElements()) {
+            String tok = (String)en.nextElement ();
+            if (tok.indexOf('/') >= 0) {
+                // mime type!?
+                list.addMimeType(tok);
+            } else {
+                list.addExtension (tok);
+            }
+        }
+        value = list;
+        
+        support.firePropertyChange (null, null, null);
+    }
+        
 }
 
 /*
