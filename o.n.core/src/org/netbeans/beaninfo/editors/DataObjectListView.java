@@ -215,14 +215,14 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         Node n = filteredRootNode;
         String p = path;
         String fileName;
-        int ind = p.indexOf('/');
+        int ind = p.indexOf(File.separatorChar);
         if (ind != -1) {
             fileName = p.substring(0, ind);
             p = p.substring(ind + 1);
         } else {
             fileName = p;
         }
-        fileName = fileName.replace('#','/');
+        fileName = fileName.replace('#',File.separatorChar);
         
         //Root node must correspond to root file
         /*if (!fileName.equals(n.getDisplayName())) {
@@ -233,14 +233,14 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
 
         while (ind != -1) {
             Node [] nodes = n.getChildren().getNodes(true);
-            ind = p.indexOf('/');
+            ind = p.indexOf(File.separatorChar);
             if (ind != -1) {
                 fileName = p.substring(0, ind);
                 p = p.substring(ind + 1);
             } else {
                 fileName = p;
             }
-            fileName = fileName.replace('#','/');
+            fileName = fileName.replace('#',File.separatorChar);
             //Find node with the same name
             for (int i = 0; i < nodes.length; i++) {
                 if (fileName.equals(getFileName(nodes[i]))) {
@@ -268,14 +268,14 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         Node parent = null;
         String p = path;
         String fileName;
-        int ind = p.indexOf('/');
+        int ind = p.indexOf(File.separatorChar);
         if (ind != -1) {
             fileName = p.substring(0, ind);
             p = p.substring(ind + 1);
         } else {
             fileName = p;
         }
-        fileName = fileName.replace('#','/');
+        fileName = fileName.replace('#',File.separatorChar);
         
         //Root node must correspond to root file
         /*if (!fileName.equals(n.getDisplayName())) {
@@ -287,14 +287,14 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         while (ind != -1) {
             Node [] nodes = n.getChildren().getNodes(true);
             parent = n;
-            ind = p.indexOf('/');
+            ind = p.indexOf(File.separatorChar);
             if (ind != -1) {
                 fileName = p.substring(0, ind);
                 p = p.substring(ind + 1);
             } else {
                 fileName = p;
             }
-            fileName = fileName.replace('#','/');
+            fileName = fileName.replace('#',File.separatorChar);
             //Find node with the same name
             for (int i = 0; i < nodes.length; i++) {
                 if (fileName.equals(getFileName(nodes[i]))) {
@@ -307,7 +307,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         if (!fileName.equals(getFileName(n))) {
             //Create new node
             n = new FakeNode(Children.LEAF);
-            n.setDisplayName(fileName.replace('#','/'));
+            n.setDisplayName(fileName.replace('#',File.separatorChar));
         }
         
         /*if (parent != null) {
@@ -519,8 +519,8 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             NodeFile [] files = new NodeFile[nodes.length];
             for (int i = 0; i < nodes.length; i++) {
                 String name = getFileName(nodes[i]);
-                name = name.replace('/','#');
-                files[i] = new NodeFile(getPath() + "/" + name, nodes[i]); // NOI18N
+                name = name.replace(File.separatorChar,'#');
+                files[i] = new NodeFile(getPath() + File.separator + name, nodes[i]);
             }
             return files;
         }
@@ -568,12 +568,12 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         
         public boolean isAbsolute () {
             String p = getPath();
-            int ind = p.indexOf('/');
+            int ind = p.indexOf(File.separatorChar);
             if (ind != -1) {
                 //Get root of path
                 p = p.substring(0, ind);
             }
-            p = p.replace('#','/');
+            p = p.replace('#',File.separatorChar);
             if (p.equals(getFileName(filteredRootNode))) {
                 return true;
             } else {
@@ -721,7 +721,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
          *
          */
         public File createNewFolder(File containingDir) throws IOException {
-            String path = containingDir.getPath() + "/" + newFolderString; // NOI18N
+            String path = containingDir.getPath() + File.separator + newFolderString;
             Node n = findNode(path);
             if (n != null) {
                 NodeFile folder = new NodeFile(path, n);
@@ -748,9 +748,9 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         }
         
         public File createFileObject(File dir, String filename) {
-            filename = filename.replace('/','#');
+            filename = filename.replace(File.separatorChar,'#');
             //Find node corresponding to given path
-            String path = dir.getPath() + "/" + filename; // NOI18N
+            String path = dir.getPath() + File.separator + filename;
             Node n = findNode(path);
             if (n == null) {
                 n = createNode(path);
