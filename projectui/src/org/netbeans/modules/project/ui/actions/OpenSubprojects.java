@@ -15,6 +15,7 @@ package org.netbeans.modules.project.ui.actions;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.OpenProjectList;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -51,14 +52,24 @@ public class OpenSubprojects extends NodeAction {
             return false; // No nodes no closing
         }
         
-        // Find out whether all nodes have project in lookup
+        // Find out whether all nodes have project in lookup 
+        boolean someSubprojects = false; // And have some subprojects;
         for( int i = 0; i < activatedNodes.length; i++ ) {
-            if ( activatedNodes[i].getLookup().lookup( Project.class ) == null ) {
+            Project p = (Project)activatedNodes[i].getLookup().lookup( Project.class );
+            if ( p == null ) {
                 return false;
+            }
+            else {
+                
+                SubprojectProvider spp = (SubprojectProvider)p.getLookup().lookup( SubprojectProvider.class );
+                
+                if ( spp != null && spp.getSubprojects().iterator().hasNext() ) {
+                    someSubprojects = true;
+                }                
             }
         }
         
-        return true;
+        return someSubprojects;
     }
     
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
