@@ -25,15 +25,20 @@ Microsystems, Inc. All Rights Reserved.
     <property name="lang.description.xml.ignore" value="true"/>
   -->
 
-    <target name="compile">
+    <target name="check-lexer-gen">
+        <!-- Check lexer/gen package readiness and compile if necessary -->
+        <ant dir="${lexer.module.root}/gen" target="compile"/>
+    </target>
+
+    <target name="compile" depends="check-lexer-gen">
         <ant antfile="${handcoded.support.antfile}" target="compile"/>
     </target>
 
-    <target name="demo">
+    <target name="demo" depends="check-lexer-gen">
         <ant antfile="${handcoded.support.antfile}" target="demo"/>
     </target>
 
-    <target name="test">
+    <target name="test" depends="check-lexer-gen">
         <ant antfile="${handcoded.support.antfile}" target="test"/>
     </target>
 
