@@ -14,6 +14,7 @@ package org.netbeans.modules.xml.tools.doclet;
 
 import junit.textui.TestRunner;
 import org.netbeans.modules.xml.core.DTDDataObject;
+import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.tax.TreeDTD;
 import org.netbeans.tests.xml.XTest;
 
@@ -61,7 +62,8 @@ public class DTDDocletTest extends XTest {
         if (dao == null) {
             fail("\"data/books.dtd\" data object is not found!");
         }
-        TreeDTD dtd = (TreeDTD) dao.getTreeDTD();
+        TreeEditorCookie cake = (TreeEditorCookie) dao.getCookie(TreeEditorCookie.class);
+        TreeDTD dtd = (TreeDTD) cake.openDocumentRoot();
         DTDDoclet doclet = new DTDDoclet();
         String result = doclet.createDoclet(dtd);
         result = TestUtil.replaceString(result, "<!--", "-->", "<!-- REMOVED -->");

@@ -15,6 +15,7 @@ package org.netbeans.modules.xml.tools.generator;
 import java.lang.reflect.Method;
 import junit.textui.TestRunner;
 import org.netbeans.modules.xml.core.XMLDataObject;
+import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.tax.TreeDocument;
 import org.netbeans.tax.TreeElement;
 import org.netbeans.tests.xml.XTest;
@@ -70,7 +71,8 @@ public class GenerateDTDSupportTest extends XTest {
         if (dao == null) {
             fail("\"data/Node00.xml\" data object is not found!");
         }
-        TreeElement element = ((TreeDocument) dao.getTreeDocument()).getDocumentElement();
+        TreeEditorCookie cake = (TreeEditorCookie) dao.getCookie(TreeEditorCookie.class);
+        TreeElement element = ((TreeDocument)cake.openDocumentRoot()).getDocumentElement();
         FileObject primFile = dao.getPrimaryFile();
         String name = primFile.getName() + "_" + element.getQName();
         FileObject folder = primFile.getParent();
