@@ -15,5 +15,16 @@
         </file>
         <file name="test.exe"><![CDATA[aaa]]></file>
         <file name="test.elf"><![CDATA[CCC]]></file>
+	<file name="build1.xml"><![CDATA[<?xml version="1.0"?>
+<project default="all">
+    <target name="all"/>
+</project>
+]]></file>
+	<file name="build2.xml"><![CDATA[<?xml version="1.0"?>
+<project default="all">
+    <target name="all"/>
+</project>
+]]></file>
+	<file name="bogus.xml"><![CDATA[fail on me!]]></file>
     </folder>
 </filesystem>

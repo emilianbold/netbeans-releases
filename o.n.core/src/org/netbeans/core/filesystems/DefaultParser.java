@@ -84,6 +84,7 @@ abstract class DefaultParser  extends DefaultHandler {
      * problems.
      */
     protected void parse(FileObject fo) {
+        state = INIT; // #15672
         InputStream is = null;
         this.fo = fo;
         try {

@@ -59,5 +59,21 @@
             </MIME-resolver>]]>
         </file>
 
+	<file name="ant.xml"><![CDATA[<?xml version="1.0"?>
+<MIME-resolver>
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-ant+xml">
+            <xml-rule>
+                <element name="project">
+                    <attr name="default"/>
+                </element>
+            </xml-rule>
+        </resolver>
+    </file>
+</MIME-resolver>
+]]>
+	</file>
+
     </folder>
 </filesystem>

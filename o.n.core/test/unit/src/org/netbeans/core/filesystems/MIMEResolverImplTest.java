@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,24 +30,33 @@ import junit.framework.*;
 
 public class MIMEResolverImplTest extends TestCase {
 
-    List resolvers = new ArrayList();
+    List resolvers;
+    FileObject root;
            
-    public MIMEResolverImplTest(java.lang.String testName) throws Exception {
+    public MIMEResolverImplTest(String testName) {
         super(testName);
-
-        
+    }
+    
+    protected void setUp() throws Exception {
         URL u = getClass().getProtectionDomain().getCodeSource().getLocation();
         u = new URL(u, "org/netbeans/core/filesystems/code-fs.xml");
         FileSystem fs = new XMLFileSystem(u);
         
-        FileObject root = fs.getRoot().getFileObject("root");
-        root.refresh();
+        FileObject coderoot = fs.getRoot().getFileObject("root");
+        coderoot.refresh();
         
-        FileObject fos[] = root.getChildren();
+        FileObject fos[] = coderoot.getChildren();
+        resolvers = new ArrayList();
         for (int i = 0; i<fos.length; i++) {
             resolvers.add(createResolver(fos[i]));
         }
         
+        u = getClass().getProtectionDomain().getCodeSource().getLocation();
+        u = new URL(u, "org/netbeans/core/filesystems/data-fs.xml");
+        fs = new XMLFileSystem(u);
+        
+        root = fs.getRoot().getFileObject("root");
+        root.refresh();
     }
     
     public static void main(java.lang.String[] args) {
@@ -61,7 +70,7 @@ public class MIMEResolverImplTest extends TestCase {
     }
     
     
-    private MIMEResolver createResolver(FileObject fo) throws Exception {
+    private static MIMEResolver createResolver(FileObject fo) throws Exception {
         if (fo == null) throw new NullPointerException();
         return new MIMEResolverImpl.Impl(fo);
     }
@@ -78,18 +87,11 @@ public class MIMEResolverImplTest extends TestCase {
     
     public void testDeclarativeMIME() throws Exception {
         
-        URL u = getClass().getProtectionDomain().getCodeSource().getLocation();
-        u = new URL(u, "org/netbeans/core/filesystems/data-fs.xml");
-        FileSystem fs = new XMLFileSystem(u);
-        
         Object tl1 = new Object();
         Object tl2 = new Object();
         
-        FileObject root = fs.getRoot().getFileObject("root");
-        root.refresh();
-        
-        TestThread t1 = new TestThread(root, tl1);
-        TestThread t2 = new TestThread(root, tl2);
+        TestThread t1 = new TestThread(tl1);
+        TestThread t2 = new TestThread(tl2);
 
         // call resolver from two threads
         
@@ -111,12 +113,10 @@ public class MIMEResolverImplTest extends TestCase {
     private class TestThread extends Thread {
         
         Object lock;
-        FileObject root;
         String fail;
         
-        private TestThread(FileObject root, Object lock) {
+        private TestThread(Object lock) {
             this.lock = lock;
-            this.root = root;
         }
         
         public void run() {
@@ -156,6 +156,15 @@ public class MIMEResolverImplTest extends TestCase {
             if ("pid.xml".equals(s) == false) fail = "pid rule failure"  + fo + " => " + s;
                         
         }
+    }
+    
+    /** See #15672.
+     * @author Jesse Glick
+     */
+    public void testParseFailures() {
+        assertEquals("build1.xml recognized as Ant script", "text/x-ant+xml", resolve(root.getFileObject("build1", "xml")));
+        assertEquals("bogus.xml not recognized as anything", null, resolve(root.getFileObject("bogus", "xml")));
+        assertEquals("build2.xml recognized as Ant script", "text/x-ant+xml", resolve(root.getFileObject("build2", "xml")));
     }
         
 }
