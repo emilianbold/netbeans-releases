@@ -95,11 +95,12 @@ public class PlatformUiSupport {
                     root.appendChild(explicitPlatform);
                     changed = true;
                 }
-                if (DEFAULT_JAVAC_TARGET.equals(props.getProperty(J2SEProjectProperties.JAVAC_TARGET))) {
-                    if (sourceLevel == null) {
-                        sourceLevel = platform.getSpecification().getVersion();
-                    }
-                    props.setProperty (J2SEProjectProperties.JAVAC_TARGET, sourceLevel.toString());
+                if (sourceLevel == null) {
+                    sourceLevel = platform.getSpecification().getVersion();
+                }
+                String javacSource = sourceLevel.toString();
+                if (!javacSource.equals(props.getProperty(J2SEProjectProperties.JAVAC_TARGET))) {                    
+                    props.setProperty (J2SEProjectProperties.JAVAC_TARGET, javacSource);
                 }
             }
             if (changed) {
