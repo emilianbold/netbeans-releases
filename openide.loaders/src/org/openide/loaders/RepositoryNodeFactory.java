@@ -40,6 +40,7 @@ public abstract class RepositoryNodeFactory {
      * parent, clone it first.
      * @param f a filter
      * @return a node showing part of the repository
+     * @deprecated Probably unwise to call this for any reason; obsolete UI.
      */
     public abstract Node repository(DataFilter f);
 

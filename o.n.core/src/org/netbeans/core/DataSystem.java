@@ -263,9 +263,11 @@ implements RepositoryListener, NewTemplateAction.Cookie {
         }
     }
     
+    /** @deprecated No longer useful in the UI. */
     public static final class NbRepositoryNodeFactory extends RepositoryNodeFactory {
         
         public Node repository(DataFilter f) {
+            Thread.dumpStack();
             return DataSystem.getDataSystem(f == DataFilter.ALL ? null : f);
         }
         
