@@ -39,6 +39,7 @@ public class IconEditor extends Object {
   static final String FILE_PREFIX = "File";
   static final String CLASSPATH_PREFIX = "Classpath";
 
+  public static final String BAD_ICON_NAME = "/com/netbeans/developer/explorer/propertysheet/editors/badIcon.gif";
 
   // innerclasses ...............................................................
 
@@ -79,15 +80,21 @@ public class IconEditor extends Object {
       case TYPE_URL:
         try {
           ii = new ImageIcon (new URL (name));
-        } catch (java.net.MalformedURLException e) {
-          return;
+        } catch (Exception e) {
+          ii = new ImageIcon (IconEditor.class.getResource (BAD_ICON_NAME));
         }
         break;
       case TYPE_FILE:
         ii = new ImageIcon (name);
         break;
       case TYPE_CLASSPATH:
-        ii = new ImageIcon (TopManager.getDefault ().currentClassLoader ().getResource (name));
+        try {
+          java.net.URL url = TopManager.getDefault ().currentClassLoader ().getResource (name);
+          ii = new ImageIcon (url);
+        } catch (Exception e) {
+          ii = new ImageIcon (IconEditor.class.getResource (BAD_ICON_NAME));
+          e.printStackTrace ();
+        }
         break;
       }
       setImage (ii.getImage ());
@@ -98,6 +105,9 @@ public class IconEditor extends Object {
 
 /*
 * Log
+*  3    Gandalf   1.2         8/17/99  Ian Formanek    Fixed bug 3431 - Forms 
+*       which contain icons referring to non-existing images on Class-path fail 
+*       to load.
 *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----
 *  1    Gandalf   1.0         5/17/99  Ian Formanek    
