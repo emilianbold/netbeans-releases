@@ -12,23 +12,25 @@
  */
 package org.netbeans.qa.form.visualDevelopment;
 
-import java.awt.Point;
+import java.util.Vector;
+import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.actions.EditAction;
+import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
 
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.form.*;
-import org.netbeans.jellytools.modules.form.properties.editors.*;
 import org.netbeans.jellytools.nodes.*;
-import org.netbeans.jellytools.properties.*;
 import org.netbeans.jellytools.actions.*;
 
 import org.netbeans.jemmy.operators.*;
-import java.util.*;
+import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.qa.form.*;
 import java.io.*;
+
 
 /**
  *<P>
@@ -54,93 +56,89 @@ import java.io.*;
  * @version
  */
 public class AddComponents_AWT extends JellyTestCase {
-    MainWindowOperator mainWindow;
-    public String fileName = "clear_Frame";
-    String packageName = "data";
-    String fileSystem;
+    
+    public String FILE_NAME = "clear_Frame";
+    public String PACKAGE_NAME = "data";
+    public String DATA_PROJECT_NAME = "SampleProject";
+    public String FRAME_ROOT = "[Frame]";
+    
+    public MainWindowOperator mainWindow;
+    public ProjectsTabOperator pto;
+    public Node formnode;
     
     public AddComponents_AWT(String testName) {
         super(testName);
     }
     
-    protected void setUp() {
-        mainWindow = MainWindowOperator.getDefault();
-        FilesystemNode node = new FilesystemNode("src");
-        fileSystem = node.getTreePath().getPathComponent(1).toString();
-        
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new AddComponents_AWT("testAddAndCompile"));
-        suite.addTest(new AddComponents_AWT("testFormFile"));
-        suite.addTest(new AddComponents_AWT("testJavaFile"));
-        return suite;
-    }
-    
-    
     /** Run test.
      */
+    
     public void testAddAndCompile() {
-
         String categoryName = "AWT";
         
-        FormNode formnode = new FormNode("src|" + packageName + "|" + fileName);
-        formnode.open();
-        log("Try to find Form Editor window ");
-        FormDesignerOperator formDesigner = new FormDesignerOperator(fileName);
-//        formeditor.selectForm(fileName);        
-        log("\t - Form Editor Window found OK");
-                
-        log("Try to find Form Designer ");        
-//        FormDesignerOperator formDesigner = formeditor.designer();        
-        log("\t - Form Designer found OK");
+        mainWindow = MainWindowOperator.getDefault();
+        pto = new ProjectsTabOperator();
+        ProjectRootNode prn = pto.getProjectRootNode(DATA_PROJECT_NAME);
+        prn.select();
+        formnode = new Node(prn, "Source Packages|" + PACKAGE_NAME + "|" + FILE_NAME);
+        formnode.select();
+        log("Form node selected.");
         
+        EditAction editAction = new EditAction();
+        editAction.perform(formnode);
+        log("Source Editor window opened.");
         
-        // add all beans from tab to form
+        OpenAction openAction = new OpenAction();
+        openAction.perform(formnode);
+        log("Form Editor window opened.");
+        
+        // store all component names from the category in the Vector
+        Vector componentNames = new Vector();
         ComponentPaletteOperator palette = new ComponentPaletteOperator();
-        PaletteUtil paletteUtil = new PaletteUtil(palette);        
         JListOperator list = palette.selectPage(categoryName);
         for (int i=0;i<list.getModel().getSize();i++) {
-            org.netbeans.modules.form.palette.PaletteItemNode comp =
-                (org.netbeans.modules.form.palette.PaletteItemNode)(list.getModel().getElementAt(i));
+            org.openide.nodes.FilterNode comp = (org.openide.nodes.FilterNode)(list.getModel().getElementAt(i));
             String component = comp.getDisplayName();
             System.out.println("component: " + component);
-            sleep(1000);
-           //formeditor.addComponent(categoryName, component, formDesigner.componentLayer().getSource());
-            palette.selectPage(categoryName);
+            sleep(100);
             palette.selectComponent(component);
-            formDesigner.clickOnComponent(formDesigner.componentLayer().getSource(), new Point(20,100));
-        }        
+            componentNames.addElement(component.toString());
+        }
         
-       
-        // try compile created source file and check compile errors
-        formnode.compile();
+        ComponentInspectorOperator cio = new ComponentInspectorOperator();
+        Node inspectorRootNode = new Node(cio.treeComponents(), FRAME_ROOT);
+        inspectorRootNode.select();
+        inspectorRootNode.expand();
         
-        log("All components from Component Palette : " + categoryName + " - were added to " + fileName);
-
-        // close form editor window
-        log("Try to close Form Editor window ");
-        formDesigner.close();
-        log(" - ok");
-
-     
+        // add all beans from Palette Category to form
+        Action popupAddFromPaletteAction;
+        for(int i = 0; i < componentNames.size(); i++){
+            popupAddFromPaletteAction = new Action(null, "Add From Palette|AWT|" + componentNames.elementAt(i).toString());
+            popupAddFromPaletteAction.perform(inspectorRootNode);
+        }
+        
+        log("All components from Component Palette : " + categoryName + " - were added to " + FILE_NAME);
+        
+        log("Try to save the form.");
+        editAction.perform(formnode);
+        Action saveAction;
+        saveAction = new Action("File|Save", null);
+        saveAction.perform();
+        
     }
     
     
     /** Run test.
      */
     public void testFormFile() {
-        //VisualDevelopmentSupport.fileToOut(VisualDevelopmentSupport.Resources, fileName, "form", getRef() );
         try {
             getRef().print(
-                VisualDevelopmentUtil.readFromFile(                
-                fileSystem + File.separatorChar + packageName + File.separatorChar + fileName + ".form")
-                );
+            VisualDevelopmentUtil.readFromFile(
+            getDataDir().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar + PACKAGE_NAME + File.separatorChar + FILE_NAME + ".form")
+            );
         } catch (Exception e) {
             fail("Fail during create reffile: " + e.getMessage());
         }
-        
         System.out.println("reffile: " + this.getName()+".ref");
         try {
             System.out.println("workdir: " + getWorkDir());
@@ -156,34 +154,52 @@ public class AddComponents_AWT extends JellyTestCase {
     /** Run test.
      */
     public void testJavaFile() {
-        //VisualDevelopmentSupport.fileToOut(VisualDevelopmentSupport.Resources, fileName, "java", getRef());
         try {
             getRef().print(
-                VisualDevelopmentUtil.readFromFile(
-                fileSystem + File.separatorChar + packageName + File.separatorChar + fileName + ".java")
-                );
+            VisualDevelopmentUtil.readFromFile(
+            getDataDir().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar + PACKAGE_NAME + File.separatorChar + FILE_NAME + ".java")
+            );
         } catch (Exception e) {
             fail("Fail during create reffile: " + e.getMessage());
         }
-        
-            
-        
         if (System.getProperty("java.version").startsWith("1.3")) {
             compareReferenceFiles(this.getName()+".ref",this.getName()+"_13.pass",this.getName()+".diff");
         } else
             compareReferenceFiles();
     }
+    /** Run test.
+     */
     
-    void sleep(int ms) {
+    public void testCloseDataProject(){
+        closeDataProject();
+        EditorWindowOperator ewo = new EditorWindowOperator();
+        ewo.closeDiscard();
+    }
+    
+    public void closeDataProject(){
+        ProjectSupport.closeProject(DATA_PROJECT_NAME);
+        log("SampleProject closed.");
+    }
+    
+    
+    
+    static void sleep(int ms) {
         try {Thread.sleep(ms);} catch (Exception e) {}
     }
     
-    /** Test could be executed internaly in Forte
+    /** Suite
      * @param args arguments from command line
      */
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new AddComponents_AWT("testAddAndCompile"));
+        suite.addTest(new AddComponents_AWT("testFormFile"));
+        suite.addTest(new AddComponents_AWT("testJavaFile"));
+        suite.addTest(new AddComponents_AWT("testCloseDataProject"));
+        return suite;
+    }
     public static void main(String[] args) {
         System.setProperty("nbjunit.workdir","c:/z");
         junit.textui.TestRunner.run(suite());
     }
-    
 }
