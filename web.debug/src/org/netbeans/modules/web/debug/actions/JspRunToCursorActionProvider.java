@@ -107,7 +107,7 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
                 ActionProvider.class
             )).isActionEnabled (
                 ActionProvider.COMMAND_DEBUG, 
-                MainProjectManager.getDefault ().getMainProject ().getLookup ()
+                p.getLookup ()
             );        
     }
     
