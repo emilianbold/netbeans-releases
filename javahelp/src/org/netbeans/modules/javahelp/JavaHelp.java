@@ -32,8 +32,6 @@ import org.openide.ErrorManager;
 import org.openide.TopManager;
 import org.openide.util.*;
 
-import org.netbeans.spi.javahelp.AbstractHelp;
-
 // [PENDING] should event dispatch thread be used thruout?
 
 /** Help implementation using the JavaHelp 1.0 system.

@@ -25,37 +25,6 @@ import org.openide.util.HelpCtx;
 */
 public abstract class Help {
     
-    /** public ID for standard helpset DTD
-     */    
-    public static final String PUBLIC_ID_HELPSET = "-//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 1.0//EN"; // NOI18N
-    /** public ID for NetBeans reference to a helpset
-     */    
-    public static final String PUBLIC_ID_HELPSETREF = "-//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN"; // NOI18N
-    /** public URL for NetBeans reference to a helpset
-     */    
-    public static final String PUBLIC_URL_HELPSETREF = "http://www.netbeans.org/dtds/helpsetref-1_0.dtd"; // NOI18N
-    /** public ID for a help context link
-     */    
-    public static final String PUBLIC_ID_HELPCTX = "-//NetBeans//DTD Help Context 1.0//EN"; // NOI18N
-    /** public URL for a help context link DTD
-     */    
-    public static final String PUBLIC_URL_HELPCTX = "http://www.netbeans.org/dtds/helpcontext-1_0.dtd"; // NOI18N
-    /** "context" for merge attribute on helpsets
-     */    
-    public static final String HELPSET_MERGE_CONTEXT = "OpenIDE"; // NOI18N
-    /** attribute (type Boolean) on helpsets indicating
-     * whether they should be merged into the master or
-     * not; by default, true
-     */    
-    public static final String HELPSET_MERGE_ATTR = "mergeIntoMaster"; // NOI18N
-    /** A helpID present only in the master help set;
-     *however, when displayed by {@link #showHelp} as the helpID in a context,
-     *the master help set (with merged-in children) will be shown instead,
-     *with no change made to the content pane.
-     *Also, this is the help ID mapped to the "default" page in the master help viewer.
-     */
-    public static final String MASTER_ID = "org.netbeans.api.javahelp.MASTER_ID"; // NOI18N
-    
     /** constructor for subclasses
      */    
     protected Help() {}
