@@ -419,11 +419,11 @@ public class BaseOptions extends OptionSupport {
     }
 
     public boolean getHighlightMatchingBracket() {
-        return getSettingBoolean(ExtSettingsNames.HIGHLIGHT_MATCHING_BRACKET);
+        return getSettingBoolean(ExtSettingsNames.HIGHLIGHT_MATCH_BRACE);
     }
 
     public void setHighlightMatchingBracket(boolean highlight) {
-        setSettingBoolean(ExtSettingsNames.HIGHLIGHT_MATCHING_BRACKET, highlight);
+        setSettingBoolean(ExtSettingsNames.HIGHLIGHT_MATCH_BRACE, highlight);
     }
 
     public boolean getHighlightCaretRow() {
