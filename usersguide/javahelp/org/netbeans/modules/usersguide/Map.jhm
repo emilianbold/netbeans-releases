@@ -634,7 +634,7 @@
 
 <mapID target="accessibility.home" url="accessibility/accessibility_home.html" />
 <mapID target="accessibility.stylesheet" url="accessibility/stylesheet.html" />
-<mapID target="accessibility.jhshortcuts" url="accessibility/jhshortcuts.html" />
+<mapID target="accessibility.jhshortcuts" url="shortcuts/jhshortcuts.html" />
 <mapID target="accessibility.alternate.browser" url="accessibility/alternate_browser.html" />
 
 
