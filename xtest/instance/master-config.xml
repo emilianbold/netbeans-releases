@@ -238,7 +238,9 @@ Microsystems, Inc. All Rights Reserved.
       <module name="openide" 	testtypes="qa-functional"   attributes="validation,full"/>  
       <module name="projects" 	testtypes="qa-functional"   attributes="validation,full,jdk13"/>
       <module name="qa" 	testtypes="serialization"   attributes="validation,full"/>
+      <!-- removed because it falls with OutOfMemoryError
       <module name="qa"       	testtypes="qa-functional"   attributes="validation,full"/>
+      -->
       <module name="vcscore"	testtypes="qa-functional"   attributes="validation,full"/>      
       <module name="vcsgeneric"	testtypes="qa-functional"   attributes="validation,full"/>      
       <module name="xml"	testtypes="qa-functional"   attributes="validation,full"/>
