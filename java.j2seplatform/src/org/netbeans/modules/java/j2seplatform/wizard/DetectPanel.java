@@ -115,6 +115,7 @@ public class DetectPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("AD_DetectPanel"));
         jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("MNE_PlatformName").charAt(0));
         jLabel3.setText(NbBundle.getBundle(DetectPanel.class).getString("LBL_DetailsPanel_Name"));
         jLabel3.setLabelFor(jdkName);
@@ -129,6 +130,7 @@ public class DetectPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(jdkName, gridBagConstraints);
+        jdkName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("AD_PlatformName"));
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -161,6 +163,7 @@ public class DetectPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         jPanel1.add(javadoc, gridBagConstraints);
+        javadoc.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("AD_PlatformJavadoc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -170,6 +173,7 @@ public class DetectPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(sources, gridBagConstraints);
+        sources.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("AD_PlatformSources"));
 
         jButton1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("LBL_Browse"));
         jButton1.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("MNE_BrowseSources").charAt(0));
@@ -185,6 +189,7 @@ public class DetectPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(jButton1, gridBagConstraints);
+        jButton1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("AD_SelectSources"));
 
         jButton2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("LBL_Browse"));
         jButton2.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("MNE_BrowseJavadoc").charAt(0));
@@ -200,6 +205,7 @@ public class DetectPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         jPanel1.add(jButton2, gridBagConstraints);
+        jButton2.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("AD_SelectJavadoc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

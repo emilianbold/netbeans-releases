@@ -61,6 +61,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         this.regs = InstallerRegistry.getDefault();
         this.setFileView( new PlatformFileView( this.getFileSystemView(), this.regs));                
         this.addPropertyChangeListener (this);
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(LocationChooser.class,"AD_LocationChooser"));
     }
     
     
@@ -149,6 +150,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
             this.tf = new JTextField();
             this.tf.setColumns(15);
             this.tf.setEditable(false);
+            this.tf.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(LocationChooser.class,"AD_PlatformType"));
             c = new GridBagConstraints();
             c.gridx = c.gridy = GridBagConstraints.RELATIVE;
             c.gridwidth = GridBagConstraints.REMAINDER;
