@@ -132,7 +132,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
 
   <!-- For use when making new releases: -->
   <target name="ensure-def-release-sourcepath" unless="release-sourcepath">
-    <fail message="You must define the variable release-sourcepath: should be root of jakarta-ant checkout"/>
+    <fail message="You must define the variable release-sourcepath: should be root of ant checkout"/>
   </target>
   <target name="ensure-def-release-version" unless="release-version">
     <fail message="You must define the variable release-version: e.g. 1.4"/>
@@ -240,7 +240,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     - ${ant-optional.jar}.master
     (and scramble them by running 'scramble in external/build.xml)
 11. Test everything
-12. Submit a patch for cvs://cvs.apache.org/jakarta-ant/xdocs/external.xml
+12. Submit a patch for cvs://cvs.apache.org/ant/xdocs/external.xml
     mentioning that the bundled version in NB is now ${release-version}.
 
 After that you should be done!
