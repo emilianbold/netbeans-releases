@@ -145,8 +145,8 @@
             <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
             <tocitem text="Setting a Username and Password for the Tomcat Manager" target="password_tomcat_manager" />
             <tocitem text="Deploying a Web Application" target="deploy_webapp" />
-            <tocitem text="Changing Web Servers" target="deploy_changebrowser" />
-            <tocitem text="Changing Web Browsers" target="deploy_changeserver" />
+            <tocitem text="Changing Web Servers" target="deploy_changeserver" />
+            <tocitem text="Changing Web Browsers" target="deploy_changebrowser" />
             <!--	<tocitem text="Viewing the Contents of a WAR File" target="war_viewcont" />  -->      
     </tocitem> 
        
