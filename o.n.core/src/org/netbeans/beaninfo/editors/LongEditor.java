@@ -26,21 +26,6 @@ public class LongEditor extends WrappersEditor {
         super(java.lang.Long.TYPE);
     }
 
-    
-    //----------------------------------------------------------------------    
-    
-    
-    /**
-     * This method is intended for use when generating Java code to set
-     * the value of the property.  It should return a fragment of Java code
-     * that can be used to initialize a variable with the current property
-     * value.
-     * <p>
-     * Example results are "2", "new Color(127,127,34)", "Color.orange", etc.
-     *
-     * @return A fragment of Java code representing an initializer for the
-     *   	current value.
-     */
     public String getJavaInitializationString() {
 	return "new java.lang.Long(" + getAsText() + "L)"; // NOI18N
     }
