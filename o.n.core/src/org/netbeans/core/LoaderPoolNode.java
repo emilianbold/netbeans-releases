@@ -230,7 +230,7 @@ public final class LoaderPoolNode extends AbstractNode {
       }
       private void warn (String yourLoader, String otherLoader, String otherRepn) {
         // PLEASE DO NOT COMMENT OUT:
-        System.err.println ("Warning: a possible error in the manifest containing " + yourLoader + "was found.");
+        System.err.println ("Warning: a possible error in the manifest containing " + yourLoader + " was found.");
         System.err.println ("The loader specified an Install-{After,Before} on " + otherLoader + ", but this is a DataLoader class.");
         System.err.println ("Probably you wanted " + otherRepn + " which is the loader's representation class.");
       }
@@ -328,17 +328,29 @@ public final class LoaderPoolNode extends AbstractNode {
       }
     }
     
+    // Explanation: modules are permitted to restoreDefault () before
+    // the loader pool is de-externalized. This means that all loader manifest
+    // sections will add a default-instance entry to the pool at startup
+    // time. Later, when the pool is restored, this may reorder existing ones,
+    // as well as change properties. But if any loader is missing (typically
+    // due to failed deserialization), it will nonetheless be added to the end
+    // now (and the pool resorted just in case).
 
     Iterator it = loaders.iterator ();
+    boolean readded = false;
     while (it.hasNext ()) {
       DataLoader loader = (DataLoader)it.next ();
       if (!classes.contains (loader.getClass ())) {
         l.add (loader);
+        readded = true;
       }
     }
     
     loaders = l;
-    update ();
+    if (readded)
+      resort ();
+    else
+      update ();
   }
   
   
@@ -434,8 +446,6 @@ public final class LoaderPoolNode extends AbstractNode {
         SystemAction.get(MoveUpAction.class),
         SystemAction.get(MoveDownAction.class),
         null,
-        SystemAction.get(DeleteAction.class),
-        null,
         SystemAction.get(ToolsAction.class),
         SystemAction.get(PropertiesAction.class),
       };
@@ -449,13 +459,16 @@ public final class LoaderPoolNode extends AbstractNode {
 
     /** Can be deleted.
     */
-    public boolean canDelete () {
-      return true;
+    public boolean canDestroy () {
+      return false;
     }
     
+    /*
+    // Removed: deleted loaders would reappear after a reload of the pool anyway.
     public void destroy () throws IOException {
       remove ((DataLoader) getBean ());
     }
+    */
 
     /** Cannot be copied
     */
@@ -628,6 +641,9 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  32   Gandalf   1.31        12/2/99  Jesse Glick     Loaders cannot be removed
+*       from pool, either intentionally or accidentally (e.g. after failed 
+*       deserialize).
 *  31   Gandalf   1.30        11/26/99 Patrik Knakal   
 *  30   Gandalf   1.29        11/26/99 Jesse Glick     Fixed a 
 *       ConcurrentModificationException, and also added a proper svuid.
