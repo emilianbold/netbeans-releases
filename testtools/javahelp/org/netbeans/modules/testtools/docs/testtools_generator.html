@@ -14,8 +14,60 @@
 
 <h2><img src="NodeGeneratorAction.gif"> Jelly Nodes'n'Actions Generator</h2>
 <a href="http://jellytools.netbeans.org">JellyTools</a> library supports custom test-nodes and test-action.<br> 
-This feature enables automated generation of source code for these Jelly nodes and actions.<br>
-Start <code>Jelly Nodes'n'Actions Generator</code> from <code>Tools</code> menu and follow instructions.
+This feature enables automated generation of source code for these Jelly nodes and actions.
+<p>
+First select destination filesystem and package for generated component sources.
+<p>
+<code><b>Nodes Package</b></code> textbox defines package for newly generated nodes.
+<p>
+<code><b>Actions Package</b></code> textbox defines package for newly generated actions.
+<p>
+<code><b>Default Inline</b></code> checkbox determines if new actions will be generated as standalone sources or inline.
+<p>
+<code><b>Default NoBlock</b></code> checkbox select default ancestor of new action to be <code>Action</code> or <code>ActionNoBlock</code>.
+<p>
+<code><b>Start/Stop Nodes'n'Actions Generator</b></code> button starts/stops thread waiting for some popup menu to be displayed and CTRL-F11 key to be pressed.<br>
+This button is enabled only when some package with write access is selected.<br>
+Jelly Nodes'n'Actions Generator is automatically stopped when its dialog is closed. 
+<p>
+When generator is started and you see information message above Stop button you can invoke popup menu on node you wish to grab.<br>
+Process of generation can be started only by pressing CTRL-F11 key. 
+Generator waits if no popup menu is currently displayed, starts popup menu scanning and shows Node Editor.
+<p>
+Do not touch mouse till "<code>Please wait, processing...</code>" message is displayed !     
+<p>
+<a name="editor"></a>
+<h3>Node Editor</h3>
+Node Editor displays tree of beans representing current generated node(root) and its actions(leaves).
+Properties for each selected bean are displayed in the property sheet on the right.
+<p>
+Actions are represented three ways:<br>
+&nbsp;<img src="class.gif"> reference to existing action source<br>
+&nbsp;<img src="new.gif"> standalone new action source<br>
+&nbsp;<img src="inline.gif"> new action defined inline in node source code
+<p>
+Any action can be deleted from tree by pushing Delete key or by selecting Delete from its popup menu.  
+
+<p>
+<b>Sub-component properties (new actions only):</b>
+<p>
+<code><b>inline</b></code> property switches action between inline and standalone declaration.
+<p>
+<code><b>menuPath</b></code> property can be filled by main menu alternative of action invocation (empty by default).
+<p>
+<code><b>name</b></code> property is action class/instance name and low level method name used in node source code.
+<p>
+<code><b>noBlock</b></code> property switches between Action and ActionNoBlock ancestor.
+<p>
+<code><b>popupPath</b></code> property shows grabbed popup path.
+<p>
+<code><b>shortcuts</b></code> property shows grabbed shortcut (if present) and can also be filled by shortcuts sequence of alternative action invocation (ex.: Ctrl+A, Alt+M). 
+<p>
+<code><b>systemActionClass</b></code> property can be filled by API alternative of action invocation - <code>SystemAction.class</code> descendant class name (empty by default).
+<p>
+     
+
+
 
 <a name="editor"></a>
 

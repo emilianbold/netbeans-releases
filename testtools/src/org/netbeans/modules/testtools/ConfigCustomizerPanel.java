@@ -112,15 +112,10 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             if (value instanceof Unknown) {
                 super.getTreeCellRendererComponent(tree, value.toString().length()==0?"<html><i>&lt;noname&gt;":value, sel, expanded, leaf, row,hasFocus);
                 String msg=((Unknown)value).errorMessage();
-                Icon i=null;
-                if (msg.length()==0) {
-                    setToolTipText(null);
-                    i=((Unknown)value).getIcon();
-                } else {
-                    if (msg.endsWith("<br>")) msg=msg.substring(0, msg.length()-3);
-                    setToolTipText("<html>"+msg);
-                    i=((Unknown)value).getErrorIcon();
-                }
+                Icon i=msg.length()>0?((Unknown)value).getErrorIcon():((Unknown)value).getIcon();
+                msg=((Unknown)value).className()+"<br>"+msg;
+                if (msg.endsWith("<br>")) msg=msg.substring(0, msg.length()-3);
+                setToolTipText("<html>"+msg);
                 if (i!=null) {
                     setIcon(i);
                 }
@@ -377,7 +372,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
                     add(createNode((Element)list.item(i)));
             }
         }
-        protected String className() {
+        public String className() {
             String cln=getClass().getName();
             return cln.substring(cln.lastIndexOf('$')+1);
         }

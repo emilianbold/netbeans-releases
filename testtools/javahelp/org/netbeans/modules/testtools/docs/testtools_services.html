@@ -18,13 +18,22 @@ Test Workspace build.xml file is represented in IDE by special data object based
 This data object offers special Cleaning, Compilation, Building, Execution and Results Cleaning in addition to functionality provided by AntProject
 (like tree browsing, source editing, etc...).<br>
 XTest Compiler and XTest Executor are default for this data object.<p>
-Following picture shows XTest Build Script, all its actions available under pop up menu and its default compiler and executor.<p>  
 
 <a name="exec"></a>
 <h2><img src="XTestCompIcon.gif"> Compiler and <img src="XTestExecIcon.gif">  Executor</h2>
 <code>XTest Compiler</code> and <code>XTest Executor</code> are used for compilation and execution of XTest tests directly from IDE.<br>
 Each contains several important properties for XTest execution and compilation.<p>
-Following picture shows XTest Executor properties.<p>
+XTest Compiler and Executor properties explanation:<br>
+<ul>
+<li><code><b>Attributes</b></code> property defines set of attributes provided during execution</li>
+<li><code><b>Identifying Name</b></code> property shows executor name</li>
+<li><code><b>Jelly Home</b></code> property contains path to <code>jelly2-nb.jar</code></li>
+<li><code><b>Jemmy Home</b></code> property contains path to <code>jemmy.jar</code></li>
+<li><code><b>Netbeans Home</b></code> property points to tested Netbeans IDE installation (required to be different than current)</li>
+<li><code><b>Show Results</b></code> boolean property affects HTML browser with results appearance</li>
+<li><code><b>Test Type</b></code> property can override default test type for execution</li>
+<li><code><b>XTest Home</b></code> property contains path to XTest distribution</li>
+</ul>
 <p>
 
 <i>Warning: XTest tests could not be compiled or executed against current running IDE but another IDE directory must be selected.</i>  
@@ -34,7 +43,13 @@ Following picture shows XTest Executor properties.<p>
 <h2><img src="ConfigIcon.gif"> Test Type Configuration Data Object</h2>
 Test Type configuration file <code>cfg-XXX.xml</code> is represented in IDE by special data object based on XML data object.<br>
 This data object offers basic operations like Cut, Copy, Paste, editing in colored XML text editor (in dependency on installed XML module(s)).<br>
-Added feature is <b>Customization</b>. It concentrates all Test Type configuration into one dialog box.<p>   
+Added feature is <b>Customization</b>. It concentrates all Test Type configuration into one dialog box.
+<p>
+<h3>Configuration Customizer</h3>
+Customizer Dialog contains semantic tree of nodes representing XTest configuration file elements, each containing properties representing element attributes.<br>
+Elements can be inserted, renamed and deleted using popup menu and only according to defined structure (<a href="http://www.netbeans.org/dtds/xtest-cfg-1_0.dtd">xtest-cfg-1_0.dtd</a>).<br>
+Error message is provided in tool-tip text for each element containing error (icon with <img src="err.gif"> sign).
+   
 <hr>
 <small><a href="credits.html">Legal Notices</a></small>
 </body>
