@@ -12,10 +12,14 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="performance" default="compile" basedir=".">
+<project name="performance" default="jars" basedir=".">
 
   <target name="compile">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}"/>
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+	<classpath>
+	    <pathelement location="../xtest/lib/junit.jar"/>
+	</classpath>
+    </javac>
   </target>
 
   <target name="jars" depends="compile">
@@ -34,4 +38,11 @@ Microsystems, Inc. All Rights Reserved.
     </delete>
     <delete dir="lib"/>
   </target>
+  
+  <target name="perf" depends="jars">
+    <ant dir="test/perf" antfile="build.xml" />
+  </target>
+	  
+	  
+  
 </project>
