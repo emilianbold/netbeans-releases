@@ -70,36 +70,6 @@ final class Controller implements Runnable, ActionListener {
         return null;
     }
     
-    /**
-     * temporary way of finding status line component.
-     */
-    private static Container findStatusComponent() {
-        Frame frm = WindowManager.getDefault().getMainWindow();
-        return find(frm.getComponents());
-        
-    }
-    
-    /**
-     * temporary way of finding status line component.
-     */
-    private static Container find(Component[] comps) {
-        if (comps == null || comps.length == 0) {
-            return null;
-        }
-        for (int i = 0; i < comps.length; i++) {
-            if (! (comps[i] instanceof Container)) {
-                continue;
-            }
-            if ("statusLine".equals(comps[i].getName())) {
-                return (Container)comps[i];
-            }
-            Container child =find(((Container)comps[i]).getComponents());
-            if (child != null) {
-                return child;
-            }
-        }
-        return null;
-    }
     
     TaskModel getModel() {
         return model;

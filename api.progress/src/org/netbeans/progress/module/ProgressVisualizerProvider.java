@@ -20,7 +20,8 @@ import org.netbeans.core.StatusLineElementProvider;
 import org.openide.util.Utilities;
 
 /**
- *
+ * Implementation of StatusLineElementProvider which allows to dock the progress
+ * component into the status bar.
  * @author  Milos Kleint
  */
 public final class ProgressVisualizerProvider implements StatusLineElementProvider {
