@@ -107,8 +107,13 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
                         f = new File(srcHome, "src.zip");
                     else
                         f = new File (javaHome, "src.zip");
-                } else
+                } else {
                     f = new File (javaHome, "src.zip");    //NOI18N
+                    //If src.zip does not exist, try src.jar (it is on some platforms)
+                    if (!f.exists()) {
+                        f = new File (javaHome, "src.jar");    //NOI18N
+                    }
+                }
                 if (f.exists() && f.canRead()) {
                     //Test for src folder in the src.zip
                     URL url = FileUtil.getArchiveRoot(f.toURI().toURL());
