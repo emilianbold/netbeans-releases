@@ -29,13 +29,13 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/usersguide.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
-	    excludesfile="../nbbuild/standard-jar-excludes.txt"
-	    compress="false">
-      <locale name="ja"/>
-    </locjar>
+    <!-- Empty JAR: -->
+    <jar jarfile="netbeans/modules/usersguide.jar"
+         whenempty="create"
+         manifest="manifest-subst.mf"
+         basedir=".">
+      <exclude name="**/*"/>
+    </jar>
   </target>
 
   <target name="javahelp">

@@ -1,6 +1,5 @@
 OpenIDE-Module: org.netbeans.modules.usersguide/1
 OpenIDE-Module-Name: User's Guide
 OpenIDE-Module-Description: org.netbeans.modules.usersguide.ide
-OpenIDE-Module-Install: org/netbeans/modules/usersguide/UGModule.class
 OpenIDE-Module-Specification-Version: 1.3
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
