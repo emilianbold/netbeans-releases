@@ -455,8 +455,8 @@ public class DiffPanel extends javax.swing.JPanel {
             p2.y = ypos;
             setViewPosition(p1, p2);
         }
-        off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getDocument(), line);
-        off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getDocument(), line);
+        off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getDocument(), line - 1);
+        off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getDocument(), line - 1);
         jEditorPane1.setCaretPosition(off1);
         jEditorPane2.setCaretPosition(off2);
         //D.deb("off1 = "+off1+", off2 = "+off2+", totalHeight = "+totalHeight+", totalLines = "+totalLines+", ypos = "+ypos);
