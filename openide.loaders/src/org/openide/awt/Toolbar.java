@@ -14,19 +14,47 @@
 package org.openide.awt;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragGestureRecognizer;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.DragSourceContext;
+import java.awt.dnd.DragSourceDragEvent;
+import java.awt.dnd.DragSourceDropEvent;
+import java.awt.dnd.DragSourceEvent;
+import java.awt.dnd.DragSourceListener;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
+import java.awt.dnd.InvalidDnDOperationException;
 import java.awt.event.*;
-import java.lang.reflect.Method;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EventObject;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TooManyListenersException;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
-import javax.swing.plaf.ToolBarUI;
 
 import org.openide.*;
 import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.actions.Presenter;
 import org.openide.util.Task;
+import org.openide.util.Utilities;
 
 /**
  * Toolbar provides a component which is useful for displaying commonly used
@@ -101,7 +129,348 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         super();
         backingFolder = folder;
         initAll(folder.getName(), f);
+        initDnD();
     }
+    
+    private void initDnD() {
+        DropTarget dt = new DropTarget(this, dnd);
+    }
+    
+    DataFolder getFolder() {
+        return backingFolder;
+    }
+    
+
+    public void paint( Graphics g ) {
+        super.paint( g );
+        if( -1 != dropTargetButtonIndex ) {
+            paintDropGesture( g );
+        }
+    }
+    
+    private void updateDropGesture( DropTargetDragEvent e ) {
+        Point p = e.getLocation();
+        Component c = getComponentAt(p);
+        int index = Toolbar.this.getComponentIndex(c);
+        if( index == 0 ) {
+            //dragging over toolbar's grip
+            resetDropGesture();
+        } else {
+            //find out whether we want to drop before or after this component
+            boolean b = p.x <= c.getLocation().x + c.getWidth() / 2;
+            if( index != dropTargetButtonIndex || b != insertBefore ) {
+                dropTargetButtonIndex = index;
+                insertBefore = b;
+                repaint();
+            }
+        }
+    }
+    
+    private void resetDropGesture() {
+        dropTargetButtonIndex = -1;
+        repaint();
+    }
+    
+    private void paintDropGesture( Graphics g ) {
+        Component c = getComponentAtIndex( dropTargetButtonIndex );
+        if( null == c )
+            return;
+        
+        Point location = c.getLocation();
+        int cursorLocation = location.x;
+        if( !insertBefore ) {
+            cursorLocation += c.getWidth();
+            if( dropTargetButtonIndex == getComponentCount()-1 )
+                cursorLocation -= 3;
+        }
+        drawDropLine( g, cursorLocation );
+    }
+    
+    private void drawDropLine( Graphics g, int x ) {
+        Color oldColor = g.getColor();
+        g.setColor( Color.black );
+        int height = getHeight();
+        g.drawLine( x, 3, x, height-4 );
+        g.drawLine( x-1, 3, x-1, height-4 );
+
+        g.drawLine( x+1, 2, x+1+2, 2 );
+        g.drawLine( x+1, height-3, x+1+2, height-3 );
+
+        g.drawLine( x-2, 2, x-2-2, 2 );
+        g.drawLine( x-2, height-3, x-2-2, height-3 );
+        g.setColor( oldColor );
+    }
+
+    /**
+     * Component index of the button under the drag cursor, or -1 when the cursor
+     * is above the toolbar drag handle
+     */
+    int dropTargetButtonIndex = -1;
+    /**
+     * Component index of the button being dragged, only used when dragging a button
+     * within the same toolbar.
+     */
+    int dragSourceButtonIndex = -1;
+    /**
+     * True if the button being dragged should be dropped BEFORE the button 
+     * under the drag cursor.
+     */
+    boolean insertBefore = true;
+    /**
+     * True indicates the toolbar instance whose button is being dragged.
+     */
+    boolean isDragSourceToolbar = false;
+    
+    private DnDSupport dnd = new DnDSupport();
+    private class DnDSupport implements DragSourceListener, DragGestureListener, DropTargetListener {
+        private DragSource dragSource = new DragSource();
+        
+        private Cursor dragMoveCursor = createCustomCursor( Utilities.loadImage( "org/openide/resources/cursorsmovesingle.gif"), "ACTION_MOVE" );
+        private Cursor dragNoDropCursor = createCustomCursor( Utilities.loadImage( "org/openide/resources/cursorsnone.gif"), "NO_ACTION_MOVE" );
+        
+        public DnDSupport() {
+            dragSource.addDragSourceListener(this);
+        }
+        
+        public void register(Component c) {
+            dgr = dragSource.createDefaultDragGestureRecognizer(c, DnDConstants.ACTION_MOVE, this);
+            if (dgr != this.dgr) {
+                this.dgr = dgr;
+                try {
+                    dgr.addDragGestureListener(this);
+                } catch (TooManyListenersException e) {
+                    //do nothing
+                }
+            }
+        }
+        DragGestureRecognizer dgr = null;
+
+        public void dragEnter(DragSourceDragEvent e) {
+            DragSourceContext context = e.getDragSourceContext();
+            int myaction = e.getDropAction();
+            if ((myaction & DnDConstants.ACTION_MOVE) != 0) {
+                context.setCursor( dragMoveCursor ); //DragSource.DefaultMoveDrop);
+            } else {
+                context.setCursor( dragNoDropCursor ); //DragSource.DefaultCopyNoDrop);                
+            }
+        }
+
+        public void dragOver(DragSourceDragEvent e) {
+            DragSourceContext context = e.getDragSourceContext();
+            int action = e.getDropAction();
+            if ((action & DnDConstants.ACTION_MOVE) != 0) {
+                context.setCursor( dragMoveCursor ); //DragSource.DefaultMoveDrop);
+            } else {
+                context.setCursor( dragNoDropCursor ); //DragSource.DefaultCopyNoDrop);                
+            }
+        }
+        
+        public void dragExit(DragSourceEvent e) {
+            DragSourceContext context = e.getDragSourceContext();
+            context.setCursor( dragNoDropCursor ); //DragSource.DefaultCopyNoDrop);                
+            resetDropGesture();
+        }
+
+        public void dragDropEnd(DragSourceDropEvent e) {
+            isDragSourceToolbar = false;
+            if ( e.getDropSuccess() == false ) {
+                  return;
+                }
+            e.getDragSourceContext().getComponent().repaint();
+            resetDropGesture();
+        }
+        
+        public void dragGestureRecognized(DragGestureEvent e) {
+              try {
+                 Component c = e.getComponent();
+                 //do not allow to drag toolbar separators
+                 if( c instanceof JToolBar.Separator || "grip".equals( c.getName() ) )
+                     return;
+                 Transferable t = null;
+                 if (c instanceof JComponent) {
+                     DataObject dob = (DataObject) ((JComponent) c).getClientProperty("file");
+                     if (dob != null) {
+                         t = new TbTransferable(dob);
+                     }
+                 }
+                 if (t != null) {
+                    dragSourceButtonIndex = Toolbar.this.getComponentIndex( c );
+                    isDragSourceToolbar = true;
+                    dragSource.startDrag(e, dragMoveCursor/*DragSource.DefaultCopyNoDrop*/, t, this);
+                 }
+                
+              } catch ( InvalidDnDOperationException idoe ) {
+                    ErrorManager.getDefault().notify(idoe);
+              }
+        }
+
+        public void dropActionChanged (DragSourceDragEvent e) {
+            DragSourceContext context = e.getDragSourceContext();
+            int myaction = e.getDropAction();
+            if ((myaction & DnDConstants.ACTION_MOVE) != 0) {
+                context.setCursor( dragMoveCursor ); //DragSource.DefaultMoveDrop);
+            } else {
+                context.setCursor( dragNoDropCursor ); //DragSource.DefaultCopyNoDrop);                
+            }
+        }
+        
+        public void drop(DropTargetDropEvent dtde) {
+            Transferable t = dtde.getTransferable();
+            try {
+                Object o = t.getTransferData( tiDataFlavor ); //XXX
+                if (o instanceof DataObject) {
+                    doDrop( (DataObject) o, dropTargetButtonIndex-1, insertBefore );
+                    
+                    resetDropGesture();
+                }
+            } catch (UnsupportedFlavorException e) {
+                ErrorManager.getDefault().notify (e);
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().notify(ioe);
+            }
+        }
+        
+        public void dragExit(DropTargetEvent dte) {
+            resetDropGesture();
+        }
+        
+        public void dropActionChanged(DropTargetDragEvent dtde) {
+            
+        }
+
+        public void dragEnter(DropTargetDragEvent e) {
+            if( e.isDataFlavorSupported( tiDataFlavor ) ) {
+                e.acceptDrag(DnDConstants.ACTION_MOVE);
+            }
+        }
+
+        public void dragOver(DropTargetDragEvent e) {
+            updateDropGesture( e );
+            if( !validateDropPosition() ) {
+                e.rejectDrag();
+            } else {
+                e.acceptDrag( DnDConstants.ACTION_MOVE );
+            }
+        }
+        
+
+        //XXX copy & paste from DragDropUtilities, make it public instead?
+        /**
+         * Returns cursor created from given icon.
+         */
+        private Cursor createCustomCursor(Image icon, String name) {
+            Toolkit t = Toolkit.getDefaultToolkit();
+            Dimension d = t.getBestCursorSize(16, 16);
+            Image i = icon;
+            if (d.width != icon.getWidth(null)) {
+                // need to resize the icon
+                Image empty = createBufferedImage(d.width, d.height);
+                i = Utilities.mergeImages(icon, empty, 0, 0);
+            }
+            return t.createCustomCursor(i, new Point(1,1), name);
+        }
+    
+        /** 
+         * Creates BufferedImage and Transparency.BITMASK 
+         * Note: this method is copied from org.openide.util.IconManager. Should
+         * it be exposed in Utilities? I don't know (dstrupl).
+         */
+        private final BufferedImage createBufferedImage(int width, int height) {
+            ColorModel model = GraphicsEnvironment.getLocalGraphicsEnvironment().
+                                              getDefaultScreenDevice().getDefaultConfiguration().getColorModel(Transparency.BITMASK);
+            BufferedImage buffImage = new BufferedImage(model,
+                    model.createCompatibleWritableRaster(width, height), model.isAlphaPremultiplied(), null);
+            return buffImage;
+        }
+        
+        //XXX copy&paste end
+    }
+    
+    void doDrop( DataObject ob, int dropIndex, boolean dropBefore ) throws IOException {
+        //find out which button is currently under the drag cursor
+        DataObject[] buttons = backingFolder.getChildren();
+        DataObject objUnderCursor = null;
+        boolean appendToEnd = false;
+        if( buttons.length > 0 ) {
+            if( !dropBefore )
+                dropIndex++;
+            if( dropIndex >= buttons.length ) {
+                objUnderCursor = buttons[buttons.length-1];
+                appendToEnd = true;
+            } else {
+                objUnderCursor = buttons[dropIndex];
+            }
+        }
+
+        if( Toolbar.this.isDragSourceToolbar ) {
+            //do nothing, we're just reordering buttons in this toolbar
+        } else {
+            //move button to the new toolbar
+            ob.move(backingFolder);                 
+        }
+
+        if( null != objUnderCursor ) {
+            //reorder children
+            java.util.List children = new ArrayList( Arrays.asList( backingFolder.getChildren() ) );
+            int targetIndex = children.indexOf( objUnderCursor );
+            int currentIndex = children.indexOf( ob );
+            if( currentIndex < targetIndex )
+                targetIndex--;
+            children.remove( ob );
+            if( appendToEnd )
+                children.add( ob );
+            else
+                children.add( targetIndex, ob );
+
+            backingFolder.setOrder( (DataObject[])children.toArray( new DataObject[children.size()]) );
+        }
+        //else we're dragging a button to an empty toolbar
+    }
+    
+    private boolean validateDropPosition() {
+               //the drag cursor cannot be positioned above toolbar's drag handle
+        return dropTargetButtonIndex >= 0
+               //when toolbar has buttons '1 2 3 4 5' and we're dragging button 3,
+               //do not allow drop between buttons 2 and 3 and also between buttons 3 and 3
+               && !(isDragSourceToolbar && (dragSourceButtonIndex == dropTargetButtonIndex  //drop index 3
+                                        || (dropTargetButtonIndex == dragSourceButtonIndex-1 && !insertBefore) //drop index 2
+                                        || (dropTargetButtonIndex == dragSourceButtonIndex+1 && insertBefore))) //drop index 4
+               //dragging a button to an empty toolbar
+               || (dropTargetButtonIndex < 0 && getComponentCount() == 1);
+    }
+
+    private static DataFlavor tiDataFlavor = new DataFlavor( DataObject.class, "Toolbar Item" );
+
+    private static class TbTransferable implements Transferable, ClipboardOwner {
+        final DataObject obj;
+        
+      public TbTransferable (DataObject obj) {
+          this.obj = obj;
+      }
+        
+      public synchronized DataFlavor[] getTransferDataFlavors() {
+        return new DataFlavor[] { 
+            tiDataFlavor
+        };
+      }
+      
+      public boolean isDataFlavorSupported( DataFlavor flavor ) {
+        return flavor == tiDataFlavor;
+      }
+      
+      public synchronized Object getTransferData(DataFlavor flavor)
+        throws UnsupportedFlavorException, IOException {
+            if (!isDataFlavorSupported(flavor)) {
+                throw new UnsupportedFlavorException(flavor);
+            }
+            return obj; //XXX
+            
+      }
+      
+      public void lostOwnership (Clipboard clip, Transferable tf) {
+          //Hmm...
+      }
+    }    
 
     /** Start tracking content of the underlaying folder if not doing so yet */
     final Folder waitFinished() {
@@ -145,6 +514,9 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             }
         }
         super.addImpl (c, constraints, idx);
+        if (!"grip".equals(c.getName())) {
+            dnd.register(c);
+        }
     }
     
     /**
@@ -438,11 +810,26 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             InstanceCookie ic = super.acceptDataObject (dob);
             if (ic == null) {
                 JButton button = ExecBridge.createButton (dob);
+                if (button != null) {
+                    System.err.println("Button is " + button);
+                    System.err.println("dob is " + dob);
+                    button.putClientProperty ("file", dob);
+                }
                 return button != null ? new InstanceSupport.Instance (button) : null;
             } else {
                 return ic;
             }
         }
+        
+    private Map cookiesToObjects = new HashMap();
+    
+    protected Object instanceForCookie (DataObject obj, InstanceCookie cookie)
+    throws IOException, ClassNotFoundException {
+        Object result = super.instanceForCookie(obj, cookie);
+        cookiesToObjects.put (result, obj);
+        return result;
+    }
+        
 
         /**
          * Accepts only cookies that can provide <code>Toolbar</code>.
@@ -490,6 +877,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             for (int i = 0; i < cookies.length; i++) {
                 try {
                     Object obj = cookies[i].instanceCreate();
+                    Object file = cookiesToObjects.get(obj);
                     if (obj instanceof Presenter.Toolbar) {
                         obj = ((Presenter.Toolbar)obj).getToolbarPresenter();
                         // go on to get thru next condition
@@ -507,6 +895,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                             if (ToolbarPool.getDefault().getPreferredIconSize() == 24) {
                                 ((JComponent) obj).putClientProperty("PreferredIconSize",new Integer(24)); //NOI18N
                             }
+                            ((JComponent) obj).putClientProperty("file", file);
                         }
                         Toolbar.this.add ((Component)obj);
                         continue;
@@ -518,6 +907,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                             b.putClientProperty("PreferredIconSize",new Integer(24)); //NOI18N
                         }
                         Actions.connect (b, a);
+                        b.putClientProperty ("file", file);
                         Toolbar.this.add (b);
                         continue;
                     }
@@ -525,6 +915,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                     ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
                 } catch (ClassNotFoundException ex) {
                     ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
+                } finally {
+                   cookiesToObjects.clear();
                 }
             }
 
