@@ -35,8 +35,11 @@ import org.netbeans.modules.form.palette.*;
 import org.netbeans.modules.form.layoutsupport.*;
 
 /**
+ * A transparent layer (glass pane) handling user operations in designer (mouse
+ * and keyboard events) and painting selection and drag&drop feedback.
+ * Technically, this is a layer in FormDesigner, placed over ComponentLayer.
  *
- * @author Tran Duc Trung
+ * @author Tran Duc Trung, Tomas Pavek
  */
 
 class HandleLayer extends JPanel
@@ -46,6 +49,8 @@ class HandleLayer extends JPanel
     static final int COMP_SELECTED = 1; // get the deepest selected component
     static final int COMP_ABOVE_SELECTED = 2; // get the component above the deepest selected component
     static final int COMP_UNDER_SELECTED = 3; // get the component under the deepest selected component
+
+    private static final int DESIGNER_RESIZING = 256; // flag for resizeType
 
     private FormDesigner formDesigner;
     private boolean viewOnly;
@@ -58,9 +63,7 @@ class HandleLayer extends JPanel
 
     private SelectionDragger selectionDragger;
 
-    private FormDesigner.Resizer fdResizer;
-    private int designerResizeType;
-    private boolean wasDragged = false;
+    private DesignerResizer designerResizer;
 
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
@@ -128,8 +131,10 @@ class HandleLayer extends JPanel
             }
         }
         
-        getAccessibleContext().setAccessibleName(FormEditor.getFormBundle().getString("ACSN_HandleLayer"));
-        getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_HandleLayer"));
+        getAccessibleContext().setAccessibleName(
+            FormUtils.getBundleString("ACSN_HandleLayer")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(
+            FormUtils.getBundleString("ACSD_HandleLayer")); // NOI18N
     }
 
     void setViewOnly(boolean viewOnly) {
@@ -299,7 +304,7 @@ class HandleLayer extends JPanel
      */
     private RADComponent getMetaComponentAt(Point point, int mode) {
         Component componentLayer = formDesigner.getComponentLayer();
-        point = SwingUtilities.convertPoint(this, point, componentLayer);
+//        point = SwingUtilities.convertPoint(this, point, componentLayer);
         Component comp = SwingUtilities.getDeepestComponentAt(
             componentLayer, point.x, point.y);
 
@@ -557,7 +562,7 @@ class HandleLayer extends JPanel
     boolean anyDragger() {
         return componentDragger != null
                || selectionDragger != null
-               || fdResizer != null;
+               || designerResizer != null;
     }
 
     private ComponentDragger createComponentDragger(Point hotspot) {
@@ -617,35 +622,57 @@ class HandleLayer extends JPanel
     }
 
     private boolean cancelDragging() {
-        if (componentDragger != null || selectionDragger != null) {
-            componentDragger = null;
-            selectionDragger = null;
-
+        if (componentDragger != null || selectionDragger != null
+            || designerResizer != null)
+        {
             if (resizeType != 0) {
                 resizeType = 0;
                 Cursor cursor = getCursor();
                 if (cursor != null && cursor.getType() != Cursor.DEFAULT_CURSOR)
                     setCursor(Cursor.getDefaultCursor());
+                if (getToolTipText() != null)
+                    setToolTipText(null);
             }
 
-            repaint();
+            if (designerResizer != null) {
+                designerResizer = null;
+                Dimension prevSize = formDesigner.getStoredDesignerSize();
+                if (!formDesigner.getComponentLayer().getDesignerSize()
+                        .equals(prevSize)) // restore the previous designer size
+                    formDesigner.getComponentLayer().updateDesignerSize(prevSize);
+            }
+            else {
+                componentDragger = null;
+                selectionDragger = null;
+                repaint();
+            }
+
             draggingCanceled = true;
             return true;
         }
+
         return false;
     }
     
-    private boolean validDesignerResizing(int resizing) {
-        return resizing == (LayoutSupportManager.RESIZE_DOWN
-                            | LayoutSupportManager.RESIZE_RIGHT)
-            || resizing == LayoutSupportManager.RESIZE_DOWN
-            || resizing == LayoutSupportManager.RESIZE_RIGHT;
-    }
-
     private void checkResizing(MouseEvent e) {
         int resizing = checkDesignerResizing(e);
-        if (resizing == 0)
+        if (resizing == 0) {
+            if (getToolTipText() != null)
+                setToolTipText(null);
+
             resizing = checkComponentsResizing(e);
+        }
+        else {
+            if (getToolTipText() == null) {
+                Dimension size = formDesigner.getComponentLayer().getDesignerSize();
+                String hint = FormUtils.getFormattedBundleString(
+                                "FMT_HINT_DesignerResizing", // NOI18N
+                                new Object[] { new Integer(size.width),
+                                               new Integer(size.height) });
+                setToolTipText(hint);
+                ToolTipManager.sharedInstance().mouseEntered(e);
+            }
+        }
 
         if (resizing != 0)
             setResizingCursor(resizing);
@@ -658,15 +685,25 @@ class HandleLayer extends JPanel
 
     private int checkDesignerResizing(MouseEvent e) {
         if (!e.isAltDown() && !e.isControlDown() && !e.isShiftDown()) {
+            ComponentLayer compLayer = formDesigner.getComponentLayer();
             int resizing = getSelectionResizable(
-                               e.getPoint(),
-                               formDesigner.getComponentLayer(),
-                               7);
-            designerResizeType = validDesignerResizing(resizing) ? resizing : 0;
-        }
-        else designerResizeType = 0;
+                             e.getPoint(),
+                             compLayer.getComponentContainer(),
+                             compLayer.getDesignerOutsets().right + 2);
 
-        return designerResizeType;
+            resizeType = validDesignerResizing(resizing) ?
+                         resizing | DESIGNER_RESIZING : 0;
+        }
+        else resizeType = 0;
+
+        return resizeType;
+    }
+
+    private boolean validDesignerResizing(int resizing) {
+        return resizing == (LayoutSupportManager.RESIZE_DOWN
+                            | LayoutSupportManager.RESIZE_RIGHT)
+            || resizing == LayoutSupportManager.RESIZE_DOWN
+            || resizing == LayoutSupportManager.RESIZE_RIGHT;
     }
 
     private int checkComponentsResizing(MouseEvent e) {
@@ -746,7 +783,8 @@ class HandleLayer extends JPanel
     }
 
     private int getSelectionResizable(Point p, Component comp, int borderWidth) {
-        if (comp == null) return 0;
+        if (comp == null)
+            return 0;
 
         Rectangle bounds = comp.getBounds();
         bounds.x = 0;
@@ -758,8 +796,10 @@ class HandleLayer extends JPanel
 
         r1.grow(borderWidth, borderWidth);
         r2.grow(-3, -3);
-        if (r2.width < 0) r2.width = 0;
-        if (r2.height < 0) r2.height = 0;
+        if (r2.width < 0)
+            r2.width = 0;
+        if (r2.height < 0)
+            r2.height = 0;
 
         int resizable = 0;
         if (r1.contains(p)) {
@@ -803,6 +843,40 @@ class HandleLayer extends JPanel
             cursor = Cursor.getDefaultCursor();
 
         setCursor(cursor);
+    }
+
+    private void setUserDesignerSize() {
+        NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine(
+            FormUtils.getBundleString("CTL_SetDesignerSize_Label"), // NOI18N
+            FormUtils.getBundleString("CTL_SetDesignerSize_Title")); // NOI18N
+        Dimension size = formDesigner.getComponentLayer().getDesignerSize();
+        input.setInputText(Integer.toString(size.width) + ", " // NOI18N
+                           + Integer.toString(size.height));
+
+        if (TopManager.getDefault().notify(input) == NotifyDescriptor.OK_OPTION) {
+            String txt = input.getInputText();
+            int i = txt.indexOf(',');
+            if (i > 0) {
+                int n = txt.length();
+                try {
+                    int w = Integer.parseInt(txt.substring(0, i));
+                    while (++i < n && txt.charAt(i) == ' ');
+                    int h = Integer.parseInt(txt.substring(i, n));
+                    if (w >= 0 && h >= 0) {
+                        size = new Dimension(w ,h);
+                        formDesigner.setStoredDesignerSize(size);
+                        // update must be done immediately because of a weird
+                        // mouse move event occurring after closing the input
+                        // dialog but before updating the designer through
+                        // synthetic property change processing
+                        formDesigner.getComponentLayer().updateDesignerSize(size);
+                        setToolTipText(null);
+                        setCursor(Cursor.getDefaultCursor());
+                    }
+                }
+                catch (NumberFormatException ex) {} // silently ignore, do nothing
+            }
+        }
     }
 
     private LayoutConstraints getConstraintsAtPoint(RADComponent metacomp,
@@ -889,8 +963,8 @@ class HandleLayer extends JPanel
                 args));
     }
     
-    private boolean mouseOnComponentLayer(Point p) {
-        Rectangle bounds = formDesigner.getComponentLayer().getBounds();
+    private boolean mouseOnVisual(Point p) {
+        Rectangle bounds = formDesigner.getComponentLayer().getDesignerBounds();
         return bounds.contains(p);
     }
 
@@ -913,19 +987,13 @@ class HandleLayer extends JPanel
                 return;
 
             if (MouseUtils.isLeftMouseButton(e)) {
-                if (fdResizer != null) {
-                    if (wasDragged) {
-                        fdResizer.dropDesigner(e.getPoint(), true);
-                    }
-                    fdResizer.hideCurrentSizeInStatus();
-                    fdResizer = null;
-                    wasDragged = false;
-                }
-                
                 CPManager palette = CPManager.getDefault();
-
                 if (palette.getMode() == PaletteAction.MODE_SELECTION) {
-                    if (componentDragger != null) {
+                    if (designerResizer != null) {
+                        designerResizer.drop(e.getPoint());
+                        designerResizer = null;
+                    }
+                    else if (componentDragger != null) {
                         componentDragger.dropComponents(e.getPoint());
                         componentDragger = null;
                         repaint();
@@ -984,7 +1052,7 @@ class HandleLayer extends JPanel
 
             if (MouseUtils.isRightMouseButton(e)) {
                 if (!anyDragger()) {
-                    if (!mouseOnComponentLayer(e.getPoint()))
+                    if (!mouseOnVisual(e.getPoint()))
                         selectOtherComponentsNode();
                     else {
                         RADComponent hitMetaComp =
@@ -1014,15 +1082,18 @@ class HandleLayer extends JPanel
                         // mouse not pressed with Shift only (reserved for
                         // interval selection, applied on mouse release or
                         // or mouse dragged)
-                        if (fdResizer == null && !modifier
-                            && validDesignerResizing(designerResizeType))
-                        {   // start designer resizing
-                            fdResizer = new FormDesigner.Resizer(
-                                              formDesigner, designerResizeType);
-                            fdResizer.showCurrentSizeInStatus();
+                        if (designerResizer == null && !modifier
+                            && (resizeType & DESIGNER_RESIZING) != 0)
+                        {   // can start resizing of the designer
+                            if (e.getClickCount() == 2)
+                                setUserDesignerSize();
+                            else { // start designer resizing
+                                designerResizer = new DesignerResizer();
+                                draggingCanceled = false;
+                            }
                         }
-                        else if (!mouseOnComponentLayer(lastLeftMousePoint)) {
-                            if (designerResizeType == 0)
+                        else if (!mouseOnVisual(lastLeftMousePoint)) {
+                            if (resizeType == 0) // designerResizeType
                                 selectOtherComponentsNode();
                         }
                         else if (resizeType == 0
@@ -1053,7 +1124,7 @@ class HandleLayer extends JPanel
                         }
                         else constraints = null;
 
-                        if (!mouseOnComponentLayer(lastLeftMousePoint)) {
+                        if (!mouseOnVisual(lastLeftMousePoint)) {
                             formDesigner.getModel().getComponentCreator()
                                 .createComponent(item.getInstanceCookie(),
                                                  null, null);
@@ -1078,10 +1149,8 @@ class HandleLayer extends JPanel
         public void mouseDragged(MouseEvent e) {
             Point p = e.getPoint();
 
-            wasDragged = true;
-            
-            if (fdResizer != null) {
-                fdResizer.dropDesigner(e.getPoint(), false);
+            if (designerResizer != null) {
+                designerResizer.drag(e.getPoint());
             }
             else if (CPManager.getDefault().getMode()
                               == PaletteAction.MODE_SELECTION
@@ -1138,6 +1207,47 @@ class HandleLayer extends JPanel
 
     // ----------
 
+    private class DesignerResizer {
+        boolean dragged = false;
+
+        public void drag(Point p) {
+            Dimension size = computeDesignerSize(p);
+            formDesigner.getComponentLayer().updateDesignerSize(size);
+            if (!size.equals(formDesigner.getStoredDesignerSize()))
+                dragged = true;
+        }
+
+        public void drop(Point p) {
+            if (dragged) {
+                Dimension size = computeDesignerSize(p);
+                formDesigner.setStoredDesignerSize(size);
+                // designer size in ComponentLayer will be updated
+                // automatically through synthetic property change processing
+            }
+        }
+
+        private Dimension computeDesignerSize(Point p) {
+            Rectangle r = formDesigner.getComponentLayer().getDesignerBounds();
+            int w = r.width, h = r.height;
+
+            if ((resizeType & LayoutSupportManager.RESIZE_DOWN) != 0) {
+                h = p.y - r.y;
+                if (h < 0)
+                    h = 0;
+            }
+
+            if ((resizeType & LayoutSupportManager.RESIZE_RIGHT) != 0) {
+                w = p.x - r.x;
+                if (w < 0)
+                    w = 0;
+            }
+
+            return new Dimension(w, h);
+        }
+    }
+
+    // ----------
+
     private class SelectionDragger {
         private Point startPoint;
         private Point lastPoint;
@@ -1161,9 +1271,10 @@ class HandleLayer extends JPanel
             if (startPoint != null && endPoint != null) {
                 lastPoint = endPoint;
                 ArrayList toSelect = new ArrayList();
-                collectSelectedComponents(getRectangle(),
-                                          formDesigner.getComponentLayer(),
-                                          toSelect);
+                collectSelectedComponents(
+                    getRectangle(),
+                    formDesigner.getComponentLayer().getComponentContainer(),
+                    toSelect);
 
                 RADComponent[] selected = new RADComponent[toSelect.size()];
                 toSelect.toArray(selected);

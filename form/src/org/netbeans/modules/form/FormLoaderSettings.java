@@ -165,9 +165,9 @@ public class FormLoaderSettings extends SystemOption {
     /** Opened forms are docked into one FormDesigner window, otherwise each form into one single window */
 //    private static boolean openFormsInOneWindow = true;
     /** The color of FormDesigner window's background */
-    private static java.awt.Color formDesignerBackgroundColor = new java.awt.Color(255, 255, 255);
+    private static java.awt.Color formDesignerBackgroundColor = java.awt.Color.white;
     /** The color of border around designed component */
-    private static java.awt.Color formDesignerBorderColor = new java.awt.Color(230, 230, 255);
+    private static java.awt.Color formDesignerBorderColor = new java.awt.Color(224, 224, 255);
 
     private static final int MIN_SELECTION_BORDER_SIZE = 1;
     private static final int MAX_SELECTION_BORDER_SIZE = 15;

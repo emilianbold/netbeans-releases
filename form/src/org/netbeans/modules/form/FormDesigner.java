@@ -14,30 +14,30 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
-import java.applet.Applet;
-import java.awt.event.*;
 import java.beans.*;
-import java.lang.reflect.*;
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.text.JTextComponent;
 
 import org.openide.*;
 import org.openide.windows.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.awt.UndoRedo;
-import org.openide.explorer.ExplorerPanel;
 
 import org.netbeans.modules.form.palette.*;
-import org.netbeans.modules.form.fakepeer.FakePeerContainer;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 
-import org.netbeans.lib.awtextra.*;
-
 /**
+ * This is a TopComponent subclass holding the form designer. It consist of two
+ * layers - HandleLayer (responsible for interaction with user) and
+ * ComponentLayer (presenting the components, not accessible to the user).
+ *
+ * FormDesigner
+ *  +- JScrollPane
+ *      +- JLayeredPane
+ *          +- HandleLayer
+ *          +- ComponentLayer
  *
  * @author Tran Duc Trung, Tomas Pavek, Josef Kozak
  */
@@ -49,7 +49,6 @@ public class FormDesigner extends TopComponent
 
     private ComponentLayer componentLayer;
     private HandleLayer handleLayer;
-    private FormDesignerPanel fdPanel;
 
     private InPlaceEditLayer textEditLayer;
     private FormProperty editedProperty;
@@ -66,7 +65,7 @@ public class FormDesigner extends TopComponent
 
     private VisualReplicator replicator = new VisualReplicator(
         null,
-        new Class[] { Window.class, Applet.class,
+        new Class[] { Window.class, java.applet.Applet.class,
 //                      RootPaneContainer.class,
                       MenuComponent.class },
         VisualReplicator.ATTACH_FAKE_PEERS | VisualReplicator.DISABLE_FOCUSING);
@@ -99,15 +98,6 @@ public class FormDesigner extends TopComponent
         return new HelpCtx("gui.formeditor"); // NOI18N
     }
 
-    public Dimension getPreferredSize() {
-        int padding = 2 * fdPanel.getBorderThickness();
-        return new Dimension(400 + padding + 15, 300 + padding + 50);
-    }
-
-    //
-    //
-    //
-    
     public void writeExternal(ObjectOutput out) throws IOException {
         if (formEditorSupport == null)
             return;
@@ -233,23 +223,15 @@ public class FormDesigner extends TopComponent
         formModelListener = new FormListener();
         
         componentLayer = new ComponentLayer();
-        fdPanel = new FormDesignerPanel(formModel, componentLayer);
-        
-        FakePeerContainer fakeContainer = new FakePeerContainer();
-        fakeContainer.setLayout(new BorderLayout());
-        fakeContainer.add(fdPanel, BorderLayout.CENTER);
-        
         handleLayer = new HandleLayer(this);
         
         layeredPane = new JLayeredPane();
         layeredPane.setLayout(new OverlayLayout(layeredPane));
-        layeredPane.add(fakeContainer, new Integer(1000));
+        layeredPane.add(componentLayer, new Integer(1000));
         layeredPane.add(handleLayer, new Integer(1001));
 
         setLayout(new BorderLayout());
-        
-        JScrollPane sp = new JScrollPane(layeredPane);
-        add(sp);
+        add(new JScrollPane(layeredPane), BorderLayout.CENTER);
 
         setModel(formModel);
     }
@@ -268,7 +250,7 @@ public class FormDesigner extends TopComponent
             resetTopDesignComponent(false);
             updateName(formModel.getName());
             handleLayer.setViewOnly(formModel.isReadOnly());
-            fdPanel.updatePanel(getDesignerSize());
+            componentLayer.updateDesignerSize(getStoredDesignerSize());
         }
         else formEditorSupport = null;
     }
@@ -516,18 +498,15 @@ public class FormDesigner extends TopComponent
         }
     }
 
-    private Dimension getDesignerSize() {
+    Dimension getStoredDesignerSize() {
         RADComponent metacomp = formModel.getTopRADComponent();
         if (metacomp == null)
             return null;
 
-        Dimension size = (Dimension) metacomp.getAuxValue(PROP_DESIGNER_SIZE);
-        if (size == null)
-            size = new Dimension(400, 300);
-        return size;
+        return (Dimension) metacomp.getAuxValue(PROP_DESIGNER_SIZE);
     }
 
-    private void setDesignerSize(Dimension size) {
+    void setStoredDesignerSize(Dimension size) {
         RADComponent metacomp = formModel.getTopRADComponent();
         if (metacomp instanceof RADVisualFormContainer)
             ((RADVisualFormContainer)metacomp).setDesignerSize(size);
@@ -542,10 +521,6 @@ public class FormDesigner extends TopComponent
         return componentLayer;
     }
     
-    FormDesignerPanel getFormDesignerPanel() {
-        return fdPanel;
-    }    
-
     public void setTopDesignComponent(RADVisualComponent component,
                                       boolean update) {
         topDesignComponent = component;
@@ -601,6 +576,12 @@ public class FormDesigner extends TopComponent
                 }
             }
         );
+    }
+
+    void updateVisualSettings() {
+        componentLayer.updateVisualSettings();
+        layeredPane.revalidate();
+        layeredPane.repaint(); // repaints both HanleLayer and ComponentLayer
     }
 
     // ------------------
@@ -847,12 +828,11 @@ public class FormDesigner extends TopComponent
 
         private void performUpdates() {
             if (events == null) {
-                componentLayer.removeAll();
                 replicator.setTopMetaComponent(topDesignComponent);
                 Component formClone = (Component) replicator.createClone();
                 if (formClone != null) {
                     formClone.setVisible(true);
-                    componentLayer.add(formClone, BorderLayout.CENTER);
+                    componentLayer.setTopDesignComponent(formClone);
                 }
                 updateName(formModel.getName());
                 return;
@@ -926,7 +906,7 @@ public class FormDesigner extends TopComponent
                 }
                 else if (type == FormModelEvent.SYNTHETIC_PROPERTY_CHANGED
                          && PROP_DESIGNER_SIZE.equals(ev.getPropertyName()))
-                    fdPanel.updatePanel(getDesignerSize());
+                    componentLayer.updateDesignerSize(getStoredDesignerSize());
 
                 prevType = type;
                 prevContainer = metacont;
@@ -936,148 +916,6 @@ public class FormDesigner extends TopComponent
                 componentLayer.revalidate();
                 componentLayer.repaint();
             }
-        }
-    }
-
-    // -----------
-
-    public static class FormDesignerPanel extends JPanel {
-        
-        private JComponent formDesignerLayer;
-        private int borderThickness;
-        private int lineThickness;
-        private int paddingThickness;
-        private FormModel formModel;
-        private AbsoluteConstraints ac;
-        
-        
-        public FormDesignerPanel(FormModel formModel, JComponent container) {
-            this.formModel = formModel;
-            
-            JPanel panel = new JPanel();
-            panel.setLayout(new BorderLayout());
-            panel.add(container, BorderLayout.CENTER);
-            
-            this.formDesignerLayer = panel;
-            
-            borderThickness = 5;
-            lineThickness = 1;
-            paddingThickness = 30;
-            
-            setLayout(new AbsoluteLayout());
-            
-            updateBackgroundColor();
-            
-            int borderSize = 2 * getBorderThickness();
-            
-            ac = new AbsoluteConstraints(0, 0, 400 + borderSize, 300 + borderSize);
-            add(formDesignerLayer, ac);
-        }
-        
-        
-        public int getBorderThickness() {
-            return borderThickness + lineThickness + paddingThickness;
-        }
-        
-        
-        public void updatePanel(Dimension d) {
-            if (d == null) {
-                return;
-            }
-            
-            int padding = 2 * getBorderThickness();
-            ac.width = d.width + padding;
-            ac.height = d.height + padding;
-
-            formDesignerLayer.revalidate();
-            formDesignerLayer.repaint();
-        }
-        
-        
-        public void updateBackgroundColor() {
-            setBackground(formSettings.getFormDesignerBackgroundColor());
-            updateBorderColor();
-        }
-    
-        
-        public void updateBorderColor() {
-            CompoundBorder border = new CompoundBorder(
-                new CompoundBorder(
-                    new LineBorder(formSettings.getFormDesignerBackgroundColor(), 30), 
-                    new LineBorder(formSettings.getFormDesignerBackgroundColor(), 1)), //java.awt.Color.black ??
-                new LineBorder(formSettings.getFormDesignerBorderColor(), 5));
-            
-            formDesignerLayer.setBorder(border); 
-        }
-    }
-
-    
-    public static class Resizer  {
-
-        private FormDesigner formDesigner;
-        private FormDesignerPanel fdPanel;
-        private int resize;
-        
-        
-        public Resizer(FormDesigner formDesigner, int resize) {
-            this.formDesigner = formDesigner;
-            this.resize = resize;
-            this.fdPanel = formDesigner.getFormDesignerPanel();
-        }
-        
-        
-        private void setStatusText(String formatId, Object[] args) {
-            TopManager.getDefault().setStatusText(
-                java.text.MessageFormat.format(
-                    FormEditor.getFormBundle().getString(formatId), args));
-        }
-        
-        
-        public void showCurrentSizeInStatus() {
-            Dimension size = fdPanel.getPreferredSize();
-            int padding = 2 * fdPanel.getBorderThickness();
-            setStatusText("FMT_MSG_RESIZING_FORMDESIGNER", // NOI18N
-                            new Object[] { new Integer(size.width - padding).toString(), 
-                                           new Integer(size.height - padding).toString() } );            
-        }
-        
-        
-        public void hideCurrentSizeInStatus() {
-            TopManager.getDefault().setStatusText(""); // NOI18N
-        }
-        
-        
-        public void dropDesigner(Point p, boolean resizingFinished) {
-            int w = fdPanel.getPreferredSize().width;
-            int h = fdPanel.getPreferredSize().height;
-            int border = fdPanel.getBorderThickness();
-            
-            if (resize == (LayoutSupportManager.RESIZE_DOWN
-                           | LayoutSupportManager.RESIZE_RIGHT))
-            {
-                w = p.x - border;
-                h = p.y - border;
-            }
-            else if (resize == LayoutSupportManager.RESIZE_DOWN) {
-                w = w - 2 * border;
-                h = p.y - border;
-            }
-            else if (resize == LayoutSupportManager.RESIZE_RIGHT) {
-                w = p.x - border;
-                h = h - 2 * border;
-            }
-            
-            int minSize = 20;
-            if (w < minSize) w = minSize;
-            if (h < minSize) h = minSize;
-            
-            fdPanel.updatePanel(new Dimension(w, h));
-            
-            if (resizingFinished)
-                formDesigner.setDesignerSize(new Dimension(w, h));
-            
-            setStatusText("FMT_MSG_RESIZING_FORMDESIGNER", // NOI18N
-                            new Object[] { new Integer(w).toString(), new Integer(h).toString() } );
         }
     }
 }

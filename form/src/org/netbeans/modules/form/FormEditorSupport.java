@@ -981,15 +981,11 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
                     }
                     else if (FormLoaderSettings.PROP_SELECTION_BORDER_SIZE.equals(propName)
                           || FormLoaderSettings.PROP_SELECTION_BORDER_COLOR.equals(propName)
-                          || FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR.equals(propName))
+                          || FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR.equals(propName)
+                          || FormLoaderSettings.PROP_FORMDESIGNER_BACKGROUND_COLOR.equals(propName)
+                          || FormLoaderSettings.PROP_FORMDESIGNER_BORDER_COLOR.equals(propName))
                     {
-                        formModel.getFormDesigner().repaint();
-                    }
-                    else if (FormLoaderSettings.PROP_FORMDESIGNER_BACKGROUND_COLOR.equals(propName)) {
-                        formModel.getFormDesigner().getFormDesignerPanel().updateBackgroundColor();
-                    }
-                    else if (FormLoaderSettings.PROP_FORMDESIGNER_BORDER_COLOR.equals(propName)) {
-                        formModel.getFormDesigner().getFormDesignerPanel().updateBorderColor();
+                        formModel.getFormDesigner().updateVisualSettings();
                     }
                 }
             }

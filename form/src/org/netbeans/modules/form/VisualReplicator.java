@@ -21,11 +21,13 @@ import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 import org.netbeans.modules.form.layoutsupport.*;
 
 /**
- * This class replicates the instances from meta-components hierarchy,
- * allowing additional updates. It also maintains mapping from meta components
- * to clones, and viceversa.
+ * This class replicates the instances from meta-components hierarchy of the
+ * designed form. Components cloned this way are used e.g. in ComponentLayer
+ * for presenting the form in designer, or by TestAction. Due to mapping from
+ * meta components to clones (and viceversa), effective incremental updates of
+ * changes from metadata are possible.
  * Note: if some updates are done on replicated components, revalidate() and
- * repaint() should be called on the top component then.
+ * repaint() should be called on the top component afterwards.
  *
  * @author Tomas Pavek
  */

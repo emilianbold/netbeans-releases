@@ -16,27 +16,129 @@ package org.netbeans.modules.form;
 import java.awt.*;
 import javax.swing.*;
 
-import org.netbeans.modules.form.fakepeer.FakePeerSupport;
+import org.netbeans.modules.form.fakepeer.*;
 
 /**
+ * A JPanel subclass holding components presented in FormDesigner (contains
+ * also the resizable border and the white area around). Technically, this is
+ * a layer in FormDesigner, placed under HandleLayer.
  *
- * @author Tran Duc Trung
+ * ComponentLayer
+ *  +- DesignerPanel
+ *      +- FakePeerContainer
+ *          +- top visual component of the designed form (by VisualReplicator)
+ *              +- subcomponents of the designed form
+ *              +- ...
+ *
+ * @author Tomas Pavek
  */
 
 class ComponentLayer extends JPanel
 {
+    private static FormLoaderSettings formSettings = FormEditor.getFormSettings();
+
+    private static final int HORIZONTAL_MARGIN = 12;
+    private static final int VERTICAL_MARGIN = 12;
+
+    /** The container holding the top visual component of the form. */
+    private Container componentContainer;
+
+    /** A panel (with a resizable border) positioning the component container
+     * in the whole ComponentLayer area. */
+    private DesignerPanel designerPanel;
+
     ComponentLayer() {
-        setBackground(Color.white);
-        setFont(FakePeerSupport.getDefaultAWTFont());
-        setLayout(new BorderLayout());
+        componentContainer = new FakePeerContainer();
+        componentContainer.setLayout(new BorderLayout());
+        componentContainer.setBackground(Color.white);
+        componentContainer.setFont(FakePeerSupport.getDefaultAWTFont());
+
+        designerPanel = new DesignerPanel();
+        designerPanel.setLayout(new BorderLayout());
+        designerPanel.add(componentContainer, BorderLayout.CENTER);
+
+        setLayout(new FlowLayout(FlowLayout.LEFT,
+                                 HORIZONTAL_MARGIN,
+                                 VERTICAL_MARGIN));
+        add(designerPanel);
+
+        updateBackground();
     }
-    
-//      public Insets getInsets() {
-//          Insets insets = super.getInsets();
-//          insets.top += 20;
-//          insets.left += 20;
-//          insets.bottom += 20;
-//          insets.right += 20;
-//          return insets;
-//        }
+
+    Container getComponentContainer() {
+        return componentContainer;
+    }
+
+    Rectangle getDesignerBounds() {
+        Rectangle r = new Rectangle(designerPanel.getDesignerSize());
+        Insets i = designerPanel.getInsets();
+        r.x = HORIZONTAL_MARGIN + i.left;
+        r.y = VERTICAL_MARGIN + i.top;
+        return r;
+    }
+
+    Dimension getDesignerSize() {
+        return designerPanel.getDesignerSize();
+    }
+
+    Insets getDesignerOutsets() {
+        return designerPanel.getInsets();
+    }
+
+    void updateDesignerSize(Dimension size) {
+        if (size != null && !size.equals(designerPanel.getDesignerSize())) {
+            designerPanel.setDesignerSize(size);
+            revalidate();
+            repaint();
+        }
+    }
+
+    void setTopDesignComponent(Component component) {
+        if (componentContainer.getComponentCount() > 0)
+            componentContainer.removeAll();
+        componentContainer.add(component, BorderLayout.CENTER);
+    }
+
+    void updateVisualSettings() {
+        updateBackground();
+        designerPanel.updateBorder();
+    }
+
+    private void updateBackground() {
+        setBackground(formSettings.getFormDesignerBackgroundColor());
+    }
+
+    // ---------
+
+    private static class DesignerPanel extends JPanel {
+        private static int BORDER_THICKNESS = 5; // [could be changeable]
+
+        private Dimension designerSize = new Dimension(400, 300);
+
+        DesignerPanel() {
+            updateBorder();
+        }
+
+        void updateBorder() {
+            setBorder(new javax.swing.border.LineBorder(
+                              formSettings.getFormDesignerBorderColor(),
+                              BORDER_THICKNESS));
+        }
+
+        Dimension getDesignerSize() {
+            return designerSize;
+        }
+
+        void setDesignerSize(Dimension size) {
+            designerSize = size;
+        }
+
+        public Dimension getPreferredSize() {
+            Dimension size = new Dimension(designerSize);
+            Insets insets = getInsets();
+            size.width += insets.left + insets.right;
+            size.height += insets.top + insets.bottom;
+            return size;
+        }
+    }
 }
