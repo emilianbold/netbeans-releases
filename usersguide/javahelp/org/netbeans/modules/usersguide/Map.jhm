@@ -42,7 +42,6 @@
 
 <mapID target="explorer" url="objects/explorer.html" />
 
-<mapID target="filesystems-objects" url="filesystems/filesystems-objects.html" />
 <mapID target="filesystems.classpath" url="filesystems/filesystems_classpath.html" />
 <mapID target="filesystems.mount" url="filesystems/filesystems_mounting.html" />
 <mapID target="filesystems.openfile" url="filesystems/filesystems_openfile.html" />
@@ -61,7 +60,6 @@
 <mapID target="objects.opening" url="objects/objects_opening.html" />
 <mapID target="objects.packages" url="objects/objects_packages.html" />
 <mapID target="objects.properties" url="objects/objects_properties.html" />
-<mapID target="objects.props-toolbar" url="objects/objects_props-toolbar.html" />
 <mapID target="objects.refresh" url="objects/objects_refreshing.html" />
 <mapID target="objects.runtime" url="objects/objects_runtime.html" />
 <mapID target="objects.saving" url="objects/objects_saving.html" />
@@ -1437,7 +1435,7 @@
    <mapID target="org.netbeans.beaninfo.JarFileEditor" url="jarpackager/jarpackager.html" />
    <mapID target="org.netbeans.core.NbAuthenticator.getPasswordAuthentication" url="pending.html" />
 <!--used for folder nodes in explorer, including root nodes of filesystems, such as JARs, and folders in JARs-->
-   <mapID target="org.openide.loaders.DataFolder" url="filesystems/filesystems-objects.html" />
+   <mapID target="org.openide.loaders.DataFolder" url="objects/objects_icons.html" />
 <!--was used for root node of a Javadoc filesystem on the javadoc tab in the Explorer-->
    <mapID target="org.netbeans.modules.javadoc.search.JavaDocNode" url="pending.html" />
 
@@ -1508,11 +1506,11 @@
   <mapID target="org.netbeans.core.actions.OptionsAction$Templates" url="pending.html" />
   
   <mapID target="org.netbeans.core.ui.UINodes$TemplatesNode" url="pending.html" />
-  <!--folder subnodes of Templates category-->
+  <!--folder subnodes of Templates category; can be overridden in layer-->
   <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnode" url="pending.html" />
   <!--for Services node and its subnodes in Templates folder-->
   <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeServices" url="pending.html" />
-    <!--for Filesystems node in Templates folder-->
+    <!--for Filesystems node in Filesystems folder-->
   <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeFilesystems" url="pending.html" />  
 
   <mapID target="org.netbeans.core.actions.MemoryMeterAction" url="pending.html" />

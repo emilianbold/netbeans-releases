@@ -40,7 +40,6 @@
     <tocitem text="Opening a File in the IDE" target="objects.opening" />
     <tocitem text="Creating or Deleting a Java Package" target="objects.packages" />
     <tocitem text="Properties Window" target="objects.properties" />
-    <tocitem text="Property Sheet Toolbar" target="objects.props-toolbar" />
     <tocitem text="Cut, Copy, Paste, and Delete Commands" target="objects.clipboard-ops" />
     <tocitem text="Saving Work" target="objects.saving" />
     <tocitem text="File Searches" >
