@@ -177,10 +177,10 @@ public class Arch extends Task implements ErrorHandler {
             
             if (!answersVersion.equals(questionsVersion)) {
                 String msg = questionsFile.getAbsolutePath() + ": answers were created for questions version \"" + answersVersion + "\" but current version of questions is \"" + questionsVersion + "\"";
-                if ("true".equals (this.getProject().getProperty("arch.warn"))) {
-                    log (msg, Project.MSG_WARN);
-                } else {
+                if ("false".equals (this.getProject().getProperty("arch.warn"))) {
                     throw new BuildException (msg);
+                } else {
+                    log (msg, Project.MSG_WARN);
                 }
             }
         }
