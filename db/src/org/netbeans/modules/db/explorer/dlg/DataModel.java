@@ -110,13 +110,17 @@ public class DataModel extends AbstractTableModel
                     //xcol.setProperty(ColumnItem.UNIQUE, Boolean.FALSE);
                     //xcol.setProperty(ColumnItem.INDEX, Boolean.FALSE);
                     xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
+                    primaryKeys.remove((ColumnItem)data.elementAt(row));
                 }
             }
 
             if (pname.equals(ColumnItem.INDEX)) {
                 if (val.equals(Boolean.FALSE)) {
                     if (xcol.isUnique()) xcol.setProperty(ColumnItem.UNIQUE, Boolean.FALSE);
-                    if (xcol.isPrimaryKey()) xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
+                    if (xcol.isPrimaryKey()) {
+                        xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
+                        primaryKeys.remove((ColumnItem)data.elementAt(row));
+                    }
                     //xcol.setProperty(ColumnItem.UNIQUE, Boolean.FALSE);
                     //xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
                 } //else xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
@@ -127,6 +131,7 @@ public class DataModel extends AbstractTableModel
                     if (!xcol.isIndexed()) xcol.setProperty(ColumnItem.INDEX, Boolean.TRUE);
                 } else {
                     xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
+                    primaryKeys.remove((ColumnItem)data.elementAt(row));
                     xcol.setProperty(ColumnItem.INDEX, Boolean.FALSE);
                 }
             }
