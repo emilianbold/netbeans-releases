@@ -13,31 +13,15 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:p="http://www.netbeans.org/ns/project"
+                xmlns:p="http://www.netbeans.org/ns/project/1"
                 xmlns:xalan="http://xml.apache.org/xslt"
-                xmlns:nbm="http://www.netbeans.org/ns/nb-module-project"
+                xmlns:nbm="http://www.netbeans.org/ns/nb-module-project/1"
                 exclude-result-prefixes="xalan p nbm">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     
     <xsl:variable name="modules" select="document('modules.xml')/modules"/>
     <xsl:variable name="deps" select="/p:project/p:configuration/nbm:data/nbm:module-dependencies"/>
     <xsl:variable name="path" select="/p:project/p:configuration/nbm:data/nbm:path"/>
-    <xsl:variable name="public.packages">
-        <xsl:variable name="pkgs" select="/p:project/p:configuration/nbm:data/nbm:public-packages"/>
-        <xsl:choose>
-            <xsl:when test="count($pkgs) &gt; 0">
-                <xsl:for-each select="$pkgs/nbm:package">
-                    <xsl:if test="position() &gt; 1">
-                        <xsl:text>, </xsl:text>
-                    </xsl:if>
-                    <xsl:value-of select="."/>
-                </xsl:for-each>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:text>-</xsl:text>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:variable>
     
     <xsl:template match="/">
 
@@ -88,11 +72,15 @@ NOTE: nbbuild/build.xml should contain:
         <property name="code.name.base.dashes" value="{translate(/p:project/p:name, '.', '-')}"/>
         <property name="domain" value="{substring-before(/p:project/p:configuration/nbm:data/nbm:path, '/')}"/>
         <property name="module.jar.dir" value="modules"/>
-        <property name="module.jar" location="${{module.jar.dir}}/${{code.name.base.dashes}}.jar"/>
+        <property name="module.jar" value="${{module.jar.dir}}/${{code.name.base.dashes}}.jar"/>
         <property name="nbm" value="${{code.name.base.dashes}}.nbm"/>
         <property name="homepage.base" value="netbeans.org"/>
         <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
         <fail unless="nbroot">Must set nbroot</fail>
+        <xsl:if test="/p:project/p:configuration/nbm:data/nbm:javadoc">
+            <fail unless="javadoc.name">Must set javadoc.name</fail>
+            <fail unless="javadoc.title">Must set javadoc.title</fail>
+        </xsl:if>
         <property name="license.file" location="${{nbroot}}/nbbuild/standard-nbm-license.txt"/>
         <property name="nbm_alias" value="nb_ide"/>
         <property name="build.compiler.debug" value="true"/>
@@ -169,11 +157,17 @@ NOTE: nbbuild/build.xml should contain:
     <target name="jar" depends="init,compile">
         <mkdir dir="netbeans/${{module.jar.dir}}"/>
         <tstamp>
-            <format property="buildnumber" pattern="manual-yyMMdd" timezone="UTC"/>
+            <format property="buildnumber" pattern="yyMMdd" timezone="UTC"/>
         </tstamp>
         <jar jarfile="netbeans/${{module.jar}}" compress="false" manifest="${{manifest.mf}}">
             <manifest>
-                <attribute name="OpenIDE-Module-Public-Packages" value="{$public.packages}"/>
+                <attribute name="OpenIDE-Module-Public-Packages">
+                    <xsl:attribute name="value">
+                        <xsl:call-template name="public.packages">
+                            <xsl:with-param name="glob" select="'.*'"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                </attribute>
                 <xsl:variable name="openide.dep" select="$deps/nbm:dependency[nbm:code-name-base = 'org.openide' and nbm:run-dependency]"/>
                 <xsl:if test="$openide.dep">
                     <!-- Special-cased. -->
@@ -203,6 +197,7 @@ NOTE: nbbuild/build.xml should contain:
                 <!-- XXX make this conditional so can use OIDE-M-B-V instead -->
                 <attribute name="OpenIDE-Module-Implementation-Version" value="${{buildnumber}}"/>
             </manifest>
+            <fileset dir="${{build.classes.dir}}"/>
         </jar>
     </target>
     
@@ -230,22 +225,21 @@ NOTE: nbbuild/build.xml should contain:
 
     <xsl:if test="/p:project/p:configuration/nbm:data/nbm:javadoc">
         <target name="javadoc" depends="init">
-            <ant dir="${nbroot}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
+            <ant dir="${{nbroot}}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
                 <property name="javadoc.base" location="."/>
-                <property name="javadoc.packages" value="{$public.packages}"/>
+                <property name="javadoc.packages">
+                    <xsl:attribute name="value">
+                        <xsl:call-template name="public.packages">
+                            <xsl:with-param name="glob" select="''"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                </property>
                 <property name="javadoc.classpath" refid="cp"/>
             </ant>
         </target>
 
         <target name="javadoc-nb" depends="init,javadoc" if="netbeans.home">
-            <pathconvert property="index.html" pathsep=" ">
-                <path>
-                    <fileset dir="javadoc">
-                        <include name="javadoc/*/index.html"/>
-                    </fileset>
-                </path>
-            </pathconvert>
-            <nbbrowse file="${{index.html}}"/>
+            <nbbrowse file="javadoc/${{javadoc.name}}/index.html"/>
         </target>
     </xsl:if>
 
@@ -349,6 +343,25 @@ NOTE: nbbuild/build.xml should contain:
         <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
         <classpath refid="test.run.cp"/>
         <arg line="${{test.class}}"/>
+    </xsl:template>
+
+    <xsl:template name="public.packages">
+        <xsl:param name="glob"/>
+        <xsl:variable name="pkgs" select="/p:project/p:configuration/nbm:data/nbm:public-packages"/>
+        <xsl:choose>
+            <xsl:when test="count($pkgs) &gt; 0">
+                <xsl:for-each select="$pkgs/nbm:package">
+                    <xsl:if test="position() &gt; 1">
+                        <xsl:text>, </xsl:text>
+                    </xsl:if>
+                    <xsl:value-of select="."/>
+                    <xsl:value-of select="$glob"/>
+                </xsl:for-each>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text>-</xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
 </xsl:stylesheet>

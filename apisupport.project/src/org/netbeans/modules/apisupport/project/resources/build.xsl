@@ -13,21 +13,49 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:project="http://www.netbeans.org/ns/project"
-                xmlns:nbm="http://www.netbeans.org/ns/nb-module-project"
+                xmlns:p="http://www.netbeans.org/ns/project/1"
+                xmlns:nbm="http://www.netbeans.org/ns/nb-module-project/1"
                 xmlns:xalan="http://xml.apache.org/xslt"
-                exclude-result-prefixes="xalan project nbm">
+                exclude-result-prefixes="xalan p nbm">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
 
 <xsl:comment> You may freely edit this file. </xsl:comment>
 <xsl:comment> The names of existing targets are significant to the IDE. </xsl:comment>
         
-<project name="{/project:project/project:configuration/nbm:data/nbm:path}" default="netbeans" basedir=".">
+<project name="{/p:project/p:configuration/nbm:data/nbm:path}" default="netbeans" basedir=".">
     <target name="netbeans" description="Build complete module.">
         <ant antfile="nbproject/build-impl.xml" target="netbeans"/>
     </target>
-    <!-- XXX others... -->
+    <target name="compile-single">
+        <ant antfile="nbproject/build-impl.xml" target="compile-single"/>
+    </target>
+    <target name="reload" description="Reload module from within IDE.">
+        <ant antfile="nbproject/build-impl.xml" target="reload"/>
+    </target>
+    <target name="nbm" description="Build NBM archive.">
+        <ant antfile="nbproject/build-impl.xml" target="nbm"/>
+    </target>
+    <xsl:if test="/p:project/p:configuration/nbm:data/nbm:javadoc">
+        <target name="javadoc" description="Create Javadoc.">
+            <ant antfile="nbproject/build-impl.xml" target="javadoc"/>
+        </target>
+        <target name="javadoc-nb" description="Create Javadoc and browse it inside the IDE.">
+            <ant antfile="nbproject/build-impl.xml" target="javadoc-nb"/>
+        </target>
+    </xsl:if>
+    <xsl:if test="/p:project/p:configuration/nbm:data/nbm:unit-tests">
+        <target name="test" description="Run tests.">
+            <ant antfile="nbproject/build-impl.xml" target="test"/>
+        </target>
+        <target name="test-single">
+            <ant antfile="nbproject/build-impl.xml" target="test-single"/>
+        </target>
+        <target name="debug-test-single">
+            <ant antfile="nbproject/build-impl.xml" target="debug-test-single"/>
+        </target>
+    </xsl:if>
+    <!-- XXX compile-test-single etc. -->
     <target name="clean" description="Clean build products.">
         <ant antfile="nbproject/build-impl.xml" target="clean"/>
     </target>
