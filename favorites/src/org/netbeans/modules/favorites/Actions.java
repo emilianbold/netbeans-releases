@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -42,22 +42,16 @@ import org.openide.windows.WindowManager;
 * @author   Jaroslav Tulach
 */
 public final class Actions extends Object {
-    private static final View VIEW = new View ();
-    private static final Select SELECT = new Select ();
-    private static final Add ADD = new Add ();
-    private static final AddOnFavoritesNode ADD_ON_FAVORITES_NODE = new AddOnFavoritesNode ();
-    private static final Remove REMOVE = new Remove ();
     
     private Actions () {
         // noinstances
     }
     
-    
-    public static Action view () { return VIEW; }
-    public static Action add () { return ADD; }
-    public static Action addOnFavoritesNode () { return ADD_ON_FAVORITES_NODE; }
-    public static Action remove () { return REMOVE; }
-    public static Action select () { return SELECT; }
+    public static Action view () { return View.getDefault(); }
+    public static Action add () { return Add.getDefault(); }
+    public static Action addOnFavoritesNode () { return AddOnFavoritesNode.getDefault(); }
+    public static Action remove () { return Remove.getDefault(); }
+    public static Action select () { return Select.getDefault(); }
     
     /**
      * Action which opend <code>CurrentProjectNode.ProjectsTab</code> default component.
@@ -65,14 +59,20 @@ public final class Actions extends Object {
      * @author  Peter Zavadsky
      */
     private static class View extends AbstractAction implements HelpCtx.Provider {
+        
+        private static final View VIEW = new View ();
+        
         public View() {
             putValue(NAME, NbBundle.getMessage(Actions.class,
                     "ACT_View"));
             Image image = Utilities.loadImage("org/netbeans/modules/favorites/resources/actionView.gif"); // NOI18N
             putValue(SMALL_ICON, image != null ? new ImageIcon(image) : null);
         }
-
-
+        
+        public static Action getDefault () {
+            return VIEW;
+        }
+        
         public void actionPerformed(ActionEvent evt) {
             final TopComponent projectsTab = Tab.findDefault();
             projectsTab.open();
@@ -89,7 +89,12 @@ public final class Actions extends Object {
     * @author   Dusan Balek
     */
     private static final class Select extends NodeAction {
-
+        private static final Select SELECT = new Select ();
+        
+        public static Action getDefault () {
+            return SELECT;
+        }
+        
         protected void performAction(Node[] activatedNodes) {
             Tab proj = Tab.findDefault();
             proj.open();
@@ -137,7 +142,13 @@ public final class Actions extends Object {
         static final long serialVersionUID =-6471281373153172312L;
         /** generated Serialized Version UID */
         //  static final long serialVersionUID = -5280204757097896304L;
-
+        
+        private static final Remove REMOVE = new Remove ();
+        
+        public static Action getDefault () {
+            return REMOVE;
+        }
+        
         /** Enabled only if the current project is ProjectDataObject.
         */
         public boolean enable (Node[] arr) {
@@ -209,7 +220,12 @@ public final class Actions extends Object {
         static final long serialVersionUID =-6471281373153172312L;
         /** generated Serialized Version UID */
         //  static final long serialVersionUID = -5280204757097896304L;
-
+        private static final Add ADD = new Add ();
+        
+        public static Action getDefault () {
+            return ADD;
+        }
+        
         /** Enabled only if the current project is ProjectDataObject.
         */
         public boolean enable (Node[] arr) {
@@ -455,6 +471,12 @@ public final class Actions extends Object {
     */
     public static class AddOnFavoritesNode extends Add {
         static final long serialVersionUID =-6471284573153172312L;
+        
+        private static final AddOnFavoritesNode ADD_ON_FAVORITES_NODE = new AddOnFavoritesNode ();
+        
+        public static Action getDefault () {
+            return ADD_ON_FAVORITES_NODE;
+        }
         
         /** Human presentable name of the action. This should be
         * presented as an item in a menu.
