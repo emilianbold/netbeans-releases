@@ -181,6 +181,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                             this.description.setText (ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("TXT_NoDescription"));
                         }
                     }                    
+                } else {
+                    // bugfix #46738, Description in New Project dialog doesn't show description of selected categories
+                    this.description.setText (ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("TXT_NoDescription"));                
                 }
                 this.firer.fireChange ();
             }
