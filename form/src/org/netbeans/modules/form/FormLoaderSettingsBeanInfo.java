@@ -145,7 +145,6 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
   * @return array of properties
   */
   public PropertyDescriptor[] getPropertyDescriptors () {
-    System.out.println("FormLoaderSettingsBeanInfo.getPropertyDescriptors ()");
     return desc;
   }
 
@@ -300,6 +299,7 @@ static final long serialVersionUID =7628317154007139777L;
 
 /*
  * Log
+ *  18   Gandalf   1.17        12/10/99 Pavel Buzek     
  *  17   Gandalf   1.16        12/8/99  Pavel Buzek     "workspace" property 
  *       added (workspace where forms are opened)
  *  16   Gandalf   1.15        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
