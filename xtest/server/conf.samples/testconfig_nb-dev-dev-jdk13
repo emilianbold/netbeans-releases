@@ -11,7 +11,7 @@ BUILDINFO_PATH=netbeans/build_info
 DRIVER_CONFIG=${CONF_DIR}/driver-nbdev-unit.properties
 
 # After how much time warning mail should be send if build is still tested
-WARNING_TIME=2h
+WARNING_TIME=`expr 2 '*' 3600`
 
 # Project name
 PROJECT_NAME="NetBeans dev JDK1.3"
