@@ -14,6 +14,7 @@
 package org.netbeans.modules.java.project;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -21,11 +22,17 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
+import org.netbeans.spi.project.SourceGroup;
+import org.netbeans.spi.project.Sources;
+import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -34,6 +41,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.nodes.Node;
 
 /**
  * Wizard to create a new J2SE project.
@@ -52,10 +60,25 @@ public class NewJavaFileWizardIterator implements TemplateWizard.Iterator {
         return new NewJavaFileWizardIterator();
     }
             
-    private WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] {
-            new JavaTargetChooserPanel(), // XXX
-        };
+    private WizardDescriptor.Panel[] createPanels( WizardDescriptor wizardDescriptor ) {
+        
+        // Ask for Java folders
+        Project project = Templates.getProject( wizardDescriptor );
+        Sources sources = (Sources)project.getLookup().lookup( Sources.class );
+        SourceGroup[] groups = sources == null ? null : sources.getSourceGroups( Sources.TYPE_JAVA ); 
+        if ( groups == null ) {            
+            sources = GenericSources.genericOnly( project );
+            groups = sources.getSourceGroups( Sources.TYPE_GENERIC ); 
+            return new WizardDescriptor.Panel[] {            
+                Templates.createSimpleTargetChooser( project, groups ),
+            };
+        }
+        else {            
+            return new WizardDescriptor.Panel[] {
+                JavaTemplates.createPackageChooser( project, groups ),
+            };
+        }
+               
     }
     
     private String[] createSteps() {
@@ -66,6 +89,7 @@ public class NewJavaFileWizardIterator implements TemplateWizard.Iterator {
         
     public Set/*<DataObject>*/ instantiate(TemplateWizard wiz) throws IOException {
         FileObject dir = Templates.getTargetFolder( wiz );
+        
         DataFolder df = DataFolder.findFolder( dir );
         FileObject template = Templates.getTemplate( wiz );
         
@@ -73,6 +97,18 @@ public class NewJavaFileWizardIterator implements TemplateWizard.Iterator {
         
         DataObject dTemplate = DataObject.find( template );                
         DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wiz )  );
+
+        // Same what template wizard does - not vey nice
+        // run default action (hopefully should be here)
+        final Node node = dobj.getNodeDelegate ();
+        final Action a = node.getPreferredAction();
+        if (a != null) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+                }
+            });
+        }
         
         return Collections.singleton(dobj);
     }
@@ -85,7 +121,7 @@ public class NewJavaFileWizardIterator implements TemplateWizard.Iterator {
     public void initialize(TemplateWizard wiz) {
         this.wiz = wiz;
         index = 0;
-        panels = createPanels();
+        panels = createPanels( wiz );
         // Make sure list of steps is accurate.
         String[] steps = createSteps();
         for (int i = 0; i < panels.length; i++) {

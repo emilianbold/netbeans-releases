@@ -15,6 +15,7 @@ package org.netbeans.modules.java.project;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,6 +24,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -33,15 +35,17 @@ import org.openide.util.HelpCtx;
  *
  * @author  Petr Hrebejk
  */
-final class JavaTargetChooserPanel implements WizardDescriptor.Panel, ChangeListener {
+public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, ChangeListener {
 
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     private JavaTargetChooserPanelGUI gui;
 
-    // private Project project;
+    private Project project;
+    private SourceGroup folders[];
     
-    JavaTargetChooserPanel() {
-        
+    public JavaTargetChooserPanel( Project project, SourceGroup folders[] ) {
+        this.project = project;
+        this.folders = folders;
     }
 
     public Component getComponent() {
@@ -58,7 +62,7 @@ final class JavaTargetChooserPanel implements WizardDescriptor.Panel, ChangeList
     }
 
     public boolean isValid() {
-        return gui != null && gui.getTargetName() != null && gui.getTargetFolder() != null;
+        return gui != null && gui.getTargetName() != null;
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -95,14 +99,24 @@ final class JavaTargetChooserPanel implements WizardDescriptor.Panel, ChangeList
             }
                         
             // Init values
-            gui.initValues( project, Templates.getTemplate( templateWizard ), targetFolder );
+            gui.initValues( project, folders, Templates.getTemplate( templateWizard ), targetFolder );
         }
     }
 
     public void storeSettings(Object settings) { 
         if( isValid() ) {
-            String folderName = gui.getTargetFolder();
-            FileObject folder = FileUtil.toFileObject(new File(folderName));
+            FileObject rootFolder = gui.getRootFolder();
+            String packageFileName = gui.getPackageFileName();
+            FileObject folder = rootFolder.getFileObject( packageFileName );            
+            if ( folder == null ) {
+                try {
+                    folder = FileUtil.createFolder( rootFolder, packageFileName );
+                }
+                catch( IOException e ) {
+                    ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
+                    return;
+                }
+            }
             Templates.setTargetFolder( (WizardDescriptor)settings, folder );
             Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
         }

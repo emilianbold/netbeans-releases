@@ -14,6 +14,7 @@
 package org.netbeans.spi.java.project.support.ui.templates;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.project.JavaTargetChooserPanel;
 import org.netbeans.spi.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -36,9 +37,8 @@ public class JavaTemplates {
      * @param folders a list of possible Java package roots to create the new file in
      * @return a wizard panel(s) prompting the user to choose a name and package
      */
-    public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders) {
-        // XXX
-        return Templates.createSimpleTargetChooser(project, folders);
+    public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders) {       
+        return new JavaTargetChooserPanel(project, folders);
     }
     
 }

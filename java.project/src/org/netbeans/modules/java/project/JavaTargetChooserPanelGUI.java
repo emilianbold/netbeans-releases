@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -35,6 +36,7 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 // XXX I18N
@@ -48,6 +50,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     private static final ListCellRenderer CELL_RENDERER = new NodeCellRenderer();
     
     private Project project;
+    private ModelItem[] groupItems;
     private String expectedExtension;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     
@@ -65,30 +68,45 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         setName( "Name & Location");
     }
     
-    public void initValues( Project p, FileObject template, String preselectedFolder ) {
+    public void initValues( Project p, SourceGroup[] groups, FileObject template, String preselectedFolder ) {
         this.project = p;
+        
+        this.groupItems = new ModelItem[ groups.length ]; 
+        for( int i = 0; i < groups.length; i++ ) {
+            this.groupItems[i] = new ModelItem( groups[i] ); 
+        }
+                
         // Show name of the project
         projectTextField.setText( ProjectUtils.getInformation(p).getDisplayName() );
         // Setup comboboxes 
-        rootComboBox.setModel( new DefaultComboBoxModel( getSourceFolderNodes( p ) ) );
+        rootComboBox.setModel( new DefaultComboBoxModel( this.groupItems ) );
         updatePackages();        
         // Determine the extension
         String ext = template == null ? "" : template.getExt(); // NOI18N
         expectedExtension = ext.length() == 0 ? "" : "." + ext; // NOI18N
     }
         
+    public FileObject getRootFolder() {
+        return ((ModelItem)rootComboBox.getSelectedItem()).group.getRootFolder();        
+    }
+    
+    public String getPackageFileName() {
+        String packageName = packageComboBox.getEditor().getItem().toString();        
+        return  packageName.replace( '.', '/' ); // NOI18N        
+    }
+    
+    /*
     public String getTargetFolder() {
-        FileObject fo = getFolder();
+        File fo = getFolder();
         
         if ( fo == null ) {
             return null;
         }
         else {
-            // XXX have to account for FU.tF returning null
-            File folder = FileUtil.toFile( fo );
-            return folder.getPath();
+            return fo.getPath();
         }
     }
+    */
     
     public String getTargetName() {
         String text = documentNameTextField.getText().trim();
@@ -159,14 +177,14 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 0);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 0);
         add(jPanel1, gridBagConstraints);
 
         jLabel5.setText("Project");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(jLabel5, gridBagConstraints);
 
         projectTextField.setEditable(false);
@@ -178,42 +196,43 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
 
         jLabel1.setText("Package Root:");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(jLabel1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(rootComboBox, gridBagConstraints);
 
         jLabel2.setText("Package:");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jLabel2, gridBagConstraints);
 
+        packageComboBox.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(packageComboBox, gridBagConstraints);
 
         jLabel4.setText("Created File:");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jLabel4, gridBagConstraints);
 
         fileTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(fileTextField, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -277,27 +296,20 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     }
     
     // Private methods ---------------------------------------------------------
-    
-    private Node[] getSourceFolderNodes( Project p ) {
-        // XXX Prety nice hack
-        LogicalViewProvider lvp = (LogicalViewProvider)p.getLookup().lookup( LogicalViewProvider.class );
-        Node root = lvp.createLogicalView();
-        return root.getChildren().getNodes();
-    }
-    
-    private Node[] getCurrentPackageNodes() {
-        Node packageRoot = (Node)rootComboBox.getSelectedItem();
-        return packageRoot.getChildren().getNodes();
-    }
-
+        
     private void updatePackages() {
-        packageComboBox.setModel( new DefaultComboBoxModel( getCurrentPackageNodes() ) );        
+        packageComboBox.setModel( new DefaultComboBoxModel( ((ModelItem)rootComboBox.getSelectedItem()).getChildren() ) );        
     }
     
-    private FileObject getFolder() {
-        Node node = (Node)packageComboBox.getSelectedItem();
-        DataObject dobj = (DataObject)node.getLookup().lookup( DataObject.class );
-        return dobj.getPrimaryFile();
+    private File getFolder() {
+        FileObject rootFo = getRootFolder();
+        File rootFile = FileUtil.toFile( rootFo );
+        if ( rootFile == null ) {
+            return null;
+        }        
+        String packageFileName = getPackageFileName();        
+        File folder = new File( rootFile, packageFileName );
+        return folder;
     }
     
     private void updateText() {
@@ -307,8 +319,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             if (documentName.length() == 0) {
                 fileTextField.setText(""); // NOI18N
             } else {
-                FileObject folder = getFolder();
-                File newFile = new File( FileUtil.toFile( folder ), documentName + expectedExtension);
+                File newFile = new File( getFolder(), documentName + expectedExtension);
                 fileTextField.setText(newFile.getAbsolutePath());
             }
         } else {
@@ -318,6 +329,61 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     }
     
     // Private innerclasses ----------------------------------------------------
+    
+    private static class ModelItem {
+        
+        private Node node;        
+        private SourceGroup group;
+        private Icon icon;
+        private ModelItem[] children;
+	
+        // For source groups
+        public ModelItem( SourceGroup group ) {            
+            this.group = group;
+            this.icon = null; // XXX Should be group getIcon() 
+        }
+        
+        // For packages
+        public ModelItem( Node node ) {
+            this.node = node;
+            this.icon = new ImageIcon( node.getIcon( java.beans.BeanInfo.ICON_COLOR_16x16 ) );
+        }
+        
+	public String getDisplayName() {
+            if ( group != null ) {
+                return group.getDisplayName();
+            }
+            else {
+                return node.getDisplayName();
+            }
+        }
+	
+        public Icon getIcon() {
+            return icon;
+        }
+        
+        public String toString() {
+            return getDisplayName();
+        }
+        
+        public ModelItem[] getChildren() {
+            if ( group == null ) {
+                return null;
+            }
+            else {
+                if ( children == null ) {
+                    Children ch = PackageView.createPackageView( group.getRootFolder() );
+                    Node nodes[] = ch.getNodes( true );
+                    children = new ModelItem[ nodes.length ];
+                    for( int i = 0; i < nodes.length; i++ ) {
+                        children[i] = new ModelItem( nodes[i] );
+                    }
+                }
+                return children;
+            }
+        }
+        
+    }
     
     private static class NodeCellRenderer extends javax.swing.plaf.basic.BasicComboBoxRenderer implements ListCellRenderer {
         
@@ -331,9 +397,9 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             javax.swing.plaf.basic.BasicComboBoxRenderer cbr = (javax.swing.plaf.basic.BasicComboBoxRenderer)super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );   
             
             if ( value != null ) {
-                Node node = (Node)value;
-                cbr.setText(node.getDisplayName());
-                cbr.setIcon( new ImageIcon( node.getIcon( java.beans.BeanInfo.ICON_COLOR_16x16 ) ) );
+                ModelItem item = (ModelItem)value;
+                cbr.setText( item.getDisplayName() );
+                cbr.setIcon( item.getIcon() );
             }
             return cbr;
         }
