@@ -103,8 +103,8 @@ public class Deploy extends Task {
             throw new BuildException("Some other error.");
         }
         
-        URLCookie urlCookie = (URLCookie) obj.getCookie(URLCookie.class);
-        String url = "";
+//        URLCookie urlCookie = (URLCookie) obj.getCookie(URLCookie.class);
+//        String url = "";
 //        if (urlCookie != null){
 //            url = urlCookie.getURL();
 //        }
