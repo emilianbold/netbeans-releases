@@ -179,6 +179,9 @@ public abstract class NbTopManager extends TopManager {
         
         // read environment properties from external file, if any
         readEnvMap ();
+
+        // initialize the URL factory
+        Object o = org.openide.execution.NbClassLoader.class;
     }
     
     /** Puts a property into the system ones, but only if the value is not null.

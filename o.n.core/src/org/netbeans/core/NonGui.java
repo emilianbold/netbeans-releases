@@ -58,6 +58,10 @@ public class NonGui extends NbTopManager implements Runnable {
 
     /** directory for modules */
     static final String DIR_MODULES = "modules"; // NOI18N
+    
+    /** name of system folder to be located in the USER_DIR and HOME_DIR */
+    private static final String SYSTEM_FOLDER = "system"; // NOI18N
+
 
     /* The class of the UIManager to be used for netbeans - can be set by command-line argument -ui <class name> */
     protected static Class uiClass;
@@ -166,7 +170,7 @@ public class NonGui extends NbTopManager implements Runnable {
             }
         } else {
             // try to create it
-            if (!systemDirFile.mkdir ()) {
+            if (!systemDirFile.mkdirs ()) {
                 Object[] arg = new Object[] {userDir};
                 System.out.println (new MessageFormat(getString("CTL_CannotCreateSysDir_text")).format(arg));
                 doExit (7);
@@ -181,7 +185,9 @@ public class NonGui extends NbTopManager implements Runnable {
         {
             Exception exc = null;
             try {
-                systemFileSystem = ModuleLayeredFileSystem.create (userDir, homeDir);
+                File u = new File (userDirFile, SYSTEM_FOLDER);
+                File h = new File (homeDirFile, SYSTEM_FOLDER);
+                systemFileSystem = ModuleLayeredFileSystem.create (u, h);
             } catch (IOException ex) {
                 exc = ex;
             } catch (java.beans.PropertyVetoException ex) {

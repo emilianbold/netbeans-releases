@@ -19,6 +19,8 @@ import java.net.URL;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
 
+import org.netbeans.core.projects.ModuleLayeredFileSystem;
+
 /** Default implementation of TopManager that is used when 
 * the system is used without initialization.
 *
@@ -31,22 +33,22 @@ public class Plain extends NbTopManager implements Runnable {
   }
 
   
-  /** Creates defalt file system.
-  */
-  protected FileSystem createDefaultFileSystem () {
-    LocalFileSystem fs = new LocalFileSystem ();
-    try {
-      String systemDir = System.getProperty("system.dir");
-      if (systemDir != null) {
-        File f = new File (systemDir);
-        fs.setRootDirectory(f);
-      }
-    } catch (Exception ex) {
-      ex.printStackTrace();
+    /** Creates defalt file system.
+    */
+    protected FileSystem createDefaultFileSystem () {
+        String systemDir = System.getProperty("system.dir");
+
+        try {
+            File f = systemDir == null ? null : new File (systemDir);
+            return ModuleLayeredFileSystem.create (f, f);
+        } catch (java.io.IOException ex) {
+            ex.printStackTrace();
+            throw new InternalError ();
+        } catch (java.beans.PropertyVetoException ex) {
+            ex.printStackTrace();
+            throw new InternalError ();
+        }
     }
-    
-    return fs;
-  }
 
 
   /** Test method to check whether some level of interactivity is enabled.
