@@ -113,6 +113,23 @@ Microsystems, Inc. All Rights Reserved.
         </java>
     </target>
     
+    <target name="javadoc">
+        <javadoc destdir="javadoc" source="1.4">
+            <classpath>
+                <path refid="cp"/>
+            </classpath>
+            <sourcepath>
+                <pathelement location="src"/>
+            </sourcepath>
+            <fileset dir="src"/>
+        </javadoc>
+    </target>
+    
+    <target name="javadoc-nb" depends="javadoc">
+        <property name="html" location="javadoc/overview-summary.html"/>
+        <nbbrowse url="file://${html}"/>
+    </target>
+    
     <target name="clean" depends="init,clean-looks">
         <delete file="threaddemo.jar"/>
         <delete>
@@ -120,6 +137,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/*.class"/>
             </fileset>
         </delete>
+        <delete dir="javadoc"/>
     </target>
     
     <target name="clean-looks" depends="init" if="looks/build.xml">

@@ -42,7 +42,7 @@ public interface Phadhail {
     boolean hasChildren();
     
     /**
-     * will be child files
+     * Get a list of child files.
      * element type = Phadhail
      * caller cannot mutate list, and it might not be thread-safe
      * implementor cannot change list after creation (i.e. size & identity of elements)
