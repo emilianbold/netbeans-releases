@@ -231,6 +231,12 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Services">
         
+        <folder name="Hidden">
+            <file name="debugger.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.multisession.EnterpriseDebugger"/>
+            </file>
+        </folder>
+
         <file name="org-netbeans-modules-debugger-support-DebuggerProjectSettings.settings" url="DebuggerProjectSettings.settings">
             <attr boolvalue="true" name="hidden"/>
         </file>
@@ -384,12 +390,4 @@ Microsystems, Inc. All Rights Reserved.
      </folder>
    </folder>
    
-   <folder name="Services">
-     <folder name="Hidden">
-        <file name="debugger.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.multisession.EnterpriseDebugger" />
-        </file>
-     </folder>
-   </folder>
-
 </filesystem>
