@@ -632,13 +632,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * Used by KillActionProvider.
      */
     public void finish () {
-        synchronized (LOCK) {
+        //Workaround for #56233
+        //synchronized (LOCK) { 
             if (startVerbose)
                 System.out.println("\nS StartActionProvider.finish ()");
             AbstractDICookie di = (AbstractDICookie) lookupProvider.lookupFirst 
                 (null, AbstractDICookie.class);
             if (getState () == STATE_DISCONNECTED) return;
-            startingThread.interrupt ();
+            if (startingThread != null) startingThread.interrupt ();
             startingThread = null;
             try {
                 if (virtualMachine != null) {
@@ -677,7 +678,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 System.out.println ("\nS StartActionProvider." +
                     "finish () end "
                 );
-        }
+        //}
     }
 
     /**
