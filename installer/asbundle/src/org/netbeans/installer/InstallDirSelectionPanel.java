@@ -81,9 +81,9 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             String destination = (String) service.getProductBeanProperty(
             ProductService.DEFAULT_PRODUCT_SOURCE, null, "installLocation");
             
-            if (! System.getProperty("os.name").startsWith("Windows")) {
+            if (!Util.isWindowsOS()) {
                 File root = new File("/");
-                if (! root.canWrite()) {
+                if (!root.canWrite()) {
                     service.setProductBeanProperty(
                     ProductService.DEFAULT_PRODUCT_SOURCE,
                     null,
@@ -105,24 +105,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     
     protected void initialize() {
         super.initialize();
-        
-	String tempPath;
-	String sysDrive = null;
-	if (Util.isWindowsOS()) {
-	    StringBuffer drive = new StringBuffer(" :\\");
-	    drive.setCharAt(0, getWinSystemDrive());
-	    sysDrive = drive.toString();
-	    tempPath = resolveString("$D(install)") + "\\Java";
-	} else {
-	    // String isAdmin = (String)System.getProperties().get("isAdmin");
-	    // if (isAdmin != null && isAdmin.equals("yes")) {  // if root user
-	    if (Util.isAdmin()) {  // if root user
-		tempPath = "/opt";
-	    } else {
-		tempPath = resolveString("$J(user.home)");
-	    }
-	}
-	logEvent(this, Log.DBG, "Install tempPath: "+ tempPath);
         
         GridBagConstraints gridBagConstraints;
         mainPanel = new JPanel();        
@@ -149,7 +131,16 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         
 	//----------------------------------------------------------------------
 	// netbeans install dir components
-	String nbInstallDir = resolveString("$P(absoluteInstallLocation)");
+	String nbInstallDir;
+        nbInstallDir = resolveString("$P(absoluteInstallLocation)");
+        if (Util.isMacOSX()) {
+            //Replace install dir
+            nbInstallDir = nbInstallDir.substring(0,nbInstallDir.lastIndexOf(File.separator))
+            + File.separator
+            + resolveString("$L(org.netbeans.installer.Bundle,Product.installDirMacOSX)");
+        }
+        logEvent(this, Log.DBG, "#### nbInstallDir: " + nbInstallDir);
+        
 	nbLabel = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.nbInstallDirectoryLabel)");
         nbInputLabel = new JLabel(nbLabel);
 	nbInputLabel.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);

@@ -71,6 +71,8 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     private String imageDirPath;
     /** Location of JDK on which installer is running. */
     private String jdkDirPath;
+    
+    private String rootInstallDir;
     /** NetBeans installation directory. */
     private String nbInstallDir;
     private String statefilePath;
@@ -115,8 +117,15 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     throws Exception{
         ProductService pservice = (ProductService)getService(ProductService.NAME);
         String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
-        nbInstallDir = resolveString((String)pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation"));
-        instDirPath = nbInstallDir + File.separator + UNINST_DIRECTORY_NAME;
+        
+        rootInstallDir = resolveString((String)pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation"));
+        if (Util.isMacOSX()) {
+            nbInstallDir = rootInstallDir + File.separator + "Contents" + File.separator + "Resources" + File.separator + "NetBeans";
+        } else {
+            nbInstallDir = rootInstallDir;
+        }
+        
+        instDirPath = rootInstallDir + File.separator + UNINST_DIRECTORY_NAME;
         logEvent(this, Log.DBG,"instDirPath: "+ instDirPath);
         imageDirPath  = nbInstallDir + File.separator + IMAGE_DIRECTORY_NAME;
 	asSetupDirPath = instDirPath + File.separator + AS_SETUP_DIR;
@@ -234,20 +243,20 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             } else {
                 cmdArray[0] = instDirPath + File.separator + INSTALL_SH;
             }
-
+            
             logEvent(this, Log.DBG,"****RunCommand Start " );
             runCommand(cmdArray, support);
             logEvent(this, Log.DBG,"****RunCommand End " );
- 
+            
 	    // installPermanentLicense();
-	
+            
             //for debugging purposes, allow not to remove instDirPath
             boolean cleanInstDir = !(Boolean.getBoolean("keep.as_inst"));
             logEvent(this, Log.DBG,"cleanInstDir -> " + cleanInstDir);
             statusDesc = resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.cleanInstDir,"
             + "$L(org.netbeans.installer.Bundle, AS.shortName))");
             mutableOperationState.setStatusDescription(statusDesc);
-
+            
             if (cleanInstDir) {
 		if (Util.isWindowsOS()) {
 		    Util.deleteDirectory(new File(asSetupDirPath), this);

@@ -19,16 +19,23 @@ import com.installshield.product.ProductBuilderSupport;
 import com.installshield.product.ProductException;
 import com.installshield.product.service.product.ProductService;
 import com.installshield.util.Log;
+import com.installshield.util.ProcessExec;
+import com.installshield.util.ProcessExecException;
+import com.installshield.util.ProcessOutputHandler;
 import com.installshield.wizard.platform.win32.Win32RegistryService;
 import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizard.service.file.FileService;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class PostInstallFixupAction extends ProductAction {
     
     private String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
     
     private String nbInstallDir = null;
+    private String rootInstallDir = null;
     private String binDir = null;
     private String configDir = null;
     private String uninstallDir = null;
@@ -43,6 +50,7 @@ public class PostInstallFixupAction extends ProductAction {
     public void build(ProductBuilderSupport support) {
         try {
             support.putClass(Util.class.getName());
+            support.putClass("org.netbeans.installer.PostInstallFixupAction$LnHandleOutput");
             support.putRequiredService(FileService.NAME);
             support.putRequiredService(ProductService.NAME);
             support.putRequiredService(Win32RegistryService.NAME);
@@ -57,10 +65,15 @@ public class PostInstallFixupAction extends ProductAction {
             // need to get absoluteInstallLocation because uninstaller doesn't know the system properties.
             fileService = (FileService)getServices().getService(FileService.NAME);
             ProductService pservice = (ProductService)getService(ProductService.NAME);
-
-            nbInstallDir = resolveString((String)pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation"));
+            
             psep = fileService.getPathSeparator();
             sep = fileService.getSeparator();
+            rootInstallDir = resolveString((String)pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation"));
+            if (Util.isMacOSX()) {
+                nbInstallDir = rootInstallDir + sep + "Contents" + sep + "Resources" + sep + "NetBeans";
+            } else {
+                nbInstallDir = rootInstallDir;
+            }
         }
         catch (Exception e) {
             logEvent(this, Log.ERROR, e);
@@ -71,7 +84,7 @@ public class PostInstallFixupAction extends ProductAction {
         
         binDir = nbInstallDir + sep + "bin";
         configDir = nbInstallDir + sep + "etc";
-        uninstallDir = nbInstallDir + sep + "_uninst";
+        uninstallDir = rootInstallDir + sep + "_uninst";
     }
     
     public void install(ProductActionSupport support) throws ProductException {
@@ -103,6 +116,9 @@ public class PostInstallFixupAction extends ProductAction {
         
         installIDEConfigFile();
         
+        if (Util.isMacOSX()) {
+            createSymbolicLink();
+        }
         if (Util.isUnixOS()) {
             installGnomeIcon();
         }
@@ -124,6 +140,9 @@ public class PostInstallFixupAction extends ProductAction {
             Util.deleteCompletely(new File(nbInstallDir + sep + StorageBuilderAction.STORAGE_BUILDER_DEST_DIR),support);
             Util.deleteCompletely(new File(uninstallDir + sep + "storagebuilder" + sep + "storagebuilder.log"),support);
             
+            if (Util.isMacOSX()) {
+                deleteSymbolicLink();
+            }
             if (Util.isUnixOS()) {
                 uninstallGnomeIcon();
             }
@@ -137,6 +156,53 @@ public class PostInstallFixupAction extends ProductAction {
         logEvent(this, Log.DBG,"replace, oldAction is " + oldAction +", support is " + support + " ...");
         
         // TODO might be modify config file
+    }
+
+    /** Create symbolic link for NetBeans start script on Mac OS X. */
+    private void createSymbolicLink () {
+        // Create the command to exec by looking for ln in /bin and /usr/bin
+        String target = "../Resources/NetBeans/bin/netbeans";
+        String linkName = rootInstallDir + sep + "Contents/MacOS/netbeans";
+        try {
+            String command = null;
+            String[] args = { "-s", target, linkName };
+            if (fileService.fileExists("/bin/ln")) {
+                command = "/bin/ln";
+            } else if (fileService.fileExists("/usr/bin/ln")) {
+                command = "/usr/bin/ln";
+            } else {
+                logEvent(this, Log.ERROR, "Cannot find 'ln' command. => Cannot create symbolic link.");
+                return;
+            }
+
+            logEvent(this, Log.DBG, "Running Symbolic Link Command: " + command);
+
+            // exec the process
+            ProcessExec ps = new ProcessExec(command, args);
+            ps.setProcessOutputHandler(new LnHandleOutput());
+            try {
+                ps.executeProcess();
+            } catch (ProcessExecException pe) {
+                logEvent(this, Log.ERROR, "Could not exec ln process.");
+            }
+            logEvent(this, Log.DBG, "Symbolic link created Target: " + target
+            + " Link: " + linkName);
+        } catch (ServiceException se) {
+            logEvent(this, Log.ERROR, se);
+        }
+    }
+    
+    private void deleteSymbolicLink () {
+        String linkName = rootInstallDir + sep + "Contents/MacOS/netbeans";
+        try {
+            if (fileService.fileExists(linkName)) {
+                fileService.deleteFile(linkName);
+            }
+        } catch (ServiceException se) {
+            logEvent(this, Log.ERROR, "Cannot delete symbolic link: " + linkName);
+            logEvent(this, Log.ERROR, se);
+        }
+        logEvent(this, Log.DBG, "Symbolic link deleted Link: " + linkName);
     }
     
     public void installIDEConfigFile() {
@@ -187,7 +253,7 @@ public class PostInstallFixupAction extends ProductAction {
      */
     public void deleteUnusedFiles() {
         try {
-            fileService.deleteFile(nbInstallDir + sep + "netbeans.desktop");
+            fileService.deleteFile(rootInstallDir + sep + "netbeans.desktop");
             
             String[] binFiles = new String [20];
             int i = -1;
@@ -300,6 +366,30 @@ public class PostInstallFixupAction extends ProductAction {
             }
         } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
+        }
+    }
+    
+    /**
+     * Inner helper class which performs output handling for the ISMP ProcessExec Class
+     */
+    private class LnHandleOutput implements ProcessOutputHandler {
+        public void processOutputData(java.io.InputStream ipStream) {
+
+        }
+        public void processErrorData(java.io.InputStream ipStream){
+            try {
+
+                InputStreamReader isr = new InputStreamReader(ipStream);
+                BufferedReader br = new BufferedReader(isr);
+                String line;
+                while ((line = br.readLine()) != null) {
+                    logEvent(this, Log.WARNING, line);
+                }
+
+            } catch (IOException ioe) {
+                PostInstallFixupAction.this.logEvent(this, Log.ERROR, "Reading of ln output failed");
+            }
+
         }
     }
 }

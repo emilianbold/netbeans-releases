@@ -19,6 +19,15 @@ Microsystems, Inc. All Rights Reserved.
   <property name="storage.builder" location="../../java/storagebuilder/dist/storagebuilder.jar"/>
   <property name="preparse.files" location="../../java/storagebuilder/preparse-files.txt"/>
   <property name="nb.dir" location="../../nbbuild/netbeans"/>
+
+  <!-- Specific to Mac OS X installer -->
+  <property name="appname" value="NetBeans4.1dev"/>
+  <property name="appversion" value="4.1dev"/>
+  <property name="version" value="4.1dev"/>
+                                                                                                                                 
+  <property name="app.dir" value="${appname}.app"/>
+  <property name="build.dir" value="build"/>
+  <!-- End -->
   
   <target name="init" depends="set-buildnumber, set-installer.basename, copy-localized-data" unless="inited">
     <property name="inited" value="true" />
@@ -181,7 +190,7 @@ Microsystems, Inc. All Rights Reserved.
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
   </target>
 
-  <target name="build-macosx" depends="init, clean-build, compile, create-statefile">
+  <target name="build-macosx" depends="init, clean-build, compile, create-statefile, create-app">
     <mkdir dir="build/scripts/as_setup"/>
     <copy file="scripts/as-macosx-install.template" tofile="build/scripts/as_setup/as-macosx-install.template"/>
     <copy file="scripts/as-macosx-uninstall.template" tofile="build/scripts/as-macosx-uninstall.template"/>
@@ -201,7 +210,7 @@ Microsystems, Inc. All Rights Reserved.
       <arg value="-alias"/>
       <arg value="basedir=${basedir}"/>
       <arg value="-alias"/>
-      <arg value="nb.dir=${nb.dir}"/>
+      <arg value="nb.dir=${build.dir}/${app.dir}"/>
       <arg value="-alias"/>
       <arg value="as.scripts.dir=build/scripts"/>
       <arg value="-alias"/>
@@ -280,5 +289,48 @@ Microsystems, Inc. All Rights Reserved.
     <echo message="${file.content}"/>
     <!-- End of debug -->
   </target>
- 
+
+  <!-- Specific to Mac OS X -->
+  <target name="create-app" description="Organize NetBeans into a standard mac-os NetBeans.app application layout">
+    <echo>
+Creating NetBeans.app bundle using ${nb.dir} as master
+================================================================
+    </echo>
+                                                                                                                                 
+    <delete dir="${build.dir}/${app.dir}"/>
+                                                                                                                                 
+    <mkdir dir="${build.dir}/${app.dir}/Contents"/>
+    <mkdir dir="${build.dir}/${app.dir}/Contents/MacOS"/>
+    <mkdir dir="${build.dir}/${app.dir}/Contents/Resources"/>
+                                                                                                                                 
+    <echo message="Copying netbeans home dir to ${build.dir}/${app.dir}/Contents/Resources/NetBeans"/>
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value="cp -r ${nb.dir} '${build.dir}/${app.dir}/Contents/Resources/NetBeans'"/>
+    </exec>
+                                                                                                                                 
+    <echo message="Copying the icon into the correct place" />
+    <copy file="${build.dir}/${app.dir}/Contents/Resources/NetBeans/nb4.1/netbeans.icns"
+          todir="${build.dir}/${app.dir}/Contents/Resources"/>
+                                                                                                                                 
+    <echo message="Generating Info.plist" />
+    <copy file="../mac/Info.plist" filtering="true" tofile="${build.dir}/${app.dir}/Contents/Info.plist">
+      <filterset>
+        <filter token="APPNAME" value="${appname}"/>
+        <filter token="APPVERSION" value="${appversion}"/>
+        <filter token="VERSION" value="${version}"/>
+        <filter token="EXENAME" value="netbeans"/>
+        <filter token="ICONFILENAME" value="netbeans.icns"/>
+      </filterset>
+    </copy>
+
+    <!-- Link must be created by installer during installation                                                                             <echo message="Creating launch script symlink ${build.dir}/${app.dir}/Contents/MacOS/netbeans"/>
+    <exec executable="sh" failonerror="yes">
+      <arg value="-c"/>
+      <arg value="ln -s ../Resources/NetBeans/bin/netbeans '${build.dir}/${app.dir}/Contents/MacOS/netbeans'"/>
+    </exec>
+    -->
+  </target>
+  <!-- End -->
+
 </project>
