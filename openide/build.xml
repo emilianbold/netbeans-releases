@@ -14,8 +14,15 @@ Microsystems, Inc. All Rights Reserved.
 
 <!-- ToDo: target to build API documentation...would be used by API Support -->
 <project name="openide" default="nbm" basedir=".">
-  <target name="compile">
+  <target name="init">
     <available property="jdk13proxies" classname="java.lang.reflect.Proxy"/>
+  </target>
+  <target name="warn-re-jdk13proxies" depends="init" unless="jdk13proxies">
+    <echo message="Warning: due to lack of JDK 1.3 proxies in your compile environment,"/>
+    <echo message="this support will not be built and the IDE will not work in JDK 1.3."/>
+    <echo message="(Or at least not as efficiently as it would if built with 1.3.)"/>
+  </target>
+  <target name="compile" depends="init,warn-re-jdk13proxies">
     <javac srcdir="src" destdir="src">
       <exclude name="**/org/openide/util/WeakListener13.java" unless="jdk13proxies"/>
       <classpath>
@@ -37,5 +44,13 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   <target name="nbm" depends="jars">
     <zip zipfile="openide.nbm" includes="netbeans/" basedir="."/>
+  </target>
+  <target name="clean">
+    <delete dir="src">
+      <include name="**/*.class"/>
+    </delete>
+    <delete file="manifest-subst.mf"/>
+    <delete file="openide.nbm"/>
+    <deltree dir="netbeans"/>
   </target>
 </project>
