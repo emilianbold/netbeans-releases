@@ -25,42 +25,17 @@ All Rights Reserved.
         </javac>
     </target>
 
-    <target depends="compile, delete-release" name="jars">
-        <mkdir dir="release"/>
-        <jar compress="false" 
-             jarfile="release/nbjnlpinstaller.jar">
-             <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt">
-                <exclude name="**/IndexServlet*"/>
-             </fileset>
-        </jar>
-    </target>
-
     <target depends="jnlp-expand1, create-war" name="netbeans">
     </target>
 
     <target depends="copy-to-release, create-jnlp-jars" name="create-config">
-        <path id="nbmfiles">
-            <fileset dir="release" includes="**/*.nbm"/>
-        </path>
-        <!-- config.txt contains the list of all nbm files -->
-        <pathconvert dirsep="${file.separator}" pathsep="" property="nbm-files-list" refid="nbmfiles"/>
-        <echo file="release/config.txt" message="${nbm-files-list}"/>
-        <property location="${nb_all}/installer/jnlp/release/" name="dirname"/>
-        <echo message="Replacing ${dirname}/"/>
-        <replace file="release/config.txt" token="${dirname}${file.separator}">
-            <replacevalue><![CDATA[@@@
-###]]></replacevalue><!-- this tag has specified a value of new line -->
-        </replace>
-        <replace file="release/config.txt" token="@@@" value=""/>
-        <replace file="release/config.txt" token="###" value="${jnlp.codebase}/"/>
-        
-        <!-- The rest of this target creates the end of nb-launch.jnlp file -->
+        <!-- This target creates the end of nb-launch.jnlp file -->
         <path id="jarfiles">
             <fileset dir="release">
                 <include name="*.jar"/>
-                <exclude name="nbjnlpinstaller.jar"/>
             </fileset>
         </path>
+        <property location="${nb_all}/installer/jnlp/release/" name="dirname"/>
         <!-- save directory name for replacing back -->
         <replace file="release/nb-launch.jnlp" token="${dirname}" value="D#I#R#_#N#A#M#E"/>
         <pathconvert dirsep="${file.separator}" pathsep="" property="jar-files-list" refid="jarfiles"/>
@@ -82,9 +57,8 @@ All Rights Reserved.
         <echo append="true" file="release/nb-launch.jnlp" message="${jnlp.extra.properties}"/>
         <echo append="true" file="release/nb-launch.jnlp">
 <![CDATA[        
-        <extension href="nb-install.jnlp" name="NetBeansInstall"/>
     </resources>
-    <application-desc main-class="org.netbeans.jnlp.NetBeansLaunch"/>
+    <application-desc main-class="org.netbeans.core.Main"/>
 </jnlp>
 ]]></echo>
         <!-- replace back accidentally replaced name of the directory -->
@@ -93,12 +67,6 @@ All Rights Reserved.
     
     <target depends="jars" name="copy-to-release">
         <mkdir dir="release"/>
-        <copy flatten="true" todir="release">
-            <fileset dir="../..">
-                <include name="**/*.nbm"/>
-                <exclude name="installer/jnlp/**"/>
-            </fileset>
-        </copy>
         <copy flatten="true" todir="release">
             <fileset dir="">
                 <include name="*.jnlp"/>
@@ -109,17 +77,11 @@ All Rights Reserved.
     <target name="jnlp-expand1" depends="create-config" if="jnlp.static">
         <replace file="release/nb-launch.jnlp" token="@CODEBASE@" value="${jnlp.codebase}"/>
         <replace file="release/nb-launch.jnlp" token="@NAME@" value="nb-launch.jnlp"/>
-        <replace file="release/nb-install.jnlp" token="@CODEBASE@" value="${jnlp.codebase}"/>
-        <replace file="release/nb-install.jnlp" token="@NAME@" value="nb-intstall.jnlp"/>
     </target>
     
     <target name="jnlp-expand2" depends="create-config" unless="jnlp.static">
         <replace file="release/nb-launch.jnlp" token="@CODEBASE@" value="$$$$codebase"/>
         <replace file="release/nb-launch.jnlp" token="@NAME@" value="$$$$name"/>
-        <replace file="release/nb-install.jnlp" token="@CODEBASE@" value="$$$$codebase"/>
-        <replace file="release/nb-install.jnlp" token="@NAME@" value="$$$$name"/>
-<!--        <replace file="release/config.txt" token="${jnlp.codebase}/" value=" $$$$codebase/"/> -->
-        <delete file="release/config.txt" />
     </target>
 
     <target name="create-war" depends="jnlp-expand2" unless="jnlp.static">
@@ -140,28 +102,10 @@ All Rights Reserved.
     <target depends="jars" name="create-jnlp-jars">
         <mkdir dir="release"/>
         <copy flatten="true" todir="release">
-            <fileset dir="../..">
-                <include name="**/lib/ext/*.jar"/>
-                <exclude name="installer/jnlp/**"/>
-                
-            </fileset>
-            <fileset dir="../..">
-                <include name="autoupdate/netbeans/lib/updater.jar"/>
-                <include name="core/netbeans/lib/ext/boot.jar"/>
+            <fileset dir="jars">
+                <include name="**/*.jar"/>
             </fileset>
         </copy>
-        <!-- bacuase some of the file cannot be signed, repack them
-            without their original manifests ;-( -->
-        <mkdir dir="tmpdir"/>
-        <unjar src="release/crimson-1.1.3.jar" dest="tmpdir"/>
-        <delete file="tmpdir/META-INF/MANIFEST.MF"/>
-        <jar jarfile="release/crimson-1.1.3.jar" basedir="tmpdir"/>
-        <delete dir="tmpdir"/>
-        <mkdir dir="tmpdir"/>
-        <unjar src="release/xml-apis-1.0b2.jar" dest="tmpdir"/>
-        <delete file="tmpdir/META-INF/MANIFEST.MF"/>
-        <jar jarfile="release/xml-apis-1.0b2.jar" basedir="tmpdir"/>
-        <delete dir="tmpdir"/>
         <!-- now they can be signed -->
         <signjar alias="${jnlp.signjar.alias}" storepass="${jnlp.signjar.password}">
             <fileset dir=".">
@@ -184,15 +128,11 @@ All Rights Reserved.
         </delete>
 	<!-- workaround for issue 20745 -->
         <delete dir="netbeans/lib"/>
-        <delete>
-	    <fileset dir=".">
-		<include name="*.nbm"/>
-	    </fileset>
-	</delete>
         <delete dir="Info"/>
         <delete file="manifest-subst.mf"/>
         <delete dir="javadoc"/>
         <delete dir="release"/>
+        <delete dir="jars"/>
         <delete file="${netbeans.dest}.war"/>
     </target>
 
@@ -202,9 +142,131 @@ All Rights Reserved.
 
     <path id="cp">
         <pathelement location="${nb_all}/core/netbeans/lib/ext/boot.jar"/>
-        <pathelement location="${nb_all}/autoupdate/netbeans/lib/updater.jar"/>
         <pathelement location="${jnlp-api.file.location}"/>
         <pathelement location="${nb_all}/web/external/servlet-2.3.jar"/>
     </path>
     
+    <target name="jars" depends="compile, delete-release">
+        <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        
+        <repeat values="${allmodules}" name="maindir" target="buildjar"/>
+        <!-- if we use JDK 1.4 we no longer need these files: -->
+        <delete file="jars/core/crimson-1.1.3.jar"/>
+        <delete file="jars/core/regexp-1.2.jar"/>
+        <delete file="jars/core/xml-apis-1.0b2.jar"/>
+<!--        <delete file="jars/core/xerces-2.0.2.jar"/> -->
+    </target>
+
+    <target name="buildjar">
+        <echo message="buildjar running with property maindir == ${maindir}"/>
+        
+        <mkdir dir="jars/${maindir}"/>
+        
+        <fileset dir="../../${maindir}" id="modules">
+            <include name="netbeans/modules/*.jar"/>
+        </fileset>
+        
+        <fileset dir="../../${maindir}" id="modules-ext">
+            <include name="netbeans/modules/ext/*.jar"/>
+        </fileset>
+        
+        <fileset dir="../../${maindir}" id="modules-autoload">
+            <include name="netbeans/modules/autoload/*.jar"/>
+        </fileset>
+        
+        <fileset dir="../../${maindir}" id="modules-autoload-ext">
+            <include name="netbeans/modules/autoload/ext/*.jar"/>
+        </fileset>
+        
+        <fileset dir="../../${maindir}" id="modules-eager">
+            <include name="netbeans/modules/eager/*.jar"/>
+        </fileset>
+        
+        <fileset dir="../../${maindir}" id="modules-eager-ext">
+            <include name="netbeans/modules/eager/ext/*.jar"/>
+        </fileset>
+        
+        <copy flatten="true" todir="jars/${maindir}">
+            <fileset dir="../../${maindir}" id="without-repackaging">
+                <include name="netbeans/lib/**/*.jar"/>
+            </fileset>
+        </copy>
+
+        <pathconvert pathsep="," property="f1" refid="modules" setonempty="false"/>
+        <antcall target="repackage-all">
+            <param name="subdir" value="modules"/>
+            <param name="forconversion" value="${f1}"/>
+        </antcall>
+        
+        <pathconvert pathsep="," property="f2" refid="modules-ext" setonempty="false"/>
+        <antcall target="repackage-all">
+            <param name="subdir" value="modules/ext"/>
+            <param name="forconversion" value="${f2}"/>
+        </antcall>
+        
+        <pathconvert pathsep="," property="f3" refid="modules-autoload" setonempty="false"/>
+        <antcall target="repackage-all">
+            <param name="subdir" value="modules/autoload"/>
+            <param name="forconversion" value="${f3}"/>
+        </antcall>
+        
+        <pathconvert pathsep="," property="f4" refid="modules-autoload-ext" setonempty="false"/>
+        <antcall target="repackage-all">
+            <param name="subdir" value="modules/autoload/ext"/>
+            <param name="forconversion" value="${f4}"/>
+        </antcall>
+        
+        <pathconvert pathsep="," property="f5" refid="modules-eager" setonempty="false"/>
+        <antcall target="repackage-all">
+            <param name="subdir" value="modules/eager"/>
+            <param name="forconversion" value="${f5}"/>
+        </antcall>
+        
+        <pathconvert pathsep="," property="f6" refid="modules-eager-ext" setonempty="false"/>
+        <antcall target="repackage-all">
+            <param name="subdir" value="modules/eager/ext"/>
+            <param name="forconversion" value="${f6}"/>
+        </antcall>
+    </target>
+    
+    <target name="repackage-all">
+        <condition property="run-repackage">
+            <not>
+                <!-- This a little trick to find out whether property
+                    forconversion contains real set of path or one of
+                    the strings ${f1} .. ${f6}. It contains this strange
+                    string in case the folder for conversion is emtpy.
+                    Sorry I did not find any better way to decide whether
+                    a property is empty - it would reuire a dedicated task.
+                -->
+                <contains string="${forconversion}" substring="{f"/>
+            </not>
+        </condition>
+        <antcall target="repackage-all2"/>
+    </target>
+    
+    <target name="repackage-all2" if="run-repackage">
+        <echo message="repackage-all called with --${forconversion}--"/>
+        <repeat values="${forconversion}" name="filetoconvert" target="repackage"/>
+    </target>
+    
+    <target name="repackage">
+        <echo message="Trying to repackage ${filetoconvert}"/>
+        <basename property="fname" file="${filetoconvert}" suffix=".jar"/>
+        <basename property="fullname" file="${filetoconvert}"/>
+    
+        <mkdir dir="jars/${maindir}/tmp/${fname}"/>
+        <unjar src="${filetoconvert}" dest="jars/${maindir}/tmp/${fname}"/>
+        <echo file="jars/${maindir}/${fname}-manifest.mf"><![CDATA[Manifest-Version: 1.0
+NetBeans-Location: ${subdir}
+NetBeans-Prefix: ${fname}
+
+]]></echo>
+        <jar jarfile="jars/${maindir}/${fname}.jar" 
+             basedir="jars/${maindir}/tmp"
+             manifest="jars/${maindir}/${fname}-manifest.mf"
+        />
+        <delete dir="jars/${maindir}/tmp"/>
+    </target>
 </project>
+

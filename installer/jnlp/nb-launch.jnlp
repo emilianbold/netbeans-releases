@@ -23,5 +23,14 @@ All Rights Reserved.
     </security>
     <resources>
         <j2se version="1.4+"></j2se>
-        <jar main="true" href="nbjnlpinstaller.jar"/>
+        <property name="netbeans.home" value="memory"/>
+        <property name="netbeans.user" value="memory"/>
+        <property name="netbeans.security.nocheck" value="true"/>
+
+        <!-- Debugging:
+        <property name="netbeans.logger.console" value="true"/>
+        <property name="org.netbeans.core.modules" value="-1"/>
+        <property name="org.openide.util.lookup.MetaInfServicesLookup.DEBUG" value="true"/>
+        End Debugging -->
+
         <!-- The rest of this file is appended by the build.xml script -->
