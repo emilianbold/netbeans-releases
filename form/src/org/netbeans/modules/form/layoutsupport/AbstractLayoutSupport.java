@@ -284,16 +284,10 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
         return null;
     }
 
-    protected void ensureFakePeerAttached(Component comp) {
-        if (comp != null
-            && !comp.isDisplayable()
-            && !(comp instanceof javax.swing.JComponent)
-            && !(comp instanceof javax.swing.RootPaneContainer))
-        {
-            FakePeerSupport.attachFakePeer(comp);
-            if (comp instanceof Container)
-                FakePeerSupport.attachFakePeerRecursively((Container)comp);
-        }
+    static protected void ensureFakePeerAttached(Component comp) {
+        boolean attached = FakePeerSupport.attachFakePeer(comp);
+        if (attached && comp instanceof Container)
+            FakePeerSupport.attachFakePeerRecursively((Container)comp);
     }
 
     static protected ResourceBundle getBundle() {

@@ -92,10 +92,13 @@ public class BeanSupport
         Object defInstance = instancesCache.get(beanClass);
         if (defInstance == null) {
             defInstance = createBeanInstance(beanClass);
-            if (defInstance instanceof Component
-                    && !(defInstance instanceof javax.swing.JComponent)
-                    && !(defInstance instanceof javax.swing.RootPaneContainer))
-                FakePeerSupport.attachFakePeer((Component)defInstance);
+            if (defInstance instanceof Component) {
+                boolean attached =
+                    FakePeerSupport.attachFakePeer((Component)defInstance);
+                if (attached && defInstance instanceof Container)
+                    FakePeerSupport.attachFakePeerRecursively(
+                                                    (Container)defInstance);
+            }
             instancesCache.put(beanClass, defInstance);
         }
         return defInstance;

@@ -16,6 +16,7 @@ package org.netbeans.modules.form;
 import java.beans.*;
 import java.util.*;
 import java.awt.Component;
+import java.awt.Container;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -224,10 +225,11 @@ public class RADComponent implements FormDesignValue {
      * other instance of another metacomponent needs to be modified too.
      */
     protected void setBeanInstance(Object beanInstance) {
-        if (beanInstance instanceof Component
-                && !(beanInstance instanceof javax.swing.JComponent)
-                && !(beanInstance instanceof javax.swing.RootPaneContainer))
-            FakePeerSupport.attachFakePeer((Component)beanInstance);
+        if (beanInstance instanceof Component) {
+            boolean attached = FakePeerSupport.attachFakePeer((Component)beanInstance);
+            if (attached && beanInstance instanceof Container)
+                FakePeerSupport.attachFakePeerRecursively((Container)beanInstance);
+        }
 
         this.beanInstance = beanInstance;
     }

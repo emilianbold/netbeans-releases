@@ -593,34 +593,8 @@ public class FormDesigner extends TopComponent
                             null,
                             new Class[] { Window.class, Applet.class, RootPaneContainer.class }
                         );
-                        if (!(cont instanceof JComponent))
-                            FakePeerSupport.attachFakePeer(cont);
+                        FakePeerSupport.attachFakePeer(cont);
                         componentLayer.add(cont, BorderLayout.CENTER);
-
-/*                        RADProperty prop;
-                        Object val;
-                        RADComponent topcomp = formModel.getTopRADComponent();
-
-                        prop = topcomp.getPropertyByName("background"); // NOI18N
-                        if (prop != null) {
-                            val = prop.getTargetValue();
-                            if (val instanceof Color)
-                                componentLayer.setBackground(
-                                    new Color(((Color)val).getRGB()));
-                        }
-                        prop = topcomp.getPropertyByName("foreground"); // NOI18N
-                        if (prop != null) {
-                            val = prop.getTargetValue();
-                            if (val instanceof Color)
-                                componentLayer.setForeground(
-                                    new Color(((Color)val).getRGB()));
-                        }
-                        prop = topcomp.getPropertyByName("font"); // NOI18N
-                        if (prop != null) {
-                            val = prop.getTargetValue();
-                            if (val == null || val instanceof Font)
-                                componentLayer.setFont((Font) val);
-                        } */
 
                         metaCompToComp.put(topDesignContainer, cont);
                         compToMetaComp.put(cont, topDesignContainer);
