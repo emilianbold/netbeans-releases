@@ -9,7 +9,7 @@
 <meta name="lastupdated" content="4Feb04">
 <!-- p1 -->
 
-<title>Tomcat Context Node</title>
+<title>Tomcat Web Applications Node</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -48,7 +48,7 @@ the first time you execute the web application
   <li><b>View Context Log.</b> Displays the context log file. The server does not need to be 
     running for this item to be enabled, but the context must have a logger defined 
     in the <tt>context.xml</tt> file. For example, when you create a web application,
-    the NetBeans IDE creates a <tt>context.xml</tt> file that includes a logger element:
+    the IDE creates a <tt>context.xml</tt> file that includes a logger element:
     <pre><tt>      &lt;Context path="/MyApp"&gt;
          &lt;Logger className="org.apache.catalina.logger.FileLogger" 
          prefix="MyApp" suffix=".log" timestamp="true"/&gt;

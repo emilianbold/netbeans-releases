@@ -42,13 +42,13 @@ help\
         <!-- CSH topics -->
         <mapID target="context_help" url="tomcat/tomcat_plugintro.html" />
 	<mapID target="org.netbeans.modules.tomcat5.nodes.TomcatTargetNode.WebModules" 
-           url="tomcat/tomcat_context_node.html" />
+           url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
 	<mapID target="org.netbeans.modules.tomcat5.nodes.TomcatInstanceNode" 
-           url="tomcat/tomcat_internal_node.html" />
+           url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
 	<mapID target="org.netbeans.modules.tomcat5.nodes.TomcatInstanceNode.PropertySheet" 
-           url="tomcat/tomcat_internal_props.html" />
+           url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
 	<mapID target="org.netbeans.modules.tomcat5.nodes.TomcatFactoryNode" 
-	   url="tomcat/tomcat_top_node.html" />
+	   url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
         <mapID target="org.netbeans.core.NbAuthenticator.getPasswordAuthentication" 
 		url="tomcat/tomcat_edit_tomcatuser.html" />
 
