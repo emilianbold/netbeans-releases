@@ -30,6 +30,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.java.platform.InstallerRegistry;
+import org.netbeans.modules.java.platform.PlatformSettings;
 import org.netbeans.spi.java.platform.PlatformInstall;
 import org.openide.util.Utilities;
 
@@ -99,11 +100,20 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
     }
 
     private void read (WizardDescriptor settings) {
-
+        PlatformSettings ps = PlatformSettings.getDefault();
+        if (ps !=null) {
+            this.setCurrentDirectory(ps.getPlatformsFolder());
+        }
     }
 
     private void store (WizardDescriptor settings) {
-
+        File dir = this.getCurrentDirectory();
+        if (dir != null) {
+            PlatformSettings ps = PlatformSettings.getDefault();
+            if (ps != null) {
+                ps.setPlatformsFolder(dir);
+            }
+        }
     }
 
     private WizardDescriptor.InstantiatingIterator getInstaller () {
