@@ -66,6 +66,9 @@
 # vncdisplayargs="-SecurityTypes=none"
 # extra arguments to pass to vnc, depending on which version you run
 #
+# spawnwm="mwm"
+# the X window manager to use, such as mwm, metacity, etc.
+#
 # mozbrowser=mozilla
 # display test results automatically in Netscape or Mozilla
 #
@@ -141,6 +144,11 @@ then
     vncdisplayargs="-SecurityTypes=none"
 fi
 
+if [ -z "spawnwm" ]
+then
+    spawnwm="mwm"
+fi
+
 if [ -z "$testedmodule" ]
 then
     testedmodule=validate
@@ -186,9 +194,9 @@ then
     xauth generate $display .
     export DISPLAY=$display
     sleep 2 # give X time to start
-    mwm &
-    mwmpid=$!
-    trap "kill $mwmpid; kill $xpid; rm -f $xauthority" EXIT
+    $spawnwm &
+    wmpid=$!
+    trap "kill $wmpid; kill $xpid; rm -f $xauthority" EXIT
     sleep 2 # give WM time to work
     if [ $spawndisplaytype = Xnest ]
     then
