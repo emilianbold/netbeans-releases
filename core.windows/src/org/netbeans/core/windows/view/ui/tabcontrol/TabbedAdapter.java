@@ -361,11 +361,6 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
         Debug.log(TabbedAdapter.class, message);
     }
     
-    public Image createImageOfTab(int tabIndex) {
-        // XXX -TBD
-        return null;
-    }
-    
     public Component getComponent() {
         return this;
     }

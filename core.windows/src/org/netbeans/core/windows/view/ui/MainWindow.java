@@ -221,12 +221,14 @@ public final class MainWindow extends JFrame {
 
     /** Creates menu bar. */
     private static JMenuBar createMenuBar() {
-        MenuBar menu = getCustomMenuBar();
+        JMenuBar menu = getCustomMenuBar();
         if (menu == null) {
              menu = new MenuBar (null);
         }
         menu.setBorderPainted(false);
-        menu.waitFinished();
+        if (menu instanceof MenuBar) {
+            ((MenuBar)menu).waitFinished();
+        }
         
         if(Constants.SWITCH_STATUSLINE_IN_MENUBAR) {
             if (Constants.CUSTOM_STATUS_LINE_PATH == null) {
@@ -256,7 +258,7 @@ public final class MainWindow extends JFrame {
       * @return menu bar component or <code>null</code> if no menu bar
       *         component is found on system file system.
       */
-     private static MenuBar getCustomMenuBar() {
+     private static JMenuBar getCustomMenuBar() {
          try {
              String fileName = Constants.CUSTOM_MENU_BAR_PATH;
              if (fileName == null) {
@@ -269,7 +271,7 @@ public final class MainWindow extends JFrame {
                  DataObject dobj = DataObject.find(fo);
                  InstanceCookie ic = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
                  if (ic != null) {
-                     return (MenuBar)ic.instanceCreate();
+                     return (JMenuBar)ic.instanceCreate();
                  }
              }
          } catch (Exception e) {
