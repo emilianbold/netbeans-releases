@@ -70,6 +70,8 @@ class GrammarManager implements DocumentListener {
     // maximal gurded offset
     private Position maxGuarded;
 
+    private int environmentElementsCount = -1;
+    
     /**
      * Create new manager.
      */
@@ -116,21 +118,38 @@ class GrammarManager implements DocumentListener {
     }
 
     public void insertUpdate(DocumentEvent e) {
-        // !!! handle that adding new SyntaxElement at root
-        // level may change enableness rule, syntax element
-        // count should be enough
-
+        //test whether there is a change in the grammar environment - e.g. is a grammar
+        //declaration was added and so.
+        checkDocumentEnvironment(e);
+        
         if (isGuarded(e.getOffset(), e.getLength())) {
             invalidateGrammar();
         }
     }
 
     public void removeUpdate(DocumentEvent e) {
+        //test whether there is a change in the grammar environment - e.g. is a grammar
+        //declaration was removed and so.
+        checkDocumentEnvironment(e);
+        
         if (isGuarded(e.getOffset(), e.getLength())) {
             invalidateGrammar();
         }
     }
 
+    private void checkDocumentEnvironment(DocumentEvent e) {
+        long current = System.currentTimeMillis();
+
+        try {
+            LinkedList ll = getEnvironmentElements();
+            if(ll.size() != environmentElementsCount) {
+                invalidateGrammar();
+                environmentElementsCount = ll.size();
+            }
+        }catch(BadLocationException ble) {}
+        
+    }
+    
     public void changedUpdate(DocumentEvent e) {
         // not interested
     }
@@ -138,7 +157,7 @@ class GrammarManager implements DocumentListener {
     private boolean isGuarded(int offset, int length) {
 
         // optimalization for common case
-        if (offset > maxGuarded.getOffset()) {
+        if ((maxGuarded != null) && (offset > maxGuarded.getOffset())) {
             return false;
         }
 
@@ -191,20 +210,7 @@ class GrammarManager implements DocumentListener {
 
             try {
 
-                LinkedList ctx = new LinkedList ();
-                SyntaxElement first = syntax.getElementChain(1);
-                while (true) {
-                    if (first == null) break;
-                    if (first instanceof SyntaxNode) {
-                        SyntaxNode node = (SyntaxNode) first;
-                        ctx.add (node);
-                        if (node.ELEMENT_NODE == node.getNodeType()) {
-                            break;
-                        }
-                    }
-                    first = first.getNext();
-                }
-
+                LinkedList ctx = getEnvironmentElements();
                 InputSource inputSource = new DocumentInputSource(doc);
                 FileObject fileObject = null;
                 Object obj = doc.getProperty(Document.StreamDescriptionProperty);
@@ -248,15 +254,35 @@ class GrammarManager implements DocumentListener {
                 // retrieve the grammar and start invalidation listener
 
                 loaded = g.getGrammar(env);
-                doc.addDocumentListener(GrammarManager.this);
+                
 
             } catch (BadLocationException ex) {
                 loaded = null;
             }
 
         } finally {
+            
+            doc.addDocumentListener(GrammarManager.this);
+            
             grammarLoaded(loaded);
         }
+    }
+    
+    private LinkedList getEnvironmentElements() throws BadLocationException {
+        LinkedList ctx = new LinkedList ();
+        SyntaxElement first = syntax.getElementChain(1);
+        while (true) {
+            if (first == null) break;
+            if (first instanceof SyntaxNode) {
+                SyntaxNode node = (SyntaxNode) first;
+                ctx.add (node);
+                if (node.ELEMENT_NODE == node.getNodeType()) {
+                    break;
+                }
+            }
+            first = first.getNext();
+        }
+        return ctx;
     }
 }
 
