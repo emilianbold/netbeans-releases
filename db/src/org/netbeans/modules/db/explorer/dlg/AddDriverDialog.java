@@ -32,22 +32,40 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 import org.netbeans.modules.db.explorer.DbURLClassLoader;
+import org.netbeans.modules.db.explorer.driver.JDBCDriver;
 import org.netbeans.modules.db.util.DriverListUtil;
 
 public class AddDriverDialog extends javax.swing.JPanel {
     
     private DefaultListModel dlm;
     private List drvs;
+    private boolean customizer;
     
     private final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; //NOI18N
 
     /** Creates new form AddDriverDialog1 */
     public AddDriverDialog() {
+        customizer = false;
         initComponents();
         findProgressBar.setBorderPainted(false);
         initAccessibility();
         dlm = (DefaultListModel) drvList.getModel();
         drvs = new LinkedList();
+    }
+    
+    public AddDriverDialog(JDBCDriver drv) {
+        this();
+        customizer = true;
+        
+        String fileName;
+        for (int i = 0; i < drv.getURLs().length; i++) {
+            fileName = (new File(drv.getURLs()[i].getPath())).toString();
+            dlm.addElement(fileName);
+            drvs.add(drv.getURLs()[i]);
+        }
+        drvClassComboBox.addItem(drv.getClassName());
+        drvClassComboBox.setSelectedItem(drv.getClassName());
+        nameTextField.setText(drv.getName());
     }
     
     private void initAccessibility() {
@@ -214,7 +232,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
     }//GEN-END:initComponents
 
     private void drvClassComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drvClassComboBoxActionPerformed
-        nameTextField.setText(DriverListUtil.findFreeName(DriverListUtil.getName((String) drvClassComboBox.getSelectedItem())));
+        if (!customizer)
+            nameTextField.setText(DriverListUtil.findFreeName(DriverListUtil.getName((String) drvClassComboBox.getSelectedItem())));
     }//GEN-LAST:event_drvClassComboBoxActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed

@@ -116,6 +116,11 @@
 				class = org.openide.actions.DeleteAction;
 				node = driverlist;
 				system = YES;
+			},
+			delimiter,
+			{
+				name = "Customize";
+				class = org.netbeans.modules.db.explorer.actions.CustomizeDriverAction;
 			}
 		);
 	};
