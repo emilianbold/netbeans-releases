@@ -102,12 +102,4 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="javadoc"/>
   </target>
   
-  <target name="apichanges-check">
-    <xmlvalidate file="doc/changes/apichanges.xml" failonerror="true"/>
-  </target>
-
-  <target name="apichanges-generate">
-    <style in="doc/changes/apichanges.xml" out="doc/changes/apichanges.html" style="../../nbbuild/javadoctools/apichanges.xsl"/>
-  </target>
-  
 </project>
