@@ -297,13 +297,13 @@ is divided into following sections:
                 <copy todir="${{build.classes.dir}}">
                     <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
                 </copy>
-                <copy todir="${{build.ejb.dir}}/META-INF">
+                <copy todir="${{build.dir}}/META-INF">
                   <fileset dir="${{meta.inf}}"/>
                 </copy>
                 <xsl:for-each select="/p:project/p:configuration/ear:data/ear:web-module-additional-libraries/ear:library[ear:path-in-war]">
                     <xsl:variable name="copyto" select=" ear:path-in-war"/>
                     <xsl:variable name="libfile" select="ear:file"/>
-                    <copy todir="${{build.ejb.dir}}/{$copyto}" file="{$libfile}"/>
+                    <copy todir="${{build.dir}}/{$copyto}" file="{$libfile}"/>
                 </xsl:for-each>
             </target>
 
@@ -357,7 +357,7 @@ is divided into following sections:
                 <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
-                    <fileset dir="${{build.ejb.dir}}"/>
+                    <fileset dir="${{build.dir}}"/>
                 </jar>
             </target>
 
@@ -495,7 +495,7 @@ is divided into following sections:
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <delete dir="${{build.dir}}"/>
                 <delete dir="${{dist.dir}}"/>
-                <delete dir="${{build.ejb.dir}}"/>
+                <delete dir="${{build.dir}}"/>
             </target>
 
             <target name="post-clean">
@@ -541,7 +541,7 @@ to simulate
         <xsl:param name="type"/>
         <target name="{$targetname}">
             <xsl:attribute name="depends">init</xsl:attribute>
-            <xsl:attribute name="unless">${no.dependencies}</xsl:attribute>
+            <xsl:attribute name="unless">no.deps</xsl:attribute>
             <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
             <xsl:for-each select="$references/projdeps:reference[not($type) or projdeps:artifact-type = $type]">
                 <xsl:variable name="subproj" select="projdeps:foreign-project"/>
@@ -556,45 +556,7 @@ to simulate
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="script" select="projdeps:script"/>
-                <xsl:variable name="scriptdir" select="substring-before($script, '/')"/>
-                <xsl:variable name="scriptdirslash">
-                    <xsl:choose>
-                        <xsl:when test="$scriptdir = ''"/>
-                        <xsl:otherwise>
-                            <xsl:text>/</xsl:text>
-                            <xsl:value-of select="$scriptdir"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
-                <xsl:variable name="scriptfileorblank" select="substring-after($script, '/')"/>
-                <xsl:variable name="scriptfile">
-                    <xsl:choose>
-                        <xsl:when test="$scriptfileorblank != ''">
-                            <xsl:value-of select="$scriptfileorblank"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="$script"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
-                <ant target="{$subtarget}" inheritall="false">
-                    <!-- XXX #43624: cannot use inline attr on JDK 1.5 -->
-                    <xsl:attribute name="dir">${project.<xsl:value-of select="$subproj"/>}<xsl:value-of select="$scriptdirslash"/></xsl:attribute>
-                    <xsl:if test="$scriptfile != 'build.xml'">
-                        <xsl:attribute name="antfile">
-                            <xsl:value-of select="$scriptfile"/>
-                        </xsl:attribute>
-                    </xsl:if>
- <!--                   <property name="dist.dir" value="${{basedir}}/${{build.ejb.dir}}"> -->
- <!--                                       <xsl:attribute name="value">${basedir}/${build.classes.dir}</xsl:attribute> -->
- <!-- value="'${basedir}/${build.classes.dir}'"/> -->
- <!--                   </property> -->
-                </ant>
-<!--                <xsl:if test="$targetname != 'deps-clean'"> -->
-<!--                    <copy todir="${{basedir}}/${{build.ejb.dir}}"> -->
-<!--                        <xsl:attribute name="file">${reference.<xsl:value-of select="$subproj"/>.dist}</xsl:attribute> -->
-<!--                    </copy> -->
-<!--                </xsl:if> -->
+                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
             </xsl:for-each>
         </target>
     </xsl:template>
