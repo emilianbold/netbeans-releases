@@ -4,7 +4,7 @@
  * Created on __DATE__, __TIME__
  */
 
-package Templates.Dialogs;
+package Templates.GUIForms.Dialogs;
 
 /**
  *
@@ -38,12 +38,7 @@ public class Application extends javax.swing.JFrame {
         contentsMenuItem = new javax.swing.JMenuItem();
         aboutMenuItem = new javax.swing.JMenuItem();
 
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(java.awt.event.WindowEvent evt) {
-                exitForm(evt);
-            }
-        });
-
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         fileMenu.setText("File");
         openMenuItem.setText("Open");
         fileMenu.add(openMenuItem);
@@ -84,11 +79,6 @@ public class Application extends javax.swing.JFrame {
     private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
         System.exit(0);
     }//GEN-LAST:event_exitMenuItemActionPerformed
-
-    /** Exit the Application */
-    private void exitForm(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_exitForm
-        System.exit(0);
-    }//GEN-LAST:event_exitForm
 
     /**
     * @param args the command line arguments
