@@ -559,7 +559,8 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             d.putProperty(WizardProperties.DOC_BASE, panel.jTextFieldWebPages.getText().trim());
             d.putProperty(WizardProperties.JAVA_ROOT, panel.jTextFieldJavaSources.getText().trim());
             d.putProperty(WizardProperties.LIB_FOLDER, panel.jTextFieldLibraries.getText().trim());
-            
+            d.putProperty(WizardProperties.J2EE_LEVEL, panel.j2eeLevel);
+
             d.putProperty("NewProjectWizard_Title", null); //NOI18N
         }
         
