@@ -814,7 +814,13 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="nbm" description="Dummy target."/>
 
   <!-- build javadoc for selected modules -->
-  <target name="build-javadoc" depends="merge">
+  <target name="build-javadoc" depends="init">
+      <ant dir="." target="merge">
+          <property name="modules" value="${modules}"/>
+          <property name="fixedmodules" value="${fixedmodules}"/>
+          <property name="merge.dependent.modules" value="true"/>
+          <property name="stop.when.broken.module" value="false"/>
+      </ant>
       <!-- build javadoc for supported APIs -->
       <for-each startdir=".." target="javadoc" locations="${fixedmodules}"/>
       <!-- build javadoc for unsupported APIs -->
