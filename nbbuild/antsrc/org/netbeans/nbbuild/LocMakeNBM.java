@@ -58,7 +58,7 @@ public class LocMakeNBM extends Task {
   }
   public void setFile( String s) {
     fileName = s ;
-    if( !fileName.substring( fileName.length() - 4).equals( ".nbm")) {
+    if( !fileName.substring( fileName.length() - 4).equals( ".nbm")) { //NOI18N
       throw new BuildException( "NBM file name must end in '.nbm'") ;
     }
     baseFileName = fileName.substring( 0, fileName.length() - 4) ;
@@ -100,7 +100,7 @@ public class LocMakeNBM extends Task {
 
     // Set default values. //
     if( mainDir == null) {
-      mainDir = new String( "netbeans") ;
+      mainDir = new String( "netbeans") ; //NOI18N
     }
     if( topDir == null) {
       topDir = getProject().getBaseDir() ;
@@ -112,18 +112,18 @@ public class LocMakeNBM extends Task {
     }
 
     locs = getLocales() ;
-    if( locs == null || locs.trim().equals( "")) {
+    if( locs == null || locs.trim().equals( "")) { //NOI18N
       throw new BuildException( "Must specify 1 or more locales.") ;
     }
     if( fileName == null) {
       throw new BuildException( "Must specify the file attribute.") ;
     }
-
+    
     // I couldn't get it to work unless I explicitly added the task def here. //
-    getProject().addTaskDefinition("makelnbm", MakeLNBM.class);
+    getProject().addTaskDefinition("makelnbm", MakeLNBM.class); //NOI18N
 
     // Get a list of the locales for which localized files exist. //
-    stok = new StringTokenizer( locs, ",") ;
+    stok = new StringTokenizer( locs, ",") ; //NOI18N
     while( stok.hasMoreTokens()) {
       loc = stok.nextToken() ;
       if( hasFilesInLocale( loc)) {
@@ -153,11 +153,11 @@ public class LocMakeNBM extends Task {
 
     // Delete the Info directory if desired. //
     if( deleteInfo) {
-      del = (Delete) getProject().createTask("delete");
+      del = (Delete) getProject().createTask("delete"); //NOI18N
       del.init() ;
-      del.setDir( new File( topDir.getAbsolutePath() + File.separator + "Info")) ;
+      del.setDir( new File( topDir.getAbsolutePath() + File.separator + "Info")) ; //NOI18N
       del.execute() ;
-      del.setDir( new File( topDir.getAbsolutePath() + File.separator + "Info_" + 
+      del.setDir( new File( topDir.getAbsolutePath() + File.separator + "Info_" +  //NOI18N
 			    locale)) ;
       del.execute() ;
     }
@@ -167,7 +167,7 @@ public class LocMakeNBM extends Task {
       switchInfo( true, locale) ;
     }
 
-    makenbm = (MakeLNBM) getProject().createTask("makelnbm");
+    makenbm = (MakeLNBM) getProject().createTask("makelnbm"); //NOI18N
     makenbm.init() ;
 
     makenbm.setModInfo( modInfo) ;
@@ -177,11 +177,11 @@ public class LocMakeNBM extends Task {
 			       File.separator + fname)) ;
     makenbm.setTopdir( topDir) ;
     makenbm.setIsStandardInclude( false) ;
-    String distbase = getProject().getProperty("dist.base");
+    String distbase = getProject().getProperty("dist.base"); //NOI18N
     if (distbase != null) {
 //        try {
             int idx = fname.lastIndexOf('/');
-            makenbm.setDistribution(distbase + "/" + fname.substring(idx + 1));
+            makenbm.setDistribution(distbase + "/" + fname.substring(idx + 1)); //NOI18N
 //        } catch (MalformedURLException e) {
 //            throw new BuildException(e, getLocation());
 //        }
@@ -219,15 +219,15 @@ public class LocMakeNBM extends Task {
     while( iterator.hasNext()) {
       s = (String) iterator.next() ;
       if( !first_time) {
-	includes += "," ;
+	includes += "," ; //NOI18N
       }
       includes += s ;
       first_time = false ;
     }
     // Add any extra includes that were specified. //
-    if( nbmIncludes != null && !nbmIncludes.trim().equals( "")) {
+    if( nbmIncludes != null && !nbmIncludes.trim().equals( "")) { //NOI18N
       if( !first_time) {
-	includes += "," ;
+	includes += "," ; //NOI18N
       }
       includes += nbmIncludes ;
     }
@@ -243,7 +243,7 @@ public class LocMakeNBM extends Task {
    * one.
    */
   protected File getLicenseFile( String locale) {
-    String license_prop_name = locale + ".license.file" ;
+    String license_prop_name = locale + ".license.file" ; //NOI18N
     String license_prop = getProject().getProperty(license_prop_name);
     File license = null ;
     if( license_prop != null) {
@@ -257,26 +257,26 @@ public class LocMakeNBM extends Task {
     File dir ;
 
     if( to_info) {
-      dir = new File( topDir.getAbsolutePath() + File.separator + "Info_" + locale) ;
-      dir.renameTo( new File( topDir.getAbsolutePath() + File.separator + "Info")) ;
+      dir = new File( topDir.getAbsolutePath() + File.separator + "Info_" + locale) ; //NOI18N
+      dir.renameTo( new File( topDir.getAbsolutePath() + File.separator + "Info")) ; //NOI18N
     }
     else {
-      dir = new File( topDir.getAbsolutePath() + File.separator + "Info") ;
-      dir.renameTo( new File( topDir.getAbsolutePath() + File.separator + "Info_" + 
+      dir = new File( topDir.getAbsolutePath() + File.separator + "Info") ; //NOI18N
+      dir.renameTo( new File( topDir.getAbsolutePath() + File.separator + "Info_" +  //NOI18N
 			      locale)) ;
     }
   }
 
   /** Get the localized version of the NBM filename. */
   protected String getLocalizedFileName( String locale) {
-    return( baseFileName + "_" + locale + ".nbm") ;
+    return( baseFileName + "_" + locale + ".nbm") ; //NOI18N
   }
 
   protected String getLocales() {
     if( locales != null) {
       return( locales) ;
     }
-    return( getGlobalProp( "locmakenbm.locales")) ;
+    return( getGlobalProp( "locmakenbm.locales")) ; //NOI18N
   }
 
   /** See if there are any files for the given locale. */
@@ -323,20 +323,20 @@ public class LocMakeNBM extends Task {
     String re = new String() ;
 
     dir = mainDir ;
-    re = dir + "/**/*_" + loc + ".*" ; // pattern is: ${dir}/**/*_${locale}.*
+    re = dir + "/**/*_" + loc + ".*" ; // pattern is: ${dir}/**/*_${locale}.* //NOI18N
     list.add( new String( re)) ;
-    re = dir + "/**/" + loc + "/" ;    // pattern is: ${dir}/${locale}/
+    re = dir + "/**/" + loc + "/" ;    // pattern is: ${dir}/${locale}/ //NOI18N
     list.add( new String( re)) ;
 
     addLocIncludes( list, loc) ;
 
     // For ja locale, include these other variants. //
-    if( loc.equals( "ja")) {
-      addLocalePatterns( list, "ja_JP.PCK") ;
-      addLocalePatterns( list, "ja_JP.eucJP") ;
-      addLocalePatterns( list, "ja_JP.SJIS") ;
-      addLocalePatterns( list, "ja_JP.UTF-8") ;
-      addLocalePatterns( list, "ja_JP.UTF8") ;
+    if( loc.equals( "ja")) { //NOI18N
+      addLocalePatterns( list, "ja_JP.PCK") ; //NOI18N
+      addLocalePatterns( list, "ja_JP.eucJP") ; //NOI18N
+      addLocalePatterns( list, "ja_JP.SJIS") ; //NOI18N
+      addLocalePatterns( list, "ja_JP.UTF-8") ; //NOI18N
+      addLocalePatterns( list, "ja_JP.UTF8") ; //NOI18N
     }
   }
 
@@ -351,10 +351,10 @@ public class LocMakeNBM extends Task {
     }
 
     // For each locale-specific include. //
-    tkzr = new StringTokenizer( locIncludes, ",\n\t ") ;
+    tkzr = new StringTokenizer( locIncludes, ",\n\t ") ; //NOI18N
     while( tkzr.hasMoreTokens()) {
       locInc = tkzr.nextToken() ;
-      idx = locInc.indexOf( ":") ;
+      idx = locInc.indexOf( ":") ; //NOI18N
       if( idx != -1) {
 	incLocale = locInc.substring( 0, idx) ;
 	incPattern = locInc.substring( idx+1) ;
@@ -375,10 +375,10 @@ public class LocMakeNBM extends Task {
     // Don't return empty strings or strings whose value contains a //
     // property that isn't set.					    //
     if( ret != null) {
-      if( ret.trim().equals( "")) {
+      if( ret.trim().equals( "")) { //NOI18N
 	ret = null ;
       }
-      else if( ret.indexOf( "${") != -1) {
+      else if( ret.indexOf( "${") != -1) { //NOI18N
 	ret = null ;
       }
     }
@@ -386,15 +386,15 @@ public class LocMakeNBM extends Task {
   }
 
   protected String getKeystore() {
-    return( getGlobalProp( "locmakenbm.keystore")) ;
+    return( getGlobalProp( "locmakenbm.keystore")) ; //NOI18N
   }
 
   protected String getStorepass() {
-    return( getGlobalProp( "locmakenbm.storepass")) ;
+    return( getGlobalProp( "locmakenbm.storepass")) ; //NOI18N
   }
 
   protected String getAlias() {
-    return( getGlobalProp( "locmakenbm.alias")) ;
+    return( getGlobalProp( "locmakenbm.alias")) ; //NOI18N
   }
 
   /** If the topDir doesn't exist, warn the user and return true. */
@@ -415,7 +415,8 @@ public class LocMakeNBM extends Task {
       makenbm.setLocBundle( bundle) ;
     }
     else {
-      log( "WARNING: Localizing bundle not found: " + ((bundle==null)?(""):(bundle.getPath())) ) ;
+      log( "WARNING: Localizing bundle not found: " + 
+          ((bundle==null)?(""):(bundle.getPath())) ) ; //NOI18N
     }
   }
 
@@ -433,11 +434,11 @@ public class LocMakeNBM extends Task {
       isr = new InputStreamReader( fis) ;
       len = isr.read( buf) ;
       if( len != -1) {
-	if( buf[ len-1] == '\n') {
+	if( buf[ len-1] == '\n') { //NOI18N
 	  len-- ;
 	}
 	s = new String( buf, 0, len) ;
-	idx = s.indexOf( "=") ;
+	idx = s.indexOf( "=") ; //NOI18N
 	if( idx != -1) {
 	  s = s.substring( idx + 1) ;
 	  s.trim() ;
@@ -463,7 +464,7 @@ public class LocMakeNBM extends Task {
 
     // See if the file containing the srcdir is there. //
     srcdirfile = new File( topDir.getAbsolutePath() + File.separator + 
-			   "srcdir.properties") ;
+			   "srcdir.properties") ; //NOI18N
     if( srcdirfile.exists()) {
       srcdir = getSrcDir( srcdirfile) ;
     }
@@ -472,7 +473,7 @@ public class LocMakeNBM extends Task {
     }
 
     // Get the codename of this module. //
-    index = modInfo.indexOf( "/") ;
+    index = modInfo.indexOf( "/") ; //NOI18N
     if( index != -1) {
       s = modInfo.substring( 0, index) ;
     }
@@ -481,26 +482,26 @@ public class LocMakeNBM extends Task {
     }
 
     // Convert to pathname and set the loc bundle. //
-    s = s.replace( '.', '/') ;
-    locdir = new File( getRelPath( srcdir + "/" + s, findLocBundle).
-		       replace( '/', File.separatorChar)) ;
+    s = s.replace( '.', '/') ; //NOI18N
+    locdir = new File( getRelPath( srcdir + "/" + s, findLocBundle). //NOI18N
+		       replace( '/', File.separatorChar)) ; //NOI18N
     return( getDefaultLocBundleFile( locdir, locale)) ;
   }
 
   protected File getDefaultLocBundleFile( File dir,
 					  String locale) {
-    return( new File( dir.getPath() + File.separator + "Bundle_" + locale + ".properties")) ;
+    return( new File( dir.getPath() + File.separator + "Bundle_" + locale + ".properties")) ; //NOI18N
   }
 
   protected File getSpecificLocBundleFile( File enBundle,
 					   String locale) {
     String path = enBundle.getPath() ;
-    int idx = path.lastIndexOf( '.') ;
+    int idx = path.lastIndexOf( '.') ; //NOI18N
     if( idx != -1) {
-      return( new File( path.substring( 0, idx) + "_" + locale + path.substring( idx))) ;
+      return( new File( path.substring( 0, idx) + "_" + locale + path.substring( idx))) ; //NOI18N
     }
     else {
-      return( new File( path + "_" + locale)) ;
+      return( new File( path + "_" + locale)) ; //NOI18N
     }
   }
 
@@ -509,13 +510,13 @@ public class LocMakeNBM extends Task {
 			       String path2) {
     int idx1, idx2 ;
 
-    if( path2.equals( ".")) {
+    if( path2.equals( ".")) { //NOI18N
       return( path1) ;
     }
 
     // For each ".." element in path2. //
     while( true) {
-      idx2 = path2.indexOf( "..") ;
+      idx2 = path2.indexOf( "..") ; //NOI18N
       if( idx2 == -1) {
 	break ;
       }
@@ -524,19 +525,19 @@ public class LocMakeNBM extends Task {
       path2 = path2.substring( 2) ;
 
       // Strip off the slash if it starts with slash. //
-      idx2 = path2.indexOf( "/") ;
+      idx2 = path2.indexOf( "/") ; //NOI18N
       if( idx2 == 0) {
 	path2 = path2.substring( 1) ;
       }
 
       // Strip off the last element of path1. //
-      idx1 = path1.lastIndexOf( "/") ;
+      idx1 = path1.lastIndexOf( "/") ; //NOI18N
       if( idx1 != -1) {
 	path1 = path1.substring( 0, idx1) ;
       }
     }
 
-    return( path1 + "/" + path2) ;
+    return( path1 + "/" + path2) ; //NOI18N
   }
 
 }
