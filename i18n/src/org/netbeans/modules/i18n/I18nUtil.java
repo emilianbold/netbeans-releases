@@ -7,37 +7,22 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 
 package org.netbeans.modules.i18n;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.ObjectStreamException;
-import java.net.URL;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import javax.swing.JPanel;
 
 
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
-import org.openide.windows.Mode;
-import org.openide.windows.TopComponent;
-import org.openide.windows.Workspace;
-import org.openide.windows.WindowManager;
-
 
 /**
  * Utilities class for I18N module.
@@ -114,10 +99,11 @@ public final class I18nUtil {
     /** Gets <code>InitHelpFormats</code>. */
     public static List getInitHelpItems() {
         if(initHelpItems == null) {
+            ResourceBundle bundle = getBundle();
             initHelpItems = new ArrayList(3);
-            initHelpItems.add("{bundleNameSlashes} - "+ getBundle().getString("TXT_PackageNameSlashes")); // NOI18N
-            initHelpItems.add("{bundleNameDots} - " + getBundle().getString("TXT_PackageNameDots")); // NOI18N
-            initHelpItems.add("{sourceFileName} - " + getBundle().getString("TXT_SourceDataObjectName")); // NOI18N
+            initHelpItems.add("{bundleNameSlashes} - "+ bundle.getString("TXT_PackageNameSlashes")); // NOI18N
+            initHelpItems.add("{bundleNameDots} - " + bundle.getString("TXT_PackageNameDots")); // NOI18N
+            initHelpItems.add("{sourceFileName} - " + bundle.getString("TXT_SourceDataObjectName")); // NOI18N
         }
          
         return initHelpItems;
@@ -142,13 +128,14 @@ public final class I18nUtil {
     /** Gets <code>replaceHeplItems</code>.*/
     public static List getReplaceHelpItems() {
         if(replaceHelpItems == null) {
-            replaceHelpItems = new ArrayList(5);
-            replaceHelpItems.add("{identifier} - " + getBundle().getString("TXT_FieldIdentifier")); // NOI18N
-            replaceHelpItems.add("{key} - " + getBundle().getString("TXT_KeyHelp")); // NOI18N
-            replaceHelpItems.add("{bundleNameSlashes} - " + getBundle().getString("TXT_PackageNameSlashes")); // NOI18N
-            replaceHelpItems.add("{bundleNameDots} - " + getBundle().getString("TXT_PackageNameDots")); // NOI18N
-            replaceHelpItems.add("{sourceFileName} - " + getBundle().getString("TXT_SourceDataObjectName")); // NOI18N
-            replaceHelpItems.add("{arguments} - " + getBundle().getString("TXT_Arguments")); // NOI18N
+            ResourceBundle bundle = getBundle();
+            replaceHelpItems = new ArrayList(6);
+            replaceHelpItems.add("{identifier} - " + bundle.getString("TXT_FieldIdentifier")); // NOI18N
+            replaceHelpItems.add("{key} - " + bundle.getString("TXT_KeyHelp")); // NOI18N
+            replaceHelpItems.add("{bundleNameSlashes} - " + bundle.getString("TXT_PackageNameSlashes")); // NOI18N
+            replaceHelpItems.add("{bundleNameDots} - " + bundle.getString("TXT_PackageNameDots")); // NOI18N
+            replaceHelpItems.add("{sourceFileName} - " + bundle.getString("TXT_SourceDataObjectName")); // NOI18N
+            replaceHelpItems.add("{arguments} - " + bundle.getString("TXT_Arguments")); // NOI18N
         }
             
         return replaceHelpItems;
@@ -181,22 +168,23 @@ public final class I18nUtil {
     /** Gets <code>regExpHelpItems</code>. */
     public static List getRegExpHelpItems() {
         if(regExpHelpItems == null) {
+            ResourceBundle bundle = getBundle();
             regExpHelpItems = new ArrayList(13);
-            regExpHelpItems.add("{hardString} - " + getBundle().getString("TXT_HardString")); // NOI18N
-            regExpHelpItems.add("[:alnum:] - " + getBundle().getString("TXT_Alnum")); // NOI18N
-            regExpHelpItems.add("[:alpha:] - " + getBundle().getString("TXT_Alpha")); // NOI18N
-            regExpHelpItems.add("[:blank:] - " + getBundle().getString("TXT_Blank")); // NOI18N
-            regExpHelpItems.add("[:cntrl:] - " + getBundle().getString("TXT_Cntrl")); // NOI18N
-            regExpHelpItems.add("[:digit:] - " + getBundle().getString("TXT_Digit")); // NOI18N
-            regExpHelpItems.add("[:graph:] - " + getBundle().getString("TXT_Graph")); // NOI18N
-            regExpHelpItems.add("[:lower:] - " + getBundle().getString("TXT_Lower")); // NOI18N
-            regExpHelpItems.add("[:print:] - " + getBundle().getString("TXT_Print")); // NOI18N
-            regExpHelpItems.add("[:punct:] - " + getBundle().getString("TXT_Punct")); // NOI18N
-            regExpHelpItems.add("[:space:] - " + getBundle().getString("TXT_Space")); // NOI18N
-            regExpHelpItems.add("[:upper:] - " + getBundle().getString("TXT_Upper")); // NOI18N
-            regExpHelpItems.add("[:xdigit:] - " + getBundle().getString("TXT_Xdigit")); // NOI18N
-            //regExpHelpItems.add("[:javastart:] - " + getBundle().getString("TXT_Javastart")); // NOI18N
-            //regExpHelpItems.add("[:javapart:] - " + getBundle().getString("TXT_Javapart")); // NOI18N
+            regExpHelpItems.add("{hardString} - " + bundle.getString("TXT_HardString")); // NOI18N
+            regExpHelpItems.add("[:alnum:] - " + bundle.getString("TXT_Alnum")); // NOI18N
+            regExpHelpItems.add("[:alpha:] - " + bundle.getString("TXT_Alpha")); // NOI18N
+            regExpHelpItems.add("[:blank:] - " + bundle.getString("TXT_Blank")); // NOI18N
+            regExpHelpItems.add("[:cntrl:] - " + bundle.getString("TXT_Cntrl")); // NOI18N
+            regExpHelpItems.add("[:digit:] - " + bundle.getString("TXT_Digit")); // NOI18N
+            regExpHelpItems.add("[:graph:] - " + bundle.getString("TXT_Graph")); // NOI18N
+            regExpHelpItems.add("[:lower:] - " + bundle.getString("TXT_Lower")); // NOI18N
+            regExpHelpItems.add("[:print:] - " + bundle.getString("TXT_Print")); // NOI18N
+            regExpHelpItems.add("[:punct:] - " + bundle.getString("TXT_Punct")); // NOI18N
+            regExpHelpItems.add("[:space:] - " + bundle.getString("TXT_Space")); // NOI18N
+            regExpHelpItems.add("[:upper:] - " + bundle.getString("TXT_Upper")); // NOI18N
+            regExpHelpItems.add("[:xdigit:] - " + bundle.getString("TXT_Xdigit")); // NOI18N
+            //regExpHelpItems.add("[:javastart:] - " + bundle.getString("TXT_Javastart")); // NOI18N
+            //regExpHelpItems.add("[:javapart:] - " + bundle.getString("TXT_Javapart")); // NOI18N
         }
         
         return regExpHelpItems;

@@ -31,7 +31,7 @@ import javax.swing.SwingUtilities;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 import org.openide.WizardDescriptor;
 import org.openide.DialogDisplayer;
 import org.netbeans.api.project.Project;
@@ -158,7 +158,7 @@ final class I18nWizardDescriptor extends WizardDescriptor {
         if(rootPane != null && rootListener == null)
             // Set listener on root for cases some needless button
             // would like to become default one (the ones from superclass).
-            rootPane.addPropertyChangeListener(WeakListener.propertyChange(
+            rootPane.addPropertyChangeListener(WeakListeners.propertyChange(
                 rootListener = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
                         if("defaultButton".equals(evt.getPropertyName())) { // NOI18N

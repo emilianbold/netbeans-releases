@@ -15,11 +15,9 @@
 package org.netbeans.modules.i18n;
 
 
-import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -27,10 +25,9 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 import org.openide.util.Lookup;
 import org.netbeans.api.javahelp.Help;
 import org.netbeans.api.project.Project;
@@ -188,7 +185,7 @@ public class I18nPanel extends JPanel {
         ((ResourcePanel)resourcePanel).setI18nString(i18nString);
         
         // Set listener to enable/disable replace button.
-        resourcePanel.addPropertyChangeListener(WeakListener.propertyChange(
+        resourcePanel.addPropertyChangeListener(WeakListeners.propertyChange(
             propListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if(ResourcePanel.PROP_RESOURCE.equals(evt.getPropertyName())) {

@@ -195,7 +195,7 @@ public class InsertI18nStringAction extends CookieAction {
             null
         );
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.show();
+        dialog.setVisible(true);
         if (dd.getValue() == NotifyDescriptor.OK_OPTION) {
             insertI18nString();
         }

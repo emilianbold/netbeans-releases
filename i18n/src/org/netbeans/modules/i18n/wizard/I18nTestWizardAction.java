@@ -85,7 +85,7 @@ public class I18nTestWizardAction extends NodeAction {
         
         dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialogWRef = new WeakReference(dialog);
-        dialog.show();
+        dialog.setVisible(true);
     }
 
     /** Gets wizard iterator thru panels used in wizard invoked by this action, 

@@ -15,7 +15,6 @@
 package org.netbeans.modules.i18n.wizard;
 
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
@@ -43,22 +42,11 @@ import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.i18n.SelectorUtils;
-import org.netbeans.modules.properties.PropertiesDataObject; // PENDING
 import org.netbeans.modules.properties.UtilConvert; // PENDING
 
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataFilter;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.RepositoryNodeFactory;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeAcceptor;
-import org.openide.nodes.NodeOperation;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.UserCancelException;
-import org.openide.util.Lookup;
-import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.ErrorManager;
 
@@ -266,8 +254,6 @@ final class ResourceWizardPanel extends JPanel {
         for(int i=0; i<selectedRows.length; i++) {
             DataObject dataObject = (DataObject)resourcesTable.getValueAt(selectedRows[i], 0);
 
-            I18nSupport support = null;
-
             sourceMap.put(dataObject, new SourceData(resource));
             
             tableModel.fireTableCellUpdated(selectedRows[i], 1);
@@ -285,8 +271,6 @@ final class ResourceWizardPanel extends JPanel {
         // Feed data.
         for(int i=0; i<resourcesTable.getRowCount(); i++) {
             DataObject dataObject = (DataObject)resourcesTable.getValueAt(i, 0);
-
-            I18nSupport support = null;
 
             sourceMap.put(dataObject, new SourceData(resource));
             

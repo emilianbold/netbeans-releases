@@ -14,18 +14,11 @@
 
 package org.netbeans.modules.i18n;
 
-import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.ObjectStreamException;
 import java.lang.ref.WeakReference;
-import java.net.URL;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -36,10 +29,7 @@ import org.openide.DialogDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.actions.SystemAction;
 import org.openide.windows.Mode;
-import org.openide.windows.TopComponent;
-import org.openide.windows.Workspace;
 import org.netbeans.api.project.Project;
 import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
@@ -77,13 +67,9 @@ public class I18nManager {
 
     
     /** Gets the only instance of I18nSupport. */
-    public static I18nManager getDefault() {
-        if(manager == null) {
-            synchronized(I18nManager.class) {
-                if(manager == null)
-                    manager = new I18nManager();
-            }
-        }
+    public static synchronized I18nManager getDefault() {
+        if(manager == null)
+            manager = new I18nManager();
             
         return manager;
     }
@@ -269,14 +255,11 @@ public class I18nManager {
     /** Gets dialog. In our case it is a top component. 
      * @param name name of top component */
     private void getDialog(DataObject sourceDataObject) {
-        String name = sourceDataObject.getName();
         Project project = Util.getProjectFor(sourceDataObject);
 
         Dialog dialog = (Dialog) dialogWRef.get();
         I18nPanel i18nPanel = (I18nPanel)i18nPanelWRef.get();
 
-        Mode createdMode = null;
-        
         // Dialog was not created yet or garbaged already.
         if(i18nPanel == null) {
             
@@ -328,7 +311,7 @@ public class I18nManager {
             dialogWRef = new WeakReference(dialog);
         }
 
-        dialog.show();
+        dialog.setVisible(true);
     }
     
     /** Shows dialog. In our case opens top component if it is necessary and
@@ -337,7 +320,7 @@ public class I18nManager {
         // Open dialog if available
         Dialog dialog = (Dialog) dialogWRef.get();
         if (dialog != null)
-            dialog.show();
+            dialog.setVisible(true);
 
         // Set caret visible.
         Caret caret = (Caret)caretWRef.get();

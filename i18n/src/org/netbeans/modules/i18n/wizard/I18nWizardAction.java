@@ -86,7 +86,7 @@ public class I18nWizardAction extends NodeAction {
         
         dialog = DialogDisplayer.getDefault().createDialog(wizardDesc);
         dialogWRef = new WeakReference(dialog);
-        dialog.show();
+        dialog.setVisible(true);
     }
 
     /** Gets wizard iterator thru panels used in wizard invoked by this action, 
