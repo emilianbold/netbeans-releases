@@ -125,10 +125,11 @@ public class MakeListOfNBM extends Task {
         String clusterDir = this.getProject().getProperty("cluster.dir");
         String moduleName = this.getProject().getProperty("module.name");
         String outputPath = absolutePath.substring(0,absolutePath.length() - clusterDir.length());
-        String[] inc = new String[include.length+1];
+        String[] inc = new String[include.length+2];
         for (int i=0; i < include.length; i++)
             inc[i] = include[i];
         inc[include.length] = systemDir + File.separator + "Modules" + File.separator + track.getTrackingFileName();
+        inc[include.length+1] = UpdateTracking.TRACKING_DIRECTORY + File.separator + track.getTrackingFileName();
         ModuleTracking moduleTracking = new ModuleTracking( outputPath );
         moduleTracking.putModule(moduleName, absolutePath, inc);
         moduleTracking.write();
