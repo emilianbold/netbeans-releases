@@ -302,14 +302,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new WebSharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl(this.updateHelper),
             new WebFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
-            helper.createSharabilityQuery(evaluator(), new String[] {
-                "${src.dir}", // NOI18N
-                "${web.docbase.dir}", // NOI18N
-                "${" + WebProjectProperties.TEST_SRC_DIR + "}", // NOI18N
-            }, new String[] {
-                "${dist.dir}", // NOI18N
-                "${build.dir}", // NOI18N
-            }),
             new WebProjectClassPathExtender(this, updateHelper, evaluator(), refHelper),
         });
     }

@@ -84,13 +84,14 @@ public class WebSharabilityQuery implements SharabilityQueryImplementation, Prop
     private SharabilityQueryImplementation createDelegate () {
         String[] srcProps = srcRoots.getRootProperties();
         String[] testProps = testRoots.getRootProperties();
-        String[] props = new String [srcProps.length + testProps.length];
+        String[] props = new String [srcProps.length + testProps.length + 1];
         for (int i=0; i<srcProps.length; i++) {
             props[i] = "${"+srcProps[i]+"}";
         }
         for (int i=0; i<testProps.length; i++) {
             props[srcProps.length+i] = "${"+testProps[i]+"}";
         }
+        props[props.length - 1] = "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}";
         return helper.createSharabilityQuery(this.evaluator, props,
             new String[] {
                 "${" + WebProjectProperties.DIST_DIR + "}", // NOI18N
