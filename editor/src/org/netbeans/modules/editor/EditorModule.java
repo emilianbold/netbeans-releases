@@ -77,6 +77,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  8    Gandalf   1.7         4/8/99   Miloslav Metelka 
  *  7    Gandalf   1.6         3/18/99  Miloslav Metelka 
  *  6    Gandalf   1.5         3/11/99  Jaroslav Tulach Works with plain 
  *       document.

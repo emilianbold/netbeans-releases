@@ -62,6 +62,7 @@ implements NbDocument.PositionBiasable, NbDocument.WriteLockable {
 
 /*
  * Log
+ *  3    Gandalf   1.2         4/8/99   Miloslav Metelka 
  *  2    Gandalf   1.1         3/23/99  Miloslav Metelka 
  *  1    Gandalf   1.0         3/18/99  Miloslav Metelka 
  * $
