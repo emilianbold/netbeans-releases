@@ -37,6 +37,7 @@ import javax.swing.undo.UndoableEdit;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
+import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -61,7 +62,7 @@ import org.openide.windows.TopComponent;
 
 
 /** Support for viewing porperties files (EditCookie) by opening them in a text editor */
-public class PropertiesEditorSupport extends CloneableEditorSupport implements EditCookie, Serializable {
+public class PropertiesEditorSupport extends CloneableEditorSupport implements EditCookie, PrintCookie, Serializable {
     
     /** New lines in this file was delimited by '\n'. */
     private static final byte NEW_LINE_N = 0;
