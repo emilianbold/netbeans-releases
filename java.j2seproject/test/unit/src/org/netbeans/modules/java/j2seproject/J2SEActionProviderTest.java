@@ -175,7 +175,15 @@ public class
         assertEquals("Unexpected target name", "compile-single", targets[0]);
         assertEquals("There must be one target parameter", 1, p.keySet().size());
         assertEquals("There must be be target parameter", "foo/,foo2/", p.getProperty("javac.includes"));
-
+        p = new Properties();
+        context = Lookups.fixed(new DataObject[] {DataFolder.findFolder(sources)});
+        targets = actionProvider.getTargetNames(ActionProvider.COMMAND_COMPILE_SINGLE, context, p);
+        assertNotNull("Must found some targets for COMMAND_COMPILE_SINGLE", targets);
+        assertEquals("There must be one target for COMMAND_COMPILE_SINGLE", 1, targets.length);
+        assertEquals("Unexpected target name", "compile-single", targets[0]);
+        assertEquals("There must be one target parameter", 1, p.keySet().size());
+        assertEquals("There must be be target parameter", "**", p.getProperty("javac.includes"));
+        
         // test COMMAND_TEST_SINGLE
 
         p = new Properties();
@@ -195,7 +203,7 @@ public class
         assertEquals("Unexpected target name", "test-single", targets[0]);
         assertEquals("There must be one target parameter", 2, p.keySet().size());
         assertEquals("There must be be target parameter", "foo/BarTest.java,foo/MainTest.java", p.getProperty("javac.includes"));
-        assertEquals("There must be be target parameter", "foo/BarTest.java,foo/MainTest.java", p.getProperty("test.includes"));
+        assertEquals("There must be be target parameter", "foo/BarTest.java,foo/MainTest.java", p.getProperty("test.includes"));        
 
         // test COMMAND_DEBUG_TEST_SINGLE
 

@@ -413,9 +413,11 @@ class J2SEActionProvider implements ActionProvider {
     }      
     
     private FileObject getRoot (FileObject[] roots, FileObject file) {
+        assert file != null : "File can't be null";   //NOI18N
         FileObject srcDir = null;
         for (int i=0; i< roots.length; i++) {
-            if (FileUtil.isParentOf(roots[i],file)) {
+            assert roots[i] != null : "Source Path Root can't be null"; //NOI18N
+            if (FileUtil.isParentOf(roots[i],file) || roots[i].equals(file)) {
                 srcDir = roots[i];
                 break;
             }
