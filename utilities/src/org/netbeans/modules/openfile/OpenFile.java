@@ -13,7 +13,7 @@
 
 package com.netbeans.examples.modules.openfile;
 
-import java.beans.PropertyVetoException;
+import java.beans.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -26,73 +26,99 @@ import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.modules.ModuleInstall;
 import com.netbeans.ide.nodes.*;
 
-/** 
+/** Acts as a server to open files when requested.
 *
-* @author Jaroslav Tulach
+* @author Jaroslav Tulach, Jesse Glick
 */
 public class OpenFile extends Object implements ModuleInstall, Runnable {
-  /** the port to listen at */
-  static final int port = 7318;
-  /** max lenght of transfered data */
+  /** max length of transferred data */
   private static final int LENGTH = 512;
   /** how long to wait between requests */
   private static final int TIMEOUT = 10000;
-  /** true if we should stop */
+  /** true if we should stop due to uninstallation */
   private static boolean stop;
   
-  /**
-   * Called when the module is first installed into the IDE.
-   * Should perform whatever setup functions are required.
-   * <p>Typically, would do one-off functions, and then also call {@link #restored}.
-  */
   public void installed () {
     restored ();
   }
 
-  /**
-   * Called when an already-installed module is restored (at IDE startup time).
-   * Should perform whatever initializations are required.
-   */
   public void restored () {
     stop = false;
     new Thread (this, "OpenFile").start ();
   }
 
-  /**
-   * Called when the module is uninstalled (from a running IDE).
-   * Should remove whatever functionality from the IDE that it had registered.
-  */
   public void uninstalled () {
     stop = true;
   }
 
-  /**
-   * Called when the IDE is about to exit.
-   * The module may cancel the exit if it is not prepared to be shut down.
-  * @return <code>true</code> if it is ok to exit the IDE
-  */
   public boolean closing () {
     stop = true;
     return true;
   }
   
-  /** Run */
+  /** Run the server.
+  * If the server is stopped from the Control Panel, waits until it is
+  * started again (if it is started again).
+  * When enabled, calls {@link #server}.
+  */
   public void run () {
-    try {
-      server ();
-    } catch (IOException ex) {
-      TopManager.getDefault ().notifyException (ex);
+    final Object wait = new Object ();
+    PropertyChangeListener pcl = new PropertyChangeListener () {
+      public void propertyChange (PropertyChangeEvent ev) {
+        if (Settings.PROP_RUNNING.equals (ev.getPropertyName ())) {
+          synchronized (wait) {
+            wait.notifyAll ();
+          }
+        }
+      }
+    };
+    while (true) {
+      if (Settings.DEFAULT.isRunning ()) {
+        try {
+          server ();
+        } catch (IOException ex) {
+          TopManager.getDefault ().notifyException (ex);
+        }
+      }
+      try {
+        Settings.DEFAULT.addPropertyChangeListener (pcl);
+        synchronized (wait) {
+          wait.wait ();
+        }
+      } catch (InterruptedException interr) {
+      }
+      Settings.DEFAULT.removePropertyChangeListener (pcl);
+      // now continue again
     }
   }
   
+  /** the socket to use */
+  private static DatagramSocket s;
+  /** set up the socket */
+  private static void initSocket () throws IOException {
+    s = new DatagramSocket (Settings.DEFAULT.getPort ());
+    s.setSoTimeout (TIMEOUT);
+  }
   /** Waits on the connection.
   */
   private static void server () throws IOException {
-    DatagramSocket s = new DatagramSocket (port);
-    s.setSoTimeout (TIMEOUT);
+    initSocket ();
+    // Make sure the socket is changed if the user changes the port number.
+    PropertyChangeListener pcl = new PropertyChangeListener () {
+      public void propertyChange (PropertyChangeEvent ev) {
+        if (Settings.PROP_PORT.equals (ev.getPropertyName ())) {
+          try {
+            initSocket ();
+          } catch (IOException e) {
+            TopManager.getDefault ().notifyException (e);
+          }
+        }
+      }
+    };
+    Settings.DEFAULT.addPropertyChangeListener (pcl);
     DatagramPacket p = new DatagramPacket (new byte[LENGTH], LENGTH);
     try {
-      while (!stop) {
+      while (!stop && Settings.DEFAULT.isRunning ()) {
         p.setLength (LENGTH);
         try {
           s.receive (p);
@@ -100,6 +126,15 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
           // go on
           continue;
         }
+        // Check access:
+        if (Settings.DEFAULT.getAccess () == Settings.ACCESS_LOCAL) {
+          if (! p.getAddress ().equals (InetAddress.getLocalHost ())) {
+            TopManager.getDefault ().notify (new NotifyDescriptor.Message
+                                             ("Rejecting attempted open-file access from host " + p.getAddress ()));
+            continue;
+          }
+        }
+        // Try to open the requested file:
         String fileName = new String (p.getData (), p.getOffset (), p.getLength ());
         TopManager.getDefault ().setStatusText ("Opening " + fileName);
         try {
@@ -109,19 +144,22 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
         }
       }
     } finally {
-      s.close ();
+      if (pcl != null) Settings.DEFAULT.removePropertyChangeListener (pcl);
+      if (s != null) s.close ();
+      s = null;
     }
   }
   
   
-  /** Tries to find file object for given file on disk.
+  /** Try to find the file object corresponding to a given file on disk.
+  * Can produce a folder, mount directories, etc. as needed.
   * @param f the file on local disk
-  * @return file object or null if not found
+  * @return file object or <code>null</code> if not found
   */
   private static FileObject find (File f) {
     String fileName = f.toString ();
     String fileNameUpper = fileName.toUpperCase ();
-    
+    // First see if it is present in an existing LocalFileSystem.
     // enumeration of file systems
     Enumeration en = TopManager.getDefault ().getRepository ().getFileSystems ();
     while (en.hasMoreElements ()) {
@@ -140,7 +178,7 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
         }
       }
     }
-    // not found
+    // Not found. For Java files, it is reasonable to mount the package root.
     if (fileName.endsWith (".java")) {
       // Try to find the package name and then infer a directory to mount.
       BufferedReader rd = null;
@@ -204,11 +242,11 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
           TopManager.getDefault ().notifyException (e2);
         }
       }
+      // Now try to go through the package name piece by piece and get the right parent directory.
       if (pkg == null) pkg = ""; // assume default package
       String prefix = pkg.replace ('.', File.separatorChar);
       File dir = f.getParentFile ();
       if (dir != null) {
-        // XXX get dir name, look for ending in prefix, clip that, mount it hidden, find this file in that fs...
         String pkgtouse = "";
         while (! pkg.equals ("")) {
           int lastdot = pkg.lastIndexOf ('.');
@@ -234,6 +272,7 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
             break;
           }
         }
+        // Mount it.
         LocalFileSystem fs = new LocalFileSystem ();
         try {
           fs.setRootDirectory (dir);
@@ -272,13 +311,15 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
         repo2.addFileSystem (jfs);
         exist = jfs;
       }
+      // The root folder will be displayed in the Explorer:
       return exist.getRoot ();
     }
     return null;
   }
   
-  /** Open the file either by calling open cookie, or by 
-  * showing it in explorer.
+  /** Open the file either by calling {@link OpenCookie}, or by
+  * showing it in the Explorer.
+  * Uses {@link #find} to figure out what the right file object is.
   * @param f file on local disk
   * @exception IOException if the file cannot be found
   */
@@ -315,6 +356,7 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
     }
   }
   
+  /** Test run. */
   public static void main (String[] args) throws Exception {
     server ();
   }
@@ -322,6 +364,8 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
 
 /*
 * Log
+*  4    Gandalf   1.3         5/22/99  Jesse Glick     Handling options, and 
+*       doc.
 *  3    Gandalf   1.2         5/22/99  Jesse Glick     Support for opening 
 *       archive files, and also better display for root folders.
 *  2    Gandalf   1.1         5/22/99  Jesse Glick     If Java file does not 
