@@ -400,6 +400,7 @@ public class TargetServer {
         public DistributeEventHandler(DeployProgressUI ui, ProgressObject po) {
             this.ui = ui;
             this.po = po;
+            ui.setProgressObject(po);
         }
         public void handleProgressEvent(ProgressEvent progressEvent) {
             DeploymentStatus status = progressEvent.getDeploymentStatus();
@@ -426,7 +427,7 @@ public class TargetServer {
         public IncrementalEventHandler(DeployProgressUI ui, ProgressObject po) {
             this.po = po;
             this.ui = ui;
-            
+            ui.setProgressObject(po);
         }
         public void handleProgressEvent(ProgressEvent progressEvent) {
             StateType state = progressEvent.getDeploymentStatus().getState();

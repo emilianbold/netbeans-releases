@@ -133,7 +133,7 @@ public class ServerFileDistributor extends ServerProgress {
                 changes.record(mcr, lastDeployTime);
             
             setStatusDistributeCompleted(NbBundle.getMessage(
-                ServerFileDistributor.class, "MSG_DoneIncrementalDeploy", targetModule));
+                ServerFileDistributor.class, "MSG_DoneIncrementalDeploy", targetModule.getModuleID()));
             
         return changes;
     }

@@ -55,9 +55,6 @@ public class InitialServerFileDistributor extends ServerProgress {
     }
     
     public File distribute() {
-        setStatusDistributeRunning(NbBundle.getMessage(
-            InitialServerFileDistributor.class, "MSG_RunningIncrementalDeploy", target));
-
         DeploymentConfigurationProvider deployment = dtarget.getDeploymentConfigurationProvider();
         J2eeModule source = dtarget.getModule();
         DeployableObject deployable = deployment.getDeployableObject(null);
@@ -79,6 +76,9 @@ public class InitialServerFileDistributor extends ServerProgress {
                 }
             }
             
+            setStatusDistributeRunning(NbBundle.getMessage(
+                InitialServerFileDistributor.class, "MSG_RunningInitialDeploy", dtarget.getDeploymentName(), dir));
+
             _distribute(source.getArchiveContents(), dir, null);
 
             if (source instanceof J2eeModuleContainer) {
@@ -92,7 +92,7 @@ public class InitialServerFileDistributor extends ServerProgress {
             }
 
             setStatusDistributeCompleted(NbBundle.getMessage(
-                InitialServerFileDistributor.class, "MSG_DoneIncrementalDeploy", deployable));
+                InitialServerFileDistributor.class, "MSG_DoneInitialDistribute", dtarget.getDeploymentName()));
 
             return dir;
             
