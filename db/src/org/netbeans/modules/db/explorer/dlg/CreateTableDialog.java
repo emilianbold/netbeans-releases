@@ -25,6 +25,7 @@ import javax.swing.text.DefaultCaret;
 import java.io.InputStream;
 import javax.swing.event.TableModelEvent;
 
+import org.openide.*;
 import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
@@ -220,7 +221,6 @@ public class CreateTableDialog {
 
             ActionListener listener = new ActionListener() {
               public void actionPerformed(ActionEvent event) {
-                  boolean disres = true;
                   if (event.getSource() == DialogDescriptor.OK_OPTION) {
                       result = validate();
 
@@ -269,26 +269,28 @@ public class CreateTableDialog {
                               if (icmd.getColumns().size()>0) cbuff.add(icmd);
                               cbuff.execute();
 
+                              // dialog is closed after successfully create table
+                              dialog.setVisible(false);
+                              dialog.dispose();
+
                           } catch (Exception e) {
                               e.printStackTrace();
-                              disres = false;
+                              
                           }
                       } else {
-                          Toolkit.getDefaultToolkit().beep();
-                          disres = false;
+                          String msg = bundle.getString("EXC_InsufficientCreateTableInfo");
+                          TopManager.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                       }
-                  } else
-                      result = false;
-
-                  if (disres) {
-                      dialog.setVisible(false);
-                      dialog.dispose();
                   }
-              }
+               }
             };
 
             addbtn.doClick();
             DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("CreateTableDialogTitle"), true, listener); // NOI18N
+            // inbuilt close of the dialog is only after CANCEL button click
+            // after OK button is dialog closed by hand
+            Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
+            descriptor.setClosingOptions(closingOptions);
             dialog = TopManager.getDefault().createDialog(descriptor);
             dialog.setResizable(true);
         } catch (MissingResourceException ex) {
