@@ -704,6 +704,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
      */
     public void saveForm(FormDataObject formObject, FormManager2 manager) throws IOException {
         FileObject formFile = formObject.getFormEntry().getFile();
+        if (formFile.isReadOnly()) // should not happen
+            throw new InternalError("Tried to save read-only form "+formFile.getName()); // NOI18N
+
         FileLock lock = null;
         java.io.OutputStream os = null;
         String encoding = manager.getEncoding();

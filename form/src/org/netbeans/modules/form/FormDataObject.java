@@ -79,6 +79,16 @@ public class FormDataObject extends JavaDataObject {
         return getFormEntry().getFile();
     }
 
+    public boolean isReadOnly() {
+        FileObject javaFO = getPrimaryFile();
+        FileObject formFO = formEntry.getFile();
+        return javaFO.isReadOnly() || formFO.isReadOnly();
+    }
+
+    public boolean formFileReadOnly() {
+        return formEntry.getFile().isReadOnly();
+    }
+
     protected JavaEditor createJavaEditor() {
         if (formEditor == null) {
             formEditor = new FormEditorSupport(getPrimaryEntry(), this);

@@ -75,6 +75,7 @@ public class RADComponent {
     private FormManager2 formManager;
     private EventsList eventsList;
     private String gotoMethod;
+    private boolean readOnly;
 
     private String storedName; // component name preserved between Cut and Paste
 
@@ -99,6 +100,7 @@ public class RADComponent {
      */
     public void initialize(FormManager2 formManager) {
         this.formManager = formManager;
+        readOnly = formManager.getFormObject().isReadOnly();
     }
 
     /** Called to set the bean to be represented by this RADComponent.
@@ -264,6 +266,10 @@ public class RADComponent {
             }
         }
         return (getBeanInfo().getBeanDescriptor().getValue("hidden-state") != null); // NOI18N
+    }
+
+    public boolean readOnly() {
+        return readOnly;
     }
 
     /** Getter for the Name property of the component - usually maps to variable declaration for holding the
@@ -525,7 +531,7 @@ public class RADComponent {
         getComponentEvents();
         EventsList.Event defaultEvt = eventsList.getDefaultEvent();
         Vector handlers = defaultEvt.getHandlers();
-        if (handlers == null || handlers.size() == 0)
+        if ((handlers == null || handlers.size() == 0) && !readOnly)
             defaultEvt.createDefaultEventHandler();
         defaultEvt.gotoEventHandler();
     }
@@ -669,6 +675,10 @@ public class RADComponent {
                             newSelectedHandler =((EventsManager.EventHandler) event.getHandlers().get(0)).getName();
                         getNodeReference().firePropertyChangeHelper(this.getName(), lastSelectedHandler, newSelectedHandler);
                         ((java.beans.PropertyEditorSupport)getPropertyEditor()).firePropertyChange();
+                    }
+
+                    public boolean canWrite() {
+                        return !RADComponent.this.readOnly;
                     }
                 };
                 nodeEvents[idx++] = ep;
@@ -893,7 +903,8 @@ public class RADComponent {
          * @return <CODE>true</CODE> if the read of the value is supported
          */
         public boolean canWrite() {
-            return(desc.getWriteMethod() != null);
+            return !RADComponent.this.readOnly
+                     && desc.getWriteMethod() != null;
         }
 
         /** Set the value.
@@ -1453,11 +1464,11 @@ public class RADComponent {
              *         sheet.
              */
             public java.awt.Component getInPlaceCustomEditor() {
+                Vector handlers = event.getHandlers();
                 if (formManager.getFormEditorSupport().supportsAdvancedFeatures()) {
                     final javax.swing.JComboBox eventCombo = new javax.swing.JComboBox();
-                    eventCombo.setEditable(true);
+                    eventCombo.setEditable(!RADComponent.this.readOnly);
 
-                    Vector handlers = event.getHandlers();
                     if (handlers.size() == 0) {
                         eventCombo.getEditor().setItem(FormUtils.getDefaultEventName(RADComponent.this, event.getListenerMethod()));
                     } else {
@@ -1466,78 +1477,90 @@ public class RADComponent {
                         }
                     }
 
-                    eventCombo.addActionListener(new java.awt.event.ActionListener() {
-                        public void actionPerformed(java.awt.event.ActionEvent e) {
-                            String selected =(String) eventCombo.getEditor().getItem();
-                            lastSelectedHandler = selected;
-                            event.gotoEventHandler(selected);
-                        }
-                    }
-                                                 );
-                    eventCombo.addFocusListener(new java.awt.event.FocusAdapter() {
-                        public void focusGained(java.awt.event.FocusEvent evt) {
-                            Vector hand = event.getHandlers();
-                            eventCombo.removeAllItems();
-                            if (hand.size() == 0) {
-                                eventCombo.getEditor().setItem(FormUtils.getDefaultEventName(RADComponent.this, event.getListenerMethod()));
-                            } else {
-                                for (int i=0, n=hand.size(); i<n; i++) {
-                                    eventCombo.addItem(((EventsManager.EventHandler) hand.get(i)).getName());
-                                }
+                    if (!RADComponent.this.readOnly)
+                        eventCombo.addActionListener(new java.awt.event.ActionListener() {
+                            public void actionPerformed(java.awt.event.ActionEvent e) {
+                                String selected =(String) eventCombo.getEditor().getItem();
+                                lastSelectedHandler = selected;
+                                event.gotoEventHandler(selected);
                             }
-                        }
-                    }
-                                                );
-                    eventCombo.getEditor().addActionListener(new java.awt.event.ActionListener() {
-                        public void actionPerformed(java.awt.event.ActionEvent e) {
-                            String selected =(String) eventCombo.getEditor().getItem();
-                            String oldname = lastSelectedHandler;
-                            lastSelectedHandler = selected;
-                            boolean removed = false;
-                            boolean isNew = true;
-                            String items[] = new String[eventCombo.getItemCount()];
-                            for (int i=0, n=eventCombo.getItemCount(); i<n; i++) {
-                                items[i] =(String) eventCombo.getItemAt(i);
-                                if (eventCombo.getItemAt(i).equals(selected)) {
-                                    isNew = false;
-                                }
+                        });
+                    else
+                        eventCombo.addActionListener(new java.awt.event.ActionListener() {
+                            public void actionPerformed(java.awt.event.ActionEvent e) {
+                                String selected = (String) eventCombo.getSelectedItem();
+                                event.gotoEventHandler(selected);
                             }
-                            if (isNew) {
-                                HandlerSetChange change = new HandlerSetChange();
-                                if (eventCombo.getItemCount()==0) {     // event added
-                                    change.getAdded().add(selected);
-                                    eventCombo.addItem(selected);
-                                }
-                                else {
-                                    if (selected.equals("")) {          // event deleted
-                                        change.getRemoved().add(oldname);
-                                        removed = true;
-                                    }
-                                    else {                              // event renamed
-                                        change.getRenamedOldNames().add(oldname);
-                                        change.getRenamedNewNames().add(selected);
+                        });
+
+                    if (!RADComponent.this.readOnly) {
+                        eventCombo.addFocusListener(new java.awt.event.FocusAdapter() {
+                            public void focusGained(java.awt.event.FocusEvent evt) {
+                                Vector hand = event.getHandlers();
+                                eventCombo.removeAllItems();
+                                if (hand.size() == 0) {
+                                    eventCombo.getEditor().setItem(FormUtils.getDefaultEventName(RADComponent.this, event.getListenerMethod()));
+                                } else {
+                                    for (int i=0, n=hand.size(); i<n; i++) {
+                                        eventCombo.addItem(((EventsManager.EventHandler) hand.get(i)).getName());
                                     }
                                 }
-                                EventEditor.this.setValue(change);
                             }
-                            if (!removed) event.gotoEventHandler(selected);
                         }
-                    }
+                                                    );
+                        eventCombo.getEditor().addActionListener(new java.awt.event.ActionListener() {
+                            public void actionPerformed(java.awt.event.ActionEvent e) {
+                                String selected =(String) eventCombo.getEditor().getItem();
+                                String oldname = lastSelectedHandler;
+                                lastSelectedHandler = selected;
+                                boolean removed = false;
+                                boolean isNew = true;
+                                String items[] = new String[eventCombo.getItemCount()];
+                                for (int i=0, n=eventCombo.getItemCount(); i<n; i++) {
+                                    items[i] =(String) eventCombo.getItemAt(i);
+                                    if (eventCombo.getItemAt(i).equals(selected)) {
+                                        isNew = false;
+                                    }
+                                }
+                                if (isNew) {
+                                    HandlerSetChange change = new HandlerSetChange();
+                                    if (eventCombo.getItemCount()==0) {     // event added
+                                        change.getAdded().add(selected);
+                                        eventCombo.addItem(selected);
+                                    }
+                                    else {
+                                        if (selected.equals("")) {          // event deleted
+                                            change.getRemoved().add(oldname);
+                                            removed = true;
+                                        }
+                                        else {                              // event renamed
+                                            change.getRenamedOldNames().add(oldname);
+                                            change.getRenamedNewNames().add(selected);
+                                        }
+                                    }
+                                    EventEditor.this.setValue(change);
+                                }
+                                if (!removed) event.gotoEventHandler(selected);
+                            }
+                        }
                                                              );
+                    }
                     return eventCombo;
                 } else {
                     final JTextField eventField = new JTextField();
-                    Vector handlers = event.getHandlers();
                     if (handlers.size() == 0) {
                         eventField.setText(FormUtils.getDefaultEventName(RADComponent.this, event.getListenerMethod()));
                     } else {
                         eventField.setText(((EventsManager.EventHandler) handlers.get(0)).getName());
                     }
-                    eventField.addActionListener(new java.awt.event.ActionListener() {
-                        public void actionPerformed(java.awt.event.ActionEvent e) {
-                            setAsText(eventField.getText());
+                    if (RADComponent.this.readOnly)
+                        eventField.setEditable(false);
+                    else
+                        eventField.addActionListener(new java.awt.event.ActionListener() {
+                            public void actionPerformed(java.awt.event.ActionEvent e) {
+                                setAsText(eventField.getText());
+                            }
                         }
-                    }
                                                  );
                     return eventField;
                 }
@@ -1548,14 +1571,16 @@ public class RADComponent {
              *              property editor, false otherwise
              */
             public boolean hasInPlaceCustomEditor() {
-                return true;
+                return !RADComponent.this.readOnly || event.getHandlers().size() > 0;
             }
 
             public boolean supportsCustomEditor() {
-                return formManager.getFormEditorSupport().supportsAdvancedFeatures();
+                return //!RADComponent.this.readOnly &&
+                       formManager.getFormEditorSupport().supportsAdvancedFeatures();
             }
 
             public java.awt.Component getCustomEditor() {
+                if (RADComponent.this.readOnly) return null;
                 final EventCustomEditor ed = new EventCustomEditor(EventProperty.this);
                 DialogDescriptor dd = new DialogDescriptor(ed,
                                                            java.text.MessageFormat.format(FormEditor.getFormBundle().getString("FMT_MSG_HandlersFor"), new Object [] {event.getName()}),

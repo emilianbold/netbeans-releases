@@ -55,8 +55,10 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
      * @return array of new type operations that are allowed
      */
     public NewType[] getNewTypes() {
-        Class[] classes =(Class []) supportedNewMenu.get(new Integer(getMenuItemType()));
+        if (readOnly())
+            return RADComponent.NO_NEW_TYPES;
 
+        Class[] classes =(Class []) supportedNewMenu.get(new Integer(getMenuItemType()));
         if (classes == null)
             return RADComponent.NO_NEW_TYPES;
 

@@ -96,6 +96,7 @@ class JavaCodeGenerator extends CodeGenerator {
     private FormManager2 formManager;
     private boolean initialized = false;
     private boolean errorInitializing = false;
+    private boolean canGenerate = true;
 
     private JavaEditor.SimpleSection initComponentsSection;
     private JavaEditor.SimpleSection variablesSection;
@@ -106,9 +107,12 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     public void initialize(FormManager2 formManager) {
+        canGenerate = !formManager.getFormObject().isReadOnly();
+
         if (!initialized) {
             this.formManager = formManager;
-            formManager.addFormListener(new JCGFormListener());
+            if (canGenerate)
+                formManager.addFormListener(new JCGFormListener());
             initialized = true;
         }
         FormEditorSupport s = formManager.getFormEditorSupport();
@@ -149,6 +153,10 @@ class JavaCodeGenerator extends CodeGenerator {
             public Object getValue() {
                 return component.getName();
             }
+
+            public boolean canWrite() {
+                return JavaCodeGenerator.this.canGenerate;
+            }
         };
 
         if (!component.getFormManager().getFormEditorSupport().supportsAdvancedFeatures()) {
@@ -182,6 +190,9 @@ class JavaCodeGenerator extends CodeGenerator {
                         return new Boolean(component.getAuxValue(AUX_VARIABLE_MODIFIER) == null);
                     }
 
+                    public boolean canWrite() {
+                        return JavaCodeGenerator.this.canGenerate;
+                    }
                 },
                 new PropertySupport.ReadWrite(
                     "modifiers",
@@ -203,7 +214,9 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
 
                     public boolean canWrite() {
-                        return(component.getAuxValue(AUX_VARIABLE_MODIFIER) != null);
+                        return JavaCodeGenerator.this.canGenerate
+                               && component.getAuxValue(AUX_VARIABLE_MODIFIER)
+                                                                      != null;
                     }
 
                     public PropertyEditor getPropertyEditor() {
@@ -249,6 +262,9 @@ class JavaCodeGenerator extends CodeGenerator {
                         return value;
                     }
 
+                    public boolean canWrite() {
+                        return JavaCodeGenerator.this.canGenerate;
+                    }
                     public PropertyEditor getPropertyEditor() {
                         return new CodeGenerateEditor(component);
                     }
@@ -367,6 +383,10 @@ class JavaCodeGenerator extends CodeGenerator {
                         }
                         return value;
                     }
+
+                    public boolean canWrite() {
+                        return JavaCodeGenerator.this.canGenerate;
+                    }
                 }
             };
 
@@ -400,6 +420,8 @@ class JavaCodeGenerator extends CodeGenerator {
                             return value;
                         }
                         public boolean canWrite() {
+                            if (!JavaCodeGenerator.this.canGenerate)
+                                return false;
                             Integer genType =(Integer)component.getAuxValue(AUX_CODE_GENERATION);
                             return((genType == null) ||(genType.equals(VALUE_GENERATE_CODE)));
                         }
@@ -1080,6 +1102,7 @@ class JavaCodeGenerator extends CodeGenerator {
     public boolean generateEventHandler(String handlerName, String[] paramTypes,
                                         String[] exceptTypes, String bodyText) {
         if (errorInitializing) return false;
+        if (!canGenerate) return false; // read only
         if (getEventHandlerSection(handlerName) != null)
             return false;
 
@@ -1128,6 +1151,8 @@ class JavaCodeGenerator extends CodeGenerator {
      */
     public boolean changeEventHandler(final String handlerName, final String[] paramTypes,
                                       final String[] exceptTypes, final String bodyText) {
+        if (errorInitializing) return false;
+        if (!canGenerate) return false; // read only
         JavaEditor.InteriorSection sec = getEventHandlerSection(handlerName);
         if (sec == null)
             return false;
@@ -1168,6 +1193,8 @@ class JavaCodeGenerator extends CodeGenerator {
      * @param handlerName The name of the event handler
      */
     public boolean deleteEventHandler(String handlerName) {
+        if (errorInitializing) return false;
+        if (!canGenerate) return false; // read only
         synchronized(GEN_LOCK) {
             JavaEditor.InteriorSection section = getEventHandlerSection(handlerName);
             if (section == null)
@@ -1245,6 +1272,9 @@ class JavaCodeGenerator extends CodeGenerator {
      */
     public boolean renameEventHandler(String oldHandlerName, String newHandlerName,
                                       String[] paramTypes, String[] exceptTypes) {
+        if (errorInitializing) return false;
+        if (!canGenerate) return false; // read only
+
         JavaEditor.InteriorSection sec = getEventHandlerSection(oldHandlerName);
         if (sec == null) {
             return false;
@@ -1687,6 +1717,10 @@ class JavaCodeGenerator extends CodeGenerator {
                     return true;
                 }
             };
+        }
+
+        public boolean canWrite() {
+            return JavaCodeGenerator.this.canGenerate;
         }
     }
 

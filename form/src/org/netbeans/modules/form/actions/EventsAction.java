@@ -119,6 +119,7 @@ public class EventsAction extends CookieAction {
                 RADComponent radComp = radCookie.getRADComponent();
                 if (radComp == null)
                     return;
+                boolean readOnly = radComp.readOnly();
 
                 EventsList em = radComp.getEventsList();
                 EventsList.EventSet[] setHandlers = em.getEventSets();
@@ -127,15 +128,16 @@ public class EventsAction extends CookieAction {
                     String name = setHandlers[i].getName();
                     JMenu m = new org.openide.awt.JMenuPlus(name.substring(0, 1).toUpperCase() + name.substring(1));
                     HelpCtx.setHelpIDString(m, EventsAction.class.getName());
-                    menu.add(m);
                     boolean eventSetHasHandlers = false;
                     EventsList.Event[] events = setHandlers[i].getEvents();
                     for (int j = 0; j < events.length; j++) {
                         JMenuItem jmi=null;
                         if (events[j].getHandlers().size() == 0) {
-                            String menuText = java.text.MessageFormat.format(org.openide.util.NbBundle.getBundle(EventsAction.class).getString("FMT_CTL_EventNoHandlers"),
+                            if (!readOnly) {
+                                String menuText = java.text.MessageFormat.format(org.openide.util.NbBundle.getBundle(EventsAction.class).getString("FMT_CTL_EventNoHandlers"),
                                                                              new Object[] { events[j].getName() });
-                            jmi = new JMenuItem(menuText);
+                                jmi = new JMenuItem(menuText);
+                            }
                         }
                         if (events[j].getHandlers().size() == 1) {
                             String menuText = java.text.MessageFormat.format(org.openide.util.NbBundle.getBundle(EventsAction.class).getString("FMT_CTL_EventOneHandler"),
@@ -172,29 +174,38 @@ public class EventsAction extends CookieAction {
                                 mapping2.put(hItem, handler.getName());
                             }
                         }
-                        HelpCtx.setHelpIDString(jmi, EventsAction.class.getName());
-                        if (events[j].getHandlers().size() > 0) {
-                            eventSetHasHandlers = true;
-                            Font jmiFont = jmi.getFont();
-                            jmi.setFont(new Font(jmiFont.getFontName(), jmiFont.getStyle() + Font.BOLD, jmiFont.getSize()));
-                        }
-                        m.add(jmi);
-                        mapping.put(jmi, events[j]);
-                        jmi.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent evt) {
-                                EventsList.Event event =(EventsList.Event)mapping.get(evt.getSource());
-                                if (event != null) {
-                                    if (event.getHandlers().size() == 0)
-                                        event.createDefaultEventHandler();
-                                    event.gotoEventHandler();
+                        if (jmi != null) {
+                            HelpCtx.setHelpIDString(jmi, EventsAction.class.getName());
+                            if (events[j].getHandlers().size() > 0) {
+                                eventSetHasHandlers = true;
+                                if (!readOnly) {
+                                    Font jmiFont = jmi.getFont();
+                                    jmi.setFont(new Font(jmiFont.getFontName(),
+                                                         jmiFont.getStyle() + Font.BOLD,
+                                                         jmiFont.getSize()));
                                 }
                             }
+                            m.add(jmi);
+                            mapping.put(jmi, events[j]);
+                            jmi.addActionListener(new ActionListener() {
+                                public void actionPerformed(ActionEvent evt) {
+                                    EventsList.Event event =(EventsList.Event)mapping.get(evt.getSource());
+                                    if (event != null) {
+                                        if (event.getHandlers().size() == 0)
+                                            event.createDefaultEventHandler();
+                                        event.gotoEventHandler();
+                                    }
+                                }
+                            }
+                                                  );
                         }
-                                              );
                     }
-                    if (eventSetHasHandlers) {
+                    if (eventSetHasHandlers && !readOnly) {
                         Font mFont = m.getFont();
                         m.setFont(new Font(mFont.getFontName(), mFont.getStyle() + Font.BOLD, mFont.getSize()));
+                    }
+                    if (eventSetHasHandlers || !readOnly) {
+                        menu.add(m);
                     }
                 }
             }

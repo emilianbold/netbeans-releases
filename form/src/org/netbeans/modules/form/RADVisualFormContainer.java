@@ -320,6 +320,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 setFormSizePolicy(((Integer)val).intValue());
             }
 
+            public boolean canWrite() {
+                return !readOnly();
+            }
+
             /** Editor for alignment */
             public java.beans.PropertyEditor getPropertyEditor() {
                 return new SizePolicyEditor();
@@ -341,6 +345,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 if (!(val instanceof Dimension)) throw new IllegalArgumentException();
                 setFormSize((Dimension)val);
             }
+
+            public boolean canWrite() {
+                return !readOnly();
+            }
         };
 
         Node.Property positionProperty = new PropertySupport.ReadWrite(PROP_FORM_POSITION, Point.class,
@@ -355,6 +363,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                                                     IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 if (!(val instanceof Point)) throw new IllegalArgumentException();
                 setFormPosition((Point)val);
+            }
+
+            public boolean canWrite() {
+                return !readOnly();
             }
         };
 
@@ -371,6 +383,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 if (!(val instanceof Boolean)) throw new IllegalArgumentException();
                 setGeneratePosition(((Boolean)val).booleanValue());
             }
+
+            public boolean canWrite() {
+                return !readOnly();
+            }
         };
 
         Node.Property genSizeProperty = new PropertySupport.ReadWrite(PROP_GENERATE_SIZE, Boolean.TYPE,
@@ -385,6 +401,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                                                     IllegalArgumentException, java.lang.reflect.InvocationTargetException {
                 if (!(val instanceof Boolean)) throw new IllegalArgumentException();
                 setGenerateSize(((Boolean)val).booleanValue());
+            }
+
+            public boolean canWrite() {
+                return !readOnly();
             }
         };
 
@@ -401,6 +421,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 if (!(val instanceof Boolean)) throw new IllegalArgumentException();
                 setGenerateCenter(((Boolean)val).booleanValue());
             }
+
+            public boolean canWrite() {
+                return !readOnly();
+            }
         };
 
         Node.Property genEncodingProperty = new EncodingProperty("encoding", String.class, // NOI18N
@@ -413,6 +437,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 getFormManager().setEncoding((String) value);
             }
 
+            public boolean canWrite() {
+                return !readOnly();
+            }
 
             public Object getValue() {
                 Object value = getFormManager().getEncoding();
@@ -475,6 +502,10 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 if (!(val instanceof String)) throw new IllegalArgumentException();
                 String s =(String) val;
                 setFormMenu(s.equals(NO_MENU) ? null : s);
+            }
+
+            public boolean canWrite() {
+                return !readOnly();
             }
 
             /** Editor for alignment */

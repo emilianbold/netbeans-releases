@@ -165,49 +165,63 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     protected SystemAction [] createActions() {
         ArrayList actions = new ArrayList(15);
 
-        actions.add(SystemAction.get(EventsAction.class));
-        actions.add(null);
-        if (component instanceof RADVisualContainer) {
-            actions.add(SystemAction.get(SelectLayoutAction.class));
-            actions.add(SystemAction.get(CustomizeLayoutAction.class));
+        if (component.readOnly()) {
+            if (component.getEventsList().getHandlersCount() > 0) {
+                actions.add(SystemAction.get(EventsAction.class));
+                actions.add(null);
+            }
+            actions.add(SystemAction.get(GotoFormAction.class));
+            actions.add(SystemAction.get(GotoEditorAction.class));
+            actions.add(SystemAction.get(GotoInspectorAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(CopyAction.class));
             actions.add(null);
         }
+        else {
+            actions.add(SystemAction.get(EventsAction.class));
+            actions.add(null);
+            if (component instanceof RADVisualContainer) {
+                actions.add(SystemAction.get(SelectLayoutAction.class));
+                actions.add(SystemAction.get(CustomizeLayoutAction.class));
+                actions.add(null);
+            }
 
-        if (component instanceof ComponentContainer) {
-            actions.add(SystemAction.get(ReorderAction.class));
-            if (!(component instanceof FormContainer)) {
+            if (component instanceof ComponentContainer) {
+                actions.add(SystemAction.get(ReorderAction.class));
+                if (!(component instanceof FormContainer)) {
+                    actions.add(SystemAction.get(MoveUpAction.class));
+                    actions.add(SystemAction.get(MoveDownAction.class));
+                }
+                actions.add(null);
+                actions.add(SystemAction.get(GotoFormAction.class));
+                actions.add(SystemAction.get(GotoEditorAction.class));
+                actions.add(SystemAction.get(GotoInspectorAction.class));
+                actions.add(null);
+                actions.add(SystemAction.get(CutAction.class));
+                actions.add(SystemAction.get(CopyAction.class));
+                actions.add(SystemAction.get(PasteAction.class));
+            } else {
+                actions.add(SystemAction.get(GotoFormAction.class));
+                actions.add(SystemAction.get(GotoEditorAction.class));
+                actions.add(SystemAction.get(GotoInspectorAction.class));
+                actions.add(null);
                 actions.add(SystemAction.get(MoveUpAction.class));
                 actions.add(SystemAction.get(MoveDownAction.class));
+                actions.add(null);
+                actions.add(SystemAction.get(CutAction.class));
+                actions.add(SystemAction.get(CopyAction.class));
             }
-            actions.add(null);
-            actions.add(SystemAction.get(GotoFormAction.class));
-            actions.add(SystemAction.get(GotoEditorAction.class));
-            actions.add(SystemAction.get(GotoInspectorAction.class));
-            actions.add(null);
-            actions.add(SystemAction.get(CutAction.class));
-            actions.add(SystemAction.get(CopyAction.class));
-            actions.add(SystemAction.get(PasteAction.class));
-        } else {
-            actions.add(SystemAction.get(GotoFormAction.class));
-            actions.add(SystemAction.get(GotoEditorAction.class));
-            actions.add(SystemAction.get(GotoInspectorAction.class));
-            actions.add(null);
-            actions.add(SystemAction.get(MoveUpAction.class));
-            actions.add(SystemAction.get(MoveDownAction.class));
-            actions.add(null);
-            actions.add(SystemAction.get(CutAction.class));
-            actions.add(SystemAction.get(CopyAction.class));
-        }
 
-        actions.add(null);
-        if (!(component instanceof FormContainer)) {
-            actions.add(SystemAction.get(RenameAction.class));
-            actions.add(SystemAction.get(DeleteAction.class));
             actions.add(null);
-        }
-        if (getNewTypes().length != 0) {
-            actions.add(SystemAction.get(NewAction.class));
-            actions.add(null);
+            if (!(component instanceof FormContainer)) {
+                actions.add(SystemAction.get(RenameAction.class));
+                actions.add(SystemAction.get(DeleteAction.class));
+                actions.add(null);
+            }
+            if (getNewTypes().length != 0) {
+                actions.add(SystemAction.get(NewAction.class));
+                actions.add(null);
+            }
         }
 
         actions.add(SystemAction.get(ToolsAction.class));
@@ -240,14 +254,14 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
      * @return <code>false</code>
      */
     public boolean canRename() {
-        return !(component instanceof FormContainer);
+        return !component.readOnly() && !(component instanceof FormContainer);
     }
 
     /** Can this node be destroyed?
      * @return <CODE>false</CODE>
      */
     public boolean canDestroy() {
-        return !(component instanceof FormContainer);
+        return !component.readOnly() && !(component instanceof FormContainer);
     }
 
     /** Remove the node from its parent and deletes it.
@@ -298,7 +312,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
      * @return <CODE>true</CODE> if there is a customizer
      */
     public boolean hasCustomizer() {
-        return component.getBeanInfo().getBeanDescriptor().getCustomizerClass() != null;
+        return !component.readOnly() && component.getBeanInfo().getBeanDescriptor()
+                                              .getCustomizerClass() != null;
     }
 
     /** Get the customizer component.
@@ -346,7 +361,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
      * @return <code>true</code> if it can
      */
     public boolean canCut() {
-        return !(component instanceof FormContainer);
+        return !(component instanceof FormContainer) && !component.readOnly();
     }
 
     /** Copy this node to the clipboard.
@@ -393,6 +408,8 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
      *    valid for this node
      */
     protected void createPasteTypes(Transferable t, java.util.List s) {
+        if (component.readOnly()) return;
+
         boolean isRADComponentFlavor = false;
 
         if (t.isDataFlavorSupported(RAD_COMPONENT_COPY_FLAVOR)

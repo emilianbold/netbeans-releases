@@ -432,13 +432,14 @@ final public class FormEditor extends Object
         private final static Image inspectorIcon = Toolkit.getDefaultToolkit().getImage(iconURL);
         
         SplittedPanel split;
+        PropertySheetView sheet;
 
         static final long serialVersionUID =4248268998485315927L;
         ComponentInspector() {
             final ExplorerManager manager = getExplorerManager();
             emptyInspectorNode = new EmptyInspectorNode();
             manager.setRootContext(emptyInspectorNode);
-            split = createSplit();
+            createSplit();
             add("Center", split); // NOI18N
 
             manager.addPropertyChangeListener(new PropertyChangeListener() {
@@ -456,9 +457,8 @@ final public class FormEditor extends Object
             setName(formBundle.getString("CTL_NoSelection"));
         }
         
-        private static SplittedPanel createSplit() {
-            PropertySheetView sheet;
-            SplittedPanel split = new SplittedPanel();
+        private SplittedPanel createSplit() {
+            split = new SplittedPanel();
             split.add(new BeanTreeView(), SplittedPanel.ADD_FIRST);
             split.add(sheet = new PropertySheetView(), SplittedPanel.ADD_SECOND);
             split.setSplitType(SplittedPanel.VERTICAL);
@@ -496,10 +496,11 @@ final public class FormEditor extends Object
                 // XXX this should not happen, but sometimes it does. WHY?
                 null == formManager.getFormEditorSupport().getFormRootNode()) {
                 remove(split);
-                split = createSplit();
+                createSplit();
                 add("Center", split); // NOI18N
                 getExplorerManager().setRootContext(emptyInspectorNode);
             } else {
+                sheet.setDisplayWritableOnly(!formManager.readOnly());
                 getExplorerManager().setRootContext(formManager.getFormEditorSupport().getFormRootNode());
             }
         }

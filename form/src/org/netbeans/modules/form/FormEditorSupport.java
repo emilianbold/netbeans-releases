@@ -168,7 +168,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         }
 
         // clear status text
-        TopManager.getDefault().setStatusText(null); // NOI18N
+        TopManager.getDefault().setStatusText(null);
         return true;
     }
 
@@ -258,7 +258,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     /** Marks the form as modified if it's not yet. Used if changes made
      * in form data don't project to the java source file (generated code). */
     void markFormModified() {
-        if (formLoaded && !formObject.isModified())
+        if (formLoaded && !formObject.isReadOnly() && !formObject.isModified())
             super.notifyModified();
     }
 
@@ -450,7 +450,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     }
 
     private void saveForm() {
-        if (formLoaded) {
+        if (formLoaded && !formObject.formFileReadOnly()) {
             formManager.fireFormToBeSaved();
             try {
                 saveManager.saveForm(formObject, formManager);
