@@ -335,10 +335,8 @@ public class ProjectsRootNode extends AbstractNode {
                 Sources sources = ProjectUtils.getSources(project);
 
                 /* build a delegated SearchInfo object: */
-                SourceGroup[] sourceGroups = sources.getSourceGroups("java");   //NOI18N
-                if (sourceGroups.length == 0) {
-                    sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-                }
+                SourceGroup[] sourceGroups
+                        = sources.getSourceGroups(Sources.TYPE_GENERIC);
                 if (sourceGroups.length == 0) {
                     return Collections.EMPTY_LIST.iterator();
                 }
