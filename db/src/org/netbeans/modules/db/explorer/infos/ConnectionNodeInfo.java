@@ -13,24 +13,26 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.net.SocketException;
-import java.sql.*;
-import java.util.*;
+import java.io.IOException;
+import java.sql.Connection;
 import java.text.MessageFormat;
+import java.util.Vector;
 
 import org.openide.nodes.Node;
 
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.impl.*;
+import org.netbeans.lib.ddl.DBConnection;
+import org.netbeans.lib.ddl.DatabaseProductNotFoundException;
+import org.netbeans.lib.ddl.impl.DriverSpecification;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.lib.ddl.impl.SpecificationFactory;
+
 import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
-import org.netbeans.modules.db.explorer.dlg.UnsupportedDatabaseDialog;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.DatabaseOption;
 import org.netbeans.modules.db.explorer.PointbasePlus;
+import org.netbeans.modules.db.explorer.dlg.UnsupportedDatabaseDialog;
+import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
+import org.netbeans.modules.db.explorer.nodes.RootNode;
 
 public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOperations {
     
@@ -39,7 +41,6 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
     public void connect(String dbsys) throws DatabaseException {
         String drvurl = getDriver();
         String dburl = getDatabase();
-        String schema = null;
         
         try {
             // check if there is connected connection by Pointbase driver
@@ -55,8 +56,6 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
                                     throw new Exception(bundle.getString("EXC_PBConcurrentConn")); // NOI18N
                     }
             }
-
-            Properties dbprops = getConnectionProperties();
 
             DatabaseConnection con = new DatabaseConnection(drvurl, dburl, getUser(), getPassword());
             Connection connection = con.createJDBCConnection();
@@ -128,9 +127,8 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
 
     public void delete() throws IOException {
         try {
-            disconnect();
             Vector cons = RootNode.getOption().getConnections();
-            DatabaseConnection cinfo = (DatabaseConnection)getDatabaseConnection();
+            DatabaseConnection cinfo = (DatabaseConnection) getDatabaseConnection();
             if (cons.contains(cinfo))
                 cons.remove(cinfo);
         } catch (Exception e) {
@@ -150,7 +148,6 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
     private void updateConnection(String key, String oldVal, String newVal) {
         DatabaseOption option = RootNode.getOption();
         Vector cons = option.getConnections();
-        Enumeration enu = cons.elements();
         DBConnection infoConn = getDatabaseConnection();
         int idx = cons.indexOf(infoConn);
         if(idx>=0) {

@@ -13,19 +13,22 @@
 
 package org.netbeans.modules.db;
 
-import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import java.text.MessageFormat;
 
-import org.openide.*;
-import org.openide.filesystems.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.InstanceDataObject;
-import org.openide.modules.*;
+import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
-import org.openide.nodes.Node;
-import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
+
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 
 import org.openide.nodes.*;
@@ -103,9 +106,12 @@ public class DatabaseModule extends ModuleInstall {
             public void run () {
                 try {
                     Node[] n = environment.getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
-                    for (int i = 0; i < n.length; i++)
-                        if (n[i] instanceof ConnectionNode)
-                            ((ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo()).disconnect();
+                    ConnectionNodeInfo cni;
+                    for (int i = 0; i < n.length; i++) {
+                        cni = (ConnectionNodeInfo) n[i].getCookie(ConnectionNodeInfo.class);
+                        if (cni != null)
+                            cni.disconnect();
+                    }
                 } catch (Exception exc) {
                     //connection not closed
                 }
