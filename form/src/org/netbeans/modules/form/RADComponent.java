@@ -120,15 +120,15 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
         if (beanClass == null)
             throw new NullPointerException();
 
-        if (this.beanClass != beanClass) {
+        if (this.beanClass != beanClass && this.beanClass != null) {
             beanInfo = null;
-            if (this.beanClass != null)
-                clearProperties();
+            clearProperties();
         }
 
         this.beanClass = beanClass;
 
         Object bean = createBeanInstance();
+        getBeanInfo(); // force BeanInfo creation here - will be needed, may fail
         createCodeExpression();
         setBeanInstance(bean);
 
@@ -146,6 +146,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
         this.beanClass = beanInstance.getClass();
 
+        getBeanInfo(); // force BeanInfo creation here - will be needed, may fail
         createCodeExpression();
         setBeanInstance(beanInstance);
 
