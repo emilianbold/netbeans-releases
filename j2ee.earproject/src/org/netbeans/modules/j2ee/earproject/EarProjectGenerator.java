@@ -44,8 +44,9 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 
 /**
  * Create a fresh EarProject from scratch.
- * TODO importing an exisitng enterprise application 
- * in j2ee blueprint recommended layout format
+ * Importing an exisitng enterprise application 
+ * in j2ee blueprint recommended layout format 
+ * using existing sources subprojects
  *
  * @see WebProjectGenerator
  *
@@ -221,8 +222,13 @@ public class EarProjectGenerator {
 
                 // ---- test to see if it is an ejb jar project and trigger the import
                 if (null != ejbJarDotXml) {
-                    subProjHelper = EjbJarProjectGenerator.importProject(subProjDir, 
-                        subprojectRoot.getName(), subprojectRoot, javaRoot, ejbJarDotXml.getParent(), j2eeLevel, serverInstanceID, "build.xml");
+                    subProjHelper = EjbJarProjectGenerator.importProject(
+			subProjDir, subprojectRoot.getName(),
+			new File[] {FileUtil.toFile(javaRoot)},
+			new File[0], FileUtil.toFile(ejbJarDotXml.getParent()),
+			 null, j2eeLevel, serverInstanceID);
+//                    subProjHelper = EjbJarProjectGenerator.importProject(subProjDir, 
+//                        subprojectRoot.getName(), subprojectRoot, javaRoot, ejbJarDotXml.getParent(), j2eeLevel, serverInstanceID, "build.xml");
                 }
                     
                 // XXX ---- test to see if it is an app client and figure out how to import it.
@@ -297,7 +303,7 @@ public class EarProjectGenerator {
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         // XXX the following just for testing, TBD:
         ep.setProperty(EarProjectProperties.DIST_DIR, "dist");
-        ep.setProperty(EarProjectProperties.DIST_JAR, "${"+EarProjectProperties.DIST_DIR+"}/" + name + ".ear");
+        ep.setProperty(EarProjectProperties.DIST_JAR, "${"+EarProjectProperties.DIST_DIR+"}/" + name.toLowerCase() + ".ear");
         
 //        if (J2eeProjectConstants.J2EE_14_LEVEL.equals(j2eeLevel))
 //            ep.setProperty(EarProjectProperties.JAVAC_CLASSPATH, "${libs.j2ee14.classpath}");

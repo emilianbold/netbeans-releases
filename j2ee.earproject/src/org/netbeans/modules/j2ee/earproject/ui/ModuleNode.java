@@ -208,10 +208,11 @@ public class ModuleNode extends AbstractNode implements Node.Cookie {
      */
     
     // Handle copying and cutting specially:
-    /*
+    /**/
     public boolean canCopy() {
-        return true;
+        return false;
     }
+    /*
     public boolean canCut() {
         return true;
     }

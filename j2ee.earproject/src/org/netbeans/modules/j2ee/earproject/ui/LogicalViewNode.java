@@ -91,27 +91,6 @@ public class LogicalViewNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get(AddModuleAction.class),
-            null,
-            SystemAction.get(OpenLocalExplorerAction.class),
-            null,
-//            SystemAction.get(AddModuleAction.class),
-//            null,                     // separator
-            /* according to what it can do:
-                   SystemAction.get(ReorderAction.class),
-                   null,
-                   SystemAction.get(CutAction.class),
-                   SystemAction.get(CopyAction.class),
-                   SystemAction.get(PasteAction.class),
-                   null,
-                   SystemAction.get(DeleteAction.class),
-                   SystemAction.get(RenameAction.class),
-                   null,
-                   SystemAction.get(NewAction.class),
-                   null,
-             */
-            SystemAction.get(ToolsAction.class),
-            null,
-            SystemAction.get(PropertiesAction.class),
         };
     }
     
@@ -263,10 +242,11 @@ public class LogicalViewNode extends AbstractNode {
      */
     
     // Handle copying and cutting specially:
-    /*
+    /**/
     public boolean canCopy() {
-        return true;
+        return false;
     }
+     /*
     public boolean canCut() {
         return true;
     }

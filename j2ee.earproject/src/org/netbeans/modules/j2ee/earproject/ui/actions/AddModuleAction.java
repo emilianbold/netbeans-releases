@@ -16,11 +16,13 @@ package org.netbeans.modules.j2ee.earproject.ui.actions;
 import java.util.LinkedList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModuleContainer;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -64,7 +66,7 @@ public class AddModuleAction extends CookieAction {
         try {
             EarProjectProperties epp = 
                 (EarProjectProperties) activeNodes[0].getCookie(EarProjectProperties.class);
-            Project[] moduleProjects = getSelectedProjects();
+            Project[] moduleProjects = getSelectedProjects(epp);
             // XXX Vince add code here to add to application.xml and
             // build script
             epp.addJ2eeSubprojects(moduleProjects);
@@ -122,7 +124,7 @@ public class AddModuleAction extends CookieAction {
         return false;
     }
     
-    private Project[] getSelectedProjects() throws UserCancelException {
+    private Project[] getSelectedProjects(EarProjectProperties epp) throws UserCancelException {
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
         List moduleProjectNodes = new LinkedList();
         for (int i = 0; i < allProjects.length; i++) {
@@ -140,22 +142,35 @@ public class AddModuleAction extends CookieAction {
         final Node root = new AbstractNode(children);
         String moduleSelector = NbBundle.getMessage(AddModuleAction.class, "LBL_ModuleSelectorTitle");
         
-        NodeAcceptor na = new NodeAcceptor() {
-            public boolean acceptNodes(Node[] nodes) {
-                for (int i = 0; i < nodes.length; i++) {
-                    if (nodes[i].getParentNode() != root) {
-                        return false;
+        Project parent = epp.getProject();
+        SubprojectProvider spp = (SubprojectProvider) parent.getLookup().lookup(SubprojectProvider.class);
+        if (null != spp) {
+            final Set s = spp.getSubprojects();
+            NodeAcceptor na = new NodeAcceptor() {
+                public boolean acceptNodes(Node[] nodes) {
+                    for (int i = 0; i < nodes.length; i++) {
+                        if (nodes[i].getParentNode() != root) {
+                            return false;
+                        }
+                        // do not put this test befor the root test...
+                        Project p = (Project) nodes[i].getLookup().lookup(Project.class);
+                        if (null == p)
+                            return false;
+                        if (s.contains(p)) return false;
                     }
+                    return nodes.length > 0;
                 }
-                return nodes.length > 0;
+            };
+            root.setDisplayName(NbBundle.getMessage(AddModuleAction.class, "LBL_J2EEModules"));
+            Node[] selected = NodeOperation.getDefault().select(moduleSelector, root.getDisplayName(), root, na);
+            Project[] modules = new Project[selected.length];
+            for (int i = 0; i < modules.length; i++) {
+                modules[i] = (Project) selected[i].getLookup().lookup(Project.class);
             }
-        };
-        root.setDisplayName(NbBundle.getMessage(AddModuleAction.class, "LBL_J2EEModules"));
-        Node[] selected = NodeOperation.getDefault().select(moduleSelector, root.getDisplayName(), root, na);
-        Project[] modules = new Project[selected.length];
-        for (int i = 0; i < modules.length; i++) {
-            modules[i] = (Project) selected[i].getLookup().lookup(Project.class);
+            return modules;
+      }
+        else {
+            return new Project[0];
         }
-        return modules;
     }
 }
