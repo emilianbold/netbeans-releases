@@ -70,7 +70,7 @@ public abstract class SearchGroup extends Object {
     protected final Set searchRoots = new HashSet(5);
     
     /** Set of objects which passed the serach. It's usbset of searchObjects. */
-    protected final Set resultObjects = new HashSet(50);
+    protected final Set resultObjects = new LinkedHashSet(50);
 
     /** Flag indicating the search should be stopped. */
     protected boolean stopped = false;
@@ -258,7 +258,7 @@ public abstract class SearchGroup extends Object {
 
     /** Getter for result object property. */
     public Set getResultObjects() {
-        return new HashSet(resultObjects);
+        return new LinkedHashSet(resultObjects);
     }
 
     /** Adds property change listener. */

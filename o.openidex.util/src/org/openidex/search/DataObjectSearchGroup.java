@@ -80,6 +80,7 @@ public class DataObjectSearchGroup extends SearchGroup {
             SearchInfo info = getSearchInfo(node);
             if (info != null) {
                 for (Iterator j = info.objectsToSearch(); j.hasNext(); ) {
+                    if (stopped) return;
                     processSearchObject(/*DataObject*/ j.next());
                 }
             }
@@ -103,93 +104,93 @@ public class DataObjectSearchGroup extends SearchGroup {
                : SimpleSearchInfo.EMPTY_SEARCH_INFO;
     }
 
-    /**
-     * Gets data folder roots on which to search.
-     *
-     * @return  array of data folder roots
-     */
-    private DataObject.Container[] getContainers() {
-        List children = null;
-        Node[] nodes = normalizeNodes(
-                (Node[]) searchRoots.toArray(new Node[searchRoots.size()]));
-        
-        for (int i = 0; i < nodes.length; i++) {
-            Node node = nodes[i];
-            if (node.getParentNode() == null) {
-                
-                /* it should be the root of some project */
-            }
-        }
-
-        /* test whether to scan whole repository: */
-        if (nodes.length == 1) {
-            InstanceCookie ic = (InstanceCookie) nodes[0].getCookie(
-                                                          InstanceCookie.class);
-            try {
-                if (ic != null && Repository.class
-                                  .isAssignableFrom(ic.instanceClass())) {
-                                      
-                    /* yes - scanning whole repository: */
-                    children = new ArrayList(10);
-                    Enumeration fss = Repository.getDefault().getFileSystems();
-                    while (fss.hasMoreElements()) {
-                        FileSystem fs = (FileSystem) fss.nextElement();
-                        if (fs.isValid() && !fs.isHidden()) {
-                            children.add(DataObject.find(fs.getRoot()));
-                        }
-                    }
-                }
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
-                children = null;
-            } catch (ClassNotFoundException cnfe) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, cnfe);
-                children = null;
-            }
-        }
-        if (children == null) {
-            children = new ArrayList(nodes.length);
-            for (int i = 0; i < nodes.length; i++) {
-                DataObject.Container container = (DataObject.Container) 
-                        nodes[i].getCookie(DataObject.Container.class);
-                if (container != null) {
-                    children.add(container);
-                }
-            }
-        }
-        return (DataObject.Container[])
-               children.toArray(new DataObject.Container[children.size()]);
-    }
-    
-    /**
-     * Scans data folder recursively. 
-     *
-     * @return <code>true</code> if scanned entire folder successfully
-     * or <code>false</code> if scanning was stopped. */
-    private boolean scanContainer(DataObject.Container container) {
-        DataObject[] children = container.getChildren();
-
-        for (int i = 0; i < children.length; i++) {
-            
-            /* Test if the search was stopped. */
-            if (stopped) {
-                stopped = true;
-                return false;
-            }
-
-            DataObject.Container c = (DataObject.Container)
-                    children[i].getCookie(DataObject.Container.class);
-            if (c != null) {
-                if (!scanContainer(c)) {
-                    return false;
-                }
-            } else {
-                processSearchObject(children[i]);
-            }
-        }
-
-        return true;
-    }
+//    /**
+//     * Gets data folder roots on which to search.
+//     *
+//     * @return  array of data folder roots
+//     */
+//    private DataObject.Container[] getContainers() {
+//        List children = null;
+//        Node[] nodes = normalizeNodes(
+//                (Node[]) searchRoots.toArray(new Node[searchRoots.size()]));
+//
+//        for (int i = 0; i < nodes.length; i++) {
+//            Node node = nodes[i];
+//            if (node.getParentNode() == null) {
+//
+//                /* it should be the root of some project */
+//            }
+//        }
+//
+//        /* test whether to scan whole repository: */
+//        if (nodes.length == 1) {
+//            InstanceCookie ic = (InstanceCookie) nodes[0].getCookie(
+//                                                          InstanceCookie.class);
+//            try {
+//                if (ic != null && Repository.class
+//                                  .isAssignableFrom(ic.instanceClass())) {
+//
+//                    /* yes - scanning whole repository: */
+//                    children = new ArrayList(10);
+//                    Enumeration fss = Repository.getDefault().getFileSystems();
+//                    while (fss.hasMoreElements()) {
+//                        FileSystem fs = (FileSystem) fss.nextElement();
+//                        if (fs.isValid() && !fs.isHidden()) {
+//                            children.add(DataObject.find(fs.getRoot()));
+//                        }
+//                    }
+//                }
+//            } catch (IOException ioe) {
+//                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
+//                children = null;
+//            } catch (ClassNotFoundException cnfe) {
+//                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, cnfe);
+//                children = null;
+//            }
+//        }
+//        if (children == null) {
+//            children = new ArrayList(nodes.length);
+//            for (int i = 0; i < nodes.length; i++) {
+//                DataObject.Container container = (DataObject.Container)
+//                        nodes[i].getCookie(DataObject.Container.class);
+//                if (container != null) {
+//                    children.add(container);
+//                }
+//            }
+//        }
+//        return (DataObject.Container[])
+//               children.toArray(new DataObject.Container[children.size()]);
+//    }
+//
+//    /**
+//     * Scans data folder recursively.
+//     *
+//     * @return <code>true</code> if scanned entire folder successfully
+//     * or <code>false</code> if scanning was stopped. */
+//    private boolean scanContainer(DataObject.Container container) {
+//        DataObject[] children = container.getChildren();
+//
+//        for (int i = 0; i < children.length; i++) {
+//
+//            /* Test if the search was stopped. */
+//            if (stopped) {
+//                stopped = true;
+//                return false;
+//            }
+//
+//            DataObject.Container c = (DataObject.Container)
+//                    children[i].getCookie(DataObject.Container.class);
+//            if (c != null) {
+//                if (!scanContainer(c)) {
+//                    return false;
+//                }
+//            } else {
+//                processSearchObject(children[i]);
+//            }
+//        }
+//
+//        return true;
+//    }
 
 
     /** Gets node for found object. Implements superclass method.
