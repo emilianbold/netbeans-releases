@@ -109,13 +109,8 @@ public final class MainWindow extends JFrame {
         setJMenuBar(createMenuBar());
     
         if (!Constants.NO_TOOLBARS) {
-//            SwingUtilities.invokeLater(new Runnable() {
-//                public void run() {
-                    JComponent tb = getToolbarComponent();
-        
-                    getContentPane().add(tb, BorderLayout.NORTH);
-//                }
-//            });
+            JComponent tb = getToolbarComponent();
+            getContentPane().add(tb, BorderLayout.NORTH);
         }
         
         if(!Constants.SWITCH_STATUSLINE_IN_MENUBAR) {
