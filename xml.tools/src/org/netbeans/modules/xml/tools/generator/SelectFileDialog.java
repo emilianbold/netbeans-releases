@@ -154,16 +154,33 @@ public class SelectFileDialog extends JPanel {
         if (selectDD.getValue() != DialogDescriptor.OK_OPTION) {
             throw new UserCancelException();
         }
-        String name = fileField.getText();
+        final String newName = fileField.getText();
         
-        FileObject newFO = folder.getFileObject (name, ext);
-        if (newFO != null) {
+        FileObject newFO = folder.getFileObject (newName, ext);
+        
+        if ( ( newFO == null ) ||
+             ( newFO.isVirtual() == true ) ) {
+
+            FileSystem fs = folder.getFileSystem();
+            final FileObject tempFile = newFO;
+
+            fs.runAtomicAction (new FileSystem.AtomicAction () {
+                public void run () throws IOException {
+
+                    if ( tempFile.isVirtual() ) {
+                        tempFile.delete();
+                    }
+                    folder.createData (newName, ext);                    
+                }
+            });
+
+            newFO = folder.getFileObject (newName, ext);
+
+        } else if (newFO != null) {
             if (!!! GuiUtil.confirmAction (MessageFormat.format (Util.getString ("PROP_replaceMsg"),
-                                                                new String [] { name, ext })) ) {
+                                                                new String [] { newName, ext })) ) {
                 throw new UserCancelException();
             }
-        } else {
-            newFO = folder.createData (name, ext);
         }
         return newFO;
     }
