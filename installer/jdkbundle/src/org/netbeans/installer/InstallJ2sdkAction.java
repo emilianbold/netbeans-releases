@@ -524,10 +524,11 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         File installDirFile = new File(origJ2SEInstallDir);
         logEvent(this, Log.DBG, "createInstallScript installDirFile: " + installDirFile);
         File [] children = installDirFile.listFiles();
+        String installerPrefix = resolveString("$L(org.netbeans.installer.Bundle,JDK.installerPrefix)");
 	if (Util.isLinuxOS()) {
             //Try to locate Linux JDK installer
             for (int i = 0; i < children.length; i++) {
-                if (children[i].getName().startsWith("jdk-1_5_0") && (children[i].getName().indexOf("linux-i586") != -1) && 
+                if (children[i].getName().startsWith(installerPrefix) && (children[i].getName().indexOf("linux-i586") != -1) && 
                     children[i].getName().endsWith(".bin")) {
                     installerName = children[i].getName();
                     break;
@@ -537,7 +538,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
 	    if (arch.startsWith("sparc")) {
                 //Try to locate Solaris Sparc JDK installer
                 for (int i = 0; i < children.length; i++) {
-                    if (children[i].getName().startsWith("jdk-1_5_0") && (children[i].getName().indexOf("solaris-sparc") != -1) && 
+                    if (children[i].getName().startsWith(installerPrefix) && (children[i].getName().indexOf("solaris-sparc") != -1) && 
                         children[i].getName().endsWith(".sh")) {
                         installerName = children[i].getName();
                         break;
@@ -546,7 +547,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
 	    } else {
                 //Try to locate Solaris X86 JDK installer
                 for (int i = 0; i < children.length; i++) {
-                    if (children[i].getName().startsWith("jdk-1_5_0") && (children[i].getName().indexOf("solaris-i586") != -1) && 
+                    if (children[i].getName().startsWith(installerPrefix) && (children[i].getName().indexOf("solaris-i586") != -1) && 
                         children[i].getName().endsWith(".sh")) {
                         installerName = children[i].getName();
                         break;
@@ -705,8 +706,9 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         File installDirFile = new File(j2seInstallDir);
         logEvent(this, Log.DBG, "findJDKWindowsInstaller installDirFile: " + installDirFile);
         File [] children = installDirFile.listFiles();
+        String installerPrefix = resolveString("$L(org.netbeans.installer.Bundle,JDK.installerPrefix)");
         for (int i = 0; i < children.length; i++) {
-            if (children[i].getName().startsWith("jdk-1_5_0") && (children[i].getName().indexOf("windows-i586") != -1) && 
+            if (children[i].getName().startsWith(installerPrefix) && (children[i].getName().indexOf("windows-i586") != -1) && 
                 children[i].getName().endsWith(".exe")) {
                 installerName = children[i].getName();
                 break;
