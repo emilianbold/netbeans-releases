@@ -133,6 +133,9 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         scroll.setBorder (new CompoundBorder (new EmptyBorder (5, 5, 5, 5), scroll.getBorder ()));
         add(scroll, java.awt.BorderLayout.CENTER);
         list.setCellRenderer(new ExitDlgListCellRenderer());
+        list.getAccessibleContext().setAccessibleName((NbBundle.getBundle(ExitDialog.class)).getString("ACSN_ListOfChangedFiles"));
+        list.getAccessibleContext().setAccessibleDescription((NbBundle.getBundle(ExitDialog.class)).getString("ACSD_ListOfChangedFiles"));
+        this.getAccessibleContext().setAccessibleDescription((NbBundle.getBundle(ExitDialog.class)).getString("ACSD_ExitDialog"));
     }
     
     private void updateSaveButton () {
@@ -322,6 +325,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                 secondaryExitOptions = new Object[] {
                                            new JButton (NbBundle.getBundle(ExitDialog.class).getString("CTL_Cancel")),
                                        };
+                ((JButton)secondaryExitOptions[0]).getAccessibleContext().setAccessibleDescription((NbBundle.getBundle(ExitDialog.class)).getString("ACSD_CancelButton"));
                 ExitDialog exitComponent = null;
                 if (activatedNodes != null)
                     exitComponent = new ExitDialog (activatedNodes);
@@ -339,6 +343,10 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                                                      );
                 exitDlgDescriptor.setAdditionalOptions (secondaryExitOptions);
                 exitDialog = TopManager.getDefault ().createDialog (exitDlgDescriptor);
+                
+                buttonSave.getAccessibleContext().setAccessibleDescription((NbBundle.getBundle(ExitDialog.class)).getString("ACSD_SaveButton"));
+                buttonSaveAll.getAccessibleContext().setAccessibleDescription((NbBundle.getBundle(ExitDialog.class)).getString("ACSD_SaveAllButton"));
+                buttonDiscardAll.getAccessibleContext().setAccessibleDescription((NbBundle.getBundle(ExitDialog.class)).getString("ACSD_DiscardAllButton"));
             }
 
             result = false;
@@ -349,7 +357,6 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         else
             return true;
     }
-
 
     /** Creates dialod for showing pending tasks. */
     private static ExplorerPanel createExplorerPanel() {
