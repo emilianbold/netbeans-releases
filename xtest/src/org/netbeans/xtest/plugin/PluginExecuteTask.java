@@ -65,7 +65,38 @@ public class PluginExecuteTask extends Task {
         this.actionID = actionID;
     }    
 
-    
+    public static void pluginExecute(PluginDescriptor pluginDescriptor, PluginDescriptor.Action pluginAction, Task issuingTask) throws BuildException {
+        
+        File pluginHomeDirectory = pluginDescriptor.getPluginHomeDirectory();
+        String antTarget = pluginAction.getTarget();
+        
+        File antFile = new File(pluginHomeDirectory, pluginAction.getAntFile());        
+        
+        Ant ant = new Ant();
+        if (issuingTask != null) {
+            ant.setProject(issuingTask.getProject());
+            ant.setOwningTarget(issuingTask.getOwningTarget());
+            issuingTask.log("Plugin will execute target '"+antTarget+"' in file '"+antFile+"'.");
+        }
+        
+        ant.setAntfile(antFile.getAbsolutePath());
+        ant.setTarget(antTarget);
+        
+        Property xtestPluginHome = ant.createProperty();
+        xtestPluginHome.setName(XTEST_PLUGIN_HOME_PROPERTY_NAME);
+        xtestPluginHome.setValue(pluginHomeDirectory.getAbsolutePath());
+        
+        Property xtestPluginName = ant.createProperty();
+        xtestPluginName.setName(XTEST_PLUGIN_NAME_PROPERTY_NAME);
+        xtestPluginName.setValue(pluginDescriptor.getName());
+        
+        Property xtestPluginVersion = ant.createProperty();
+        xtestPluginVersion.setName(XTEST_PLUGIN_VERSION_PROPERTY_NAME);
+        xtestPluginVersion.setValue(pluginDescriptor.getVersion());
+        
+        // now execute the target
+        ant.execute();      
+    }
     
     public void execute() throws BuildException {
         PluginManager pluginManager = PluginManagerStorageSupport.retrievePluginManager();
@@ -98,38 +129,11 @@ public class PluginExecuteTask extends Task {
                 throw new BuildException("executeType "+executeType+" is not supported");
             }
             
-            String antTarget = pluginAction.getTarget();
-            
-            File pluginHomeDirectory=pluginManager.getPluginHomeDirectory(pluginName);
-            File antFile = new File(pluginHomeDirectory, pluginAction.getAntFile());
-            String pluginVersion = pluginManager.getPluginVersion(pluginName);
-            
-            Ant ant = new Ant();
-            ant.setProject(this.getProject());
-            ant.setOwningTarget(this.getOwningTarget());
-            log("Plugin will execute target '"+antTarget+"' in file '"+antFile+"'.");
-            ant.setAntfile(antFile.getAbsolutePath());
-            ant.setTarget(antTarget);
-            // set properties
-            Property xtestPluginHome = ant.createProperty();
-            xtestPluginHome.setName(XTEST_PLUGIN_HOME_PROPERTY_NAME);
-            xtestPluginHome.setValue(pluginHomeDirectory.getAbsolutePath());
-            
-            Property xtestPluginName = ant.createProperty();
-            xtestPluginName.setName(XTEST_PLUGIN_NAME_PROPERTY_NAME);
-            xtestPluginName.setValue(pluginName);
-            
-            Property xtestPluginVersion = ant.createProperty();
-            xtestPluginVersion.setName(XTEST_PLUGIN_VERSION_PROPERTY_NAME);
-            xtestPluginVersion.setValue(pluginVersion);            
-            
-            // now execute the target
-            ant.execute();
-            
+            PluginExecuteTask.pluginExecute(pluginDescriptor, pluginAction, this);
             
             
         } catch (PluginResourceNotFoundException prnfe) {
-            throw new BuildException("Cannot find some plugin resource. Reason: "+prnfe.getMessage(),prnfe);
+            throw new BuildException("Cannot find plugin resource. Reason: "+prnfe.getMessage(),prnfe);
         }
     }
     

@@ -39,7 +39,7 @@ public class PluginManagerStorageSupport {
     }
     
      // static methods for storing/retrieving PluginManager, so it survives classloader change
-    static PluginManager retrievePluginManager() {
+    public static PluginManager retrievePluginManager() {
         Object obj = System.getProperties().get(PLUGIN_MANAGER_SYSTEM_PROPERTY_NAME);
         if (obj != null) {
             if (obj instanceof ByteArrayOutputStream) {
@@ -65,7 +65,7 @@ public class PluginManagerStorageSupport {
         return null;
     }
     
-    static void storePluginManager(PluginManager pluginManager) throws IOException {
+    public static void storePluginManager(PluginManager pluginManager) throws IOException {
         
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream p = new ObjectOutputStream(baos);
