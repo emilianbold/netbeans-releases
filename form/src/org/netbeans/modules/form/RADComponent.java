@@ -396,7 +396,7 @@ public class RADComponent {
                 
                 // adding event handler
                 formManager.getEventsManager ().addEventHandler (event, handlerName);
-                formManager.fireEventRemoved (RADComponent.this, event.getHandler ());
+                formManager.fireEventAdded (RADComponent.this, event.getHandler ());
                 
               }
 
@@ -1076,6 +1076,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  37   Gandalf   1.36        7/30/99  Ian Formanek    fixed firing event added
  *  36   Gandalf   1.35        7/29/99  Ian Formanek    Fixed bug where form 
  *       aware property editors were not correctly initialized if advanced 
  *       features were not used.
