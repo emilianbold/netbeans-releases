@@ -17,21 +17,19 @@ Microsystems, Inc. All Rights Reserved.
   <property file="build.properties" />
 
   <property name="ismp.project" value="coreide.xml"/>
-  
-  <target name="init" depends="set-buildnumber, set-installer.basename, set-nb.dir, copy-localized-data" unless="inited">
+  <property name="storage.builder" location="../../java/storagebuilder/dist/storagebuilder.jar"/>
+  <property name="preparse.files" location="../../java/storagebuilder/preparse-files.txt"/>
+  <property name="nb.dir" location="../../nbbuild/netbeans" />
+
+  <target name="init" depends="set-buildnumber, set-installer.basename, copy-localized-data" unless="inited">
     <property name="inited" value="true" />
   </target>
   
-  <target name="set-nb.dir" unless="nb.dir">
-    <property name="nb.dir" location="../../nbbuild/netbeans" />
-  </target>
-
   <target name="copy-localized-data">
      <copy todir="." failonerror="false">
          <fileset dir="../../translatedfiles/src/installer/coreide"/>
      </copy>
  </target>
-  
  
   <target name="set-ismp.cp" unless="ismp.cp-set">
     <path id="ismp.cp">        
@@ -89,6 +87,8 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-win32" depends="init, compile, xsl-win32">
     <copy file="../lib/scripts/run-storage-builder-windows.template"
           tofile="build/storagebuilder/run-storage-builder-windows.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="build/${ismp.project}-win32" />
       <arg value="-build" />
@@ -114,6 +114,8 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-unix" depends="init, compile, xsl-unix">
     <copy file="../lib/scripts/run-storage-builder-unix.template"
           tofile="build/storagebuilder/run-storage-builder-unix.template"/>
+    <copy file="${preparse.files}"
+          tofile="build/storagebuilder/preparse-files.txt"/>
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="build/${ismp.project}-unix" />
       <arg value="-build" />
