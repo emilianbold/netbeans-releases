@@ -124,6 +124,8 @@ public class Operator {
 
 /*
  * Log
+ *  4    Gandalf   1.3         9/28/99  Jan Jancura     
+ *  3    Gandalf   1.2         9/28/99  Jan Jancura     
  *  2    Gandalf   1.1         9/2/99   Jan Jancura     
  *  1    Gandalf   1.0         7/13/99  Jan Jancura     
  * $
