@@ -85,7 +85,9 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
   }
 
   public void setValue (Object object) {
-    font = (Font) object;
+    if (!(object instanceof Font )) {
+      font = new Font( fonts[0], Font.PLAIN, 10 );
+    } else font = (Font) object;
 
     fontName = font.getName () + " " + font.getSize () + " " + getStyleName (font.getStyle ());
 
@@ -356,6 +358,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
 /*
  * Log
+ *  6    Gandalf   1.5         8/17/99  Petr Nejedly    fixed #3416
  *  5    Gandalf   1.4         7/13/99  Ian Formanek    Implements 
  *       XMLPropertyEditor
  *  4    Gandalf   1.3         7/8/99   Jesse Glick     Context help.
