@@ -172,6 +172,13 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         assertNotNull("Found " + name, fo);
         return DataObject.find(fo);
     }
+
+    protected static void assertSameDataObject (String msg, DataObject obj1, DataObject obj2) {
+        assertNotNull (msg, obj1);
+        assertNotNull (msg, obj2);
+        assertEquals ("They have the same primary file: " + msg, obj1.getPrimaryFile (), obj2.getPrimaryFile ());
+        assertSame (msg, obj1, obj2);
+    }
     
     protected static final class LookupL implements LookupListener {
         public int count = 0;
