@@ -83,10 +83,10 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     private static String host = LOCALHOST;
 
     /** mapping of repository to URL */
-    private static String repositoryBaseURL = "/repository"; // NOI18N
+    private static String repositoryBaseURL = "/repository/"; // NOI18N
 
     /** mapping of classpath to URL */
-    private static String classpathBaseURL = "/classpath"; // NOI18N
+    private static String classpathBaseURL = "/classpath/"; // NOI18N
 
     /** addresses which have been granted access to the web server */
     private static String grantedAddresses = ""; // NOI18N
