@@ -267,7 +267,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module a11y..."/>
     <ant dir="../a11y" target="netbeans"/>
   </target>
-  <target name="all-ant" depends="all-openide,all-core/javahelp,all-openide/execution,all-openide/io,all-java/api,all-libs/xerces">
+  <target name="all-ant" depends="all-openide,all-core/javahelp,all-openide/execution,all-openide/io,all-java/api">
     <echo message="Building module ant..."/>
     <ant dir="../ant" target="netbeans"/>
   </target>
