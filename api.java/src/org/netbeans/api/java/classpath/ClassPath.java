@@ -186,9 +186,9 @@ public abstract class ClassPath {
         int onl = ownerName.length();
         String partName;
         if (includeExt)
-            partName = f.getPackageNameExt('/', '.');
+            partName = f.getPackageNameExt(dirSep, '.');
         else
-            partName = f.getPackageName('/');
+            partName = f.getPackageName(dirSep);
         return onl == 0 ? partName : partName.substring(onl + 1);
     }
     
