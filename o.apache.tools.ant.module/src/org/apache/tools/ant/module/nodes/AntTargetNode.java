@@ -351,21 +351,25 @@ public class AntTargetNode extends ElementNode {
             //combo.setEditable (true);
             pane.add (combo, BorderLayout.CENTER);
             pane.add (new JLabel (NbBundle.getMessage (AntTargetNode.class, "LBL_choose_task")), BorderLayout.WEST);
-            final JButton help = new JButton ();
-            ActionListener helplistener = new ActionListener () {
-                    public void actionPerformed (ActionEvent ignore) {
-                        help.setText (NbBundle.getMessage (AntTargetNode.class, "LBL_help_on_task", combo.getSelectedItem ()));
-                        help.setEnabled (IntrospectedInfo.getDefaults ().getDefs ("task").containsKey (combo.getSelectedItem ())); // NOI18N
-                    }
-                };
-            helplistener.actionPerformed (null);
-            combo.addActionListener (helplistener);
-            help.addActionListener (new ActionListener () {
-                    public void actionPerformed (ActionEvent ev) {
-                        TopManager.getDefault ().showHelp (new HelpCtx ("org.apache.tools.ant.module.tasks." + combo.getSelectedItem ()));
-                    }
-                });
-            pane.add (help, BorderLayout.EAST);
+            if (AntTaskNode.helpFor("property", "task") != null) { // NOI18N
+                // We have help available. (<property> is well-known.)
+                final JButton help = new JButton ();
+                ActionListener helplistener = new ActionListener () {
+                        public void actionPerformed (ActionEvent ignore) {
+                            help.setText (NbBundle.getMessage (AntTargetNode.class, "LBL_help_on_task", combo.getSelectedItem ()));
+                            help.setEnabled(AntTaskNode.helpFor((String)combo.getSelectedItem(), "task") != null); // NOI18N
+                        }
+                    };
+                helplistener.actionPerformed (null);
+                combo.addActionListener (helplistener);
+                help.addActionListener (new ActionListener () {
+                        public void actionPerformed (ActionEvent ev) {
+                            TopManager.getDefault().showHelp(
+                                AntTaskNode.helpFor((String)combo.getSelectedItem(), "task")); // NOI18N
+                        }
+                    });
+                pane.add (help, BorderLayout.EAST);
+            }
             DialogDescriptor dlg = new DialogDescriptor (pane, NbBundle.getMessage (AntTargetNode.class, "TITLE_select_task"));
             dlg.setHelpCtx (getHelpCtx ());
             dlg.setModal (true);

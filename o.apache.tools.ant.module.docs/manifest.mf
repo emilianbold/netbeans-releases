@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.apache.tools.ant.module.docs
+OpenIDE-Module-Localizing-Bundle: org/apache/tools/ant/module/docs/Bundle.properties
+OpenIDE-Module-Specification-Version: 2.9
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Layer: org/apache/tools/ant/module/docs/layer.xml
+OpenIDE-Module-Module-Dependencies: org.apache.tools.ant.module/2
+OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.3
+Class-Path: docs/ant-manual.zip
+

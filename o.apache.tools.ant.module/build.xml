@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 
 Contributor(s): Jayme C. Edwards, Jesse Glick.
@@ -23,7 +23,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
 
   <property name="nbm_alias" value="nb_ide"/>
 
-  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
@@ -40,6 +39,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
           <include name="ant-1.*.jar"/>
         </fileset>
 	<pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+        <pathelement location="../core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
       </classpath>
     </javac>
   </target>
@@ -64,35 +64,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     </copy>
   </target>
 
-  <target name="javahelp">
-    <mkdir dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
-    <unzip src="${binroot}/ant/ant-docs.zip" dest="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
-    <mkdir dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch2"/>
-    <jhindexer basedir="javahelp/org/apache/tools/ant/module/docs"
-               db="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch2"
-               jhall="${binroot}/nbbuild/lib/jhall.jar">
-      <include name="**/*.html"/>
-      <exclude name="JavaHelpSearch2/"/>
-      <exclude name="credits.html"/>
-      <exclude name="ant-docs/LICENSE"/>
-    </jhindexer>
-    <mkdir dir="netbeans/modules/docs"/>
-    <zip zipfile="netbeans/modules/docs/ant-manual.zip"
-         basedir="javahelp"
-	 excludesfile="../nbbuild/standard-jar-excludes.txt"
-	 compress="true"/>
-  </target>
-
-  <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors.">
-    <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets" classpath="../nbbuild/nbantext.jar:${binroot}/core/release/lib/ext/regexp.jar:${binroot}/nbbuild/lib/jhall.jar"/>
-    <checkhelpsets>
-      <fileset dir="javahelp">
-        <include name="org/apache/tools/ant/module/docs/HelpSet.hs"/>
-      </fileset>
-    </checkhelpsets>
-  </target>
-
-  <target name="netbeans" depends="jars,release,javahelp" description="Build module.">
+  <target name="netbeans" depends="jars,release" description="Build module.">
     <genlist targetname="nbm" outputfiledir="../nbbuild/netbeans"/>
   </target>
 
@@ -105,20 +77,19 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
       <license name="ant-license.txt">
         <text>For the Ant module itself:</text>
         <file location="${license.file}"/>
-	<text>For the Ant runtime and manual:</text>
+	<text>For the Ant runtime:</text>
 	<file location="Ant_License"/>
       </license>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>
 
-  <target name="test-build" depends="compile,javahelp">
+  <target name="test-build" depends="compile">
     <mkdir dir="test"/>
     <filter token="BUILD_NUMBER_SUBST" value="testing"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="test/ant.jar" manifest="manifest-subst.mf" compress="false">
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="javahelp" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
       <zipfileset src="${binroot}/ant/release/modules/ext/ant-1.4.1.jar" excludes="META-INF/MANIFEST.MF"/>
       <zipfileset src="${binroot}/ant/release/modules/ext/ant-optional-1.4.1.jar" excludes="META-INF/MANIFEST.MF"/>
     </jar>
@@ -137,8 +108,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <delete file="ant.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
-    <delete dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch2"/>
-    <delete dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
     <!-- See target 'release-helper': -->
     <delete dir="release-work"/>
   </target>
@@ -187,7 +156,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
         <!-- Do not forget about the package list for Javadoc below... -->
       </fileset>
     </copy>
-    <property name="ant-api.zip" location="release/docs/ant-api.zip"/>
+    <property name="ant-api.zip" location="docs/release/docs/ant-api.zip"/>
     <echo>2.  Will produce Javadoc for these at ${ant-api.zip}...</echo>
     <property name="javadoc-out" location="release-work/javadoc-out"/>
     <delete dir="${javadoc-out}"/>
@@ -244,7 +213,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <property name="libdeps.html" location="${online-manual}/libdeps.html"/>
     <property name="ant-docs.zip" location="${binroot}/ant/ant-docs.zip"/>
     <property name="here" location="."/>
-    <property name="ParserDB" location="release/system/ParserDB"/>
+    <property name="ParserDB" location="docs/release/system/ParserDB"/>
     <property name="features.xml" location="www/plans/features.xml"/>
     <property name="ant.jar" location="${binroot}/ant/release/modules/ext/ant.jar"/>
     <property name="ant-optional.jar" location="${binroot}/ant/release/modules/ext/ant-optional.jar"/>
@@ -255,12 +224,12 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     - Jakarta regexp is already available in the IDE by default
 5.  Recreate ${ant-docs.zip} from the contents of ${online-manual}
 6.  Ensure these files in ${here} match the actual contents of ${online-manual}:
-    - javahelp/org/apache/tools/ant/module/docs/TOC.toc
-    - javahelp/org/apache/tools/ant/module/docs/Map.jhm
+    - docs/javahelp/org/apache/tools/ant/module/docs/TOC.toc
+    - docs/javahelp/org/apache/tools/ant/module/docs/Map.jhm
 7.  Mention that the Ant version is ${release-version} in these files in ${here}:
-    - javahelp/org/apache/tools/ant/module/docs/HelpSet.hs
-    - javahelp/org/apache/tools/ant/module/docs/TOC.toc
-    - src/org/apache/tools/ant/module/resources/Bundle.properties
+    - docs/javahelp/org/apache/tools/ant/module/docs/HelpSet.hs
+    - docs/javahelp/org/apache/tools/ant/module/docs/TOC.toc
+    - docs/src/org/apache/tools/ant/module/docs/Bundle.properties
     - src/org/apache/tools/ant/module/resources/SampleProject.xml_
 8.  Update ${ParserDB} with sources from ${useful-sources}
 9.  Update ${features.xml}
