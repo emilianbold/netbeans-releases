@@ -80,6 +80,7 @@ public class FormPropertyEditor implements PropertyEditor,
 
     public void propertyChange(PropertyChangeEvent evt) {
         value = modifiedEditor.getValue();
+        firePropertyChange();
     }
 
     // -----------------------------------------------------------------------------
@@ -96,11 +97,11 @@ public class FormPropertyEditor implements PropertyEditor,
         if (modifiedEditor != property.getCurrentEditor())
             setModifiedEditor(property.getCurrentEditor());
 
-        Object oldValue = value;
         value = newValue;
         if (value != BeanSupport.NO_VALUE)
             modifiedEditor.setValue(value);
-        firePropertyChange(oldValue, newValue);
+
+        firePropertyChange();
     }
 
     /**
@@ -335,20 +336,19 @@ public class FormPropertyEditor implements PropertyEditor,
      *
      * @param source  The PropertyEditor that caused the event.
      */
-    void firePropertyChange(Object oldValue, Object newValue) {
+    void firePropertyChange() {
         java.util.Vector targets;
         synchronized(this) {
-            if (listeners == null) {
+            if (listeners == null)
                 return;
-            }
             targets =(java.util.Vector) listeners.clone();
         }
 
-        PropertyChangeEvent evt = new PropertyChangeEvent(this,
-                                                          property.getName(),
-                                                          oldValue, newValue);
+        PropertyChangeEvent evt = new PropertyChangeEvent(this, null, null, null);
+
         for (int i = 0; i < targets.size(); i++) {
-            PropertyChangeListener target =(PropertyChangeListener)targets.elementAt(i);
+            PropertyChangeListener target = (PropertyChangeListener)
+                                            targets.elementAt(i);
             target.propertyChange(evt);
         }
     }
