@@ -258,12 +258,10 @@ Microsystems, Inc. All Rights Reserved.
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
                     <attr name="goto-help/SeparatorAfterGoToHelp.instance" boolvalue="true"/>
-                    
-                    <file name="try-catch"/>
-                    <attr name="SeparatorAfterGoToHelp.instance/try-catch" boolvalue="true"/>                                        
-                    <file name="format"/>
-                    <attr name="try-catch/format" boolvalue="true"/>
-                    
+
+                    <file name="format"/>                    
+                    <attr name="SeparatorAfterGoToHelp.instance/format" boolvalue="true"/>                                        
+
                     <file name="SeparatorBeforeCut.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
