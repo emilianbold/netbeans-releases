@@ -15,11 +15,13 @@ package org.netbeans.modules.properties;
 
 import java.awt.Color;
 import java.awt.Event;
+import java.awt.Font;
 import java.awt.SystemColor;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -106,7 +108,8 @@ public abstract class TableViewSettings {
     public abstract Color getValueBackground();
     public abstract Color getHighlightColor();
     public abstract Color getHighlightBackground();
-    public abstract Color getShadowColor();
+    public abstract Color getShadowColor();    
+    public abstract Font getFont();
 
     public abstract KeyStroke[] getKeyStrokesFindNext();
     public abstract KeyStroke[] getKeyStrokesFindPrevious();
@@ -158,6 +161,10 @@ public abstract class TableViewSettings {
             return peer.getKeyColor();
         }
         
+        public Font getFont() {
+            return peer.getFont();
+        }
+        
         public KeyStroke[] getKeyStrokesFindNext() {
             return peer.getKeyStrokesFindNext();
         }
@@ -202,8 +209,9 @@ public abstract class TableViewSettings {
         public Color getValueBackground() {return VALUE_DEFAULT_BACKGROUND;}
         public Color getHighlightColor() {return HIGHLIGHT_DEFAULT_COLOR;}
         public Color getHighlightBackground() {return HIGHLIGHT_DEFAULT_BACKGROUND;}
-        public Color getShadowColor() {return SHADOW_DEFAULT_COLOR;}
-
+        public Color getShadowColor() { return SHADOW_DEFAULT_COLOR;}
+        public Font getFont() { return UIManager.getFont("TextField.font"); }
+        
         public KeyStroke[] getKeyStrokesFindNext() {return FIND_NEXT_DEFAULT_KEYSTROKES;}
         public KeyStroke[] getKeyStrokesFindPrevious() {return FIND_PREVIOUS_DEFAULT_KEYSTROKES;}
         public KeyStroke[] getKeyStrokesToggleHighlight() {return TOGGLE_HIGHLIGHT_DEFAULT_KEYSTROKES;}

@@ -16,6 +16,7 @@ package org.netbeans.modules.properties.syntax;
 
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.SystemColor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -33,6 +34,7 @@ import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.SettingsChangeListener;
 import org.netbeans.editor.SettingsNames;
+import org.netbeans.editor.SettingsUtil;
 import org.netbeans.modules.properties.TableViewSettings;
 
 import org.openide.util.SharedClassObject;
@@ -151,6 +153,15 @@ public class EditorSettingsCopy extends TableViewSettings implements SettingsCha
         
         return shadowColor;
     }
+
+    public Font getFont() {
+        prepareSettings();
+        Font font = SettingsUtil.getColoring(PropertiesKit.class, 
+                                             SettingsNames.DEFAULT_COLORING, 
+                                             false).getFont();
+        return font;            
+    }    
+
 
     /** Implements <code>EditorSetings</code> interface method. */     
     public KeyStroke[] getKeyStrokesFindNext() {

@@ -198,7 +198,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     private void initSettings() {
         settings = TableViewSettings.getDefault();
                     
-                    // Listen on changes of setting settings.
+        // Listen on changes of setting settings.
         settings.addPropertyChangeListener(
             WeakListeners.propertyChange(this, settings)
         );
@@ -207,10 +207,10 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     /**
      * Handler of settings changes
      */
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            // settings changed repaint table
-                            BundleEditPanel.this.repaint();
-                        }
+    public void propertyChange(PropertyChangeEvent evt) {
+        // settings changed 
+        BundleEditPanel.this.repaint();
+    }
     
     private void initAccessibility() {
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_BundleEditPanel"));
@@ -794,7 +794,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
             
             PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)value;                        
             
-            setFont(table.getFont());
+            setFont(settings.getFont());
             
             if(hasFocus) {
                 setBorder(UIManager.getBorder("Table.focusCellHighlightBorder") ); // NOI18N
