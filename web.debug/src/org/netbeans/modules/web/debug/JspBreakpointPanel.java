@@ -46,6 +46,7 @@ class JspBreakpointPanel extends javax.swing.JPanel implements Controller {
     public JspBreakpointPanel(JspCompoundEvent e) {
         event = e;
         initComponents ();
+        putClientProperty("HelpID", "jsp_breakpoint");//NOI18N
         // a11y
         getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_LineBreakpointPanel")); // NOI18N
         cboxClass.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_CTL_Class_name")); // NOI18N
