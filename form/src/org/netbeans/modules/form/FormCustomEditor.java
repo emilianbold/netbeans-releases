@@ -13,9 +13,11 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
+import org.openide.explorer.propertysheet.NbCustomPropertyEditor;
 import org.openide.util.Utilities;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.beans.PropertyEditor;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -24,13 +26,15 @@ import javax.swing.border.EmptyBorder;
  *
  * @author  Ian Formanek
  */
-public class FormCustomEditor extends JPanel {
+public class FormCustomEditor extends JPanel implements NbCustomPropertyEditor {
 
 // -----------------------------------------------------------------------------
 // Private variables
 
   private FormPropertyEditor editor;
   private JTabbedPane tabs;
+  private PropertyEditor[] allEditors;
+  private Component[] allCustomEditors;
     
 // -----------------------------------------------------------------------------
 // Constructor
@@ -39,7 +43,10 @@ public class FormCustomEditor extends JPanel {
     this.editor = editor;
     setBorder (new EmptyBorder (5, 5, 5, 5));
     setLayout (new BorderLayout ());
-    PropertyEditor[] allEditors = FormPropertyEditorManager.getAllEditors (editor.getPropertyType (), false);
+
+    allEditors = FormPropertyEditorManager.getAllEditors (editor.getPropertyType (), false);
+    allCustomEditors = new Component[allEditors.length];
+
     if (allEditors.length == 1) {
       if (editor.getCurrentEditor ().supportsCustomEditor ()) {
         add (editor.getCurrentEditor ().getCustomEditor (), BorderLayout.CENTER);
@@ -65,10 +72,49 @@ public class FormCustomEditor extends JPanel {
     }
   }
 
+// -----------------------------------------------------------------------------
+// NbCustomPropertyEditor implementation
+
+  /** Get the customized property value.
+  * @return the property value
+  * @exception InvalidStateException when the custom property editor does not contain a valid property value
+  *            (and thus it should not be set)
+  */
+  public Object getPropertyValue () throws IllegalStateException {
+    Component currentCustomEditor = getCurrentCustomPropertyEditor ();
+    if (currentCustomEditor instanceof NbCustomPropertyEditor) {
+      return ((NbCustomPropertyEditor)currentCustomEditor).getPropertyValue ();
+    }
+    PropertyEditor currentEditor = getCurrentPropertyEditor ();
+    if (currentEditor != null) {
+      return currentEditor.getValue ();
+    }
+    return editor.getValue ();
+  }
+
+  public PropertyEditor getCurrentPropertyEditor () {
+    int index = 0;
+    if (tabs != null) index = tabs.getSelectedIndex ();
+    if (index == -1) {
+      return null;
+    }
+    return allEditors[index];
+  }
+
+  public Component getCurrentCustomPropertyEditor () {
+    int index = 0;
+    if (tabs != null) index = tabs.getSelectedIndex ();
+    if (index == -1) {
+      return null;
+    }
+    return allCustomEditors[index];
+  }
 }
 
 /*
  * Log
+ *  5    Gandalf   1.4         6/22/99  Ian Formanek    Further tweaked for 
+ *       multiple (custom) editors
  *  4    Gandalf   1.3         6/22/99  Ian Formanek    Fixed working with 
  *       FormAwareEditors
  *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 

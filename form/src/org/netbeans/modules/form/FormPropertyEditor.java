@@ -14,13 +14,14 @@
 package com.netbeans.developer.modules.loaders.form;
 
 import java.beans.*;
+import org.openide.explorer.propertysheet.SpecialPropertyEditor;
 import org.openide.nodes.*;
 
 /** 
  *
  * @author Ian Formanek
  */
-public class FormPropertyEditor implements PropertyEditor, PropertyChangeListener {
+public class FormPropertyEditor implements PropertyEditor, PropertyChangeListener, SpecialPropertyEditor {
   // -----------------------------------------------------------------------------
   // Private Variables
 
@@ -228,6 +229,44 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   }
 
   // -----------------------------------------------------------------------------
+  // SpecialPropertyEditor implementation
+
+  /** Get an in-place editor.
+  * @return a custom property editor to be shown inside the property
+  *         sheet
+  */
+  public java.awt.Component getInPlaceCustomEditor () {
+    if (currentEditor instanceof SpecialPropertyEditor) {
+      return ((SpecialPropertyEditor)currentEditor).getInPlaceCustomEditor ();
+    } else {
+      return null;
+    }
+  }
+
+  /** Test for support of in-place custom editors.
+  * @return <code>true</code> if supported
+  */
+  public boolean hasInPlaceCustomEditor () {
+    if (currentEditor instanceof SpecialPropertyEditor) {
+      return ((SpecialPropertyEditor)currentEditor).hasInPlaceCustomEditor ();
+    } else {
+      return false;
+    }
+  }
+
+  /** Test for support of editing of tagged values.
+  * Must also accept custom strings, otherwise you may may specify a standard property editor accepting only tagged values.
+  * @return <code>true</code> if supported
+  */
+  public boolean supportsEditingTaggedValues () {
+    if (currentEditor instanceof SpecialPropertyEditor) {
+      return ((SpecialPropertyEditor)currentEditor).supportsEditingTaggedValues ();
+    } else {
+      return false;
+    }
+  }
+  
+  // -----------------------------------------------------------------------------
 
   /**
   * Register a listener for the PropertyChange event.  The class will
@@ -283,6 +322,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
 
 /*
  * Log
+ *  7    Gandalf   1.6         6/22/99  Ian Formanek    Further tweaked for 
+ *       multiple (custom) editors
  *  6    Gandalf   1.5         6/22/99  Ian Formanek    
  *  5    Gandalf   1.4         6/22/99  Ian Formanek    Fixed setting 
  *       FormAwareEditor
