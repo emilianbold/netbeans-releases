@@ -68,7 +68,7 @@ public interface WebServicesSupportImpl {
     /**
      * Remove the web service entries from the project properties
      * project.xml files
-    */
+     */
     public void removeProjectEntries(String serviceName);
     
     /**
@@ -90,7 +90,7 @@ public interface WebServicesSupportImpl {
      * Get the ReferenceHelper from the project
      */
     public ReferenceHelper getReferenceHelper();
-
+    
     /**
      * Get the list of services and their wscompile settings.
      */
@@ -102,4 +102,8 @@ public interface WebServicesSupportImpl {
      */
     public void addInfrastructure(String implBeanClass, FileObject pkg);
     
+    /**
+     * Determine if the web service was created from WSDL
+     */
+    public boolean isFromWSDL(String serviceName);
 }

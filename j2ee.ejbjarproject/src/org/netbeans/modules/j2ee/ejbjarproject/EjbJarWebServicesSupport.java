@@ -228,6 +228,42 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         return null;
     }
     
+    public boolean isFromWSDL(String serviceName) {
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+        NodeList nodes = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+        WEB_SERVICES); //NOI18N
+        Element webservices = null;
+        Element wsNameNode = null;
+        if(nodes.getLength() == 1){
+            webservices = (Element)nodes.item(0);
+            NodeList wsNodes = webservices.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+            WEB_SERVICE); //NOI18N
+            for(int j = 0; j < wsNodes.getLength(); j++) {
+                Element wsNode = (Element)wsNodes.item(j);
+                NodeList wsNameNodes = wsNode.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+                WEB_SERVICE_NAME); //NOI18N
+                if(wsNameNodes.getLength() == 1) {
+                    wsNameNode = (Element)wsNameNodes.item(0);
+                    NodeList nl = wsNameNode.getChildNodes();
+                    if(nl.getLength() == 1) {
+                        Node n = nl.item(0);
+                        if(n.getNodeType() == Node.TEXT_NODE) {
+                            if(serviceName.equals(n.getNodeValue())) {
+                                NodeList fromWSDLNodes = wsNode.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+                                WebServicesConstants.WEB_SERVICE_FROM_WSDL); //NOI18N
+                                if(fromWSDLNodes.getLength() == 1) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
     public void removeProjectEntries(String serviceName) {
         boolean needsSave = false;
         
@@ -344,26 +380,26 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
      *  probably does not belong at this time.
      */
     private static final String [] WSCOMPILE_SEI_SERVICE_FEATURES = {
-//        "datahandleronly", // WSDL - portable
+        //        "datahandleronly", // WSDL - portable
         "documentliteral", // SEI ONLY - portable
         "rpcliteral", // SEI ONLY - portable
-//        "explicitcontext", // WSDL - portable
-//        "infix:<name>", // difficult handle with current API
-//        "jaxbenumtype", // WSDL
-//        "nodatabinding", // WSDL - portable
+        //        "explicitcontext", // WSDL - portable
+        //        "infix:<name>", // difficult handle with current API
+        //        "jaxbenumtype", // WSDL
+        //        "nodatabinding", // WSDL - portable
         "noencodedtypes",
         "nomultirefs",
-//        "norpcstructures", // import only - portable
-//        "novalidation", // WSDL - portable
-//        "resolveidref", // WSDL
-//        "searchschema", // WSDL - portable
+        //        "norpcstructures", // import only - portable
+        //        "novalidation", // WSDL - portable
+        //        "resolveidref", // WSDL
+        //        "searchschema", // WSDL - portable
         "serializeinterfaces",
         "strict", // - portable
         "useonewayoperations", // SEI ONLY - portable
-//        "wsi", // WSDL - portable
-//        "unwrap", // WSDL - portable
+        //        "wsi", // WSDL - portable
+        //        "unwrap", // WSDL - portable
         "donotoverride", // - portable
-//        "donotunwrap", // WSDL - portable
+        //        "donotunwrap", // WSDL - portable
     };
     
     private static final List allSeiServiceFeatures = Arrays.asList(WSCOMPILE_SEI_SERVICE_FEATURES);
@@ -380,10 +416,10 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     
     private static final String [] WSCOMPILE_WSDL_SERVICE_FEATURES = {
         "datahandleronly", // WSDL - portable
-//        "documentliteral", // SEI ONLY - portable
-//        "rpcliteral", // SEI ONLY - portable
+        //        "documentliteral", // SEI ONLY - portable
+        //        "rpcliteral", // SEI ONLY - portable
         "explicitcontext", // WSDL - portable
-//        "infix:<name>", // difficult handle with current API
+        //        "infix:<name>", // difficult handle with current API
         "jaxbenumtype", // WSDL
         "nodatabinding", // WSDL - portable
         "noencodedtypes",
@@ -394,7 +430,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         "searchschema", // WSDL - portable
         "serializeinterfaces",
         "strict", // - portable
-//        "useonewayoperations", // SEI ONLY - portable
+        //        "useonewayoperations", // SEI ONLY - portable
         "wsi", // WSDL - portable
         "unwrap", // WSDL - portable
         "donotoverride", // - portable
@@ -404,15 +440,15 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     private static final List allWsdlServiceFeatures = Arrays.asList(WSCOMPILE_WSDL_SERVICE_FEATURES);
     
     private static final String [] WSCOMPILE_KEY_WSDL_SERVICE_FEATURES = {
-        "datahandleronly", 
-        "explicitcontext", 
-        "nodatabinding", 
-        "novalidation", 
-        "searchschema", 
+        "datahandleronly",
+        "explicitcontext",
+        "nodatabinding",
+        "novalidation",
+        "searchschema",
         "strict",
-        "wsi", 
-        "unwrap", 
-        "donotoverride", 
+        "wsi",
+        "unwrap",
+        "donotoverride",
         "donotunwrap"
     };
     
@@ -671,7 +707,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         
         return null;
     }
-
+    
     // Implementation of WebServiceClientSupportImpl
     public void addServiceClient(String serviceName, String packageName, String sourceUrl, FileObject configFile, StubDescriptor stubDescriptor) {
         // !PW FIXME I have two concerns with this implementation:
@@ -703,7 +739,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
          */
         boolean serviceAlreadyAdded = false;
         NodeList clientNameList = clientElements.getElementsByTagNameNS(
-            EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_CLIENT_NAME);
+        EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_CLIENT_NAME);
         for(int i = 0; i < clientNameList.getLength(); i++ ) {
             Element clientNameElement = (Element) clientNameList.item(i);
             NodeList nl = clientNameElement.getChildNodes();
@@ -785,8 +821,8 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
                 ProjectManager.getDefault().saveProject(project);
             } catch(IOException ex) {
                 NotifyDescriptor desc = new NotifyDescriptor.Message(
-                NbBundle.getMessage(EjbJarWebServicesSupport.class, 
-                    "MSG_ErrorSavingOnWSClientAdd", serviceName, ex.getMessage()), // NOI18N
+                NbBundle.getMessage(EjbJarWebServicesSupport.class,
+                "MSG_ErrorSavingOnWSClientAdd", serviceName, ex.getMessage()), // NOI18N
                 NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
             }
@@ -798,7 +834,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         //    Side effect: Regenerate build-impl.xsl
         //    Optional - if last service, remove properties we generated.
         boolean needsSave = false;
-
+        
         /** Remove properties from project.properties
          */
         String featureProperty = "wscompile.client." + serviceName + ".features"; // NOI18N
@@ -832,7 +868,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         if(nodes.getLength() >= 1) {
             clientElements = (Element) nodes.item(0);
             NodeList clientNameList = clientElements.getElementsByTagNameNS(
-                EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_CLIENT_NAME);
+            EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_CLIENT_NAME);
             for(int i = 0; i < clientNameList.getLength(); i++ ) {
                 Element clientNameElement = (Element) clientNameList.item(i);
                 NodeList nl = clientNameElement.getChildNodes();
@@ -858,8 +894,8 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
                 ProjectManager.getDefault().saveProject(project);
             } catch(IOException ex) {
                 NotifyDescriptor desc = new NotifyDescriptor.Message(
-                NbBundle.getMessage(EjbJarWebServicesSupport.class, 
-                    "MSG_ErrorSavingOnWSClientRemove", serviceName, ex.getMessage()), // NOI18N
+                NbBundle.getMessage(EjbJarWebServicesSupport.class,
+                "MSG_ErrorSavingOnWSClientRemove", serviceName, ex.getMessage()), // NOI18N
                 NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
             }
@@ -879,7 +915,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
             // Create was specified, but no META-INF was found, so how do we create it?
             // Expect an NPE if we return null for this case, but log it anyway.
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
-                NbBundle.getMessage(EjbJarWebServicesSupport.class, "MSG_MetaInfNotFoundForWsdlFolder"));
+            NbBundle.getMessage(EjbJarWebServicesSupport.class, "MSG_MetaInfNotFoundForWsdlFolder"));
         }
         
         return wsdlFolder;
@@ -929,15 +965,15 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     private static final List allClientFeatures = Arrays.asList(WSCOMPILE_CLIENT_FEATURES);
     
     private static final String [] WSCOMPILE_KEY_CLIENT_FEATURES = {
-        "wsi", 
-        "strict", 
-        "unwrap", 
+        "wsi",
+        "strict",
+        "unwrap",
         "donotunwrap",
-        "donotoverride", 
+        "donotoverride",
         "datahandleronly",
         "nodatabinding",
-        "norpcstructures", 
-        "novalidation", 
+        "norpcstructures",
+        "novalidation",
         "searchschema",
     };
     
@@ -963,18 +999,18 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
                         String serviceName = n.getNodeValue();
                         String currentFeatures = projectProperties.getProperty("wscompile.client." + serviceName + ".features");
                         if(currentFeatures == null) {
-                            // !PW should probably retrieve default features for stub type.  
+                            // !PW should probably retrieve default features for stub type.
                             // For now, this will work because this is the same value we'd get doing that.
                             //
-                            // Defaults if we can't find any feature property for this client 
+                            // Defaults if we can't find any feature property for this client
                             // Mostly for upgrading EA1, EA2 projects which did not have
                             // this property, but also useful if the user deletes it from
                             // project.properties.
-                            currentFeatures = "wsi, strict"; 
+                            currentFeatures = "wsi, strict";
                         }
                         StubDescriptor stubType = getClientStubDescriptor(clientNameElement.getParentNode());
                         WsCompileEditorSupport.ServiceSettings settings = new WsCompileEditorSupport.ServiceSettings(
-                            serviceName, stubType, currentFeatures, allClientFeatures, importantClientFeatures);
+                        serviceName, stubType, currentFeatures, allClientFeatures, importantClientFeatures);
                         serviceNames.add(settings);
                     } else {
                         // !PW FIXME node is wrong type?! - log message or trace?
@@ -987,14 +1023,14 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         
         return serviceNames;
     }
-            
+    
     private StubDescriptor getClientStubDescriptor(org.w3c.dom.Node parentNode) {
         StubDescriptor result = null;
         
         if(parentNode instanceof Element) {
             Element parentElement = (Element) parentNode;
             NodeList clientNameList = parentElement.getElementsByTagNameNS(
-                EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_STUB_TYPE);
+            EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_STUB_TYPE);
             if(clientNameList.getLength() == 1) {
                 Element clientStubElement = (Element) clientNameList.item(0);
                 NodeList nl = clientStubElement.getChildNodes();
@@ -1014,7 +1050,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         
         return result;
     }
-
+    
     public String getWsdlSource(String serviceName) {
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -1023,7 +1059,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         Element clientElement = getWebServiceClientNode(data, serviceName);
         if(clientElement != null) {
             NodeList fromWsdlList = clientElement.getElementsByTagNameNS(
-                EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.CLIENT_SOURCE_URL);
+            EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.CLIENT_SOURCE_URL);
             if(fromWsdlList.getLength() == 1) {
                 Element fromWsdlElement = (Element) fromWsdlList.item(0);
                 NodeList nl = fromWsdlElement.getChildNodes();
@@ -1043,11 +1079,11 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         boolean needsSave = false;
-
+        
         Element clientElement = getWebServiceClientNode(data, serviceName);
         if(clientElement != null) {
             NodeList fromWsdlList = clientElement.getElementsByTagNameNS(
-                EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.CLIENT_SOURCE_URL);
+            EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.CLIENT_SOURCE_URL);
             if(fromWsdlList.getLength() > 0) {
                 Element fromWsdlElement = (Element) fromWsdlList.item(0);
                 NodeList nl = fromWsdlElement.getChildNodes();
@@ -1059,7 +1095,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
                 }
             } else {
                 Element clientElementSourceUrl = doc.createElementNS(
-                    EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, CLIENT_SOURCE_URL);
+                EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, CLIENT_SOURCE_URL);
                 clientElement.appendChild(clientElementSourceUrl);
                 clientElementSourceUrl.appendChild(doc.createTextNode(wsdlSource));
             }
@@ -1073,8 +1109,8 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
                 ProjectManager.getDefault().saveProject(project);
             } catch(IOException ex) {
                 NotifyDescriptor desc = new NotifyDescriptor.Message(
-                NbBundle.getMessage(EjbJarWebServicesSupport.class, 
-                    "MSG_ErrorSavingOnWSClientAdd", serviceName, ex.getMessage()), // NOI18N
+                NbBundle.getMessage(EjbJarWebServicesSupport.class,
+                "MSG_ErrorSavingOnWSClientAdd", serviceName, ex.getMessage()), // NOI18N
                 NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
             }
@@ -1088,7 +1124,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         if(nodes.getLength() != 0) {
             Element clientElements = (Element) nodes.item(0);
             NodeList clientNameList = clientElements.getElementsByTagNameNS(
-                EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_CLIENT_NAME);
+            EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_CLIENT_NAME);
             for(int i = 0; i < clientNameList.getLength(); i++ ) {
                 Element clientNameElement = (Element) clientNameList.item(i);
                 NodeList nl = clientNameElement.getChildNodes();
@@ -1113,27 +1149,27 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     
     // Service stub descriptors
     private static final JAXRPCStubDescriptor seiServiceStub = new JAXRPCStubDescriptor(
-        StubDescriptor.SEI_SERVICE_STUB,
-        NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_SEIServiceStub"), // NOI18N
-        new String [] {"documentliteral", "strict"});
+    StubDescriptor.SEI_SERVICE_STUB,
+    NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_SEIServiceStub"), // NOI18N
+    new String [] {"documentliteral", "strict"});
     
     private static final JAXRPCStubDescriptor wsdlServiceStub = new JAXRPCStubDescriptor(
-        StubDescriptor.WSDL_SERVICE_STUB,
-        NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_WSDLServiceStub"), // NOI18N
-        new String [] { "wsi", "strict" }); // NOI18N
-
-
+    StubDescriptor.WSDL_SERVICE_STUB,
+    NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_WSDLServiceStub"), // NOI18N
+    new String [] { "wsi", "strict" }); // NOI18N
+    
+    
     // Client stub descriptors
     private static final JAXRPCStubDescriptor jsr109ClientStub = new JAXRPCStubDescriptor(
-        StubDescriptor.JSR109_CLIENT_STUB,
-        NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_JSR109ClientStub"),
-        new String [] { "wsi", "strict" });
+    StubDescriptor.JSR109_CLIENT_STUB,
+    NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_JSR109ClientStub"),
+    new String [] { "wsi", "strict" });
     
     private static final JAXRPCStubDescriptor jaxrpcClientStub = new JAXRPCStubDescriptor(
-        StubDescriptor.JAXRPC_CLIENT_STUB,
-        NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_JAXRPCStaticClientStub"),
-        new String [] { "wsi", "strict" });
-        
+    StubDescriptor.JAXRPC_CLIENT_STUB,
+    NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_JAXRPCStaticClientStub"),
+    new String [] { "wsi", "strict" });
+    
     /** Stub descriptor for services and clients supported by this project type.
      */
     private static class JAXRPCStubDescriptor extends StubDescriptor {

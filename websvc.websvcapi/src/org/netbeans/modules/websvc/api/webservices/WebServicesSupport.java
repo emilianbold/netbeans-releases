@@ -124,28 +124,17 @@ public final class WebServicesSupport {
     public ReferenceHelper getReferenceHelper(){
         return impl.getReferenceHelper();
     }
-
+    
     public List/*WsCompileEditorSupport.ServiceSettings*/ getServices() {
         return impl.getServices();
     }
-      
+    
     public void addInfrastructure(String implBeanClass, FileObject pkg) {
         impl.addInfrastructure(implBeanClass, pkg);
     }
     
-/* !! What to put here?
- *
-        public boolean equals (Object obj) {
-        if (!WebModule.class.isAssignableFrom(obj.getClass()))
-            return false;
-        WebModule wm = (WebModule) obj;
-        return getDocumentBase().equals(wm.getDocumentBase())
-            && getJ2eePlatformVersion().equals (wm.getJ2eePlatformVersion())
-            && getContextPath().equals(wm.getContextPath());
+    public boolean isFromWSDL(String serviceName) {
+        return impl.isFromWSDL(serviceName);
     }
- 
-    public int hashCode () {
-        return getDocumentBase ().getPath ().length () + getContextPath ().length ();
-    }
- */
+    
 }
