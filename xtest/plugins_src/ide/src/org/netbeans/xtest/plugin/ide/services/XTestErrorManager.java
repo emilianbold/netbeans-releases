@@ -60,6 +60,18 @@ public class XTestErrorManager extends ErrorManager {
         // these messages are logged to IDE log
     }
 
+    /** It uses the same logic as in org.openide.ErrorManager.DelegatingErrorManager.
+     * Test whether a messages with given severity will be logged in advance.
+     * Can be used to avoid the construction of complicated and expensive
+     * logging messages.
+     * @param severity the severity to check, e.g. {@link #EXCEPTION}
+     * @return <code>false</code> if the next call to {@link #log(int,String)} with this severity will
+     *    discard the message
+    */
+    public boolean isLoggable(int severity) {
+        return severity > INFORMATIONAL;
+    }
+
     public void notify(int severity, Throwable t) {
         // log only ERROR, EXCEPTION or UNKNOWN severity
         if(severity == ERROR || severity == EXCEPTION || severity == UNKNOWN) {
