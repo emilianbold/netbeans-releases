@@ -106,7 +106,8 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
     
     public void propertyChange( PropertyChangeEvent evt ) {
         
-        if ( evt.getPropertyName() == OpenProjectList.PROPERTY_MAIN_PROJECT ) {
+        if ( evt.getPropertyName() == OpenProjectList.PROPERTY_MAIN_PROJECT || 
+             evt.getPropertyName() == OpenProjectList.PROPERTY_OPEN_PROJECTS ) {
             refreshView ();
         }
                
