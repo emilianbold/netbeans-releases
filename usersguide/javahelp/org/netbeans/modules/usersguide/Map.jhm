@@ -671,7 +671,7 @@
    <mapID target="org.netbeans.modules.form.editors2.ColorEditor$NbColorChooser" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.ColorEditor$NbColorChooser" url="pending.html" /> 
    <mapID target="org.netbeans.beaninfo.editors.FontEditor$FontPanel" url="pending.html" /> 
- 
+<!--OptionsAction is Options window--> 
    <mapID target="org.netbeans.core.actions.OptionsAction" url="configure/configure.html" /> 
    <mapID target="org.netbeans.core.ControlPanelNode" url="configure/configure.html" />
    <mapID target="org.netbeans.core.EnvironmentNode" url="configure/configure.html" />
