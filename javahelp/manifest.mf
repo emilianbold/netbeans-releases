@@ -10,5 +10,5 @@ OpenIDE-Module-Requires: org.openide.modules.InstalledFileLocator
 OpenIDE-Module-Package-Dependencies: javax.help[HelpSet] > 1.0
 OpenIDE-Module-Layer: org/netbeans/modules/javahelp/resources/layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/javahelp/Installer.class
-Class-Path: ext/jh-1.1.2_02.jar
+Class-Path: ext/jh-1.1.3.jar
 
