@@ -17,20 +17,22 @@
  */
 package org.netbeans.modules.junit;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.SourceCookie;
-import org.openide.src.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Task;
+import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.jmi.javamodel.*;
+import org.openide.src.ClassElement;
+import java.lang.reflect.Modifier;
+
 
 /**
  *
@@ -74,22 +76,19 @@ public class TestUtil {
     //
     // test class names    
     //
-    
-    static public String getTestClassFullName(ClassElement ce) {
+    public static String getTestClassFullName(String sourceClassName, String packageName) {
         StringBuffer name = new StringBuffer();
-        String packageName = ce.getName().getQualifier();
+
         if (packageName != null) {
             name.append(packageName.replace('.','/'));
             if (name.length() > 0) {
                 name.append('/');
             }
         }
-        name.append(getTestClassName(ce));
+        name.append(getTestClassName(sourceClassName));
         return name.toString();
-    }
-    
-    private static String getTestClassName(ClassElement ce) {
-        return getTestClassName(ce.getName().getName());
+
+
     }
     
     public static String getTestClassName(String sourceClassName) {
@@ -154,20 +153,20 @@ public class TestUtil {
 
     
     // other misc methods
-    
+
     static public FileObject getFileObjectFromNode(Node node) {
-        ClassElement    ce;
         DataObject      dO;
         DataFolder      df;
         
         dO = (DataObject) node.getCookie(DataObject.class);
         if (null != dO)
             return dO.getPrimaryFile();
+
         df = (DataFolder) node.getCookie(DataFolder.class);
         if (null != df)
             return df.getPrimaryFile();
         
-        ce = (ClassElement) node.getCookie(ClassElement.class);
+        ClassElement ce = (ClassElement) node.getCookie(ClassElement.class);
         if (null != ce) {
             // find the parent DataObject, which node belongs to
             while (null != (node = node.getParentNode())) {
@@ -177,163 +176,103 @@ public class TestUtil {
         }
         return null;
     }
+
+
     
 
-    // make sure the class element is parsed, so it cannot return
-    // wrong results
-    private static void parseClassElement(ClassElement ce) {
-        SourceElement se = ce.getSource();
-        Task parser = se.prepare();
-        parser.waitFinished();
-    }
-    
-    
-    private static boolean anyInterfaceImplementsName(FileObject ctx, Identifier[] interfaces, String name) {
-        for (int i=0; i < interfaces.length; i++) {
-            if (interfaces[i].getFullName().equals(name)) {
-                return true;
-            }
-        }
-        // hmm, it does not seem to 
-        // let's try parent interfaces (if any)
-        for (int i=0; i < interfaces.length; i++) {
-            ClassElement interfaceClassElement = ClassElement.forName(interfaces[i].getFullName(), ctx);
-            if (interfaceClassElement != null) {
-                // make sure this class element is parsed
-                parseClassElement(interfaceClassElement);
-                Identifier[] parentInterfaces = interfaceClassElement.getInterfaces();
-                if (parentInterfaces != null) {
-                    boolean result = anyInterfaceImplementsName(ctx, parentInterfaces, name);
-                    if (result == true) {
-                       // great - we found it
-                       return true;
-                    } 
-                    // otherwise continue
-                }
-            }
-        }
-        // hmm, this branch does not seem to implement the interface name
-        return false;
-    }
-    
         
-    static boolean isClassElementTest(FileObject ctx, ClassElement ce) {
-        return isClassElementImplementingTestInterface(ctx, ce);
+    static boolean isClassTest(JavaClass jc) {
+        return isClassImplementingTestInterface(jc);
     }
     
-    // is ClassElement a Test class ?
-    static boolean isClassElementImplementingTestInterface(FileObject ctx, ClassElement ce) {        
+    // is JavaClass a Test class ?
+    static boolean isClassImplementingTestInterface(JavaClass cls) {        
         
-        boolean result = false;
-        ClassElement classElement = ce;
-        while (classElement != null) {
-            //System.err.println("############### Tested ClassElement:"+classElement.getVMName());
-            // make sure it is correctly parsed
-            parseClassElement(classElement);
-            Identifier superClass = classElement.getSuperclass();
-            //System.err.println("Tested superClass :"+superClass);
-            Identifier[] interfaces = classElement.getInterfaces();            
-            // check the supperclass (if available)            
-            if (superClass != null) {
-                String superClassName = superClass.getFullName();                
-                //System.err.println("Tested ClassElement superclassFullName:"+superClassName);
-                // shortcut !!!
-                classElement = ClassElement.forName(superClassName, ctx);
-                if (classElement != null) {                    
-                    //System.err.println("!! Tested SuperClassElement.getVMName()"+classElement.getVMName());
-                    parseClassElement(classElement);
-                    if ("junit.framework.TestCase".equals(classElement.getVMName())) {
-                        return true;
-                    }
-                } else {
-                    //System.err.println("!!! superClassElement is null !!!!!");
-                }
-            } else {
-                // no super class - go on
-                //System.err.println("No superclass");
-                classElement = null;
-            }
-            
-            // now check the interfaces            
-            if (anyInterfaceImplementsName(ctx, interfaces,"junit.framework.Test")) {
-                // we found it
-                return true;
-            }
-            // otherwise continue in our search
-        }
-        // not implemented (or class has no superclass)
-        return false;
+        JavaModelPackage pkg = (JavaModelPackage)cls.refImmediatePackage();  
+        JavaClass testInterface = (JavaClass)pkg.getJavaClass().resolve("junit.framework.Test");
+        
+        return cls.isSubTypeOf(testInterface);
     }    
     
+        
     
     // is class an exception
-    static boolean isClassElementException(FileObject ctx, ClassElement ce) {
-        boolean result = false;
-        ClassElement classElement = ce;
-        while (classElement != null) {
-            parseClassElement(classElement);
-            Identifier superClass = classElement.getSuperclass();
-            Identifier[] interfaces = classElement.getInterfaces();            
-            // check the supperclass (if available)            
-            if (superClass != null) {
-                String superClassName = superClass.getFullName();                
-                // shortcut !!!
-                classElement = ClassElement.forName(superClassName, ctx);
-                if (classElement != null) {                    
-                    //System.err.println("!! Tested SuperClassElement.getVMName()"+classElement.getVMName());
-                    parseClassElement(classElement);
-                    if ("java.lang.Throwable".equals(classElement.getVMName())) {
-                        return true;
-                    }
-                } else {
-                    //System.err.println("!!! superClassElement is null !!!!!");
-                }
-            } else {
-                // no super class - go on
-                //System.err.println("No superclass");
-                classElement = null;
-            }            
-        }
-        // not implemented (or class has no superclass)
-        return false;
-        
-    }
-    
-    static ClassElement[] getAllClassElementsFromDataObject(DataObject dO) {
-        if (dO == null) {
-            return new ClassElement[0];
-        }
-        SourceCookie    sc;
-        SourceElement   se;
 
-        sc = (SourceCookie) dO.getCookie(SourceCookie.class);
-        se = sc.getSource();
-        return se.getAllClasses();
+
+    static boolean isClassException(JavaClass cls) {
+        JavaModelPackage pkg = (JavaModelPackage)cls.refImmediatePackage();
+        ClassDefinition throwable = (ClassDefinition)pkg.getType().resolve("java.lang.Throwable");
+        return cls.isSubTypeOf(throwable);
+    }
+
+
+    /**
+     * Gets all top-level classes from file.
+     * @param fo the <code>FileObject</code> to examine
+     * @return Collection<JavaClass>, not null
+     */ 
+    static Collection getAllClassesFromFile(FileObject fo) {
+        if (fo == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        Iterator it = JavaModel.getResource(fo).getChildren().iterator();
+        LinkedList ret = new LinkedList();
+
+        while (it.hasNext()) {
+            Element e = (Element)it.next();
+            if (e instanceof JavaClass) {
+                ret.add((JavaClass)e);
+            }
+        }
+
+        return ret;
     }
 
     /**
      * Returns an object describing the main class of the specified
-     * Java data object.
+     * file object containing java source.
      *
-     * @param  dO  data object to examine
-     * @return  <code>ClassElement</code> describing the data object's
-     *          main class; or <code>null</code> if the class element was not
-     *          found (e.g. because of a broken data object's source file)
+     * @param  res <code>Resource</code> examine
+     * @return  <code>JavaClass</code> with the data object's
+     *          main class; or <code>null</code> if the class was not
+     *          found (e.g. because of a broken source file)
      */
-    static ClassElement getClassElementFromDataObject(DataObject dO) {
-        if (dO == null) {
-            return null;
+    static JavaClass getMainJavaClass(Resource res) {
+        // search for the main class  
+        Iterator it = res.getChildren().iterator();
+        String resName = fileToClassName(res.getName());
+        if (resName != null) {
+            while (it.hasNext()) {
+                Element e = (Element)it.next();
+                if (e instanceof JavaClass) {
+                    System.err.println(((JavaClass)e).getName());
+                    System.err.println(resName);
+
+                    if (((JavaClass)e).getName().equals(resName)) 
+                        return (JavaClass)e;
+                }
+            }
         }
-        SourceCookie    sc;
-        SourceElement   se;
-        sc = (SourceCookie) dO.getCookie(SourceCookie.class);
-        if (sc == null) {
-            return null;
-        }
-        se = sc.getSource();
-        return se.getClass(Identifier.create(dO.getPrimaryFile().getName()));
+
+        return null;
     }    
     
+    /**
+     * Converts filename to the fully qualified name of the main class
+     * residing in the file. <br>
+     * For example : "test/myapp/App.java" --> "test.myapp.App"
+     * @param filename
+     * @return corresponding package name. Null if the input is not
+     * well formed.
+     */
+    static String fileToClassName(String fileName) {
+        if (fileName.endsWith(".java")) {
+            return (fileName.substring(0, fileName.length()-5)).replace('/','.');
+        } else
+            return null;
+    }
+
     /**
      * Returns full names of all primary Java classes
      * withing the specified folder (non-recursive).
@@ -356,26 +295,160 @@ public class TestUtil {
                     || !child.getMIMEType().equals(JAVA_MIME_TYPE)) {
                 continue;
             }
+
             DataObject dataObject;
             try {
                 dataObject = DataObject.find(child);
             } catch (DataObjectNotFoundException ex) {
                 continue;
             }
-            SourceCookie srcCookie = (SourceCookie)
-                                     dataObject.getCookie(SourceCookie.class);
-            if (srcCookie == null) {
-                continue;
-            }
-            SourceElement srcElement = srcCookie.getSource();
-            ClassElement classElement = srcElement.getClass(
-                                            Identifier.create(child.getName()));
-            if (classElement == null) {
-                continue;
-            }
-            result.add(classElement.getName().getFullName());
+
+            Resource rc = JavaModel.getResource(dataObject.getPrimaryFile());
+            result.add(getMainJavaClass(rc).getName());
         }
         return result.isEmpty() ? Collections.EMPTY_LIST : result;
     }
-    
+
+    public static List filterFeatures(JavaClass cls, Class type) {
+        LinkedList ret = new LinkedList();
+        Iterator it = cls.getFeatures().iterator();
+
+        while (it.hasNext()) {
+            Feature f = (Feature)it.next();
+            if (type.isAssignableFrom(f.getClass())) ret.add(f);
+        }
+        return ret;
+    }
+
+    public static Feature getFeatureByName(JavaClass src, Class cls, String name) {
+        if (!Feature.class.isAssignableFrom(cls)) throw new IllegalArgumentException("cls is not Feature");
+        
+        Iterator it = src.getFeatures().iterator();
+        while (it.hasNext()) {
+            Object o = it.next();
+            if (cls.isAssignableFrom(o.getClass())) {
+                Feature f = (Feature)o;
+                if (f.getName().equals(name)) return f;
+            }
+        }
+        return null;
+    }
+
+
+    public static JavaClass getClassBySimpleName(JavaClass cls, String name) {
+        return cls.getInnerClass(name, false);
+    }
+
+    static public Parameter cloneParam(Parameter p, JavaModelPackage pkg) {
+        Parameter ret =
+            pkg.getParameter().
+            createParameter(p.getName(), 
+                            p.getAnnotations(), 
+                            p.isFinal(),
+                            null,
+                            p.getDimCount(),
+                            p.isVarArg());
+        ret.setType(p.getType());
+        return ret;
+    }
+
+    public static List cloneParams(List params, JavaModelPackage pkg) {
+        Iterator origParams = params.iterator();
+        List newParams = new LinkedList();
+        while (origParams.hasNext()) {
+            Parameter p = (Parameter)origParams.next();
+            newParams.add(TestUtil.cloneParam(p, pkg));
+        }
+        return newParams;
+    }
+
+
+    /**
+     * Gets collection of types of the parameters passed in in the
+     * argument. The returned collection has the same size as the
+     * input collection.
+     * @param params List<Parameter>
+     * @return List<Type> 
+     */
+    static public List getParameterTypes(List params) {
+        List ret = new ArrayList(params.size());
+        Iterator it = params.iterator();
+        while (it.hasNext()) {
+            ret.add(((Parameter)it.next()).getType());
+        }
+        return ret;
+    }
+
+
+
+    /**
+     * Gets list of all features within the given class of the given
+     * class and modifiers.
+     * @param c the JavaClass to search
+     * @param cls the Class to search for
+     * @param modifiers the modifiers to search for
+     * @param recursive if true, the search descents to superclasses
+     *                  and interfaces
+     * @return List of the collected Features
+     */
+    public static List collectFeatures(JavaClass c, Class cls, 
+                                   int modifiers, boolean recursive) {
+
+        return collectFeatures(c, cls, modifiers, recursive, new LinkedList());
+    }
+        
+
+
+
+    private static List collectFeatures(JavaClass c, Class cls, 
+                                   int modifiers, boolean recursive, 
+                                   List list ) 
+    {
+
+        System.err.println("Collecting " + c.getName());
+
+        // this class
+        
+        int mo = (c.isInterface()) ? Modifier.ABSTRACT : 0;
+        Iterator it = TestUtil.filterFeatures(c, cls).iterator();
+        while (it.hasNext()) {
+            Feature m = (Feature)it.next();
+            System.err.print("Method : " + m.getName() + " ,modif:" + m.getModifiers());
+            if (((m.getModifiers() | mo) & modifiers) == modifiers) {
+                System.err.println("...matches");
+                list.add(m);
+            } else System.err.println("...skipped");
+        }
+
+        if (recursive) {
+            // super
+            JavaClass sup = c.getSuperClass();
+            if (sup != null) collectFeatures(sup, cls, modifiers, recursive, list);
+
+            // interfaces
+            Iterator ifaces = c.getInterfaces().iterator();
+            while (ifaces.hasNext()) collectFeatures((JavaClass)ifaces.next(), cls,
+                                                     modifiers, recursive, list);
+        }
+
+        return list;
+    }
+
+    public static boolean hasMainMethod(JavaClass cls) {
+
+        JavaModelPackage pkg = (JavaModelPackage)cls.refImmediatePackage();  
+        return cls.getMethod("main", 
+                             Collections.singletonList(pkg.getArray().resolveArray(TestUtil.getStringType(pkg))),
+                             false) != null;
+
+    }
+        
+    public static Type getStringType(JavaModelPackage pkg) {
+        return pkg.getType().resolve("java.lang.String");
+    }
+
+    public static TypeReference getTypeReference(JavaModelPackage pkg, String name) {
+        return pkg.getMultipartId().createMultipartId(name, null, Collections.EMPTY_LIST);
+    }
+
 }

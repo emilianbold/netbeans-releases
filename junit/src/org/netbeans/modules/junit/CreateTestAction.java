@@ -21,11 +21,7 @@ package org.netbeans.modules.junit;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -43,22 +39,22 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.src.ClassElement;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
+import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.jmi.javamodel.*;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
-import javax.swing.JMenuItem;
-import javax.swing.JMenu;
-import javax.swing.ImageIcon;
 import org.openide.util.Utilities;
+
 
 
 /** Action sensitive to some cookie that does something useful.
  *
  * @author  vstejskal, David Konecny
  * @author  Marian Petras
+ * @author  Ondrej Rypacek
  */
 public class CreateTestAction extends CookieAction {
     
@@ -73,7 +69,7 @@ public class CreateTestAction extends CookieAction {
     
     /* protected members */
     protected Class[] cookieClasses() {
-        return new Class[] { DataFolder.class, SourceCookie.class, ClassElement.class };
+        return new Class[] { DataFolder.class, SourceCookie.class };
     }
     
     /** Perform special enablement check in addition to the normal one.
@@ -197,6 +193,7 @@ public class CreateTestAction extends CookieAction {
             progress.hide();
         }
 
+
         if (!results.getSkipped().isEmpty()) {
             // something was skipped
             if (results.getSkipped().size()==1) {
@@ -204,7 +201,7 @@ public class CreateTestAction extends CookieAction {
                 TestUtil.notifyUser
                     (NbBundle.getMessage(CreateTestAction.class,
                                          "MSG_skipped_class",
-                                         ((ClassElement)results.getSkipped().iterator().next()).getName().getFullName()),
+                                         ((JavaClass)results.getSkipped().iterator().next()).getName()),
                      NotifyDescriptor.INFORMATION_MESSAGE );
 
             } else {
@@ -221,11 +218,9 @@ public class CreateTestAction extends CookieAction {
             DataObject dobj = (DataObject)results.getCreated().iterator().next();
             EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
             if (ec != null) {
-                System.err.println("EDITING !!!!!!!");
                 ec.open();
             }
         }
-
     }
     
     /**
@@ -244,10 +239,14 @@ public class CreateTestAction extends CookieAction {
         return false;
     }
     
-    public static DataObject createSuiteTest(ClassPath testClassPath, DataFolder folder,
-            String suiteName,
-            LinkedList suite, DataObject doSuiteT, LinkedList parentSuite,
-            ProgressIndicator progress) {
+    public static DataObject createSuiteTest(ClassPath testClassPath, 
+                                             DataFolder folder,
+                                             String suiteName,
+                                             LinkedList suite, 
+                                             DataObject doSuiteT, 
+                                             LinkedList parentSuite,
+                                             ProgressIndicator progress) 
+    {
         
         // find correct package name
         FileObject fo = folder.getPrimaryFile();
@@ -257,23 +256,27 @@ public class CreateTestAction extends CookieAction {
             return null;
         }
         String pkg = cp.getResourceName(fo, '/', false);
+        String dotPkg = pkg.replace('/', '.');
         String fullSuiteName = (suiteName != null)
                                ? pkg + '/' + suiteName
                                : TestUtil.convertPackage2SuiteName(pkg);
         
         // find the suite class, if it exists or create one from active template
         DataObject doTarget = getTestClass(testClassPath, fullSuiteName, doSuiteT);
-        // generate the test suite for all listed test classes
-        ClassElement[] classTargets = TestUtil.getAllClassElementsFromDataObject(doTarget);
 
-        for (int i=0; i < classTargets.length; i++) {
-            ClassElement classTarget = classTargets[i];
+        // generate the test suite for all listed test classes
+        Collection targetClasses = TestUtil.getAllClassesFromFile(doTarget.getPrimaryFile());
+
+        Iterator tcit = targetClasses.iterator();
+        while (tcit.hasNext()) {
+            JavaClass targetClass = (JavaClass)tcit.next();
+
             if (progress != null) {
-                progress.setMessage(getCreatingMsg(classTarget.getName().getFullName()), false);
+                progress.setMessage(getCreatingMsg(targetClass.getName()), false);
             }
 
             try {
-                TestCreator.createTestSuite(suite, pkg.replace('/', '.'), classTarget);
+                TestCreator.createTestSuite(suite, dotPkg, targetClass);
                 save(doTarget);
             } catch (Exception e) {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, e.toString());
@@ -282,7 +285,7 @@ public class CreateTestAction extends CookieAction {
 
             // add the suite class to the list of members of the parent
             if (null != parentSuite) {
-                parentSuite.add(classTarget.getName().getFullName());
+                parentSuite.add(targetClass.getName());
             }
         }
         return doTarget;
@@ -294,7 +297,7 @@ public class CreateTestAction extends CookieAction {
 
                 
         if (foSource.isFolder()) {
-            // recurse of subfolders
+            // recurse to subfolders
             FileObject  childs[] = foSource.getChildren();
             LinkedList  mySuite = new LinkedList();
             progress.setMessage(getScanningMsg(foSource.getName()), false);
@@ -319,82 +322,85 @@ public class CreateTestAction extends CookieAction {
 
             }
             
-            if (
-                !results.isAbborted() && 
-                ((0 < mySuite.size())&(JUnitSettings.getDefault().isGenerateSuiteClasses()))) {
+            // if everything went ok, and the option is enabled,
+            // create a suite for the folder . 
+            if (!results.isAbborted() && ((0 < mySuite.size())&(JUnitSettings.getDefault().isGenerateSuiteClasses()))) {
                 createSuiteTest(testClassPath, DataFolder.findFolder(foSource), (String) null, mySuite, doSuiteT, parentSuite, progress);
             }
 
             return results;
-
 
         } else {
             return createSingleTest(testClassPath, foSource, doTestT, doSuiteT, parentSuite, progress, true);
         }
     }
     
-    public static CreationResults createSingleTest(ClassPath testClassPath, FileObject foSource,
-            DataObject doTestT, DataObject doSuiteT, LinkedList parentSuite,
-            ProgressIndicator progress, boolean skipNonTestable) 
+    public static CreationResults createSingleTest(ClassPath testClassPath,  
+                                                   FileObject foSource, 
+                                                   DataObject doTestT, 
+                                                   DataObject doSuiteT, 
+                                                   LinkedList parentSuite,
+                                                   ProgressIndicator progress, 
+                                                   boolean skipNonTestable) 
         throws CreationError
     {
-
-        DataObject dobj;
-        try {
-            dobj = DataObject.find(foSource);
-        } catch (DataObjectNotFoundException ex) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR, ex.toString());
-            throw new CreationError(ex);
-        }
-
         // create tests for all classes in the source 
-        ClassElement[] classSources = TestUtil.getAllClassElementsFromDataObject(dobj);
-        CreationResults result = new CreationResults(classSources.length);
+        Resource srcRc = JavaModel.getResource(foSource);
+        CreationResults result = new CreationResults(srcRc.getChildren().size());
 
-        for (int i=0; i < classSources.length; i++) {
-            ClassElement classSource = classSources[i];
-            if (classSource == null || classSource.isInner()) {
-                continue;
-            }
+        List srcChildren = srcRc.getChildren();
+        Iterator scit = srcChildren.iterator();
+        while (scit.hasNext()) {
+            Element el = (Element)scit.next();
+            if (el instanceof JavaClass) {
+                JavaClass theClass = (JavaClass)el;
+                if (!skipNonTestable || TestCreator.isClassTestable(theClass)) {
+                    // find the test class, if it exists or create one
+                    // from active template
+                    DataObject doTarget 
+                        = getTestClass(testClassPath, 
+                                       TestUtil.getTestClassFullName(theClass.getSimpleName(),
+                                                                     packageName(theClass.getName())), 
+                                       doTestT);
 
-            if (!skipNonTestable || TestCreator.isClassTestable(foSource, classSource)) {             
-                // find the test class, if it exists or create one from active template
-                DataObject doTarget = getTestClass(testClassPath, TestUtil.getTestClassFullName(classSource), doTestT);
+                    // generate the test of current node
+                    Resource tgtRc = JavaModel.getResource(doTarget.getPrimaryFile());
+                    JavaClass targetClass = TestUtil.getMainJavaClass(tgtRc);
+                    
+                    if (progress != null) {
+                        progress.setMessage(getCreatingMsg(targetClass.getName()), false);
+                    }                    
 
-                // generate the test of current node
-                ClassElement classTarget = TestUtil.getClassElementFromDataObject(doTarget);
+                    TestCreator.createTestClass(srcRc, theClass, tgtRc, targetClass);
+                    try {
+                        save(doTarget);
+                    } catch (java.io.IOException e) { throw new CreationError(e);}
 
-                if (progress != null) {
-                    progress.setMessage(getCreatingMsg(classTarget.getName().getFullName()), false);
-                }
-
-                try {
-                    TestCreator.createTestClass(foSource, classSource, doTarget.getPrimaryFile(), classTarget);
-                    save(doTarget);
                     result.addCreated(doTarget);
-                } catch (Exception e) {
-                    ErrorManager.getDefault().log(ErrorManager.ERROR, e.toString());
-                    throw new CreationError(e);
-                }
 
-                String name = classTarget.getName().getFullName();
-                // add the test class to the parent's suite
-                if (null != parentSuite) {
-                    parentSuite.add(name);
-                }
-            }
-            else {
-                if (progress != null) {
-                    // ignoring because untestable
-                    progress.setMessage(getIgnoringMsg(classSource.getName().getFullName()), false);
-                    result.addSkipped(classSource);
+                    // add the test class to the parent's suite
+                    if (null != parentSuite) {
+                        parentSuite.add(targetClass.getName());
+                    }
+                } else {
+                    if (progress != null) {
+                        // ignoring because untestable
+                        progress.setMessage(getIgnoringMsg(theClass.getName()), false);
+                        result.addSkipped(theClass);
+                    }
                 }
             }
         }
 
         return result;
+
     }
     
+    private static String packageName(String fullName) {
+        int i = fullName.lastIndexOf('.');
+        return fullName.substring(0, i > 0 ? i : fullName.length());
+    }
+
     private static DataObject getTestClass(ClassPath cp, String testClassName, DataObject doTemplate) {
         FileObject fo = cp.findResource(testClassName+".java");
         if (fo != null) {
@@ -480,12 +486,12 @@ public class CreateTestAction extends CookieAction {
     /**
      * Utility class representing the results of a test creation
      * process. It gatheres all tests (as DataObject) created and all
-     * classes (as ClassElements) for which no test was created.
+     * classes (as JavaClasses) for which no test was created.
      */
     public static class CreationResults {
         
         Set created; // Set< createdTest : DataObject >
-        Set skipped; // Set< sourceClass : ClassElement >
+        Set skipped; // Set< sourceClass : JavaClass >
         boolean abborted = false;
 
         public CreationResults() { this(20);}
@@ -517,17 +523,17 @@ public class CreateTestAction extends CookieAction {
         }
 
         /**
-         * Adds a new <code>ClassElement</code> to the collection of
+         * Adds a new <code>JavaClass</code> to the collection of
          * skipped classes.
          * @return true if it was added, false if it was present before
          */
-        public boolean addSkipped(ClassElement c) {
+        public boolean addSkipped(JavaClass c) {
             return skipped.add(c);
         }
 
         /**
          * Returns a set of classes that were skipped in the process.
-         * @return Set<ClassElement>
+         * @return Set<JavaClass>
          */
         public Set getSkipped() {
             return skipped;

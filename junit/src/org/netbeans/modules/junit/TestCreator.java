@@ -24,8 +24,8 @@ import java.util.*;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
-import org.openide.src.*;
 import org.openide.util.NbBundle;
+import org.netbeans.jmi.javamodel.*;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.api.mdr.MDRepository;
 
@@ -63,84 +63,127 @@ public class TestCreator extends java.lang.Object {
         return result;   
     }
 
-    static public void createTestClass(FileObject sourceCtx, ClassElement classSource, FileObject classCtx, ClassElement classTarget) throws SourceException {
+    /**
+     * Implements equality by attributes of a wrapped Import. 
+     */
+    static private class ImpEq {
+        org.netbeans.jmi.javamodel.Import imp;
+
+        ImpEq(org.netbeans.jmi.javamodel.Import imp) {
+            this.imp = imp;
+        }
+
+        public boolean equals(Object rhs) {
+            if (rhs instanceof ImpEq) {
+                org.netbeans.jmi.javamodel.Import i = ((ImpEq)rhs).imp;
+                return
+                    (i.isStatic() == imp.isStatic()) &&
+                    (i.isOnDemand() == imp.isOnDemand()) &&
+                    (i.getName().equals(imp.getName()));
+            }  else return false;
+        }
+
+        public int hashCode() {
+            return imp.getName().hashCode();
+        }
+
+
+    }                
+
+
+    static public void createTestClass(Resource srcRc, JavaClass srcClass, 
+                                       Resource tgtRc, JavaClass tgtClass) 
+    {
         JavaModel.getJavaRepository().beginTrans(true);
         try {
-            SourceElement   srcelSource;
-            SourceElement   srcelTarget;
-        
-            // update the source file of the test class
-            srcelSource = classSource.getSource();
-            srcelTarget = classTarget.getSource();
+            JavaModelPackage tgtPackage = (JavaModelPackage)tgtRc.refImmediatePackage();
 
-            srcelTarget.setPackage(srcelSource.getPackage());
+            tgtRc.setPackageName(srcRc.getPackageName());
  
             // add imports from the source but only those that are not
             // already present
-            Import [] timports = srcelTarget.getImports();
-            Import [] simports = srcelSource.getImports();
-            HashSet tImpSet = new HashSet(timports.length);
-            for (int i = 0 ; i < timports.length; i++) tImpSet.add(timports[i]);
+            List srcImports = srcRc.getImports();
+            List tgtImports = tgtRc.getImports();
+
+            // use hashtable for faster access
+            HashSet tImpSet = new HashSet(tgtImports.size());
+            Iterator it = tgtImports.iterator();
+            while (it.hasNext()) {
+                tImpSet.add(new ImpEq((org.netbeans.jmi.javamodel.Import)it.next()));
+            }
+
 
             // import for junit.framework.*
-            Import frameworkImp = new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE);
-            if (!tImpSet.contains(frameworkImp)) srcelTarget.addImport(frameworkImp);
+            org.netbeans.jmi.javamodel.Import frameworkImp = 
+                createFrameworkImport(tgtPackage);
+
+            if (!tImpSet.contains(new ImpEq(frameworkImp))) 
+                tgtImports.add(frameworkImp);
 
             // all other imports if not present, yet
-            for (int j = 0; j < simports.length; j++) {
-                if (!tImpSet.contains(simports[j])) {
-                    srcelTarget.addImport(simports[j]);
+            Iterator simpit = srcImports.iterator();
+            while (simpit.hasNext()) {
+                org.netbeans.jmi.javamodel.Import imp = 
+                    (org.netbeans.jmi.javamodel.Import)simpit.next();
+                if (!tImpSet.contains(new ImpEq(imp))) {
+                    tgtImports.add(tgtPackage.getImport().
+                                   createImport(imp.getName(), 
+                                                imp.getIdentifier(), 
+                                                imp.isStatic(), 
+                                                imp.isOnDemand()));
                 }
             }
 
 
             // construct/update test class from the source class
-            fillTestClass(sourceCtx, classSource, classCtx, classTarget);
+            fillTestClass(srcRc, srcClass, tgtRc, tgtClass);
         
             // if aplicable, add main method (method checks options itself)
-            addMainMethod(classTarget);
+            addMainMethod(tgtClass);
 
         } finally {
             JavaModel.getJavaRepository().endTrans();
         }
     }
-    
 
-    static public void createTestSuite(LinkedList listMembers, String packageName, ClassElement classTarget) throws SourceException {
+    private static Import createFrameworkImport(JavaModelPackage pkg) {
+        return pkg.getImport().createImport(JUNIT_FRAMEWORK_PACKAGE_NAME,null, false, true);
+    }
 
+    static public void createTestSuite(List listMembers, 
+                                       String packageName, 
+                                       JavaClass tgtClass)  
+    {
         JavaModel.getJavaRepository().beginTrans(true);
         try {
-            SourceElement   srcelTarget;
 
-            // update the source file of the suite class
-            srcelTarget = classTarget.getSource();
-            //System.err.println("createTestSuite(): srcelTarget:"+srcelTarget);
-        
-            srcelTarget.setPackage(packageName.length() != 0 ? Identifier.create(packageName) : null);
+            Resource   tgtRes = tgtClass.getResource();
+            tgtRes.setPackageName(packageName);
 
-            // import for junit.framework.*
-            Import frameworkImp = new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE);
-            Import [] timports = srcelTarget.getImports();
+            JavaModelPackage pkg = (JavaModelPackage)tgtRes.refImmediatePackage();
 
             // look for the import among all imports in the target file
-            int i;
-            for (i = 0 ; i < timports.length; i++) 
-                if (timports[i].equals(frameworkImp)) break;
+            Iterator ti_it = tgtRes.getImports().iterator();
+            while (ti_it.hasNext()) {
+                Import i = (Import)ti_it.next();
+                if (i.getName().equals(JUNIT_FRAMEWORK_PACKAGE_NAME) &&
+                    i.isStatic() == false &&
+                    i.isOnDemand() == true) break;
+            }
 
-            // if not found, add it
-            if (i == timports.length) srcelTarget.addImport(frameworkImp);                
+            if (!ti_it.hasNext()) // not found
+                tgtRes.getImports().add(createFrameworkImport(pkg));
 
             // construct/update test class from the source class
-            fillSuiteClass(listMembers, packageName, classTarget);
+            fillSuiteClass(listMembers, packageName, tgtClass);
         
             // if aplicable, add main method (method checks options itself)
-            addMainMethod(classTarget);        
+            addMainMethod(tgtClass);        
 
         } finally {
             JavaModel.getJavaRepository().endTrans();
         }
     }
-
     
     static public void initialize() {
         // setup the methods filter
@@ -150,65 +193,55 @@ public class TestCreator extends java.lang.Object {
         if (JUnitSettings.getDefault().isMembersPublic()) cfg_MethodsFilter |= Modifier.PUBLIC;
     }
 
-    static public boolean isClassTestable(FileObject ctx, ClassElement ce) {
+    static public boolean isClassTestable(JavaClass jc) {
 
         JavaModel.getJavaRepository().beginTrans(true);
         try {
-            // @@        System.out.println("isClassTestable : " + ce.getName().getFullName());
-        
-            ClassElement[]  innerClasses;
 
-            // check whether the ClassElement is class
-            if (null == ce || (!ce.isClass())) {
-                // we will not create tests for it
-                return false;
-            }
+            if (jc == null) return false;
         
             JUnitSettings settings = JUnitSettings.getDefault();
         
-            //System.err.println("isClassTestable: class name="+ce.getVMName());
-        
             // check whether class implements test interfaces
-            if (TestUtil.isClassElementImplementingTestInterface(ctx, ce)) {
+            if (TestUtil.isClassImplementingTestInterface(jc)) {
                 //System.err.println("!!Class implements Test Interface");
-                if ( ! JUnitSettings.GENERATE_TESTS_FROM_TEST_CLASSES) {
+                if (!JUnitSettings.GENERATE_TESTS_FROM_TEST_CLASSES) {
                     // we don't want to generate tests from test classes                
                     return false;
                 }
             }
 
-            // this is WILD :-(((( ....
-            int classModifiers = ce.getModifiers();
+            int classModifiers = jc.getModifiers();
             if ( ((0 != (classModifiers & Modifier.PUBLIC)) || 
                   ( settings.isIncludePackagePrivateClasses() && (0 == ( classModifiers & Modifier.PRIVATE )))
                   ) &&
-                 (settings.isGenerateExceptionClasses() || ! TestUtil.isClassElementException(ctx, ce)) &&
-                 (!ce.isInner() || 0 != (classModifiers & Modifier.STATIC)) &&
+                 (settings.isGenerateExceptionClasses() || ! TestUtil.isClassException(jc)) &&
+                 (!jc.isInner() || 0 != (classModifiers & Modifier.STATIC)) &&
                  (0 == (classModifiers & Modifier.ABSTRACT) || settings.isGenerateAbstractImpl()) &&
-                 hasTestableMethods(ce)) {
+                 hasTestableMethods(jc)) {
                 return true;
             }
 
-            //System.err.println("isClassTestable(): does not seem to be testable");
             // nothing from the non-static inner class is accessible (and testable),
             // except there is a class specific way how to get an instance of inner class
-            if (ce.isInner() && 0 == (classModifiers & Modifier.STATIC)) {
+            if (jc.isInner() && 0 == (classModifiers & Modifier.STATIC)) {
                 //System.err.println("isClassTestable(): is inner, but not static");
                 return false;
             }
             
             // check for testable inner classes
-            innerClasses = ce.getClasses();
-            for(int i = 0; i < innerClasses.length; i++) {
-                if (isClassTestable(ctx, innerClasses[i]))
-                    return true;
+            Iterator it  = TestUtil.collectFeatures(jc, JavaClass.class, 0, true).iterator();
+            while (it.hasNext()) {
+                if (isClassTestable((JavaClass)it.next())) return true;
             }
 
             return false;
 
+
         } finally {
             JavaModel.getJavaRepository().endTrans();
         }
+
     }
     
     
@@ -218,251 +251,228 @@ public class TestCreator extends java.lang.Object {
     
     /* private methods */
     static private boolean         cfg_MethodsFilterPackage = true;
-    static private int             cfg_MethodsFilter = Modifier.PUBLIC | Modifier.PROTECTED;
+    static private int             cfg_MethodsFilter = 0;
+
+
     
-    static private void addMethods(ClassElement classTest, LinkedList methods) {
-        ListIterator    li;
-        MethodElement   m;
-        
-        if (null == methods)
-            return;
-        
-        li = methods.listIterator();
-        while (li.hasNext()) {
-            m = (MethodElement)li.next();
-            try {
-                classTest.addMethod(m);
-            } catch (SourceException e) {
-                // Nothing is done, because it is expected that the method already exist
-            }
-        }
-    }    
-    
+
+    /**
+     * Returns true if tgtClass contains suite() method 
+     */
+    static private boolean hasSuiteMethod(JavaClass tgtClass) {
+        return tgtClass.getMethod("suite", Collections.EMPTY_LIST, false)!= null;
+    }
+
+    static private Method createSuiteMethod(JavaModelPackage pkg) {
+        Method ret = pkg.getMethod().createMethod();
+        ret.setName("suite");
+        ret.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
+        ret.setTypeName(TestUtil.getTypeReference(pkg,"Test"));
+        return ret;
+    }
 
     /**
      * Creates function <b>static public Test suite()</b> and fills its body,
      * appends all test functions in the class and creates sub-suites for
      * all test inner classes.
      */
-    static private MethodElement createTestClassSuiteMethod(FileObject ctx, ClassElement classTest) throws SourceException {
-        StringBuffer    body = new StringBuffer(512);
-        ClassElement    innerClasses[];        
-        
-                
-        
-        //System.err.println("Generating suite() method for :"+classTest.getName());
-        
-        //removeSuiteMethod(classTest);
+    static private Method createTestClassSuiteMethod(JavaClass tgtClass) {
+
+        JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
+        System.err.println("Generating suite() method for :"+tgtClass.getName());
         
         // create header of function
-        MethodElement method = new MethodElement();
-        method.setName(Identifier.create("suite"));
-        method.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
-        method.setReturn(org.openide.src.Type.createClass(Identifier.create("Test")));
+        Method method = createSuiteMethod(pkg);
         
-        // !-- GENERATE NbJUnit no longer supported
-        // prepare the body - if we generate nbjunit - we have to generate NbTestSuite otherwise TestSuite        
-        /*if (JUnitSettings.getDefault().isGenerateNbJUnit()) {
-            body.append("\nTestSuite suite = new NbTestSuite(");
-        } else {         
-           body.append("\nTestSuite suite = new TestSuite(");             
-        }*/
-        // GENERATE NbJUnit no longer supported --!
-        
+        StringBuffer body = new StringBuffer(1024);
         body.append("\nTestSuite suite = new TestSuite(");
-        body.append(classTest.getName().getName());
+        body.append(tgtClass.getSimpleName());
         body.append(".class);\n");
         
-        innerClasses = classTest.getClasses();        
-        for(int i = 0; i < innerClasses.length; i++) {
-            ClassElement innerClass = innerClasses[i];
-            if (TestUtil.isClassElementTest(ctx, innerClass)) {
-                //System.err.println("Adding inner class:"+innerClasses[i].getVMName());
+        Collection innerClasses = TestUtil.filterFeatures(tgtClass, JavaClass.class);
+        Iterator itic = innerClasses.iterator();
+        while (itic.hasNext()) {
+            JavaClass jc = (JavaClass)itic.next();
+            if (TestUtil.isClassTest(jc)) {
+                System.err.println("Adding inner class:"+jc.getName());
                 body.append("suite.addTest(");
-                body.append(innerClass.getName().getName());
+                body.append(jc.getSimpleName());
                 body.append(".suite());\n");
             } 
         }
         
         body.append("\nreturn suite;\n");
-        method.setBody(body.toString());
+        method.setBodyText(body.toString());
         return method;
     }
 
-    static private ConstructorElement createTestConstructor(Identifier className) throws SourceException {
-        ConstructorElement constr = new ConstructorElement();
-        constr.setName(className);
-        constr.setModifiers(Modifier.PUBLIC);
-        MethodParameter[] params = {new MethodParameter("testName", org.openide.src.Type.createFromClass(java.lang.String.class), false)};
-        constr.setParameters(params);
-        constr.setBody("\nsuper(testName);\n");
+    static private List createTestConstructorParams(JavaModelPackage pkg) {
+        Parameter param = pkg.getParameter().
+            createParameter("testName",
+                            Collections.EMPTY_LIST, // annotations
+                            false, // isFinal
+                            pkg.getMultipartId().createMultipartId("java.lang.String", null, Collections.EMPTY_LIST),// typeName
+                            0, // dimCount
+                            false); // isvararg
+        return Collections.singletonList(param);
+    }
+
+
+    static private Constructor createTestConstructor(JavaModelPackage pkg, String className) {
+
+
+
+
+        Constructor constr = pkg.getConstructor()
+            .createConstructor(
+                               className, // name
+                               Collections.EMPTY_LIST, // annotations
+                               Modifier.PUBLIC, // modifiers
+                               null, // javadoc text
+                               null, // javadoc - object repre
+                               null, // body - object repre
+                               "\nsuper(testName);\n", // body -
+                                                      // string repre
+                               Collections.EMPTY_LIST,// type parameters
+                               createTestConstructorParams(pkg),// parameters
+                               null); // exception names
         return constr;
     }
 
-    static private LinkedList createVariantMethods (ClassElement classSource) throws SourceException {
-        LinkedList      methodList = new LinkedList();
-        MethodElement[] allMethods = classSource.getMethods();                        
-        MethodElement   method;
-        String          name;
-        Identifier      newName;
-        StringBuffer    newBody = new StringBuffer();
-        
-        for (int i = 0; i < allMethods.length; i++) {
-            // check modifiers against the settings of test generation
-            if (isMethodAcceptable(allMethods[i])) {
-               name = allMethods[i].getName().getName();
-                method = new MethodElement();
-                newName = Identifier.create("test" + name.substring(0,1).toUpperCase() + name.substring(1));
-
-                // generate only one test method for overloaded source methods
-                if (!existsMethod(methodList, newName)) {
-                    method.setName(newName);
-                    method.setModifiers(Modifier.PUBLIC);
-
-                    // generate JavaDoc for test method
-                    if (JUnitSettings.getDefault().isJavaDoc()) {
-                        String msg = MessageFormat.format(NbBundle.getMessage(TestCreator.class,"TestCreator.variantMethods.JavaDoc.comment"),
-                                    new Object[] {name, classSource.getName().getFullName()});
-                        method.getJavaDoc().setText(msg);
-                    }
-
-                    // generate the body of method
-                    newBody.delete(0, newBody.length());
-                    newBody.append("\n");
-                    if (JUnitSettings.getDefault().isBodyContent()) {
-                        // generate default bodies, printing the name of method
-                        newBody.append("System.out.println(\"" + newName.getName() + "\");\n");
-                    }
-                    if (JUnitSettings.getDefault().isBodyComments()) {
-                        // generate comments to bodies
-                        newBody.append("\n"+NbBundle.getMessage(TestCreator.class,"TestCreator.variantMethods.defaultComment")+"\n");
-                    }
-                    if (JUnitSettings.getDefault().isBodyContent()) {
-                        // generate a test failuare by default (in response to request 022).
-                        newBody.append(NbBundle.getMessage(TestCreator.class,"TestCreator.variantMethods.defaultBody")+"\n");
-                    }
-                    method.setBody(newBody.toString());
-                    method.setReturn(org.openide.src.Type.VOID);
-                    methodList.add(method);
-                }
-            }
-        }                
-        return methodList;
+    static private List createTestMethodParams(Method sm, JavaModelPackage pkg) {
+        return Collections.EMPTY_LIST;
     }
-    
-    static private boolean existsMethod(LinkedList methodList, Identifier id) {
-        ListIterator    li;
-        MethodElement   m;
-        
-        li = methodList.listIterator();
-        while(li.hasNext()) {
-            m = (MethodElement) li.next();
-            if (m.getName().equals(id))
-                return true;
+
+    static private String createTestMethodName(String smName) {
+        return "test" + smName.substring(0,1).toUpperCase() + smName.substring(1);
+    }
+
+    static private Method createTestMethod(JavaClass sclass, Method sm, JavaModelPackage pkg) {
+
+        String smName = sm.getName();
+
+        // method name
+        String newName = createTestMethodName(smName);
+
+        List annotations = Collections.EMPTY_LIST;
+        int modifiers = Modifier.PUBLIC;
+
+        // javadoc
+        String javadocText = 
+            JUnitSettings.getDefault().isJavaDoc() ? 
+            MessageFormat.format(NbBundle.getMessage(TestCreator.class,
+                                                     "TestCreator.variantMethods.JavaDoc.comment"), 
+                                 new Object[] {smName, sclass.getName()})
+            : null;
+            
+        // create body of the method
+        StringBuffer newBody = new StringBuffer(512);
+        newBody.append("\n");
+        if (JUnitSettings.getDefault().isBodyContent()) {
+            // generate default bodies, printing the name of method
+            newBody.append("System.out.println(\"" + newName + "\");\n");
         }
-        return false;
+        if (JUnitSettings.getDefault().isBodyComments()) {
+            // generate comments to bodies
+            newBody.append("\n"+NbBundle.getMessage(TestCreator.class,"TestCreator.variantMethods.defaultComment")+"\n");
+        }
+        if (JUnitSettings.getDefault().isBodyContent()) {
+            // generate a test failuare by default (in response to request 022).
+            newBody.append(NbBundle.getMessage(TestCreator.class,"TestCreator.variantMethods.defaultBody")+"\n");
+        }
+            
+        // return type
+        TypeReference typeName = pkg.getMultipartId().createMultipartId("void", null, Collections.EMPTY_LIST);
+
+        // method parameters
+        List params = createTestMethodParams(sm, pkg);
+            
+        Method ret = pkg.getMethod().createMethod(newName,
+                                                  annotations,
+                                                  modifiers,
+                                                  javadocText,
+                                                  null, // javadoc
+                                                  null, // body
+                                                  newBody.toString(),
+                                                  Collections.EMPTY_LIST, // type parameters
+                                                  params,
+                                                  Collections.EMPTY_LIST, // exceptions
+                                                  typeName,
+                                                  0);
+        return ret;
     }
 
-    static private boolean isImplemented(ClassElement implementor, MethodElement m) {
-        MethodElement[] methods = implementor.getMethods();
-        for(int i = 0; i < methods.length; i++) {
-            if (0 == (methods[i].getModifiers() & Modifier.ABSTRACT) &&
-                m.getName().equals(methods[i].getName()) &&
-                m.getReturn().equals(methods[i].getReturn()) &&
-                Arrays.equals(getParameterTypes(m.getParameters()), 
-                              getParameterTypes(methods[i].getParameters()))) {
-                return true;
-            }
-        }
-        return false;
-    }
+
      
-    static private org.openide.src.Type[] getParameterTypes(MethodParameter[] params) {
-        org.openide.src.Type[] types = new org.openide.src.Type[params.length];
-        for (int i = 0; i < params.length; i++) {
-            types[i] = params[i].getType();
-        }
 
-        return types;
-    }
-     
-    static private boolean hasTestableMethods(ClassElement classSource) {
-        MethodElement[] allMethods = classSource.getMethods();                        
-        
-        for (int i = 0; i < allMethods.length; i++) {
-            if (isMethodAcceptable(allMethods[i]))
+    static private boolean hasTestableMethods(JavaClass cls) {
+
+        Iterator methods = TestUtil.collectFeatures(cls, Method.class, 0, true).iterator();
+        while (methods.hasNext()) {
+            if (isMethodAcceptable((Method)methods.next()))
                 return true;
         }
         
         return false;
     }
 
-    static private void fillGeneral(ClassElement classTest) throws SourceException {
-        ConstructorElement  constr;
+
+
+    static private void fillGeneral(JavaClass testClass) {
+        JavaModelPackage pkg = (JavaModelPackage)testClass.refImmediatePackage();
         
         // !-- GENERATE NbJUnit no longer supported
         // set explicitly super class and modifiers
-        /*
-        if (JUnitSettings.getDefault().isGenerateNbJUnit()) {
-            classTest.setSuperclass(Identifier.create(NBJUNIT_SUPER_CLASS_NAME));
-        } else {
-            classTest.setSuperclass(Identifier.create(JUNIT_SUPER_CLASS_NAME));
-        }
-        */
-        // GENERATE NbJUnit no longer supported --!
         
-        classTest.setSuperclass(Identifier.create(JUNIT_SUPER_CLASS_NAME));
-        classTest.setModifiers(Modifier.PUBLIC);
+//         if (JUnitSettings.getDefault().isGenerateNbJUnit()) {
+//             classTest.setSuperclass(Identifier.create(NBJUNIT_SUPER_CLASS_NAME));
+//         } else {
+//             classTest.setSuperclass(Identifier.create(JUNIT_SUPER_CLASS_NAME));
+//         }
+        
+        // GENERATE NbJUnit no longer supported --!
+        testClass.setSuperClassName(pkg.getMultipartId().createMultipartId(JUNIT_SUPER_CLASS_NAME, null, Collections.EMPTY_LIST));
+        testClass.setModifiers(Modifier.PUBLIC);
 
         // remove default ctor, if exists (shouldn't throw exception)
-        constr = classTest.getConstructor(new org.openide.src.Type[] {});
-        if (null != constr)
-            classTest.removeConstructor(constr);
-        
-        //fill classe's constructor
-        constr = createTestConstructor(classTest.getName());
-        try {
-            classTest.addConstructor(constr);
-        } catch (SourceException e) {
-            // Nothing is done, because it is expected that constructor already exists
+        if (null == testClass.getConstructor(Collections.singletonList(createStringType(pkg)), false)) {
+            //fill classe's constructor
+            Constructor newConstr = createTestConstructor(pkg, testClass.getSimpleName());
+            testClass.getFeatures().add(newConstr);
         }
         
+
         //add method setUp() (optionally):
         if (JUnitSettings.getDefault().isGenerateSetUp()
-                && !hasInitMethod(classTest, METHOD_NAME_SETUP)) {
-            try {
-                classTest.addMethod(generateInitMethod(METHOD_NAME_SETUP));
-            } catch (SourceException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-            }
+                && !hasInitMethod(testClass, METHOD_NAME_SETUP)) {
+
+            testClass.getFeatures().add(generateInitMethod(pkg, METHOD_NAME_SETUP));
         }
         
         //add method tearDown() (optionally):
         if (JUnitSettings.getDefault().isGenerateTearDown()
-                && !hasInitMethod(classTest, METHOD_NAME_TEARDOWN)) {
-            try {
-                classTest.addMethod(generateInitMethod(METHOD_NAME_TEARDOWN));
-            } catch (SourceException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-            }
+                && !hasInitMethod(testClass, METHOD_NAME_TEARDOWN)) {
+            testClass.getFeatures().add(generateInitMethod(pkg, METHOD_NAME_TEARDOWN));
         }
     }
+
     
     /**
      * Detects whether a given class contains a no-argument method of a given
      * name, having protected or public member access.
      *
-     * @param  testClass  class the method is to be found in
+     * @param  cls  class the method is to be found in
      * @param  methodName  name of the method to be found
      * @return  <code>true</code> if the class contains such a method,
      *          <code>false</code> otherwise
      */
-    private static boolean hasInitMethod(ClassElement testClass,
+    private static boolean hasInitMethod(JavaClass cls,
                                          String methodName) {
-        return testClass.getMethod(Identifier.create(methodName),
-                                   new org.openide.src.Type[0])
-               != null;
+        return cls.getMethod(methodName,
+                             Collections.EMPTY_LIST,
+                             false) != null;
     }
+
     
     /**
      * Generates a set-up or a tear-down method.
@@ -475,107 +485,123 @@ public class TestCreator extends java.lang.Object {
      * @see  http://junit.sourceforge.net/javadoc/junit/framework/TestCase.html
      *       methods <code>setUp()</code> and <code>tearDown()</code>
      */
-    private static MethodElement generateInitMethod(String methodName)
-            throws SourceException {
-        MethodElement method = new MethodElement();
-        method.setModifiers(Modifier.PROTECTED);
-        method.setReturn(org.openide.src.Type.VOID);
-        method.setName(Identifier.create(methodName));
-        method.setParameters(new MethodParameter[0]);
-        method.setExceptions(new Identifier[] {
-                Identifier.create("java.lang.Exception", "Exception")});//NOI18N
+    private static Method generateInitMethod(JavaModelPackage pkg, String methodName)
+    {
+        Method method = pkg.getMethod().
+            createMethod(methodName, // name
+                         Collections.EMPTY_LIST, // annotations
+                         Modifier.PROTECTED, // modifiers
+                         null, // javadoc text
+                         null, // javadoc object
+                         null, // body object
+                         "\n", // body text
+                         Collections.EMPTY_LIST, // type parameters
+                         Collections.EMPTY_LIST, // parameters
+                         Collections.singletonList(pkg.getMultipartId().createMultipartId("java.lang.Exception", null, Collections.EMPTY_LIST)), // exception names
+                         pkg.getMultipartId().createMultipartId("void", null, Collections.EMPTY_LIST), // typeName
+                         0 // dimCount
+                         );
         return method;
     }
-    
-    static private void fillTestClass(FileObject sourceCtx, ClassElement classSource, FileObject classCtx, ClassElement classTest) throws SourceException {
-        LinkedList      methods;
-        ClassElement    innerClasses[];        
-        
-        fillGeneral(classTest);
 
+
+
+
+    static private void fillTestClass(Resource srcRc, JavaClass srcClass, Resource tgtRc, JavaClass tgtClass) 
+    {
+        fillGeneral(tgtClass);
+
+        List    innerClasses = TestUtil.filterFeatures(srcClass, JavaClass.class);
+        
         // create test classes for inner classes
-        innerClasses = classSource.getClasses();
-        for(int i = 0; i < innerClasses.length; i++) {
-            if (isClassTestable(sourceCtx, innerClasses[i])) {
+        Iterator itInner = innerClasses.iterator();
+        while (itInner.hasNext()) {
+            JavaClass theClass = (JavaClass)itInner.next();
+            JavaModelPackage pkg = ((JavaModelPackage)tgtClass.refImmediatePackage());
+
+            if (isClassTestable(theClass)) {
                 // create new test class
-                ClassElement    innerTester;
-                Identifier      name = Identifier.create(TestUtil.getTestClassName(innerClasses[i].getName().getName()));
-                boolean         add = false;
+                JavaClass innerTester;
+                String    name = TestUtil.getTestClassName(theClass.getSimpleName());
                 
-                if (null == (innerTester = classTest.getClass(name))) {
-                    add = true;
-                    innerTester = new ClassElement();
-                    innerTester.setName(name);
+                if (null == (innerTester = TestUtil.getClassBySimpleName(tgtClass, name))) {
+
+                    innerTester = pkg.getJavaClass().createJavaClass();
+                    innerTester.setSimpleName(tgtClass.getName()+"."+name);
+                    tgtClass.getFeatures().add(innerTester);
+                    System.err.println("THE FQN Name is: " + innerTester.getName());
                 }
                 
                 // process tested inner class the same way like top-level class
-                fillTestClass(sourceCtx, innerClasses[i], classCtx, innerTester);
+                fillTestClass(srcRc, theClass, tgtRc, innerTester);
                 
                 // do additional things for test class to became inner class usable for testing in JUnit
                 innerTester.setModifiers(innerTester.getModifiers() | Modifier.STATIC);
-                if (add)
-                    classTest.addClass(innerTester);
+
             }
         }
-        
-        
+          
         // add suite method ... only if we are supposed to do so
-        if (JUnitSettings.getDefault().isGenerateSuiteClasses()) {
-            methods = new LinkedList();
-            methods.add(createTestClassSuiteMethod(classCtx, classTest));
-            addMethods(classTest, methods);            
+
+        if (JUnitSettings.getDefault().isGenerateSuiteClasses() &&
+            (!hasSuiteMethod(tgtClass))) {
+            tgtClass.getFeatures().add(createTestClassSuiteMethod(tgtClass));            
         } else {
-            //System.err.println("TestCreator.createTestClassSuiteMethod() - do not regenerate ...");
+            System.err.println("TestCreator.createTestClassSuiteMethod() - do not regenerate ...");
         }
         
+
         // fill methods according to the iface of tested class
-        methods = createVariantMethods(classSource);
-        addMethods(classTest, methods);
-        
+        Iterator methit = TestUtil.filterFeatures(srcClass, Method.class).iterator();
+        while (methit.hasNext()) {
+            Method sm = (Method)methit.next();
+            System.err.println("Copying method " + sm.getName());
+            if (isMethodAcceptable(sm) &&
+                tgtClass.getMethod(createTestMethodName(sm.getName()),
+                                   createTestMethodParams(sm, (JavaModelPackage)tgtClass.refImmediatePackage()), 
+                                   false) == null) 
+                {
+                    Method tm = createTestMethod(srcClass, sm, (JavaModelPackage)tgtClass.refImmediatePackage());
+                    tgtClass.getFeatures().add(tm);
+                } else {
+                    System.err.println("...SKIPPED");
+                }
+        }
+
+
         // create abstract class implementation
-        if ((JUnitSettings.getDefault().isGenerateAbstractImpl()) &&
-            (0 != (classSource.getModifiers() & Modifier.ABSTRACT))) {
-// @@            System.out.println("fillTestClass : calling createAbstractImpl");
-            try {
-                createAbstractImpl(classSource, classTest);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+         if (
+             (JUnitSettings.getDefault().isGenerateAbstractImpl()) &&
+             (
+              (Modifier.ABSTRACT == (srcClass.getModifiers() & Modifier.ABSTRACT)) |
+              (srcClass.isInterface())
+              )
+             ) {
+             createAbstractImpl(srcClass, tgtClass);
+         }
+         
     }        
+  
 
-    static private void fillSuiteClass(LinkedList listMembers, String packageName, ClassElement classTest) throws SourceException {
-        LinkedList      methods;
-        MethodElement   method;
-        boolean         updateBody = false;
+    static private void fillSuiteClass(List listMembers, 
+                                       String packageName, 
+                                       JavaClass tgtClass)  {
         
-        
-        fillGeneral(classTest);
-        
-        methods = new LinkedList();
+        JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();                 
+        fillGeneral(tgtClass);
 
-        removeSuiteMethod(classTest);
-
-        MethodElement oldMethod = classTest.getMethod(Identifier.create("suite"), new org.openide.src.Type[] {});
-        if (oldMethod == null) {
-            method = new MethodElement();
-            method.setName(Identifier.create("suite"));
-            
-        } else {
-            method = oldMethod;
-        }
-        method.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
-        method.setReturn(org.openide.src.Type.createClass(Identifier.create("Test")));
-        method.getJavaDoc().setText(NbBundle.getMessage(TestCreator.class,"TestCreator.suiteMethod.JavaDoc.comment"));
+        // find "suite()" method 
+        Method suiteMethod = tgtClass.getMethod("suite", Collections.EMPTY_LIST, false);
+        
+        if (suiteMethod == null)  suiteMethod = createSuiteMethod(pkg);
+        suiteMethod.setJavadocText(NbBundle.getMessage(TestCreator.class,"TestCreator.suiteMethod.JavaDoc.comment"));
         
         // generate the body of suite method
-        StringTokenizer oldBody = new StringTokenizer(method.getBody(), "\n");
+        StringTokenizer oldBody = new StringTokenizer(suiteMethod.getBodyText(), "\n");
         StringBuffer newBody = new StringBuffer();
         
         boolean insideBlock = false;
         boolean justBlockExists = false;
-        
         
         
         while (oldBody.hasMoreTokens()) {
@@ -587,7 +613,7 @@ public class TestCreator extends java.lang.Object {
             else if (-1 != line.indexOf(GENERATED_SUITE_BLOCK_END)) {
                 // JUst's owned suite block, regenerate it
                 insideBlock = false;
-                generateSuiteBody(classTest.getName().getName(), newBody, listMembers, true);
+                generateSuiteBody(tgtClass.getSimpleName(), newBody, listMembers, true);
                 justBlockExists = true;
             }
             else if (!insideBlock) {
@@ -597,20 +623,18 @@ public class TestCreator extends java.lang.Object {
         }
         
         if (!justBlockExists) {
-            generateSuiteBody(classTest.getName().getName(), newBody, listMembers, true);
+            generateSuiteBody(tgtClass.getSimpleName(), newBody, listMembers, true);
         }
                     
-        //if (updateBody) {
-            method.setBody(newBody.toString());
-            // add/update methods to the class
-            methods.add(method);
-            addMethods(classTest, methods);
-        //}
+        suiteMethod.setBodyText(newBody.toString());
     }
+
+
     
-    static private void generateSuiteBody(String testName, StringBuffer body, LinkedList members, boolean alreadyExists) {
-        ListIterator    li;
-        String          name;
+
+    static private void generateSuiteBody(String testName, StringBuffer body, List members, boolean alreadyExists) {
+        Iterator    li;
+        String      name;
         
            
         body.append('\n');
@@ -629,7 +653,8 @@ public class TestCreator extends java.lang.Object {
         //body.append("//" + GENERATED_SUITE_BLOCK_END + "\n");
                 
     }
-    
+
+
     static private boolean isForbidden(String name) {
         for (int i = 0; i < forbiddenMethods.length; i++) {            
             if (forbiddenMethods[i].equals(name)) 
@@ -637,239 +662,223 @@ public class TestCreator extends java.lang.Object {
         }
         return false;
     }
-    
 
-    static private boolean isMethodAcceptable(MethodElement m) {
-        String name;
+
+
+    static private boolean isMethodAcceptable(Method m) {
         if ((m.getModifiers() & Modifier.PRIVATE) == 0 &&
             ((m.getModifiers() & cfg_MethodsFilter) != 0 ||
             ((m.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED)) == 0 && cfg_MethodsFilterPackage))) {
-            name = m.getName().getName();
-            return !isForbidden(name) && (m.getModifiers() & Modifier.ABSTRACT) == 0;
+            return !isForbidden(m.getName()); // && (m.getModifiers() & Modifier.ABSTRACT) == 0;
         }
         return false;
     }
-    
-    static private void createAbstractImpl(ClassElement sourceClass, ClassElement targetClass) throws SourceException {
-        Identifier      implClassName = Identifier.create(sourceClass.getName().getName() + "Impl");
-        ClassElement    innerClass = targetClass.getClass(implClassName);
-        LinkedList      methods;
-        Iterator        iterator;
-        
+
+
+    static private void createAbstractImpl(JavaClass srcClass, JavaClass tgtClass) {
+        JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
+        String implClassName = srcClass.getSimpleName() + "Impl";
+        JavaClass innerClass = tgtClass.getInnerClass(implClassName, false);
+
+        System.err.println("Creating impl of " + srcClass.getName());
+
         if (innerClass == null) {
-            innerClass = new ClassElement();
-            innerClass.setName(implClassName);
-            innerClass.setModifiers(Modifier.PRIVATE);
+            String name = implClassName;
+            List annotations = Collections.EMPTY_LIST;
+            int modifiers = Modifier.PRIVATE;
 
-            if (sourceClass.isInner())
-                innerClass.setSuperclass(Identifier.create(sourceClass.getName().getFullName()));
-            else
-                innerClass.setSuperclass(sourceClass.getName());
-
-            // generate JavaDoc for the generated implamentation of tested abstract class
+            // generate JavaDoc for the generated implementation of tested abstract class
+            String javadocText = null;
             if (JUnitSettings.getDefault().isJavaDoc()) {
-                
-                String msg= MessageFormat.format(NbBundle.getMessage(TestCreator.class,"TestCreator.abstracImpl.JavaDoc.comment"), 
-                                new Object[] {sourceClass.getName().getFullName()});
-                   
-                innerClass.getJavaDoc().setText(msg);
+                javadocText = MessageFormat.format(NbBundle.getMessage(TestCreator.class,"TestCreator.abstracImpl.JavaDoc.comment"), 
+                                new Object[] {srcClass.getName()});
             }
-            createImpleConstructors(sourceClass, innerClass);
+            
+            // superclass
+            MultipartId supClass = null;
+            if (srcClass.isInner())
+                supClass = pkg.getMultipartId().createMultipartId(srcClass.getName(), 
+                                                                null,
+                                                                Collections.EMPTY_LIST);
+            else
+                supClass = pkg.getMultipartId().createMultipartId(srcClass.getSimpleName(), 
+                                                                null,
+                                                                Collections.EMPTY_LIST);
+
+            innerClass = pkg.getJavaClass().createJavaClass(name, 
+                                                            annotations,
+                                                            modifiers,
+                                                            javadocText,
+                                                            null,
+                                                            Collections.EMPTY_LIST,
+                                                            null,
+                                                            Collections.EMPTY_LIST,
+                                                            Collections.EMPTY_LIST);
+            if (srcClass.isInterface()) 
+                innerClass.getInterfaceNames().add(supClass);
+            else
+                innerClass.setSuperClassName(supClass);
+
+
+            createImpleConstructors(srcClass, innerClass);
+            tgtClass.getFeatures().add(innerClass);
         }
 
-        // retrieve all unimplemented abstract methods
-        methods = new LinkedList();
-        getAbstractClassMethods(sourceClass, methods);
-        
+        System.err.println("Collecting " + srcClass.getName());
         // created dummy implementation for all abstract methods
-        iterator = methods.iterator();
-        while (iterator.hasNext()) {
-            MethodElement origMethod = (MethodElement)iterator.next();
-            MethodElement newMethod = createMethodImpl(origMethod);
+        Iterator it = TestUtil.collectFeatures(srcClass, Method.class,
+                                               Modifier.ABSTRACT, true).iterator();
 
-            try {
-                innerClass.addMethod(newMethod);
-            } catch (SourceException e) {
-                //ignore as the method already exists
+        while (it.hasNext()) {
+            Method oldMethod = (Method)it.next();
+            System.err.print("About to implement " + oldMethod.getName());
+            if (innerClass.getMethod(oldMethod.getName(),
+                                     TestUtil.getParameterTypes(oldMethod.getParameters()),
+                                     false) == null) {
+                System.err.println("...implementing");
+                Method newMethod = createMethodImpl(pkg, oldMethod);
+                innerClass.getFeatures().add(newMethod);
+            } else {
+                System.err.println("...already implemented");
             }
         }
 
-        try {
-            targetClass.addClass(innerClass);
-        } catch (SourceException e) {
-            //ignore as the inner class already exists
-        }
-    }
-     
-    static private MethodElement createMethodImpl(MethodElement origMethod) throws SourceException {
-        MethodElement   newMethod = (MethodElement)origMethod.clone();
-        StringBuffer    body = new StringBuffer(200);
-        int             mod = origMethod.getModifiers() & ~Modifier.ABSTRACT;
 
-// @@        System.out.println("createMethodImpl : " + origMethod.getName().getFullName());
-// @@        System.out.println("createMethodImpl : " + (null == origMethod.getDeclaringClass() ? "null" : "OK"));
-        if (origMethod.getDeclaringClass().isInterface())
+    }
+    
+
+    static private Method createMethodImpl(JavaModelPackage pkg, Method origMethod)  {
+        Method   newMethod = pkg.getMethod().createMethod();
+
+        newMethod.setName(origMethod.getName());
+
+        // compute modifiers of the method
+        int mod = origMethod.getModifiers() & ~Modifier.ABSTRACT;
+        if (((JavaClass)origMethod.getDeclaringClass()).isInterface())
             mod |= Modifier.PUBLIC;
-        
         newMethod.setModifiers(mod);
 
         // prepare the body of method implementation
+        StringBuffer    body = new StringBuffer(200);
         body.append('\n');
         if (JUnitSettings.getDefault().isBodyComments()) {
             body.append(NbBundle.getMessage(TestCreator.class,"TestCreator.methodImpl.bodyComment"));
             body.append('\n');
         }
-        if (newMethod.getReturn().isClass() || newMethod.getReturn().isArray()) {
-            body.append("\nreturn null;\n");
-        } else if (newMethod.getReturn().equals(org.openide.src.Type.BOOLEAN)) {
-            body.append("\nreturn false;\n");
-        } else if (!newMethod.getReturn().equals(org.openide.src.Type.VOID)) {
-            body.append("\nreturn 0;\n");
+
+        newMethod.setType(origMethod.getType());
+        Type type= origMethod.getType();
+        if (type != null) {
+            String value = null;
+            if ((type instanceof JavaClass) || (type instanceof Array)) {
+                value = "null";
+            } else if (type instanceof PrimitiveType) {
+                PrimitiveTypeKindEnum tke = (PrimitiveTypeKindEnum)((PrimitiveType)type).getKind();
+                if (tke.equals(PrimitiveTypeKindEnum.BOOLEAN)) value = "false";
+                else if (!tke.equals(PrimitiveTypeKindEnum.VOID)) value = "0";
+            }
+
+            if (value != null) 
+                body.append("\nreturn "+value+";\n");
         }
-        newMethod.setBody(body.toString());
+
+        newMethod.setBodyText(body.toString());
+        
+        // parameters
+        newMethod.getParameters().addAll(TestUtil.cloneParams(origMethod.getParameters(), pkg));
 
         return newMethod;
      }
-     
-     static private void createImpleConstructors(ClassElement sourceClass, ClassElement implInnerClass) throws SourceException {
-         ConstructorElement[] constructors = sourceClass.getConstructors();
-         ConstructorElement nextConstructor = null;
-         for (int i = 0; i < constructors.length; i++) {
-             nextConstructor = (ConstructorElement)constructors[i].clone();
-             if (0 == (nextConstructor.getModifiers() & Modifier.PRIVATE)) {
-                 nextConstructor.setBody("\nsuper(" + getParameterString(nextConstructor.getParameters()) + ");\n");
-                 nextConstructor.getJavaDoc().clearJavaDoc();
-                 implInnerClass.addConstructor(nextConstructor);
+
+
+
+     static private void createImpleConstructors(JavaClass srcClass, JavaClass tgtClass) {
+         JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
+
+         Iterator it = TestUtil.filterFeatures(srcClass, Constructor.class).iterator();
+         while (it.hasNext()) {
+             Constructor ctr = (Constructor)it.next();
+
+             if (0 == (ctr.getModifiers() & Modifier.PRIVATE)) {
+                 Constructor nctr = pkg.getConstructor().createConstructor();
+                 nctr.setBodyText("\nsuper(" + getParameterString(ctr.getParameters()) + ");\n");
+                 nctr.getParameters().addAll(TestUtil.cloneParams(ctr.getParameters(),pkg));
+                 tgtClass.getFeatures().add(nctr);
              }
          }
      }
-     
-     static private String getParameterString(MethodParameter[] params) {
+
+
+
+     static private String getParameterString(List params) {
          StringBuffer paramString = new StringBuffer();
          
-         for (int i = 0; i < params.length; i++) {
+         Iterator it = params.iterator();
+         while (it.hasNext()) {
+             Parameter param= (Parameter)it.next();
              if (paramString.length() > 0) {
                  paramString.append(", ");
              }
-             paramString.append(params[i].getName());
+             paramString.append(param.getName());
          }
          
          return paramString.toString();
      }
-     
-    static private LinkedList getInterfaceMethods(Identifier iface) throws SourceException {
-        LinkedList         interfaceMethods = new LinkedList();
-        MethodElement[]    methods;
-        Identifier[]       interfaces;
-        ClassElement       ifaceClass;
 
-        // add all methods of current inetrface
-        ifaceClass = ClassElement.forName(iface.getFullName());
-        methods = ifaceClass.getMethods();
-        for (int i = 0; i < methods.length; i++)
-            interfaceMethods.add(methods[i]);
 
-        // add methods of all implemented interfaces
-        interfaces = ifaceClass.getInterfaces();
-        for(int i = 0; i < interfaces.length; i++) {
-            // name duplicities should be rare and will be discovered during impl generation
-            interfaceMethods.addAll(getInterfaceMethods(interfaces[i]));
-        }
 
-        return interfaceMethods;
+    private static void removeSuiteMethod(JavaClass tgtClass) {
+        Method sm = tgtClass.getMethod("suite", Collections.EMPTY_LIST, false);
+        if (sm != null) tgtClass.getFeatures().remove(sm);
     }
-     
-    static private void getAbstractClassMethods(ClassElement sourceClass, LinkedList abstractMethods) throws SourceException {
-        MethodElement[] methods;
-        Identifier[]    interfaces;
-        Identifier      superClassId;
 
-// @@        System.out.println("getAbstractClassMethods : " + sourceClass.getName().getFullName());
-        
-        // given bag of abstract methods of classe's descendant should be
-        // checked for those, which current class implements itself
-        removeImplemented(sourceClass, abstractMethods, false);
-        
-        // add abstract methods of all implemented ifaces
-        interfaces = sourceClass.getInterfaces();
-        for(int i = 0; i < interfaces.length; i++) {
-            LinkedList  ifaceAbstracts = getInterfaceMethods(interfaces[i]);
 
-            // remove implemented methods
-            removeImplemented(sourceClass, ifaceAbstracts, false);
-            abstractMethods.addAll(ifaceAbstracts);
-        }
+    private static void addMainMethod(JavaClass tgtClass) {
+        JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();  
+        if ((JUnitSettings.getDefault().isGenerateMainMethod()) && (!TestUtil.hasMainMethod(tgtClass))) {
+            // add main method
+            String mainMethodBodySetting = 
+                JUnitSettings.getDefault().getGenerateMainMethodBody();
 
-        // add all own abstract methods
-        methods = sourceClass.getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            if (0 != (methods[i].getModifiers() & Modifier.ABSTRACT))
-                abstractMethods.add((MethodElement)methods[i]);
-        }
-        
-        // recurse for superclass if it is abstract or remove methods implemented by superclass
-        if (null != (superClassId = sourceClass.getSuperclass())) {
-            ClassElement superClass = ClassElement.forName(superClassId.getFullName());
-            if (null != superClass) {
-                if (0 != (superClass.getModifiers() & Modifier.ABSTRACT))
-                    getAbstractClassMethods(superClass, abstractMethods);
-                else
-                    removeImplemented(superClass, abstractMethods, true);
+            if ((mainMethodBodySetting != null) && (mainMethodBodySetting.length() > 0) ) {
+                // create body
+                StringBuffer mainMethodBody = new StringBuffer(mainMethodBodySetting.length() + 2);
+                mainMethodBody.append('\n');
+                mainMethodBody.append(mainMethodBodySetting);
+                mainMethodBody.append('\n');
+
+                Type paramType = pkg.getArray().resolveArray(TestUtil.getStringType(pkg));
+                Parameter param = pkg.getParameter().createParameter("argList", 
+                                                                     Collections.EMPTY_LIST, // annotations
+                                                                     false, // is final
+                                                                     null, // typename
+                                                                     0, // dimCount
+                                                                     false);
+                param.setType(paramType);
+                                                                         
+
+                Method mainMethod = pkg.getMethod().createMethod("main",
+                                                                 Collections.EMPTY_LIST,
+                                                                 Modifier.STATIC | Modifier.PUBLIC,
+                                                                 null, // javadoc text
+                                                                 null, // jvadoc
+                                                                 null, // object body
+                                                                 mainMethodBody.toString(), // string body
+                                                                 Collections.EMPTY_LIST, // type params
+                                                                 Collections.singletonList(param), // parameters
+                                                                 Collections.EMPTY_LIST, // exceptions
+                                                                 TestUtil.getTypeReference(pkg, "void"), // type
+                                                                 0);
+                tgtClass.getFeatures().add(mainMethod);
             }
         }
     }
 
-    private static void removeImplemented(ClassElement implementor, LinkedList methods, boolean traverseAll) throws SourceException {
-        Identifier  superClass;
-        Iterator    it = methods.iterator();
-        while (it.hasNext()) {
-            MethodElement m = (MethodElement)it.next();
-            if (isImplemented(implementor, m)) {
-                it.remove();
-            }
-        }
-        
-        if (traverseAll && null != (superClass = implementor.getSuperclass())) {
-            ClassElement superClassElemenet = ClassElement.forName(superClass.getFullName());
-            if (null != superClassElemenet)
-                removeImplemented(superClassElemenet, methods, true);
-        }
+
+    private static Type createStringType(JavaModelPackage pkg) {
+        return pkg.getType().resolve("java.lang.String");
     }
-    
-    private static void removeSuiteMethod(ClassElement classTest) throws SourceException {
-        MethodElement suiteMethod = classTest.getMethod(Identifier.create("suite"),null);
-        if (suiteMethod != null) {
-            //System.err.println("TestCreator.removeSuiteMethod() - suite method found ..");
-            // remove the method
-            classTest.removeMethod(suiteMethod);
-        } 
-    }
-    
-    private static void addMainMethod(ClassElement targetClass) throws SourceException {
-        if (JUnitSettings.getDefault().isGenerateMainMethod()) {
-            if (!targetClass.hasMainMethod()) {
-                // add main method
-                String mainMethodBodySetting = JUnitSettings.getDefault().getGenerateMainMethodBody();
-                if ((mainMethodBodySetting != null) & (mainMethodBodySetting.length() > 0) ) {
-                    MethodElement mainMethod = createMainMethodElement();
-                    StringBuffer mainMethodBody = new StringBuffer(mainMethodBodySetting.length() + 2);
-                    mainMethodBody.append('\n');
-                    mainMethodBody.append(mainMethodBodySetting);
-                    mainMethodBody.append('\n');
-                    mainMethod.setBody(mainMethodBody.toString());
-                    targetClass.addMethod(mainMethod);
-                }
-            }
-        }
-    }
-    
-    private static MethodElement createMainMethodElement() throws SourceException {
-        MethodElement mainMethod = new MethodElement();
-        mainMethod.setName(Identifier.create("main"));
-        mainMethod.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
-        mainMethod.setReturn(org.openide.src.Type.VOID);
-        MethodParameter parameter = new MethodParameter("args", org.openide.src.Type.createArray(org.openide.src.Type.createFromClass(String.class)), false);
-        mainMethod.setParameters(new MethodParameter[] {parameter} );
-        return mainMethod;
-    }
+
+
+
 }
