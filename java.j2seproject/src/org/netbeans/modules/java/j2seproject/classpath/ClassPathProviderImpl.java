@@ -115,6 +115,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         }
         dir = getDistJar(); // not really a dir at all, of course
         if (dir != null && dir.equals(FileUtil.getArchiveFile(file))) {
+            // XXX check whether this is really the root
             return 4;
         }
         dir = getBuildTestClassesDir();

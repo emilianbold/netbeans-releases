@@ -43,6 +43,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
         if (FileUtil.getArchiveFile(binaryRoot) != null) {
             binaryRoot = FileUtil.getArchiveFile(binaryRoot);
+            // XXX check whether this is really the root
         }
         String srcPropName = null;
         if (hasSources(binaryRoot,"build.classes.dir")) {   //NOI18N

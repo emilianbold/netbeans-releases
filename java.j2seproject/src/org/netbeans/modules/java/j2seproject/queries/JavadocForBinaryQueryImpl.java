@@ -69,6 +69,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
         try {
             if (FileUtil.getArchiveFile(binaryRoot) != null) {
                 binaryRoot = FileUtil.getArchiveFile(binaryRoot);
+                // XXX check whether this is really the root
             }
             String outDir = evaluator.getProperty(binaryProperty);
             if (outDir != null) {

@@ -143,6 +143,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
                 URL url = (URL) rootsIt.next();
                 if ("jar".equals(url.getProtocol())) {
                     url = FileUtil.getArchiveFile (url);
+                    // XXX check whether this is really the root
                 }
                 FileObject fo = URLMapper.findFileObject(url);
                 if (fo != null) {
