@@ -176,8 +176,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="javadoc-nb" depends="javadoc">
-        <property name="html" location="javadoc/overview-summary.html"/>
-        <nbbrowse url="file://${html}"/>
+        <nbbrowse file="javadoc/overview-summary.html"/>
     </target>
     
     <target name="test-build" depends="build">
