@@ -329,7 +329,8 @@ public class FormModel
             ((RADMenuItemComponent)comp).freeMenu();
         
         deleteEventHandlersRecursively(comp);
-        if (eventHandlers!=null) eventHandlers.setNeed2Notify(true);
+        if (eventHandlers!=null) 
+            eventHandlers.setNeed2Notify(true);
         deleteVariables(comp);
     }
 
