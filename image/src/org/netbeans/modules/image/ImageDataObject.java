@@ -15,23 +15,27 @@
 package org.netbeans.modules.image;
 
 
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorSupport;
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 
 import org.openide.actions.OpenAction;
 import org.openide.cookies.CompilerCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.CookieSet;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import org.openide.loaders.*;
+import org.openide.nodes.*;
+import org.openide.TopManager;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 
 /** 
@@ -117,14 +121,128 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
     }
 
 
-    /** Create a node to represent the image.
-     * @return the node
-     */
+    /** Create a node to represent the image. Overrides superclass method.
+     * @return node delegate */
     protected Node createNodeDelegate () {
-        DataNode node = new DataNode (this, Children.LEAF);
-        node.setIconBase(IMAGE_ICON_BASE);
-        node.setDefaultAction (SystemAction.get (OpenAction.class));
-        return node;
+        return new ImageNode(this);
     }
+    
+    
+    /** Node representing <code>ImageDataObject</code>. */
+    private static final class ImageNode extends DataNode {
+        /** Constructs image node. */
+        public ImageNode(ImageDataObject obj) {
+            super(obj, Children.LEAF);
+            setIconBase(IMAGE_ICON_BASE);
+            setDefaultAction (SystemAction.get (OpenAction.class));
+        }
+        
+        /** Creates property sheet. Ovrrides superclass method. */
+        protected Sheet createSheet() {
+            Sheet s = super.createSheet();
+            Sheet.Set ss = s.get(Sheet.PROPERTIES);
+            if (ss == null) {
+                ss = Sheet.createPropertiesSet();
+                s.put(ss);
+            }
+            ss.put(new ThumbnailProperty(getDataObject()));
+            return s;
+        }
+        
+
+        /** Property representing for thumbanil property in the sheet. */
+        private static final class ThumbnailProperty extends PropertySupport.ReadOnly {
+            /** (Image) data object associated with. */
+            private final DataObject obj;
+            
+            /** Constructs property. */
+            public ThumbnailProperty(DataObject obj) {
+                super("thumbnail", Icon.class, // NOI18N
+                    NbBundle.getMessage(ImageDataObject.class, "PROP_Thumbnail"),
+                    NbBundle.getMessage(ImageDataObject.class, "HINT_Thumbnail"));
+                this.obj = obj;
+            }
+            
+            /** Gets value of property. Overrides superclass method. */
+            public Object getValue() throws InvocationTargetException {
+                try {
+                    return new ImageIcon(obj.getPrimaryFile().getURL());
+                } catch (FileStateInvalidException fsie) {
+                    throw new InvocationTargetException(fsie);
+                }
+            }
+            
+            /** Gets property editor. */
+            public PropertyEditor getPropertyEditor() {
+                return new ThumbnailPropertyEditor();
+            }
+            
+            
+            /** Property editor for thumbnail property. */
+            private final class ThumbnailPropertyEditor extends PropertyEditorSupport {
+                /** Overrides superclass method.
+                 * @return <code>true</code> */
+                public boolean isPaintable() {
+                    return true;
+                }
+                
+                /** Patins thumbanil of the image. Overrides superclass method. */
+                public void paintValue(Graphics g, Rectangle r) {
+                    ImageIcon icon = null;
+                    
+                    try {
+                        icon = (ImageIcon)ThumbnailProperty.this.getValue();
+                    } catch(InvocationTargetException ioe) {
+                        if(Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
+                            TopManager.getDefault().getErrorManager().notify(ioe);
+                        }
+                    }
+                    
+                    if(icon != null) {
+                        int iconWidth = icon.getIconWidth();
+                        int iconHeight = icon.getIconHeight();
+                        
+
+                        // Shrink image if necessary.
+                        double scale = (double)iconWidth / iconHeight;
+                        
+                        if(iconWidth > r.width) {
+                            iconWidth = r.width;
+                            iconHeight = (int) (iconWidth / scale);
+                        }
+
+                        if(iconHeight > r.height) {
+                            iconHeight = r.height;
+                            iconWidth = (int) (iconHeight * scale);
+                        }
+                        
+                        // Try to center it if it fits, else paint as much as possible.
+                        int x;
+                        if(iconWidth < r.x) {
+                            x = (r.x - iconWidth) / 2;
+                        } else {
+                            x = 5; // XXX Indent.
+                        }
+                        
+                        int y;
+                        if(iconHeight < r.y) {
+                            y = (r.y - iconHeight) / 2;
+                        } else {
+                            y = 0;
+                        }
+                        
+                        Graphics g2 = g.create(r.x, r.y, r.width, r.height);
+                        g.drawImage(icon.getImage(), x, y, iconWidth, iconHeight, null);
+                    }
+                }
+
+                /** Overrides superclass method.
+                 * @return <code>null</code> */
+                public String getAsText() {
+                    return null;
+                }
+            } // End of class ThumbnailPropertyEditor.
+        } // End of class ThumbnailProperty.
+    } // End of class ImageNode.
 
 }
