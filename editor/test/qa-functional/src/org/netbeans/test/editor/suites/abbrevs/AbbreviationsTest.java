@@ -96,6 +96,10 @@ public abstract class AbbreviationsTest extends JellyTestCase {
             editor.typeKey(' ');
         else
             editor.typeKey(' ', KeyEvent.SHIFT_MASK);
+        try {
+            Thread.currentThread().sleep(100);   //wait for abbrevition
+        } catch (InterruptedException ex) {
+        }
         editor.txtEditorPane().typeText("CARET_POSITION");
         editor.pushKey(KeyEvent.VK_END);
         editor.pushKey(KeyEvent.VK_ENTER);
