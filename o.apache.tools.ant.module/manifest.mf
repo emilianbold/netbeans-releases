@@ -9,7 +9,7 @@ OpenIDE-Module-Layer: org/apache/tools/ant/module/AntModuleLayer.xml
 OpenIDE-Module-Description: org.apache.tools.ant.module.docs.HelpSet
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.1.1
 OpenIDE-Module-Package-Dependencies: [org.apache.tools.ant.Project], [org.apache.xerces.parsers.DOMParser]
-Class-Path: ext/ant.jar ext/xerces.jar
+Class-Path: ext/ant.jar
 
 Name: org/apache/tools/ant/module/AntProjectDataLoader.class
 OpenIDE-Module-Class: Loader

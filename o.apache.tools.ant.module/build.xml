@@ -28,10 +28,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
           <include name="openide*.jar" />
         </fileset>
 	<pathelement location="release/modules/ext/ant.jar"/>
-	<pathelement location="release/modules/ext/xerces.jar"/>
-	<!-- Using IDE's version of jaxp + parser, these cannot be overridden: -->
-	<pathelement location="../core/release/lib/ext/jaxp.jar"/>
-	<pathelement location="../core/release/lib/ext/parser.jar"/>
+	<pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
       </classpath>
     </javac>
   </target>
@@ -84,8 +81,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
         <file location="../nbbuild/standard-nbm-license.txt"/>
 	For the Ant runtime:
 	<file location="Ant_License"/>
-	For the Xerces library:
-	<file location="Xerces_License"/>
       </license>
       <description>
         Support for Ant build scripts.
