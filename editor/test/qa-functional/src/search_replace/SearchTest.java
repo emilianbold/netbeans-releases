@@ -94,7 +94,7 @@ public class SearchTest extends EditorTestCase {
             editor.select(13, 14, 38);
             new FindAction().perform();
             Find find2 = new Find();
-            text = find.cboFindWhat().getTextField().getText();
+            text = find2.cboFindWhat().getTextField().getText();
             // compare
             assertEquals(text, "testFindSelectionRepeated");
             find2.find();
@@ -118,21 +118,21 @@ public class SearchTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             // first search
-            editor.setCaretPosition(0);
+            editor.setCaretPosition(1, 1);
             new EventTool().waitNoEvent(FIND_TIMEOUT);            
             new FindAction().perform();
             Find find = new Find();
-            find.cboFindWhat().getTextField().setText("package");
+            find.cboFindWhat().typeText("package");
             find.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
             
             // second search
-            editor.setCaretPosition(0);
+            editor.setCaretPosition(1, 1);
             new EventTool().waitNoEvent(FIND_TIMEOUT);            
             new FindAction().perform();
             Find find2 = new Find();
-            find2.cboFindWhat().getTextField().setText("class");
+            find.cboFindWhat().typeText("class");
             find2.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find2.close();
@@ -164,12 +164,11 @@ public class SearchTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
             
             // perform search with all options unselected
-            editor.setCaretPosition(0);
+            editor.setCaretPosition(1, 1);
             new EventTool().waitNoEvent(FIND_TIMEOUT);            
             new FindAction().perform();
             Find find = new Find();
-            JComboBoxOperator cbo = find.cboFindWhat();
-            cbo.getTextField().setText("cLaSs");
+            find.cboFindWhat().typeText("cLaSs");
             find.cbHighlightSearch().setSelected(false);
             find.cbIncrementalSearch().setSelected(false);
             find.cbWrapSearch().setSelected(false);
@@ -196,13 +195,12 @@ public class SearchTest extends EditorTestCase {
             // perform search for nonexistent word
             new FindAction().perform();
             Find find = new Find();
-            JComboBoxOperator cbo = find.cboFindWhat();
-            cbo.getTextField().setText("foo");
+            find.cboFindWhat().typeText("foo");
             find.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
             // check status bar
-            waitForLabel("'foo' not found");
+            waitForLabel("'foo' not found");            
             
         } finally {
             closeFileWithDiscard();
@@ -221,8 +219,7 @@ public class SearchTest extends EditorTestCase {
             // perform case sensitive search - nothing found 
             new FindAction().perform();
             Find find = new Find();
-            JComboBoxOperator cbo = find.cboFindWhat();
-            cbo.getTextField().setText("Package");
+            find.cboFindWhat().typeText("Package");
             find.cbMatchCase().setSelected(true);
             find.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
@@ -231,12 +228,11 @@ public class SearchTest extends EditorTestCase {
             waitForLabel("'Package' not found");
 
             // perform case sensitive search - package found
-            editor.setCaretPosition(0);            
+            editor.setCaretPosition(1, 1);
             new EventTool().waitNoEvent(FIND_TIMEOUT);            
             new FindAction().perform();
             Find find2 = new Find();
-            JComboBoxOperator cbo2 = find2.cboFindWhat();
-            cbo2.getTextField().setText("package");
+            find.cboFindWhat().typeText("package");
             find2.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find2.close();
@@ -260,8 +256,7 @@ public class SearchTest extends EditorTestCase {
             // perform smart case search 
             new FindAction().perform();
             Find find = new Find();
-            JComboBoxOperator cbo = find.cboFindWhat();
-            cbo.getTextField().setText("smarttest");
+            find.cboFindWhat().typeText("smarttest");
             // uncheck match case
             find.cbMatchCase().setSelected(false);
             // check smart case
@@ -275,8 +270,7 @@ public class SearchTest extends EditorTestCase {
             // perform smart case search 
             new FindAction().perform();
             Find find2 = new Find();
-            JComboBoxOperator cbo2 = find.cboFindWhat();
-            cbo2.getTextField().setText("smarttest");
+            find.cboFindWhat().typeText("smarttest");
             find2.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
@@ -286,8 +280,7 @@ public class SearchTest extends EditorTestCase {
             // perform smart case search 
             new FindAction().perform();
             Find find3 = new Find();
-            JComboBoxOperator cbo3 = find.cboFindWhat();
-            cbo3.getTextField().setText("smarttest");
+            find.cboFindWhat().typeText("smarttest");
             find3.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find3.close();
@@ -297,8 +290,7 @@ public class SearchTest extends EditorTestCase {
             // perform smart case search - negative
             new FindAction().perform();
             Find find4 = new Find();
-            JComboBoxOperator cbo4 = find.cboFindWhat();
-            cbo4.getTextField().setText("smarttest");
+            find.cboFindWhat().typeText("smarttest");
             find4.find(); 
             new EventTool().waitNoEvent(FIND_TIMEOUT); 
             find4.close(); 
@@ -324,8 +316,7 @@ public class SearchTest extends EditorTestCase {
             Find find = new Find();
             // check smart case
             find.cbSmartCase().setSelected(true);            
-            JComboBoxOperator cbo = find.cboFindWhat();
-            cbo.getTextField().setText("Smarttest");
+            find.cboFindWhat().typeText("Smarttest");
             find.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
@@ -335,8 +326,7 @@ public class SearchTest extends EditorTestCase {
             // perform smart case search - negative
             new FindAction().perform();
             Find find2 = new Find();
-            JComboBoxOperator cbo2 = find2.cboFindWhat();
-            cbo2.getTextField().setText("Smarttest");
+            find.cboFindWhat().typeText("Smarttest");
             find2.find(); 
             new EventTool().waitNoEvent(FIND_TIMEOUT); 
             find2.close(); 
@@ -362,8 +352,7 @@ public class SearchTest extends EditorTestCase {
             Find find = new Find();
             find.cbSmartCase().setSelected(false);
             find.cbMatchWholeWordsOnly().setSelected(true);
-            JComboBoxOperator cbo = find.cboFindWhat();
-            cbo.getTextField().setText("word");
+            find.cboFindWhat().typeText("word");
             find.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find.close();
@@ -373,8 +362,7 @@ public class SearchTest extends EditorTestCase {
             // perform search for "word"
             new FindAction().perform();
             Find find2 = new Find();
-            JComboBoxOperator cbo2 = find2.cboFindWhat();
-            cbo2.getTextField().setText("word");
+            find.cboFindWhat().typeText("word");
             find2.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find2.close();
@@ -384,8 +372,7 @@ public class SearchTest extends EditorTestCase {
             // perform search for "word"
             new FindAction().perform();
             Find find3 = new Find();
-            JComboBoxOperator cbo3 = find3.cboFindWhat();
-            cbo3.getTextField().setText("word");
+            find.cboFindWhat().typeText("word");
             find3.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find3.close();
@@ -395,8 +382,7 @@ public class SearchTest extends EditorTestCase {
             // perform search for "word" - negative
             new FindAction().perform();
             Find find4 = new Find();
-            JComboBoxOperator cbo4 = find4.cboFindWhat();
-            cbo4.getTextField().setText("word");
+            find.cboFindWhat().typeText("word");
             find4.find();
             new EventTool().waitNoEvent(FIND_TIMEOUT);
             find4.close();
@@ -422,8 +408,7 @@ public class SearchTest extends EditorTestCase {
             Find find = new Find();
             find.cbMatchWholeWordsOnly().setSelected(false);
             find.cbHighlightSearch().setSelected(true);
-            JComboBoxOperator cbo = find.cboFindWhat();
-            cbo.getTextField().setText("testHighlightSearch");
+            find.cboFindWhat().typeText("testHighlightSearch");
             find.find();
             waitForLabel("'testHighlightSearch' found at 2:4");
             find.find();
@@ -454,8 +439,7 @@ public class SearchTest extends EditorTestCase {
             new FindAction().perform();
             Find find = new Find();
             find.cbHighlightSearch().setSelected(true);
-            JComboBoxOperator cbo = find.cboFindWhat();
-            cbo.getTextField().setText("searchedWord");
+            find.cboFindWhat().typeText("searchedWord");
             for (int i = 0; i<10; i++) {
                 find.find();
                 waitForLabel("'searchedWord' found at "+String.valueOf(i+17)
@@ -481,20 +465,57 @@ public class SearchTest extends EditorTestCase {
             new FindAction().perform();
             Find find = new Find();
             find.cbHighlightSearch().setSelected(false);
-            find.cbBackwardSearch().setSelected(true);
-            JComboBoxOperator cbo = find.cboFindWhat();
-            cbo.getTextField().setText("first");
+            find.cboFindWhat().typeText("first");
             find.find();
             waitForLabel("'first' found at 21:12");
-            cbo.getTextField().setText("second");
+            find.cboFindWhat().clearText();
+            find.cboFindWhat().typeText("second");            
+            find.cbBackwardSearch().setSelected(true);
             find.find();
             waitForLabel("'second' found at 20:12");
-            cbo.getTextField().setText("third");
+            find.cboFindWhat().clearText();
+            find.cboFindWhat().typeText("third");
             find.find();
             waitForLabel("'third' found at 19:12");
-            cbo.getTextField().setText("fourth");
+            find.cboFindWhat().clearText();
+            find.cboFindWhat().typeText("fourth");
             find.find();
             waitForLabel("'fourth' found at 18:12");            
+            find.close();
+            
+        } finally {
+            closeFileWithDiscard();
+        }                
+    }    
+
+    /**
+     * TC13 - Wrap Search
+     */
+    public void testWrapSearch() {
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+            EditorOperator editor = getDefaultSampleEditorOperator();
+            
+            // perform backward search
+            new FindAction().perform();
+            Find find = new Find();
+            find.cbBackwardSearch().setSelected(false);
+            find.cbWrapSearch().setSelected(true);
+            find.cboFindWhat().typeText("wrapWord");
+            for (int i = 0; i<4; i++) {
+                find.find();
+                waitForLabel("'wrapWord' found at "+String.valueOf(i+18)
+                        +":12");
+            }
+            find.find();
+            waitForLabel("'wrapWord' found at 18:12; End of document reached. "
+                        +"Continuing search from beginning.");
+            for (int i = 0; i<3; i++) {
+                find.find();
+                waitForLabel("'wrapWord' found at "+String.valueOf(i+19)
+                        +":12");
+            }
             find.close();
             
         } finally {
