@@ -16,8 +16,7 @@ package com.netbeans.developer.modules.loaders.form;
 import java.awt.*;
 import java.beans.*;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.text.MessageFormat;
 import javax.swing.*;
 
@@ -391,6 +390,10 @@ final public class FormEditor extends Object {
     return newDesignLayout;
   }
 
+  static RADComponent.RADProperty[] sortProperties (java.util.List properties, Class beanClass) {
+    return (RADComponent.RADProperty[])properties.toArray (new RADComponent.RADProperty[properties.size ()]); // noop so far [PENDING]
+  }
+
 // ---------------------------------------------------
 // inner classes
 
@@ -610,6 +613,7 @@ static final long serialVersionUID =7424646018839457544L;
 
 /*
  * Log
+ *  37   Gandalf   1.36        9/24/99  Ian Formanek    sortProperties is back
  *  36   Gandalf   1.35        9/24/99  Ian Formanek    Rollback of last 
  *       erroneous checkin
  *  35   Gandalf   1.34        9/23/99  Ian Formanek    Better notification in 
