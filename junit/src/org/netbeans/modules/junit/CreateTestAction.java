@@ -108,17 +108,25 @@ public class CreateTestAction extends TestAction {
             try {
                 // get the Suite class template
                 temp = NbBundle.getMessage(CreateTestAction.class,
-                "PROP_testSuiteTemplate");       //NOI18N
-                FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(temp);
-                if (fo == null) { noTemplateMessage(temp); return;}
+                                           "PROP_testSuiteTemplate");   //NOI18N
+                FileObject fo = Repository.getDefault().getDefaultFileSystem()
+                                .findResource(temp);
+                if (fo == null) {
+                    noTemplateMessage(temp);
+                    return;
+                }
                 doSuiteTempl = DataObject.find(fo);
                 
                 // get the Test class template
                 temp = NbBundle.getMessage(CreateTestAction.class,
-                "PROP_testClassTemplate");       //NOI18N
-                fo = Repository.getDefault().getDefaultFileSystem().findResource(temp);
+                                           "PROP_testClassTemplate");   //NOI18N
+                fo = Repository.getDefault().getDefaultFileSystem()
+                     .findResource(temp);
                 
-                if (fo == null) { noTemplateMessage(temp); return;}
+                if (fo == null) {
+                    noTemplateMessage(temp);
+                    return;
+                }
                 doTestTempl = DataObject.find(fo);
             }
             catch (DataObjectNotFoundException e) {
@@ -131,8 +139,9 @@ public class CreateTestAction extends TestAction {
             ProgressIndicator progress = new ProgressIndicator();
             progress.show();
             
-            String msg = NbBundle.getMessage(CreateTestAction.class,
-            "MSG_StatusBar_CreateTest_Begin"); //NOI18N
+            String msg = NbBundle.getMessage(
+                    CreateTestAction.class,
+                    "MSG_StatusBar_CreateTest_Begin");                  //NOI18N
             progress.displayStatusText(msg);
             
             // results will be accumulated here
@@ -145,20 +154,30 @@ public class CreateTestAction extends TestAction {
                     if (hasParentAmongNodes(nodes, nodeIdx)) {
                         continue;
                     }
-                    FileObject fo = TestUtil.getFileObjectFromNode(nodes[nodeIdx]);
+                    FileObject fo = TestUtil
+                                    .getFileObjectFromNode(nodes[nodeIdx]);
                     if (fo == null) {
-                        TestUtil.notifyUser(NbBundle.getMessage(CreateTestAction.class, "MSG_file_from_node_failed"));
+                        TestUtil.notifyUser(NbBundle.getMessage(
+                                CreateTestAction.class,
+                                "MSG_file_from_node_failed"));          //NOI18N
                         continue;
                     }
                     ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
                     if (cp == null) {
-                        TestUtil.notifyUser(NbBundle.getMessage(CreateTestAction.class,
-                        "MSG_no_project", fo));
+                        TestUtil.notifyUser(NbBundle.getMessage(
+                                CreateTestAction.class,
+                                "MSG_no_project",                       //NOI18N
+                                fo));
                         continue;
                     }
                     
                     try {
-                        results.combine(createTests(nodes[nodeIdx], testClassPath, doTestTempl, doSuiteTempl, null, progress));
+                        results.combine(createTests(nodes[nodeIdx],
+                                                    testClassPath,
+                                                    doTestTempl,
+                                                    doSuiteTempl,
+                                                    null,
+                                                    progress));
                     } catch (CreationError e) {
                         ErrorManager.getDefault().notify(e);
                     }
@@ -172,27 +191,30 @@ public class CreateTestAction extends TestAction {
             
             if (!results.getSkipped().isEmpty()) {
                 // something was skipped
-                if (results.getSkipped().size()==1) {
+                String message;
+                if (results.getSkipped().size() == 1) {
                     // one class? report it
-                    TestUtil.notifyUser
-                    (NbBundle.getMessage(CreateTestAction.class,
-                    "MSG_skipped_class",   // NOI18N
-                    ((JavaClass)results.getSkipped().iterator().next()).getName()),
-                    NotifyDescriptor.INFORMATION_MESSAGE );
-                    
+                    String className =
+                            ((JavaClass) results.getSkipped().iterator().next())
+                            .getName();
+                    message = NbBundle.getMessage(CreateTestAction.class,
+                                                  "MSG_skipped_class",  //NOI18N
+                                                  className);
                 } else {
                     // more classes, report a general error
-                    TestUtil.notifyUser
-                    (NbBundle.getMessage(CreateTestAction.class,
-                    "MSG_skipped_classes"), // NOI18N
-                    NotifyDescriptor.INFORMATION_MESSAGE);
+                    message = NbBundle.getMessage(CreateTestAction.class,
+                                                  "MSG_skipped_classes");
                 }
+                TestUtil.notifyUser(message,
+                                    NotifyDescriptor.INFORMATION_MESSAGE);
                 
-            } else if (results.getCreated().size()==1) {
+            } else if (results.getCreated().size() == 1) {
                 // created exactly one class, highlight it in the explorer
                 // and open it in the editor
-                DataObject dobj = (DataObject)results.getCreated().iterator().next();
-                EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+                DataObject dobj = (DataObject)
+                                  results.getCreated().iterator().next();
+                EditorCookie ec = (EditorCookie)
+                                  dobj.getCookie(EditorCookie.class);
                 if (ec != null) {
                     ec.open();
                 }
@@ -206,7 +228,8 @@ public class CreateTestAction extends TestAction {
             }
         }
         
-        private static FileObject ensureFolder(File file) throws java.io.IOException {
+        private static FileObject ensureFolder(File file)
+                throws java.io.IOException {
             File parent = file.getParentFile();
             String name = file.getName();
             FileObject pfo = FileUtil.toFileObject(parent);
@@ -214,48 +237,54 @@ public class CreateTestAction extends TestAction {
             return pfo.createFolder(name);
         }
         
-        public static DataObject createSuiteTest(ClassPath testClassPath,
-        DataFolder folder,
-        String suiteName,
-        LinkedList suite,
-        DataObject doSuiteT,
-        LinkedList parentSuite,
-        ProgressIndicator progress)
-        throws CreationError {
+        public static DataObject createSuiteTest(
+                ClassPath testClassPath,
+                DataFolder folder,
+                String suiteName,
+                LinkedList suite,
+                DataObject doSuiteT,
+                LinkedList parentSuite,
+                ProgressIndicator progress) throws CreationError {
             
             // find correct package name
             FileObject fo = folder.getPrimaryFile();
             ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-            assert cp != null : "SOURCE classpath was not found for "+fo;
+            assert cp != null : "SOURCE classpath was not found for " + fo;
             if (cp == null) {
                 return null;
             }
             String pkg = cp.getResourceName(fo, '/', false);
             String dotPkg = pkg.replace('/', '.');
             String fullSuiteName = (suiteName != null)
-            ? pkg + '/' + suiteName
-            : TestUtil.convertPackage2SuiteName(pkg);
+                                   ? pkg + '/' + suiteName
+                                   : TestUtil.convertPackage2SuiteName(pkg);
             
             try {
-                // find the suite class, if it exists or create one from active template
-                DataObject doTarget = getTestClass(testClassPath, fullSuiteName, doSuiteT);
+                // find the suite class,
+                // if it exists or create one from active template
+                DataObject doTarget = getTestClass(testClassPath,
+                                                   fullSuiteName,
+                                                   doSuiteT);
                 
                 // generate the test suite for all listed test classes
-                Collection targetClasses = TestUtil.getAllClassesFromFile(doTarget.getPrimaryFile());
+                Collection targetClasses = TestUtil.getAllClassesFromFile(
+                                                   doTarget.getPrimaryFile());
                 
                 Iterator tcit = targetClasses.iterator();
                 while (tcit.hasNext()) {
                     JavaClass targetClass = (JavaClass)tcit.next();
                     
                     if (progress != null) {
-                        progress.setMessage(getCreatingMsg(targetClass.getName()), false);
+                        progress.setMessage(
+                                getCreatingMsg(targetClass.getName()), false);
                     }
                     
                     try {
                         TestCreator.createTestSuite(suite, dotPkg, targetClass);
                         save(doTarget);
                     } catch (Exception e) {
-                        ErrorManager.getDefault().log(ErrorManager.ERROR, e.toString());
+                        ErrorManager.getDefault().log(ErrorManager.ERROR,
+                                                      e.toString());
                         return null;
                     }
                     
@@ -270,9 +299,13 @@ public class CreateTestAction extends TestAction {
             }
         }
         
-        private CreationResults createTests(Node node, ClassPath testClassPath,
-        DataObject doTestT, DataObject doSuiteT, LinkedList parentSuite,
-        ProgressIndicator progress) throws CreationError {
+        private CreationResults createTests(
+                    Node node,
+                    ClassPath testClassPath,
+                    DataObject doTestT,
+                    DataObject doSuiteT,
+                    LinkedList parentSuite,
+                    ProgressIndicator progress) throws CreationError {
             
             FileObject foSource = TestUtil.getFileObjectFromNode(node);
             if (foSource.isFolder()) {
@@ -290,65 +323,98 @@ public class CreateTestAction extends TestAction {
                         break;
                     }
                     
-                    results.combine(createTests(childs[ch], testClassPath, doTestT, doSuiteT, mySuite, progress));
-                    if (results.isAbborted())  break;
+                    results.combine(createTests(childs[ch],
+                                                testClassPath,
+                                                doTestT,
+                                                doSuiteT,
+                                                mySuite,
+                                                progress));
+                    if (results.isAbborted()) {
+                        break;
+                    }
                 }
                 
                 // if everything went ok, and the option is enabled,
                 // create a suite for the folder .
-                if (!results.isAbborted() && ((0 < mySuite.size())&(JUnitSettings.getDefault().isGenerateSuiteClasses()))) {
-                    createSuiteTest(testClassPath, DataFolder.findFolder(foSource), (String) null, mySuite, doSuiteT, parentSuite, progress);
+                if (!results.isAbborted()
+                        && ((0 < mySuite.size())
+                            & (JUnitSettings.getDefault()
+                               .isGenerateSuiteClasses()))) {
+                    createSuiteTest(testClassPath,
+                                    DataFolder.findFolder(foSource),
+                                    (String) null,
+                                    mySuite,
+                                    doSuiteT,
+                                    parentSuite,
+                                    progress);
                 }
                 
                 return results;
             } else {
                 // is not folder, create test for the fileObject of the node
-                if (foSource.isData() && !("java".equals(foSource.getExt())))
+                if (foSource.isData()
+                        && !("java".equals(foSource.getExt()))) {       //NOI18N
                     return CreationResults.EMPTY;
-                else
-                    return createSingleTest(testClassPath, foSource, doTestT, doSuiteT, parentSuite, progress, true);
-                
+                } else {
+                    return createSingleTest(testClassPath,
+                                            foSource,
+                                            doTestT,
+                                            doSuiteT,
+                                            parentSuite,
+                                            progress,
+                                            true);
+                }
             }
         }
         
-        public static CreationResults createSingleTest(ClassPath testClassPath,
-        FileObject foSource,
-        DataObject doTestT,
-        DataObject doSuiteT,
-        LinkedList parentSuite,
-        ProgressIndicator progress,
-        boolean skipNonTestable)
-        throws CreationError {
+        public static CreationResults createSingleTest(
+                ClassPath testClassPath,
+                FileObject foSource,
+                DataObject doTestT,
+                DataObject doSuiteT,
+                LinkedList parentSuite,
+                ProgressIndicator progress,
+                boolean skipNonTestable) throws CreationError {
+            
             // create tests for all classes in the source
             Resource srcRc = JavaModel.getResource(foSource);
-            CreationResults result = new CreationResults(srcRc.getChildren().size());
-            
+            CreationResults result = new CreationResults(srcRc.getChildren()
+                                                         .size());
             List srcChildren = srcRc.getChildren();
             Iterator scit = srcChildren.iterator();
             while (scit.hasNext()) {
                 Element el = (Element)scit.next();
                 if (el instanceof JavaClass) {
                     JavaClass theClass = (JavaClass)el;
-                    if (!skipNonTestable || TestCreator.isClassTestable(theClass)) {
+                    if (!skipNonTestable
+                            || TestCreator.isClassTestable(theClass)) {
                         // find the test class, if it exists or create one
                         // from active template
                         try {
                             //PENDING - test class name:
                             DataObject doTarget = getTestClass(testClassPath,
-                            TestUtil.getTestClassFullName(theClass.getSimpleName(),
-                            packageName(theClass.getName())),
-                            doTestT);
+                            TestUtil.getTestClassFullName(
+                                    theClass.getSimpleName(),
+                                    packageName(theClass.getName())),
+                                    doTestT);
                             
                             // generate the test of current node
-                            Resource tgtRc = JavaModel.getResource(doTarget.getPrimaryFile());
-                            JavaClass targetClass = TestUtil.getMainJavaClass(tgtRc);
+                            Resource tgtRc = JavaModel.getResource(
+                                    doTarget.getPrimaryFile());
+                            JavaClass targetClass = TestUtil
+                                                    .getMainJavaClass(tgtRc);
                             
                             if (targetClass != null) {
                                 if (progress != null) {
-                                    progress.setMessage(getCreatingMsg(targetClass.getName()), false);
+                                    progress.setMessage(
+                                        getCreatingMsg(targetClass.getName()),
+                                                       false);
                                 }
                                 
-                                TestCreator.createTestClass(srcRc, theClass, tgtRc, targetClass);
+                                TestCreator.createTestClass(srcRc,
+                                                            theClass,
+                                                            tgtRc,
+                                                            targetClass);
                                 save(doTarget);
                                 result.addCreated(doTarget);
                                 // add the test class to the parent's suite
@@ -362,7 +428,8 @@ public class CreateTestAction extends TestAction {
                     } else {
                         if (progress != null) {
                             // ignoring because untestable
-                            progress.setMessage(getIgnoringMsg(theClass.getName()), false);
+                            progress.setMessage(
+                                    getIgnoringMsg(theClass.getName()), false);
                             result.addSkipped(theClass);
                         }
                     }
@@ -378,9 +445,12 @@ public class CreateTestAction extends TestAction {
             return fullName.substring(0, i > 0 ? i : 0);
         }
         
-        private static DataObject getTestClass(ClassPath cp, String testClassName, DataObject doTemplate)
-        throws DataObjectNotFoundException, IOException {
-            FileObject fo = cp.findResource(testClassName+".java");
+        private static DataObject getTestClass(
+                ClassPath cp,
+                String testClassName,
+                DataObject doTemplate) throws DataObjectNotFoundException,
+                                              IOException {
+            FileObject fo = cp.findResource(testClassName + ".java");   //NOI18N
             if (fo != null) {
                 return DataObject.find(fo);
             } else {
@@ -388,15 +458,19 @@ public class CreateTestAction extends TestAction {
                 assert cp.getRoots().length == 1;
                 FileObject root = cp.getRoots()[0];
                 int index = testClassName.lastIndexOf('/');
-                String pkg = index > -1 ? testClassName.substring(0, index) : "";
-                String clazz = index > -1 ? testClassName.substring(index+1) : testClassName;
+                String pkg = index > -1 ? testClassName.substring(0, index)
+                                        : "";                           //NOI18N
+                String clazz = index > -1 ? testClassName.substring(index+1)
+                                          : testClassName;
                 
                 // create package if it does not exist
                 if (pkg.length() > 0) {
                     root = FileUtil.createFolder(root, pkg);
                 }
                 // instantiate template into the package
-                return doTemplate.createFromTemplate(DataFolder.findFolder(root), clazz);
+                return doTemplate.createFromTemplate(
+                        DataFolder.findFolder(root),
+                        clazz);
             }
         }
         
@@ -405,11 +479,13 @@ public class CreateTestAction extends TestAction {
             
             node = nodes[idx].getParentNode();
             while (null != node) {
-                for(int i = 0; i < nodes.length; i++) {
-                    if (i == idx)
+                for (int i = 0; i < nodes.length; i++) {
+                    if (i == idx) {
                         continue;
-                    if (node == nodes[i])
+                    }
+                    if (node == nodes[i]) {
                         return true;
+                    }
                 }
                 node = node.getParentNode();
             }
@@ -423,20 +499,23 @@ public class CreateTestAction extends TestAction {
         }
         
         private static String getCreatingMsg(String className) {
-            String fmt = NbBundle.getMessage(CreateTestAction.class,
-            "FMT_generator_status_creating"); // NOI18N
+            String fmt = NbBundle.getMessage(
+                    CreateTestAction.class,
+                    "FMT_generator_status_creating");                   //NOI18N
             return MessageFormat.format(fmt, new Object[] { className });
         }
         
         private static String getScanningMsg(String sourceName) {
-            String fmt = NbBundle.getMessage(CreateTestAction.class,
-            "FMT_generator_status_scanning"); // NOI18N
+            String fmt = NbBundle.getMessage(
+                    CreateTestAction.class,
+                    "FMT_generator_status_scanning");                   //NOI18N
             return MessageFormat.format(fmt, new Object[] { sourceName });
         }
         
         private static String getIgnoringMsg(String sourceName) {
-            String fmt = NbBundle.getMessage(CreateTestAction.class,
-            "FMT_generator_status_ignoring"); // NOI18N
+            String fmt = NbBundle.getMessage(
+                    CreateTestAction.class,
+                    "FMT_generator_status_ignoring");                   //NOI18N
             return MessageFormat.format(fmt, new Object[] { sourceName });
         }
         
