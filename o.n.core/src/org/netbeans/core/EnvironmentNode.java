@@ -39,7 +39,7 @@ final class EnvironmentNode extends AbstractNode {
     /** name of section to filter */
     private String filter;
     /** icon base for icons of this node */
-    private static final String EN_ICON_BASE = "/org/netbeans/core/resources/"; // NOI18N
+    private static final String EN_ICON_BASE = "org/netbeans/core/resources/"; // NOI18N
     /** map between type of node and the parent node for this type (String, Node) */
     private static java.util.HashMap types = new java.util.HashMap (11);
     /** A lock for the find method. */

@@ -594,7 +594,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                 AbstractNode an = new AbstractNode( Children.LEAF );
                 an.setName( NbBundle.getBundle(ExitDialog.class).getString("CTL_PendingExternalProcess") + 
                             ExecutionEngine.getExecutionEngine().getRunningTaskName( (ExecutorTask) key ) );
-                an.setIconBase( "/org/netbeans/core/resources/execution" ); //NOI18N
+                an.setIconBase( "org/netbeans/core/resources/execution" ); //NOI18N
                 n = an;
             }
             return n == null ? null : new Node[] { n };

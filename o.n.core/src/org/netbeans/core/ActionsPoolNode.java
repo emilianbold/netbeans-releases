@@ -53,7 +53,7 @@ public final class ActionsPoolNode extends DataFolder.FolderNode {
         //JST: it displays only Menu as name!    super.setDisplayName(NbBundle.getBundle (ActionsPoolNode.class).getString("CTL_Actions_name"));
         super.setShortDescription(NbBundle.getBundle (ActionsPoolNode.class).getString("CTL_Actions_hint"));
 
-        super.setIconBase ("/org/netbeans/core/resources/actions"); // NOI18N
+        super.setIconBase ("org/netbeans/core/resources/actions"); // NOI18N
     }
 
     public HelpCtx getHelpCtx () {

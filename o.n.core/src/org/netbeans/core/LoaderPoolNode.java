@@ -52,7 +52,7 @@ import org.netbeans.core.modules.ManifestSection;
 public final class LoaderPoolNode extends AbstractNode {
     /** Default icon base for loader pool node.*/
     private static final String LOADER_POOL_ICON_BASE =
-        "/org/netbeans/core/resources/loaderPool"; // NOI18N
+        "org/netbeans/core/resources/loaderPool"; // NOI18N
     /** The only instance of the LoaderPoolNode class in the system.
     * This value is returned from the getLoaderPoolNode() static method */
     private static LoaderPoolNode loaderPoolNode;

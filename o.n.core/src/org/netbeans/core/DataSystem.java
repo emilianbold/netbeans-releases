@@ -57,7 +57,7 @@ implements RepositoryListener, NewTemplateAction.Cookie {
         fileSystemPool = fsp;
         this.filter = filter;
         initialize();
-        setIconBase ("/org/netbeans/core/resources/repository"); // NOI18N
+        setIconBase ("org/netbeans/core/resources/repository"); // NOI18N
         setName (NbBundle.getBundle (DataSystem.class).getString ("dataSystemName"));
         setShortDescription (NbBundle.getBundle (DataSystem.class).getString ("CTL_Repository_Hint"));
         getCookieSet ().add (new InstanceSupport.Instance (fsp));
