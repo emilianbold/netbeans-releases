@@ -25,6 +25,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.ant.freeform.spi.ProjectNature;
 import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
 import org.netbeans.modules.ant.freeform.spi.TargetDescriptor;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.freeform.ui.WebLocationsPanel;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -103,7 +104,7 @@ public class WebProjectNature implements ProjectNature {
     }
     
     public static TargetDescriptor getExtraTarget() {
-        return new TargetDescriptor("deploy", Arrays.asList(new String[]{"deploy", ".*deploy.*"}),  // NOI18N
+        return new TargetDescriptor(WebProjectConstants.COMMAND_REDEPLOY, Arrays.asList(new String[]{"deploy", ".*deploy.*"}),  // NOI18N
             NbBundle.getMessage(WebProjectNature.class, "LBL_TargetMappingPanel_Deploy"), // NOI18N
             NbBundle.getMessage(WebProjectNature.class, "ACSD_TargetMappingPanel_Deploy")); // NOI18N
     }
