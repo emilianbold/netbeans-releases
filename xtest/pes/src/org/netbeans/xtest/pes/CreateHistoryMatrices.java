@@ -181,7 +181,7 @@ public class CreateHistoryMatrices {
                         if (bag != null) {
                             for (int k = 0; k < bag.xmlel_UnitTestSuite.length; k++) {
                                 UnitTestSuite suite = bag.xmlel_UnitTestSuite[k];
-                                if (suite != null) {
+                                if ((suite != null) && (suite.xmlel_UnitTestCase != null)) {                                    
                                     for (int l = 0 ; l < suite.xmlel_UnitTestCase.length; l++) {
                                         UnitTestCase testCase = suite.xmlel_UnitTestCase[l];
                                         //System.out.println("TestCase:"+testCase.xmlat_class+"."+testCase.xmlat_name+":"+testCase.xmlat_result);
