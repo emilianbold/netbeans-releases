@@ -70,7 +70,7 @@ public abstract class ActionUtils {
         
         List actions = new ArrayList();
         if(kind == Constants.MODE_KIND_EDITOR) {
-            actions.add(new CloseAllDocumentsAction());
+            actions.add(new CloseAllDocumentsAction(false));
             CloseAllButThisAction allBut = new CloseAllButThisAction(tc);
             if (mode != null && mode.getOpenedTopComponents().size() == 1) {
                 allBut.setEnabled(false);
@@ -100,118 +100,6 @@ public abstract class ActionUtils {
     }
     /******** end of PENDING **********/
     
-    
-    /** */
-    private static class CloseAllDocumentsAction extends AbstractAction {
-        public CloseAllDocumentsAction() {
-            putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, "LBL_CloseAllDocumentsAction"));
-        }
-        
-        public void actionPerformed(ActionEvent evt) {
-            closeAllDocuments();
-        }
-        
-        /** Overriden to share accelerator with 
-         * org.netbeans.core.windows.actions.CloseAllDocumentsAction
-         */ 
-        public void putValue(String key, Object newValue) {
-            if (Action.ACCELERATOR_KEY.equals(key)) {
-                putSharedAccelerator("CloseAllDocuments", newValue);
-            } else {
-                super.putValue(key, newValue);
-            }
-        }
-
-        /** Overriden to share accelerator with 
-         * org.netbeans.core.windows.actions.CloseAllDocumentsAction
-         */ 
-        public Object getValue(String key) {
-            if (Action.ACCELERATOR_KEY.equals(key)) {
-                return getSharedAccelerator("CloseAllDocuments");
-            } else {
-                return super.getValue(key);
-            }
-        }
-       
-    } // End of class CloseAllDocumentsAction.
-    
-    private static class CloseWindowAction extends AbstractAction {
-        private final TopComponent tc;
-        public CloseWindowAction(TopComponent tc) {
-            this.tc = tc;
-            //Include the name in the label for the popup menu - it may be clicked over
-            //a component that is not selected
-            putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, 
-                "LBL_CloseWindowAction")); //NOI18N
-        }
-        
-        public void actionPerformed(ActionEvent evt) {
-            closeWindow(tc);
-        }
-
-        /** Overriden to share accelerator with 
-         * org.netbeans.core.windows.actions.CloseWindowAction
-         */ 
-        public void putValue(String key, Object newValue) {
-            if (Action.ACCELERATOR_KEY.equals(key)) {
-                putSharedAccelerator("CloseWindow", newValue);
-            } else {
-                super.putValue(key, newValue);
-            }
-        }
-
-        /** Overriden to share accelerator with 
-         * org.netbeans.core.windows.actions.CloseWindowAction
-         */ 
-        public Object getValue(String key) {
-            if (Action.ACCELERATOR_KEY.equals(key)) {
-                return getSharedAccelerator("CloseWindow");
-            } else {
-                return super.getValue(key);
-            }
-        }
-        
-    } // End of class CloseWindowAction.
-
-    private static class CloseAllButThisAction extends AbstractAction {
-        private final TopComponent tc;
-        public CloseAllButThisAction(TopComponent tc) {
-            this.tc = tc;
-            //Include the name in the label for the popup menu - it may be clicked over
-            //a component that is not selected
-            putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, 
-                "LBL_CloseAllButThisAction")); //NOI18N
-
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            closeAllExcept(tc);
-        }
-
-        /** Overriden to share accelerator with
-         * org.netbeans.core.windows.actions.CloseWindowAction
-         */
-        public void putValue(String key, Object newValue) {
-            if (Action.ACCELERATOR_KEY.equals(key)) {
-                putSharedAccelerator("CloseAllButThis", newValue);
-            } else {
-                super.putValue(key, newValue);
-            }
-        }
-
-        /** Overriden to share accelerator with
-         * org.netbeans.core.windows.actions.CloseWindowAction
-         */
-        public Object getValue(String key) {
-            if (Action.ACCELERATOR_KEY.equals(key)) {
-                return getSharedAccelerator("CloseAllButThis");
-            } else {
-                return super.getValue(key);
-            }
-        }
-
-    } // End of class CloseAllButThisAction
-
     /** Auto-hide toggle action */
     public static final class AutoHideWindowAction extends AbstractAction implements Presenter.Popup {
         

@@ -25,8 +25,24 @@ import javax.swing.*;
  */
 public class CloseAllDocumentsAction extends AbstractAction {
 
+    /**
+     * default constructor with label containing mnemonics.
+     */
     public CloseAllDocumentsAction() {
-        putValue(NAME, NbBundle.getMessage(CloseAllDocumentsAction.class, "CTL_CloseAllDocumentsAction"));
+        this(true);
+    }
+
+    /**
+     * can decide whether to have label with mnemonics or without it.
+     */ 
+    public CloseAllDocumentsAction(boolean withMnemonic) {
+        String key; 
+        if (withMnemonic) {
+            key = "CTL_CloseAllDocumentsAction"; //NOI18N
+        } else {
+            key = "LBL_CloseAllDocumentsAction"; //NOI18N
+        }
+        putValue(NAME, NbBundle.getMessage(CloseAllDocumentsAction.class, key));
     }
     
     /** Perform the action. Sets/unsets maximzed mode. */

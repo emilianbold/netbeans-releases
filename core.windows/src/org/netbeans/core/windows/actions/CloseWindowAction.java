@@ -37,11 +37,27 @@ implements PropertyChangeListener {
         updateEnabled();
     }
     
+    private TopComponent tc;
+    // dno't update enable state, is tied to one component only
+    public CloseWindowAction(TopComponent topcomp) {
+        tc = topcomp;
+        //Include the name in the label for the popup menu - it may be clicked over
+        //a component that is not selected
+        putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class,
+        "LBL_CloseWindowAction")); //NOI18N
+        setEnabled(true);
+    }
+    
+    
     /** Perform the action. Sets/unsets maximzed mode. */
     public void actionPerformed(java.awt.event.ActionEvent ev) {
-        TopComponent tc = TopComponent.getRegistry().getActivated();
-        if(tc != null) {
-            ActionUtils.closeWindow(tc);
+        TopComponent topC = tc;
+        if (topC == null) {
+            // the updating instance will get the TC to close from winsys
+            topC = TopComponent.getRegistry().getActivated();
+        }
+        if(topC != null) {
+            ActionUtils.closeWindow(topC);
         }
     }
 

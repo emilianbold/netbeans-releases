@@ -43,10 +43,24 @@ implements PropertyChangeListener, Runnable {
             WeakListeners.propertyChange(this, TopComponent.getRegistry()));
         updateEnabled();
     }
+    
+    private TopComponent tc;
+    public CloseAllButThisAction(TopComponent topComp) {
+        tc = topComp;
+        //Include the name in the label for the popup menu - it may be clicked over
+        //a component that is not selected
+        putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class,
+        "LBL_CloseAllButThisAction")); //NOI18N
+        
+    }
 
     /** Perform the action. Sets/unsets maximzed mode. */
     public void actionPerformed(java.awt.event.ActionEvent ev) {
-        TopComponent tc = TopComponent.getRegistry().getActivated();
+        TopComponent topC = tc;
+        if (topC == null) {
+            // for the updating sate action instance..
+            topC = TopComponent.getRegistry().getActivated();
+        }
         if(tc != null) {
             ActionUtils.closeAllExcept(tc);
         }

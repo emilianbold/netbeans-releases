@@ -18,7 +18,6 @@ package org.netbeans.core.windows.view.ui;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.actions.CloseAllDocumentsAction;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.view.ModeView;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
