@@ -13,19 +13,25 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Enumeration;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 
-import org.netbeans.lib.ddl.impl.*;
-import org.openide.*;
-import org.openide.nodes.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 
-import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.lib.ddl.impl.CreateTable;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.netbeans.modules.db.explorer.infos.ColumnNodeInfo;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.openide.windows.WindowManager;
 
 public class GrabTableAction extends DatabaseAction {
@@ -68,6 +74,7 @@ public class GrabTableAction extends DatabaseAction {
             // Get filename
 
             JFileChooser chooser = new JFileChooser();
+            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setDialogType(JFileChooser.SAVE_DIALOG);
             chooser.setDialogTitle(bundle.getString("GrabTableFileSaveDialogTitle")); //NOI18N
             chooser.setSelectedFile(new File(tablename+".grab")); //NOI18N

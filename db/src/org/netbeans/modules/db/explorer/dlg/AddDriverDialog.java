@@ -27,6 +27,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
 
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -307,6 +308,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
         hideProgress();
         
         JFileChooser fc = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(fc, null);
         fc.setDialogTitle(NbBundle.getBundle(BUNDLE).getString("AddDriver_Chooser_Title")); //NOI18N
         fc.setMultiSelectionEnabled(true);
         fc.setAcceptAllFileFilterUsed(false);

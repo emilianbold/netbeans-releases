@@ -23,6 +23,7 @@ import javax.swing.JFileChooser;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -60,6 +61,7 @@ public class RecreateTableAction extends DatabaseAction {
 
                     // Get filename
                     JFileChooser chooser = new JFileChooser();
+                    FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                     chooser.setDialogType(JFileChooser.OPEN_DIALOG);
                     chooser.setDialogTitle(bundle.getString("RecreateTableFileOpenDialogTitle")); //NOI18N
                     chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
