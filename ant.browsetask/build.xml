@@ -12,80 +12,40 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="ant/browsetask" basedir="." default="netbeans">
-  <import file="../../nbbuild/default.xml"/> 
 
-  <target name="init" depends="default.init">
-    <ant dir="../external" target="unscramble"/>
-    <patternset id="ant/browsetask.files">
-      <include name="${nb.modules.dir}/org-netbeans-modules-ant-browsetask.jar"/>
-      <include name="ant/nblib/org-netbeans-modules-ant-browsetask.jar"/>
-    </patternset>
+    <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <path id="cp">
-      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-       <pathelement location="../external/lib/ant.jar"/>
-    </path>
-  </target>
+    <target name="init" depends="projectized.init">
+        <property name="ant.jar" location="${ant.home}/lib/ant.jar"/>
+    </target>
 
-    <target name="compile" depends="init">
-        <javac srcdir="src" destdir="src">
-            <classpath refID="cp"/>
+    <target name="files-init" depends="basic-init">
+        <patternset id="module.files">
+            <include name="${module.jar}"/>
+            <include name="${javahelp.jar}" if="has.javahelp"/>
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
+            <include name="ant/nblib/${code.name.base.dashes}.jar"/>
+        </patternset>
+    </target>
+
+    <target name="nblib" depends="init">
+        <mkdir dir="build/antclasses"/>
+        <javac srcdir="antsrc" destdir="build/antclasses" debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" source="1.4" includeantruntime="false">
+            <classpath>
+                <path refid="cp"/>
+                <pathelement location="${ant.jar}"/>
+                <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+            </classpath>
         </javac>
-    </target>
-
-    <target name="jars" depends="compile">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-ant-browsetask.jar" manifest="manifest-subst.mf" compress="false">
-            <fileset dir="src">
-                <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
-                <exclude name="**/*.class"/>
-                <exclude name="org/netbeans/modules/ant/browsetask/antlib.xml"/>
-            </fileset>
-        </jar>
+        <copy todir="build/antclasses">
+            <fileset dir="antsrc" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+        </copy>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/nblib"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/ant/nblib/org-netbeans-modules-ant-browsetask.jar" compress="false">
-            <fileset dir="src">
-                <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
-                <include name="**/*.class"/>
-                <include name="org/netbeans/modules/ant/browsetask/antlib.xml"/>
-            </fileset>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/ant/nblib/${code.name.base.dashes}.jar" compress="false">
+            <fileset dir="build/antclasses"/>
         </jar>
     </target>
 
-    <target name="netbeans" depends="jars" description="Build the module.">
-      <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/org-netbeans-modules-ant-browsetask.jar">
-        <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-          <patternset refID="ant/browsetask.files"/>
-        </fileset>
-      </genlist>
-    </target>
-
-    <target name="nbm" depends="netbeans" description="Prepare the module for distribution via Auto Update.">
-        <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
-        <makenbm file="org-netbeans-modules-ant-browsetask.nbm"
-                 productdir="${netbeans.dest.dir}/${cluster.dir}"
-                 module="${nb.modules.dir}/org-netbeans-modules-ant-browsetask.jar"
-                 homepage="http://ant.netbeans.org/"
-                 needsrestart="false"
-                 distribution="http://${dist.base}/org-netbeans-modules-ant-browsetask.nbm">
-            <license file="${license.file}"/>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
-    </target>
-
-    <target name="clean" depends="init" description="Clean all build products.">
-        <delete>
-            <fileset dir="src">
-                <include name="**/*.class"/>
-            </fileset>
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-                <patternset refID="ant/browsetask.files"/>
-            </fileset>
-        </delete>
-        <delete file="org-netbeans-modules-ant-browsetask.nbm"/>
-        <delete file="manifest-subst.mf"/>
-    </target>
+    <target name="netbeans-extra" depends="nblib"/>
 
 </project>
