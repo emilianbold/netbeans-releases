@@ -115,6 +115,9 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="src-bridge">
+        <include name="**/*.class"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="ant.nbm"/>
