@@ -27,6 +27,7 @@ import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.options.SystemOption;
 import org.openide.util.SharedClassObject;
+import org.openide.util.Utilities;
 import org.netbeans.modules.httpserver.*;
 
 /**
@@ -53,6 +54,8 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             e.printStackTrace ();
         }
     }
+    
+    private static final boolean debug = true;
     
     private static java.util.ResourceBundle bundle = 
         java.util.ResourceBundle.getBundle("org/netbeans/modules/extbrowser/Bundle"); // NOI18N
@@ -256,72 +259,45 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 // initProgress ();
 
                 String winID;
-                // IE problem
-                if (getDDEServerName().equals(ExtBrowserSettings.IEXPLORE))
-                    winID = "0xFFFFFFFF";
-                else
-                    winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: currWinID).toUpperCase(); // NOI18N
-                if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
+                // activate browser window (doesn't work on Win9x)
+                if (!win9xHack ()) {
+                    // IE problem
+                    if (getDDEServerName().equals(ExtBrowserSettings.IEXPLORE))
+                        winID = "0xFFFFFFFF";
+                    else
+                        winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: currWinID).toUpperCase(); // NOI18N
+                    if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
 
-                try {
-                    data = reqDdeMessage(getDDEServerName(),"WWW_Activate",winID,5000);
-                }
-                catch (NbBrowserException ex) {
-                    // try to start browser and activet it again
-                    data = null;
-                    String b;
-                    if (ExtBrowserSettings.OPTIONS.isStartWhenNotRunning()) {
-                        // get the browser
-                        if (winBrowserFactory.getExecutable() != null
-                        &&  !winBrowserFactory.getExecutable().equals("")) { // NOI18N
-                            b = winBrowserFactory.getExecutable();
-                            // System.out.println("b = "+b);
-                        }
-                        else {
-                            b = (winBrowserFactory.getDDEServer()!=null)?
-                                getBrowserPath(getDDEServerName()):
-                                getDefaultOpenCommand();
-                        }
-
-                        // start it
-                        if (b != null) {
-                            // check quoted path
-                            if (b.charAt(0) == '"') {
-                                int from, to;
-                                from = b.indexOf('"'); to = b.indexOf('"', from+1);
-                                b = b.substring(from+1, to);
-                            }
-                            else {
-                                StringTokenizer st = new StringTokenizer(b);
-                                b = st.nextToken();
-                            }
-                            // start IE with -nohome
-                            if (ExtBrowserSettings.IEXPLORE.equals (getDDEServerName ())) {
-                                b += " -nohome";    // NOI18N
-                            }
-                            
-                            setStatusMessage(bundle.getString("MSG_Running_command")+b);
-                            Runtime.getRuntime().exec(b);
-                            // wait for browser start
-                            Thread.currentThread().sleep(7000);
-                            data = reqDdeMessage(getDDEServerName(),"WWW_Activate",winID,5000);
-                            hasNoWindow = false;
-                        }
+                    try {
+                        System.out.println("WWW_Activate");
+                        data = reqDdeMessage(getDDEServerName(),"WWW_Activate",winID,5000);
+                    }
+                    catch (NbBrowserException ex) {
+                        startBrowser ();
+                        data = reqDdeMessage(getDDEServerName(),"WWW_Activate",winID,5000);
+                        hasNoWindow = false;
+                    }
+                    
+                    if (data != null && data.length >= 4) {
+                        currWinID=DdeBrowserSupport.getDWORDAtOffset(data, 0);
+                        setStatusMessage(bundle.getString("MSG_use_win")+currWinID);
+                    }
+                    else {
+                        currWinID = -1;
+                        setStatusMessage(bundle.getString("ERR_cant_activate_browser"));
+                        return;
                     }
                 }
-
-                if (data != null && data.length >= 4) {
-                    currWinID=DdeBrowserSupport.getDWORDAtOffset(data, 0);
-                    setStatusMessage(bundle.getString("MSG_use_win")+currWinID);
-                }
                 else {
-                    currWinID = -1;
-                    setStatusMessage(bundle.getString("ERR_cant_activate_browser"));
-                    return;
+                    System.out.println("no WWW_Activate");
+                    data = null;
                 }
 
-                if (getDDEServerName().equals(ExtBrowserSettings.IEXPLORE))
-                    winID = hasNoWindow? "0": "-1";
+
+                if (getDDEServerName().equals(ExtBrowserSettings.IEXPLORE)) {
+                    winID = (hasNoWindow && !win9xHack())? "0": "-1";
+                    System.out.println("winID = "+winID);
+                }
                 else
                     winID = "0x00000000"+Integer.toHexString(hasNoWindow? 0: currWinID).toUpperCase(); // NOI18N
                 if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
@@ -329,7 +305,24 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 // nbfs can be displayed internally and in ext. viewer too
                 String args1;
                 args1="\""+url.toString()+"\",,"+winID+",0x1,,,"+(ddeProgressSrvName==null?"":ddeProgressSrvName);  // NOI18N
-                data = reqDdeMessage(getDDEServerName(),"WWW_OpenURL",args1,3000); // NOI18N
+                if (!win9xHack ()) {
+                    System.out.println("OpenURL");
+                    data = reqDdeMessage(getDDEServerName(),"WWW_OpenURL",args1,3000); // NOI18N
+                }
+                else {
+                    // we've skipped WWW_Activate step so we need to start it if it doesn't run 
+                    try {
+                        System.out.println("win9x openURL");
+                        data = reqDdeMessage(getDDEServerName(),"WWW_OpenURL",args1,3000); // NOI18N
+                    }
+                    catch (NbBrowserException ex) {
+                        System.out.println("win9x startBrowser");
+                        startBrowser ();
+                        System.out.println("win9x openURL");
+                        data = reqDdeMessage(getDDEServerName(),"WWW_OpenURL",args1,3000); // NOI18N
+                    }
+                }
+                    
                 if (data != null && data.length >= 4) {
                     if (!getDDEServerName().equals("IEXPLORE")) {
                         currWinID=DdeBrowserSupport.getDWORDAtOffset(data, 0);
@@ -349,6 +342,59 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                         TopManager.getDefault().notifyException(ex1);
                     }
                 });
+            }
+        }
+        
+        /**
+         * Checks for IExplorer & Win9x combination.
+         */
+        private boolean win9xHack () {
+            return getDDEServerName().equals(ExtBrowserSettings.IEXPLORE)
+                   && (Utilities.getOperatingSystem() == Utilities.OS_WIN98 
+                      ||  Utilities.getOperatingSystem() == Utilities.OS_WIN95);
+        }
+
+        /** 
+         * Utility function that tries to start new browser process.
+         *
+         * It is used when WWW_Activate or WWW_OpenURL fail
+         */
+        private void startBrowser() throws NbBrowserException, java.io.IOException, InterruptedException {
+            String b;
+            if (ExtBrowserSettings.OPTIONS.isStartWhenNotRunning()) {
+                // get the browser
+                if (winBrowserFactory.getExecutable() != null
+                &&  !winBrowserFactory.getExecutable().equals("")) { // NOI18N
+                    b = winBrowserFactory.getExecutable();
+                }
+                else {
+                    b = (winBrowserFactory.getDDEServer()!=null)?
+                    getBrowserPath(getDDEServerName()):
+                        getDefaultOpenCommand();
+                }
+                
+                // start it
+                if (b != null) {
+                    // check quoted path
+                    if (b.charAt(0) == '"') {
+                        int from, to;
+                        from = b.indexOf('"'); to = b.indexOf('"', from+1);
+                        b = b.substring(from+1, to);
+                    }
+                    else {
+                        StringTokenizer st = new StringTokenizer(b);
+                        b = st.nextToken();
+                    }
+                    // start IE with -nohome
+                    if (ExtBrowserSettings.IEXPLORE.equals(getDDEServerName())) {
+                        b += " -nohome";    // NOI18N
+                    }
+                    
+                    setStatusMessage(bundle.getString("MSG_Running_command")+b);
+                    Runtime.getRuntime().exec(b);
+                    // wait for browser start
+                    Thread.currentThread().sleep(7000);
+                }
             }
         }
     }
