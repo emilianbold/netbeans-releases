@@ -75,8 +75,6 @@ public class J2SEProjectProperties {
     public static final String JAVAC_DEPRECATION = "javac.deprecation"; // NOI18N
     public static final String JAVAC_COMPILER_ARG = "javac.compilerargs";    //NOI18N
     public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
-    public static final String SRC_DIR = "src.dir"; // NOI18N
-    public static final String TEST_SRC_DIR = "test.src.dir"; // NOI18N
     public static final String BUILD_DIR = "build.dir"; // NOI18N
     public static final String BUILD_CLASSES_DIR = "build.classes.dir"; // NOI18N
     public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N

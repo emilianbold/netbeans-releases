@@ -343,7 +343,9 @@ public final class J2SEProject implements Project, AntProjectListener {
                     return null;
                 }
             });
-            if (J2SEPhysicalViewProvider.hasBrokenLinks(updateHelper, refHelper)) {   //XXX Don't konw if it needs to use updateHelper
+            J2SEPhysicalViewProvider physicalViewProvider = (J2SEPhysicalViewProvider)
+                J2SEProject.this.getLookup().lookup (J2SEPhysicalViewProvider.class);
+            if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
             }
         }
