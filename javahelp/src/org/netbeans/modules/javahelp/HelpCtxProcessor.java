@@ -21,17 +21,20 @@ import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.xml.sax.*;
 
+import org.openide.awt.Mnemonics;
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.util.actions.Presenter;
 
 import org.netbeans.api.javahelp.Help;
 
@@ -136,7 +139,8 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
     
     /** The presenter to be shown in a menu, e.g.
      */
-    private static final class ShortcutAction extends AbstractAction implements HelpCtx.Provider, NodeListener, ChangeListener {
+    private static final class ShortcutAction extends AbstractAction 
+    implements HelpCtx.Provider, NodeListener, ChangeListener, Presenter.Menu {
         
         /** associated XML file representing it
          */
@@ -189,6 +193,15 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
         public HelpCtx getHelpCtx() {
             // #23565:
             return new HelpCtx("ide.welcome"); // NOI18N
+        }
+        
+        //#46565: Do not display icon in Help menu item
+        public JMenuItem getMenuPresenter() {
+            JMenuItem item = new JMenuItem();
+            item.setAction(this);
+            item.setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/actions/empty.gif", true))); // NOI18N
+            Mnemonics.setLocalizedText(item,(String) getValue(Action.NAME));
+            return item;
         }
         
         /** Help sets may have changed.
