@@ -11,21 +11,6 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-e/*
- * RADVisualComponent.java -- synopsis.
- *
- * Copyright (C) 1997, 1998 NetBeans, Inc.
- *
- * Date
- * Revision
- *
- * This file is part of $Project: Corona$.
- *
- * This software is the exclusive property of NetBeans, Inc. ("SOFTWARE").
- * Any distribution, public posting, duplication, or dissemination of this
- * SOFTWARE, either by print, electronically, or any other form, is strictly
- * prohibited and will be prosecuted to the full extent of the law.
- */
 package com.netbeans.developer.modules.loaders.form;
 
 import org.openide.nodes.*;
@@ -132,6 +117,7 @@ public class RADVisualComponent extends RADComponent {
 
 /*
  * Log
+ *  12   Gandalf   1.11        7/5/99   Ian Formanek    Fixed last change
  *  11   Gandalf   1.10        7/5/99   Ian Formanek    getComponentInstance->getBeanInstance,
  *        getComponentClass->getBeanClass
  *  10   Gandalf   1.9         6/9/99   Ian Formanek    ---- Package Change To 
