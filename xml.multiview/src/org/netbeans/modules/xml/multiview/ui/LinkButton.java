@@ -29,6 +29,9 @@ public class LinkButton extends javax.swing.JButton {
         setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         setMargin(new java.awt.Insets(2, 2, 2, 2));
         setOpaque(false);
+        setBorderPainted(false);
+        setFocusPainted(false);
+        setContentAreaFilled(false);
         setAction(new LinkAction(panel, ddBean, ddProperty));
     }
     
