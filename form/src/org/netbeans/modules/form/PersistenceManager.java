@@ -78,7 +78,7 @@ public abstract class PersistenceManager {
      * @return the FormModel representing the loaded form or null if some problem occured
      * @exception IOException if any problem occured when loading the form
      */
-    public abstract FormModel loadForm(FormDataObject formObject) throws IOException;
+    public abstract void loadForm(FormDataObject formObject, FormModel formModel) throws IOException;
 
     /** Called to actually save the form represented by specified FormModel into specified formObject.
      * @param formObject the FormDataObject which represents the form files

@@ -227,7 +227,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @return the FormModel representing the loaded form or null if some problem occured
      * @exception IOException if any problem occured when loading the form
      */
-    public FormModel loadForm(FormDataObject formObject) throws IOException {
+    public void loadForm(FormDataObject formObject, FormModel formModel)
+    throws IOException {
         formFile = formObject.getFormEntry().getFile();
         org.w3c.dom.Document doc;
         org.w3c.dom.Element mainElement;
@@ -251,7 +252,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         formInfoName = mainElement.getAttribute(ATTR_FORM_TYPE);
 
-        FormModel formModel = new FormModel();
+//        FormModel formModel = new FormModel();
         formModel.setName(formObject.getName());
 
         try {
@@ -307,8 +308,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         containerDependentProperties = null;
-
-        return formModel;
+//        return formModel;
     }
 
     private void loadNonVisuals(org.w3c.dom.Node node, FormModel formModel) {

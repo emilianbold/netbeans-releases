@@ -117,25 +117,33 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         PersistenceManager loadManager = pms[0];
         saveManager = pms[1];
 
+        // create and register new FormModel instance
+        formModel = new FormModel();
+        formModel.setName(formDataObject.getName());
+        formModel.setReadOnly(formDataObject.isReadOnly());
+        openForms.put(formModel, this);
+
         // load the form data (FormModel) and report errors
         try {
-            formModel = loadManager.loadForm(formDataObject);
+            loadManager.loadForm(formDataObject, formModel);
 
-            reportErrors(formModel==null, null);
+            reportErrors(false, null); // non fatal errors
         }
         catch (Throwable t) {
             if (t instanceof ThreadDeath)
                 throw (ThreadDeath)t;
 
-            reportErrors(true, t);
-        }
-        if (formModel == null)
+            saveManager = null;
+            openForms.remove(formModel);
+            formModel = null;
+
+            reportErrors(true, t); // fatal errors
+
             return false;
+        }
 
         // form is successfully loaded...
         formLoaded = true;
-        openForms.put(formModel, this);
-        formModel.setName(formDataObject.getName());
 //        getCodeGenerator().initialize(formModel);
         formModel.fireFormLoaded();
 
@@ -212,6 +220,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     }
 
 //    CodeGenerator getCodeGenerator() {
+//        if (!formLoaded)
+//            return null;
 //        if (codeGenerator == null)
 //            codeGenerator = new JavaCodeGenerator();
 //        return codeGenerator;
@@ -267,10 +277,19 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 
     /** @return an array of all opened forms */
     public static FormModel[] getOpenedForms() {
-        Set forms = openForms.keySet();
-        FormModel[] formArray = new FormModel[forms.size()];
-        forms.toArray(formArray);
-        return formArray;
+        synchronized(openForms) {
+            Collection forms = openForms.values();
+            ArrayList list = new ArrayList(forms.size());
+            for (Iterator it=forms.iterator(); it.hasNext(); ) {
+                FormEditorSupport fes = (FormEditorSupport) it.next();
+                if (fes.formLoaded)
+                    list.add(fes.getFormModel());
+            }
+
+            FormModel[] formsArray = new FormModel[list.size()];
+            list.toArray(formsArray);
+            return formsArray;
+        }
     }
 
     /** @return FormDesigner for given form */
@@ -486,8 +505,10 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
 
         // reset references
         formRootNode = null;
-        formModel = null;
+        formDesigner = null;
+        saveManager = null;
         formLoaded = false;
+        formModel = null;
     }
 
     // -----------

@@ -114,6 +114,10 @@ public class FormModel
         formName = name;
     }
 
+    void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+    }
+
     // -----------
     // getters
 
