@@ -25,6 +25,9 @@ import java.text.MessageFormat;
 
 /** Class for getting information about version and build number
  * from given IDE build. Examples of use:
+ *
+ * new BuildInfo("/tmp/netbeans/platform4/core").getBuildNumber()
+ *
  * @author breh
  */
 public class BuildInfo {
@@ -34,33 +37,31 @@ public class BuildInfo {
 	private Method getBundleMethod;
         private Method setBrandingMethod;
         private String branding = null;
-	
-        
-        
+      
         /** Creates new object
-         * @param ideHomeDirName ide home dir file object (usually known as netbeans.home or ide.home)
+         * @param ideLibDirPath path to ide lib directory with openide.jar, core.jar and other libraries
          * @throws IOException in the case there is any problem with accessing required
-         * directories in ide.home dir
+         * directories in given path
          */        
-	public BuildInfo(String ideHomeDirName) throws IOException {
-                this(new File(ideHomeDirName));
+	public BuildInfo(String ideLibDirPath) throws IOException {
+                this(new File(ideLibDirPath));
 	}
 	
         /** Creates new object
-         * @param ideHomeDir ide home dir file object (usually known as netbeans.home or ide.home)
+         * @param ideLibDir ide lib dir file object point to directory with 
+         * openide.jar, core.jar and other libraries
          * @throws IOException in the case there is any problem with accessing required
-         * directories in ide.home dir
+         * directories in given directory
          */        
-	public BuildInfo(File ideHomeDir) throws IOException {
-		if (ideHomeDir == null) {
+	public BuildInfo(File ideLibDir) throws IOException {
+		if (ideLibDir == null) {
 			throw new NullPointerException("argument cannot be null");
 		}
-		if (!ideHomeDir.isDirectory()) {
+		if (!ideLibDir.isDirectory()) {
 			throw new IOException("Supplied file is not a directory");
 		}
-		File ideLibDir = new File(ideHomeDir,"lib");
-		if (!ideLibDir.isDirectory()) {
-			throw new IOException("Supplied directory is not IDE home dir, because it does not contain lib/ subdirectory");
+		if (!new File(ideLibDir,"openide.jar").exists()) {
+			throw new IOException("Supplied directory is not IDE lib dir, because it does not contain openide.jar.");
 		}
 		// now create a classloader 
 		coreClassLoader = BuildInfo.createClassLoaderForCore(ideLibDir);
@@ -158,7 +159,7 @@ public class BuildInfo {
 		});
                 if(patches != null) {
                     for (int i=0; i < patches.length; i++) {
-                            urls.add(BuildInfo.getURL(patches[i]));
+                            urls.add(patches[i].toURI().toURL());
                     }
                 }
 
@@ -175,23 +176,18 @@ public class BuildInfo {
                 
                 if (locales != null) {
                     for (int i=0; i < locales.length; i++) {
-        			urls.add(BuildInfo.getURL(locales[i]));
+        			urls.add(locales[i].toURI().toURL());
         		}
                 }
 		
 		// get openide jar
-		urls.add(BuildInfo.getURL(new File(libDir,"openide.jar")));
+		urls.add(new File(libDir,"openide.jar").toURI().toURL());
 				
 		// get core jar
-		urls.add(BuildInfo.getURL(new File(libDir,"core.jar")));
+		urls.add(new File(libDir,"core.jar").toURI().toURL());
 
 		// get the urls as an array
 		// now create the classloader;
 		return new URLClassLoader((URL[])(urls.toArray(new URL[0])));
 	}
-	
-	private static URL getURL(File file) throws MalformedURLException {
-		return new URL("file",null,file.getAbsolutePath());
-	}
-
 }

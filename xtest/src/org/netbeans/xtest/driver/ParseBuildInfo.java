@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,7 +24,8 @@ import org.apache.tools.ant.Task;
 import org.netbeans.xtest.driver.ide.BuildInfo;
 
 /**
- * From given IDE home it parses build number, project name and timestamp.
+ * From given IDE lib dir it parses build number, project name and timestamp.
+ * IDE lib dir is the directory with openide.jar, core.jar and other libraries.
  */
 public class ParseBuildInfo extends Task {
     
@@ -35,14 +36,14 @@ public class ParseBuildInfo extends Task {
     private String buildProject = "Unknown";
     private String buildTimestampProperty = null;
     
-    private String ideHome;
+    private String ideLibDir;
     
-    public void setIdeHome(String ideHome) {
-        this.ideHome = ideHome;
+    public void setIdeLibDir(String ideLibDir) {
+        this.ideLibDir = ideLibDir;
     }
     
-    public String getIdeHOme() {
-        return ideHome;
+    public String getIdeLibDir() {
+        return ideLibDir;
     }
 
     public void setBuildNumberProperty(String property) {
@@ -91,10 +92,10 @@ public class ParseBuildInfo extends Task {
         
         BuildInfo bi;
         try {
-            bi = new BuildInfo(ideHome);
+            bi = new BuildInfo(ideLibDir);
         } catch (IOException e) {
-            log("Not setting properties! Getting build info from directory "+
-                ideHome+" failed for the following reason: "+e.getMessage()+".",
+            log("Not setting properties! Getting build info from IDE with supplied lib directory "+
+                ideLibDir+" failed for the following reason: "+e.getMessage()+".",
                 Project.MSG_WARN);
             return;
         }
