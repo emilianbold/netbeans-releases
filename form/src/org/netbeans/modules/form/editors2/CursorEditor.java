@@ -54,12 +54,10 @@ public class CursorEditor extends PropertyEditorSupport  implements EnhancedProp
   }
   
   public Object getValue () {
-    System.out.println("getValue ()");
     return current;
   }
 
   public void setValue (Object value) {
-    System.out.println("setValue ("+value+")");
     if (value == null) return;
     if ( value instanceof Cursor) {
       current = (Cursor) value;
@@ -70,7 +68,6 @@ public class CursorEditor extends PropertyEditorSupport  implements EnhancedProp
   }
 
   public String getAsText () {
-    System.out.println("getAsText ()");
     if (current == null)
       return "null";
     else
@@ -78,7 +75,6 @@ public class CursorEditor extends PropertyEditorSupport  implements EnhancedProp
   }
 
   public void setAsText (String string) {
-    System.out.println("setAsText ()");
     Object o = CURSOR_TYPES.get(string);
     if (o != null) {
       int type = ((Integer) o).intValue ();
@@ -107,12 +103,10 @@ public class CursorEditor extends PropertyEditorSupport  implements EnhancedProp
   }
   
   public boolean supportsCustomEditor () {
-    System.out.println("supportsCustomEditor ()");
     return true;
   }
 
   public Component getCustomEditor () {
-    System.out.println("getCustomEditor ()");
     return new CursorPanel (current);
   } 
 
@@ -126,7 +120,6 @@ public class CursorEditor extends PropertyEditorSupport  implements EnhancedProp
 
   class CursorPanel extends JPanel implements EnhancedCustomPropertyEditor {
     CursorPanel (Cursor value) {
-      System.out.println("cursor panel ()");
       setLayout (new java.awt.GridBagLayout ());
       java.awt.GridBagConstraints gridBagConstraints1;
       list = new JList (new java.util.Vector (CURSOR_TYPES.keySet()));
@@ -152,7 +145,6 @@ public class CursorEditor extends PropertyEditorSupport  implements EnhancedProp
     }
     
     public Object getPropertyValue () throws IllegalStateException {
-      System.out.println("getPropertyValue ()");
       if (list.getSelectedValue()==null) return null;
       int type = ((Integer) CURSOR_TYPES.get(list.getSelectedValue())).intValue ();
       return new Cursor (type);
@@ -164,6 +156,7 @@ public class CursorEditor extends PropertyEditorSupport  implements EnhancedProp
 
 /*
  * Log
+ *  2    Gandalf   1.1         12/17/99 Pavel Buzek     
  *  1    Gandalf   1.0         12/17/99 Pavel Buzek     
  * $
  */
