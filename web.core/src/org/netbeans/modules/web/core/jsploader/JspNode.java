@@ -109,7 +109,7 @@ public class JspNode extends DataNode {
                    }
                    
                    public void restoreDefaultValue() throws IllegalAccessException,InvocationTargetException {
-                       setValue(NbBundle.getBundle(LanguageEditor.class).getString("CTL_lang_html"));
+                       setValue( "text/html" );     // NOI18N
                    }
                }
             );
