@@ -15,6 +15,7 @@ package org.netbeans.jellytools.properties;
 import java.awt.Component;
 import java.awt.Container;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ContainerOperator;
@@ -47,6 +48,11 @@ public class Property {
     private SheetButtonOperator nameButtonOperator;
     /** Operator of value button */
     private SheetButtonOperator valueButtonOperator;
+
+    static {
+        // Checks if you run on correct jemmy version. Writes message to jemmy log if not.
+        JellyVersion.checkJemmyVersion();
+    }
     
     /** Waits for property with given name in specified container.
      * @param contOper ContainerOperator where to find property. It is

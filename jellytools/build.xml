@@ -52,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="jars" depends="compile" description="Create jars">
         <tstamp>
-            <format property="buildnumber" pattern="yyyyMMddhhmm"/>
+            <format property="buildnumber" pattern="yyyyMMddHHmm"/>
         </tstamp>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
 
@@ -66,22 +66,26 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
         
         <!-- Create jelly2 jar -->
-        <filter token="VERSION_SUBST" value="2.0"/>
         <delete file="manifest-subst.mf"/>
-        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+        <copy file="src/org/netbeans/jellytools/version_info" tofile="manifest-subst.mf" filtering="on"/>
+        <move file="src/org/netbeans/jellytools/version_info" todir="."/>
+        <copy file="manifest-subst.mf" tofile="src/org/netbeans/jellytools/version_info" overwrite="true"/>
         <jar basedir="src" compress="false" jarfile="jelly2-nb.jar" manifest="manifest-subst.mf">
           <include name="**/jellytools/**"/>
           <patternset refid="standard-jar-excludes"/>
         </jar>
-      </target>
-    
+        <move file="./version_info" todir="src/org/netbeans/jellytools"/>
+     </target>
+
     <!-- only to enable call both 'ant jar' and 'ant jars' -->
     <target name="jar" depends="jars">
     </target>
 
     <target name="zipsrc" description="Create zip containing only sources">
         <zip zipfile="jelly-nb-src.zip" basedir="src" includes="**/test/oo/**/*.java"/>
-        <zip zipfile="jelly2-nb-src.zip" basedir="src" includes="**/jellytools/**/*.java"/>
+        <zip zipfile="jelly2-nb-src.zip" basedir="src" 
+             includes="**/jellytools/**/*.java,org/netbeans/jellytools/version_info"
+        />
     </target>
 
     <target name="javadoc" description="Javadoc for jellytools">

@@ -14,6 +14,7 @@
 package org.netbeans.jellytools;
 
 import javax.swing.JDialog;
+import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 
@@ -30,6 +31,10 @@ public class NbDialogOperator extends JDialogOperator {
     private JButtonOperator _btClose;
     private JButtonOperator _btHelp;
     
+    static {
+        // Checks if you run on correct jemmy version. Writes message to jemmy log if not.
+        JellyVersion.checkJemmyVersion();
+    }
     
     /** Waits until dialog with requested title is found. Title is compared
      * on partial match and case non-sensitive. If dialog is not found, runtime

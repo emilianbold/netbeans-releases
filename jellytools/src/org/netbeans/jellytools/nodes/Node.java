@@ -20,6 +20,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.*;
@@ -42,6 +43,11 @@ public class Node {
     protected JTreeOperator treeOperator;
     /** TreePath of node */    
     protected TreePath treePath;
+
+    static {
+        // Checks if you run on correct jemmy version. Writes message to jemmy log if not.
+        JellyVersion.checkJemmyVersion();
+    }
     
     /** creates new Node instance
      * @param treeOperator JTreeOperator of tree where node lives

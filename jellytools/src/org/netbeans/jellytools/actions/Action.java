@@ -17,9 +17,10 @@ import java.awt.Component;
 import java.awt.event.KeyEvent;
 import javax.swing.tree.TreePath;
 
-import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Timeouts;
@@ -30,7 +31,6 @@ import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.util.EmptyVisualizer;
 
 import org.openide.util.actions.SystemAction;
-
 
 /** Ancestor class for all blocking actions.<p>
  * It handles performing action through main menu (MENU_MODE), popup menu
@@ -87,6 +87,11 @@ public class Action {
     private static Operator.StringComparator defaultComparator;
     /** Comparator used for this action instance. */
     private Operator.StringComparator comparator;
+
+    static {
+        // Checks if you run on correct jemmy version. Writes message to jemmy log if not.
+        JellyVersion.checkJemmyVersion();
+    }
 
     /** creates new Action instance without API_MODE and SHORTCUT_MODE support
      * @param menuPath action path in main menu (use null value if menu mode is not supported)
