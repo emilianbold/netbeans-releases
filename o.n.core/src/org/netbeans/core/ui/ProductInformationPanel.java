@@ -50,7 +50,7 @@ public class ProductInformationPanel extends JPanel {
     public ProductInformationPanel() {
         dialog = null;
         initComponents();
-        if (org.netbeans.core.NonGui.accessibility)
+        if (Boolean.getBoolean("netbeans.accessibility"))
         {
             ((NbLabelA11y)productInformationLabel).setA11yFocus(true);
             ((NbLabelA11y)productVersionValueLabel).setA11yAll(true, fromBundle("LBL_ProductVersion") + getProductVersionValue(), "");
