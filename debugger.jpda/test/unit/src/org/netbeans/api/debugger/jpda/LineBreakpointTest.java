@@ -41,8 +41,8 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
     }
 
     public void testConditionalBreakpoint() throws Exception {
-        doTestBreakpointComplete(33, "x==22", CONDITION_FALSE);
-        doTestBreakpointComplete(34, "x==60", CONDITION_TRUE);
+        doTestBreakpointComplete(33, "x==22", DebuggerConstants.CONDITION_FALSE);
+        doTestBreakpointComplete(34, "x==60", DebuggerConstants.CONDITION_TRUE);
     }
 
     public void testMultipleLineBreakpoints() throws Exception {
@@ -73,23 +73,23 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
             support = JPDASupport.listen("basic.LineBreakpointApp", false);
             debugger = support.getDebugger();
 
-            support.waitState(STATE_STOPPED, 5000);  // 1st breakpoint hit
+            support.waitState(DebuggerConstants.STATE_STOPPED, 10000);  // 1st breakpoint hit
             assertEquals("Debugger stopped at wrong line", lb1.getLineNumber(), debugger.getCurrentCallStackFrame().getLineNumber(null));
 
             support.doContinue();
-            support.waitState(STATE_STOPPED, 5000);  // 2nd breakpoint hit
+            support.waitState(DebuggerConstants.STATE_STOPPED, 10000);  // 2nd breakpoint hit
             assertEquals("Debugger stopped at wrong line", lb2.getLineNumber(), debugger.getCurrentCallStackFrame().getLineNumber(null));
 
             support.doContinue();
-            support.waitState(STATE_STOPPED, 5000);  // 3rd breakpoint hit
+            support.waitState(DebuggerConstants.STATE_STOPPED, 10000);  // 3rd breakpoint hit
             assertEquals("Debugger stopped at wrong line", lb3.getLineNumber(), debugger.getCurrentCallStackFrame().getLineNumber(null));
 
             support.doContinue();
-            support.waitState(STATE_STOPPED, 5000);  // 4th breakpoint hit
+            support.waitState(DebuggerConstants.STATE_STOPPED, 10000);  // 4th breakpoint hit
             assertEquals("Debugger stopped at wrong line", lb4.getLineNumber(), debugger.getCurrentCallStackFrame().getLineNumber(null));
 
             support.doContinue();
-            support.waitState(STATE_STOPPED, 5000);  // 5th breakpoint hit
+            support.waitState(DebuggerConstants.STATE_STOPPED, 10000);  // 5th breakpoint hit
             assertEquals("Debugger stopped at wrong line", lb5.getLineNumber(), debugger.getCurrentCallStackFrame().getLineNumber(null));
 
             tb1.assertFailure();
@@ -139,7 +139,7 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
             DebuggerStartException {
         try {
             LineBreakpoint lb = doTestBreakpoint(line, condition, conditionResult);
-            if (condition == null || conditionResult == CONDITION_TRUE) {
+            if (condition == null || conditionResult == DebuggerConstants.CONDITION_TRUE) {
                 support.doContinue();
                 support.waitDisconnected(5000);
             }
@@ -151,7 +151,7 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
 
     private void doTestBreakpointComplete(int line) throws IOException, IllegalConnectorArgumentsException,
             DebuggerStartException {
-        doTestBreakpointComplete(line, null, CONDITION_NONE);
+        doTestBreakpointComplete(line, null, DebuggerConstants.CONDITION_NONE);
     }
 
     private LineBreakpoint doTestBreakpoint(int line, String condition, int conditionResult) throws IOException, IllegalConnectorArgumentsException,
@@ -165,10 +165,10 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
         support = JPDASupport.listen("basic.LineBreakpointApp", false);
         debugger = support.getDebugger();
 
-        if (condition == null || conditionResult == CONDITION_TRUE) {
-            support.waitState(STATE_STOPPED, 5000);
+        if (condition == null || conditionResult == DebuggerConstants.CONDITION_TRUE) {
+            support.waitState(DebuggerConstants.STATE_STOPPED, 5000);
         } else {
-            support.waitState(STATE_DISCONNECTED, 5000);
+            support.waitState(DebuggerConstants.STATE_DISCONNECTED, 5000);
         }
 
         tbl.assertFailure();
@@ -184,7 +184,7 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
         private AssertionError      failure;
 
         public TestBreakpointListener(LineBreakpoint bpt) {
-            this(bpt, CONDITION_NONE);
+            this(bpt, DebuggerConstants.CONDITION_NONE);
         }
 
         public TestBreakpointListener(LineBreakpoint bpt, int conditionResult) {
@@ -208,7 +208,7 @@ public class LineBreakpointTest extends DebuggerJPDAApiTestBase {
             assertNotNull("Breakpoint event: Context thread is null", event.getThread());
 
             int result = event.getConditionResult();
-            if (result == CONDITION_FAILED && conditionResult != CONDITION_FAILED) {
+            if (result == DebuggerConstants.CONDITION_FAILED && conditionResult != DebuggerConstants.CONDITION_FAILED) {
                 failure = new AssertionError(event.getConditionException());
             } else if (result != conditionResult) {
                 failure = new AssertionError("Unexpected breakpoint condition result: " + result);

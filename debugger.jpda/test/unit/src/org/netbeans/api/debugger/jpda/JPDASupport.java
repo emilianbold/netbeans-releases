@@ -15,15 +15,14 @@ package org.netbeans.api.debugger.jpda;
 
 import org.netbeans.api.debugger.*;
 
-import java.io.IOException;
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.*;
 import java.net.URLClassLoader;
 import java.net.URL;
 import java.net.ServerSocket;
 import java.beans.PropertyChangeEvent;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 import com.sun.jdi.connect.*;
 import com.sun.jdi.VirtualMachineManager;
@@ -36,12 +35,15 @@ import com.sun.jdi.Bootstrap;
  */
 public class JPDASupport implements DebuggerManagerListener {
 
+    private static final boolean verbose = false;
+    private static final DateFormat df = new SimpleDateFormat("kk:mm:ss.SSS");
+
     private DebuggerManager dm;
     private Process     process;
     private ProcessIO   pio;
     private JPDADebugger debugger;
 
-    private Object debuggerStartLock;
+    private Object [] debuggerStartLock = new Object[1];
     private Object [] stepLock = new Object[1];
 
     private JPDASupport() {
@@ -109,18 +111,23 @@ public class JPDASupport implements DebuggerManagerListener {
 
         if (stopInMain) addMainMethodBreakpoint(mainClass);
 
-        JPDADebugger.startListening(connector, args, new Object[] { });
+        debuggerStartLock = new Object[1];
 
-        process = launchVM(mainClass, localhostAddres, false);
-        pio = new ProcessIO(process);
-        pio.go();
+        JPDADebugger.startListening(connector, args, new Object[] { });
 
         DebuggerEngine engine = dm.getCurrentEngine();
         debugger = (JPDADebugger) engine.lookupFirst(JPDADebugger.class);
         if (debugger == null) throw new DebuggerStartException("JPDA debugger was not started");
         debugger.addPropertyChangeListener(this);
 
-        if (stopInMain) waitDebuggerStarted();
+        process = launchVM(mainClass, localhostAddres, false);
+        pio = new ProcessIO(process);
+        pio.go();
+
+        if (stopInMain) {
+            waitDebuggerStarted();
+            if (verbose) System.out.println("JPDA SUPPORT STOPPED IN " + debugger.getCurrentCallStackFrame().getMethodName() + " LINE: " + debugger.getCurrentCallStackFrame().getLineNumber(null));
+        }
     }
 
     private void addMainMethodBreakpoint(String mainClass) {
@@ -164,14 +171,13 @@ public class JPDASupport implements DebuggerManagerListener {
     }
 
     private void waitDebuggerStarted() throws DebuggerStartException {
-        debuggerStartLock = new Object();
-        synchronized (debuggerStartLock) {
-            if (debugger.getState() != JPDADebugger.STATE_STOPPED) {
-                try {
-                    debuggerStartLock.wait();
-                } catch (InterruptedException e) {
-                    throw new DebuggerStartException(e);
-                }
+        synchronized(debuggerStartLock) {
+            try {
+                if ("started".equals(debuggerStartLock[0])) return;
+                debuggerStartLock.wait(10000);
+                if (debuggerStartLock[0] == null) throw new DebuggerStartException("Debugger did not start");
+            } catch (InterruptedException e) {
+                throw new DebuggerStartException(e);
             }
         }
     }
@@ -204,9 +210,10 @@ public class JPDASupport implements DebuggerManagerListener {
     }
 
     public void doContinue() {
-        if (debugger.getState() != JPDADebugger.STATE_STOPPED) throw new IllegalStateException();
+        if (debugger.getState() != DebuggerConstants.STATE_STOPPED) throw new IllegalStateException();
         waitEnabled(DebuggerManager.ACTION_CONTINUE);
         getActionsManager().doAction(DebuggerManager.ACTION_CONTINUE);
+        if (verbose) System.err.println(df.format(new Date()) + " Successfully invoked continue");
     }
 
     public void stepOver() {
@@ -222,13 +229,14 @@ public class JPDASupport implements DebuggerManagerListener {
     }
 
     public void step(Object action) {
-        if (debugger.getState() != JPDADebugger.STATE_STOPPED) {
+        if (debugger.getState() != DebuggerConstants.STATE_STOPPED) {
             throw new IllegalStateException();
         }
         waitEnabled(action);
         synchronized (stepLock) {
             stepLock[0] = "stepStart";
             getActionsManager().doAction(action);
+            if (verbose) System.err.println(df.format(new Date()) + " Successfully invoked step: " + action);
             try {
                 stepLock.wait(10000);
                 if (stepLock[0] != null) throw new TimeoutException("Step action timed out");
@@ -248,7 +256,7 @@ public class JPDASupport implements DebuggerManagerListener {
 
     public void waitDisconnected(int timeoutMillis) {
         long t0 = System.currentTimeMillis();
-        while (debugger.getState() != JPDADebugger.STATE_DISCONNECTED) {
+        while (debugger.getState() != DebuggerConstants.STATE_DISCONNECTED) {
             sleep(100);
             if (System.currentTimeMillis() - t0 > timeoutMillis) throw new TimeoutException();
 /*
@@ -272,9 +280,18 @@ public class JPDASupport implements DebuggerManagerListener {
     public void waitState(int state, int timeoutMillis) {
         long t0 = System.currentTimeMillis();
         while (debugger.getState() != state) {
-            sleep(100);
-            if (System.currentTimeMillis() - t0 > timeoutMillis)
+            sleep(200);
+            if (System.currentTimeMillis() - t0 > timeoutMillis) {
+/*
+                VirtualMachine vm = ((JPDADebuggerImpl) debugger).getVirtualMachine();
+                List threads = vm.allThreads();
+                for (Iterator i = threads.iterator(); i.hasNext();) {
+                    ThreadReference threadReference = (ThreadReference) i.next();
+                    System.err.println("Thread " + threadReference.name() + " suspended? " + threadReference.isSuspended());
+                }
+*/
                 throw new TimeoutException("Waitstate timeout: " + debugger.getState());
+            }
         }
     }
 
@@ -296,13 +313,19 @@ public class JPDASupport implements DebuggerManagerListener {
     }
 
     public void doFinish() {
-        doFinish(Integer.MAX_VALUE);
-    }
-
-    public void doFinish(int timeoutMillis) {
-        if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) return;
-        getActionsManager().doAction(DebuggerManager.ACTION_KILL);
-        waitDisconnected(timeoutMillis);
+        if (debugger == null) return;
+        debugger.removePropertyChangeListener(this);
+        if (DebuggerManager.getDebuggerManager().getCurrentEngine() != null) {
+            try {
+                ActionsManager am = getActionsManager();
+                am.doAction(DebuggerManager.ACTION_KILL);
+                waitDisconnected(10000);
+            } catch (Throwable e) {
+                e.printStackTrace(System.out);
+            }
+        }
+        debugger = null;
+        if (verbose) System.err.println(df.format(new Date()) + " DEBUGGER FINISHED OK");
     }
 
     private class DisconnectedException extends RuntimeException {
@@ -342,26 +365,29 @@ public class JPDASupport implements DebuggerManagerListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
 //        System.out.println(evt.getSource() + " : " + evt.getPropertyName() + " : " + evt.getOldValue() + " : " + evt.getNewValue());
-        if (evt.getSource() == debugger) {
+        if (evt.getSource() instanceof JPDADebugger) {
+            JPDADebugger dbg = (JPDADebugger) evt.getSource();
+
             if (JPDADebugger.PROP_STATE.equals(evt.getPropertyName())) {
                 int os = ((Integer) evt.getOldValue()).intValue();
                 int ns = ((Integer) evt.getNewValue()).intValue();
-                if (debuggerStartLock != null) {
-                    synchronized(debuggerStartLock) {
-                        if (JPDADebugger.STATE_RUNNING == os && JPDADebugger.STATE_STOPPED == ns) {
+                if (verbose) System.err.println(df.format(new Date()) + " STATE: " + os + " => " + ns);
+                synchronized(debuggerStartLock) {
+                    if (debuggerStartLock != null && debuggerStartLock[0] == null) {
+                        if (DebuggerConstants.STATE_RUNNING == os && DebuggerConstants.STATE_STOPPED == ns) {
+                            debuggerStartLock[0] = "started";
                             debuggerStartLock.notifyAll();
-                            debuggerStartLock = null;
                         }
                     }
                 }
                 synchronized(stepLock) {
                     if (stepLock[0] != null) {
                         if (stepLock[0].equals("stepStart")) {
-                            if (os == JPDADebugger.STATE_STOPPED && ns == JPDADebugger.STATE_RUNNING) {
+                            if (os == DebuggerConstants.STATE_STOPPED && ns == DebuggerConstants.STATE_RUNNING) {
                                 stepLock[0] = "stepInProgress";
                             }
                         } else if (stepLock[0].equals("stepInProgress")) {
-                            if (os == JPDADebugger.STATE_RUNNING && ns == JPDADebugger.STATE_STOPPED) {
+                            if (os == DebuggerConstants.STATE_RUNNING && ns == DebuggerConstants.STATE_STOPPED) {
                                 stepLock.notifyAll();
                                 stepLock[0] = null;
                             }
