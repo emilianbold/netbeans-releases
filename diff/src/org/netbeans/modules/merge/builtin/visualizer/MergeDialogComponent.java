@@ -44,6 +44,7 @@ import org.openide.nodes.Node;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.CallableSystemAction;
@@ -70,10 +71,12 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     public MergeDialogComponent() {
         initComponents();
         initListeners();
-        javax.swing.JRootPane root = getRootPane();
-        if (root != null) root.setDefaultButton(okButton);
         putClientProperty("PersistenceType", "Never");
         setName(org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "MergeDialogComponent.title"));
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(MergeDialogComponent.class);
     }
     
     /** This method is called from within the constructor to
@@ -240,6 +243,20 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     private javax.swing.JButton helpButton;
     // End of variables declaration//GEN-END:variables
     
+    public void addNotify() {
+        super.addNotify();
+                javax.swing.JRootPane root = getRootPane();
+                if (root != null) root.setDefaultButton(okButton);
+                /*
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                javax.swing.JRootPane root = getRootPane();
+                if (root != null) root.setDefaultButton(okButton);
+            }
+        });
+                 */
+    }
+    
     private void initListeners() {
         mergeTabbedPane.addMouseListener(new PopupMenuImpl());
         mergeTabbedPane.addChangeListener(this);
@@ -270,12 +287,10 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     
     public synchronized void addMergePanel(MergePanel panel) {
         mergeTabbedPane.addTab(panel.getName(), panel);
-        javax.swing.JRootPane root = getRootPane();
         MergeNode node = new MergeNode(panel);
         nodesForPanels.put(panel, node);
         mergeTabbedPane.setSelectedComponent(panel);
         setActivatedNodes(new Node[] { node });
-        if (root != null) root.setDefaultButton(okButton);
     }
     
     public synchronized void removeMergePanel(MergePanel panel) {
