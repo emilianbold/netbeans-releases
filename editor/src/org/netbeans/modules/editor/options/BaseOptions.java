@@ -179,6 +179,10 @@ public class BaseOptions extends OptionSupport {
     private transient Map defaultAbbrevsMap;
     private transient Map defaultMacrosMap;
     private transient Map defaultKeyBindingsMap;
+
+    /** Map of Kit to Options */
+    private static final HashMap kitClass2Options = new HashMap();
+
     public BaseOptions() {
         this(BaseKit.class, BASE);
         optionsVersion = LATEST_OPTIONS_VERSION;
@@ -189,6 +193,7 @@ public class BaseOptions extends OptionSupport {
         super(kitClass, typeName);
         
         createMIMENode(typeName);
+        kitClass2Options.put(kitClass, this);
         
     }
 
