@@ -173,7 +173,9 @@ public class TransactionView extends ExplorerPanel implements
 	SaveAction.setTransactionView(this);
 	EditReplayAction.setTransactionView(this);
 	DeleteAction.setTransactionView(this);
-	
+	this.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_monitorDesc"));
+	this.getAccessibleContext().setAccessibleName(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_monitorName"));
+
 	if (debug) log ("Calling opentransactions from constructor"); // NOI18N
     }
 
@@ -185,6 +187,8 @@ public class TransactionView extends ExplorerPanel implements
 
 	tree = new BeanTreeView();
 	tree.setDefaultActionAllowed(true);
+	tree.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_treeName"));
+	tree.getAccessibleContext().setAccessibleName(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_treeDesc"));
 
 	SplittedPanel splitPanel = new SplittedPanel();
 	splitPanel.setSplitPosition(35);
@@ -496,6 +500,9 @@ public class TransactionView extends ExplorerPanel implements
 	transactionTitle.setBorder (new EtchedBorder (EtchedBorder.LOWERED));
 
 	JTabbedPane jtp = new JTabbedPane();
+        jtp.getAccessibleContext().setAccessibleName(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_Transaction_dataName"));
+        jtp.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_Transaction_dataDesc"));
+
 	jtp.setPreferredSize(tabD);
 	jtp.setMaximumSize(tabD);
 

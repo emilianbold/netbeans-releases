@@ -92,7 +92,7 @@ public class EditPanelHeaders extends DataDisplay {
 			    0, 0);
 
 	String msg = NbBundle.getBundle(EditPanelHeaders.class).getString("MON_HTTP_Headers"); 
-	addGridBagComponent(this, createSortButtonLabel(msg, headerTable, NbBundle.getBundle(EditPanelHeaders.class).getString("MON_HTTP_Headers_Mnemonic").charAt(0), NbBundle.getBundle(EditPanelHeaders.class).getString("ACS_MON_HTTP_HeadersA11yDesc")), 0, ++gridy,
+	addGridBagComponent(this, createSortButtonLabel(msg, headerTable, NbBundle.getBundle(EditPanelHeaders.class).getString("MON_HTTP_Headers_2_Mnemonic").charAt(0), NbBundle.getBundle(EditPanelHeaders.class).getString("ACS_MON_HTTP_HeadersA11yDesc")), 0, ++gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,

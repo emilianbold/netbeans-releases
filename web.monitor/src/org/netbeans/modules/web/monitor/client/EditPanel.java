@@ -139,6 +139,9 @@ public class EditPanel extends javax.swing.JPanel implements
 	if(debug) log("setData()"); //NOI18N
 
 	JTabbedPane tabs = new JTabbedPane();
+        tabs.getAccessibleContext().setAccessibleName(NbBundle.getBundle(EditPanel.class).getString("ACS_MON_Replay_tabsName"));
+        tabs.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(EditPanel.class).getString("ACS_MON_Replay_tabsDesc"));
+
 	tabs.setPreferredSize(tabD);
 	tabs.addTab(NbBundle.getBundle(EditPanel.class).getString("MON_Query_Panel_Tab"),   queryPanel);
 	tabs.addTab(NbBundle.getBundle(EditPanel.class).getString("MON_Request_Panel_Tab"),
