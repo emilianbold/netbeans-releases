@@ -43,7 +43,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     };
 
     /**
-     * Creates new form SectionContainer
+     * Creates new form SectionPanel
      */
     public SectionPanel(SectionView sectionView, Node explorerNode, Object key) {
         this(sectionView, explorerNode, key, false);
@@ -101,15 +101,6 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         filler.setVisible(true);
-        innerPanel.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
-            protected void showPopup(java.awt.event.MouseEvent e) {
-                if (!SectionPanel.this.isActive()) {
-                    SectionPanel.this.setActive(true);
-                }
-                JPopupMenu popup = getNode().getContextMenu();
-                popup.show(foldButton, e.getX(), e.getY());
-            }
-        });
         innerPanel.addFocusListener(sectionFocusListener);
         add(innerPanel, gridBagConstraints);
     }
@@ -147,9 +138,8 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
      * Method from NodeSectionPanel interface
      */
     public void open() {
-        foldButton.setSelected(false);
+        foldButton.setSelected(true);
         openInnerPanel();
-        filler.setVisible(true);
     }
 
     /**
@@ -202,13 +192,12 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
 
         setLayout(new java.awt.GridBagLayout());
 
-        foldButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/arrowbottom.gif")));
-        foldButton.setSelected(true);
+        foldButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/arrowright.gif")));
         foldButton.setBorder(null);
         foldButton.setBorderPainted(false);
         foldButton.setContentAreaFilled(false);
         foldButton.setFocusPainted(false);
-        foldButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/arrowright.gif")));
+        foldButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/arrowbottom.gif")));
         foldButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 foldButtonActionPerformed(evt);
@@ -269,14 +258,23 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     }//GEN-END:initComponents
 
     private void titleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_titleButtonActionPerformed
-        if (getInnerPanel()==null) open();
-        setActive(true);
+        if (!foldButton.isSelected()) {
+            openInnerPanel();
+            foldButton.setSelected(true);
+        } else {
+            if (isActive()) {
+                closeInnerPanel();
+                foldButton.setSelected(false);
+            }
+        }
+        if (!isActive()) setActive(true);
+        
     }//GEN-LAST:event_titleButtonActionPerformed
 
     private void foldButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foldButtonActionPerformed
-        if (!foldButton.isSelected()) {
+        if (foldButton.isSelected()) {
             openInnerPanel();
-            setActive(true);
+            //setActive(true);
         } else {
             closeInnerPanel();
         }

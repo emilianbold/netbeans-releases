@@ -241,6 +241,7 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
             SectionPanel panel = findSectionPanel(key);
             if (panel!=null) {
                 if (panel.getInnerPanel()==null) panel.open();
+                openParents((JPanel)panel);
                 panel.scroll();
                 panel.setActive(true);
             }

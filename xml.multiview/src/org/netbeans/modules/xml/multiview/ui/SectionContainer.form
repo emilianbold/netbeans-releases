@@ -10,7 +10,7 @@
     <Component class="javax.swing.JToggleButton" name="foldButton">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/netbeans/modules/xml/multiview/resources/arrowbottom.gif"/>
+          <Image iconType="3" name="/org/netbeans/modules/xml/multiview/resources/arrowright.gif"/>
         </Property>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="null"/>
@@ -19,7 +19,7 @@
         <Property name="contentAreaFilled" type="boolean" value="false"/>
         <Property name="focusPainted" type="boolean" value="false"/>
         <Property name="selectedIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/netbeans/modules/xml/multiview/resources/arrowright.gif"/>
+          <Image iconType="3" name="/org/netbeans/modules/xml/multiview/resources/arrowbottom.gif"/>
         </Property>
       </Properties>
       <Events>

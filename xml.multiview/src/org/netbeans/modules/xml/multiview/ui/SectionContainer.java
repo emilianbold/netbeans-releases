@@ -60,7 +60,10 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
                 popup.show(foldButton,e.getX(), e.getY());
             }
         });
-        setIcon(true);
+        setIcon(false);
+        foldButton.setSelected(false);
+        contentPanel.setVisible(false);
+        filler.setVisible(false);
         if (!foldable) {  
             remove(filler);
             remove(foldButton);
@@ -74,9 +77,10 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     
     /** Method from NodeSectionPanel interface */
     public void open(){
-        foldButton.setSelected(false);
+        foldButton.setSelected(true);
         contentPanel.setVisible(true);
         filler.setVisible(true);
+        setIcon(true);
     }
 
     /** Method from NodeSectionPanel interface */
@@ -193,12 +197,12 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
 
         setLayout(new java.awt.GridBagLayout());
 
-        foldButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/arrowbottom.gif")));
+        foldButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/arrowright.gif")));
         foldButton.setBorder(null);
         foldButton.setBorderPainted(false);
         foldButton.setContentAreaFilled(false);
         foldButton.setFocusPainted(false);
-        foldButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/arrowright.gif")));
+        foldButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/arrowbottom.gif")));
         foldButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 foldButtonActionPerformed(evt);
@@ -271,16 +275,25 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
 
     private void titleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_titleButtonActionPerformed
         // TODO add your handling code here:
-        setActive(true);
-        open();
-        setIcon(true);
+        if (!foldButton.isSelected()) {
+            open();
+            foldButton.setSelected(true);
+        } else {
+            if (isActive()) {
+                foldButton.setSelected(false);
+                contentPanel.setVisible(false);
+                filler.setVisible(false);
+                setIcon(false);
+            }
+        }
+        if (!isActive()) setActive(true);
     }//GEN-LAST:event_titleButtonActionPerformed
 
     private void foldButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foldButtonActionPerformed
         // TODO add your handling code here:
-        contentPanel.setVisible(!foldButton.isSelected());
-        filler.setVisible(!foldButton.isSelected());
-        setIcon(!foldButton.isSelected());
+        contentPanel.setVisible(foldButton.isSelected());
+        filler.setVisible(foldButton.isSelected());
+        setIcon(foldButton.isSelected());
     }//GEN-LAST:event_foldButtonActionPerformed
     
     
