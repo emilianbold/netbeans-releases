@@ -37,38 +37,17 @@ import org.apache.tools.ant.taskdefs.Ant;
  */
 public class MConfig {
     
-    private Hashtable mcfg;
-    private Hashtable prop;
+    private Vector mcfg;
     private Setup setup;
-    private Hashtable setuptable;
     
     /** Creates new Config */
-    public MConfig(Hashtable cfg) {        
+    public MConfig(Vector cfg) {        
         this.mcfg = cfg;
     }
 
-    public void setProperties(Hashtable t) {
-        prop = t;
-    }
-    
-    public Hashtable getProperties(String module) {
-        Hashtable properties = (Hashtable) prop.get(module);
-        if (null != properties)
-            return properties;
-        return null;
-    } 
-    
-    public Enumeration getModules() {
-        return mcfg.keys();
-    }
-    
-    public Enumeration getTests(String module) {
-        Vector types = (Vector) mcfg.get(module);
-        
-        if (null != types)
-            return types.elements();
-        
-        return null;
+    /** Returns enumeration of TestGroup */
+    public Enumeration getAllTests() {
+        return mcfg.elements();
     }
     
     public void setConfigSetup(Setup setup) {
@@ -79,21 +58,51 @@ public class MConfig {
         return setup;
     }
     
-    public void setSetups(Hashtable setuptable) {
-        this.setuptable = setuptable;
-    }
-     
-    public Setup getSetup(String module) {
-        Setup msetup = (Setup) setuptable.get(module); 
-        return msetup;
+    public static class TestGroup {
+        private Vector tests = new Vector();
+        private Setup  setup = null;
+        private Hashtable properties = new Hashtable();
+        
+        public TestGroup() {
+        }
+        
+        public void addTest(Test test) {
+            tests.add(test);
+        }
+        
+        public Enumeration getTests() {
+            return tests.elements();
+        }
+        
+        public void setSetup(Setup s) {
+            setup = s;
+        }
+        
+        public Setup getSetup() {
+            return setup;
+        }
+        
+        public void setProperties (Hashtable t) {
+            properties = t;
+        }
+        
+        public void addProperties(Hashtable t) {
+            properties.putAll(t);   
+        }
+        
+        public Hashtable getProperties () {
+            return properties;
+        }
     }
     
     public static class Test {
         private String [] attribs;
         private String    type;
+        private String    module;
         
-        public Test(String type) {
+        public Test(String module, String type) {
             this.type = type;
+            this.module = module;
         }
         
         public String [] getAttributes() {
@@ -117,47 +126,52 @@ public class MConfig {
         public String getType() {
             return type;
         }
+        
+        public String getModule() {
+            return module;
+        }
     }
     
     public static class Setup {
-        private File startDir, stopDir;
-        private String startAntFile, stopAntFile;
-        private String startTarget, stopTarget;
         
-        public void setStart(File startDir, String startAntFile, String startTarget) {
-            this.startDir = startDir;
-            this.startAntFile = startAntFile;
-            this.startTarget = startTarget;
+        public static class StartStop {
+            public File dir= null;
+            public String antfile = null;
+            public String target = null;
+        }
+
+        private StartStop start = null, stop = null;
+        
+        public void setStart(StartStop start) {
+            this.start = start;
         }
         
-        public void setStop(File stopDir, String stopAntFile, String stopTarget) {
-            this.stopDir = stopDir;
-            this.stopAntFile = stopAntFile;
-            this.stopTarget = stopTarget;
+        public void setStop(StartStop stop) {
+            this.stop = stop;
         }
         
         public File getStartDir() {
-            return startDir;
+            return start==null?null:start.dir;
         }
         
         public File getStopDir() {
-            return stopDir;
+            return stop==null?null:stop.dir;
         }
         
         public String getStartAntfile() {
-            return startAntFile;
+            return start==null?null:start.antfile;
         }
         
         public String getStopAntfile() {
-            return stopAntFile;
+            return stop==null?null:stop.antfile;
         }
         
         public String getStartTarget() {
-            return startTarget;
+            return start==null?null:start.target;
         }
         
         public String getStopTarget() {
-            return stopTarget;
+            return stop==null?null:stop.target;
         }
     }
     

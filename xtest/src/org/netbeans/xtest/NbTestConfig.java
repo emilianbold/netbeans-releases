@@ -1,368 +1,408 @@
 /*
- *                 Sun Public License Notice
- * 
- * The contents of this file are subject to the Sun Public License
- * Version 1.0 (the "License"). You may not use this file except in
- * compliance with the License. A copy of the License is available at
- * http://www.sun.com/
- * 
- * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
- * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * NbTestConfig.java
+ * Date:           January 6, 2002  5:16 PM
  *
- * Created on March 28, 2001, 2:25 PM
+ * @author  lm97939
  */
-
 package org.netbeans.xtest;
 
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
-
-import java.util.LinkedList;
-import java.util.Hashtable;
-import java.util.Vector;
-import java.util.StringTokenizer;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
+import org.xml.sax.*;
+import org.w3c.dom.*;
+import javax.xml.parsers.*;
 import java.io.File;
+import java.util.*;
+import java.io.IOException;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 
 /**
- *
- * @author  vs124454
- * @version 
+ * This is a scanner of DOM tree.
  */
 public class NbTestConfig extends Task {
-    LinkedList      configs         = new LinkedList();
-    String          activeConfig    = null;
-    private Vector  allModules = new Vector();
-    private Vector  allTests   = new Vector();
     
-    private static XConfig xconfig;
+    private File file;
+    private String config;
     
-    private static final PatternSet DEFAULT_PATTERN;
-    private static final PatternSet DEFAULT_PATTERN_UNIT;
+    private Hashtable allSetups = new Hashtable();
+    private Vector cfg = new Vector();
+    private String config_setup = null;
+    //private Hashtable props = new Hashtable();
 
-    static {
-        DEFAULT_PATTERN = new PatternSet();
-        DEFAULT_PATTERN.setIncludes("**/*.class");
-        
-        DEFAULT_PATTERN_UNIT = DEFAULT_PATTERN;
+    private static MConfig mconfig;
+    
+    public static MConfig getMConfig() {
+        return mconfig;
     }
     
-    public static XConfig getXConfig() {
-        return xconfig;
+    public void setFile(File f) {
+        file = f;
     }
     
-    public void setConfig(String config) {
-        activeConfig = config;
+    public void setConfig(String c) {
+        config = c;
+    }
+
+    public void execute() throws BuildException {
+        if (file == null) throw new BuildException ("Attribute 'file' is empty.");
+        if (config == null) throw new BuildException ("Attribute 'config' is empty.");
+        
+        Document document = null;
+        try {
+            DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbfac.newDocumentBuilder();
+            db.setEntityResolver(new XTestEntityResolver());
+            document = db.parse(file);
+        } catch (SAXException saxe) {
+            throw new BuildException( "Exception during parsing "+file.getAbsolutePath()+": "+saxe );
+        } catch (ParserConfigurationException pce) {
+            throw new BuildException( "Exception during parsing "+file.getAbsolutePath()+": "+pce  );
+        } catch (IOException ioe) {
+            throw new BuildException(  "Exception during parsing "+file.getAbsolutePath()+": "+ioe );
+        }
+        
+        org.w3c.dom.Element element = document.getDocumentElement();
+        if ((element != null) && element.getTagName().equals("testconfig")) {
+            visitElement_testconfig(element);
+        }
+        else throw new BuildException("Element testconfig expected.");
     }
     
-    public Config createConfig() {
-        Config c = new Config(project);
-        configs.add(c);
-        return c;
-    }
-
-    public static class PatternSetContainer {
-        private PatternSet defaultPatterns = new PatternSet();
-        private LinkedList additionalPatterns = new LinkedList();
-        protected Project project;
-        
-        public PatternSetContainer(Project p) {
-            this.project = p;
-        }
-        
-        public PatternSet createPatternSet() {
-            PatternSet patterns = new PatternSet();
-            additionalPatterns.add(patterns);
-            return patterns;
-        }
-
-        public PatternSet.NameEntry createInclude() {
-            return defaultPatterns.createInclude();
-        }
-
-        public PatternSet.NameEntry createExclude() {
-            return defaultPatterns.createExclude();
-        }
-
-        public void setIncludes(String includes) {
-            defaultPatterns.setIncludes(includes);
-        }
-
-        public void setExcludes(String excludes) {
-            defaultPatterns.setExcludes(excludes);
-        }
-
-        public void setIncludesfile(File incl) throws BuildException {
-            defaultPatterns.setIncludesfile(incl);
-        }
-
-        public void setExcludesfile(File excl) throws BuildException {
-            defaultPatterns.setExcludesfile(excl);
-        }
-        
-        public PatternSet getPatternSet() {
-            PatternSet p = new PatternSet();
-            Iterator i = additionalPatterns.iterator();
-            
-            p.append(defaultPatterns, project);
-            while (i.hasNext()) {
-                PatternSet src = (PatternSet)i.next();
-                p.append(src, project);
-            }
-            
-            return p;
-        }
-    }
-    
-    public static class Config extends PatternSetContainer {
-        LinkedList  modulesList = new LinkedList();
-        LinkedList  testsList = new LinkedList();
-        String      name        = null;
-        String      modules     = "";
-        String      tests       = "";
-        
-        public Config(Project p) {
-            super(p);
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-        
-        public void setModules(String modules) {
-            this.modules = modules;
-        }
-        
-        public void setTestTypes(String tests) {
-            this.tests = tests;
-        }
-        
-        public Module createModule() {
-            Module m = new Module(project);
-            modulesList.add(m);
-            return m;
-        }
-        
-        public TestType createTestType() {
-            TestType t = new TestType(project);
-            testsList.add(t);
-            return t;
-        }
-        
-        public static class Module extends PatternSetContainer {
-            String  name = null;
-            String  tests = null;
-            
-            public Module(Project p) {
-                super(p);
-            }
-
-            public void setName(String name) {
-                this.name = name;
-            }
-            
-            public void setTestTypes(String tests) {
-                this.tests = tests;
+    /** Scan through org.w3c.dom.Element named testconfig. */
+    void visitElement_testconfig(org.w3c.dom.Element element) { // <testconfig>
+        // element.getValue();
+        org.w3c.dom.NodeList nodes = element.getChildNodes();
+        for (int i = 0; i < nodes.getLength(); i++) {
+            org.w3c.dom.Node node = nodes.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                org.w3c.dom.Element nodeElement = (org.w3c.dom.Element)node;
+                if (nodeElement.getNodeName().equals("setup"))
+                    visitElement_setup(allSetups,nodeElement);
             }
         }
-        
-        public static class TestType extends PatternSetContainer {
-            String  name = null;
-            String  modules = null;
-            
-            public TestType(Project p) {
-                super(p);
-            }
-            
-            public void setName(String name) {
-                this.name = name;
-            }
-            
-            public void setModules(String modules) {
-                this.modules = modules;
-            }
-        }
-    }
-
-    public void execute () throws BuildException {
-        Hashtable   cfg = new Hashtable();
-        Enumeration modules;
-        Iterator    i = configs.iterator();
-        Config      activeCfg = null;
-        
-        if (null == activeConfig)
-            throw new BuildException("Attribute config has to be set.");
-        
-        while (i.hasNext()) {
-            Config c = (Config)i.next();
-            if (activeConfig.equalsIgnoreCase(c.name)) {
-                activeCfg = c;
-                break;
-            }
-        }
-        
-        if (null == activeCfg)
-            throw new BuildException("Configuration '" + activeConfig + "' not found.");
-
-        // fill table by module-test specific info
-        fillTable(cfg, activeCfg.modules, activeCfg.tests, activeCfg.getPatternSet());
-        
-        i = activeCfg.modulesList.iterator();
-        while(i.hasNext()) {
-            Config.Module m = (Config.Module)i.next();
-            appendList(allModules, m.name);
-            if (null != m.tests)
-                updateTableByModule(cfg, m);
-        }
-        
-        i = activeCfg.testsList.iterator();
-        while(i.hasNext()) {
-            Config.TestType t = (Config.TestType)i.next();
-            appendList(allTests, t.name);
-            if (null != t.modules)
-                updateTableByTest(cfg, t);
-        }
-
-        // fill table by module specific info
-        i = activeCfg.modulesList.iterator();
-        while(i.hasNext()) {
-            Config.Module m = (Config.Module)i.next();
-            if (null == m.tests)
-                updateTableByModule(cfg, m);
-        }
-        
-        // fill table by test specific info
-        i = activeCfg.testsList.iterator();
-        while(i.hasNext()) {
-            Config.TestType t = (Config.TestType)i.next();
-            if (null == t.modules)
-                updateTableByTest(cfg, t);
-        }
-        
-        // fill table by defaults
-        i = cfg.keySet().iterator();
-        while (i.hasNext()) {
-            Vector v = (Vector)cfg.get(i.next());
-            Iterator j = v.iterator();
-            while(j.hasNext()) {
-                XConfig.Test t = (XConfig.Test)j.next();
-                if (null == t.getPattern()) {
-                    t.setPattern(getDefaultPattern(t.getType()));
+                
+        org.w3c.dom.Element rightConfig = null;
+        for (int i = 0; i < nodes.getLength(); i++) {
+            org.w3c.dom.Node node = nodes.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                org.w3c.dom.Element nodeElement = (org.w3c.dom.Element)node;
+                if (nodeElement.getNodeName().equals("config")) {
+                    org.w3c.dom.Attr attr = nodeElement.getAttributeNode("name");
+                    if (attr == null) 
+                        throw new BuildException("Element 'config' has to have attribute 'name'."); 
+                    if (attr.getValue().equals(config)) {
+                        if (rightConfig != null)
+                            throw new BuildException("More than one config with name "+config+" found.");
+                        rightConfig = nodeElement;
+                    }
                 }
             }
         }
-
-        // set config object
-        xconfig = new XConfig(cfg);
+        if (rightConfig == null) 
+            throw new BuildException("Config name "+ config + " not found.");
+        visitElement_config(rightConfig);
+        
+        mconfig = new MConfig(cfg);
+        if (config_setup != null) {
+            MConfig.Setup config_setup_object = (MConfig.Setup)allSetups.get(config_setup);
+            mconfig.setConfigSetup(config_setup_object);
+        }
     }
     
-    private void fillTable(Hashtable tbl, String modules, String tests, PatternSet pattern) {
-        StringTokenizer tt = new StringTokenizer(tests, ",");
-        String tst [] = new String [tt.countTokens()];
-        int i = 0;
+    /** Scan through org.w3c.dom.Element named setup. */
+    void visitElement_setup(Hashtable allSetups, org.w3c.dom.Element element) { // <setup>
+        // element.getValue();
+        org.w3c.dom.Attr attr = element.getAttributeNode("name");
+        if (attr == null) throw new BuildException ("Element 'setup' has to have attribute 'name'.");
+
+        String name = attr.getValue();
+
+        org.w3c.dom.Element start_node = null;
+        org.w3c.dom.Element stop_node = null;
         
-        while(tt.hasMoreTokens()) {
-            String test = tt.nextToken();
-            appendList(allTests, test);
-            tst[i++] = test;
+        org.w3c.dom.NodeList nodes = element.getChildNodes();
+        for (int i = 0; i < nodes.getLength(); i++) {
+            org.w3c.dom.Node node = nodes.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                org.w3c.dom.Element nodeElement = (org.w3c.dom.Element)node;
+                if (nodeElement.getNodeName().equals("start")) {
+                    if (start_node != null) throw new BuildException("More than one start element found.");
+                    start_node = nodeElement;
+                }
+                if (nodeElement.getNodeName().equals("stop")) {
+                    if (stop_node != null) throw new BuildException("More than one stop element found.");
+                    stop_node = nodeElement;
+                }
+            }
         }
         
-        StringTokenizer tm = new StringTokenizer(modules, ",");
-        while(tm.hasMoreTokens()) {
-            String module = tm.nextToken();
-            appendList(allModules, module);
-            for(i = 0; i < tst.length; i++) {
-                updateTable(tbl, module, tst[i], pattern);
+        MConfig.Setup.StartStop start = null, stop = null;
+        if (start_node != null)
+            start = visitElement_start(start_node);
+        if (stop_node != null)
+            stop = visitElement_start(stop_node);
+        
+        MConfig.Setup setup = new MConfig.Setup();
+        setup.setStart(start);
+        setup.setStop(stop);
+        allSetups.put(name, setup);
+    }
+    
+    /** Scan through org.w3c.dom.Element named start. */
+    MConfig.Setup.StartStop visitElement_start(org.w3c.dom.Element element) { // <start>
+        // element.getValue();
+        
+        MConfig.Setup.StartStop ss = new MConfig.Setup.StartStop();
+        org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
+        for (int i = 0; i < attrs.getLength(); i++) {
+            org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
+            if (attr.getName().equals("dir")) { // <start dir="???">
+                ss.dir = new File(attr.getValue());
+            }
+            if (attr.getName().equals("target")) { // <start target="???">
+                ss.target = attr.getValue();
+            }
+            if (attr.getName().equals("antfile")) { // <start antfile="???">
+                ss.antfile = attr.getValue();
+            }
+        }
+        return ss;
+    }
+    
+    /** Scan through org.w3c.dom.Element named config. */
+    void visitElement_config(org.w3c.dom.Element element) { // <config>
+        String name = null;
+        String default_testtypes = null;
+        String default_attributes = null;
+        
+        Hashtable config_properties = new Hashtable();
+        
+        // element.getValue();
+        org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
+        for (int i = 0; i < attrs.getLength(); i++) {
+            org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
+            if (attr.getName().equals("name")) { // <config name="???">
+                name = attr.getValue();
+            }
+            else if (attr.getName().equals("defaultAttributes")) { // <config attributes="???">
+                default_attributes = attr.getValue();
+            }
+            else if (attr.getName().equals("defaultTesttypes")) { // <config testtypes="???">
+                default_testtypes = attr.getValue();
+            }
+            else if (attr.getName().equals("setup")) { // <config setup="???">
+                config_setup = attr.getValue();
+            }
+            else {
+                throw new BuildException ("Unexpected attribute '" + attr.getName() + "'.");
+            }
+        }
+        
+        if (name == null) throw new BuildException ("Attribute 'name' has to be set.");
+        
+        visitAllProperties(config_properties, element);
+        
+        MConfig.TestGroup group;
+            
+        org.w3c.dom.NodeList nodes = element.getChildNodes();
+        for (int i = 0; i < nodes.getLength(); i++) {
+            org.w3c.dom.Node node = nodes.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                org.w3c.dom.Element nodeElement = (org.w3c.dom.Element)node;
+                if (nodeElement.getNodeName().equals("module")) {
+                    group = visitElement_module(nodeElement, default_testtypes, default_attributes);
+                    group.addProperties(config_properties);
+                    cfg.add(group); 
+                }
+                if (nodeElement.getNodeName().equals("testtype")) {
+                    group = visitElement_testtype(nodeElement, default_attributes);
+                    group.addProperties(config_properties);
+                    cfg.add(group); 
+                }
+                
             }
         }
     }
     
-    private void updateTableByModule(Hashtable tbl, Config.Module m) {
-        Enumeration t;
+    /** Scan through org.w3c.dom.Element named module. */
+    MConfig.TestGroup visitElement_module(org.w3c.dom.Element element, String default_testtypes, String default_attributes) { // <module>
+        // element.getValue();
         
-        if (null == m.tests)
-            t = allTests.elements();
-        else
-            t = new StringTokenizer(m.tests, ",");
+        String name = null;
+        String testtypes = default_testtypes;
+        String attributes = default_attributes;
+        String setup = null;
         
-        while(t.hasMoreElements()) {
-            updateTable(tbl, m.name, (String)t.nextElement(), m.getPatternSet());
-        }
-    }
-
-    private void updateTableByTest(Hashtable tbl, Config.TestType t) {
-        Enumeration m;
+        MConfig.TestGroup group = new MConfig.TestGroup();
         
-        if (null == t.modules)
-            m = allModules.elements();
-        else
-            m = new StringTokenizer(t.modules, ",");
-            
-        while(m.hasMoreElements()) {
-            updateTable(tbl, (String)m.nextElement(), t.name, t.getPatternSet());
-        }
-    }
-    
-    private void updateTable(Hashtable tbl, String module, String test, PatternSet pattern) {
-        Vector          v = (Vector)tbl.get(module);
-        XConfig.Test    t;
-        
-        if (null == v) {
-            v = new Vector();
-            tbl.put(module, v);
-        }
-        
-        t = findTest(v, test);
-        
-        if (null == t) {
-            t = new XConfig.Test(test);
-            v.add(t);
-        }
-        
-        if (null == t.getPattern()) {
-            if (isPatternSetEmpty(pattern))
-                pattern = null;
-            
-            t.setPattern(pattern);
-        }
-    }
-
-    private XConfig.Test findTest(Vector tests, String type) {
-        Iterator i = tests.iterator();
-        while (i.hasNext()) {
-            XConfig.Test t = (XConfig.Test)i.next();
-            if (type.equals(t.getType())) {
-                return t;
+        org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
+        for (int i = 0; i < attrs.getLength(); i++) {
+            org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
+            if (attr.getName().equals("attributes")) { // <module attributes="???">
+                attributes = attr.getValue();
+            }
+            else if (attr.getName().equals("name")) { // <module name="???">
+                name = attr.getValue();
+            }
+            else if (attr.getName().equals("testtypes")) { // <module testtypes="???">
+                testtypes = attr.getValue();
+            }
+            else if (attr.getName().equals("setup")) { // <module setup="???">
+                setup = attr.getValue();
+            }
+            else {
+                throw new BuildException ("Unexpected attribute '" + attr.getName() + "'.");
             }
         }
-        return null;
-    }
-    
-    private boolean isPatternSetEmpty(PatternSet p) {
-        return  null == p ||
-                ((null == p.getIncludePatterns(project) || 0 == p.getIncludePatterns(project).length) && 
-                 (null == p.getExcludePatterns(project) || 0 == p.getExcludePatterns(project).length));
-    }
-    
-    private PatternSet getDefaultPattern(String testtype) {
-        PatternSet p = null;
         
-        if (testtype.equals("unit"))
-            p = DEFAULT_PATTERN_UNIT;
-        else
-            p = DEFAULT_PATTERN;
+        if (name == null || testtypes == null || attributes == null)
+            throw new BuildException ("Element 'module' has to have attriutes 'name', 'testtypes' and 'attributes'.");
         
-        return p;
+        Hashtable module_props = new Hashtable();
+        
+        visitAllProperties(module_props, element);
+        
+        if (setup != null) {
+            MConfig.Setup module_setup = (MConfig.Setup)allSetups.get(setup);
+            group.setSetup(module_setup);
+        }
+        group.setProperties(module_props);
+        StringTokenizer testtypes_tokens = new StringTokenizer(testtypes,",");
+        while (testtypes_tokens.hasMoreTokens()) {
+            String testtype = testtypes_tokens.nextToken();
+            updateTable(group, name, testtype, attributes);
+        }
+        
+        return group;
     }
     
-    private void appendList(List list, String element) {
-        if (!list.contains(element))
-            list.add(element);
+    /** Scan through org.w3c.dom.Element named testtype. */
+    MConfig.TestGroup visitElement_testtype(org.w3c.dom.Element element, String default_attributes) { // <testtype>
+        // element.getValue();
+        
+        String name = null;
+        String modules = null;
+        String attributes = default_attributes;
+        String setup = null;
+        
+        MConfig.TestGroup group = new MConfig.TestGroup();
+        
+        org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
+        for (int i = 0; i < attrs.getLength(); i++) {
+            org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
+            if (attr.getName().equals("attributes")) { // <testtype attributes="???">
+                attributes = attr.getValue();
+            }
+            else if (attr.getName().equals("modules")) { // <testtype modules="???">
+                modules = attr.getValue();
+            }
+            else if (attr.getName().equals("name")) { // <testtype name="???">
+                name = attr.getValue();
+            }
+            else if (attr.getName().equals("setup")) { // <testtype setup="???">
+                setup = attr.getValue();
+            }
+            else {
+                throw new BuildException ("Unexpected attribute '" + attr.getName() + "'.");
+            }
+        }
+        
+        if (name == null || modules == null || attributes == null)
+            throw new BuildException ("Element 'module' has to have attriutes 'name', 'modules' and 'attributes'.");
+        
+        Hashtable group_props = new Hashtable();
+        
+        visitAllProperties(group_props, element);
+        
+        if (setup != null) {
+            MConfig.Setup group_setup = (MConfig.Setup)allSetups.get(setup);
+            group.setSetup(group_setup);
+        }
+        group.setProperties(group_props);
+        StringTokenizer modules_tokens = new StringTokenizer(modules,",");
+        while (modules_tokens.hasMoreTokens()) {
+            String module = modules_tokens.nextToken();
+            updateTable(group, module, name, attributes);
+        } 
+        
+        return group;
+    }
+    
+    void visitAllProperties(Hashtable table, Element element) {
+        org.w3c.dom.NodeList nodes = element.getChildNodes();
+        for (int i = 0; i < nodes.getLength(); i++) {
+            org.w3c.dom.Node node = nodes.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                org.w3c.dom.Element nodeElement = (org.w3c.dom.Element)node;
+                if (nodeElement.getNodeName().equals("property"))
+                    visitElement_property(table, nodeElement);   
+            }
+        }
+    }
+    
+    /** Scan through org.w3c.dom.Element named property. */
+    void visitElement_property(Hashtable properties, org.w3c.dom.Element element) { // <property>
+        // element.getValue();
+
+        String name = null;
+        String value = null;
+        String file = null;
+        
+        org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
+        for (int i = 0; i < attrs.getLength(); i++) {
+            org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
+            if (attr.getName().equals("file")) { // <property file="???">
+                file = attr.getValue();
+            }
+            else if (attr.getName().equals("name")) { // <property name="???">
+                name =  attr.getValue();
+            }
+            else if (attr.getName().equals("value")) { // <property value="???">
+                value = attr.getValue();
+            }
+            else {
+                throw new BuildException ("Unexpected attribute '" + attr.getName() + "'.");
+            }
+        }
+        
+        if (name == null && file == null) throw new BuildException("Either 'name' or 'file' attribute is empty.",location);
+        if (name != null && value == null) throw new BuildException("Attribute 'value' is empty.",location);
+        if (value != null && file != null) throw new BuildException("Attributes 'file' and 'value' can't be defined together.",location);
+ 
+        if (name != null) 
+            properties.put(name,value);
+        if (file != null) 
+            convertProperties(properties, file);
+        
+    }
+    
+    private void convertProperties(Hashtable table, String filename)  {
+       try {  
+         File file = new File (filename);
+         if (!file.exists()) throw new BuildException("Property file "+file.getAbsolutePath()+" not found.");
+         java.util.Properties javaprop = new java.util.Properties();
+         BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+         javaprop.load(bis);
+         bis.close();
+         Enumeration enum = javaprop.propertyNames();
+         while (enum.hasMoreElements()) {
+             String name2 = (String) enum.nextElement();
+             table.put(name2,javaprop.getProperty(name2));
+         }
+       }
+       catch (IOException e) { throw new BuildException(e); }
+    }
+    
+    private void updateTable(MConfig.TestGroup group, String module, String testtype, String attributes) {
+        MConfig.Test test = new MConfig.Test(module,testtype);
+        StringTokenizer ta = new StringTokenizer(attributes, ",");
+        String [] attrs = new String [ta.countTokens()];
+        int j = 0;
+        while(ta.hasMoreTokens()) {
+            String atr = ta.nextToken();
+            attrs[j++] = atr;
+        }
+        test.setAttributes(attrs);
+        group.addTest(test);   
     }
 }

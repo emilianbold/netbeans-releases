@@ -10,6 +10,7 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 /*
  * NbExecutor.java
  *
@@ -23,19 +24,24 @@ import org.apache.tools.ant.types.*;
 import org.apache.tools.ant.taskdefs.*;
 
 import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 /**
  *
- * @author  vs124454
+ * @author  lm97939
  * @version 
  */
 public class NbExecutor extends Task {
     
-    String targetName   = null;
-    String targetParamModule     = null;
-    String targetParamTestType   = null;
-    String targetParamIncludes   = null;
-    String targetParamExcludes   = null;
+    String targetName = null;
+    String targetParamModule   = null;
+    String targetParamTestType = null;
+    String targetParamTestAttributes = null;
+    String mode = null;
+    
+    private static final String ERRORS_PROP = "xtest.errors";
     
     public void setTargetName(String name) {
         this.targetName = name;
@@ -48,15 +54,15 @@ public class NbExecutor extends Task {
     public void setTargetParamTesttype(String param) {
         this.targetParamTestType = param;
     }
+
+    public void setTargetParamTestAttributes(String param) {
+        this.targetParamTestAttributes = param;
+    }
     
-    public void setTargetParamIncludes(String param) {
-        this.targetParamIncludes = param;
+    public void setRunningMode(String mode) {
+        this.mode = mode;
     }
-
-    public void setTargetParamExcludes(String param) {
-        this.targetParamExcludes = param;
-    }
-
+    
     public void execute () throws BuildException {
         if (null == targetName || 0 == targetName.length())
             throw new BuildException("Attribute 'targetname' has to be set.");
@@ -64,23 +70,31 @@ public class NbExecutor extends Task {
             throw new BuildException("Attribute 'targetParamModule' has to be set.");
         if (null == targetParamTestType || 0 == targetParamTestType.length())
             throw new BuildException("Attribute 'targetParamTestType' has to be set.");
-        if (null == targetParamIncludes || 0 == targetParamIncludes.length())
-            throw new BuildException("Attribute 'targetParamIncludes' has to be set.");
-        if (null == targetParamExcludes || 0 == targetParamExcludes.length())
-            throw new BuildException("Attribute 'targetParamExcludes' has to be set.");
         
-        XConfig cfg = NbTestConfig.getXConfig();
+        MConfig cfg = NbTestConfig4.getMConfig();                
+        
         if (null == cfg)
-            throw new BuildException("XTest configuration wasn't chosen, use call xtestconfig task first (org.netbeans.xtest.NbTestConfig).", getLocation());
+            throw new BuildException("XTest configuration wasn't chosen, use call xtestconfig task first.", getLocation());        
         
-        Enumeration modules = cfg.getModules();
-        while(modules.hasMoreElements()) {
-            String module = (String)modules.nextElement();
-            Enumeration tests = cfg.getTests(module);
+        MConfig.Setup setup = cfg.getConfigSetup();
+        if (mode.equalsIgnoreCase("run") && setup != null) executeStart(setup);
+
+        Enumeration all_tests = cfg.getAllTests();
+        while(all_tests.hasMoreElements()) {
+          try {
+            MConfig.TestGroup test_group = (MConfig.TestGroup)all_tests.nextElement();
+            
+            MConfig.Setup msetup = test_group.getSetup();
+            if (mode.equalsIgnoreCase("run") && msetup != null) executeStart(msetup);
+            
+            Hashtable props = test_group.getProperties();
+            
+            Enumeration tests = test_group.getTests();
 
             while(tests.hasMoreElements()) {
-                XConfig.Test test = (XConfig.Test)tests.nextElement();
-                CallTarget   callee = (CallTarget)getProject().createTask("antcall");
+              MConfig.Test test = (MConfig.Test) tests.nextElement();
+              try {  
+                CallTarget   callee = (CallTarget) getProject().createTask( "antcall" );
                 String       pattern;
                 
                 callee.setTarget(targetName);
@@ -89,43 +103,64 @@ public class NbExecutor extends Task {
 
                 Property paramModule = callee.createParam();
                 Property paramTestType = callee.createParam();
-                Property paramIncludes = callee.createParam();
-                Property paramExcludes = callee.createParam();
-
+                Property paramTestAttribute = callee.createParam();
+                
                 paramModule.setName(targetParamModule);
-                paramModule.setValue(module);
+                paramModule.setValue(test.getModule());
                 paramTestType.setName(targetParamTestType);
                 paramTestType.setValue(test.getType());
-                
-                pattern = listPatterns(test.getPattern().getIncludePatterns(project));
-                if (pattern.length () > 0) {
-                    paramIncludes.setName(targetParamIncludes);
-                    paramIncludes.setValue(pattern);
+                paramTestAttribute.setName(targetParamTestAttributes);
+                paramTestAttribute.setValue(test.getAttributesAsString());
+
+                Set set = props.entrySet();
+                Iterator it = set.iterator();
+                while (it.hasNext()) {
+                    Map.Entry map = (Map.Entry) it.next();
+                    Property newproperty = callee.createParam();
+                    newproperty.setName((String)map.getKey());
+                    newproperty.setValue((String)map.getValue());
                 }
-                
-                pattern = listPatterns(test.getPattern().getExcludePatterns(project));
-                if (pattern.length () > 0) {
-                    paramExcludes.setName(targetParamExcludes);
-                    paramExcludes.setValue(pattern);
-                }
-                
-                callee.execute();
+                callee.execute(); 
+              }
+              catch (BuildException e) {
+                  log("Exception during executiong test (module="+test.getModule()+",type="+test.getType()+"):\n"+e.toString(),Project.MSG_ERR);
+                  logError(e);
+              }
             }
-        }
+            if (mode.equalsIgnoreCase("run") && msetup != null) executeStop(msetup);
+          }
+          catch (BuildException e) {
+              log("Exception during executiong test:\n"+e.toString(),Project.MSG_ERR);
+              logError(e);
+          }
+        } 
+        if (mode.equalsIgnoreCase("run") && setup != null) executeStop(setup);
+    } 
+    
+    private void logError(Exception e) {
+        String prop = System.getProperty(ERRORS_PROP,"");   
+        prop = prop + "\n" + e.toString();
+        System.setProperty(ERRORS_PROP,prop);
     }
     
-    private String listPatterns(String [] patterns) {
-        if (null == patterns)
-            return "";
-        
-        StringBuffer buf = new StringBuffer();
-        for(int i = 0; i < patterns.length; i++) {
-            if (0 != i)
-                buf.append(",");
-                
-            buf.append(patterns[i]);
-        }
-        
-        return buf.toString();
+    private void executeStart(MConfig.Setup setup) throws BuildException {
+        executeSetup(setup.getStartDir(), setup.getStartAntfile(), setup.getStartTarget());
     }
+
+    private void executeStop(MConfig.Setup setup) throws BuildException {
+        executeSetup(setup.getStopDir(), setup.getStopAntfile(), setup.getStopTarget());
+    }
+    
+    private void executeSetup(File dir, String antfile, String targetname) throws BuildException {
+        if (antfile == null && targetname == null) return;
+        Ant ant = (Ant) project.createTask("ant");
+        ant.setOwningTarget(target);
+        ant.setLocation(location);
+        ant.init();
+        ant.setDir(dir);
+        ant.setAntfile(antfile);
+        ant.setTarget(targetname);
+        ant.execute();
+    }
+        
 }
