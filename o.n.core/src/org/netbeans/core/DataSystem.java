@@ -132,8 +132,8 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
       null,
       SystemAction.get (org.openide.actions.NewAction.class),
       null,
-      SystemAction.get (org.openide.actions.PropertiesAction.class),
       SystemAction.get (org.openide.actions.ToolsAction.class),
+      SystemAction.get (org.openide.actions.PropertiesAction.class),
     };
   }
 
@@ -235,6 +235,8 @@ static final long serialVersionUID =-2266375092419944364L;
 
 /*
  * Log
+ *  25   Gandalf   1.24        12/22/99 Ian Formanek    Fixed order of actions 
+ *       in popup menu
  *  24   Gandalf   1.23        11/29/99 Petr Kuzel      Repository node tagged 
  *       by Repository cookie.
  *  23   Gandalf   1.22        11/5/99  Jaroslav Tulach WeakListener has now 
