@@ -118,8 +118,12 @@ public class NonGui extends NbTopManager implements Runnable {
             userDir = System.getProperty ("netbeans.user");
             
             if (userDir == null) {
-                userDir = getHomeDir ();
-                System.setProperty("netbeans.user", homeDir); // NOI18N                                
+                System.err.println(NbBundle.getMessage(NonGui.class, "ERR_no_user_directory"));
+                doExit(1);
+            }
+            if (userDir.equals(getHomeDir())) {
+                System.err.println(NbBundle.getMessage(NonGui.class, "ERR_user_directory_is_home"));
+                doExit(1);
             }
             
             /** #11735. Relative userDir is converted to absolute*/
@@ -137,26 +141,10 @@ public class NonGui extends NbTopManager implements Runnable {
             System.setProperty("netbeans.user", userDir); // NOI18N
             
             File systemDirFile = new File (userDir, NbRepository.SYSTEM_FOLDER);
-            if (!systemDirFile.isDirectory ()) {
-                // try to create it
-                makedir (systemDirFile);
-                if (! userDir.equals (homeDir)) {
-                    // Need to set up a multiuser user directory. Formerly in launcher.
-
-                    touch (new File (systemDirFile, "project.last_hidden")); // NOI18N
-                    touch (new File (systemDirFile, "project.basic_hidden")); // NOI18N
-                    File projDir = new File (systemDirFile, "Projects"); // NOI18N
-                    makedir (projDir);
-                    touch (new File (projDir, "workspace.ser_hidden")); // NOI18N
-                    makedir (new File (new File (userDir, DIR_MODULES), "autoload")); // NOI18N
-                    makedir (new File (new File (userDir, DIR_MODULES), "eager")); // NOI18N
-                    File libDir = new File (userDir, "lib"); // NOI18N
-                    makedir (libDir);
-                    makedir (new File (libDir, "ext")); // NOI18N
-                    makedir (new File (libDir, "patches")); // NOI18N
-                }
-            }
+            makedir (systemDirFile);
             systemDir = systemDirFile.getAbsolutePath ();
+            makedir (new File (new File (userDir, DIR_MODULES), "autoload")); // NOI18N
+            makedir (new File (new File (userDir, DIR_MODULES), "eager")); // NOI18N
         }
         return userDir;
     }
@@ -173,15 +161,6 @@ public class NonGui extends NbTopManager implements Runnable {
                 System.err.println (new MessageFormat(getString("CTL_CannotCreateSysDir_text")).format(arg));
                 doExit (7);
             }
-        }
-    }
-
-    private static void touch (File f) {
-        try {
-            new FileOutputStream (f).close ();
-        } catch (IOException ioe) {
-            System.err.println (ioe);
-            doExit (8);
         }
     }
 
@@ -462,6 +441,7 @@ public class NonGui extends NbTopManager implements Runnable {
     	    StartLog.logStart ("Modules initialization"); // NOI18N
 
             FileSystem sfs = getRepository().getDefaultFileSystem();
+            getUserDir();
             File moduleDirHome = new File(homeDir, DIR_MODULES);
             File moduleDirUser;
             if (homeDir.equals(userDir)) {
