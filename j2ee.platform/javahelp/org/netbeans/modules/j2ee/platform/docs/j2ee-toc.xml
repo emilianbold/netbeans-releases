@@ -93,7 +93,7 @@
       
       <tocitem text="Tag Libraries" >
           <tocitem text="Managing a Library" target="taglib_manage"/>
-          <tocitem text="Creating a Tag Library"  target="taglib_create_separate"/>     
+          <tocitem text="Creating a Reusable Tag Library"  target="taglib_create_separate"/>     
       </tocitem>
       <tocitem text="Tag Library Descriptors" >
           <tocitem text="About Tag Library Descriptors" target="about_tld"  />        
