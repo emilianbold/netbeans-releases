@@ -153,9 +153,9 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
      */
     public static Project getProjectFor(AntProjectHelper helper) {
         Reference/*<Project>*/ projectRef = (Reference) helper2Project.get(helper);
-        assert projectRef != null;
+        assert projectRef != null : "Found a Project reference for " + helper;
         Project p = (Project) projectRef.get();
-        assert p != null;
+        assert p != null : "Found a non-null Project for " + helper;
         return p;
     }
     
