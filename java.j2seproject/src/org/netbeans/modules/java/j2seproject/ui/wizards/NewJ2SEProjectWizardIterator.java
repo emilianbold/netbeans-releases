@@ -100,7 +100,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
             J2SEProjectGenerator.createProject(dirF, codename, displayName, sourceFolder, testFolder );
         }
         else {
-            AntProjectHelper h = J2SEProjectGenerator.createProject (dirF, codename, displayName, mainClass, MANIFEST_FILE );
+            AntProjectHelper h = J2SEProjectGenerator.createProject (dirF, codename, displayName, mainClass, type == TYPE_APP ? MANIFEST_FILE : null);
             if (mainClass != null && mainClass.length () > 0) {
                 try {
                     //String sourceRoot = "src"; //(String)j2seProperties.get (J2SEProjectProperties.SRC_DIR);
