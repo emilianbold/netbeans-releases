@@ -17,6 +17,7 @@ import java.io.File;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 
 /**
@@ -37,9 +38,13 @@ public class CustomizerSources extends javax.swing.JPanel implements J2SECustomi
         initComponents();
         this.vps = new VisualPropertySupport( j2seProperties );
         this.sources = new VisualSourceRootsSupport((J2SEProject)j2seProperties.getProject(),this.sourceRoots,this.addSourceRoot,
-                this.removeSourceRoot, this.upSourceRoot, this.downSourceRoot);
+                this.removeSourceRoot, this.upSourceRoot, this.downSourceRoot,
+                NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInTests"));
         this.tests = new VisualSourceRootsSupport((J2SEProject)j2seProperties.getProject(),this.testRoots,this.addTestRoot,
-                this.removeTestRoot, this.upTestRoot, this.downTestRoot);
+                this.removeTestRoot, this.upTestRoot, this.downTestRoot,
+                NbBundle.getMessage(CustomizerSources.class,"TXT_ProjectOwnedRoot"), NbBundle.getMessage(CustomizerSources.class,"TXT_AlreadyInSources"));
+        this.sources.setRelatedVisualSourceRootsSupport(this.tests);
+        this.tests.setRelatedVisualSourceRootsSupport(this.sources);
     }
 
     public void initValues() {

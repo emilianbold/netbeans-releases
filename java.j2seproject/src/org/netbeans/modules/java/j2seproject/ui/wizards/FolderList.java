@@ -14,6 +14,7 @@
 package org.netbeans.modules.java.j2seproject.ui.wizards;
 
 
+import java.awt.Color;
 import java.awt.Component;
 import java.io.File;
 import javax.swing.DefaultListModel;
@@ -23,6 +24,7 @@ import javax.swing.JList;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
 
 
@@ -169,8 +171,16 @@ public final class FolderList extends javax.swing.JPanel {
             int[] indecesToSelect = new int[files.length];
             DefaultListModel model = (DefaultListModel)this.roots.getModel();
             for (int i=0, index=model.size(); i<files.length; i++, index++) {
-                model.addElement (FileUtil.normalizeFile(files[i]));
-                indecesToSelect[i] = index;
+                File normalizedFile = FileUtil.normalizeFile(files[i]);
+                int pos = model.indexOf (normalizedFile);
+                if (pos == -1) {
+                    model.addElement (normalizedFile);
+                    indecesToSelect[i] = index;
+                }
+                else {
+                    indecesToSelect[i] = pos;
+                }
+
             }
             this.roots.setSelectedIndices(indecesToSelect);
             this.firePropertyChange(PROP_FILES, null, null);
@@ -184,8 +194,12 @@ public final class FolderList extends javax.swing.JPanel {
     
     private static class Renderer extends DefaultListCellRenderer {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            File f = (File) value;            
-            return super.getListCellRendererComponent(list, f.getAbsolutePath(), index, isSelected, cellHasFocus);
+            File f = (File) value;
+            Component result = super.getListCellRendererComponent(list, f.getAbsolutePath(), index, isSelected, cellHasFocus);
+            if (FileOwnerQuery.getOwner(f.toURI())!=null) {
+                result.setForeground (new Color(164,0,0));
+            }
+            return result;
         }
         
     }

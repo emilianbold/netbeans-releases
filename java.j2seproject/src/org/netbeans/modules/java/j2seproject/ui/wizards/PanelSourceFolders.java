@@ -32,6 +32,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.netbeans.api.project.FileOwnerQuery;
 
 //XXX There should be a way how to add nonexistent test dir
 
@@ -115,6 +116,10 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             if (ploc.equals (sloc) || ploc.startsWith (sloc + File.separatorChar)) {
                 return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectFolder");
             }
+            if (FileOwnerQuery.getOwner(sources[i].toURI())!=null) {
+                return MessageFormat.format (NbBundle.getMessage(PanelSourceFolders.class,"TXT_AlreadyContainedRoot"),
+                    new Object[] {sources[i].getAbsolutePath()});
+            }
         }
         for (int i=0; i<tests.length; i++) {
             String tloc = tests[i].getAbsolutePath();
@@ -126,6 +131,10 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
                 if (tloc.equals(sloc) || tloc.startsWith(sloc + File.separatorChar) || sloc.startsWith(tloc + File.separatorChar)) {
                     return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalTests");
                 }
+            }
+            if (FileOwnerQuery.getOwner(tests[i].toURI())!=null) {
+                return MessageFormat.format (NbBundle.getMessage(PanelSourceFolders.class,"TXT_AlreadyContainedRoot"),
+                    new Object[] {tests[i].getAbsolutePath()});
             }
         }
         return null;
