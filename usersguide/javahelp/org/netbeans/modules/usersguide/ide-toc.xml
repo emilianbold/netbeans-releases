@@ -10,7 +10,7 @@
 
 <toc version="1.0">
 
-<tocitem text="Core IDE Help" >
+<tocitem text="Core IDE Help"  >
 
 <tocitem text="Legal Notices" target="ide.credits" />
 
@@ -461,76 +461,50 @@
 </tocitem>
 
 
-<tocitem text="Using Version Control in the IDE" target="vcs.overview">
-  <tocitem text="CVS Support" target="vcs.cvs-intro">
-    <tocitem text="Mounting a CVS Filesystem" target="cvs.create-fs" />
-    <tocitem text="New CVS Wizard" target="cvs.wizard" />
-    <tocitem text="Calling CVS Commands" target="cvs.calling" />
-    <tocitem text="Saving CVS Command Options" target="cvs.commandopts-save" />
+<tocitem text="Using Version Control in the IDE" >
+  <tocitem text="About" target="vcs.overview" />
+  <tocitem text="Mounting a VCS Working Directory" target="vcsgeneric.mounting" />
+  <tocitem text="Setting a Relative Mount Point" target="vcs.mountpoint" />
+  <tocitem text="Calling Version Control Commands" target="vcsgeneric.calling" />
+  <tocitem text="VCS Command Output" target="vcs.output" />
+  <tocitem text="Versioning Window" target="vcs.revexplorer" />
+  <tocitem text="Refreshing VCS File Status Information" target="vcs.refresh" />
+  <tocitem text="Adding a Binary File to a VCS Repository" target="vcs.binary" />         
+  <tocitem text="Searching for a File by VCS Status" target="search.status" />
+  <tocitem text="VCS Support on Windows 95, Windows 98, and Windows ME" target="vcs.cygwin" />
+  <tocitem text="Configuring Version Control Settings" target="vcs.globalsettings" />
+  <tocitem text="CVS Support" >
+    <tocitem text="About" target="vcs.cvs-intro" />
+    <tocitem text="Getting Files from a CVS Repository" target="cvs.checkout" />
     <tocitem text="CVS Commands" target="cvs.commands" />
+    <tocitem text="Comparing File Revisions Visually" target="vcs.diffs" />
     <tocitem text="Merging File Revisions" target="cvs.merge" />
     <tocitem text="Resolving Merge Conflicts" target="cvs.merge-resolve" />
+    <tocitem text="Creating and Applying a Patch" target="vcs.patch" />
     <tocitem text="Setting Up a Local CVS Repository" target="cvs.local" />
-    <tocitem text="Reconfiguring a CVS Filesystem" target="cvs.settings" />
-    <tocitem text="Built-in Client Filesystem Properties" target="cvs.filesystemproperties" />
-    <tocitem text="Managing Connections to Remote Repositories" target="cvs.password" />
-  </tocitem>
-  <tocitem text="CVS Command Arguments" target="cvs_args_intro">
-    <tocitem text="Add Arguments" target="args_add"/>
-    <tocitem text="Annotate Arguments" target="args_annotate"/>
-    <tocitem text="Checkout Arguments" target="args_checkout"/>
-    <tocitem text="Commit Arguments" target="args_commit"/>
-    <tocitem text="Diff Arguments" target="args_diff"/>
-    <tocitem text="Global Arguments" target="args_global"/>
-    <tocitem text="Log Arguments" target="args_log"/>
-    <tocitem text="Remove Arguments" target="args_remove"/>
-    <tocitem text="Status Arguments" target="args_status"/>
-    <tocitem text="Tag Arguments" target="args_tag"/>
-    <tocitem text="Update Arguments" target="args_update"/>
-  </tocitem>
-    
-  <tocitem text="Generic VCS Support" target="vcs.vcsgeneric">
-    <tocitem text="Mounting a Directory With Generic VCS Support" target="vcsgeneric.mounting" />
-    <tocitem text="Mounting a CVS Directory With Generic VCS Support" target="vcsgeneric.custom-cvs" />
-    <tocitem text="Mounting a PVCS Directory" target="vcsgeneric.custom-pvcs" />
-    <tocitem text="Mounting a Visual Source Safe Directory" target="vcsgeneric.custom-vss" />
-    <tocitem text="New Generic VCS Wizard" target="vcsgeneric.wizard" />
-    <tocitem text="Creating a Custom VCS Profile" target="vcsgeneric.newprofile" />
-    <tocitem text="Calling Version Control Commands" target="vcsgeneric.calling" />
-    <tocitem text="Setting Advanced Options for VCS Commands" target="vcsgeneric.command-opts" />
-    <tocitem text="Modifying VCS Command Parameters and Variables" target="vcsgeneric.modifying" />
-    <tocitem text="Adding and Editing VCS Commands" target="vcsgeneric.add-command" />
-    <tocitem text="VCS Command Properties" target="vcsgeneric.command-props" />
-    <tocitem text="Writing a Refresh Command for Your VCS" target="vcsgeneric.list" />
-    <tocitem text="Variables in VCS Commands" target="vcsgeneric.variables" />
-    <tocitem text="Creating a New Variable" target="vcsgeneric.vars-creating" />
-    <tocitem text="Variable Syntax and Usage" target="vcsgeneric.vars-syntax" />
-    <tocitem text="Runtime Variables" target="vcsgeneric.vars-runtime" />
-    <tocitem text="Substitution Formats for Variables" target="vcsgeneric.vars-subcode" />
-    <tocitem text="Reconfiguring a VCS Filesystem" target="vcsgeneric.settings" />
-    <tocitem text="Generic VCS Filesystems Properties" target="vcsgeneric.filesystemproperties" />
-  </tocitem>
-    <tocitem text="Using VCS Groups" target="vcs.groups" >
+      <tocitem text="CVS Command Arguments" >
+        <tocitem text="Add Arguments" target="args_add"/>
+        <tocitem text="Annotate Arguments" target="args_annotate"/>
+        <tocitem text="Checkout Arguments" target="args_checkout"/>
+        <tocitem text="Commit Arguments" target="args_commit"/>
+        <tocitem text="Diff Arguments" target="args_diff"/>
+        <tocitem text="Global Arguments" target="args_global"/>
+        <tocitem text="Log Arguments" target="args_log"/>
+        <tocitem text="Remove Arguments" target="args_remove"/>
+        <tocitem text="Status Arguments" target="args_status"/>
+        <tocitem text="Tag Arguments" target="args_tag"/>
+        <tocitem text="Update Arguments" target="args_update"/>
+      </tocitem>
+  </tocitem>  <tocitem text="Using VCS Groups" > 
+    <tocitem text="About" target="vcs.groups" />
     <tocitem text="Adding and Deleting a VCS Group" target="vcs.groupsadd" />
     <tocitem text="Adding Files to VCS Groups" target="vcs.groupsaddfile" />
     <tocitem text="Moving and Removing Files From VCS Groups" target="vcs.groupsmovefile" />
     <tocitem text="Calling VCS Commands on VCS Groups" target="vcs.groupscommands" />
     <tocitem text="Preparing VCS Groups for Check-In to the Repository" target="vcs.groupsverify" />
     <tocitem text="Resolving Problems With Grouped Files" target="vcs.groupsresolve" />
-    <tocitem text="Setting VCS Group Properties" target="vcs.groupsproperties" />
+    <tocitem text="Configuring VCS Group Settings" target="vcs.groupsproperties" />
   </tocitem>
-  <tocitem text="VCS Support on Windows 95, Windows 98, and Windows ME" target="vcs.cygwin" />
-  <tocitem text="Setting a Relative Mount Point" target="vcs.mountpoint" />
-  <tocitem text="The Versioning Explorer" target="vcs.revexplorer" />
-  <tocitem text="Using the Versioning Toolbar" target="vcs.toolbar" />
-  <tocitem text="Comparing File Revisions Visually" target="vcs.diffs" />
-  <tocitem text="Creating and Applying a Patch" target="vcs.patch" />
-  <tocitem text="Refreshing VCS File Statuses" target="vcs.refresh" />
-  <tocitem text="Version Control Status" target="vcs.status" />
-  <tocitem text="Searching for a File by VCS Status" target="search.status" />
-  <tocitem text="Reviewing VCS Command Status and Output" target="vcs.output" />
-  <tocitem text="Adding Binary Files to a VCS Repository" target="vcs.binary" />         
-  <tocitem text="Global Settings for VCS Filesystems" target="vcs.globalsettings" />
 </tocitem>
 
 
