@@ -206,7 +206,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 hierarchy.updateDesktop(wsa);
                 hierarchy.updateMainWindowBounds(wsa);
                 hierarchy.setSeparateModesVisible(true);
-                hierarchy.updateSplits();
             } else if(changeType == CHANGE_EDITOR_AREA_FRAME_STATE_CHANGED) {
                 if(DEBUG) {
                     debugLog("Editor area frame state changed"); // NOI18N
@@ -244,7 +243,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
 
                 hierarchy.setMaximizedModeView(hierarchy.getModeViewForAccessor(wsa.getMaximizedModeAccessor()));
                 hierarchy.updateDesktop(wsa);
-                hierarchy.updateSplits();
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_MODE_ADDED) {
                 if(DEBUG) {
@@ -310,7 +308,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                     // prefer not to call hierarchy.updateframestates() because it's only needed for the currently opened mode..
                     modeView.updateFrameState();
                 }
-                hierarchy.updateSplits();
             } else if(changeType == CHANGE_MODE_TOPCOMPONENT_REMOVED) {
                 if(DEBUG) {
                     debugLog("TopComponent removed"); // NOI18N
@@ -365,8 +362,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 }                
 
                 hierarchy.updateDesktop(wsa);
-                // PENDING Updating splits - figure out how to init just newly added ones.
-                hierarchy.updateSplits();
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_TOPCOMPONENT_ARRAY_ADDED) {
                 if(DEBUG) {
@@ -375,7 +370,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 }
 
                 hierarchy.updateDesktop(wsa);
-                hierarchy.updateSplits();
             } else if(changeType == CHANGE_TOPCOMPONENT_ARRAY_REMOVED) {
                 if(DEBUG) {
                     debugLog("TopComponent array removed:" // NOI18N
@@ -383,7 +377,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 }
 
                 hierarchy.updateDesktop(wsa);
-                hierarchy.updateSplits();
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_TOPCOMPONENT_ACTIVATED) {
                 if(DEBUG) {
@@ -398,7 +391,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 }
                 
                 hierarchy.updateDesktop();
-                hierarchy.updateSplits();
             } else if(changeType == CHANGE_DND_PERFORMED) {
                 if(DEBUG) {
                     debugLog("DnD performed"); // NOI18N
@@ -406,7 +398,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
 
                 hierarchy.setMaximizedModeView(hierarchy.getModeViewForAccessor(wsa.getMaximizedModeAccessor()));
                 hierarchy.updateDesktop();
-                hierarchy.updateSplits();
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_UI_UPDATE) {
                 if(DEBUG) {
@@ -427,7 +418,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 }
                 hierarchy.setMaximizedModeView(hierarchy.getModeViewForAccessor(wsa.getMaximizedModeAccessor()));
                 hierarchy.updateDesktop(wsa);
-                hierarchy.updateSplits();
                 hierarchy.activateMode(wsa.getActiveModeAccessor());
             }
         }
@@ -464,11 +454,13 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         if(DEBUG) {
             debugLog(wsa.getModeStructureAccessor().toString());
         }
+        // Prepare main window (pack and set bounds).
+        hierarchy.getMainWindow().prepareWindow();
 
-        hierarchy.setMaximizedModeView(hierarchy.getModeViewForAccessor(wsa.getMaximizedModeAccessor()));
+        if(DEBUG) {
+            debugLog("Init view 4="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
+        }
 
-        // Init desktop.
-        hierarchy.updateDesktop(wsa);
 
         if(DEBUG) {
             debugLog("Init view 2="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
@@ -480,15 +472,14 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             debugLog("Init view 3="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
         }
         
-        // Prepare main window (pack and set bounds).
-        hierarchy.getMainWindow().prepareWindow();
-
-        if(DEBUG) {
-            debugLog("Init view 4="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
-        }
        
         // Shows main window
         hierarchy.getMainWindow().setVisible(true);
+        
+        hierarchy.setMaximizedModeView(hierarchy.getModeViewForAccessor(wsa.getMaximizedModeAccessor()));
+
+        // Init desktop.
+        hierarchy.updateDesktop(wsa);
         
         // XXX Seems it needs to be called after setVisible(true);
         // When tried to be set (maximized) immediately after prepareWindow, it didn't work,
@@ -498,11 +489,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         } else {
             hierarchy.getMainWindow().setExtendedState(wsa.getMainWindowFrameStateSeparated());
         }
-        // XXX #37369 Again this needs to be called after setting possible 
-        // Adjusts positions of splits.
-        // Mkleint: this one gets called too early when the window is not maximazed yet, thus getting wrong bounds.
-        // moved to a later stage..
-//        hierarchy.updateSplits();
         
         
         // Show separate modes.
@@ -537,7 +523,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 if (DEBUG) {
                     debugLog("Installing main window listeners.");
                 }
-                hierarchy.updateSplits();
                 //#40501 it seems that activating mode needs to be done after the splits are recalculated.
                 //otherwise it possibly failes.
                 hierarchy.activateMode(wsa.getActiveModeAccessor());

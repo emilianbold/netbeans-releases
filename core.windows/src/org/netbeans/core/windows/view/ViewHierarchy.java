@@ -501,45 +501,6 @@ final class ViewHierarchy {
         }
     }
     
-    public void updateSplits() {
-        if(maximizedModeView != null) { // PENDING
-            return;
-        }
-        
-        // #38014 The destkop can be null if special switch used.
-        Component desktopComp = getDesktopComponent();
-        if(desktopComp != null) {
-            updateSplitElement(desktop.getSplitRoot(), desktopComp.getSize());
-        }
-    }
-
-    private static void updateSplitElement(ViewElement view, Dimension realSize) {
-        if(view instanceof SplitView) {
-            SplitView sv = (SplitView)view;
-            
-            sv.updateSplit(realSize);
-            
-            Dimension firstRealSize;
-            Dimension secondRealSize;
-            double location = sv.getLocation();
-            int dividerSize = sv.getDividerSize();
-            if(sv.getOrientation() == javax.swing.JSplitPane.VERTICAL_SPLIT) {
-                firstRealSize = new Dimension(realSize.width, (int)(realSize.height * location) - dividerSize);
-                secondRealSize = new Dimension(realSize.width, (int)(realSize.height * (1D - location)) - dividerSize);
-            } else {
-                firstRealSize = new Dimension((int)(realSize.width * location) - dividerSize, realSize.height);
-                secondRealSize = new Dimension((int)(realSize.width * (1D - location)) - dividerSize, realSize.height);
-            }
-
-            updateSplitElement(sv.getFirst(), firstRealSize);
-            updateSplitElement(sv.getSecond(), secondRealSize);
-        } else if(view instanceof EditorView) {
-            EditorView ev = (EditorView)view;
-            updateSplitElement(ev.getEditorArea(), realSize);
-        }
-    }
-
-    
     public void updateMainWindowBounds(WindowSystemAccessor wsa) {
         if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
             mainWindow.setBounds(wsa.getMainWindowBoundsJoined());
@@ -557,32 +518,32 @@ final class ViewHierarchy {
     }
     
     private void setMaximizedViewIntoDesktop(ViewElement elem) {
-        elem.updateAWTHierarchy();
+        elem.updateAWTHierarchy(desktop.getInnerPaneDimension());
+        
         desktop.setMaximizedView(elem);
+        desktop.getDesktopComponent().invalidate();
+        ((JComponent)desktop.getDesktopComponent()).revalidate();
+        desktop.getDesktopComponent().repaint();
     }
     
     
     private void setSplitRootIntoDesktop(ViewElement root) {
         if (root != null) {
-            root.updateAWTHierarchy();
+            root.updateAWTHierarchy(desktop.getInnerPaneDimension());
         }
         desktop.setSplitRoot(root);
-//        EditorView editView = findEditorAreaElement();
-//        if (editView != null) {
-//            // hack to trigger readding the editor view compnent into editor view..
-//            editView.assureComponentInEditorArea();
-//        }
+        
+        desktop.getDesktopComponent().invalidate();
+        ((JComponent)desktop.getDesktopComponent()).revalidate();
+        desktop.getDesktopComponent().repaint();
     }
 
     // PENDING Revise, updating desktop and editor area, bounds... separate this method.
     public void updateDesktop(WindowSystemAccessor wsa) {
-//        System.out.println("updatedesktop(param)");
         if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
             if(maximizedModeView != null) {
                 setMainWindowDesktop(getDesktopComponent());
-//                System.out.println("viewhierarchyupdddesktop: have maximized=" + maximizedModeView.getClass());
                 setMaximizedViewIntoDesktop(maximizedModeView);
-//                setMainWindowDesktop(maximizedModeView.getComponent());
                 return;
             }
         }
@@ -594,11 +555,9 @@ final class ViewHierarchy {
                 editorAreaFrame = null;
             }
             setMainWindowDesktop(getDesktopComponent());
-//            System.out.println("viewhierarchyupdddesktop: no maximized");
             setSplitRootIntoDesktop(getSplitRootElement());
             
         } else {
-//            System.out.println("viewhierarchyupdddesktop: EDITOR_AREA_SPLIT");
             boolean showEditorFrame = hasEditorAreaVisibleView();
             
             if(editorAreaFrame == null && showEditorFrame) {

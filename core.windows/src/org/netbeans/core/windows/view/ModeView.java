@@ -27,6 +27,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.JComponent;
 
 
 /**
@@ -68,7 +69,7 @@ public class ModeView extends ViewElement {
     /** Specialized constructor for SlidingView.
      */
     protected ModeView(Controller controller) {
-        super(controller, 0D);
+    super(controller, 0D);
         //mkleint - moved to SlidingView - "side" needs to be initialized first..
 //        this.container = new SlideBarContainer(this, windowDnDManager);
         
@@ -178,8 +179,13 @@ public class ModeView extends ViewElement {
             + (selected == null ? null : WindowManagerImpl.getInstance().getTopComponentDisplayName(selected)) + "]"; // NOI18N
     }
 
-    public void updateAWTHierarchy() {
+    public void updateAWTHierarchy(Dimension availableSpace) {
         // nothing needs to be done here?
+//        System.out.println("ModeView:updateAWTHierarchy=" + availableSpace);
+        Component comp = container.getComponent();
+        if (comp instanceof JComponent) {
+            ((JComponent)comp).setPreferredSize(availableSpace);
+        }
     }    
     
     

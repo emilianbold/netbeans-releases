@@ -82,7 +82,13 @@ public final class DesktopImpl {
         return layeredPane;
     }
 
-    
+    public Dimension getInnerPaneDimension() {
+        // 40 is magic number..
+        //TODO - figure out he real soze of the central panel.. substract the 
+        // sliding bars from the desptop's size..
+        
+        return new Dimension(desktop.getSize().width - 40, desktop.getSize().height - 40);
+    }
     
    public void setSplitRoot (ViewElement splitRoot) {
         // check for the same instance.. 
