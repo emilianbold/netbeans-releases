@@ -15,62 +15,126 @@ Microsystems, Inc. All Rights Reserved.
 
 Support for providing own templates visible in <b>New File...</b> action.
 
-<p>Each project can declare own template and exposing it in <b>New File...</b> action to allow 
-users to create new file types supported by this project. The project can
-provide own iterator to a project-specific customization.</p>
+<p>Project types may declare the templates for projects in the folder <code>Templates/Projects</code>
+on the system filesystem using a module XML layer file. Registering project type templates is similar to
+registering file templates described below.</p>
 
-<p>The client project has to declare its templates in the module's layer file
-in folder <code>Templates</code>. The declaration looks like
+<p>Each project can also declare own file templates to be exposed it in <b>New File...</b> wizard. This 
+permits users to create new files, which are of types supported by given project type. The project may also
+provide own iterator for project-specific customization of given file type.</p>
+
+<p>The project type has to declare its file templates in the module's layer file
+in folder the <code>Templates</code>. The declaration should look as follows:
+<p>
+<code>
 &lt;folder name="Templates"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;folder name="JSP_Servlet"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;file name="JSP.jsp" url="templates/JSP.template"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attr
-name="SystemFileSystem.localizingBundle"
-stringvalue="org.netbeans.modules.web.core.Bundle"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attr name="template" boolvalue="true"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attr
-name="instantiatingWizardURL"
-urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attr
-name="instantiatingIterator"
-methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;attr name="templateCategory" stringvalue="web-types"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/file&gt;<br>
-&nbsp;&nbsp; &lt;/folder&gt;<br>
+&nbsp;&nbsp;&lt;folder name="JSP_Servlet"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;file name="JSP.jsp" url="templates/JSP.template"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;attr name="template" boolvalue="true"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;attr name="templateCategory" stringvalue="web-types"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/file&gt;<br>
+&nbsp;&nbsp;&lt;/folder&gt;<br>
 &lt;/folder&gt;<br>
-<br>
+</code>
+</p>
 The subfolder of <code>Templates</code> folder specify the folder in which will 
-be this templates present in <i>templates chooser</i> invoked from <b>New File...</b>
-action. In this subfolder is declared file which represents one template and its attributes:
+be this templates present in <i>templates chooser</i> invoked from either <b>New File...</b>
+or <b>New Project...</b> wizard.<br>
+The subfolder should contain a file representing one template and its attributes:
 The <code><b>file</b></code> tag has to have a unique <code><b>name</b></code> to
 recognize in the <code>SystemFileSystem</code> and the <code><b>url</b></code>
 property which links to file pattern of the declared template. <p>
-<p>The mandatory file's attributes are:<br>
-<code><b>SystemFileSystem.localizingBundle</b></code> specifies the <code>ResourceBundle</code>
-which contains the localized display name of template, <br>
-<code><b>template</b></code> must be <code><b>true</b></code> otherwise will be ignored. <br><br>
-The optionally attributes are: <br>
-<code><b>instantiatingWizardURL</b></code> links to a resource with a template's description, <br>
-<code><b>instantiatingIterator</b></code> specifies a instance of <code>org.openide.InstantiatingIterator</code>
-which instantiate new file in specified target folder,</p>
-<pre>
-&nbsp;&nbsp;&nbsp <b>Note:</b> a client project can declare own custom iterator with some project-specific customization,
-&nbsp;&nbsp;&nbsp it's <b>recommended</b> use the standardized target chooser exposed in {@link org.netbeans.spi.project.ui.templates.support.Templates.createSimpleTargetChooser}, 
-&nbsp;&nbsp;&nbsp a similar target chooser offers {@link <a href="@JAVA/PROJECT@/org/netbeans/spi/java/project/support/ui/templates/JavaTemplates.html"><code>JavaTemplates.createPackageChooser</code></a>}
-&nbsp;&nbsp;&nbsp for Java-oriented projects.
-&nbsp;&nbsp;&nbsp The client-project also can use a <code>InstantiatingIterator</code> published by other module,
-&nbsp;&nbsp;&nbsp i.e. <code>org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator</code>
-&nbsp;&nbsp;&nbsp useful for Java-oriented templates in case of no needs to own customization.
-&nbsp;&nbsp;&nbsp The last possibility is declaration no iterator, in this case will be used a generic iterator
-&nbsp;&nbsp;&nbsp useful for simple file types without any specific needs, i.e. <code>properties file</code>.
-</pre>
+<p>The mandatory file's attributes are:
+<li><code><b>SystemFileSystem.localizingBundle</b></code> specifies the <code>ResourceBundle</code>
+which contains the localized display name of template</li>
+<li><code><b>template</b></code> which must have value set to <code><b>true</b></code> otherwise the template will be ignored.</li>
+<br>
+The optional attributes are: <br>
+<li><code><b>instantiatingWizardURL</b></code> links to a resource with a template's description</li>
+<li><code><b>instantiatingIterator</b></code> specifies a instance of <code>org.openide.InstantiatingIterator</code>
+which instantiates the new file in specified target folder.</li>
+<blockquote>
+<b>Note:</b> a project type can declare own custom iterator with some project-specific customization,
+it's <b>recommended</b> to use the standardized target chooser exposed in {@link org.netbeans.spi.project.ui.templates.support.Templates.createSimpleTargetChooser}, 
+a similar target chooser offers {@link <a href="@JAVA/PROJECT@/org/netbeans/spi/java/project/support/ui/templates/JavaTemplates.html"><code>JavaTemplates.createPackageChooser</code></a>}
+for Java-oriented projects.
+The project type also can use a <code>InstantiatingIterator</code> published by other module,
+i.e. <code>org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator</code>
+useful for Java-oriented templates in case of no needs to own customization.
+The last possibility is declaration no iterator, in this case will be used a generic iterator
+useful for simple file types without any specific needs, i.e. <code>properties file</code>.<br>
+For project templates the <code>instantiate()</code> method should return a Set of FileObjects. FileObjects
+representing project directories will automatically be opened in the project and files tab. Other FileObjects 
+(e.g. Java classes created by the wizard) will be opened in the editor area. Path of coresponding nodes will be
+expanded in the project or files tab.<br>
+For file templates the <code>instantiate()</code> method should return Set of FileObjects which will then
+automaticaly opened in the editor. Path of coresponding nodes will be
+expanded in the project or files tab.<br>
+</blockquote>
+<li><code><b>template-category</b></code> files the template to some category. The template's categories
+helps to filter the templates according to type of project.</li>
 <p>
-<code><b>template-category</b></code> files the template to some category. The template's categories
-helps to filter the templates according to type of project. The project provides the project's 
-<a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/RecommendedTemplates.html"><code>RecommendedTemplates</code></a>.
-<br>There is a list of template categories and its relations to project's types in matrix:
-<pre>&nbsp;&nbsp;&nbsp <b>Note:</b> if no <code>templateCategory</code> is declared then this template will be visible for each project regardless its type.</pre>
+There are two importatnt interfaces affecting the behavior of the templates. Implementation of these interfaces should
+reside in the project's lookup.
+<p>
+First one is the <a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/PriviledgedTemplates.html"><code>ProviledgedTemplates</code></a>.
+It is used for the initial content of the popup menu of <b>New File...</b>. It simply should return names of file tempolates from system
+filesystem which should be contained in the popup menu. Example implementation follows:
+<pre><code>
+private static final class PriviledgedTemplatesImpl implements PrivilegedTemplates {
 
+    private static final String[] PRIVILEGED_NAMES = new String[] {
+        "Templates/Classes/Class.java",
+        "Templates/Classes/Package",
+        "Templates/Classes/Interface.java",
+        "Templates/GUIForms/JPanel.java",
+        "Templates/GUIForms/JFrame.java",
+    };
+
+    public String[] getPrivilegedTemplates() {
+        return PRIVILEGED_NAMES;
+    }
+
+}
+</code></pre>
+<p>
+Second interface is the <a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/RecommendedTemplates.html"><code>RecommendedTemplates</code></a>,
+which infulences the apperance of templates in the New File wizard according to project types. The implementation of the interface has to return 
+array of Strings which corresponds to names of template categories listed in the <code>template-category</code> attribute of template files. All templates 
+which list at least one recommended category in the <code>template-category</code> attribute will be listed for given project type.<br>
+<b>Note:</b> if no <code>templateCategory</code> is declared then this template will be visible for each project regardless its type.<br>
+<p>
+Example implementation of <code>RecommendedTemplates</code> interface:
+<pre><code>
+private static final class RecommendedTemplatesImpl implements RecommendedTemplates {
+    
+    // List of primarily supported templates categories
+    private static final String[] TYPES = new String[] { 
+        "java-classes",         
+        "java-main-class",      
+        "java-forms",           
+        "gui-java-application", 
+        "java-beans",           
+        "oasis-XML-catalogs",   
+        "XML",                  
+        "ant-script",           
+        "ant-task",             
+        "junit",                
+        "simple-files"          
+    };
+
+    public String[] getRecommendedTypes() {
+        return TYPES;
+    }
+
+}
+</code></pre>
+</p>
+
+<br>There is a list of template categories and its relations to project's types in matrix:
 
 <table style="text-align: left; width: 100%;" border="1" cellspacing="2" cellpadding="2">
 <tbody>

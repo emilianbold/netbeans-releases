@@ -17,6 +17,9 @@ package org.netbeans.spi.project.ui;
  * List of template types supported by a project when making a new file.
  * An instance should be placed in {@link org.netbeans.api.project.Project#getLookup}
  * to affect the recommended template list for that project.
+ * <p>
+ * For more information about registering templates see overview of 
+ * {@link org.netbeans.spi.project.ui.templates.support} package. 
  * @author Petr Hrebejk
  */
 public interface RecommendedTemplates {
