@@ -141,11 +141,8 @@ public class WarIncludesUi {
                 FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
                 chooser.setMultiSelectionEnabled( true );
-                chooser.setDialogTitle( NbBundle.getMessage( WebClassPathUi.class, "LBL_AddJar_DialogTitle" ) ); // NOI18N
-                chooser.setFileFilter( new SimpleFileFilter( 
-                    NbBundle.getMessage( WebClassPathUi.class, "LBL_ZipJarFolderFilter" ),                  // NOI18N
-                    new String[] {"ZIP","JAR"} ) );                                                                 // NOI18N 
-                chooser.setAcceptAllFileFilterUsed( false );
+                chooser.setDialogTitle( NbBundle.getMessage( WebClassPathUi.class, "LBL_AddFile_DialogTitle" ) ); // NOI18N
+                chooser.setAcceptAllFileFilterUsed(true);
                 File curDir = FoldersListSettings.getDefault().getLastUsedClassPathFolder(); 
                 chooser.setCurrentDirectory (curDir);
                 int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( list ) ); // Show the chooser
@@ -243,33 +240,6 @@ public class WarIncludesUi {
         }
     }
     
-    private static class SimpleFileFilter extends FileFilter {
-
-        private String description;
-        private Collection extensions;
-
-
-        public SimpleFileFilter (String description, String[] extensions) {
-            this.description = description;
-            this.extensions = Arrays.asList(extensions);
-        }
-
-        public boolean accept(File f) {
-            if (f.isDirectory())
-                return true;
-            String name = f.getName();
-            int index = name.lastIndexOf('.');   //NOI18N
-            if (index <= 0 || index==name.length()-1)
-                return false;
-            String extension = name.substring (index+1).toUpperCase();
-            return this.extensions.contains(extension);
-        }
-
-        public String getDescription() {
-            return this.description;
-        }
-    }
-
     static class ClassPathCellRenderer extends DefaultTableCellRenderer {
         
         private static String RESOURCE_ICON_JAR = "org/netbeans/modules/web/project/ui/resources/jar.gif"; //NOI18N
