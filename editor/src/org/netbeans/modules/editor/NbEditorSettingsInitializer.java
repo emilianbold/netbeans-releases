@@ -35,7 +35,9 @@ import org.openide.windows.TopComponent;
 import org.netbeans.modules.editor.options.OptionUtilities;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
+import org.openide.util.Utilities;
 
 /**
 * Customized settings for NetBeans editor
@@ -76,6 +78,19 @@ public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
 
         if (kitClass == BaseKit.class) {
             settingsMap.put(BaseOptions.TOOLBAR_VISIBLE_PROP, Boolean.TRUE);
+            
+	    //Fix for IZ bug #53744:
+	    //On MAC OS X, Ctrl+left click has the same meaning as the right-click.
+	    //The hyperlinking should be enabled for the Command key on MAC OS X, for Ctrl on others:
+            int activationMask;
+            
+            if ((Utilities.getOperatingSystem() & Utilities.OS_MAC) != 0) {
+                activationMask = InputEvent.META_MASK;
+            } else {
+                activationMask = InputEvent.CTRL_DOWN_MASK;
+            }
+            
+            settingsMap.put(SettingsNames.HYPERLINK_ACTIVATION_MODIFIERS, new Integer(activationMask));
         }
 
         if (kitClass == NbEditorKit.class) {
