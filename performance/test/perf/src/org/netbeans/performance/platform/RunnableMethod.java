@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -18,189 +18,142 @@ import java.util.*;
 import java.lang.reflect.Method;
 
 /**
- * The benchmark comparing time to construct and fire an anonymous Runnable
- * versus time to construct a single named Runable passing it a method.
+ * The benchmark comparing time to construct and run an anonymous Runnable
+ * versus time to construct a single special Runable working over a Method.
  *
  * @author  Petr Nejedly
- * @version 0.0
+ * @version 1.0
  */
-public class RunnableMethod extends TestDescription implements Test {
-
-    private static final String[] names = {
-            "Runnable", "Delegating Runnable", "Method",
-	    "Method cached data", "Cached Method", "Cached MethodRunner" };
-            
-    private static final int[] workloads = {
-            1, 100, 10000 };
-
-    public Test getTest() {
-        return this;
+public class RunnableMethod extends Benchmark {
+    
+    public RunnableMethod(String name) {
+        super( name, new Integer[] {
+            new Integer(1), new Integer(100), new Integer( 10000 )
+        });
     }
     
-    public String getTestDescription() {
-        return "Fires a Runnable by either creating real Runnable or by" +
-	    " using special Runnable to run passed method with several" +
-	    " degrees of caching";
-    }
-    
-    public int getImplementationsCount() {
-        return names.length;
-    }
-
-    public String getImplementationName( int imp ) {
-        return names[imp];
-    }
-    
-    public int getProblemsCount() {
-        return workloads.length;
-    }
-
-    public String getProblemName( int problem ) {
-        return "n=" + workloads[problem];
-    }
-    
-    public TestCase getTestCase( int imp, int problem, int iterations ) {
-	switch( imp ) {
-	    case 0:  // Runnable
-		return new InternalTestCase( workloads[problem], iterations ) {
-		    public void doTheWork() {
-			new Runnable() {
-			    public void run() {
-				for( int i=0; i < workload; i++ );
-			    }
-			}.run();
-		    }
-		};
-	    case 1:  // Delegating Runnable
-		return new InternalTestCase( workloads[problem], iterations ) {
-		    public void doTheWork() {
-			new Runnable() {
-			    public void run() {
-				worker();
-			    }
-			}.run();
-		    }
-		};
-	    
-	    case 2:  // Method
-		return new InternalTestCase( workloads[problem], iterations ) {
-		    public void doTheWork() {
-			try {
-			    Method mtd = getClass().getMethod( "worker", new Class[0] );
-			} catch( Throwable t ) {
-			    t.printStackTrace();
-			};
-			new MethodRunner( mtd, this, new Object[0] ).run();
-		    }
-		    
-		};
-		
-	    case 3:  // Method cached data
-		return new InternalTestCase( workloads[problem], iterations ) {
-		    
-		    public void doTheWork() {
-			try {
-			    Method mtd = getClass().getMethod( "worker", clsArray );
-			} catch( Throwable t ) {
-			    t.printStackTrace();
-			}
-			new MethodRunner( mtd, this, objArray ).run();
-		    }
-		    
-		};
-
-	    case 4:  // Cached Method
-		return new InternalTestCase( workloads[problem], iterations ) {
-		    public void doTheWork() {
-			new MethodRunner( mtd, this, objArray ).run();
-		    }		    
-		};
-		
-	    case 5:  // Cached MethodRunner
-		return new InternalTestCase( workloads[problem], iterations ) {
-		    MethodRunner mr = new MethodRunner( mtd, this, objArray );
-		    
-		    public void doTheWork() {
-			mr.run();
-		    }
-		    
-		};
-		
-	    default:
-		return null;
-	}
-    }
-
-    
-
-    /* -------------------- Test implementation -------------------- */
-    public long doTest( TestCase tc ) {
-        InternalTestCase itc = (InternalTestCase)tc;
-	
-	int iterations = itc.getIterations();
+    /** Create new instance of unnamed Runnable implemented as independent
+     * inner class for every round.
+     */
+    public void testUsingRealRunnable() {
+        int count = getIterationCount();
+        final int workload = ((Integer)getArgument()).intValue();
         
-        TestBed.cooling();
-        
-        long time = System.currentTimeMillis();
-        for( int iter = 0; iter < iterations; iter++ ) {
-	    itc.doTheWork();
+        while( count-- > 0 ) {
+            new Runnable() {
+                public void run() {
+                    for( int i=0; i < workload; i++ );
+                }
+            }.run();
         }
-        time = System.currentTimeMillis() - time;
-        
-        return time;
     }
     
     
-    private static abstract class InternalTestCase implements TestCase {
-        int workload;
-        int repeats;
-	static Class[] clsArray = new Class[0];
-	static Object[] objArray = new Object[0];
-	Method mtd;
+    /** Create new instance of unnamed Runnable implemented as a direct caller
+     * to a worker method for every round.
+     */
+    public void testUsingDelegatingRunnable() {
+        int count = getIterationCount();
+        final int workload = ((Integer)getArgument()).intValue();
         
-        public InternalTestCase( int workload, int repeats ) {
-            this.workload = workload;
-            this.repeats = repeats;
-	    try {
-		mtd = getClass().getMethod( "worker", new Class[0] );
-	    } catch( Throwable t ) {
-		t.printStackTrace();
-	    }
+        while( count-- > 0 ) {
+            new Runnable() {
+                public void run() {
+                    workerMethod( workload );
+                }
+            }.run();
         }
+    }
+    
+    /** Create a new instance of MethodRunner - a class that will delegate
+     * its task to passed Method - for every round. 
+     */
+    public void testUsingMethodRunner() throws Exception {
+        int count = getIterationCount();
+        int workload = ((Integer)getArgument()).intValue();
         
-	public int getIterations() {
-	    return repeats;
-	}
-	
-	public abstract void doTheWork();
-
-        public void worker() {
-	    for( int i=0; i < workload; i++ );
+        while( count-- > 0 ) {
+            Method mtd = getClass().getDeclaredMethod( "workerMethod", new Class[] { Integer.TYPE } );
+            mtd.setAccessible(true);
+            new MethodRunner( mtd, this, new Object[] { new Integer(workload) } ).run();
         }
     }
 
-    public static final class MethodRunner implements Runnable {
-	private Method mtd;
-	private Object obj;
-	private Object[] args;
-    
-	public MethodRunner( Method mtd, Object obj, Object[] args ) {
-	    this.mtd = mtd;
-	    this.obj = obj;
-	    this.args = args;
-	}
-	
-	public void run() {
-	    try {
-		mtd.invoke( obj, args );
-	    } catch( Throwable t ) {
-		t.printStackTrace();
-	    }
-	}
+    /** Create a new instance of MethodRunner - a class that will delegate
+     * its task to passed Method - for every round, but looking up the Method
+     * only once.  
+     */
+    public void testUsingMethodRunnerWithCachedMethod() throws Exception {
+        int count = getIterationCount();
+        int workload = ((Integer)getArgument()).intValue();
+        Method mtd = getClass().getDeclaredMethod( "workerMethod", new Class[] { Integer.TYPE } );
+        mtd.setAccessible(true);
+        
+        while( count-- > 0 ) {
+            new MethodRunner( mtd, this, new Object[] { new Integer(workload) } ).run();
+        }
+    }
+
+    /** Create a new instance of MethodRunner - a class that will delegate
+     * its task to passed Method - for every round, but looking up the Method
+     * and creating argument parring array only once.  
+     */
+    public void testUsingMethodRunnerWithCachedParams() throws Exception {
+        int count = getIterationCount();
+        int workload = ((Integer)getArgument()).intValue();
+        Method mtd = getClass().getDeclaredMethod( "workerMethod", new Class[] { Integer.TYPE } );
+        mtd.setAccessible(true);
+        Object[] params = new Object[] { new Integer(workload) };
+        
+        while( count-- > 0 ) {
+            new MethodRunner( mtd, this, params ).run();
+        }
+    }
+
+    /** Create just one instance of MethodRunner - a class that will delegate
+     * its task to passed Method - and call this single instance for every
+     * round.  
+     */
+    public void testUsingCachedMethodRunner() throws Exception {
+        int count = getIterationCount();
+        int workload = ((Integer)getArgument()).intValue();
+        Method mtd = getClass().getDeclaredMethod( "workerMethod", new Class[] { Integer.TYPE } );
+        mtd.setAccessible(true);
+        Object[] params = new Object[] { new Integer(workload) };
+        MethodRunner mr = new MethodRunner( mtd, this, params );
+
+        while( count-- > 0 ) {
+            mr.run();
+        }
     }
 
     public static void main( String[] args ) {
-	TestBed.doTest( new RunnableMethod() );
+	junit.textui.TestRunner.run( new junit.framework.TestSuite( RunnableMethod.class ) );
+    }    
+    
+    /* ----------------------------- */
+    private void workerMethod( int workload ) {
+        for( int i=0; i < workload; i++ );
     }
 
+    private static final class MethodRunner implements Runnable {
+        private Method mtd;
+        private Object obj;
+        private Object[] args;
+        
+        public MethodRunner( Method mtd, Object obj, Object[] args ) {
+            this.mtd = mtd;
+            this.obj = obj;
+            this.args = args;
+        }
+        
+        public void run() {
+            try {
+                mtd.invoke( obj, args );
+            } catch( Throwable t ) {
+                t.printStackTrace();
+                junit.framework.Assert.fail( "Exception: " + t.getMessage() );
+            }
+        }
+    }
 }

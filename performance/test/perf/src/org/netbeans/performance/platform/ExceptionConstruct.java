@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -13,129 +13,90 @@
 
 package org.netbeans.performance.platform;
 
-import org.netbeans.performance.*;
-import java.util.*;
+import org.openide.utildata.UtilClass;
+import org.netbeans.performance.Benchmark;
+import java.util.ResourceBundle;
 
 /**
- * The implementation of a benchmark measuring how long would it take
- * to construct an instance of Exception. Measured bacause the Exception
- * contains native-filled structure describing the shape of the thread
- * stack in the moment of constructing and because OpenIde uses manually
- * created exceptions as a holders for RequestProcessor tasks to allow
- * it to annotate the possible exception inside the RequestProcessor
- * with the information about the caller.
+ * The Benchmark measuring how long would it take to construct an instance
+ * of Exception. Measured bacause the Exception contains native-filled
+ * structure describing the shape of the thread stack in the moment
+ * of constructing, which depends on stack depth in the time of constructing.
+ * Uses a set of Integer arguments to select the call stack depth.
  *
  * @author  Petr Nejedly
- * @version 0.0
+ * @version 1.0
  */
-public class ExceptionConstruct extends TestDescription implements Test {
+public class ExceptionConstruct extends Benchmark {
 
-    private static final String[] names = {
-            "Object", "Exception", "thrown Exception" };
-            
-    private static final int[] depths = {
-            1, 2, 5, 10, 20, 50, 100, 200 };
-
-    /** Creates new ListAppendTest */
-    public ExceptionConstruct() {
+    public ExceptionConstruct(String name) {
+        super( name, new Integer[] {
+            new Integer(1), new Integer(5), new Integer(10),
+            new Integer(100), new Integer(1000 )
+        });
     }
+
+    private static final Object createObj( int depth ) {
+	if( depth == 0 ) return new Object();
+	return createObj( depth-1 );
+    }
+
+    /**
+     * Pour into the call stack and then create an object.
+     * Used as a reference to divide the time between recursive decline
+     * and Exception creation.
+     */
+    public void testCreateObjectDeepInStack() throws Exception {
+        int count = getIterationCount();
+        int magnitude = ((Integer)getArgument()).intValue();
     
-    public Test getTest() {
-        return this;
-    }
-    
-    public String getTestDescription() {
-        return "Create an object n calls deep in recursion";
-    }
-    
-    public int getImplementationsCount() {
-        return names.length;
-    }
-
-    public String getImplementationName( int imp ) {
-        return names[imp];
-    }
-    
-    public int getProblemsCount() {
-        return depths.length;
-    }
-
-    public String getProblemName( int problem ) {
-        return "n=" + depths[problem];
-    }
-    
-    public TestCase getTestCase( int imp, int problem, int iterations ) {
-	if( imp == 0 ) {
-	    return new InternalTestCase( depths[problem], iterations ) {
-		public Object createObject() {
-		    return new Object();
-		}
-	    };
-	} else if( imp == 1 ) {
-	    return new InternalTestCase( depths[problem], iterations ) {
-		public Object createObject() {
-		    return new Exception();
-		}
-	    };
-	} else {
-	    return new InternalTestCase( depths[problem], iterations ) {
-		public Object createObject() throws Exception {
-		    throw new Exception();
-		}
-	    };
-	}
-    }
-
-    
-
-    private static final Object create( int depth, InternalTestCase itc ) throws Exception {
-	if( depth == 0 ) return itc.createObject();
-	return create( depth-1, itc );
-    }
-
-
-    /* -------------------- Test implementation -------------------- */
-    public long doTest( TestCase tc ) {
-        InternalTestCase itc = (InternalTestCase)tc;
-	
-	int iterations = itc.getIterations();
-	int depth = itc.getDepth();
-        
-        TestBed.cooling();
-        
-        long time = System.currentTimeMillis();
-        for( int iter = 0; iter < iterations; iter++ ) {
-	    try {
-		Object o = create( depth, itc );
-	    } catch( Exception e ) {}
+        while( count-- > 0 ) {
+            createObj( magnitude );
         }
-        time = System.currentTimeMillis() - time;
-        
-        return time;
-    }
-    
-    private static abstract class InternalTestCase implements TestCase {
-        int depth;
-        int repeats;
-        
-        public InternalTestCase( int depth, int repeats ) {
-            this.depth = depth;
-            this.repeats = repeats;
-        }
-        
-        public int getDepth() {
-            return depth;
-        }
-	
-	public int getIterations() {
-	    return repeats;
-	}
-	
-	public abstract Object createObject() throws Exception;
     }
 
+    private static final Object createExc( int depth ) {
+	if( depth == 0 ) return new Exception();
+	return createExc( depth-1 );
+    }
+
+    
+    /**
+     * Create an Exception deep in the call stack, filling its stack trace.
+     */
+    public void testCreateExceptionDeepInStack() throws Exception {
+        int count = getIterationCount();
+        int magnitude = ((Integer)getArgument()).intValue();
+    
+        while( count-- > 0 ) {
+            createExc( magnitude );
+        }
+    }
+
+    private static final Object throwExc( int depth ) throws Exception {
+	if( depth == 0 ) throw new Exception();
+	return createExc( depth-1 );
+    }
+
+    
+    /**
+     * Create an Exception deep in the call stack and let it bubble up
+     * throughout the whole stack.
+     */
+    public void testThrowExceptionDeepInStack() throws Exception {
+        int count = getIterationCount();
+        int magnitude = ((Integer)getArgument()).intValue();
+    
+        while( count-- > 0 ) {
+            try {
+                createExc( magnitude );
+            } catch( Exception e ) {}
+        }
+    }
+
+    
     public static void main( String[] args ) {
-        TestBed.doTest( new ExceptionConstruct() );
+	junit.textui.TestRunner.run( new junit.framework.TestSuite( ExceptionConstruct.class ) );
     }
-    
+
 }
