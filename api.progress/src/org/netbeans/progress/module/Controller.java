@@ -18,6 +18,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Frame;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import org.netbeans.progress.module.ui.StatusLineComponent;
 import org.openide.windows.WindowManager;
 
@@ -32,7 +34,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Milos Kleint (mkleint@netbeans.org)
  */
-final class Controller implements Runnable, ViewController {
+final class Controller implements Runnable, ActionListener {
     
     private static Controller defaultInstance;
     private static Container defaultContTemp;
@@ -41,12 +43,15 @@ final class Controller implements Runnable, ViewController {
     private TaskModel model;
     private List eventQueue;
     private boolean dispatchRunning;
+    private Timer timer;
     /** Creates a new instance of Controller */
     public Controller(NewInterface comp) {
         component = comp;
         model = new TaskModel();
         eventQueue = new ArrayList();
         dispatchRunning = false;
+        timer = new Timer(400, this);
+        timer.setRepeats(false);
     }
 
     public static synchronized Controller getDefault() {
@@ -101,36 +106,61 @@ final class Controller implements Runnable, ViewController {
     }
     
     void start(InternalHandle handle) {
-        ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_START);
+        ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_START, isWatched(handle));
         postEvent(event);
     }
     
     void finish(InternalHandle handle) {
-        ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_FINISH);
+        ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_FINISH, isWatched(handle));
         postEvent(event);
     }
     
-    void progress(InternalHandle handle, String msg, int units, int percentage, long estimate) {
-        ProgressEvent event = new ProgressEvent(handle, msg, units, percentage, estimate);
+    void progress(InternalHandle handle, String msg, 
+                  int units, int percentage, long estimate) {
+        ProgressEvent event = new ProgressEvent(handle, msg, units, percentage, estimate, isWatched(handle));
         postEvent(event);
     }
+    
+    ProgressEvent snapshot(InternalHandle handle, String msg, 
+                  int units, int percentage, long estimate) {
+        return new ProgressEvent(handle, msg, units, percentage, estimate, isWatched(handle));
+    }
+    
     
     void explicitSelection(InternalHandle handle, int units, int percentage, long estimate) {
-        ProgressEvent event = new ProgressEvent(handle, null, units, percentage, estimate);
+        InternalHandle old = model.getExplicitSelection();
         model.explicitlySelect(handle);
-        postEvent(event);
+        Collection evnts = new ArrayList();
+        evnts.add(new ProgressEvent(handle, null, units, percentage, estimate, isWatched(handle)));
+        if (old != null && old != handle) {
+            // refresh the old one, results in un-bodling the text.
+            evnts.add(old.requestStateSnapshot());
+        }
+        runImmediately(evnts);
+    }
+    
+    private boolean isWatched(InternalHandle hndl) {
+        return model.getExplicitSelection() == hndl;
+    }
+    
+    void runImmediately(Collection events) {
+        synchronized (this) {
+            eventQueue.addAll(events);
+            dispatchRunning = true;
+            run();
+        }
     }
     
     void postEvent(final ProgressEvent event) {
         synchronized (this) {
             eventQueue.add(event);
             if (!dispatchRunning) {
-                //TODO has some kind of timer to  limit the number of runs in AWT.
-                SwingUtilities.invokeLater(this);
+                timer.start();
                 dispatchRunning = true;
             }
         }
     }
+     
     
     /**
      * can be run from awt only.
@@ -165,7 +195,6 @@ final class Controller implements Runnable, ViewController {
                 }
                 it.remove();
             }
-            dispatchRunning = false;
         }
         InternalHandle selected = model.getSelectedHandle();
         selected = selected == null ? oldSelected : selected;
@@ -177,15 +206,15 @@ final class Controller implements Runnable, ViewController {
             }
             component.processProgressEvent(event);
         }
-        
+        timer.stop();
+        dispatchRunning = false;
     }
 
-    public void requestCancel(InternalHandle handle) {
-        handle.requestCancel();
-    }
-
-    public void requestExplicitSelection(InternalHandle handle) {
-        model.explicitlySelect(handle);
+    /**
+     * used by Timer
+     */
+    public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
+        run();
     }
     
 
