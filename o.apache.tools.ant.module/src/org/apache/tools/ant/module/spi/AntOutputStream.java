@@ -19,10 +19,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.StringBuffer;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.run.AntOutputParser;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
 /** OutputStream for wrapping output of Ant task and capable of
@@ -120,12 +124,43 @@ public abstract class AntOutputStream extends OutputStream {
             antOutputParser.setClasspath(cp);
             return; // do not actually print it!
         }
-        AntOutputParser.Result r = antOutputParser.parse(l);
+        AntOutputParser.Result r;
+        try {
+            r = antOutputParser.parse(l);
+        } catch (IOException e) {
+            r = null;
+            AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+        }
         if (r == null) {
             writeLine(l);
         } else {
-            writeLine(l, r.getFileObject(), r.getLineStart(), r.getColumnStart(), r.getLineEnd(), r.getColumnEnd(), r.getMessage());
+            URL u = r.getURL();
+            if (!writeLine(l, u, r.getLineStart(), r.getColumnStart(), r.getLineEnd(), r.getColumnEnd(), r.getMessage())) {
+                // Fallback for old subclasses of AOS - compatibility. Cf. #42666.
+                FileObject f = URLMapper.findFileObject(u);
+                if (f != null) {
+                    writeLine(l, f, r.getLineStart(), r.getColumnStart(), r.getLineEnd(), r.getColumnEnd(), r.getMessage());
+                }
+            }
         }
+    }
+
+    /**
+     * Write one line of the parsed text (<strong>must be overridden</strong>).
+     * All line and column parameters can be -1 meaning
+     * that the value was not available or parsing was not successful.
+     * @param line original text of the line
+     * @param file file location for which this line was generated
+     * @param line1 starting line of the message
+     * @param col1 starting column of the message
+     * @param line2 ending line of the message
+     * @param col2 ending column of the message
+     * @param message message
+     * @return must always return true
+     * @since org.apache.tools.ant.module/3 3.10
+     */
+    protected boolean writeLine(String line, URL file, int line1, int col1, int line2, int col2, String message) throws IOException {
+        return false;
     }
 
     /** Write one line of the parsed text. All line and column parameters can be -1 what means
@@ -137,8 +172,11 @@ public abstract class AntOutputStream extends OutputStream {
     * @param line2 ending line of the message
     * @param col2 ending column of the message
     * @param message message 
+     * @deprecated Please override the variant taking URL instead, since org.apache.tools.ant.module/3 3.10.
     */
-    abstract protected void writeLine(String line, FileObject file, int line1, int col1, int line2, int col2, String message) throws IOException;
+    protected void writeLine(String line, FileObject file, int line1, int col1, int line2, int col2, String message) throws IOException {
+        throw new IllegalStateException("writeLine(...URL...) must return true if writeLine(...FileObject...) is not implemented"); // NOI18N
+    }
 
     /** Write one line of text which was not parsed.
      */
