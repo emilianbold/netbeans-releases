@@ -45,12 +45,25 @@ public class EventDriver extends SupportiveDriver {
 	this(new Class[] {ComponentOperator.class});
     }
     public void dispatchEvent(Component comp, AWTEvent event) {
-        checkVisibility(comp);
-        queueTool.dispatchEvent(event);
+        queueTool.invokeSmoothly(new Dispatcher(comp, event));
     }
     protected void checkVisibility(Component component) {
 	if(!component.isVisible()) {
 	    throw(new ComponentIsNotVisibleException(component));
+	}
+    }
+    protected class Dispatcher extends QueueTool.QueueAction {
+	AWTEvent event;
+	Component component;
+	public Dispatcher(Component component, AWTEvent e) {
+	    super(e.getClass().getName() + " event dispatching");
+	    this.component = component;
+	    event = e;
+	}
+	public Object launch() {
+	    checkVisibility(component);
+	    component.dispatchEvent(event);
+	    return(null);
 	}
     }
 }
