@@ -17,31 +17,6 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
 
 
 <filesystem>
-    <folder name="Mount">
-        <folder name="Javadoc">
-            <file name="org-netbeans-modules-testtools-jelly2-nb-javadoc.xml">
-                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
-	      <![CDATA[
-		<!DOCTYPE Javadoc PUBLIC "-//NetBeans IDE//DTD JavadocLibrary//EN" "http://www.netbeans.org/dtds/JavadocLibrary-1_0.dtd">
-		<Javadoc>
-		    <Archive name="docs/jelly2-nb-javadoc.zip"/>
-		</Javadoc>
-	      ]]>
-            </file>
-        </folder>
-        <folder name="java">
-           <file name="org-netbeans-modules-testtools-jelly2-library.xml">
-                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>
-	      <![CDATA[
-	          <!DOCTYPE Library PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
-	          <Library>
-	              <Archive name="modules/ext/jelly2-nb.jar"/>
-	          </Library>
-	      ]]>
-           </file>
-      </folder>
-    </folder>
-
   <folder name="Templates">
     <folder name="TestTools">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.testtools.Bundle"/>

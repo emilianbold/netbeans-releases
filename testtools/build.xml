@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext}/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
 
-  <target name="compile" depends="prepare-lib">
+  <target name="compile">
     <mkdir dir="netbeans/modules"/>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
@@ -54,33 +54,9 @@ Microsystems, Inc. All Rights Reserved.
     </javac>
   </target>
 
-
- <target name="prepare-lib" depends="prepare-docs">
-    <ant dir="${nbroot}/xtest/" target="makedist"/>
-    <mkdir dir="netbeans/xtest-distribution"/>
-    <unzip src="${nbroot}/xtest/xtest-distribution.zip" dest="netbeans/xtest-distribution" />
-
-    <ant dir="${nbroot}/jellytools/"/>
-    <mkdir dir="netbeans/modules/ext"/>
-    <copy file="${nbroot}/jellytools/jelly2-nb.jar" tofile="netbeans/modules/ext/jelly2-nb.jar" filtering="off"/>
- </target>
-  
-  <target name="javadoc" unless="jelly.javadoc.uptodate">
-    <mkdir dir="netbeans/docs"/>
-    <ant dir="${nbroot}/jellytools/" target="javadoc"/>
-    <copy file="${nbroot}/jellytools/jelly2-nb-javadoc.zip" tofile="netbeans/docs/jelly2-nb-javadoc.zip" filtering="off"/>
-  </target>
-
-  <target name="prepare-docs">
-      <uptodate property="jelly.javadoc.uptodate" targetfile="netbeans/docs/jelly2-nb-javadoc.zip" >
-  	      <srcfiles dir= "${nbroot}/jellytools/src" includes="**/*.java"/>
-      </uptodate>
-      <antcall target="javadoc"/>
-  </target>
-
   <target name="timestamp" unless="buildnumber">
     <tstamp>
-        <format property="buildnumber" pattern="yyyyMMddhhmm"/>
+        <format property="buildnumber" pattern="yyyyMMddHHmm"/>
     </tstamp>
   </target>
 
@@ -127,9 +103,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete>
       <fileset dir="." includes="*.nbm"/>
     </delete>
-    <delete dir="netbeans/docs"/>
-    <delete dir="netbeans/modules"/>
-    <delete dir="netbeans/xtest-distribution"/>
+    <delete dir="netbeans"/>
     <delete dir="Info"/>
     <delete dir="javahelp/org/netbeans/modules/testtools/docs/JavaHelpSearch2"/>
     <delete dir="javahelp/org/netbeans/modules/usersguide"/>
@@ -138,10 +112,14 @@ Microsystems, Inc. All Rights Reserved.
   <!-- Create zip archive from all nbm files. -->
   <target name="zip">
      <ant dir="${nbroot}/junit/" target="nbm"/>
-     <ant dir="${nbroot}/jemmysupport/" target="nbm"/>
-	 <antcall target="nbm"/>
      <copy file="${nbroot}/junit/junit.nbm" tofile="junit.nbm" filtering="off"/>
+     <ant dir="${nbroot}/xtest/" target="nbm"/>
+     <copy file="${nbroot}/xtest/xtest.nbm" tofile="xtest.nbm" filtering="off"/>
+     <ant dir="${nbroot}/jemmysupport/" target="nbm"/>
      <copy file="${nbroot}/jemmysupport/jemmysupport.nbm" tofile="jemmysupport.nbm" filtering="off"/>
+     <ant dir="${nbroot}/jellytools/" target="nbm"/>
+     <copy file="${nbroot}/jellytools/jellytools.nbm" tofile="jellytools.nbm" filtering="off"/>
+     <antcall target="nbm"/>
      <zip zipfile="testtools-bundle.zip"
           basedir="."
           includes="*.nbm"

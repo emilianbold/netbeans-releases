@@ -174,6 +174,7 @@ public class NodeGeneratorOperator extends NbDialogOperator {
     public void start() {
         try {
             btStart().push();
+        } catch (ComponentIsNotVisibleException ce) {
         } catch (JemmyException e) {
             if (!(e.getInnerException() instanceof ComponentIsNotVisibleException))
                 throw e;
@@ -185,6 +186,7 @@ public class NodeGeneratorOperator extends NbDialogOperator {
     public void stop() {
         try {
             btStop().push();
+        } catch (ComponentIsNotVisibleException ce) {
         } catch (JemmyException e) {
             if (!(e.getInnerException() instanceof ComponentIsNotVisibleException))
                 throw e;
