@@ -21,7 +21,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
-import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.modules.web.project.ui.*;
+import org.netbeans.modules.web.project.ui.FileChooser;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -402,7 +403,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
     }//GEN-LAST:event_jTextFieldContextPathKeyReleased
 
     private void jButtonPrjLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPrjLocationActionPerformed
-        JFileChooser chooser = FileChooser.createDirectoryChooser(
+        JFileChooser chooser = org.netbeans.modules.web.project.ui.FileChooser.createDirectoryChooser(
                 "ImportLocationVisual.Project", projectLocationTextField.getText()); //NOI18N
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File projectDir = chooser.getSelectedFile();
