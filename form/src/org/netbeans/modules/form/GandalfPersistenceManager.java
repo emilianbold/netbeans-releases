@@ -239,7 +239,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       return null;
     }
     try {
-      formInfo = (FormInfo)TopManager.getDefault ().currentClassLoader ().loadClass (infoClass).newInstance ();
+      formInfo = (FormInfo) loadClass(infoClass).newInstance ();
     } catch (Exception e) {
       if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
       throw new IOException (java.text.MessageFormat.format (
@@ -317,7 +317,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         String compName = findAttribute (node, ATTR_COMPONENT_NAME);
         Class compClass = null;
         try {
-          compClass = TopManager.getDefault ().currentClassLoader ().loadClass (className);
+          compClass = loadClass (className);
         } catch (Exception e) {
           if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
           FormEditor.fileError (java.text.MessageFormat.format (
@@ -384,8 +384,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
           String cdName = findAttribute (constrNodes[i], ATTR_CONSTRAINT_VALUE);
           if ((layoutName != null) && (cdName != null)) {
             try {
-              Class layoutClass = TopManager.getDefault ().currentClassLoader ().loadClass (layoutName);
-              DesignLayout.ConstraintsDescription cd = (DesignLayout.ConstraintsDescription) TopManager.getDefault ().currentClassLoader ().loadClass (cdName).newInstance ();
+              Class layoutClass = loadClass (layoutName);
+              DesignLayout.ConstraintsDescription cd = (DesignLayout.ConstraintsDescription) loadClass (cdName).newInstance ();
               org.w3c.dom.NodeList children = constrNodes[i].getChildNodes ();
               if (children != null) {
                 for (int j = 0; j < children.getLength (); j++) {
@@ -466,7 +466,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       org.w3c.dom.Node layoutNode = findSubNode (node, XML_LAYOUT);
       String className = findAttribute (layoutNode, ATTR_LAYOUT_CLASS);
       try {
-        DesignLayout dl = (DesignLayout)TopManager.getDefault ().currentClassLoader ().loadClass (className).newInstance ();
+        DesignLayout dl = (DesignLayout) loadClass (className).newInstance ();
         org.w3c.dom.Node[] propNodes = findSubNodes (layoutNode, XML_PROPERTY);
         if (propNodes.length > 0) {
           HashMap propsMap = new HashMap (propNodes.length * 2);
@@ -521,7 +521,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         String propertyEditor = findAttribute (propNodes[i], ATTR_PROPERTY_EDITOR);
         if (propertyEditor != null) {
           try {
-            Class editorClass = TopManager.getDefault ().currentClassLoader ().loadClass (propertyEditor);
+            Class editorClass = loadClass (propertyEditor);
             Class propertyClass = findPropertyType (propType);
             PropertyEditor ed = FormEditor.createPropertyEditor (editorClass, propertyClass, comp, prop);
             ((RADComponent.RADProperty)prop).setCurrentEditor (ed);
@@ -1279,7 +1279,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     Class propertyType = findPropertyType (typeNode.getNodeValue ());
     PropertyEditor ed = null;
     if (editorNode != null) {
-      Class editorClass = TopManager.getDefault ().currentClassLoader ().loadClass (editorNode.getNodeValue ());
+      Class editorClass = loadClass (editorNode.getNodeValue ());
       if (prop != null) {
         ed = FormEditor.createPropertyEditor (editorClass, propertyType, radComponent, prop);
       } else {
@@ -1361,7 +1361,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     else if ("boolean".equals (type)) return Boolean.TYPE; // NOI18N
     else if ("char".equals (type)) return Character.TYPE; // NOI18N
     else {
-      return TopManager.getDefault ().currentClassLoader ().loadClass (type);
+      return loadClass (type);
     }
   }
 
@@ -1396,7 +1396,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       return encoded;
     } else if (Class.class.isAssignableFrom (type)) {
       try {
-        return TopManager.getDefault ().currentClassLoader ().loadClass (encoded);
+        return loadClass (encoded);
       } catch (ClassNotFoundException e) {
         if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
         // will return null as the notification of failure
@@ -1467,7 +1467,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     bytes[count++] = Byte.parseByte (singleNum);
     ByteArrayInputStream bis = new ByteArrayInputStream (bytes, 0, count);
     try {
-      ObjectInputStream ois = new ObjectInputStream (bis);
+      ObjectInputStream ois = new org.openide.util.io.NbObjectInputStream (bis);
       Object ret = ois.readObject ();
       return ret;
     } catch (Exception e) {
@@ -1680,11 +1680,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
     if (valueNode == null) return null;
     else return valueNode.getNodeValue ();
   }
-  
+
+  /** Loads a class. First it mangles its name */
+  static Class loadClass(String clazz) throws ClassNotFoundException {
+    return TopManager.getDefault().currentClassLoader().loadClass(Utilities.translate(clazz)); 
+  }
 }
 
 /*
  * Log
+ *  50   Gandalf-post-FCS1.47.1.1    4/14/00  Jesse Glick     Trung's package renaming
+ *       compatibility code.
  *  49   Gandalf-post-FCS1.47.1.0    3/20/00  Tran Duc Trung  FIX: wrong form 
  *       character encoding can lead to form data loss
  *  48   Gandalf   1.47        1/13/00  Ian Formanek    NOI18N #2
