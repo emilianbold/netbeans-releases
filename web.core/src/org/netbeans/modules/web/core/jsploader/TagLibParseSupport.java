@@ -331,6 +331,8 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                         parseResultSuccessfulRefStrongReference = locResult;
                         //remove all errors
                         annotations.annotate(new ErrorAnnotation.ErrorInfo[] {});
+                        //set icon withouth errors
+                        changeIcon(false);
                     }
                     if (!locResult.isParsingSuccess()){
                         for (int i = 0; i < locResult.getErrors().length; i ++){
@@ -342,7 +344,8 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                                             ErrorAnnotation.JSP_ERROR)
                             } );
                         }
-
+                        // set icon with error.
+                        changeIcon(true);
                     }
                     PageInfo pageInfo = locResult.getPageInfo();
                     if (pageInfo == null) return;
@@ -368,6 +371,27 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                     
                 }
             } 
+        }
+        
+        
+        private void changeIcon (boolean error){
+            org.openide.loaders.DataObject dObject = null;
+            JspNode node = null;
+            try{
+                 dObject = org.openide.loaders.DataObject.find(jspFile);
+                 if (dObject != null){
+                     node = (JspNode)dObject.getNodeDelegate();
+                 }
+            }
+            catch (org.openide.loaders.DataObjectNotFoundException e){
+                // don't change icons
+                return;
+            }
+            
+            if (error)
+                node.setIconBase(node.getErrorIconBase());
+            else
+                node.setIconBase(node.getIconBase());
         }
     }
 
