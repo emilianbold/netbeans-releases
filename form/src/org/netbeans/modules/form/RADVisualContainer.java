@@ -51,7 +51,6 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
   }
   
   public void setDesignLayout (DesignLayout layout) {
-    Thread.dumpStack();
     if (designLayout != null) {
       designLayout.setRADContainer (null);
     }
@@ -66,6 +65,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
 /*
  * Log
+ *  7    Gandalf   1.6         5/12/99  Ian Formanek    Removed debug print
  *  6    Gandalf   1.5         5/12/99  Ian Formanek    
  *  5    Gandalf   1.4         5/11/99  Ian Formanek    Build 318 version
  *  4    Gandalf   1.3         5/10/99  Ian Formanek    
