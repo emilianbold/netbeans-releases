@@ -61,7 +61,7 @@ public class NewJavaFileWizardIterator implements InstantiatingIterator {
         Project project = Templates.getProject( wizardDescriptor );
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (groups == null) {
+        if ( groups == null || groups.length == 0 ) {
             groups = sources.getSourceGroups( Sources.TYPE_GENERIC ); 
             return new WizardDescriptor.Panel[] {            
                 Templates.createSimpleTargetChooser( project, groups ),
