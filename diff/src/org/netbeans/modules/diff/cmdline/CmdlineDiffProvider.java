@@ -14,63 +14,67 @@
 package org.netbeans.modules.diff.cmdline;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.regexp.*;
 
 import org.openide.TopManager;
-import org.openide.execution.NbClassPath;
+//import org.openide.execution.NbClassPath;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
-import org.netbeans.modules.vcscore.diff.AbstractDiff;
-import org.netbeans.modules.vcscore.cmdline.exec.*;
-import org.netbeans.modules.vcscore.commands.VcsCommandExecutor;
-import org.netbeans.modules.vcscore.commands.CommandDataOutputListener;
-
-import org.netbeans.modules.diff. DiffProvider;
+import org.netbeans.api.diff.DiffProvider;
+import org.netbeans.api.diff.Difference;
 
 /**
+ * The parser of an external diff utility compatible with Unix diff output.
  *
  * @author  Martin Entlicher
  */
-public class CmdlineDiffProvider extends DiffProvider implements CommandDataOutputListener {
+public class CmdlineDiffProvider extends DiffProvider {
 
-    private static final String REVISION_STR = "retrieving revision";
+    private static final String REVISION_STR = "retrieving revision".intern();
+    private static final String DIFF_REGEXP = "(^[0-9]+(,[0-9]+|)[d][0-9]+$)|"+
+                                              "(^[0-9]+(,[0-9]+|)[c][0-9]+(,[0-9]+|)$)|"+
+                                              "(^[0-9]+[a][0-9]+(,[0-9]+|)$)".intern();
+    private static final int BUFF_LENGTH = 1024;
 
+    private RE pattern;
     private String diffCmd;
-    private AbstractDiff diff = null;
     
-    /** Creates new CmdlineDiffProvider */
+    /** Creates new CmdlineDiffProvider
+     * @param diffCmd The diff command. Must contain "{0}" and "{1}", which
+     * will be replaced with the files being compared.
+     */
     public CmdlineDiffProvider(String diffCmd) {
+        this.diffCmd = diffCmd;
+        try {
+            pattern = new RE(DIFF_REGEXP);
+        } catch (RESyntaxException resex) {}
+    }
+
+    /**
+     * Set a new diff command.
+     * @param diffCmd The diff command. Must contain "{0}" and "{1}", which
+     * will be replaced with the files being compared.
+     */
+    public void setDiffCommand(String diffCmd) {
         this.diffCmd = diffCmd;
     }
     
     /**
-     * Perform the diff of these two FileObjects and fill the differences to the diff object.
-     * @param diff the diff object to fill the differences in
-     * @param fo1 the first FileObject
-     * @param fo2 the second FileObject to be compared with the first one.
-     * @return true when no differences were found, false when either some differences were found
-     *        or some error has occured.
+     * Get the diff command being used.
      */
-    public boolean performDiff(FileObject fo1, FileObject fo2, AbstractDiff diff) {
-        File file1 = NbClassPath.toFile(fo1);
-        File file2 = NbClassPath.toFile(fo2);
-        this.diff = diff;
-        boolean d;
-        d = performDiff(diffCmd + " \"" + file1.getAbsolutePath() + "\""+
-                                  " \"" + file2.getAbsolutePath() + "\"");
-        return d;
+    public String getDiffCommand() {
+        return diffCmd;
     }
     
-    private boolean performDiff(String args) {
-        ExternalCommand ec = new ExternalCommand(args);
-        try {
-            ec.addStdoutRegexListener(this, "(^[0-9]+(,[0-9]+|)[d][0-9]+$)|(^[0-9]+(,[0-9]+|)[c][0-9]+(,[0-9]+|)$)|(^[0-9]+[a][0-9]+(,[0-9]+|)$)");
-        } catch (BadRegexException exc) {
-            TopManager.getDefault().notifyException(exc);
-        }
-        return (ec.exec() == VcsCommandExecutor.SUCCEEDED);
-    }
-
-
     private boolean checkEmpty(String str, String element) {
         if (str == null || str.length() == 0) {
             /*
@@ -86,10 +90,128 @@ public class CmdlineDiffProvider extends DiffProvider implements CommandDataOutp
     }
 
     /**
+     * Get the display name of this diff provider.
+     */
+    public String getDisplayName() {
+        return NbBundle.getMessage(CmdlineDiffProvider.class, "displayName");
+    }
+    
+    /**
+     * Get a short description of this diff provider.
+     */
+    public String getShortDescription() {
+        return NbBundle.getMessage(CmdlineDiffProvider.class, "shortDescription");
+    }
+
+    /**
+     * Create the differences of the content two streams.
+     * @param r1 the first source
+     * @param r2 the second source to be compared with the first one.
+     * @return the list of differences found, instances of {@link Difference};
+     *        or <code>null</code> when some error occured.
+     */
+    public List createDiff(Reader r1, Reader r2) {
+        File f1 = null;
+        File f2 = null;
+        try {
+            f1 = File.createTempFile("TempDiff".intern(), null);
+            f2 = File.createTempFile("TempDiff".intern(), null);
+            FileWriter fw1 = new FileWriter(f1);
+            FileWriter fw2 = new FileWriter(f2);
+            char[] buffer = new char[BUFF_LENGTH];
+            int length;
+            while((length = r1.read(buffer)) > 0) fw1.write(buffer, 0, length);
+            while((length = r2.read(buffer)) > 0) fw2.write(buffer, 0, length);
+            r1.close();
+            r2.close();
+            fw1.close();
+            fw2.close();
+            return createDiff(f1, f2);
+        } catch (IOException ioex) {
+            return null;
+        } finally {
+            if (f1 != null) f1.delete();
+            if (f2 != null) f2.delete();
+        }
+    }
+    
+    /**
+     * Create the differences of the content of two FileObjects.
+     * @param fo1 the first FileObject
+     * @param fo2 the second FileObject to be compared with the first one.
+     * @return the list of differences found, instances of {@link Difference};
+     *        or <code>null</code> when some error occured.
+     */
+    public List createDiff(FileObject fo1, FileObject fo2) {
+        File f1 = FileUtil.toFile(fo1);
+        File f2 = FileUtil.toFile(fo2);
+        if (f1 != null && f2 != null) {
+            return createDiff(f1, f2);
+        } else {
+            return null;
+        }
+    }
+    
+    private List createDiff(File f1, File f2) {
+        String cmd = java.text.MessageFormat.format(diffCmd,
+            new Object[] { f1.getAbsolutePath(), f2.getAbsolutePath() });
+        try {
+            Process p = Runtime.getRuntime().exec(cmd);
+            Reader stdout = new InputStreamReader(p.getInputStream());
+            char[] buffer = new char[BUFF_LENGTH];
+            StringBuffer outBuffer = new StringBuffer();
+            int length;
+            List differences = new ArrayList();
+            while ((length = stdout.read(buffer)) > 0) {
+                for (int i = 0; i < length; i++) {
+                    if (buffer[i] == '\n') {
+                        stdoutNextLine(outBuffer.toString(), differences);
+                        outBuffer.delete(0, outBuffer.length());
+                    } else {
+                        if (buffer[i] != 13) {
+                            outBuffer.append(buffer[i]);
+                        }
+                    }
+                }
+            }
+            if (outBuffer.length() > 0) stdoutNextLine(outBuffer.toString(), differences);
+            return differences;
+        } catch (IOException ioex) {
+            TopManager.getDefault().notifyException(
+                TopManager.getDefault().getErrorManager().annotate(ioex,
+                    NbBundle.getMessage(CmdlineDiffProvider.class, "runtimeError", cmd)));
+            return null;
+        }
+    }
+    
+    private static String[] matchToStringArray(RE pattern, String line) {
+        ArrayList v = new ArrayList(5);
+        if (!pattern.match(line)) {
+            return new String[0];
+        }
+        for(int i = 1; i < pattern.getParenCount(); i++){
+            int subStart = pattern.getParenStart(i);
+            int subEnd = pattern.getParenEnd(i);
+            if (subStart >= 0 && subEnd > subStart)
+                v.add(line.substring(subStart, subEnd));
+        }
+        int count = v.size();
+        if (count <= 0) count = 1;
+        String[] sa = new String[count];
+        v.toArray(sa);
+        return sa;
+    }
+
+    private void stdoutNextLine(String line, List differences) {
+        String[] sa = matchToStringArray(pattern, line);
+        if (sa != null && sa.length > 0) outputData(sa, differences);
+    }
+    
+    /**
      * This method is called, with elements of the output data.
      * @param elements the elements of output data.
      */
-    public void outputData(String[] elements) {
+    private void outputData(String[] elements, List differences) {
         //diffBuffer.append(elements[0]+"\n"); // NOI18N
         //D.deb("diff match: "+elements[0]); // NOI18N
         //System.out.println("diff outputData: "+elements[0]); // NOI18N
@@ -128,7 +250,7 @@ public class CmdlineDiffProvider extends DiffProvider implements CommandDataOutp
             }
             //action.setAddAction(n1, n3, n4);
             //diffActions.add(action);
-            diff.addAddAction(n1, n3, n4);
+            differences.add(new Difference(Difference.ADD, n1, 0, n3, n4));
         } else if ((index = elements[0].indexOf('d')) >= 0) {
             //DiffAction action = new DiffAction();
             commaIndex = elements[0].lastIndexOf(',', index);
@@ -159,7 +281,7 @@ public class CmdlineDiffProvider extends DiffProvider implements CommandDataOutp
             }
             //action.setDeleteAction(n1, n2, n3);
             //diffActions.add(action);
-            diff.addDeleteAction(n1, n2, n3);
+            differences.add(new Difference(Difference.DELETE, n1, n2, n3, 0));
         } else if ((index = elements[0].indexOf('c')) >= 0) {
             //DiffAction action = new DiffAction();
             commaIndex = elements[0].lastIndexOf(',', index);
@@ -202,7 +324,7 @@ public class CmdlineDiffProvider extends DiffProvider implements CommandDataOutp
             }
             //action.setChangeAction(n1, n2, n3, n4);
             //diffActions.add(action);
-            diff.addChangeAction(n1, n2, n3, n4);
+            differences.add(new Difference(Difference.CHANGE, n1, n2, n3, n4));
         } else if (elements[0].indexOf(REVISION_STR) == 0) {
             String rev = elements[0].substring(REVISION_STR.length()).trim();
             //if (diffOutRev1 == null) diffOutRev1 = rev;
