@@ -4,4 +4,4 @@ i18n/**/*.gif
 i18n/**/*.template
 exclude i18n/**/package.html
 exclude i18n/www/**
-
+exclude i18n/test/**
