@@ -475,13 +475,13 @@ is divided into following sections:
                       <fileset dir="${{classes.dir}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
                     </delete>
                 </xsl:if>
-                <ejbjarproject2:javac/>
+                <ejbjarproject2:javac destdir="${{classes.dir}}"/>
                 <copy todir="${{classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:source-roots"/>
                         <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
                     </xsl:call-template>
-                    <fileset dir="${{src.dir}}" excludes="${{classes.excludes}}"/>
+                    <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
                     <fileset dir="${{meta.inf}}" includes="**/*.dbschema"/>
                 </copy>
                 <copy todir="${{classes.dir}}/META-INF">
