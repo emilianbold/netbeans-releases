@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
         <patternset id="module.files">
             <include name="${module.jar}"/>
             <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
-            <include name="ant/nblib/org-netbeans-modules-debugger-jpda-ant.jar"/>
+            <include name="ant/nblib/${code.name.base.dashes}.jar"/>
         </patternset>
     </target>
 
@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="antsrc" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
         </copy>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/nblib"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/ant/nblib/org-netbeans-modules-debugger-jpda-ant.jar" compress="false">
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/ant/nblib/${code.name.base.dashes}.jar" compress="false">
             <fileset dir="build/antclasses">
                 <excludesfile name="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
             </fileset>

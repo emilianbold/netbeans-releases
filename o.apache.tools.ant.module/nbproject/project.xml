@@ -55,6 +55,12 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.apache.tools.ant.module.api.support</package>
                 <package>org.apache.tools.ant.module.spi</package>
             </public-packages>
+            <extra-compilation-unit>
+                <package-root>src-bridge</package-root>
+                <classpath>${module.classpath}:${src-bridge.cp.extra}</classpath>
+                <built-to>build/bridge-classes</built-to>
+                <built-to>${netbeans.dest.dir}/${cluster.dir}/ant/nblib/bridge.jar</built-to>
+            </extra-compilation-unit>
             <javadoc/>
         </data>
     </configuration>

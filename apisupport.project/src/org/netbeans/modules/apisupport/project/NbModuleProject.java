@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -35,9 +34,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -46,7 +43,6 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -68,6 +64,7 @@ final class NbModuleProject implements Project {
     private final ModuleList moduleList;
     private Map/*<String,String>*/ evalPredefs;
     private List/*<Map<String,String>>*/ evalDefs;
+    private Map/*<FileObject,Element>*/ extraCompilationUnits;
     
     NbModuleProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -79,6 +76,7 @@ final class NbModuleProject implements Project {
         moduleList = ModuleList.getModuleList(nbroot);
         eval = createEvaluator();
         FileBuiltQueryImplementation fileBuilt;
+        // XXX could add globs for other package roots too
         if (supportsUnitTests()) {
             fileBuilt = helper.createGlobFileBuiltQuery(eval, new String[] {
                 "${src.dir}/*.java", // NOI18N
@@ -101,12 +99,21 @@ final class NbModuleProject implements Project {
         // XXX would be good to mark at least the module JAR as owned by this project
         // (currently FOQ/SH do not support that)
         // XXX I18N
-        sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Source Packages", /*XXX*/null, null);
-        sourcesHelper.addTypedSourceRoot("${test.unit.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Unit Test Packages", /*XXX*/null, null);
-        sourcesHelper.addTypedSourceRoot("${test.qa-functional.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Functional Test Packages", /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Source Packages", null, null);
+        sourcesHelper.addTypedSourceRoot("${test.unit.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Unit Test Packages", null, null);
+        sourcesHelper.addTypedSourceRoot("${test.qa-functional.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Functional Test Packages", null, null);
         if (helper.resolveFileObject("javahelp/manifest.mf") == null) { // NOI18N
             // Special hack for core - ignore core/javahelp
             sourcesHelper.addTypedSourceRoot("javahelp", "javahelp", "JavaHelp Packages", null, null);
+        }
+        Iterator it = getExtraCompilationUnits().entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry entry = (Map.Entry) it.next();
+            Element ecu = (Element) entry.getValue();
+            Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            String pkgrootS = Util.findText(pkgrootEl);
+            FileObject pkgroot = (FileObject) entry.getKey();
+            sourcesHelper.addTypedSourceRoot(pkgrootS, JavaProjectConstants.SOURCES_TYPE_JAVA, /* XXX should schema incl. display name? */pkgroot.getNameExt(), null, null);
         }
         lookup = Lookups.fixed(new Object[] {
             new Info(),
@@ -399,6 +406,32 @@ final class NbModuleProject implements Project {
         return length == 1;
     }
     
+    /**
+     * Find marked extra compilation units.
+     * Gives a map from the package root to the defining XML element.
+     */
+    public Map/*<FileObject,Element>*/ getExtraCompilationUnits() {
+        if (extraCompilationUnits == null) {
+            extraCompilationUnits = new HashMap();
+            Iterator/*<Element>*/ ecuEls = Util.findSubElements(getHelper().getPrimaryConfigurationData(true)).iterator();
+            while (ecuEls.hasNext()) {
+                Element ecu = (Element) ecuEls.next();
+                if (ecu.getLocalName().equals("extra-compilation-unit")) { // NOI18N
+                    Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+                    String pkgrootS = Util.findText(pkgrootEl);
+                    String pkgrootEval = evaluator().evaluate(pkgrootS);
+                    FileObject pkgroot = getHelper().resolveFileObject(pkgrootEval);
+                    if (pkgroot == null) {
+                        Util.err.log(ErrorManager.WARNING, "Could not find package-root " + pkgrootEval + " for " + getCodeNameBase());
+                        continue;
+                    }
+                    extraCompilationUnits.put(pkgroot, ecu);
+                }
+            }
+        }
+        return extraCompilationUnits;
+    }
+    
     private final class Info implements ProjectInformation {
         
         private String displayName;
@@ -483,14 +516,16 @@ final class NbModuleProject implements Project {
     
     private final class OpenedHook extends ProjectOpenedHook {
         
+        private ClassPath[] boot, source, compile;
+        
         OpenedHook() {}
         
         protected void projectOpened() {
             // register project's classpaths to GlobalClassPathRegistry
             ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
-            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-            GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
+            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, boot = cpProvider.getProjectClassPaths(ClassPath.BOOT));
+            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, source = cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+            GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, compile = cpProvider.getProjectClassPaths(ClassPath.COMPILE));
         }
         
         protected void projectClosed() {
@@ -503,10 +538,9 @@ final class NbModuleProject implements Project {
             // XXX could discard caches, etc.
             
             // unregister project's classpaths to GlobalClassPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
-            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
+            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, boot);
+            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, source);
+            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, compile);
         }
         
     }

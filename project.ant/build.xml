@@ -16,13 +16,10 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../nbbuild/templates/projectized.xml"/>
 
     <target name="anttask" depends="netbeans" description="Build special Ant task.">
-        <property name="ant.jar" location="${ant.home}/lib/ant.jar"/>
         <mkdir dir="build/antclasses"/>
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.4" debug="true" deprecation="true">
             <classpath>
-                <pathelement location="${ant/project.dir}/${nb.modules.dir}/org-netbeans-modules-project-ant.jar"/>
-                <pathelement location="${ant.jar}"/>
-                <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+                <pathelement path="${antsrc.cp}"/>
             </classpath>
         </javac>
         <copy todir="build/antclasses">

@@ -16,14 +16,10 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../nbbuild/templates/projectized.xml"/>
 
-    <target name="init" depends="projectized.init">
+    <target name="build-init" depends="projectized.build-init">
         <ant dir="external" target="unscramble"/>
         <ant dir="../libs/external" target="unscramble"/>
-        <path id="cp+ant">
-            <path refid="cp"/>
-            <pathelement location="build/classes"/>
-            <pathelement location="${compile.ant.jar}"/>
-        </path>
+        <property name="src-bridge.cp" value="${module.classpath}:${src-bridge.cp.extra}"/>
     </target>
     
     <target name="files-init" depends="basic-init">
@@ -39,7 +35,9 @@ Microsystems, Inc. All Rights Reserved.
     <target name="compile-bridge" depends="init,compile">
         <mkdir dir="build/bridge-classes"/>
         <javac srcdir="src-bridge" destdir="build/bridge-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4" includeantruntime="false">
-            <classpath refid="cp+ant"/>
+            <classpath>
+                <path path="${src-bridge.cp}"/>
+            </classpath>
         </javac>
         <copy todir="build/bridge-classes">
             <fileset dir="src-bridge" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
