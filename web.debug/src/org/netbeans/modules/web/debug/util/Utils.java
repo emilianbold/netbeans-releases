@@ -129,7 +129,6 @@ public class Utils {
                         return f.getName();
                     }
                 } catch (IllegalArgumentException ex) {
-//                    System.err.println("url: " + url);
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.toString());
                 }
             }
