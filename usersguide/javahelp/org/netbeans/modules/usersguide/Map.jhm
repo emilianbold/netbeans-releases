@@ -168,9 +168,12 @@
 <mapID target="editor.navigation" url="editing/editor_navigation.html" />
 <mapID target="editor.smart-brackets" url="editing/editor_smart-brackets.html" />
 
-<!--also CSH for Print Fonts and Colors dialog box (called from Print Fonts and Colors properties of the various editors 
-under Print Settings in the Options window) and for Fonts and Colors dialog box
-(called from Fonts and Colors properties of the various editors under Editor Settings)-->
+<!--also CSH for: 
+  1. Print Fonts and Colors dialog box (called from Print Fonts and Colors properties of the various editors 
+under Print Settings in the Options window) 
+  2. Fonts and Colors dialog box
+(called from Fonts and Colors properties of the various editors under Editor Settings)
+ 3. Children nodes of Print Settings, since Fonts and Colors is the only property-->
 <mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
 <!--also CSH for edit keybindings dialog box (called from Key Bindings properties of the various editors in 
 the Options window:-->
@@ -615,7 +618,7 @@ the Options window:-->
    <mapID target="org.netbeans.modules.autoupdate.Settings" url="configure/modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.ModuleAutoUpdater.UpdateAction" url="configure/modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.UpdateAction" url="configure/modules/autoupdate.html" />
-
+   <mapID target="org.netbeans.modules.autoupdate.AutoupdateType" url="configure/modules/autoupdate.html" />
     <!--Tools | Options | Testing | JUnit Module Settings; both node and propsheet-->
     <mapID target="org.netbeans.modules.junit.JUnitSettings" url="junit_configuring.html" />
    
@@ -634,7 +637,9 @@ the Options window:-->
 
   <!--ID for action as listed in Options | IDE Configuration | Look and Feel | Actions:--> 
   <mapID target="org.netbeans.modules.j2ee.impl.DeployAction" url="pending.html" />
-  
+
+  <!--ID for Options | IDE Configuration | Server and External Tool Setting | PDF Settings; removal pending issue 54602 -->
+  <mapID target="org.netbeans.modules.pdf.PDFSettings" url="pending.html" />
 
  <!--Options | Source Creation and Management | Templates:-->  
  <!--TODO: future; create topic on meaning of node + notes on the fact that some templates aren't meant to be manipulated:-->
