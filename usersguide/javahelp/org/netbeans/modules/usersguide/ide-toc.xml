@@ -310,8 +310,10 @@
   <tocitem text="Form Designer" target="gui.formdesigner" />
   <tocitem text="Component Inspector" target="gui.component-inspector" />
   <tocitem text="Creating a New Form" target="gui.creatingforms" />
-  <tocitem text="Setting the Form Size" target="gui.formsize" />
+  <tocitem text="Setting the Form Size" target="gui.formsize" /> 
+  <tocitem text="Reversing Work" target="gui.reversingwork" /> 
   <tocitem text="Testing a Form" target="gui.modes" />
+  <tocitem text="Reloading a Form" target="gui.reloadingform" />
   <tocitem text="Working With Components" target="gui.components.intro">
     <tocitem text="Component Palette" target="gui.components.palette" />
     <tocitem text="Adding a Component to a Form" target="gui.components.adding" />
