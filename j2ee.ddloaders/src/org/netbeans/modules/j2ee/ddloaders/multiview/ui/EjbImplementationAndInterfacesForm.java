@@ -60,7 +60,6 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setOpaque(false);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_BeanClass"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
