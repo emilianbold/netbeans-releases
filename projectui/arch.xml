@@ -921,6 +921,15 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="resources-layer">
   <p>
    Installs a whole lot of UI through the layer. Menus, templates, etc.
+   Also is using 
+   <api name="Loaders-folder-any-Actions" 
+    category="stable" 
+    group="layer" 
+    type="import" 
+    url="http://www.netbeans.org/download/dev/javadoc/LoadersAPI/architecture-summary.html#layer-Loaders-folder-any-Actions" >
+    to add certain build system actions to folder popup menu and hide the
+    default ones.
+    </api>
   </p>
  </answer>
 

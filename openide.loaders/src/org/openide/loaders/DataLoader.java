@@ -49,6 +49,8 @@ public abstract class DataLoader extends SharedClassObject {
     public static final String PROP_ACTIONS = "actions"; // NOI18N
     /** property name of list of default actions */
     private static final String PROP_DEF_ACTIONS = "defaultActions"; // NOI18N
+   /** key to hold reference to out action manager */
+    private static final Object ACTION_MANAGER = new Object ();
     /** representation class, not public property */
     private static final Object PROP_REPRESENTATION_CLASS = new Object ();
     /** representation class name, not public property */
@@ -133,17 +135,69 @@ public abstract class DataLoader extends SharedClassObject {
     *   actions
     */
     public final SystemAction[] getActions () {
-        SystemAction[] actions = (SystemAction[])getProperty (PROP_ACTIONS);
-        if ( actions == null ) {
-            actions = (SystemAction[])getProperty (PROP_DEF_ACTIONS);
-            if ( actions == null ) {
-                actions = defaultActions();
-                putProperty (PROP_DEF_ACTIONS, actions, false);
-            }        
+        javax.swing.Action[] arr = getSwingActions ();
+        
+        ArrayList list = new ArrayList ();
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] instanceof SystemAction || arr[i] == null) {
+                list.add (arr[i]);
+            }
         }
-        return actions;
+        
+        return (SystemAction[])list.toArray (new SystemAction[0]);
     }
-
+    
+    /** Swing actions getter, used from DataNode */
+    final javax.swing.Action[] getSwingActions () {
+        DataLdrActions mgr = findManager ();
+        if (mgr != null) {
+            Object actions;
+            try {
+                actions = mgr.instanceCreate ();
+            } catch (IOException ex) {
+                ErrorManager.getDefault ().notify (ex);
+                actions = null;
+            } catch (ClassNotFoundException ex) {
+                ErrorManager.getDefault ().notify (ex);
+                actions = null;
+            }
+            if (actions == null) {
+                return new javax.swing.Action[0];
+            }
+        
+            return (javax.swing.Action[])actions;
+        } else {
+            // old behaviour, that stores actions in properties
+            SystemAction[] actions = (SystemAction[])getProperty (PROP_ACTIONS);
+            if ( actions == null ) {
+                actions = (SystemAction[])getProperty (PROP_DEF_ACTIONS);
+                if ( actions == null ) {
+                    actions = defaultActions();
+                    putProperty (PROP_DEF_ACTIONS, actions, false);
+                }
+            }
+            return actions;
+        }
+    }
+        
+    
+    /** Identifies the name of context in layer files where the 
+     * loader wishes to store its own actions and also read them.
+     * In principle any {@link javax.swing.Action} instance can be registered
+     * in the context and it will be visible in the default DataNode
+     * for data object created by this loader. Only SystemAction can however
+     * be manipulated from DataLoader getActions/setActions methods.
+     * <p>
+     * The default implementation returns null to indicate that no
+     * layer reading should be used
+     *
+     * @return the string name of the context on layer files to read/write acitons to
+     * @since 5.0
+     */
+    protected String actionsContext () {
+        return null;
+    }
+    
     /** Get default actions.
     * @return array of default system actions or <CODE>null</CODE> if this loader
     * does not have any actions.
@@ -160,6 +214,57 @@ public abstract class DataLoader extends SharedClassObject {
         return actions;
     }
     
+    /** Actions manager.
+     */
+    private final DataLdrActions findManager () {
+        Object manager = getProperty (ACTION_MANAGER);
+        if (manager instanceof Class) {
+            return null;
+        }
+        DataLdrActions mgr = (DataLdrActions)manager;
+        boolean newlyCreated = false;
+        if (mgr == null) {
+            String context = actionsContext ();
+            if (context == null) {
+                // mark we have no context
+                putProperty (ACTION_MANAGER, getClass ());
+                return null;
+            }
+            
+            FileObject fo = Repository.getDefault ().getDefaultFileSystem ().findResource (context);
+            if (fo == null) {
+                fo = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+                try {
+                    fo = FileUtil.createFolder (fo, context);
+
+                } catch (IOException ex) {
+                    ErrorManager.getDefault ().notify (ex);
+                }
+                newlyCreated = true;
+            }
+            
+            mgr = new DataLdrActions (DataFolder.findFolder (fo), this);
+            if (newlyCreated) {
+                SystemAction[] arr = defaultActions ();
+                if (arr != null) {
+                    mgr.setActions (arr);
+                }
+            }
+            putProperty (ACTION_MANAGER, mgr);
+        }
+        return mgr;
+    }
+    
+    /** Allows the friend code (package and tests) to wait while actions
+     * are synchronized with the state of disk.
+     */
+    final void waitForActions () {
+        DataLdrActions mgr = findManager ();
+        if (mgr != null) {
+            mgr.waitFinished ();
+        }
+    }
+    
     /** Set actions.
     * <p>Note that this method is public, not protected, so it is possible for anyone
     * to modify the loader's popup actions externally (after finding the loader
@@ -172,7 +277,19 @@ public abstract class DataLoader extends SharedClassObject {
     * @see #getActions
     */
     public final void setActions (SystemAction[] actions) {
-        putProperty (PROP_ACTIONS, actions, true);
+        DataLdrActions mgr = findManager ();
+        if (mgr != null) {
+            mgr.setActions (actions);
+        } else {
+            putProperty (PROP_ACTIONS, actions, true);
+        }
+    }
+    
+    /** Assigns this loader new array of swing actions.
+     * @param arr List<Action>
+     */
+    final void setSwingActions (List/*<Action>*/ arr) {
+        firePropertyChange (PROP_ACTIONS, null, null);
     }
 
     /** Get the current display name of this loader.
@@ -346,10 +463,14 @@ public abstract class DataLoader extends SharedClassObject {
                 }
 
                 try {
+                    ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+                    if (loader == null) {
+                        loader = getClass ().getClassLoader ();
+                    }
                     Class c = Class.forName (
                         Utilities.translate((String)arr[i]),
                         false, // why resolve?? --jglick
-                        (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)
+                        loader
                     );
                     SystemAction ac = SystemAction.get (c);
 

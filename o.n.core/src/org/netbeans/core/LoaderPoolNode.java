@@ -144,8 +144,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
     /** Really adds the loader.
      */
-    private static synchronized void doAdd (DataLoader l, ManifestSection.LoaderSection s) throws Exception {
-        if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+    static synchronized void doAdd (DataLoader l, ManifestSection.LoaderSection s) throws Exception {
+        if (err.isLoggable(ErrorManager.INFORMATIONAL) && s != null) {
             List before = s.getInstallBefore() == null ? null : Arrays.asList(s.getInstallBefore());
             List after = s.getInstallAfter() == null ? null : Arrays.asList(s.getInstallAfter());
             err.log("add: " + l + " repclass: " + l.getRepresentationClass().getName() + " before: " + before + " after: " + after);
@@ -165,10 +165,12 @@ public final class LoaderPoolNode extends AbstractNode {
         String cname = c.getName();
         names2Loaders.put(cname, l);
         repNames2Loaders.put(l.getRepresentationClassName(), l);
-        String[] ib = s.getInstallBefore();
-        if (ib != null) installBefores.put(cname, ib);
-        String[] ia = s.getInstallAfter();
-        if (ia != null) installAfters.put(cname, ia);
+        if (s != null) {
+            String[] ib = s.getInstallBefore();
+            if (ib != null) installBefores.put(cname, ib);
+            String[] ia = s.getInstallAfter();
+            if (ia != null) installAfters.put(cname, ia);
+        }
         if (updatingBatch) {
             updatingBatchUsed = true;
         } else {
@@ -279,6 +281,13 @@ public final class LoaderPoolNode extends AbstractNode {
             myChildren.update ();
         }
     }
+    
+    /** Checks whether a loader is modified. E.g. whether the loader
+     * considers it to be modified and necessary to be saved.
+     */
+    static synchronized boolean isModified (DataLoader l) {
+        return modifiedLoaders.contains (l);
+    }
 
     /** Stores all the objects into stream.
     * @param oos object output stream to write to
@@ -298,7 +307,7 @@ public final class LoaderPoolNode extends AbstractNode {
         while (it.hasNext ()) {
             DataLoader l = (DataLoader)it.next ();
             
-            if (!modifiedLoaders.contains(l)) {
+            if (!isModified (l)) {
                 // #27190 - no real need to write this in detail.
                 String c = l.getClass().getName();
                 if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("writing unmodified " + c);
@@ -355,7 +364,7 @@ public final class LoaderPoolNode extends AbstractNode {
         while (e.hasMoreElements ()) {
             DataLoader l = (DataLoader) e.nextElement ();
             if (loaders.contains (l)) continue;
-            if (!modifiedLoaders.contains(l)) {
+            if (!isModified (l)) {
                 // #27190 again. No need to write anything
                 String c = l.getClass().getName();
                 if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("skipping unmodified " + c);
@@ -813,8 +822,12 @@ public final class LoaderPoolNode extends AbstractNode {
         */
         public void propertyChange (PropertyChangeEvent ev) {
             DataLoader l = (DataLoader)ev.getSource();
-            modifiedLoaders.add(l);
             String prop = ev.getPropertyName ();
+            if (DataLoader.PROP_ACTIONS.equals (prop) && ev.getNewValue () == null) {
+                // skip this change as this means the loader is using new storage mechanism
+                return;
+            }
+            modifiedLoaders.add(l);
             if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("Got change in " + l.getClass().getName() + "." + prop);
             if (DataLoader.PROP_ACTIONS.equals (prop) || DataLoader.PROP_DISPLAY_NAME.equals (prop))
                 return; // these are not important to the pool, i.e. to file recognition

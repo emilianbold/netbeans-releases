@@ -897,28 +897,8 @@ static final class FolderLoader extends UniFileLoader {
         // super (DataFolder.class);
     }
 
-    /** Get default actions.
-    * @return array of default system actions or <CODE>null</CODE> if this loader does not have any
-    *   actions
-    */
-    protected SystemAction[] defaultActions () {
-            return new SystemAction[] {
-                    SystemAction.get (org.openide.actions.NewTemplateAction.class),
-                    null,
-                    // SystemAction.get (org.openide.actions.OpenLocalExplorerAction.class),
-                    SystemAction.get (org.openide.actions.FileSystemAction.class),
-                    SystemAction.get (org.openide.actions.FindAction.class),                    
-                    null,
-                    SystemAction.get (org.openide.actions.CutAction.class),
-                    SystemAction.get (org.openide.actions.CopyAction.class),
-                    SystemAction.get (org.openide.actions.PasteAction.class),
-                    null,
-                    SystemAction.get (org.openide.actions.DeleteAction.class),
-                    SystemAction.get (org.openide.actions.RenameAction.class),
-                    null,
-                    SystemAction.get (org.openide.actions.ToolsAction.class),
-                    SystemAction.get (org.openide.actions.PropertiesAction.class)
-                };
+    protected String actionsContext () {
+        return "Loaders/folder/any/Actions"; // NOI18N
     }
     
     /** Get the default display name of this loader.

@@ -38,7 +38,7 @@ public class Hacks {
     
     /** @author Petr Hrebejk */
     static void hackFolderActions() {
-        
+  /*      
         DataLoaderPool dataLoaderPool = (DataLoaderPool) Lookup.getDefault().lookup(DataLoaderPool.class);
         DataLoader folderLoader = dataLoaderPool.firstProducerOf(DataFolder.class);
 
@@ -48,7 +48,7 @@ public class Hacks {
             actions.set(index , SystemAction.get(Actions.SystemNewFile.class));
             folderLoader.setActions((SystemAction[])actions.toArray(new SystemAction[actions.size()]));
         }
-
+*/
     }
     
     private static Object windowSystemImpl = null;

@@ -42,7 +42,7 @@ import org.openide.util.actions.SystemAction;
  * @author Petr Hrebejk
  */
 public class JavaProjectModule extends ModuleInstall {
-    
+    /*
     public void restored() {
         // Hack JavaDataLoader actions
         
@@ -81,6 +81,7 @@ public class JavaProjectModule extends ModuleInstall {
         }
         
     }
+     */
     
             
     public static class ActionWrapper extends CallableSystemAction implements ContextAwareAction, PropertyChangeListener {

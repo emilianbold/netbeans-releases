@@ -302,6 +302,22 @@ public class DataNode extends AbstractNode {
     * @see DataLoader#getActions
     * @return array of actions or <code>null</code>
     */
+    public Action[] getActions (boolean context) {
+        if (systemActions == null) {
+            systemActions = createActions ();
+        }
+
+        if (systemActions != null) {
+            return systemActions;
+        }
+
+        return obj.getLoader ().getSwingActions ();
+    }
+
+    /** Get actions for this data object.
+    * @deprecated Use getActions(boolean)
+    * @return array of actions or <code>null</code>
+    */
     public SystemAction[] getActions () {
         if (systemActions == null) {
             systemActions = createActions ();
@@ -314,6 +330,7 @@ public class DataNode extends AbstractNode {
         return obj.getLoader ().getActions ();
     }
 
+    
     /** Get default action. In the current implementation the 
     *<code>null</code> is returned in case the underlying data 
     * object is a template. The templates should not have any default 

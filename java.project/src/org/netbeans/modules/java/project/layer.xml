@@ -68,5 +68,41 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Services">
         <file name="javaSettings.settings" url="javaSettings.settings"/>
     </folder>
+    
+  <folder name="Loaders">
+    <folder name="text">
+        <folder name="x-java">
+            <folder name="Actions">
+              <attr boolvalue="true" name="OpenAction.instance/java-project-separator-1.instance" />
+              <file name="java-project-separator-1.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+              </file>
+              <attr boolvalue="true" name="java-project-separator-1.instance/CompileFile.instance" />
+              <file name="CompileFile.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.java.project.JavaProjectModule$CompileWrapper" />
+              </file>
+              <attr boolvalue="true" name="CompileFile.instance/java-project-separator-2.instance" />
+              <file name="java-project-separator-2.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+              </file>
+              <attr boolvalue="true" name="java-project-separator-2.instance/RunFile.instance" />
+              <file name="RunFile.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.java.project.JavaProjectModule$RunWrapper" />
+              </file>
+              <attr boolvalue="true" name="RunFile.instance/DebugFile.instance" />
+              <file name="DebugFile.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.java.project.JavaProjectModule$DebugWrapper" />
+              </file>
+              <attr boolvalue="true" name="DebugFile.instance/java-project-separator-3.instance" />
+              <file name="java-project-separator-3.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+              </file>
+              <attr boolvalue="true" name="java-project-separator-3.instance/FileSystemAction.instance" />
+
+            </folder>
+        </folder>
+    </folder>
+  </folder>
+    
  
 </filesystem>
