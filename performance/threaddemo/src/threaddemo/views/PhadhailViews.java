@@ -49,22 +49,21 @@ public class PhadhailViews {
         root = new EQReplannedNode(root);
         ExplorerPanel p = new ExplorerPanel();
         p.setLayout(new BorderLayout());
-        p.add(new BeanTreeView(), BorderLayout.CENTER);
+        JComponent tree = new BeanTreeView();
+        p.add(tree, BorderLayout.CENTER);
         p.getExplorerManager().setRootContext(root);
         try {
             p.getExplorerManager().setSelectedNodes(new Node[] {root});
         } catch (PropertyVetoException pve) {
             pve.printStackTrace();
         }
-        CallbackSystemAction a = (CallbackSystemAction)SystemAction.get(PopupAction.class);
-        Object key = a.getActionMapKey();
-        p.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("shift F10"), key);
-        // XXX shouldn't TreeView bind this in the ActionMap automatically?
-        p.getActionMap().put(key, a /*new javax.swing.AbstractAction() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                System.err.println("S-F10!");
-            }
-        }*/);
+        Object key = "org.openide.actions.PopupAction";
+        KeyStroke ks = KeyStroke.getKeyStroke("shift F10");
+        // XXX this does not work:
+        // tree.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ks, key);
+        // since actually the BeanTreeView itself does not bind the ActionMap, rather the
+        // JTree in the viewport. When that is fixed, simplify.
+        ((JComponent)((JScrollPane)tree).getViewport().getView()).getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ks, key);
         return p;
     }
     
