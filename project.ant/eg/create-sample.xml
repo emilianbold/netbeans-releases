@@ -14,6 +14,7 @@
                 <pathelement location="${nbroot}/ant/project/build/tasks.jar"/>
                 <pathelement location="${nbroot}/nbbuild/netbeans/ide4/modules/org-netbeans-modules-project-ant.jar"/>
                 <pathelement location="${nbroot}/nbbuild/netbeans/platform4/core/openide.jar"/>
+                <pathelement location="${nbroot}/nbbuild/netbeans/platform4/modules/org-netbeans-modules-masterfs.jar"/>
                 <pathelement location="${nbroot}/nbbuild/netbeans/ide4/modules/org-netbeans-modules-projectapi.jar"/>
                 <pathelement location="${nbroot}/nbbuild/netbeans/platform4/modules/org-netbeans-modules-queries.jar"/>
             </classpath>

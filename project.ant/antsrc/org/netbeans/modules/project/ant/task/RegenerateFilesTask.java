@@ -78,6 +78,8 @@ public final class RegenerateFilesTask extends Task {
             FileObject projectFO = FileUtil.toFileObject(projectDir);
             if (projectFO == null) {
                 // Probably not running inside IDE, so mount it.
+                // XXX for some reason including masterfs.jar in <taskdef> does not work. Why?
+                // Possibly a bug in AntClassLoader.getResources(String)?
                 LocalFileSystem lfs = new LocalFileSystem();
                 lfs.setRootDirectory(projectDir);
                 Repository.getDefault().addFileSystem(lfs);
