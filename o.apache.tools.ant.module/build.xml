@@ -256,4 +256,15 @@ After that you should be done!
         <style in="api/doc/changes/apichanges.xml" out="www/apichanges.html" destdir="www" style="../openide/api/doc/changes/apichanges.xsl"/>
     </target>
 
+    <target name="javadoc" depends="release-helper">
+      <copy todir="javadoc/AntAPIs">
+        <fileset dir="${javadoc-out}" />
+      </copy>
+      <copy todir="javadoc">
+        <fileset dir=".">
+          <include name="docs/release/docs/ant-api.zip"/>
+        </fileset>
+      </copy>
+    </target>
+
 </project>
