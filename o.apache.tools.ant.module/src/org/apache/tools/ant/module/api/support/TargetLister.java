@@ -216,6 +216,10 @@ public class TargetLister {
             return !isOverridden() && getName().equals(script.getMainScript().getDefaultTargetName());
         }
         
+        public String toString() {
+            return "Target " + getName() + " in " + getScript(); // NOI18N
+        }
+        
     }
     
     /**
