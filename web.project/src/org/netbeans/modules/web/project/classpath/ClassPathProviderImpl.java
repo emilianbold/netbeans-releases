@@ -268,7 +268,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if (ClassPath.SOURCE.equals(type)) {
             ClassPath[] l = new ClassPath[2];
             l[0] = getSourcepath(0);
-            l[1] = getSourcepath(2);
+            l[1] = getSourcepath(5);
             return l;
         }
         assert false;
