@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,201 +8,154 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 
 Contributor(s): Jayme C. Edwards, Jesse Glick.
 -->
 
 <project name="ant" default="netbeans" basedir=".">
-  <import file="../nbbuild/default.xml"/> 
 
-  <target name="init" depends="default.init">
-    <ant dir="external" target="unscramble"/>
-    <ant dir="../libs/external" target="unscramble"/>
-    <patternset id="ant.files">
-      <include name="${nb.modules.dir}/ant.jar"/>
-      <include name="ant/nblib/bridge.jar"/>
-      <include name="ant/lib/**"/>
-    </patternset>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
-    <path id="cp">
-      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
-      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-      <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
-      <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
-      <pathelement location="${java/api.dir}/${nb.modules/autoload.dir}/java-api.jar"/>
-      <fileset dir="../libs/external">
-        <include name="xerces*.jar"/>
-      </fileset>
-      <pathelement location="${core/javahelp.dir}/${nb.modules/autoload.dir}/javahelp-api.jar"/>
-    </path>
+    <target name="init" depends="projectized.init">
+        <ant dir="external" target="unscramble"/>
+        <ant dir="../libs/external" target="unscramble"/>
+        <path id="cp+ant">
+            <path refid="cp"/>
+            <pathelement location="build/classes"/>
+            <pathelement location="external/lib/ant.jar"/>
+        </path>
+    </target>
+    
+    <target name="files-init" depends="basic-init">
+        <patternset id="ant.files">
+            <include name="${module.jar}"/>
+            <include name="ant/nblib/bridge.jar"/>
+            <include name="ant/lib/**"/>
+        </patternset>
+    </target>
 
-    <path id="cp+ant">
-      <path refid="cp"/>
-      <pathelement location="build/classes"/>
-      <pathelement location="external/lib/ant.jar"/>
-    </path>
-  </target>
+    <target name="compile-bridge" depends="init">
+        <mkdir dir="build/bridge-classes"/>
+        <javac srcdir="src-bridge" destdir="build/bridge-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+            <classpath refid="cp+ant"/>
+        </javac>
+        <copy todir="build/bridge-classes">
+            <fileset dir="src-bridge" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+        </copy>
+    </target>
 
-  <target name="compile" depends="init">
-    <mkdir dir="build/classes"/>
-    <javac srcdir="src" destdir="build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-      <classpath refid="cp"/>
-    </javac>
-    <mkdir dir="build/bridge-classes"/>
-    <javac srcdir="src-bridge" destdir="build/bridge-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <classpath refid="cp+ant"/>
-    </javac>
-  </target>
+    <target name="jar-bridge" depends="compile-bridge">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/nblib"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/ant/nblib/bridge.jar" compress="false">
+            <fileset dir="build/bridge-classes"/>
+        </jar>
+    </target>
 
-  <target name="jars" depends="compile">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ant.jar"
-         manifest="manifest-subst.mf"
-	 compress="false">
-      <fileset dir="build/classes"/>
-      <fileset dir="src">
-        <excludesfile name="../nbbuild/standard-jar-excludes.txt"/>
-      </fileset>
-    </jar>
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/nblib"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/ant/nblib/bridge.jar" compress="false">
-      <fileset dir="build/bridge-classes"/>
-      <fileset dir="src-bridge">
-        <excludesfile name="../nbbuild/standard-jar-excludes.txt"/>
-      </fileset>
-    </jar>
-  </target>
+    <target name="release" depends="init">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/lib"/>
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/ant/lib">
+            <fileset dir="external/lib"/>
+        </copy>
+    </target>
 
-  <target name="release" depends="init">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/ant/lib"/>
-    <copy todir="${netbeans.dest.dir}/${cluster.dir}/ant/lib">
-      <fileset dir="external/lib"/>
-    </copy>
-  </target>
+    <target name="netbeans-extra" depends="jar-bridge,release"/>
 
-  <target name="netbeans" depends="jars,release" description="Build module.">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/ant.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="ant.files"/>
-      </fileset>
-    </genlist>
-  </target>
+    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
+        <mkdir dir="build"/>
+        <makenbm file="build/${nbm}"
+                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 module="${module.jar}"
+                 homepage="http://${nbm.domain}.${homepage.base}/"
+                 distribution="http://${dist.base}/${nbm}"
+                 needsrestart="${nbm.needs.restart}">
+            <license name="ant-license.txt">
+                <text>For the Ant module itself:</text>
+                <file location="${license.file}"/>
+                <text>For the Ant runtime:</text>
+                <file location="${nb_all}/nbbuild/external/apache-license-2.0.txt"/>
+            </license>
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+        </makenbm>
+    </target>
 
-  <target name="nbm" depends="netbeans" description="Build module NBM file.">
-    <mkdir dir="build"/>
-    <makenbm file="build/ant.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.modules.dir}/ant.jar"
-	     homepage="http://ant.${homepage.base}/"
-	     distribution="http://${dist.base}/ant.nbm">
-      <license name="ant-license.txt">
-        <text>For the Ant module itself:</text>
-        <file location="${license.file}"/>
-	<text>For the Ant runtime:</text>
-	<file location="../nbbuild/external/apache-license-2.0.txt"/>
-      </license>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
-  <target name="reload" depends="jars" description="Test module inside running IDE.">
-    <nbinstaller module="netbeans/modules/ant.jar" action="reinstall"/>
-  </target>
-
-  <target name="clean" depends="init" description="Clean out build products.">
-    <delete dir="build"/>
-    <delete>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="ant.files"/>
-      </fileset>
-    </delete>
-    <delete file="manifest-subst.mf"/>
-    <delete dir="javadoc"/>
-    <!-- See target 'release-helper': -->
-    <delete dir="release-work"/>
-  </target>
-
-  <!-- For use when making new releases: -->
-  <target name="release-helper" depends="clean" description="Help do some things useful when bundling a new Ant release.">
-    <condition property="all.defined">
-      <and>
-        <isset property="release.version"/>
-        <isset property="release.path"/>
-        <isset property="release.cvs.tag"/>
-      </and>
-    </condition>
-    <fail unless="all.defined">
-      You need to set the following properties first:
-      release.version: version of Ant being bundled, e.g. "1.6"
-      release.path: full path to the Ant binary distribution, e.g. "/tmp/apache-ant-1.6.0"
-      release.cvs.tag: CVS tag in Ant of the release, e.g. "ANT_160"
-    </fail>
-    <property name="release.sources" location="release-work/ant-sources"/>
-    <property name="release.sourcepath" location="${release.sources}/ant/src/main"/>
-    <mkdir dir="${release.sourcepath}"/>
-    <echo>1.  Checking out Ant sources into ${release.sources}...</echo>
-    <!-- Currently checks out only src/main subdir for speed. -->
-    <cvs package="ant/src/main" cvsroot=":pserver:anoncvs@cvs.apache.org:/home/cvspublic" dest="${release.sources}" failonerror="true" tag="${release.cvs.tag}"/>
-    <property name="ant-api.zip" location="external/ant-api-${release.version}.zip.master"/>
-    <echo>2.  Will store Javadoc to ${ant-api.zip}...</echo>
-    <delete file="${ant-api.zip}"/>
-    <zip zipfile="${ant-api.zip}">
-      <fileset dir="${release.path}/docs/manual/api"/>
-    </zip>
-    <property name="orig.manual" location="${release.path}/docs/manual"/>
-    <echo>3.  Creating the Ant manual from ${orig.manual}...</echo>
-    <property name="online.manual" location="release-work/online-manual"/>
-    <delete dir="${online.manual}"/>
-    <mkdir dir="${online.manual}"/>
-    <copy todir="${online.manual}">
-      <fileset dir="${orig.manual}" excludesfile="../nbbuild/standard-jar-excludes.txt">
-        <!-- These are obviated by JavaHelp: -->
-        <exclude name="*list.html"/>
-        <exclude name="index.html"/>
-        <exclude name="toc.html"/>
-        <!-- Presumably you do not care about other IDE integrations at this point: -->
-        <exclude name="ide.html"/>
-        <exclude name="Integration/"/>
-        <!-- Does not apply inside NetBeans: -->
-        <exclude name="running.html"/>
-        <!-- Included as a separate Javadoc mount: -->
-        <exclude name="api/"/>
-        <!-- Currently done specially: -->
-        <exclude name="stylesheets/antmanual.css"/>
-        <!-- More or less useless: -->
-        <exclude name="cover.html"/>
-      </fileset>
-    </copy>
-    <mkdir dir="${online.manual}/stylesheets"/>
-    <tstamp/>
-    <echo file="${online.manual}/stylesheets/antmanual.css">
-      /* This document was modified on ${TODAY} by ant.netbeans.org to meet accessibility guidelines. */
-      @import "../../../../../../../netbeans/modules/usersguide/ide.css";
-    </echo>
-    <replaceregexp flags="s" match='(&lt;body&gt;).*(&lt;h2&gt;&lt;a name="librarydependencies"&gt;)' replace="\1&#10;&lt;!-- Modified on ${TODAY} by ant.netbeans.org to exclude irrelevant sections --&gt;&#10;\2" file="${online.manual}/install.html"/>
-    <property name="ant-docs.zip" location="external/ant-docs-${release.version}.zip.master"/>
-    <zip zipfile="${ant-docs.zip}" compress="true">
-      <fileset dir="${online.manual}"/>
-    </zip>
-    <property name="here" location="."/>
-    <property name="ParserDB" location="docs/release/system/ParserDB"/>
-    <property name="ant-libs.zip" location="external/ant-libs-${release.version}.zip.master"/>
-    <echo>4.  Creating ${ant-libs.zip}...</echo>
-    <zip zipfile="${ant-libs.zip}" compress="true">
-      <fileset dir="${release.path}/lib">
-        <include name="ant*.jar"/>
-      </fileset>
-    </zip>
-    <echo>5.  Creating parser database...</echo>
-    <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="../nbbuild/nbantext.jar"/>
-    <mkdir dir="${ParserDB}"/>
-    <makeparserdb db="${ParserDB}/ant-${release.version}" sources="${release.sourcepath}" nbroot=".."/>
-    <echo>Now some (currently) manual steps for you:
+    <!-- For use when making new releases: -->
+    <target name="release-helper" depends="clean" description="Help do some things useful when bundling a new Ant release.">
+        <condition property="all.defined">
+            <and>
+            <isset property="release.version"/>
+            <isset property="release.path"/>
+            <isset property="release.cvs.tag"/>
+        </and>
+        </condition>
+        <fail unless="all.defined">
+            You need to set the following properties first:
+            release.version: version of Ant being bundled, e.g. "1.6"
+            release.path: full path to the Ant binary distribution, e.g. "/tmp/apache-ant-1.6.0"
+            release.cvs.tag: CVS tag in Ant of the release, e.g. "ANT_160"
+        </fail>
+        <property name="release.sources" location="build/release-work/ant-sources"/>
+        <property name="release.sourcepath" location="${release.sources}/ant/src/main"/>
+        <mkdir dir="${release.sourcepath}"/>
+        <echo>1.  Checking out Ant sources into ${release.sources}...</echo>
+        <!-- Currently checks out only src/main subdir for speed. -->
+        <cvs package="ant/src/main" cvsroot=":pserver:anoncvs@cvs.apache.org:/home/cvspublic" dest="${release.sources}" failonerror="true" tag="${release.cvs.tag}"/>
+        <property name="ant-api.zip" location="external/ant-api-${release.version}.zip.master"/>
+        <echo>2.  Will store Javadoc to ${ant-api.zip}...</echo>
+        <delete file="${ant-api.zip}"/>
+        <zip zipfile="${ant-api.zip}">
+            <fileset dir="${release.path}/docs/manual/api"/>
+        </zip>
+        <property name="orig.manual" location="${release.path}/docs/manual"/>
+        <echo>3.  Creating the Ant manual from ${orig.manual}...</echo>
+        <property name="online.manual" location="build/release-work/online-manual"/>
+        <delete dir="${online.manual}"/>
+        <mkdir dir="${online.manual}"/>
+        <copy todir="${online.manual}">
+            <fileset dir="${orig.manual}" excludesfile="../nbbuild/standard-jar-excludes.txt">
+                <!-- These are obviated by JavaHelp: -->
+                <exclude name="*list.html"/>
+                <exclude name="index.html"/>
+                <exclude name="toc.html"/>
+                <!-- Presumably you do not care about other IDE integrations at this point: -->
+                <exclude name="ide.html"/>
+                <exclude name="Integration/"/>
+                <!-- Does not apply inside NetBeans: -->
+                <exclude name="running.html"/>
+                <!-- Included as a separate Javadoc mount: -->
+                <exclude name="api/"/>
+                <!-- Currently done specially: -->
+                <exclude name="stylesheets/antmanual.css"/>
+                <!-- More or less useless: -->
+                <exclude name="cover.html"/>
+            </fileset>
+        </copy>
+        <mkdir dir="${online.manual}/stylesheets"/>
+        <tstamp/>
+        <echo file="${online.manual}/stylesheets/antmanual.css">
+/* This document was modified on ${TODAY} by ant.netbeans.org to meet accessibility guidelines. */
+@import "../../../../../../../netbeans/modules/usersguide/ide.css";
+        </echo>
+        <replaceregexp flags="s" match='(&lt;body&gt;).*(&lt;h2&gt;&lt;a name="librarydependencies"&gt;)' replace="\1&#10;&lt;!-- Modified on ${TODAY} by ant.netbeans.org to exclude irrelevant sections --&gt;&#10;\2" file="${online.manual}/install.html"/>
+        <property name="ant-docs.zip" location="external/ant-docs-${release.version}.zip.master"/>
+        <zip zipfile="${ant-docs.zip}" compress="true">
+            <fileset dir="${online.manual}"/>
+        </zip>
+        <property name="here" location="."/>
+        <property name="ParserDB" location="docs/release/system/ParserDB"/>
+        <property name="ant-libs.zip" location="external/ant-libs-${release.version}.zip.master"/>
+        <echo>4.  Creating ${ant-libs.zip}...</echo>
+        <zip zipfile="${ant-libs.zip}" compress="true">
+            <fileset dir="${release.path}/lib">
+                <include name="ant*.jar"/>
+            </fileset>
+        </zip>
+        <echo>5.  Creating parser database...</echo>
+        <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="../nbbuild/nbantext.jar"/>
+        <mkdir dir="${ParserDB}"/>
+        <makeparserdb db="${ParserDB}/ant-${release.version}" sources="${release.sourcepath}" nbroot=".."/>
+        <echo>Now some (currently) manual steps for you:
 6.  Ensure these files in ${here} match the actual contents of ${online.manual}:
     - docs/javahelp/org/apache/tools/ant/module/docs/TOC.toc
     - docs/javahelp/org/apache/tools/ant/module/docs/Map.jhm
@@ -225,21 +178,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     mentioning that the bundled version in NB is now ${release.version}.
 
 After that you should be done!
-</echo>
-  </target>
-
-    <target name="javadoc" depends="init" description="Build Javadoc.">
-        <ant dir="../nbbuild/javadoctools" antfile="template.xml" target="javadoc">
-            <property name="javadoc.base" location="."/>
-            <property name="javadoc.name" value="AntModuleAPI"/>
-            <property name="javadoc.title" value="Ant Module API"/>
-            <property name="javadoc.packages" value="org.apache.tools.ant.module.api,org.apache.tools.ant.module.spi"/>
-            <property name="javadoc.classpath" refid="cp"/>
-            <property name="javadoc.apichanges" location="api/doc/changes/apichanges.xml"/>
-            <property name="javadoc.docfiles" location="api/doc"/>
-            <property name="javadoc.arch" location="arch/arch-ant-main.xml"/>
-            <property name="javadoc.manifest" location="manifest.mf"/>
-        </ant>
+        </echo>
     </target>
-  
+
 </project>

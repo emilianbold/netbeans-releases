@@ -79,9 +79,11 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <public-packages>
                 <package>org.apache.tools.ant.module.api</package>
+                <package>org.apache.tools.ant.module.api.support</package>
                 <package>org.apache.tools.ant.module.spi</package>
             </public-packages>
             <javadoc/>
+            <unit-tests/>
         </data>
     </configuration>
 </project>

@@ -20,7 +20,7 @@ import org.openide.util.Lookup;
  * Ability for a project to have various actions (e.g. Build) invoked on it.
  * Should be registered in a project's lookup and will be used by UI infrastructure.
  * @see org.netbeans.api.project.Project#getLookup
- * @see <a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/ActionHelper.html"><code>ActionHelper</code></a>
+ * @see <a href="@ANT@/org/apache/tools/ant/module/api/support/ActionUtils.html"><code>ActionUtils</code></a>
  * @author Jesse Glick
  */
 public interface ActionProvider {

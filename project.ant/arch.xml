@@ -219,8 +219,6 @@
   <p>
    Filesystems, Datasystems (limited use and only internally), Project API,
    Project UI API, General Queries API, Utilities (e.g. <code>Mutex</code>).
-   Currently depends on the Ant module just for running builds (this will
-   probably be factored out however).
   </p>
  </answer>
 
@@ -240,7 +238,7 @@
 -->
  <answer id="dep-non-nb">
   <p>
-   None. (Except for the Ant library used by the separate Ant module.)
+   None.
   </p>
  </answer>
 

@@ -22,10 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
+import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.support.ant.ActionHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -95,6 +96,10 @@ class J2SEActionProvider implements ActionProvider {
         this.project = project;
     }
     
+    private FileObject findBuildXml() {
+        return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
+    }
+    
     public String[] getSupportedActions() {
         return supportedActions;
     }
@@ -107,19 +112,19 @@ class J2SEActionProvider implements ActionProvider {
             FileObject[] files = findSources( context );
             p = new Properties();
             if (files != null) {
-                p.setProperty("javac.includes", ActionHelper.antIncludesList(files, project.getSourceDirectory())); // NOI18N
+                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getSourceDirectory())); // NOI18N
                 targetNames = new String[] {"compile-single"}; // NOI18N
             } 
             else {
                 files = findTestSources(context, false);
-                p.setProperty("javac.includes", ActionHelper.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
+                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
                 targetNames = new String[] {"compile-test-single"}; // NOI18N
             }
         } 
         else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             FileObject[] files = findTestSources(context, true);
             p = new Properties();
-            p.setProperty("test.includes", ActionHelper.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
+            p.setProperty("test.includes", ActionUtils.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
             targetNames = new String[] {"test-single"}; // NOI18N
         } 
         else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
@@ -159,7 +164,7 @@ class J2SEActionProvider implements ActionProvider {
         
         
         try {
-            ActionHelper.runTarget(ActionHelper.findBuildXml( antProjectHelper ), targetNames, p);
+            ActionUtils.runTarget(findBuildXml(), targetNames, p);
         } 
         catch (IOException e) {
             ErrorManager.getDefault().notify(e);
@@ -170,7 +175,7 @@ class J2SEActionProvider implements ActionProvider {
     
     public boolean isActionEnabled( String command, Lookup context ) {
         
-        if ( ActionHelper.findBuildXml( antProjectHelper ) == null ) {
+        if ( findBuildXml() == null ) {
             return false;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
@@ -207,7 +212,7 @@ class J2SEActionProvider implements ActionProvider {
     private FileObject[] findSources(Lookup context) {
         FileObject srcDir = project.getSourceDirectory();
         if (srcDir != null) {
-            FileObject[] files = ActionHelper.findSelectedFiles(context, srcDir, ".java", true);
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true);
             return files;
         } else {
             return null;
@@ -219,7 +224,7 @@ class J2SEActionProvider implements ActionProvider {
     private FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
         FileObject testSrcDir = project.getTestSourceDirectory();
         if (testSrcDir != null) {
-            FileObject[] files = ActionHelper.findSelectedFiles(context, testSrcDir, ".java", true);
+            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcDir, ".java", true);
             if (files != null) {
                 return files;
             }
@@ -227,9 +232,9 @@ class J2SEActionProvider implements ActionProvider {
         if (checkInSrcDir && testSrcDir != null) {
             FileObject srcDir = project.getSourceDirectory();
             if (srcDir != null) {
-                FileObject[] files = ActionHelper.findSelectedFiles(context, srcDir, ".java", true);
+                FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true);
                 if (files != null) {
-                    FileObject[] files2 = ActionHelper.regexpMapFiles(files, srcDir, SRCDIRJAVA, testSrcDir, SUBST, true);
+                    FileObject[] files2 = ActionUtils.regexpMapFiles(files, srcDir, SRCDIRJAVA, testSrcDir, SUBST, true);
                     if (files2 != null) {
                         return files2;
                     }
