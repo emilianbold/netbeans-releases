@@ -67,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="javadoc-nbjunit" depends="check-javadoc-uptodate" unless="javadoc-uptodate">
       <mkdir dir="javadoc/nbjunit-api"/>
-      <javadoc packagenames="org.netbeans.junit" 
+      <javadoc packagenames="org.netbeans.junit.*" 
                sourcepath="src" 
 	       destdir="javadoc/nbjunit-api"
 	       windowtitle="NetBeans extensions to JUnit"
