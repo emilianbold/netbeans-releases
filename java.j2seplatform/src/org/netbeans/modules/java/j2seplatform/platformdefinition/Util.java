@@ -161,6 +161,9 @@ public class Util {
                 }
             }
         }
+        if (sb.length() == 0) {
+            return null;
+        }
         return sb.substring(File.pathSeparator.length());
     }
 
