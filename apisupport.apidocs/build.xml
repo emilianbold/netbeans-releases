@@ -41,11 +41,14 @@ Microsystems, Inc. All Rights Reserved.
         <makeparserdb db="netbeans/system/ParserDB/CompilerAPI" sources="../../openide/compiler/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/ExecutionAPI" sources="../../openide/execution/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/InputOutputAPI" sources="../../openide/io/src" nbroot="../.."/>
+        <makeparserdb db="netbeans/system/ParserDB/JavaHelpAPI" sources="../../core/javahelp/src" nbroot="../.."/>
+        <makeparserdb db="netbeans/system/ParserDB/SettingsAPI" sources="../../core/settings/src" nbroot="../.."/>
+        <makeparserdb db="netbeans/system/ParserDB/JavaSupportAPIs" sources="../../java/api/src" nbroot="../.."/>
     </target>
 
-    <target name="open-apis">
-        <ant dir="../../openide" target="javadoc"/>
+    <target name="collect-javadoc">
         <mkdir dir="netbeans/docs"/>
+        <ant dir="../../openide" target="javadoc"/>
         <copy file="../../openide/javadoc/OpenAPIs.zip" tofile="netbeans/docs/OpenAPIs.zip"/>
         <ant dir="../../openide/io" target="javadoc"/>
         <copy file="../../openide/io/javadoc/InputOutputAPI.zip" tofile="netbeans/docs/InputOutputAPI.zip"/>
@@ -53,9 +56,15 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="../../openide/execution/javadoc/ExecutionAPI.zip" tofile="netbeans/docs/ExecutionAPI.zip"/>
         <ant dir="../../openide/compiler" target="javadoc"/>
         <copy file="../../openide/compiler/javadoc/CompilerAPI.zip" tofile="netbeans/docs/CompilerAPI.zip"/>
+        <ant dir="../../core/javahelp" target="javadoc"/>
+        <copy file="../../core/javahelp/javadoc/JavaHelpAPI.zip" tofile="netbeans/docs/JavaHelpAPI.zip"/>
+        <ant dir="../../core/settings" target="javadoc"/>
+        <copy file="../../core/settings/javadoc/SettingsAPI.zip" tofile="netbeans/docs/SettingsAPI.zip"/>
+        <ant dir="../../java/api" target="javadoc"/>
+        <copy file="../../java/api/javadoc/JavaSupportAPIs.zip" tofile="netbeans/docs/JavaSupportAPIs.zip"/>
     </target>
 
-    <target name="netbeans" depends="jars,parser-db,open-apis" description="Build complete module.">
+    <target name="netbeans" depends="jars,parser-db,collect-javadoc" description="Build complete module.">
         <genlist targetname="nbm" outputfiledir="netbeans"/>
     </target>
 
