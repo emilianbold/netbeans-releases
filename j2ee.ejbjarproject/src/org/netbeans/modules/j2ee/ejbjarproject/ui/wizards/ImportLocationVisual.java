@@ -144,17 +144,16 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         setNextFocusableComponent(projectLocation);
         getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("ACS_LBL_IW_ImportLocationVisual_A11Name"));
         getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("ACS_LBL_IW_ImportLocationVisual_A11Desc"));
-        jLabelSrcLocationDesc.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationSrcDesc"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelSrcLocationDesc, NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationSrcDesc"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jLabelSrcLocationDesc, gridBagConstraints);
 
-        jLabelSrcLocation.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_ImportLocation_LabelMnemonic").charAt(0));
         jLabelSrcLocation.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelSrcLocation.setLabelFor(projectLocation);
-        jLabelSrcLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationSrc_Label"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelSrcLocation, NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationSrc_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -173,8 +172,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         add(projectLocation, gridBagConstraints);
         projectLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocation_A11YDesc"));
 
-        browseProjectLocation.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_BrowseLocation_LabelMnemonic").charAt(0));
-        browseProjectLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(browseProjectLocation, NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
         browseProjectLocation.setNextFocusableComponent(projectName);
         browseProjectLocation.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -189,7 +187,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         add(browseProjectLocation, gridBagConstraints);
         browseProjectLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocationBrowse_A11YDesc"));
 
-        jLabelPrjLocationDesc.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationPrjDesc"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelPrjLocationDesc, NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationPrjDesc"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -198,10 +196,9 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jLabelPrjLocationDesc, gridBagConstraints);
 
-        jLabelPrjName.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectName_LabelMnemonic").charAt(0));
         jLabelPrjName.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelPrjName.setLabelFor(projectName);
-        jLabelPrjName.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectName_Label"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelPrjName, org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectName_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -220,10 +217,9 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         add(projectName, gridBagConstraints);
         projectName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_ProjectName_A11YDesc"));
 
-        jLabelPrjLocation.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectLocation_LabelMnemonic").charAt(0));
         jLabelPrjLocation.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelPrjLocation.setLabelFor(projectFolder);
-        jLabelPrjLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelPrjLocation, NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -241,8 +237,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         add(projectFolder, gridBagConstraints);
         projectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc"));
 
-        browseProjectFolder.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_BrowseProjectFolder_LabelMnemonic").charAt(0));
-        browseProjectFolder.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(browseProjectFolder, NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
         browseProjectFolder.setNextFocusableComponent(addToAppCheckBox);
         browseProjectFolder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -269,9 +264,8 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jCheckBox1.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_SetAsMainProject_LabelMnemonic").charAt(0));
         jCheckBox1.setSelected(true);
-        jCheckBox1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_SetAsMainProject_CheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_SetAsMainProject_CheckBox"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -283,9 +277,8 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         jPanel1.add(jCheckBox1, gridBagConstraints);
         jCheckBox1.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("ACS_LBL_IW_SetAsMainProject_A11YDesc"));
 
-        serverInstanceLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_Server_LabelMnemonic").charAt(0));
         serverInstanceLabel.setLabelFor(serverInstanceComboBox);
-        serverInstanceLabel.setText(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_Server"));
+        org.openide.awt.Mnemonics.setLocalizedText(serverInstanceLabel, org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_Server"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -340,8 +333,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         jPanel1.add(j2eeSpecComboBox, gridBagConstraints);
         j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("ACS_LBL_IW_SelectJ2EEVersion_A11YDesc"));
 
-        addToAppCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_SetProjectAppName_LabelMnemonic").charAt(0));
-        addToAppCheckBox.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_AddToEApp_CheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(addToAppCheckBox, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_AddToEApp_CheckBox"));
         addToAppCheckBox.setNextFocusableComponent(addToAppComboBox);
         addToAppCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {

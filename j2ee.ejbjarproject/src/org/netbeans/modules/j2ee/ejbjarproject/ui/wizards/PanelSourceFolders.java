@@ -324,7 +324,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         add(testsPanel, gridBagConstraints);
 
         jLabel1.setLabelFor(jTextFieldConfigFiles);
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_ConfigFilesFolder_Label"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_ConfigFilesFolder_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -340,7 +340,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jTextFieldConfigFiles, gridBagConstraints);
 
-        jButtonConfigFilesLocation.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonConfigFilesLocation, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button"));
         jButtonConfigFilesLocation.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonConfigFilesLocationActionPerformed(evt);
@@ -354,7 +354,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         add(jButtonConfigFilesLocation, gridBagConstraints);
 
         jLabel2.setLabelFor(jTextFieldLibraries);
-        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_LibrariesLocation_Label"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_LibrariesLocation_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -370,7 +370,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jTextFieldLibraries, gridBagConstraints);
 
-        jButtonLibraries.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonLibraries, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button"));
         jButtonLibraries.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonLibrariesActionPerformed(evt);
