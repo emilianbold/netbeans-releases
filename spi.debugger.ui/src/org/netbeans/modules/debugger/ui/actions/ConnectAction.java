@@ -68,8 +68,6 @@ public final class ConnectAction extends AbstractAction {
             true, // modal
             new ConnectListener (cp)
         );
-        descr.setHelpCtx (new HelpCtx ("debug.attachvm.window")); // NOI18N
-//            (d [0] = TopManager.getDefault ().createDialog (descr)).show ();
         (dialog = DialogDisplayer.getDefault ().createDialog (descr)).setVisible(true);
     }
 
