@@ -37,7 +37,6 @@ import java.awt.Container;
 
 import java.util.Hashtable;
 
-import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -300,7 +299,7 @@ implements Outputable, Timeoutable{
      * @throws TimeoutExpiredException
      */
     public JMenuItem pushMenu(final ComponentChooser[] choosers) {
-	return((JMenuItem)produceTimeRestricted(new org.netbeans.jemmy.Action() {
+	return((JMenuItem)produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
 		    return(driver.pushMenu(JMenuOperator.this, converChoosers(choosers)));
 		}
