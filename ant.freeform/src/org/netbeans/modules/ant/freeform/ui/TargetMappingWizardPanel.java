@@ -22,6 +22,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.Util;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -84,6 +85,12 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
         FileObject fo = FileUtil.toFileObject(f);
         List l = Util.getAntScriptTargetNames(fo);
         component.setTargetNames(l);
+        File projDir = (File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_FOLDER);
+        File antScript = (File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_ANT_SCRIPT);
+        if (!antScript.getParentFile().equals(projDir) && antScript.getName().equals("build.xml")) { // NOI18N
+            // NON-DEFAULT location of build file
+            component.setScript("${"+FreeformProjectGenerator.PROP_ANT_SCRIPT+"}");
+        }
     }
     
     public void storeSettings(Object settings) {

@@ -107,10 +107,11 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         ArrayList compUnits = new ArrayList();
         FreeformProjectGenerator.JavaCompilationUnit cu = new FreeformProjectGenerator.JavaCompilationUnit();
         cu.classpath = lib1.getAbsolutePath();
+        cu.classpathMode = "compile";
         cu.sourceLevel = "1.4";
         cu.packageRoot = src.getAbsolutePath();
         compUnits.add(cu);
-        AntProjectHelper helper = FreeformProjectGenerator.createProject(base, projectName, null, new HashMap(), sources, compUnits);
+        AntProjectHelper helper = FreeformProjectGenerator.createProject(base, projectName, null, new ArrayList(), sources, compUnits);
         return helper;
     }
     
@@ -138,18 +139,36 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertNotNull("Project does not have ActionProvider", ap);
         assertEquals("Project cannot have any action", 0, ap.getSupportedActions().length);
         
-        Map map = FreeformProjectGenerator.getTargetMappings(helper);
-        assertNotNull("getTargetMappings() cannot return null", map);
-        assertEquals("Project cannot have any action", 0, map.keySet().size());
+        List list = FreeformProjectGenerator.getTargetMappings(helper);
+        assertNotNull("getTargetMappings() cannot return null", list);
+        assertEquals("Project cannot have any action", 0, list.size());
         
-        map = new HashMap();
-        map.put("clean", Collections.singletonList("clean-target"));
-        map.put("build", Collections.singletonList("build-target"));
-        map.put("rebuild", Arrays.asList(new String[]{"clean-target", "build-target"}));
-        FreeformProjectGenerator.putTargetMappings(helper, map);
-        Map map2 = FreeformProjectGenerator.getTargetMappings(helper);
-        assertNotNull("getTargetMappings() cannot return null", map);
-        assertEquals("Project must have 3 actions", 3, map.keySet().size());
+        list = new ArrayList();
+        FreeformProjectGenerator.TargetMapping tm = new FreeformProjectGenerator.TargetMapping();
+        tm.name = "clean";
+        tm.targets = Collections.singletonList("clean-target");
+        list.add(tm);
+        tm = new FreeformProjectGenerator.TargetMapping();
+        tm.name = "build";
+        tm.targets = Collections.singletonList("build-target");
+        tm.script = "${ant.script.two}";
+        list.add(tm);
+        tm = new FreeformProjectGenerator.TargetMapping();
+        tm.name = "rebuild";
+        tm.targets = Arrays.asList(new String[]{"clean-target", "build-target"});
+        tm.script = "${ant.script.three}";
+        list.add(tm);
+        tm = new FreeformProjectGenerator.TargetMapping();
+        FreeformProjectGenerator.putTargetMappings(helper, list);
+        List list2 = FreeformProjectGenerator.getTargetMappings(helper);
+        // once again: put and get
+        FreeformProjectGenerator.putTargetMappings(helper, list2);
+        list2 = FreeformProjectGenerator.getTargetMappings(helper);
+        assertNotNull("getTargetMappings() cannot return null", list2);
+        assertEquals("Project must have 3 actions", 3, list2.size());
+        assertEquals("Script was not correctly saved", null, ((FreeformProjectGenerator.TargetMapping)list2.get(0)).script);
+        assertEquals("Script was not correctly saved", "${ant.script.two}", ((FreeformProjectGenerator.TargetMapping)list2.get(1)).script);
+        assertEquals("Script was not correctly saved", "${ant.script.three}", ((FreeformProjectGenerator.TargetMapping)list2.get(2)).script);
         assertEquals("Project must have 3 actions", 3, ap.getSupportedActions().length);
         assertTrue("Action clean must be enabled", ap.isActionEnabled("clean", Lookup.EMPTY));
         assertTrue("Action build must be enabled", ap.isActionEnabled("build", Lookup.EMPTY));
@@ -185,15 +204,16 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         Listener l = new Listener();
         ss.addChangeListener(l);
         
-        List sfs = FreeformProjectGenerator.getSourceFolders(helper);
+        List sfs = FreeformProjectGenerator.getSourceFolders(helper, null);
         assertEquals("There must be one source folder", 1, sfs.size());
         FreeformProjectGenerator.SourceFolder sf = new FreeformProjectGenerator.SourceFolder();
         sf.label = "test";
         sf.type = "java";
         sf.location = test.getAbsolutePath();
         sfs.add(sf);
-        FreeformProjectGenerator.putSourceFolders(helper, sfs);
-        assertEquals("Project must have one java source group", 2, ss.getSourceGroups("java").length);
+        FreeformProjectGenerator.putSourceFolders(helper, sfs, null);
+        FreeformProjectGenerator.putSourceViews(helper, sfs);
+        assertEquals("Project must have two java source group", 2, ss.getSourceGroups("java").length);
         assertEquals("Project cannot have csharp source group", 0, ss.getSourceGroups("csharp").length);
         // XXX still crude impl that does not try to fire a minimal number of changes:
         /*
@@ -204,6 +224,43 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         n = lvp.createLogicalView();
         // expected subnodes: #1) src folder and #2) build.xml and #3) tests
 //        assertEquals("There must be three subnodes in logical view", 3, n.getChildren().getNodesCount());
+
+        sfs = new ArrayList();
+        sf = new FreeformProjectGenerator.SourceFolder();
+        sf.label = "xdoc";
+        sf.type = "x-doc";
+        // just some path
+        sf.location = test.getAbsolutePath();
+        sfs.add(sf);
+        FreeformProjectGenerator.putSourceFolders(helper, sfs, "x-doc");
+        assertEquals("Project must have two java source group", 2, ss.getSourceGroups("java").length);
+        assertEquals("Project cannot have csharp source group", 2, FreeformProjectGenerator.getSourceFolders(helper, "java").size());
+        assertEquals("Project cannot have csharp source group", 0, ss.getSourceGroups("csharp").length);
+        assertEquals("Project cannot have csharp source group", 1, ss.getSourceGroups("x-doc").length);
+        assertEquals("Project cannot have csharp source group", 1, FreeformProjectGenerator.getSourceFolders(helper, "x-doc").size());
+        sf = new FreeformProjectGenerator.SourceFolder();
+        sf.label = "xdoc2";
+        sf.type = "x-doc";
+        // just some path
+        sf.location = src.getAbsolutePath();
+        sfs.add(sf);
+        FreeformProjectGenerator.putSourceFolders(helper, sfs, "x-doc");
+        assertEquals("Project must have two java source group", 2, ss.getSourceGroups("java").length);
+        assertEquals("Project cannot have csharp source group", 2, FreeformProjectGenerator.getSourceFolders(helper, "java").size());
+        assertEquals("Project cannot have csharp source group", 0, ss.getSourceGroups("csharp").length);
+        assertEquals("Project cannot have csharp source group", 2, ss.getSourceGroups("x-doc").length);
+        assertEquals("Project cannot have csharp source group", 2, FreeformProjectGenerator.getSourceFolders(helper, "x-doc").size());
+        assertEquals("Project cannot have csharp source group", 4, FreeformProjectGenerator.getSourceFolders(helper, null).size());
+
+        sfs = FreeformProjectGenerator.getSourceFolders(helper, null);
+        FreeformProjectGenerator.putSourceFolders(helper, sfs, null);
+        FreeformProjectGenerator.putSourceViews(helper, sfs);
+        assertEquals("Project must have two java source group", 2, ss.getSourceGroups("java").length);
+        assertEquals("Project cannot have csharp source group", 2, FreeformProjectGenerator.getSourceFolders(helper, "java").size());
+        assertEquals("Project cannot have csharp source group", 0, ss.getSourceGroups("csharp").length);
+        assertEquals("Project cannot have csharp source group", 2, ss.getSourceGroups("x-doc").length);
+        assertEquals("Project cannot have csharp source group", 2, FreeformProjectGenerator.getSourceFolders(helper, "x-doc").size());
+        assertEquals("Project cannot have csharp source group", 4, FreeformProjectGenerator.getSourceFolders(helper, null).size());
         
         ProjectManager.getDefault().saveAllProjects();
     }
@@ -239,15 +296,16 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertEquals("There is no classpath for this file", null, cp);
         
         AuxiliaryConfiguration aux = FreeformProjectGenerator.getAuxiliaryConfiguration(helper);
-        List cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux);
+        List cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux, null);
         assertEquals("There must be one compilation unit", 1, cus.size());
         FreeformProjectGenerator.JavaCompilationUnit cu = new FreeformProjectGenerator.JavaCompilationUnit();
         cu.sourceLevel = "1.4";
         cu.classpath = lib2.getAbsolutePath();
+        cu.classpathMode = "compile";
         cu.packageRoot = test.getAbsolutePath();
         cus.add(cu);
-        FreeformProjectGenerator.putJavaCompilationUnits(helper, aux, cus);
-        cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux);
+        FreeformProjectGenerator.putJavaCompilationUnits(helper, aux, cus, null);
+        cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux, null);
         assertEquals("There must be two compilation units", 2, cus.size());
         cp = cpp.findClassPath(FileUtil.toFileObject(src), ClassPath.COMPILE);
         assertEquals("Project must have one classpath root", 1, cp.getRoots().length);
@@ -257,6 +315,26 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         cp = cpp.findClassPath(FileUtil.toFileObject(test), ClassPath.COMPILE);
         assertEquals("Project must have one classpath root", 1, cp.getRoots().length);
         assertEquals("Classpath root does not match", "jar:"+lib2.toURI().toURL()+"!/", (cp.getRoots()[0]).getURL().toExternalForm());
+        
+        cus = new ArrayList();
+        cu = new FreeformProjectGenerator.JavaCompilationUnit();
+        cu.sourceLevel = "1.4";
+        cu.classpath = lib2.getAbsolutePath();
+        cu.classpathMode = "execute";
+        cu.packageRoot = test.getAbsolutePath();
+        ArrayList outputs = new ArrayList();
+        outputs.add("output1.jar");
+        outputs.add("output2.jar");
+        cu.output = outputs;
+        cus.add(cu);
+        FreeformProjectGenerator.putJavaCompilationUnits(helper, aux, cus, "execute");
+        cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux, null);
+        assertEquals("There must be two compilation units", 3, cus.size());
+        cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux, "compile");
+        assertEquals("There must be two compilation units", 2, cus.size());
+        cus = FreeformProjectGenerator.getJavaCompilationUnits(helper, aux, "execute");
+        assertEquals("There must be two compilation units", 1, cus.size());
+        
         ProjectManager.getDefault().saveAllProjects();
     }
     
