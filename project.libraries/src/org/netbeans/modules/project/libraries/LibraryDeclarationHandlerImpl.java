@@ -100,7 +100,11 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         for (Iterator it = this.contentTypes.keySet().iterator(); it.hasNext();) {
             String contentType = (String) it.next();
             List cp = (List) this.contentTypes.get (contentType);
-            this.library.setContent(contentType, cp);
+            try {
+                this.library.setContent(contentType, cp);
+            } catch (IllegalArgumentException e) {
+                throw (SAXException) new SAXException(e.toString()).initCause(e);
+            }
         }
         this.libraryName = null;
         this.libraryDescription = null;
