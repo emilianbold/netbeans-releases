@@ -354,22 +354,26 @@ public class EjbJarProjectProperties {
         }
         
         // Set new server instance ID
-        setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()), project, projectProperties, privateProperties);
+        if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
+            setNewServerInstanceValue(J2eePlatformUiSupport.getServerInstanceID(J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()), project, projectProperties, privateProperties);
+        }
         
-        // Update the deployment descriptor if upgrading from J2EE 1.3 to 1.4
+        // Update the deployment descriptor if upgrading from J2EE 1.3 to 1.4 and set the new J2EE spec version
         String oldJ2eeVersion = projectProperties.getProperty(J2EE_PLATFORM);
         String newJ2eeVersion = J2eePlatformUiSupport.getSpecVersion(J2EE_PLATFORM_MODEL.getSelectedItem());
-        if (oldJ2eeVersion.equals(J2EE_1_3) && newJ2eeVersion.equals(J2EE_1_4)) {
-            EjbJarImplementation ejbJarImplementation = (EjbJarImplementation)project.getLookup().lookup(EjbJarImplementation.class);
-            if (ejbJarImplementation != null) {
-                FileObject ddFo = ejbJarImplementation.getDeploymentDescriptor();
-                if (ddFo != null)
-                    DDProvider.getDefault().getDDRoot(ddFo).setVersion(new BigDecimal(EjbJar.VERSION_2_1));
+        if (oldJ2eeVersion != null && newJ2eeVersion != null) {
+            if (oldJ2eeVersion.equals(J2EE_1_3) && newJ2eeVersion.equals(J2EE_1_4)) {
+                EjbJarImplementation ejbJarImplementation = (EjbJarImplementation)project.getLookup().lookup(EjbJarImplementation.class);
+                if (ejbJarImplementation != null) {
+                    FileObject ddFo = ejbJarImplementation.getDeploymentDescriptor();
+                    if (ddFo != null)
+                        DDProvider.getDefault().getDDRoot(ddFo).setVersion(new BigDecimal(EjbJar.VERSION_2_1));
+                }
             }
-        }
             
-        // Set the new J2EE spec version 
-        projectProperties.setProperty(J2EE_PLATFORM, newJ2eeVersion);
+            // Set the new J2EE spec version 
+            projectProperties.setProperty(J2EE_PLATFORM, newJ2eeVersion);
+        }
         
         storeAdditionalProperties(projectProperties);
 
