@@ -384,12 +384,23 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
         javax.swing.text.EditorKit kit = ((javax.swing.JEditorPane) comp).getEditorKitForContentType("text/html"); // NOI18N
         if (! (kit instanceof javax.swing.text.html.HTMLEditorKit))
             return;
-        
+
         javax.swing.text.html.HTMLEditorKit htmlkit = (javax.swing.text.html.HTMLEditorKit) kit;
-        javax.swing.text.html.StyleSheet css = htmlkit.getStyleSheet();
+
+        // XXX the style sheet is shared by all HTMLEditorKits.  We must
+        // detect if it has been tweaked by ourselves or someone else
+        // (template description for example) and avoid doing the same
+        // thing again
+        
+        if (htmlkit.getStyleSheet().getStyleSheets() != null)
+            return;
+        
+        javax.swing.text.html.StyleSheet css = new javax.swing.text.html.StyleSheet();
         java.awt.Font f = new javax.swing.JTextArea().getFont();
         css.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
-                    .append("pt; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+                    .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+        css.addStyleSheet(htmlkit.getStyleSheet());
+        htmlkit.setStyleSheet(css);
     }
 
     /** Fills description area using constructed data. Executed in event dispatch thread.

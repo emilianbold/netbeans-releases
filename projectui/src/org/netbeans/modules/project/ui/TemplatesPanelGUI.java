@@ -585,15 +585,24 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         categoriesPanel.requestFocus ();
         if (description.getEditorKit() instanceof HTMLEditorKit) {
             // override the Swing default CSS to make the HTMLEditorKit use the
-            // same font as the rest of the UI.  This must be done in addNotify()
-            // because before the components are realized the font sizes are wrong
-            // on GTKLookAndFeel
+            // same font as the rest of the UI.
 
+            // XXX the style sheet is shared by all HTMLEditorKits.  We must
+            // detect if it has been tweaked by ourselves or someone else
+            // (code completion javadoc popup for example) and avoid doing the
+            // same thing again
+            
             HTMLEditorKit htmlkit = (HTMLEditorKit) description.getEditorKit();
             StyleSheet css = htmlkit.getStyleSheet();
+            if (css.getStyleSheets() != null)
+                return;
+            
+            StyleSheet css2 = new StyleSheet();
             Font f = jLabel1.getFont();
-            css.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
-                        .append("pt; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+            css2.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
+                        .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+            css2.addStyleSheet(css);
+            htmlkit.setStyleSheet(css2);
         }
     }
 }
