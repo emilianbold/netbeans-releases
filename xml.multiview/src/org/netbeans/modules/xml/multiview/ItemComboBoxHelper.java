@@ -1,0 +1,96 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.xml.multiview;
+
+import javax.accessibility.AccessibleContext;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Collections;
+
+/**
+ * The class simplifies use of a combo box to show/set value of an item
+ *
+ * @author pfiala
+ */
+public abstract class ItemComboBoxHelper implements ActionListener {
+    private JComboBox comboBox;
+    private final XmlMultiViewDataObject dataObject;
+
+    /**
+     * Constructor initializes object by combo box which will be handled
+     *
+     * @param comboBox handled JComboBox.
+     */
+    public ItemComboBoxHelper(JComboBox comboBox, XmlMultiViewDataObject dataObject) {
+        this.comboBox = comboBox;
+        this.dataObject = dataObject;
+        comboBox.addActionListener(this);
+        setValue(getItemValue());
+    }
+
+    /**
+     * Invoked when an action occurs on a combo box.
+     */
+    public final void actionPerformed(ActionEvent e) {
+        final String value = (String) comboBox.getSelectedItem();
+        if (value == null || !value.equals(getItemValue())) {
+            setItemValue(value);
+            dataObject.modelUpdatedFromUI();
+        }
+    }
+
+    /**
+     * Selects the item value in combo box.
+     *
+     * @param itemValue value of item to be selected in combo box
+     */
+    public void setValue(String itemValue) {
+        comboBox.setSelectedItem(itemValue);
+    }
+
+    /**
+     * Combo box getter
+     * @return handled combo box
+     */
+    public JComboBox getComboBox() {
+        return comboBox;
+    }
+
+    /**
+     * Retrieves the text value selected in the combo box.
+     *
+     * @return an accessibleName property of the AccessibleContext object related
+     *         to the button representing the selected option. If the accessibleName property
+     *         is null, a text property of the button is used instead.
+     */
+    public String getValue() {
+        return (String) comboBox.getSelectedItem();
+    }
+
+    /**
+     * Called by the helper in order to retrieve the value of the item.
+     *
+     * @return value of the handled item.
+     */
+    public abstract String getItemValue();
+
+    /**
+     * Called by the helper in order to set the value of the item
+     *
+     * @param value new value of the hanlded item
+     */
+    public abstract void setItemValue(String value);
+
+}

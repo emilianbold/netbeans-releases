@@ -123,7 +123,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
 
         new FileObjectObserver(fo);
 
-        Project project = FileOwnerQuery.getOwner(getPrimaryFile());
+        Project project = getProject();
         if (project != null) {
             Sources sources = ProjectUtils.getSources(project);
             sources.addChangeListener(this);
@@ -135,11 +135,18 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     private void refreshSourceFolders() {
         ArrayList srcRootList = new ArrayList();
 
-        Project project = FileOwnerQuery.getOwner(getPrimaryFile());
+        SourceGroup[] groups;
+        Project project = getProject();
+        SourceGroup[] groups1;
         if (project != null) {
             Sources sources = ProjectUtils.getSources(project);
             sources.addChangeListener(this);
-            SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            groups1 = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        } else {
+            groups1 = null;
+        }
+        groups = groups1;
+        if (groups != null) {
             for (int i = 0; i < groups.length; i++) {
                 EjbJarImplementation jarImpl = (EjbJarImplementation) project.getLookup().lookup(
                         EjbJarImplementation.class);
@@ -158,6 +165,24 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             }
         }
         srcRoots = (FileObject[]) srcRootList.toArray(new FileObject[srcRootList.size()]);
+    }
+
+    private Project getProject() {
+        return FileOwnerQuery.getOwner(getPrimaryFile());
+    }
+
+    public FileObject getProjectDirectory() {
+        Project project = getProject();
+        return project == null ? null : project.getProjectDirectory();
+    }
+
+    public SourceGroup[] getSourceGroups() {
+        Project project = getProject();
+        if (project != null) {
+            return ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        } else {
+            return null;
+        }
     }
 
     private String getPackageName(FileObject clazz) {
@@ -365,7 +390,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         };
 
         String fsname = "";                                             //NOI18N
-        Project project = FileOwnerQuery.getOwner(getPrimaryFile());
+        Project project = getProject();
         if (project != null) {
             ProjectInformation projectInfo = ProjectUtils.getInformation(project);
             if (projectInfo != null) {

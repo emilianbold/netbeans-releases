@@ -30,7 +30,7 @@ class BeanEnvironmentNode extends SectionNode {
         addChild(new EnvironmentEntriesNode(sectionNodeView, ejb));
         addChild(new ResourceReferencesNode(sectionNodeView, ejb));
         addChild(new ResourceEnvironmentReferencesNode(sectionNodeView, ejb));
-        if(ejb instanceof EntityAndSession) {
+        if (ejb instanceof EntityAndSession) {
             addChild(new SecurityRoleReferencesNode(sectionNodeView, (EntityAndSession) ejb));
         }
     }

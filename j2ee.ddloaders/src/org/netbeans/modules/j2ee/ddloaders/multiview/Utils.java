@@ -13,6 +13,9 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
 /**
  * @author pfiala
  */
@@ -34,4 +37,21 @@ public class Utils {
     public static final String ICON_BASE_MISC_NODE =
             "org/netbeans/modules/j2ee/ddloaders/resources/MiscNodeIcon"; // NOI18N
 
+    private static BrowseFolders.FileObjectFilter imageFileFilter = new BrowseFolders.FileObjectFilter() {
+        public boolean accept(FileObject fileObject) {
+            return fileObject.getMIMEType().startsWith("image/");
+        }
+    };
+
+    public static String browseIcon(EjbJarMultiViewDataObject dataObject) {
+        FileObject fileObject = BrowseFolders.showDialog(dataObject.getSourceGroups(), imageFileFilter);
+        String relativePath;
+        if (fileObject != null) {
+            FileObject projectDirectory = dataObject.getProjectDirectory();
+            relativePath = FileUtil.getRelativePath(projectDirectory, fileObject);
+        } else {
+            relativePath = null;
+        }
+        return relativePath;
+    }
 }

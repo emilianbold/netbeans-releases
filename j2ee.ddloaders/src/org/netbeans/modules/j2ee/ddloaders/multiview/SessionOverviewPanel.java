@@ -43,7 +43,7 @@ public class SessionOverviewPanel extends SessionOverviewForm {
             }
         });
 
-        new ItemOptionHelper(getSessionTypeButtonGroup()) {
+        new ItemOptionHelper(getSessionTypeButtonGroup(), dataObject) {
 
             public String getItemValue() {
                 return session.getSessionType();
@@ -51,11 +51,10 @@ public class SessionOverviewPanel extends SessionOverviewForm {
 
             public void setItemValue(String value) {
                 session.setSessionType(value);
-                dataObject.modelUpdatedFromUI();
             }
         };
 
-        new ItemOptionHelper(getTransactionTypeButtonGroup()) {
+        new ItemOptionHelper(getTransactionTypeButtonGroup(), dataObject) {
 
             public String getItemValue() {
                 return session.getTransactionType();
@@ -63,7 +62,6 @@ public class SessionOverviewPanel extends SessionOverviewForm {
 
             public void setItemValue(String value) {
                 session.setTransactionType(value);
-                dataObject.modelUpdatedFromUI();
             }
         };
     }

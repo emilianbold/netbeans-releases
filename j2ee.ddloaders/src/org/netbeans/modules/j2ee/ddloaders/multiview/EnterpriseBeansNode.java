@@ -18,11 +18,8 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * @author pfiala
@@ -33,7 +30,7 @@ public class EnterpriseBeansNode extends SectionNode {
         setExpanded(true);
 
         final Ejb[] ejbs = enterpriseBeans.getEjbs();
-        
+
         // sort beans according to their display name
         Arrays.sort(ejbs, new Comparator() {
             public int compare(Object o1, Object o2) {

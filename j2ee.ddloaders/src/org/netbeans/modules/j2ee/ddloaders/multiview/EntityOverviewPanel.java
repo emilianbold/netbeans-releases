@@ -17,6 +17,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EntityOverviewForm;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
+import org.netbeans.modules.xml.multiview.ItemComboBoxHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 import javax.swing.*;
@@ -91,16 +92,23 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                 CmpField cmpField = cmpFields[i];
                 primaryKeyFieldComboBox.addItem(cmpField.getFieldName());
             }
-            primaryKeyFieldComboBox.setSelectedItem(entity.getPrimkeyField());
+            new ItemComboBoxHelper(primaryKeyFieldComboBox, dataObject) {
+
+                public String getItemValue() {
+                    return entity.getPrimkeyField();
+                }
+
+                public void setItemValue(String value) {
+                    entity.setPrimkeyField(value);
+                }
+            };
             primaryKeyFieldComboBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     if (primaryKeyFieldComboBox.getSelectedIndex() == 0) {
                         primaryKeyClassComboBox.setEnabled(true);
                         primaryKeyClassComboBox.setSelectedItem(entity.getPrimKeyClass());
                     } else {
-                        entity.setPrimkeyField((String) primaryKeyFieldComboBox.getSelectedItem());
                         primaryKeyClassComboBox.setEnabled(false);
-                        //primaryKeyClassComboBox.setSelectedItem(null);
                     }
                     primaryKeyClassComboBox.setSelectedItem(entity.getPrimKeyClass());
                     dataObject.modelUpdatedFromUI();
@@ -126,11 +134,19 @@ public class EntityOverviewPanel extends EntityOverviewForm {
             primaryKeyClassComboBox.addItem("java.lang.String");
             primaryKeyClassComboBox.addItem("java.math.BigDecimal");
 
-            primaryKeyClassComboBox.setSelectedItem(entity.getPrimKeyClass());
+            new ItemComboBoxHelper(primaryKeyClassComboBox, dataObject) {
+
+                public String getItemValue() {
+                    return entity.getPrimKeyClass();
+                }
+
+                public void setItemValue(String value) {
+                    entity.setPrimKeyClass(value);
+                }
+            };
 
             primaryKeyClassComboBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    entity.setPrimKeyClass((String) primaryKeyClassComboBox.getSelectedItem());
                     dataObject.modelUpdatedFromUI();
                 }
             });

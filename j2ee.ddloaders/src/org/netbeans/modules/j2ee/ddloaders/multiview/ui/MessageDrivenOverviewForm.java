@@ -115,12 +115,6 @@ public class MessageDrivenOverviewForm extends SectionInnerPanel {
         add(spacerLabel, gridBagConstraints);
 
         nameTextField.setColumns(25);
-        nameTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                nameTextFieldActionPerformed(evt);
-            }
-        });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -129,6 +123,7 @@ public class MessageDrivenOverviewForm extends SectionInnerPanel {
 
         transactionTypeButtonGroup.add(beanTransactionTypeRadioButton);
         beanTransactionTypeRadioButton.setText("Bean");
+        beanTransactionTypeRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -138,6 +133,7 @@ public class MessageDrivenOverviewForm extends SectionInnerPanel {
 
         transactionTypeButtonGroup.add(containerTransactionTypeRadioButton);
         containerTransactionTypeRadioButton.setText("Container");
+        containerTransactionTypeRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -156,21 +152,25 @@ public class MessageDrivenOverviewForm extends SectionInnerPanel {
 
         acknowledgeModeButtonGroup.add(autoAckModeRadioButton);
         autoAckModeRadioButton.setText("Auto");
+        autoAckModeRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(autoAckModeRadioButton, gridBagConstraints);
+        autoAckModeRadioButton.getAccessibleContext().setAccessibleName("Auto-acknowledge");
 
         acknowledgeModeButtonGroup.add(dupsOkAckModeRadioButton);
         dupsOkAckModeRadioButton.setText("Dups OK");
+        dupsOkAckModeRadioButton.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(dupsOkAckModeRadioButton, gridBagConstraints);
+        dupsOkAckModeRadioButton.getAccessibleContext().setAccessibleName("Dups-ok-acknowledge");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -189,10 +189,6 @@ public class MessageDrivenOverviewForm extends SectionInnerPanel {
         add(durabilityComboBox, gridBagConstraints);
 
     }//GEN-END:initComponents
-
-    private void nameTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameTextFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_nameTextFieldActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

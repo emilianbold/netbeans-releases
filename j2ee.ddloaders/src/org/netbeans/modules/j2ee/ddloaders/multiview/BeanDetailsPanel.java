@@ -113,13 +113,20 @@ class BeanDetailsPanel extends EjbDetailForm {
         new ItemEditorHelper(getLargeIconTextField(), new LargeIconEditorModel(dataObject));
         getBrowseLargeIconButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //TODO: open browser for the icon
+                String relativePath = Utils.browseIcon(dataObject);
+                if (relativePath != null) {
+                    getLargeIconTextField().setText(relativePath);
+                }
             }
         });
         getBrowseSmallIconButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //TODO: open browser for the icon
+                String relativePath = Utils.browseIcon(dataObject);
+                if (relativePath != null) {
+                    getSmallIconTextField().setText(relativePath);
+                }
             }
         });
     }
+
 }
