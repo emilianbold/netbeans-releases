@@ -388,7 +388,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="template" boolvalue="true"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesFolder.html" />
-            <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.FolderIterator.create" />
         </folder>
         
         <folder name="Services">
