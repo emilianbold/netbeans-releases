@@ -222,6 +222,8 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
                 obj.getNodeDelegate().addNodeListener(this);
                 Help h = findHelp();
                 if (h != null) h.addChangeListener(WeakListener.change(this, h));
+                // #23565:
+                HelpCtx.setHelpIDString(b, "ide.welcome"); // NOI18N
             }
             
             /** Called when the node delegate changes somehow,
