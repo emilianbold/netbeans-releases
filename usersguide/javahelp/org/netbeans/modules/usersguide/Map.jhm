@@ -1504,9 +1504,6 @@
    <mapID target="org.openide.text.CloneableEditor" url="pending.html" />
    <mapID target="org.openide.actions.ClassNamePanel" url="pending.html" />
 
-<!--delete entry pending completion of issue 33744 -->
-   <mapID target="org.netbeans.core.ui.UINodes$StartupNode" url="pending.html" />
-
    <mapID target="org.netbeans.core.ui.WelcomeFolderNode" url="configure/welcome_node.html" />
 
 
