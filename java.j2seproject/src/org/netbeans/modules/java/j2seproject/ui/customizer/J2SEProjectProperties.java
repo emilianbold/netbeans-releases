@@ -666,9 +666,11 @@ public class J2SEProjectProperties {
         // Contains well known paths in the J2SEProject
         private static final String[][] WELL_KNOWN_PATHS = new String[][] {
             { JAVAC_CLASSPATH, NbBundle.getMessage( J2SEProjectProperties.class, "LBL_JavacClasspath_DisplayName" ) },
+            { JAVAC_TEST_CLASSPATH, NbBundle.getMessage (J2SEProjectProperties.class,"LBL_JavacTestClasspath_DisplayName")},
             { RUN_CLASSPATH, NbBundle.getMessage( J2SEProjectProperties.class, "LBL_RunClasspath_DisplayName" ) },
             { RUN_TEST_CLASSPATH, NbBundle.getMessage( J2SEProjectProperties.class, "LBL_RunTestClasspath_DisplayName" ) },
-            { BUILD_CLASSES_DIR, NbBundle.getMessage( J2SEProjectProperties.class, "LBL_BuildClassesDir_DisplayName" ) }
+            { BUILD_CLASSES_DIR, NbBundle.getMessage( J2SEProjectProperties.class, "LBL_BuildClassesDir_DisplayName" ) },            
+            { BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (J2SEProjectProperties.class,"LBL_BuildTestClassesDir_DisplayName")}
         };
         
         
