@@ -75,7 +75,7 @@ public class Util {
     }
 
     /** Returns string for localhost */
-    public static String getLocalHost() {
+/*    public static String getLocalHost() {
         try {
             return InetAddress.getLocalHost().getHostName();
         }
@@ -83,7 +83,7 @@ public class Util {
             return "127.0.0.1"; // NOI18N
         }
     }
-
+*/
     private static class Connect implements Runnable  {
 
         URL url = null;
