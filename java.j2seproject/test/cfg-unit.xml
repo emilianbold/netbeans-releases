@@ -23,16 +23,6 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="commit" executor="unit-executor" name="java/j2seproject">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="**/*Test.class"/>
-                <!-- exclude testing of build-impl.xml from commit validation; it is slow -->
-                <exclude name="org/netbeans/modules/java/j2seproject/BuildImplTest.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
     

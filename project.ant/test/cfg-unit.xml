@@ -19,18 +19,11 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="commit" executor="unit-executor" name="ant/project">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="**/*Test.class"/>
-                <!-- Usually passes, but once in a while it fails randomly: -->
+                <!-- Usually passes, but once in a while it fails randomly; could exclude:
                 <exclude name="**/GlobFileBuiltQueryTest.class"/>
-                <!-- Probably going to be the same: -->
+                     Probably going to be the same:
                 <exclude name="**/FileChangeSupportTest.class/testDiskChanges"/>
+                 -->
             </patternset>
         </testset>
     </testbag>

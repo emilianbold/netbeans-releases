@@ -19,18 +19,9 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
-                <!-- occasionally failing (#51024): -->
-                <exclude name="org/netbeans/api/project/ProjectManagerTest.class/testLoadExceptionWithConcurrentLoad"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    <testbag testattribs="commit" executor="unit-executor" name="projects/projectapi">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="**/*Test.class"/>
-                <!-- dsimonek says it fails for him, do not know why (#44273): -->
+                <!-- dsimonek says it fails for him, do not know why (#44273); could exclude:
                 <exclude name="org/netbeans/api/project/TestUtilTest.class/testCreateFileFromContent"/>
+                 -->
                 <!-- occasionally failing (#51024): -->
                 <exclude name="org/netbeans/api/project/ProjectManagerTest.class/testLoadExceptionWithConcurrentLoad"/>
             </patternset>
