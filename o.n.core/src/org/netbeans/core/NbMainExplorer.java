@@ -578,7 +578,7 @@ public final class NbMainExplorer extends CloneableTopComponent
             
             // add mini status bar at the bottom of this explorer panel
             add (getMiniStatusBar(), BorderLayout.SOUTH);
-            getMiniStatusBar ().setVisible (false);
+            getMiniStatusBar ().setVisible (MiniStatusBar.isMiniStatusBarEnabled ());
 
             return view;
         }
@@ -615,6 +615,7 @@ public final class NbMainExplorer extends CloneableTopComponent
                     // mini status bar will be showed
                     if (((Boolean)evt.getNewValue ()).booleanValue ()) {
                         getMiniStatusBar ().setExplorerManager (getExplorerManager ());
+                        getMiniStatusBar ().setVisible (true);
                     }
                 }
             }
