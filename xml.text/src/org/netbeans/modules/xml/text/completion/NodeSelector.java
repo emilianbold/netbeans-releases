@@ -33,6 +33,8 @@ import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.windows.TopComponent;
+import org.openide.util.NbBundle;
+import org.w3c.dom.DOMException;
 
 /**
  * Finds SyntaxNode at the Carat position in the text editor
@@ -217,11 +219,15 @@ public class NodeSelector {
             return propSheet.toArray();
         }
     }
-    
+
+    /**
+     * It models attribute as node property.
+     */
     private class AttributeProperty extends org.openide.nodes.PropertySupport {
-        String propName;
-        org.w3c.dom.Element ownerElem;
-        
+        private final String propName;
+        private final org.w3c.dom.Element ownerElem;
+        private boolean canWrite = true;
+
         public AttributeProperty(org.w3c.dom.Element ownerElem, String propName) {
             super(propName, String.class, propName, propName, true, true);
             this.ownerElem = ownerElem;
@@ -229,11 +235,30 @@ public class NodeSelector {
         }
         
         public void setValue(Object value) {
-            ownerElem.setAttribute(propName, (String)value);
+            try {
+                ownerElem.setAttribute(propName, (String)value);
+            } catch (DOMException ex) {
+                canWrite = false;
+            }
         }
         
         public Object getValue() {
-            return ownerElem.getAttribute(propName);
+            try {
+                return ownerElem.getAttribute(propName);
+            } catch (DOMException ex) {
+                // #29618 lifetime problem
+                canWrite = false;
+                return NbBundle.getMessage(NodeSelector.class, "BK0001");
+            }
         }
+
+        /**
+         * Writeability can change during lifetime.
+         * So nobody can cache this flag.
+         */
+        public boolean canWrite() {
+            return canWrite;
+        }
+
     }
 }
