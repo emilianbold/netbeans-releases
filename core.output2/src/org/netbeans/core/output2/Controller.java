@@ -698,6 +698,8 @@ public class Controller { //XXX public only for debug access to logging code
         }
     }
 
+    
+    private boolean firstF12 = true;
     /**
      * Sends the caret in a tab to the nearest error line to its current position, selecting
      * that line.
@@ -716,11 +718,17 @@ public class Controller { //XXX public only for debug access to logging code
         }
         OutWriter out = tab.getIO().out();
         if (out != null) {
-            int line = Math.max(0, tab.getOutputPane().getCaretLine());
+            int line = firstF12 ? 0 : Math.max(0, tab.getOutputPane().getCaretLine());
             if (line >= tab.getOutputPane().getLineCount()-1) {
                 line = 0;
             }
+            //FirstF12: #48485 - caret is already on the first listener line,
+            //so F12 jumps to the second error.  So search from 0 the first time after a reset
             int newline = out.getLines().nearestListenerLine(line, backward);
+            if (log) {
+                log ("sendCaretToError - caret line: " + line + 
+                    " nearest listener line " + newline);
+            }
             if (newline == line) {
                 if (!backward && line != tab.getOutputPane().getLineCount()) {
                     newline = out.getLines().nearestListenerLine(line+1, backward);
@@ -741,6 +749,7 @@ public class Controller { //XXX public only for debug access to logging code
                     l.outputLineAction(ce);
                 }
             }
+            firstF12 = false;
         }
     }
 
@@ -1045,6 +1054,7 @@ public class Controller { //XXX public only for debug access to logging code
                 }
                 break;
             case IOEvent.CMD_RESET :
+                firstF12 = true;
                 if (tab == null) {
                     if (log) log ("Got a reset on an io with no tab.  Creating a tab.");
                     performCommand (win, tab, io, IOEvent.CMD_CREATE, value, data);
