@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -244,6 +244,10 @@ Microsystems, Inc. All Rights Reserved.
               todir="${xtest.distdir}/${xtest.module}/test"/>
         <copy todir="${xtest.distdir}/${xtest.module}/test">
             <fileset dir="${xtest.basedir}/${xtest.module}/test" includes="cfg-*"/>
+        </copy>
+        <!-- NetBeans IDE specific - include files from nbproject dir to distribution -->
+        <copy todir="${xtest.distdir}/${xtest.module}/test/nbproject" failonerror="false">
+            <fileset dir="${xtest.basedir}/${xtest.module}/nbproject" includes="project.*"/>
         </copy>
     </target>
     
