@@ -15,6 +15,8 @@
 package org.netbeans.core.windows.services;
 
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.core.NbMainExplorer;
 import org.netbeans.core.NbSheet;
 import org.openide.DialogDescriptor;
@@ -240,7 +242,7 @@ public final class NodeOperationImpl extends NodeOperation {
                         null
                     ));
                     //fix for issue #40323
-                    SheetNodesListener listener = new SheetNodesListener(dlg);
+                    SheetNodesListener listener = new SheetNodesListener(dlg, tc);
                     listener.attach(nds);
                     dlg.show();
                 }
@@ -262,14 +264,21 @@ public final class NodeOperationImpl extends NodeOperation {
     /**
      * fix for issue #40323 the prop dialog needs to be closed when the nodes it displayes are destroyed.
      */
-    private static class SheetNodesListener extends NodeAdapter{
+    private static class SheetNodesListener extends NodeAdapter implements PropertyChangeListener {
 
 
         private Dialog dialog;
         private Set listenerSet;
         
-        SheetNodesListener(Dialog dlg) {
+        SheetNodesListener(Dialog dlg, TopComponent tc) {
             dialog = dlg;
+            tc.addPropertyChangeListener(this);
+        }
+        
+        public void propertyChange (PropertyChangeEvent pce) {
+            if ("name".equals(pce.getPropertyName())) {
+                dialog.setTitle((String) pce.getNewValue());
+            }
         }
         
         public void attach(Node[] nodes) {
