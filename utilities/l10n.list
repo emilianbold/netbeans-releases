@@ -9,6 +9,7 @@ utilities/src/**/*.html
 utilities/src/org/netbeans/modules/openfile/openFile.gif
 utilities/src/org/netbeans/modules/url/bookmarks.gif
 utilities/src/org/netbeans/modules/url/webLink.gif
+utilities/src/org/netbeans/modules/utilities/quick-start.url
 utilities/project/src/**/Bundle.properties
 utilities/project/src/**/*.html
 utilities/project/src/org/openide/resources/actions/find.gif
