@@ -26,6 +26,8 @@ import javax.swing.event.ChangeListener;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
+import org.openide.TopManager;
+import org.openide.ErrorManager;
 
 /** The ParametersPicker is a panel which allows to enter a method parameter data.
  *
@@ -165,7 +167,15 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
      *(and thus it should not be set)
      */
     public Object getPropertyValue() throws IllegalStateException {
-        if (!isFilled()) throw new IllegalStateException();
+        if (!isFilled()) {
+            IllegalStateException exc = new IllegalStateException();
+            TopManager.getDefault().getErrorManager().annotate(
+                exc, ErrorManager.USER, null, 
+                FormEditor.getFormBundle().getString("ERR_NothingEntered"), // NOI18N
+                null, null);
+            throw exc;
+        }
+
         if (valueButton.isSelected()) {
             return new RADConnectionPropertyEditor.RADConnectionDesignValue(requiredType, valueField.getText());
         } else if (beanButton.isSelected()) {
