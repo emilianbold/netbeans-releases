@@ -81,13 +81,32 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
      *  the set of current projects changes.
      */
     protected abstract void refresh( Lookup context );
-                
+    
+    
+    /** Needs to override isEnabled in order to force refresh
+     */
+    public boolean isEnabled() {
+        refresh( lookup );
+        return super.isEnabled();
+    }
+        
     // Implementation of LookupListener ----------------------------------------
     
     public void resultChanged( LookupEvent e ) {
+        
+        if ( getPropertyChangeListeners().length == 0 ) {
+            return;
+        }
+        
         if (!refreshing) {
-            refreshing = true;
-            refresh( lookup );
+            refreshing = true;            
+//            long start = System.currentTimeMillis();
+              refresh( lookup );
+//            System.err.println("Calling refresh" + this + " - " + getValue( javax.swing.Action.NAME ) + " : " + ( System.currentTimeMillis() - start ) );
+//            System.err.println("   " + e.getSource() + " : " + e);
+//            if ( this instanceof CloseProject ) {
+//                Thread.dumpStack();
+//            }
             refreshing = false;
         }
     }

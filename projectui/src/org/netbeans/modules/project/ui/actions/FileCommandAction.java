@@ -44,12 +44,12 @@ public class FileCommandAction extends ProjectAction {
         
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
 
-        if ( projects.length != 1 || !ActionsUtil.commandSupported(projects[0], command, context) ) {
-            setEnabled( false ); // Zero or more than one projects found or commande not supported
+        if ( projects.length != 1 ) {
+            setEnabled( false ); // Zero or more than one projects found or command not supported
             setDisplayName( ActionsUtil.formatName( getNamePattern(), 0, "" ) );
         }
         else {
-            FileObject[] files = ActionsUtil.getFilesFromLookup( context, command, projects[0] );
+            FileObject[] files = ActionsUtil.getFilesFromLookup( context, projects[0] );
             setEnabled( true );
             setDisplayName( ActionsUtil.formatName( getNamePattern(), files.length, files.length > 0 ? files[0].getNameExt() : "" ) ); // NOI18N
         }

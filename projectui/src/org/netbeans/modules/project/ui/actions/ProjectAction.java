@@ -74,7 +74,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
         
         if ( command != null ) {
-            setEnabled( projects.length == 1 && ActionsUtil.commandSupported( projects[0], command, getLookup() ) );
+            setEnabled( projects.length == 1 );
             setDisplayName( ActionsUtil.formatProjectSensitiveName( namePattern, projects ) );
         }
         else if ( performer != null && projects.length == 1 ) {

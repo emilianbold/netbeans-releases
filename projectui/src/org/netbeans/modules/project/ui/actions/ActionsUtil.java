@@ -51,7 +51,10 @@ class ActionsUtil {
     }
     */
     
-    /** Finds all projects in given lookup
+    /** Finds all projects in given lookup. If the command is not null it will check 
+     * whther given command is enabled on all projects. If and only if all projects
+     * have the command supported it will return array including the project. If there
+     * is one project with the command disabled it will return empty array.
      */
     public static Project[] getProjectsFromLookup( Lookup lookup, String command ) {    
 
@@ -61,9 +64,7 @@ class ActionsUtil {
         Collection projects = lookup.lookup( new Lookup.Template( Project.class ) ).allInstances();            
         for( Iterator it = projects.iterator(); it.hasNext(); ) {
             Project p = (Project)it.next();
-            if (command == null || commandSupported(p, command, lookup)) {
-                result.add(p);
-            }
+            result.add(p);
         }
 
         // Now try to guess the project from dataobjects
@@ -74,9 +75,6 @@ class ActionsUtil {
             FileObject fObj = dObj.getPrimaryFile();
             Project p = FileOwnerQuery.getOwner(fObj);
             if ( p != null ) {
-                if ( command != null && !commandSupported( p, command, lookup ) ) {
-                    continue;
-                }
                 result.add( p );                                        
             }
 
@@ -84,24 +82,30 @@ class ActionsUtil {
         
         Project[] projectsArray = new Project[ result.size() ];
         result.toArray( projectsArray );        
+        
+        if ( command != null ) {
+            // All projects have to have the command enabled
+            for( int i = 0; i < projectsArray.length; i++ ) {
+                if ( !commandSupported( projectsArray[i], command, lookup ) ) {
+                    return new Project[0];
+                }
+            }
+        }
+        
         return projectsArray;
     }
 
     /** In given lookup will find all FileObjects owned by given project
      * with given command supported.
      */    
-    public static FileObject[] getFilesFromLookup( Lookup lookup, String command, Project project ) {
+    public static FileObject[] getFilesFromLookup( Lookup lookup, Project project ) {
         HashSet result = new HashSet();
         Collection dataObjects = lookup.lookup( new Lookup.Template( DataObject.class ) ).allInstances();
         for( Iterator it = dataObjects.iterator(); it.hasNext(); ) {
-
             DataObject dObj = (DataObject)it.next();
             FileObject fObj = dObj.getPrimaryFile();
             Project p = FileOwnerQuery.getOwner(fObj);
             if ( p != null && p.equals( project ) ) {
-                if ( command != null && !commandSupported( p, command, lookup ) ) {
-                    continue;
-                }
                 result.add( fObj );                                        
             }
 
