@@ -266,7 +266,7 @@ public class XMLDataObject extends MultiDataObject {
         getIP ().waitFinished();
 
         Node.Cookie cake = (Node.Cookie)getIP ().lookupCookie (cls);
-        
+       
         if (cake instanceof InstanceCookie) {
             cake = originCookie ((InstanceCookie)cake, cls);
         }
@@ -1448,11 +1448,19 @@ public class XMLDataObject extends MultiDataObject {
                 return fo;
             }
             /* JST: I believe that this can be removed because XML_EXT should
-             * always be recognized as text/xml mime type
-            if (XML_EXT.equals(fo.getExt())) {
+             * always be recognized as text/xml mime type 
+             *
+             * Cc.: Unforunatelly there are .xml configuration files
+             * that use "*+xml" suffixed MIME content type
+             * for lightweight data-object-subclass-less typing purposes.
+             * E.g. ProjectEnvironmentProviders are keyed by MIME type.
+             *
+             * It could be better to accept directly "+xml"s...
+             */
+            if ("xml".equals(fo.getExt())) {
                 return fo;
             }            
-             */
+            
             /** JST: Removed JSP should handle this in better way
             if ("tld".equals(fo.getExt())) { // NOI18N
                 return fo; // JSP Tag Library Descriptor
