@@ -65,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
 <!--  Services part -->
 
   <folder name="Services">
-    <file name="javadoc.settings">
+    <file name="org.netbeans.modules.javadoc.settings.DocumentationSettings.settings">
         <![CDATA[<?xml version="1.0"?>
         <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
         <settings version="1.0">
@@ -175,7 +175,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <folder name="Templates">
       <folder name="Services">
-          <folder name="JavadocExecutorsSettings">
+          <folder name="JavadocExecutors">
             <file name="javadoc_external_executor.settings">
             <attr name="template" boolvalue="true"/>
                 <![CDATA[<?xml version="1.0"?>
@@ -209,7 +209,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
           </folder>  
 
-          <folder name="JavadocDocletsSettings">
+          <folder name="JavadocDoclets">
             <file name="javadoc_doclets.settings">
             <attr name="template" boolvalue="true"/>
                 <![CDATA[<?xml version="1.0"?>
