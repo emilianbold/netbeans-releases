@@ -17,8 +17,12 @@ import java.io.File;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.FileOutputStream;
 import java.util.*;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.jar.JarOutputStream;
+import java.util.zip.ZipEntry;
 
 import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
@@ -180,9 +184,17 @@ public class ClassPathTest extends NbTestCase {
         root_1.mkdir();
         File root_2 = new File (getBaseDir(),"root_2");
         root_2.mkdir();
+        File root_3 = new File (getBaseDir(),"root_3.jar");
+        JarOutputStream out = new JarOutputStream ( new FileOutputStream (root_3));
+        try {            
+            out.putNextEntry(new ZipEntry("test.txt"));
+            out.write ("test".getBytes());
+        } finally {
+            out.close ();
+        }        
         assertNotNull ("Can not find file",FileUtil.toFileObject(root_1));
         assertNotNull ("Can not find file",FileUtil.toFileObject(root_2));
-
+        assertNotNull ("Can not find file",FileUtil.toFileObject(root_3));
         TestClassPathImplementation impl = new TestClassPathImplementation();
 	ClassPath cp = ClassPathFactory.createClassPath (impl);
         impl.addResource(root_1.toURI().toURL());
@@ -215,10 +227,29 @@ public class ClassPathTest extends NbTestCase {
         impl.expectEvents (events);
         parentFolder.createFolder("root_1");
         assertTrue (cp.getRoots().length==1);
-        impl.assertEvents ();
-        cp = null;
+        impl.assertEvents ();       
+        FileObject archiveFile = FileUtil.toFileObject(root_3);
+        impl.addResource(FileUtil.getArchiveRoot(archiveFile.getURL()));
+        assertEquals (cp.getRoots().length,2);
+        events = new HashSet ();
+        events.add (ClassPath.PROP_ROOTS);
+        impl.expectEvents (events);
+        root_3.delete();
+        root_3 = new File (getBaseDir(),"root_3.jar");
+        Thread.sleep(1000);
+        out = new JarOutputStream ( new FileOutputStream (root_3));
+        try {            
+            out.putNextEntry(new ZipEntry("test2.txt"));
+            out.write ("test2".getBytes());
+        } finally {
+            out.close ();
+        }
+        archiveFile.refresh();
+        impl.assertEvents();
         root_1.delete();
         root_2.delete();
+        root_3.delete();
+        cp = null;
     }
     
     private static final class TestClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
@@ -268,6 +299,7 @@ public class ClassPathTest extends NbTestCase {
         }
 
         void expectEvents (Set events) {
+            this.unknownEvents.clear();
             this.events = events;
         }
 

@@ -668,16 +668,22 @@ public final class ClassPath {
                     ErrorManager.getDefault().log (ErrorManager.ERROR,"Can not find file system, not able to listen on changes.");  //NOI18N
                 }
             }
+            if ("jar".equals(url.getProtocol())) { //NOI18N
+                url = FileUtil.getArchiveFile(url);
+            }
             String path = url.getPath();
-            if (path.endsWith("/")) {
+            if (path.endsWith("/")) {       //NOI18N
                 path = path.substring(0,path.length()-1);
             }
             roots.add (path);
         }
 
-        public void removeRoot (URL url) {
+        public void removeRoot (URL url) {            
+            if ("jar".equals(url.getProtocol())) { //NOI18N
+                url = FileUtil.getArchiveFile(url);
+            }
             String path = url.getPath();
-            if (path.endsWith("/")) {
+            if (path.endsWith("/")) {   //NOI18N
                 path = path.substring(0,path.length()-1);
             }
             roots.remove (path);
@@ -704,6 +710,20 @@ public final class ClassPath {
         }
 
         public void fileChanged(FileEvent fe) {
+            if (!isInitialized()) {
+                return; //Cache already cleared
+            }
+            String path = getPath (fe.getFile());
+            if (this.roots.contains(path)) {
+                ClassPath cp = (ClassPath) get ();
+                if (cp != null) {
+                    synchronized (cp) {
+                        cp.rootsCache = null;
+                        this.removeAllRoots();  //No need to listen
+                    }
+                    cp.firePropertyChange(PROP_ROOTS,null,null);
+               }
+            }
         }
 
         public void fileDeleted(FileEvent fe) {
@@ -714,7 +734,7 @@ public final class ClassPath {
             this.processEvent (fe);
         }
 
-        public void fileAttributeChanged(FileAttributeEvent fe) {
+        public void fileAttributeChanged(FileAttributeEvent fe) {            
         }
 
         public void run() {
@@ -754,20 +774,16 @@ public final class ClassPath {
 
         private static String getPath (FileObject fo) {
             if (fo == null)
-                return null;
-            // XXX why can't this just use fo.getURL()?
-            File f = FileUtil.toFile(fo);
-            if (f == null)
-                return null;
+                return null;            
             try {
-                URL url = f.toURI().toURL();
+                URL url = fo.getURL();
                 String path = url.getPath();
                 if (path.endsWith("/")) {        //NOI18N
                     path=path.substring(0,path.length()-1);
                 }
                 return path;
-            } catch (MalformedURLException mue) {
-                ErrorManager.getDefault().notify (mue);
+            } catch (FileStateInvalidException e) {
+                ErrorManager.getDefault().notify (e);
                 return null;
             }
         }
