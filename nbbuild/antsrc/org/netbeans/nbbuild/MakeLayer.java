@@ -30,6 +30,7 @@ public class MakeLayer extends MatchingTask {
 
     private File dest = null;
     private List topdirs = new ArrayList ();
+    private boolean absolutePath = false;
 
     /** Target file containing list of all classes. */
     public void setDestfile(File f) {
@@ -41,6 +42,13 @@ public class MakeLayer extends MatchingTask {
      */
     public void setTopdir (File t) {
         topdirs.add (t);
+    }
+    
+    /** Set wheather there is absolute path in top dir or not
+     * default value is false
+     */
+    public void setAbsolutePath( boolean absolutePath ) {
+        this.absolutePath = absolutePath;
     }
 
     /** Nested topdir addition. */
@@ -68,6 +76,7 @@ public class MakeLayer extends MatchingTask {
         if (dest == null) {
             throw new BuildException("You must specify output file", location);
         }
+        int lengthAdjust = (absolutePath) ? 0 : 1;
         FileWriter layerFile;
         try {
             layerFile = new FileWriter(dest);
@@ -84,7 +93,7 @@ public class MakeLayer extends MatchingTask {
                 File aFileName = new File(topdir, files[i]);
                 try {
                     layerFile.write(("<file name=\""+aFileName.getName()+"\"\n").replace(File.separatorChar,'/'));
-                    layerFile.write(("  url=\""+aFileName.getAbsolutePath().substring(topdir.getAbsolutePath().length()+1)+"\"/>\n").replace(File.separatorChar,'/'));
+                    layerFile.write(("  url=\""+aFileName.getAbsolutePath().substring(topdir.getAbsolutePath().length()+lengthAdjust)+"\"/>\n").replace(File.separatorChar,'/'));
                 }
                 catch(IOException ex) {
                     throw new BuildException(ex.fillInStackTrace(),location);
