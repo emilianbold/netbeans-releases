@@ -106,7 +106,10 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
     }
     
     public PropertySet[] getPropertySets() {
-        return FilterXNode.merge(getOriginal().getPropertySets(), getDelegateTargetNode().getPropertySets());
+        Node delegateNode = getDelegateTargetNode();
+        if (delegateNode == null)
+            return getOriginal().getPropertySets();
+        return FilterXNode.merge(getOriginal().getPropertySets(), delegateNode.getPropertySets());
     }
     
     public org.openide.nodes.Node.Cookie getCookie(Class type) {
