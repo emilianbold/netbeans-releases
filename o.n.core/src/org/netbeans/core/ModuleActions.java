@@ -27,7 +27,7 @@ import org.openide.util.*;
 * @author jtulach
 */
 class ModuleActions extends ActionManager
-    implements PropertyChangeListener {
+/*implements PropertyChangeListener*/ {
     /** array of all actions added by modules */
     private static SystemAction[] array;
     /** of (ModuleItem, List (SystemAction)) */
@@ -89,12 +89,13 @@ class ModuleActions extends ActionManager
     }
 
     /** Change enabled property of an action
-    */
+    *
     public void propertyChange (PropertyChangeEvent ev) {
         if (SystemAction.PROP_ENABLED.equals (ev.getPropertyName ())) {
             fireChange ();
         }
     }
+    */
 
     /** Attaches to processing of a module
     */
@@ -115,7 +116,7 @@ class ModuleActions extends ActionManager
             map.put (module, list);
         }
         list.add (as.getAction ());
-        as.getAction ().addPropertyChangeListener (INSTANCE);
+        //as.getAction ().addPropertyChangeListener (INSTANCE);
 
         array = null;
         fireChange (); // PENDING this is too often
@@ -129,7 +130,7 @@ class ModuleActions extends ActionManager
             return;
         }
         list.remove (as.getAction ());
-        as.getAction ().removePropertyChangeListener (INSTANCE);
+        //as.getAction ().removePropertyChangeListener (INSTANCE);
 
         if (list.isEmpty ()) {
             map.remove (module);
