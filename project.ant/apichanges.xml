@@ -76,23 +76,23 @@ is the proper place.
 
     <changes>
 
-        <change>
+        <change id="StoreGroup">
             <api name="general"/>
-            <summary>Support SPI for creating/storing swing models for simple ANT proertirs</summary>
+            <summary>Support SPI for creating/storing Swing models for simple Ant properties</summary>
             <version major="1" minor="6"/>
             <date day="16" month="1" year="2005"/>
             <author login="phrebejk"/>
             <compatibility addition="yes"/>
             <description>
-                Introduced new class <code>org.netbeans.spi.project.support.ant.ui.StoreGroup</code> which
-                is capable of creating Swing models for simple ANT propject properties. And
-                to store them back into the prject properties.
+                Introduced new class <code>StoreGroup</code> which
+                is capable of creating Swing models for simple Ant project properties and
+                storing modified values back into properties.
             </description>
             <class package="org.netbeans.spi.project.support.ant.ui" name="StoreGroup"/>
             <issue number="49648"/>
         </change>
      
-        <change>
+        <change id="AntArtifact.misc">
             <api name="general"/>
             <summary>AntArtifact enhancements</summary>
             <version major="1" minor="5"/>
@@ -113,33 +113,34 @@ is the proper place.
             </compatibility>
             <description>
                 <p>
-                    Several enhancements of AntArtifact were implemented:
+                    Several enhancements of <code>AntArtifact</code> were implemented:
                 </p>
                 <ol>
-                    <li>execution of artifact's target can be customized by properties</li>
-                    <li>artifact can produce several build outputs</li>
-                    <li>Ant script path is not persisted as URI, but string possibly containing Ant properties</li>
+                    <li>execution of an artifact's target can be customized by properties</li>
+                    <li>an artifact can produce several build outputs</li>
+                    <li>an Ant script path is not persisted as a URI, but as a string possibly containing Ant properties</li>
                 </ol>
                 <p>
-                    ReferenceHelper class was simplified as part of the implementation.
+                    <code>ReferenceHelper</code> was simplified as part of the implementation.
                 </p>
             </description>
+            <class package="org.netbeans.api.project.ant" name="AntArtifact"/>
             <issue number="47788"/>
             <issue number="50484"/>
             <issue number="50092"/>
         </change>
 
-         <change>
+         <change id="ReferenceHelper.createForeignFileReference.relative">
              <api name="general"/>
-             <summary>Make ReferencesHelper.createForeignFileReference produce relative links based on properties</summary>
+             <summary>Make ReferenceHelper.createForeignFileReference produce relative links based on properties</summary>
              <version major="1" minor="4"/>
              <date day="11" month="1" year="2005"/>
              <author login="dkonecny"/>
              <compatibility addition="yes"/>
              <description>
-               ReferenceHelper should reuse external project folders as base
+               <code>ReferenceHelper</code> should reuse external project folders as base
                directories for references it creates where appropriate. The
-               new API allows to add/remove these base folders.
+               new API allows addition or removal of these base folders.
              </description>
              <class package="org.netbeans.spi.project.support.ant" name="ReferenceHelper"/>
              <issue number="49550"/>

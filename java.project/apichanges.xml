@@ -78,7 +78,7 @@ is the proper place.
 
     <changes>
     
-        <change>
+        <change id="JavaTemplates.factory.package-required">
             <api name="ui"/>
             <summary>Added a new factory method for creating the name/package chooser wizard panel into the templates SPI.</summary>
             <version major="1" minor="3"/>
@@ -95,35 +95,35 @@ is the proper place.
             <class package="org.netbeans.spi.java.project.support.ui.templates" name="JavaTemplates"/>
             <issue number="56730"/>
         </change>
-        <change>
+        <change id="PackageView.listView">
             <api name="ui"/>
-            <summary>The functionality of PackageListView was moved into PackageView support SPI.</summary>
+            <summary>Display of packages in a list added</summary>
             <version major="1" minor="3"/>
             <date day="10" month="1" year="2005"/>
             <author login="tzezula"/>
             <compatibility addition="yes"/>
             <description>
                 <p>
-                The new methods supporting creating of package list were added into PackageView.
-                PackageView.createListView (SourceGroup) creates an ComboBoxModel containing the
-                packages from given SourceGroup. PackageView.listRenderer() returns an ListCellRenderer
+                New methods supporting creation of package lists were added to <code>PackageView</code>.
+                <code>createListView(SourceGroup)</code> creates a <code>ComboBoxModel</code> containing the
+                packages from a given source group. <code>listRenderer()</code> returns a <code>ListCellRenderer</code>
                 rendering the packages.
                 </p>
             </description>
             <class package="org.netbeans.spi.java.project.support.ui" name="PackageView"/>
             <issue number="48618"/>
         </change>
-         <change>
+         <change id="ProjectClassPathSupport.createPropertyBasedClassPathImplemenentation">
             <api name="classpath"/>
-            <summary>Added helper method for creating ClassPathImplementation based on the ant property</summary>
+            <summary>Added helper method for creating <code>ClassPathImplementation</code> based on an Ant property</summary>
             <version major="1" minor="3"/>
             <date day="6" month="1" year="2005"/>
             <author login="tzezula"/>
             <compatibility addition="yes"/>
             <description>
                 <p>
-                Added new helper class org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport
-                with a static method createPropertyBasedClassPathImplementation (File, PropertyEvaluator, String[]).
+                Added new helper class <code>ProjectClassPathSupport</code>
+                with a factory method <code>createPropertyBasedClassPathImplementation(...)</code>.
                 This method creates a live classpath based on the list of Ant properties holding the path. The classpath
                 implementation listens on changes of properties, updates state and fires events to clients.
                 </p>
@@ -131,20 +131,20 @@ is the proper place.
             <class package="org.netbeans.spi.java.project.classpath.support" name="ProjectClassPathSupport"/>
             <issue number="42309"/>
         </change>    
-        <change>
+        <change id="ProjectClassPathExtender">
             <api name="classpath"/>
-            <summary>The ProjectClassPathExtender was moved into public SPI package.</summary>
+            <summary><code>ProjectClassPathExtender</code> made public</summary>
             <version major="1" minor="3"/>
             <date day="5" month="1" year="2005"/>
             <author login="tzezula"/>
             <compatibility addition="yes"/>
             <description>
                 <p>
-                The ProjectClassPathExtender was a private contract between j2seproject and form editor
-                which allowed the form editor to extend the compilation classpath of project by new classpath
-                element (archive file, folder, dependent project, library).
-                The ProjectClassPathExtender was moved into public SPI package (org.netbeans.spi.java.project.classpath)
-                to remove the need of the implementation dependency of form editor and j2seproject on java/project module.
+                <code>ProjectClassPathExtender</code> was a private contract between <code>j2seproject</code> and <code>form</code>
+                which allowed the form editor to extend the compilation classpath of a project by a new classpath
+                element (archive file, folder, dependent project, or library).
+                This interface was moved into a public SPI package
+                to remove the need to have an implementation dependency of <code>form</code> and <code>j2seproject</code> on <code>java/project</code>.
                 </p>
             </description>
             <class package="org.netbeans.spi.java.project.classpath" name="ProjectClassPathExtender"/>
