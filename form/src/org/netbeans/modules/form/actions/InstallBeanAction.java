@@ -52,7 +52,7 @@ public class InstallBeanAction extends CallableSystemAction {
      * @return name of resource for icon
      */
     protected String iconResource() {
-        return "org/netbeans/modules/form/resources/palette.gif"; // NOI18N
+        return "org/netbeans/modules/form/resources/palette_manager.png"; // NOI18N
     }
 
     /** This method is called by one of the "invokers" as a result of

@@ -53,13 +53,6 @@ public class SelectLayoutAction extends NodeAction {
         return new HelpCtx(SelectLayoutAction.class);
     }
 
-    /** Icon resource.
-     * @return name of resource for icon
-     */
-    protected String iconResource() {
-        return "org/netbeans/modules/form/resources/selectLayout.gif"; // NOI18N
-    }
-
     /**
      * Standard perform action extended by actually activated nodes.
      *

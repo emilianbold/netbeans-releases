@@ -63,7 +63,7 @@ class FormToolBar extends JToolBar {
         // selection button
         selectionButton = new JToggleButton(
             new ImageIcon(getClass().getResource(
-                          "/org/netbeans/modules/form/resources/selectionMode.gif")), // NOI18N
+                          "/org/netbeans/modules/form/resources/selection_mode.png")), // NOI18N
             false);
         selectionButton.addActionListener(listener);
         selectionButton.addMouseListener(listener);
@@ -75,7 +75,7 @@ class FormToolBar extends JToolBar {
         // connection button
         connectionButton = new JToggleButton(
             new ImageIcon(getClass().getResource(
-                          "/org/netbeans/modules/form/resources/connectionMode.gif")), // NOI18N
+                          "/org/netbeans/modules/form/resources/connection_mode.png")), // NOI18N
             false);
         connectionButton.addActionListener(listener);
         connectionButton.addMouseListener(listener);

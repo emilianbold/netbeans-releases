@@ -57,7 +57,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
 
     /** @return resource for the action icon */
     protected String iconResource() {
-        return "org/netbeans/modules/form/resources/testMode.gif"; // NOI18N
+        return "org/netbeans/modules/form/resources/test_form.png"; // NOI18N
     }
 
     public void performAction() {

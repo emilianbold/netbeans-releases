@@ -315,8 +315,7 @@ class PaletteItemDataObject extends MultiDataObject {
     }
     
     public static final class PaletteItemDataLoaderBeanInfo extends SimpleBeanInfo {
-        private static String iconURL = "org/netbeans/modules/form/resources/palette.gif"; // NOI18N
-        private static String icon32URL = "org/netbeans/modules/form/resources/palette32.gif"; // NOI18N
+        private static String iconURL = "org/netbeans/modules/form/resources/palette_manager.png"; // NOI18N
         
         public BeanInfo[] getAdditionalBeanInfo() {
             try {
@@ -328,12 +327,7 @@ class PaletteItemDataObject extends MultiDataObject {
         }
         
         public java.awt.Image getIcon(final int type) {
-            if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
-            (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-                return Utilities.loadImage(iconURL);
-            } else {
-                return Utilities.loadImage(icon32URL);
-            }
+            return Utilities.loadImage(iconURL);
         }
         
     }

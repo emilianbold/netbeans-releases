@@ -53,10 +53,6 @@ public class EventsAction extends CookieAction {
         return new HelpCtx(EventsAction.class);
     }
 
-    protected String iconResource() {
-        return "org/netbeans/modules/form/resources/events.gif"; // NOI18N
-    }
-
     protected void performAction(Node[] activatedNodes) {
     }
 

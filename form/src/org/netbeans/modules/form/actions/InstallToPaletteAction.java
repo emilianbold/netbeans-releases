@@ -48,10 +48,6 @@ public class InstallToPaletteAction extends CookieAction {
         return new HelpCtx("beans.adding"); // NOI18N
     }
 
-    protected String iconResource() {
-        return "org/netbeans/modules/form/resources/addToPalette.gif"; // NOI18N
-    }
-
     protected boolean asynchronous() {
         return false;
     }
