@@ -127,6 +127,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- but this slows down builds, messes up Jikes users, and is not apparently -->
     <!-- needed for all 1.3 Javac versions. Easier to ensure that the outer classes -->
     <!-- appear in a separate JAR file at compile time, this assuages the compiler. -->
+    <!-- Cf. #4401373. -->
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <!-- Compare inner classes of Actions: -->
       <include name="org/openide/awt/ToolbarButton.java"/>
