@@ -269,14 +269,11 @@ public final class
         }
 
         public void write(byte[] buff, int off, int len) throws IOException {
-            final char[] buff2 = new char[len];
-            for (int i = len; --i >= 0; ) {
-                buff2[i] = (char) buff[off + i];
-            }
+            String s = new String (buff, off, len);
             if (std) {
-                getTaskIOs().getOut().write(buff2, 0, len);
+                getTaskIOs().getOut().write(s.toCharArray(), 0, s.length());
             } else {
-                getTaskIOs().getErr().write(buff2, 0, len);
+                getTaskIOs().getErr().write(s.toCharArray(), 0, s.length());
             }
         }
 
