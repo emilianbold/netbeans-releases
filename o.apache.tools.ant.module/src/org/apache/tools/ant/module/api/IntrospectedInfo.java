@@ -21,14 +21,13 @@ import java.util.Map; // override org.apache.tools.ant.Map
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.apache.tools.ant.*;
-
 import org.openide.*;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListener;
 
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
+import org.apache.tools.ant.module.bridge.*;
 
 /** Represents Ant-style introspection info for a set of classes.
  * There should be one instance which is loaded automatically
@@ -40,65 +39,16 @@ import org.apache.tools.ant.module.AntSettings;
 public final class IntrospectedInfo implements Serializable {
     
     private static IntrospectedInfo defaults = null;
-    private static boolean loadedDefaults = false;
-    
-    /** Are the default definitions loaded yet? */
-    static synchronized boolean isDefaultsPrepared () {
-        return loadedDefaults;
-    }
     
     /** Get default definitions specified by Ant's defaults.properties.
      * @return the singleton defaults
      */
-    public static synchronized IntrospectedInfo getDefaults () {
-            if (defaults != null) return defaults;
-            AntModule.err.log ("IntrospectedInfo.getDefaults: loading...");
-            defaults = new IntrospectedInfo ();
-            // Not necessary and causes problems during test mode:
-            //ClassLoader cl = TopManager.getDefault ().currentClassLoader ();
-            ClassLoader cl = IntrospectedInfo.class.getClassLoader ();
-            InputStream taskDefaults = cl.getResourceAsStream ("org/apache/tools/ant/taskdefs/defaults.properties");
-            if (taskDefaults != null) {
-                try {
-                    defaults.load (taskDefaults, true, cl);
-                } catch (IOException ioe) {
-                    AntModule.err.log ("Could not load default taskdefs");
-                    AntModule.err.notify (ioe);
-                }
-            } else {
-                AntModule.err.log ("Could not open default taskdefs");
-            }
-            InputStream typeDefaults = cl.getResourceAsStream ("org/apache/tools/ant/types/defaults.properties");
-            if (typeDefaults != null) {
-                try {
-                    defaults.load (typeDefaults, false, cl);
-                } catch (IOException ioe) {
-                    AntModule.err.log ("Could not load default typedefs");
-                    AntModule.err.notify (ioe);
-                }
-            } else {
-                AntModule.err.log ("Could not open default typedefs");
-            }
-            Iterator kit = DefinitionRegistry.getKinds().iterator();
-            while (kit.hasNext()) {
-                String kind = (String)kit.next();
-                Map m = DefinitionRegistry.getDefs (kind);
-                if (m.size () > 0) {
-                    AntModule.err.log ("Introspecting " + m.size () + " ad-hoc defs (kind=" + kind + ")...");
-                    Iterator it = m.entrySet ().iterator ();
-                    while (it.hasNext ()) {
-                        Map.Entry entry = (Map.Entry) it.next ();
-                        String name = (String) entry.getKey ();
-                        Class def = (Class) entry.getValue ();
-                        defaults.register (name, def, kind);
-                    }
-                }
-            }
-            if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                AntModule.err.log ("IntrospectedInfo.defaults=" + defaults);
-            }
-            loadedDefaults = true;
-            return defaults;
+    public static synchronized IntrospectedInfo getDefaults() {
+        if (defaults != null) return defaults;
+        AntModule.err.log("IntrospectedInfo.getDefaults: loading...");
+        defaults = new IntrospectedInfo();
+        defaults.loadDefaults(true);
+        return defaults;
     }
     
     private static final long serialVersionUID = -2290064038236292995L;
@@ -110,9 +60,55 @@ public final class IntrospectedInfo implements Serializable {
     private transient Set listeners = new HashSet(5); // Set<ChangeListener>
     private transient Set tonotify = new HashSet(5); // Set<ChangeListener>
     
+    private transient ChangeListener antBridgeListener = new ChangeListener() {
+        public void stateChanged(ChangeEvent ev) {
+            clearDefs();
+            loadDefaults(false);
+            fireStateChanged();
+        }
+    };
+    
     /** Make new empty set of info.
      */
     public IntrospectedInfo () {
+    }
+    
+    private void clearDefs() {
+        clazzes.clear();
+        namedefs.clear();
+    }
+    
+    private void loadDefaults(boolean listen) {
+        ClassLoader cl = AntBridge.getMainClassLoader();
+        InputStream taskDefaults = cl.getResourceAsStream("org/apache/tools/ant/taskdefs/defaults.properties");
+        if (taskDefaults != null) {
+            try {
+                defaults.load(taskDefaults, "task", cl); // NOI18N
+            } catch (IOException ioe) {
+                AntModule.err.log("Could not load default taskdefs");
+                AntModule.err.notify(ioe);
+            }
+        } else {
+            AntModule.err.log("Could not open default taskdefs");
+        }
+        InputStream typeDefaults = cl.getResourceAsStream("org/apache/tools/ant/types/defaults.properties");
+        if (typeDefaults != null) {
+            try {
+                defaults.load(typeDefaults, "type", cl); // NOI18N
+            } catch (IOException ioe) {
+                AntModule.err.log("Could not load default typedefs");
+                AntModule.err.notify(ioe);
+            }
+        } else {
+            AntModule.err.log("Could not open default typedefs");
+        }
+        defaults.loadNetBeansSpecificDefinitions();
+        if (listen) {
+            AntBridge.addChangeListener(WeakListener.change(antBridgeListener, AntBridge.class));
+        }
+        if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            AntModule.err.log("IntrospectedInfo.defaults=" + defaults);
+        }
     }
     
     private void readObject(ObjectInputStream is) throws IOException, ClassNotFoundException {
@@ -201,22 +197,6 @@ public final class IntrospectedInfo implements Serializable {
         }
     }
     
-    /** Get task definitions.
-     * @return an immutable map from task names to class names
-     * @deprecated since 2.4, look up by kind instead
-     */
-    public Map getTaskdefs () {
-        return getDefs("task"); // NOI18N
-    }
-    
-    /** Get type definitions.
-     * @return an immutable map from type names to class names
-     * @deprecated since 2.4, look up by kind instead
-     */
-    public Map getTypedefs () {
-        return getDefs("type"); // NOI18N
-    }
-    
     /** Get definitions.
      * @param kind the kind of definition, e.g. <code>task</code>
      * @return an immutable map from definition names to class names
@@ -284,7 +264,7 @@ public final class IntrospectedInfo implements Serializable {
     }
     
     /** Load defs from a properties file. */
-    private void load (InputStream is, boolean tasks, ClassLoader cl) throws IOException {
+    private void load (InputStream is, String kind, ClassLoader cl) throws IOException {
         Properties p = new Properties ();
         try {
             p.load (is);
@@ -295,7 +275,7 @@ public final class IntrospectedInfo implements Serializable {
         while (it.hasNext ()) {
             Map.Entry entry = (Map.Entry) it.next ();
             String name = (String) entry.getKey ();
-            if (!tasks && name.equals("description")) { // NOI18N
+            if (kind.equals("type") && name.equals("description")) { // NOI18N
                 // Not a real data type; handled specially.
                 AntModule.err.log("Skipping pseudodef of <description>");
                 continue;
@@ -303,7 +283,7 @@ public final class IntrospectedInfo implements Serializable {
             String clazzname = (String) entry.getValue ();
             try {
                 Class clazz = cl.loadClass (clazzname);
-                register (name, clazz, tasks);
+                register(name, clazz, kind);
             } catch (ClassNotFoundException cnfe) {
                 // This is normal, e.g. Ant's taskdefs include optional tasks we don't have.
                 AntModule.err.log ("IntrospectedInfo: skipping " + clazzname + ": " + cnfe);
@@ -313,26 +293,34 @@ public final class IntrospectedInfo implements Serializable {
             } catch (LinkageError e) {
                 // Not normal; if it is there it ought to be resolvable etc.
                 IOException ioe = new IOException ("Could not load class " + clazzname + ": " + e); // NOI18N
-                AntModule.err.annotate (e, e);
+                AntModule.err.annotate (ioe, e);
+                throw ioe;
+            } catch (RuntimeException e) {
+                // SecurityException etc. Not normal.
+                IOException ioe = new IOException ("Could not load class " + clazzname + ": " + e); // NOI18N
+                AntModule.err.annotate (ioe, e);
                 throw ioe;
             }
         }
     }
     
-    /** Register a new definition.
-     * May change the defined task/type for a given name, but
-     * will not redefine structure if classes are modified.
-     * Also any class definitions contained in the default map (if not this one)
-     * are just ignored; you should refer to the default map for info on them.
-     * @param name name of the task or type as it appears in scripts
-     * @param clazz the implementing class
-     * @param task true for a task, false for a data type
-     * @throws various errors if the class could not be resolved, e.g. NoClassDefFoundError
-     * @deprecated since 2.4, should register by kind instead
-     */
-    public synchronized void register (String name, Class clazz, boolean task) {
-        register(name, clazz, task ? "task" : "type"); // NOI18N
+    private void loadNetBeansSpecificDefinitions() {
+        Map defsByKind = AntBridge.getCustomDefs();
+        Iterator kindIt = defsByKind.entrySet().iterator();
+        while (kindIt.hasNext()) {
+            Map.Entry kindE = (Map.Entry)kindIt.next();
+            String kind = (String)kindE.getKey();
+            Map defs = (Map)kindE.getValue();
+            Iterator defsIt = defs.entrySet().iterator();
+            while (defsIt.hasNext()) {
+                Map.Entry defsE = (Map.Entry)defsIt.next();
+                String name = (String)defsE.getKey();
+                Class clazz = (Class)defsE.getValue();
+                register(name, clazz, kind);
+            }
+        }
     }
+    
     /** Register a new definition.
      * May change the defined task/type for a given name, but
      * will not redefine structure if classes are modified.
@@ -402,7 +390,7 @@ public final class IntrospectedInfo implements Serializable {
         //}
         //if (dbg) AntModule.err.log ("Analyzing <taskdef> attrs...");
         IntrospectedClass info = new IntrospectedClass ();
-        IntrospectionHelper helper = IntrospectionHelper.getHelper (clazz);
+        IntrospectionHelperProxy helper = AntBridge.getInterface().getIntrospectionHelper(clazz);
         info.supportsText = helper.supportsCharacters ();
         Enumeration e = helper.getAttributes ();
         //if (dbg) AntModule.err.log ("Analyzing <taskdef> attrs...");
@@ -414,7 +402,7 @@ public final class IntrospectedInfo implements Serializable {
                 try {
                     String type = helper.getAttributeType (name).getName ();
                     //if (dbg) AntModule.err.log ("\ttype=" + type);
-                    if (Task.class.isAssignableFrom (clazz) &&
+                    if (hasSuperclass(clazz, "org.apache.tools.ant.Task") && // NOI18N
                         ((name.equals ("location") && type.equals ("org.apache.tools.ant.Location")) || // NOI18N
                          (name.equals ("taskname") && type.equals ("java.lang.String")) || // NOI18N
                          (name.equals ("description") && type.equals ("java.lang.String")))) { // NOI18N
@@ -464,18 +452,31 @@ public final class IntrospectedInfo implements Serializable {
         fireStateChanged();
     }
     
-    /* Scan an existing (already-run) project to see if it has any new tasks/types.
+    private static boolean hasSuperclass(Class subclass, String superclass) {
+        for (Class c = subclass; c != null; c = c.getSuperclass()) {
+            if (c.getName().equals(superclass)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Scan an existing (already-run) project to see if it has any new tasks/types.
      * Any new definitions found will automatically be added to the known list.
      * Currently this will <em>not</em> try to change existing definitions, i.e.
      * if a task is defined to be implemented with a different class, or if a
      * class changes structure.
      * Will not try to define anything contained in the defaults list.
-     * @param p project to scan
+     * @param defs map from kinds to maps from names to classes
      */
-    public void scanProject (Project p) {
-        scanMap (p.getTaskDefinitions (), "task"); // NOI18N
-        scanMap (p.getDataTypeDefinitions (), "type"); // NOI18N
-        AntModule.err.log ("IntrospectedInfo.scanProject: p=" + p.getName () + "; this=" + this);
+    public void scanProject (Map defs) {
+        Iterator it = defs.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry e = (Map.Entry)it.next();
+            scanMap((Map)e.getValue(), (String)e.getKey());
+        }
+        AntModule.err.log ("IntrospectedInfo.scanProject: " + this);
     }
     
     private void scanMap (Map/*<String,Class>*/ m, String kind) {
@@ -484,6 +485,11 @@ public final class IntrospectedInfo implements Serializable {
         while (it.hasNext ()) {
             Map.Entry entry = (Map.Entry) it.next ();
             String name = (String) entry.getKey ();
+            if (kind.equals("type") && name.equals("description")) { // NOI18N
+                // Not a real data type; handled specially.
+                AntModule.err.log("Skipping pseudodef of <description>");
+                continue;
+            }
             Class clazz = (Class) entry.getValue ();
             Map registry = (Map)namedefs.get(kind); // Map<String,String>
             if (registry == null) {

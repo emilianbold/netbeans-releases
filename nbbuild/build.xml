@@ -54,6 +54,7 @@ ToDo:
      <!-- cmdline Ant -->
      <pathelement location="${ant.home}/lib/ant.jar"/>
      <!-- Ant in NB -->
+     <!-- Note: in NB 4.0, ${ant.home}/lib/ant.jar will work as is -->
      <pathelement path="${netbeans.library.path}"/>
      <fileset dir="..">
         <!-- XML Serializer: -->
@@ -247,11 +248,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module ant/grammar..."/>
     <ant dir="../ant/grammar" target="netbeans"/>
   </target>
+  <target name="all-ant/browsetask" depends="all-openide">
+    <echo message="Building module ant/browsetask..."/>
+    <ant dir="../ant/browsetask" target="netbeans"/>
+  </target>
   <target name="all-apisupport" depends="all-openide,all-core,all-core/javahelp,all-jarpackager,all-apisupport/lite,all-java/api,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io">
     <echo message="Building module apisupport..."/>
     <ant dir="../apisupport" target="netbeans"/>
   </target>
-  <target name="all-apisupport/ant" depends="all-openide,all-core,all-ant">
+  <target name="all-apisupport/ant" depends="all-openide,all-core">
     <echo message="Building module apisupport/ant..."/>
     <ant dir="../apisupport/ant" target="netbeans"/>
   </target>

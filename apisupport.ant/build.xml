@@ -25,7 +25,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="compile" description="Compile source files.">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>
-                <pathelement location="../../ant/netbeans/modules/ant.jar"/>
                 <fileset dir="../../ant/external">
                     <include name="ant-1.*.jar"/>
                 </fileset>
@@ -40,7 +39,17 @@ Microsystems, Inc. All Rights Reserved.
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
         <jar jarfile="netbeans/modules/eager/apisupport-ant.jar" manifest="manifest-subst.mf" compress="false">
-            <fileset dir="src" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="src" excludesfile="../../nbbuild/standard-jar-excludes.txt">
+                <exclude name="**/*.class"/>
+                <exclude name="META-INF/*.properties"/>
+            </fileset>
+        </jar>
+        <mkdir dir="netbeans/ant/nblib"/>
+        <jar jarfile="netbeans/ant/nblib/nbinstaller.jar" compress="false">
+            <fileset dir="src" excludesfile="../../nbbuild/standard-jar-excludes.txt">
+                <include name="**/*.class"/>
+                <include name="META-INF/*.properties"/>
+            </fileset>
         </jar>
     </target>
     
@@ -83,8 +92,8 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="tmp/nbantext-src" destdir="tmp/nbantext-src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath refid="nbantext-cp"/>
         </javac>
-        <mkdir dir="netbeans/antlib"/>
-        <jar jarfile="netbeans/antlib/nbantext.jar" compress="true">
+        <mkdir dir="netbeans/ant/extra"/>
+        <jar jarfile="netbeans/ant/extra/nbantext.jar" compress="true">
             <fileset dir="tmp/nbantext-src">
                 <exclude name="**/*.java"/>
             </fileset>

@@ -15,6 +15,7 @@
 
 package org.apache.tools.ant.module;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Properties;
 import javax.swing.event.ChangeEvent;
@@ -27,11 +28,11 @@ import org.openide.filesystems.FileSystemCapability;
 import org.openide.options.SystemOption;
 import org.openide.util.*;
 
-import org.apache.tools.ant.*;
-
 import org.apache.tools.ant.module.api.IntrospectedInfo;
+import org.apache.tools.ant.module.bridge.AntBridge;
 import org.apache.tools.ant.module.loader.AntCompilerSupport;
 import org.apache.tools.ant.module.run.AntExecutor;
+import org.openide.modules.InstalledFileLocator;
 
 public class AntSettings extends SystemOption implements ChangeListener {
 
@@ -44,6 +45,8 @@ public class AntSettings extends SystemOption implements ChangeListener {
     public static final String PROP_REUSE_OUTPUT = "reuseOutput"; // NOI18N
     public static final String PROP_ANT_VERSION = "antVersion"; // NOI18N
     public static final String PROP_INPUT_HANDLER = "inputHandler"; // NOI18N
+    public static final String PROP_ANT_HOME = "antHome"; // NOI18N
+    public static final String PROP_EXTRA_CLASSPATH = "extraClasspath"; // NOI18N
     
     private static final String DEF_CLASS_PATH = "netbeans.class.path"; // NOI18N
     private static final String DEF_BOOTCLASS_PATH = "netbeans.bootclass.path"; // NOI18N
@@ -54,7 +57,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
     
     protected void initialize () {
         super.initialize();
-        setVerbosity (Project.MSG_INFO);
+        setVerbosity(2 /*Project.MSG_INFO*/);
         Properties p = new Properties ();
         // Enable hyperlinking for Jikes:
         p.setProperty ("build.compiler.emacs", "true"); // NOI18N
@@ -191,12 +194,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
     public String getAntVersion() {
         String v = (String)getProperty(PROP_ANT_VERSION);
         if (v == null) {
-            try {
-                v = Main.getAntVersion();
-            } catch (BuildException be) {
-                AntModule.err.notify(ErrorManager.INFORMATIONAL, be);
-                v = NbBundle.getMessage(AntSettings.class, "LBL_ant_version_unknown");
-            }
+            v = AntBridge.getInterface().getAntVersion();
             putProperty(PROP_ANT_VERSION, v, false);
         }
         return v;
@@ -216,6 +214,39 @@ public class AntSettings extends SystemOption implements ChangeListener {
 
     public void setInputHandler(String inputHandler) {
         putProperty (PROP_INPUT_HANDLER, inputHandler, true);
+    }
+    
+    public File getAntHome() {
+        File f = (File)getProperty(PROP_ANT_HOME);
+        if (f == null) {
+            f = InstalledFileLocator.getDefault().locate("ant", "org.apache.tools.ant.module", false); // NOI18N
+            putProperty(PROP_ANT_HOME, f, false);
+        }
+        return f;
+    }
+    
+    public void setAntHome(File f) {
+        putProperty(PROP_ANT_HOME, f, true);
+        putProperty(PROP_ANT_VERSION, null, false);
+        firePropertyChange(PROP_ANT_VERSION, null, null);
+    }
+    
+    public NbClassPath getExtraClasspath() {
+        NbClassPath p = (NbClassPath)getProperty(PROP_EXTRA_CLASSPATH);
+        if (p == null) {
+            // XXX could perhaps populate with xerces.jar:dom-ranges.jar
+            // However currently there is no sure way to get the "good" Xerces
+            // from libs/xerces (rather than the messed-up one from xml/tax)
+            // without hardcoding the JAR name, which seems unwise since it is
+            // definitely subject to change.
+            p = new NbClassPath(new File[0]);
+            putProperty(PROP_EXTRA_CLASSPATH, p, false);
+        }
+        return p;
+    }
+    
+    public void setExtraClasspath(NbClassPath p) {
+        putProperty(PROP_EXTRA_CLASSPATH, p, true);
     }
     
 }

@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.ant.grammar/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/ant/grammar/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.2
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/ant/grammar/mf-layer.xml
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.xml.core/2 = @BUILD_NUMBER_SUBST@, org.apache.tools.ant.module/2 > 2.14
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.xml.core/2 = @BUILD_NUMBER_SUBST@, org.apache.tools.ant.module/2-3 > 2.14
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.17
 

@@ -27,8 +27,6 @@ import javax.swing.event.*;
 
 import org.w3c.dom.*;
 
-import org.apache.tools.ant.Project;
-
 import org.openide.*;
 import org.openide.util.datatransfer.*;
 import org.openide.filesystems.*;
@@ -64,7 +62,7 @@ public class AntProjectNode extends DataNode implements ChangeListener {
             AntProjectCookie main = (AntProjectCookie)getDataObject().getCookie(AntProjectCookie.class);
             Element projel = main.getProjectElement();
             if (projel != null) {
-                return new ElementSupport.Introspection(projel, Project.class.getName());
+                return new ElementSupport.Introspection(projel, "org.apache.tools.ant.Project");
             }
         }
         return super.getCookie(c);

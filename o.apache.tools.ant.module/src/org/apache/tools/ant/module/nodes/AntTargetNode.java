@@ -28,8 +28,6 @@ import javax.swing.event.*;
 
 import org.w3c.dom.*;
 
-import org.apache.tools.ant.Target;
-
 import org.openide.*;
 import org.openide.actions.*;
 import org.openide.nodes.*;
@@ -85,7 +83,7 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
     }
 
     protected ElementCookie createElementCookie () {
-        return new ElementSupport.Introspection (el, Target.class.getName ());
+        return new ElementSupport.Introspection (el, "org.apache.tools.ant.Target");
     }
 
     protected void initDisplay () {

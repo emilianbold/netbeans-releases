@@ -1,15 +1,21 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.apache.tools.ant.module/2
+OpenIDE-Module: org.apache.tools.ant.module/3
 OpenIDE-Module-Localizing-Bundle: org/apache/tools/ant/module/Bundle.properties
-OpenIDE-Module-Specification-Version: 2.17
+OpenIDE-Module-Specification-Version: 3.1
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Public-Packages: org.apache.tools.ant.module.api.*, org.apache.tools.ant.module.spi.*, org.apache.tools.ant.*, org.apache.tools.ant.filters.**, org.apache.tools.ant.helper.**, org.apache.tools.ant.input.**, org.apache.tools.ant.listener.**, org.apache.tools.ant.taskdefs.**, org.apache.tools.ant.types.**, org.apache.tools.ant.util.**, org.apache.tools.bzip2.**, org.apache.tools.mail.**, org.apache.tools.tar.**, org.apache.tools.zip.**
+OpenIDE-Module-Public-Packages: org.apache.tools.ant.module.api.*, org.apache.tools.ant.module.spi.*
 OpenIDE-Module-Install: org/apache/tools/ant/module/AntModule.class
 OpenIDE-Module-Layer: org/apache/tools/ant/module/resources/AntModuleLayer.xml
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.javahelp/1 > 1.0, org.openide.compiler > 1.0, org.openide.execution > 1.0, org.openide.io > 1.0, org.netbeans.libs.xerces/1 > 1.2
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.javahelp/1 > 1.0,
+  org.openide.compiler > 1.0,
+  org.openide.execution > 1.0,
+  org.openide.io > 1.0,
+  org.netbeans.libs.xerces/1 > 1.2,
+  org.netbeans.api.java/1 > 1.3
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 3.40
-OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine, org.openide.execution.ExecutionEngine, org.openide.windows.IOProvider
-Class-Path: ext/ant-1.5.3.jar ext/ant-optional-1.5.3.jar
+OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
+  org.openide.execution.ExecutionEngine,
+  org.openide.windows.IOProvider
 
 Name: org/apache/tools/ant/module/loader/AntProjectDataLoader.class
 OpenIDE-Module-Class: Loader

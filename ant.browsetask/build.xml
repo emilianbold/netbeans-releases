@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="ant/browsetask" basedir="." default="netbeans">
+
+    <property name="nbm_alias" value="nb_ide"/>
+
+    <target name="init">
+        <ant dir="../../ant/external"/>
+    </target>
+
+    <target name="compile" depends="init">
+        <javac srcdir="src" destdir="src">
+            <classpath>
+                <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+                <fileset dir="../../ant/external">
+                    <include name="ant-1*.jar"/>
+                </fileset>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jars" depends="compile">
+        <mkdir dir="netbeans/modules"/>
+        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+        <jar jarfile="netbeans/modules/browsetask.jar" manifest="manifest-subst.mf" compress="false">
+            <fileset dir="src">
+                <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
+                <exclude name="**/*.class"/>
+                <exclude name="META-INF/*.properties"/>
+            </fileset>
+        </jar>
+        <mkdir dir="netbeans/ant/nblib"/>
+        <jar jarfile="netbeans/ant/nblib/nbbrowse.jar" compress="false">
+            <fileset dir="src">
+                <excludesfile name="../../nbbuild/standard-jar-excludes.txt"/>
+                <include name="**/*.class"/>
+                <include name="META-INF/*.properties"/>
+            </fileset>
+        </jar>
+    </target>
+
+    <target name="netbeans" depends="jars" description="Build the module."/>
+
+    <target name="nbm" depends="netbeans" description="Prepare the module for distribution via Auto Update.">
+        <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
+        <property file="manifest.mf"/>
+        <makenbm file="browsetask-${OpenIDE-Module-Specification-Version}.nbm"
+                 topdir="."
+                 module="netbeans/modules/browsetask.jar"
+                 homepage="http://ant.netbeans.org/"
+                 needsrestart="false"
+                 distribution="http://${dist.base}/browsetask.jar">
+            <license file="/space/src/nb_all/nbbuild/standard-nbm-license.txt"/>
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+        </makenbm>
+    </target>
+
+    <target name="clean" description="Clean all build products.">
+        <delete>
+            <fileset dir="src">
+                <include name="**/*.class"/>
+            </fileset>
+        </delete>
+        <delete dir="netbeans"/>
+        <delete dir="Info"/>
+        <delete>
+            <fileset dir=".">
+                <include name="browsetask*.nbm"/>
+            </fileset>
+        </delete>
+    </target>
+
+</project>

@@ -37,18 +37,27 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <pathelement location="../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
     <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
     <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
-    <fileset dir="external">
-      <include name="ant-1.5.3.jar"/>
-    </fileset>
+    <pathelement location="../java/api/netbeans/modules/autoload/java-api.jar"/>
     <fileset dir="../libs/external">
       <include name="xerces*.jar"/>
     </fileset>
     <pathelement location="../core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
   </path>
 
+  <path id="cp+ant">
+    <path refid="cp"/>
+    <pathelement location="src"/>
+    <fileset dir="external">
+      <include name="ant-1.*.jar"/>
+    </fileset>
+  </path>
+
   <target name="compile" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath refid="cp"/>
+    </javac>
+    <javac srcdir="src-bridge" destdir="src-bridge" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <classpath refid="cp+ant"/>
     </javac>
   </target>
 
@@ -63,18 +72,18 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
 	 compress="false">
       <locale name="ja"/>
     </locjar>
+    <mkdir dir="netbeans/ant/nblib"/>
+    <jar jarfile="netbeans/ant/nblib/bridge.jar" compress="false">
+      <fileset dir="src-bridge">
+        <excludesfile name="../nbbuild/standard-jar-excludes.txt"/>
+      </fileset>
+    </jar>
   </target>
 
   <target name="release" depends="init">
-    <copy todir="netbeans" includeEmptyDirs="false">
-      <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-    </copy>
-    <mkdir dir="netbeans/modules/ext"/>
-    <copy todir="netbeans/modules/ext">
-      <fileset dir="external">
-        <include name="ant*1.5.*.jar"/>
-      </fileset>
-    </copy>
+    <mkdir dir="netbeans/ant/lib"/>
+    <copy file="external/ant-1.5.3.jar" tofile="netbeans/ant/lib/ant.jar"/>
+    <copy file="external/ant-optional-1.5.3.jar" tofile="netbeans/ant/lib/optional.jar"/>
   </target>
 
   <target name="netbeans" depends="jars,release" description="Build module.">
@@ -103,8 +112,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="reload/ant.jar" manifest="manifest-subst.mf" compress="false">
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <zipfileset src="external/ant-1.5.3.jar" excludes="META-INF/MANIFEST.MF"/>
-      <zipfileset src="external/ant-optional-1.5.3.jar" excludes="META-INF/MANIFEST.MF"/>
     </jar>
   </target>
   <target name="test" depends="test-build" description="Test module inside running IDE.">
@@ -121,8 +128,6 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <delete file="ant.nbm"/>
     <delete dir="netbeans"/>
     <delete dir="Info"/>
-    <delete dir="AntAPIs"/>
-    <delete file="AntAPIs.zip"/>
     <delete dir="javadoc"/>
     <!-- See target 'release-helper': -->
     <delete dir="release-work"/>
@@ -251,6 +256,7 @@ After that you should be done!
             <property name="javadoc.packages" value="org.apache.tools.ant.module.api,org.apache.tools.ant.module.spi"/>
             <property name="javadoc.classpath" refid="cp"/>
             <property name="javadoc.apichanges" location="api/doc/changes/apichanges.xml"/>
+            <property name="javadoc.docfiles" location="api/doc"/>
             <!-- XXX: <property name="javadoc.arch" location="arch/arch-ant.xml"/>-->
         </ant>
     </target>

@@ -16,9 +16,6 @@
 package org.apache.tools.ant.module.run;
 
 import java.io.*;
-import java.lang.reflect.Constructor;
-import java.security.AllPermission;
-import java.security.Permissions;
 import java.util.*;
 import java.util.Map; // override org.apache.tools.ant.Map
 
@@ -29,23 +26,17 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.*;
 import org.openide.execution.ExecutionEngine;
-import org.openide.execution.NbClassLoader;
 import org.openide.loaders.DataObject;
 import org.openide.util.*;
 import org.openide.windows.*;
 
 import org.w3c.dom.Element;
 
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.input.InputHandler;
-import org.apache.tools.ant.taskdefs.Taskdef;
-
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
-import org.apache.tools.ant.module.api.DefinitionRegistry;
 import org.apache.tools.ant.module.api.IntrospectedInfo;
-import org.apache.tools.ant.module.run.NBInputHandler;
+import org.apache.tools.ant.module.bridge.AntBridge;
 
 /** Executes an Ant Target asynchronously in the IDE.
  */
@@ -226,9 +217,6 @@ public class TargetExecutor implements Runnable {
         // see the method body for description of this workaround
         regexpLibraryWorkaroundForAnt151();
         
-        //System.out.println("run #2: " + this); // NOI18N
-        Project project = null;
-
         //PrintStream out = new PrintStream (new OutputWriterOutputStream (io.getOut ()));
         PrintStream err;
         if (outputStream == null) {
@@ -238,139 +226,14 @@ public class TargetExecutor implements Runnable {
         }
         PrintStream out = err; // at least for now...
         
-        // first use the ProjectHelper to create the project object
-        // from the given build file.
-        BuildLogger logger;
-        try {
-            //writer.println("#1"); // NOI18N
-            File buildFile = pcookie.getFile ();
-            if (buildFile == null) {
-                throw new BuildException (NbBundle.getMessage (TargetExecutor.class, "EXC_non_local_proj_file"));
-            }
-            project = new Project ();
-            // If ClassCastException is thrown from the following
-            // line, it is probably a symptom of a core bug (#10260 I
-            // think, or #11920). But this should no longer happen
-            // with Ant 1.4 which itself works around such problems.
-            project.init ();
-            Iterator defs = DefinitionRegistry.getDefs ("task").entrySet ().iterator (); // NOI18N
-            while (defs.hasNext ()) {
-                Map.Entry entry = (Map.Entry) defs.next ();
-                project.addTaskDefinition ((String) entry.getKey (), (Class) entry.getValue ());
-            }
-            defs = DefinitionRegistry.getDefs ("type").entrySet ().iterator (); // NOI18N
-            while (defs.hasNext ()) {
-                Map.Entry entry = (Map.Entry) defs.next ();
-                project.addDataTypeDefinition ((String) entry.getKey (), (Class) entry.getValue ());
-            }
-            project.setUserProperty("ant.file", buildFile.getAbsolutePath()); // NOI18N
-            // #14993:
-            project.setUserProperty("ant.version", Main.getAntVersion()); // NOI18N
-            Iterator it = properties.entrySet ().iterator ();
-            while (it.hasNext ()) {
-                Map.Entry entry = (Map.Entry) it.next ();
-                project.setUserProperty ((String) entry.getKey (), (String) entry.getValue ());
-            }
-            logger = new NetBeansLogger (outputStream==null);
-            logger.setMessageOutputLevel (verbosity);
-            logger.setOutputPrintStream (out);
-            logger.setErrorPrintStream (err);
-            //writer.println("#2"); // NOI18N
-            project.addBuildListener (logger);
-            ProjectHelper.configureProject(project, buildFile);
-            //writer.println("#3"); // NOI18N
-            
-            String inputHandlerName = AntSettings.getDefault().getInputHandler();
-            InputHandler inputHandler = null;
-            if (inputHandlerName != null && inputHandlerName.length() > 0) {
-                try {
-                    NbClassLoader l = new NbClassLoader();
-                    Permissions perm = new Permissions();
-                    perm.add(new AllPermission());
-                    l.setDefaultPermissions(perm);
-                    Class clazz = Class.forName(inputHandlerName, true, l);
-                    inputHandler = (InputHandler)clazz.newInstance();
-                } catch (Exception ex) {
-                    throw new BuildException(NbBundle.getMessage (TargetExecutor.class, "MSG_input_handler_exception", inputHandlerName), ex);  //NOI18N
-                }
-            }
-            if (inputHandler == null) {
-                inputHandler = new NBInputHandler();
-            }
-            project.setInputHandler(inputHandler);
-        }
-        catch (BuildException be) {
-            // Write errors to the output window, since 
-            // alot of errors could be annoying as dialogs
-            if (verbosity >= Project.MSG_VERBOSE) {
-                be.printStackTrace (err);
-            } else {
-                err.println (be);
-            }
+        File buildFile = pcookie.getFile ();
+        if (buildFile == null) {
+            err.println(NbBundle.getMessage(TargetExecutor.class, "EXC_non_local_proj_file"));
             return;
         }
-
-        // Interesting fact: Project.build{Started,Finished} is protected!
-        // So it must be fired directly on the listener. Poor API design IMHO.
-        logger.buildStarted (new BuildEvent (project));
-        // Save & restore system output streams.
-        PrintStream sysout = System.out;
-        PrintStream syserr = System.err;
-        System.setOut(new PrintStream(new DemuxOutputStream(project, false)));
-        System.setErr(new PrintStream(new DemuxOutputStream(project, true)));
-        try {
-            // Execute the configured project
-            //writer.println("#4"); // NOI18N
-            Vector targs;
-            if (targetNames != null) {
-                targs = new Vector (targetNames);
-            } else {
-                targs = new Vector (1);
-                targs.add (project.getDefaultTarget ());
-            }
-            project.executeTargets (targs);
-            //writer.println("#5"); // NOI18N
-            logger.buildFinished (new BuildEvent (project));
-            ok = true;
-        } catch (ThreadDeath td) {
-            if (outputStream == null) {
-                StatusDisplayer.getDefault ().setStatusText (NbBundle.getMessage (TargetExecutor.class, "MSG_target_failed_status"));
-            }
-            // don't throw ThreadDeath, just return. ThreadDeath sometimes 
-            // generated when killing process in Execution Window
-            //throw td;
-            return;
-        } catch (Exception e) {
-            BuildEvent ev = new BuildEvent (project);
-            ev.setException (e);
-            logger.buildFinished (ev);
-        } catch (LinkageError e) {
-            BuildEvent ev = new BuildEvent (project);
-            ev.setException (e);
-            logger.buildFinished (ev);
-        } finally {
-            System.setOut(sysout);
-            System.setErr(syserr);
-        }
-
-        // Now check to see if the Project defined any cool new custom tasks.
-        final Project p2 = project;
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                IntrospectedInfo custom = AntSettings.getDefault().getCustomDefs();
-                custom.scanProject(p2);
-                // #8993: also try to refresh FS that script was on...
-                FileObject script = pcookie.getFileObject();
-                if (script != null) {
-                    try {
-                        FileSystem fs = script.getFileSystem();
-                        fs.refresh(false);
-                    } catch (FileStateInvalidException e) {
-                        AntModule.err.notify(ErrorManager.WARNING, e);
-                    }
-                }
-            }
-        }, 1000); // a bit later; the target can finish first!
+        
+        ok = AntBridge.getInterface().run(buildFile, pcookie.getFileObject(), targetNames,
+                                          out, err, properties, verbosity, outputStream == null);
     }
 
     // See #29245 for more details. Relevant only for Ant 1.5.1
@@ -388,26 +251,8 @@ public class TargetExecutor implements Runnable {
             return;
         }
         
-        try {
-            Class.forName("java.util.regex.Matcher");
-            System.setProperty("ant.regexp.regexpimpl", "org.apache.tools.ant.util.regexp.Jdk14RegexpRegexp");
-            return;
-        } catch (Throwable t) {
-        }
-        
-        try {
-            Class.forName("org.apache.oro.text.regex.Pattern");
-            System.setProperty("ant.regexp.regexpimpl", "org.apache.tools.ant.util.regexp.JakartaOroRegexp");
-            return;
-        } catch (Throwable t) {
-        }
-        
-        try {
-            Class.forName("org.apache.regexp.RE");
-            System.setProperty("ant.regexp.regexpimpl", "org.apache.tools.ant.util.regexp.JakartaRegexpRegexp");
-            return;
-        } catch (Throwable t) {
-        }
+        // We use JDK 1.4 -> this will be available.
+        System.setProperty("ant.regexp.regexpimpl", "org.apache.tools.ant.util.regexp.Jdk14RegexpRegexp");
    }
     
 }
