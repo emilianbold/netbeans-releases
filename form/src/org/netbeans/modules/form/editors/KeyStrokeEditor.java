@@ -11,26 +11,31 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form.editors;
 
 import java.beans.PropertyEditorSupport;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.border.*;
 import java.lang.reflect.*;
-import org.netbeans.modules.form.util.*;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
-import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.awt.FlowLayout;
+import java.awt.*;
 
 public class KeyStrokeEditor extends PropertyEditorSupport
-    implements XMLPropertyEditor
+                             implements XMLPropertyEditor
 {
+    private String TXT_CTRL;
+    private String TXT_ALT;
+    private String TXT_SHIFT;
+
+    public KeyStrokeEditor() {
+        ResourceBundle bundle =
+            org.openide.util.NbBundle.getBundle(KeyStrokeEditor.class);
+        TXT_CTRL = bundle.getString("CTL_Ctrl"); // NOI18N
+        TXT_SHIFT = bundle.getString("CTL_Shift"); // NOI18N
+        TXT_ALT = bundle.getString("CTL_Alt"); // NOI18N
+    }
+
     public String getJavaInitializationString() {
         KeyStroke key =(KeyStroke) getValue();
         int mods = key.getModifiers();
@@ -60,7 +65,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
 
     public String getAsText() {
         KeyStroke key = (KeyStroke) getValue();
-        return key != null ? keyStrokeAsString(key) : "null"; // NOI18N
+        return key != null ? keyStrokeAsString(key, true) : "null"; // NOI18N
     }
 
     public void setAsText(String text) throws IllegalArgumentException {
@@ -69,7 +74,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             return;
         }
 
-        KeyStroke key = keyStrokeFromString(text);
+        KeyStroke key = keyStrokeFromString(text, true);
         if (key == null)
             throw new IllegalArgumentException("Unrecognized key: " + text); // NOI18N
         else
@@ -99,18 +104,22 @@ public class KeyStrokeEditor extends PropertyEditorSupport
         return null;
     }
 
-    private static KeyStroke keyStrokeFromString(String s) {
+    private KeyStroke keyStrokeFromString(String s, boolean i18ned) {
         StringTokenizer st = new StringTokenizer(s, "+"); // NOI18N
         String token;
         int mods = 0;
         int keycode = 0;
 
+        String alt = i18ned ? TXT_ALT : "Alt"; // NOI18N
+        String shift = i18ned ? TXT_SHIFT : "Shift"; // NOI18N
+        String ctrl = i18ned ? TXT_CTRL : "Ctrl"; // NOI18N
+
         while (st.hasMoreTokens() &&(token = st.nextToken()) != null) {
-            if ("alt".equalsIgnoreCase(token)) // NOI18N
+            if (alt.equalsIgnoreCase(token))
                 mods |= InputEvent.ALT_MASK;
-            else if ("shift".equalsIgnoreCase(token)) // NOI18N
+            else if (shift.equalsIgnoreCase(token))
                 mods |= InputEvent.SHIFT_MASK;
-            else if ("ctrl".equalsIgnoreCase(token)) // NOI18N
+            else if (ctrl.equalsIgnoreCase(token))
                 mods |= InputEvent.CTRL_MASK;
             else {
                 String keycodeName = "VK_" + token.toUpperCase(); // NOI18N
@@ -128,12 +137,16 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             return null;
     }
 
-    private static String keyStrokeAsString(KeyStroke key) {
+    private String keyStrokeAsString(KeyStroke key, boolean i18ned) {
+        String alt = i18ned ? TXT_ALT : "Alt"; // NOI18N
+        String shift = i18ned ? TXT_SHIFT : "Shift"; // NOI18N
+        String ctrl = i18ned ? TXT_CTRL : "Ctrl"; // NOI18N
+
         StringBuffer buf = new StringBuffer();
         int mods = key.getModifiers();
         int modMasks[] = { InputEvent.SHIFT_MASK, InputEvent.CTRL_MASK,
                            InputEvent.ALT_MASK, };
-        String modMaskStrings[] = { "Shift", "Ctrl", "Alt", }; // NOI18N
+        String modMaskStrings[] = { shift, ctrl, alt, };
 
         for (int i = 0; i < modMasks.length; i++) {
             if ((mods & modMasks[i]) != 0) {
@@ -162,15 +175,23 @@ public class KeyStrokeEditor extends PropertyEditorSupport
         org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
         try {
             String value = attributes.getNamedItem(ATTR_KEY).getNodeValue();
-            setAsText(value);
-        } catch (Exception e) {
+            KeyStroke key = keyStrokeFromString(value, false);
+            if (key == null)
+                throw new IllegalArgumentException();
+            else
+                setValue(key);
+        }
+        catch (Exception e) {
             throw new java.io.IOException();
         }
     }
 
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
+        KeyStroke key = (KeyStroke) getValue();
+        String str = key != null ? keyStrokeAsString(key, false) : "null"; // NOI18N
+
         org.w3c.dom.Element el = doc.createElement(XML_KEYSTROKE);
-        el.setAttribute(ATTR_KEY, getAsText());
+        el.setAttribute(ATTR_KEY, str);
         return el;
     }
 
@@ -231,18 +252,18 @@ public class KeyStrokeEditor extends PropertyEditorSupport
                 bundle.getString("ACSD_VirtualKey")); // NOI18N
 
             JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-            _ctrl = new JCheckBox("Ctrl"); // NOI18N
-            _ctrl.setMnemonic('C');
+            _ctrl = new JCheckBox(TXT_CTRL);
+            _ctrl.setMnemonic(bundle.getString("CTL_Ctrl_Mnemonic").charAt(0)); // NOI18N
             _ctrl.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACSD_CtrlKey")); // NOI18N
             panel.add(_ctrl);
-            _alt = new JCheckBox("Alt"); // NOI18N
-            _alt.setMnemonic('l');
+            _alt = new JCheckBox(TXT_ALT);
+            _alt.setMnemonic(bundle.getString("CTL_Alt_Mnemonic").charAt(0)); // NOI18N
             _alt.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACSD_AltKey")); // NOI18N
             panel.add(_alt);
-            _shift = new JCheckBox("Shift"); // NOI18N
-            _shift.setMnemonic('S');
+            _shift = new JCheckBox(TXT_SHIFT);
+            _shift.setMnemonic(bundle.getString("CTL_Shift_Mnemonic").charAt(0)); // NOI18N
             _shift.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACSD_ShiftKey")); // NOI18N
             panel.add(_shift);
@@ -299,7 +320,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             // fill in virtual key list
 
             if (_virtualKeys == null) {
-                List list = new ArrayList();
+                java.util.List list = new ArrayList();
 
                 Field[] fields = KeyEvent.class.getDeclaredFields();
                 for (int i = 0; i < fields.length; i++) {
