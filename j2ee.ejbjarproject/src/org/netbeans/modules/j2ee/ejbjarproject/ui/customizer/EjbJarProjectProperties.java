@@ -88,6 +88,7 @@ public class EjbJarProjectProperties {
     public static final String JAVAC_ARGS = "javac.compilerargs";
     public static final String SRC_DIR = "src.dir";
     public static final String META_INF = "meta.inf";
+    public static final String RESOURCE_DIR = "resource.dir";
     public static final String BUILD_DIR = "build.dir";
     public static final String BUILD_GENERATED_DIR = "build.generated.dir";
     public static final String BUILD_CLASSES_DIR = "build.classes.dir";
@@ -141,6 +142,7 @@ public class EjbJarProjectProperties {
         new PropertyDescriptor( JAVAC_TARGET, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_ARGS, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( SRC_DIR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( RESOURCE_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_CLASSES_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_CLASSES_EXCLUDES, PROJECT, STRING_PARSER ),

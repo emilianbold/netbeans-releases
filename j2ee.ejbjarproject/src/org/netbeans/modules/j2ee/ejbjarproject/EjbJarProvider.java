@@ -77,7 +77,21 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
     public FileObject getMetaInf() {
         return getFileObject(EjbJarProjectProperties.META_INF);
     }
-    
+
+    public FileObject getEnterpriseResourceDirectory() {
+        FileObject resourceDir = getFileObject(EjbJarProjectProperties.RESOURCE_DIR);
+        if(resourceDir == null){
+            FileObject projectDir =  helper.getProjectDirectory();
+            String prop = helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.RESOURCE_DIR);
+            try {
+                resourceDir =  projectDir.createFolder (prop);
+            }catch(java.io.IOException exception){
+                org.openide.ErrorManager.getDefault().log(exception.getLocalizedMessage());
+            }
+        }
+        return  resourceDir;
+    }
+
     public FileObject findDeploymentConfigurationFile(String name) {
         return getMetaInf().getFileObject(name);
     }
@@ -313,7 +327,4 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
             return FileUtil.getRelativePath(root, f);
         }
     }
-    
-    
-    
 }
