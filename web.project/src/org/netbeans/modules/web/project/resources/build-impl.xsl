@@ -87,14 +87,14 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         <xsl:choose>
             <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
-                <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" source="${{javac.source}}" includeantruntime="false" fork="yes" executable="${{platform.home}}/bin/javac">
+                <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false" fork="yes" executable="${{platform.home}}/bin/javac">
                     <classpath>
                         <path path="${{javac.classpath}}"/>
                     </classpath>
                 </javac>
             </xsl:when>
             <xsl:otherwise>
-                <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" source="${{javac.source}}" includeantruntime="false">
+                <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false">
                     <classpath>
                         <path path="${{javac.classpath}}"/>
                     </classpath>
@@ -138,7 +138,7 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:choose>
             <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
                 <javac srcdir="${{task-tmp.src.dir}}" destdir="${{task-tmp.out.dir}}"
-                    debug="${{task-tmp.debug}}" deprecation="${{javac.deprecation}}"
+                    debug="${{task-tmp.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}"
                     source="${{javac.source}}" includes="${{javac.includes}}" includeantruntime="false"
                     fork="yes" executable="${{platform.home}}/bin/javac">
                     <classpath>
@@ -148,7 +148,7 @@ Microsystems, Inc. All Rights Reserved.
             </xsl:when>
             <xsl:otherwise>
                 <javac srcdir="${{task-tmp.src.dir}}" destdir="${{task-tmp.out.dir}}"
-                    debug="${{task-tmp.debug}}" deprecation="${{javac.deprecation}}"
+                    debug="${{task-tmp.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}"
                     source="${{javac.source}}" includes="${{javac.includes}}" includeantruntime="false">
                     <classpath>
                         <path path="${{task-tmp.classpath}}"/>

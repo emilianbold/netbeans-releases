@@ -73,6 +73,7 @@ public class WebProjectProperties {
     public static final String JAVAC_SOURCE = "javac.source";
     public static final String JAVAC_DEBUG = "javac.debug";
     public static final String JAVAC_DEPRECATION = "javac.deprecation";
+    public static final String JAVAC_TARGET = "javac.target";
     public static final String SRC_DIR = "src.dir";
     public static final String WEB_DOCBASE_DIR = "web.docbase.dir"; //TODO create property descriptor
     public static final String BUILD_DIR = "build.dir";
@@ -128,6 +129,7 @@ public class WebProjectProperties {
         new PropertyDescriptor( JAVAC_SOURCE, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_DEBUG, PROJECT, BOOLEAN_PARSER ),       
         new PropertyDescriptor( JAVAC_DEPRECATION, PROJECT, BOOLEAN_PARSER ),
+        new PropertyDescriptor( JAVAC_TARGET, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( SRC_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_CLASSES_DIR, PROJECT, STRING_PARSER ),
