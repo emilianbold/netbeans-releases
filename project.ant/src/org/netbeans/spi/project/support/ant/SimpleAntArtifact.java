@@ -54,6 +54,7 @@ final class SimpleAntArtifact extends AntArtifact {
             return URI.create("file:/UNDEFINED"); // NOI18N
         }
         try {
+            // XXX does this handle absolute locations correctly? probably not
             return new URI(null, null, locationResolved, null);
         } catch (URISyntaxException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
