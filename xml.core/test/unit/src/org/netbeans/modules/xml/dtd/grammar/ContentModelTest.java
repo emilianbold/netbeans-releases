@@ -147,7 +147,12 @@ public class ContentModelTest extends TestCase {
         gold = new InputEnumeration("element element2 element3");
         probe("((element*|element2*),element3)", in, gold);
 
-        // uniq subpath of choice implies that other options are invalid 
+        // #47738 test case
+        in = new InputEnumeration("a");
+        gold = new InputEnumeration("a element element2");
+        probe("(a*, (element*|element2*)", in, gold);
+
+        // uniq subpath of choice implies that other options are invalid
         in = new InputEnumeration("element");
         gold = new InputEnumeration("element");
         probe("(element*|element2*)", in, gold);
