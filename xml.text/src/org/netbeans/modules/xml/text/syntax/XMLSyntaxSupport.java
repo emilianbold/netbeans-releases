@@ -572,7 +572,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                 case ';':
                     return COMPLETION_HIDE;
             }
-            requestedAutoCompletion = true;
+            //requestedAutoCompletion = true;
             return COMPLETION_POST_REFRESH; //requery it
         }
     }
