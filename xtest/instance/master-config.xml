@@ -37,6 +37,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="editor" 	testtypes="qa-functional"  attributes="stable"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="stable"/>
       <module name="java"   	testtypes="qa-functional"  attributes="stable"/>
+      <module name="javacvs"   	testtypes="qa-functional"  attributes="stable"/>
       <module name="openide"  	testtypes="qa-functional"  attributes="stable"/>
       <module name="projects" 	testtypes="qa-functional"  attributes="stable,jdk14"/>
       <module name="qa"       	testtypes="serialization"  attributes="nb34"/>
@@ -53,6 +54,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="editor" 	testtypes="qa-functional"  attributes="stable"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="stable"/>
       <module name="java"   	testtypes="qa-functional"  attributes="stable"/>
+      <module name="javacvs"   	testtypes="qa-functional"  attributes="stable"/>
       <module name="openide"  	testtypes="qa-functional"  attributes="stable"/>
       <module name="projects" 	testtypes="qa-functional"  attributes="stable,jdk13"/> 
       <module name="qa"       	testtypes="serialization"  attributes="nb34"/>
