@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.xsl.action;
 
+import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
@@ -50,7 +51,10 @@ public class TransformationActionTest extends JXTest {
         XSLTransformationDialog dialog = transformXML("sources" + DELIM + "document");
         
         // fill in the TransformationDialog and execute transformation
-        dialog.cboXSLTScript().enterText("../styles/doc2html.xsl");
+        dialog.cboXSLTScript().clearText();
+        dialog.cboXSLTScript().typeText("../styles/doc2html.xsl");
+        dialog.cboXSLTScript().pressKey(KeyEvent.VK_TAB);
+        
         dialog.cboOutput().clearText();
         dialog.cboOutput().typeText(OUT_FILE);
         dialog.cboJComboBox().selectItem(dialog.ITEM_DONOTHING);

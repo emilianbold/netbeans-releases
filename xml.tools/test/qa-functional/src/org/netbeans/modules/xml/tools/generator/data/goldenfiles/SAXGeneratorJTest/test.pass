@@ -235,17 +235,17 @@ public class BParser implements ContentHandler {
         if ("Descript".equals(here)) {
             if (fireOnlyIfMixed) throw new IllegalStateException("Unexpected characters() event! (Missing DTD?)");
             handler.handle_Descript(buffer.length() == 0 ? null : buffer.toString(), attrs);
-        } else if ("inc-level-2".equals(here)) {
-            if (fireOnlyIfMixed) throw new IllegalStateException("Unexpected characters() event! (Missing DTD?)");
-            handler.handle_inc_level_2(buffer.length() == 0 ? null : buffer.toString(), attrs);
         } else if ("Price".equals(here)) {
             if (fireOnlyIfMixed) throw new IllegalStateException("Unexpected characters() event! (Missing DTD?)");
             handler.handle_Price(parslet.priceToInt(buffer.length() == 0 ? null : buffer.toString()), attrs);
+        } else if ("Custom".equals(here)) {
+            handler.handle_Custom(buffer.length() == 0 ? null : buffer.toString(), attrs);
         } else if ("x-include".equals(here)) {
             if (fireOnlyIfMixed) throw new IllegalStateException("Unexpected characters() event! (Missing DTD?)");
             handler.handle_x_include(buffer.length() == 0 ? null : buffer.toString(), attrs);
-        } else if ("Custom".equals(here)) {
-            handler.handle_Custom(buffer.length() == 0 ? null : buffer.toString(), attrs);
+        } else if ("inc-level-2".equals(here)) {
+            if (fireOnlyIfMixed) throw new IllegalStateException("Unexpected characters() event! (Missing DTD?)");
+            handler.handle_inc_level_2(buffer.length() == 0 ? null : buffer.toString(), attrs);
         } else {
             //do not care
         }
@@ -267,12 +267,12 @@ public class BParser implements ContentHandler {
     public final void endElement(java.lang.String ns, java.lang.String name, java.lang.String qname) throws SAXException {
         dispatch(false);
         context.pop();
-        if ("Product".equals(qname)) {
+        if ("Custom".equals(qname)) {
+            handler.end_Custom();
+        } else if ("Product".equals(qname)) {
             handler.end_productHandlerMethod();
         } else if ("Books".equals(qname)) {
             handler.end_Books();
-        } else if ("Custom".equals(qname)) {
-            handler.end_Custom();
         }
         handler.endElement(ns, name, qname);
     }
@@ -418,14 +418,14 @@ public class BParser implements ContentHandler {
     public final void startElement(java.lang.String ns, java.lang.String name, java.lang.String qname, Attributes attrs) throws SAXException {
         dispatch(true);
         context.push(new Object[] {qname, new org.xml.sax.helpers.AttributesImpl(attrs)});
-        if ("Product".equals(qname)) {
-            handler.start_productHandlerMethod(attrs);
+        if ("Custom".equals(qname)) {
+            handler.start_Custom(attrs);
         } else if ("Image".equals(qname)) {
             handler.handle_Image(attrs);
+        } else if ("Product".equals(qname)) {
+            handler.start_productHandlerMethod(attrs);
         } else if ("Books".equals(qname)) {
             handler.start_Books(attrs);
-        } else if ("Custom".equals(qname)) {
-            handler.start_Custom(attrs);
         }
         handler.startElement(ns, name, qname, attrs);
     }
