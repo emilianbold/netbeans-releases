@@ -1125,7 +1125,7 @@ is divided into following sections:
             <target name="-do-compile-test">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test</xsl:attribute>
-                <xsl:element name="webproject3:javac">
+                <xsl:element name="webproject2:javac">
                     <xsl:attribute name="srcdir">
                         <xsl:call-template name="createPath">
                             <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:test-roots"/>
@@ -1161,7 +1161,7 @@ is divided into following sections:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test-single</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-                <xsl:element name="webproject3:javac">
+                <xsl:element name="webproject2:javac">
                     <xsl:attribute name="srcdir">
                         <xsl:call-template name="createPath">
                             <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:test-roots"/>
