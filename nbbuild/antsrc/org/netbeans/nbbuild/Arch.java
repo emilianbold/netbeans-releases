@@ -145,7 +145,7 @@ public class Arch extends Task implements ErrorHandler {
         }
         
         if (generateTemplate) {
-            log ("Input file " + questionsFile + " does not exists. Generating it filled with skeleton answers.");
+            log ("Input file " + questionsFile + " does not exist. Generating it with skeleton answers.");
             try {
                 TreeSet s = new TreeSet (questions.keySet ());
                 generateTemplateFile(questionsVersion, s);
@@ -289,7 +289,7 @@ public class Arch extends Task implements ErrorHandler {
             w.write(elementToString(n));
             
             w.write("\n-->\n");
-            w.write("<answer id=\"" + s + "\">\nNo answer\n</answer>\n\n");
+            w.write("<answer id=\"" + s + "\">\nXXX no answer for " + s + "\n</answer>\n\n");
         }
     }
         
