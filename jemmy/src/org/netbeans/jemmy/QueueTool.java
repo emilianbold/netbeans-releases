@@ -239,9 +239,16 @@ public class QueueTool implements Outputable, Timeoutable {
 	try {
 	    waiter.waitAction(null);
 	} catch(TimeoutExpiredException e) {
-            AWTEvent event = getQueue().peekEvent();
-            getOutput().printErrLine("Event at the top of stack: " + 
-                                     ((event == null) ? "null" : event.toString()));
+            final AWTEvent event = getQueue().peekEvent();
+            // if event != null run toString in dispatch thread
+            String eventToString = (event == null) ? "null" : (String)invokeSmoothly(
+                new QueueTool.QueueAction("event.toString()") {
+                    public Object launch() {
+                        return event.toString();
+                    }
+                }
+            );
+            getOutput().printErrLine("Event at the top of stack: " + eventToString);
             throw(e);
 	} catch(InterruptedException e) {
 	    output.printStackTrace(e);
@@ -265,9 +272,15 @@ public class QueueTool implements Outputable, Timeoutable {
 	try {
 	    waiter.waitAction(null);
 	} catch(TimeoutExpiredException e) {
-            AWTEvent event = getQueue().peekEvent();
-            getOutput().printErrLine("Event at the top of stack: " + 
-                                     ((event == null) ? "null" : event.toString()));
+            final AWTEvent event = getQueue().peekEvent();
+            String eventToString = (event == null) ? "null" : (String)invokeSmoothly(
+            new QueueTool.QueueAction("event.toString()") {
+                public Object launch() {
+                    return event.toString();
+                }
+            }
+            );
+            getOutput().printErrLine("Event at the top of stack: " + eventToString);
             throw(e);
 	} catch(InterruptedException e) {
 	    output.printStackTrace(e);

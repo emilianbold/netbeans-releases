@@ -17,6 +17,8 @@
 
 package org.netbeans.jemmy;
 
+import java.awt.Component;
+
 /**
  * 
  * Waits for something defined by Waitable interface to be happened.
@@ -184,10 +186,23 @@ public class Waiter implements Waitable, Timeoutable, Outputable{
      * @param result result of Waitable.actionproduced method.
      * @return a message.
      */
-    protected String getActionProducedMessage(long timeSpent, Object result) {
+    protected String getActionProducedMessage(long timeSpent, final Object result) {
+        String resultToString;
+        if(result instanceof Component) {
+            // run toString in dispatch thread
+            resultToString = (String)new QueueTool().invokeSmoothly(
+                new QueueTool.QueueAction("result.toString()") {
+                    public Object launch() {
+                        return result.toString();
+                    }
+                }
+            );
+        } else {
+            resultToString = result.toString();
+        }
 	return("\"" + getActualDescription() + "\" action has been produced in " +
 	       (new Long(timeSpent)).toString() + " milliseconds with result " +
-	       "\n    : " + result.toString());
+	       "\n    : " + resultToString);
     }
 
     /**

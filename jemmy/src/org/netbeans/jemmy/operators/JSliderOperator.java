@@ -344,7 +344,7 @@ public class JSliderOperator extends JComponentOperator
      */
     public void scrollToValue(int value) {
 	output.printTrace("Move JSlider to " + Integer.toString(value) +
-			  " value\n" + getSource().toString());
+			  " value\n" + toStringSource());
 	output.printGolden("Move JSlider to " + Integer.toString(value) + " value");
         scrollTo(new ValueScrollAdjuster(value));
     }
@@ -355,7 +355,7 @@ public class JSliderOperator extends JComponentOperator
      */
     public void scrollToMaximum() {
 	output.printTrace("Move JSlider to maximum value\n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Move JSlider to maximum value");
 	scrollToValue(getMaximum());
     }
@@ -366,7 +366,7 @@ public class JSliderOperator extends JComponentOperator
      */
     public void scrollToMinimum() {
 	output.printTrace("Move JSlider to minimum value\n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Move JSlider to minimum value");
 	scrollToValue(getMinimum());
     }

@@ -369,8 +369,16 @@ public class EventDispatcher implements Outputable, Timeoutable {
      * @throws ComponentIsNotVisibleException
      * @throws ComponentIsNotFocusedException
      */
-    public void dispatchEvent(AWTEvent event) {
-	output.printLine("Dispatch event " + event.toString());
+    public void dispatchEvent(final AWTEvent event) {
+        // run in dispatch thread
+        String eventToString = (String)queueTool.invokeSmoothly(
+            new QueueTool.QueueAction("event.toString()") {
+                public Object launch() {
+                    return event.toString();
+                }
+            }
+        );
+	output.printLine("Dispatch event " + eventToString);
 	output.printGolden("Dispatch event " + event.getClass().toString());
 	Dispatcher disp = new Dispatcher(event);
 	queueTool.invokeAndWait(disp);

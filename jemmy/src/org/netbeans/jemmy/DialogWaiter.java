@@ -517,10 +517,23 @@ public class DialogWaiter extends WindowWaiter implements Timeoutable, Outputabl
      * @param	result A result of the action
      * @return A message string.
      */
-    protected String getActionProducedMessage(long spendedTime, Object result) {
+    protected String getActionProducedMessage(long spendedTime, final Object result) {
+        String resultToString;
+        if(result instanceof Component) {
+            // run toString in dispatch thread
+            resultToString = (String)new QueueTool().invokeSmoothly(
+                new QueueTool.QueueAction("result.toString()") {
+                    public Object launch() {
+                        return result.toString();
+                    }
+                }
+            );
+        } else {
+            resultToString = result.toString();
+        }
 	return("Dialog \"" + getComponentChooser().getDescription() + "\" has been opened in " +
 	       (new Long(spendedTime)).toString() + " milliseconds" +
-	       "\n    " + result.toString());
+	       "\n    " + resultToString);
     }
 
     /**

@@ -623,7 +623,7 @@ public abstract class Operator extends Object
     public Hashtable getDump() {
 	Hashtable result = new Hashtable();
 	result.put(CLASS_DPROP, getSource().getClass().getName());
-	result.put(TO_STRING_DPROP, getSource().toString());
+        result.put(TO_STRING_DPROP, getSource().toString());
 	return(result);
     }
 
@@ -968,6 +968,18 @@ public abstract class Operator extends Object
 	return(-1);
     }
 
+    /**
+     * Returns toString() result from component of this operator. It calls
+     * {@link #getSource}.toString() in dispatch thread.
+     * @return toString() result from component of this operator.
+     */
+    public String toStringSource() {
+        return (String)runMapping(new MapAction("getSource().toString()") {
+            public Object map() {
+                return getSource().toString();
+            }
+        });
+    }
 
     /**
      * Interface used to make component visible & ready to to make operations with.

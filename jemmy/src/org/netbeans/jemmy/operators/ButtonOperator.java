@@ -311,7 +311,7 @@ public class ButtonOperator extends ComponentOperator
      * @throws TimeoutExpiredException
      */
     public void push() {
-	output.printLine("Push button\n    :" + getSource().toString());
+	output.printLine("Push button\n    :" + toStringSource());
 	output.printGolden("Push button");
 	driver.push(this);
     }
@@ -333,7 +333,7 @@ public class ButtonOperator extends ComponentOperator
      * @throws TimeoutExpiredException
      */
     public void press() {
-	output.printLine("Press button\n    :" + getSource().toString());
+	output.printLine("Press button\n    :" + toStringSource());
 	output.printGolden("Press button");
 	driver.press(this);
     }
@@ -343,7 +343,7 @@ public class ButtonOperator extends ComponentOperator
      * @throws TimeoutExpiredException
      */
     public void release() {
-	output.printLine("Release button\n    :" + getSource().toString());
+	output.printLine("Release button\n    :" + toStringSource());
 	output.printGolden("Release button");
 	driver.press(this);
     }

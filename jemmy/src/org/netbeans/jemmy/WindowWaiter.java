@@ -325,10 +325,23 @@ public class WindowWaiter extends Waiter implements Timeoutable {
      * @param result result of Waitable.actionproduced method.
      * @return a message.
      */
-    protected String getActionProducedMessage(long timeSpent, Object result) {
+    protected String getActionProducedMessage(long timeSpent, final Object result) {
+        String resultToString;
+        if(result instanceof Component) {
+            // run toString in dispatch thread
+            resultToString = (String)new QueueTool().invokeSmoothly(
+                new QueueTool.QueueAction("result.toString()") {
+                    public Object launch() {
+                        return result.toString();
+                    }
+                }
+            );
+        } else {
+            resultToString = result.toString();
+        }
 	return("Window \"" + chooser.getDescription() + "\" has been opened in " +
 	       (new Long(timeSpent)).toString() + " milliseconds" +
-	       "\n    " + result.toString());
+	       "\n    " + resultToString);
     }
 
     /**

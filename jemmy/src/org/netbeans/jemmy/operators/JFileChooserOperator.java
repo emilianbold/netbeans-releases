@@ -315,7 +315,7 @@ public class JFileChooserOperator extends JComponentOperator
     public void approve() {
         getQueueTool().waitEmpty();
 	output.printTrace("Push approve button in JFileChooser\n    : " +
-			  getSource().toString());
+			  toStringSource());
 	JButtonOperator approveOper = new JButtonOperator(getApproveButton());
 	approveOper.copyEnvironment(this);
 	approveOper.setOutput(output.createErrorOutput());
@@ -327,7 +327,7 @@ public class JFileChooserOperator extends JComponentOperator
      */
     public void cancel() {
 	output.printTrace("Push cancel button in JFileChooser\n    : " +
-			  getSource().toString());
+			  toStringSource());
 	JButtonOperator cancelOper = new JButtonOperator(getCancelButton());
 	cancelOper.copyEnvironment(this);
 	cancelOper.setOutput(output.createErrorOutput());
@@ -341,7 +341,7 @@ public class JFileChooserOperator extends JComponentOperator
     public void chooseFile(String fileName) {
         getQueueTool().waitEmpty();
 	output.printTrace("Choose file by JFileChooser\n    : " + fileName +
-			  "\n    : " + getSource().toString());
+			  "\n    : " + toStringSource());
 	JTextFieldOperator fieldOper = new JTextFieldOperator(getPathField());
 	fieldOper.copyEnvironment(this);
 	fieldOper.setOutput(output.createErrorOutput());
@@ -360,7 +360,7 @@ public class JFileChooserOperator extends JComponentOperator
     public File goUpLevel() {
         getQueueTool().waitEmpty();
 	output.printTrace("Go up level in JFileChooser\n    : " +
-			  getSource().toString());
+			  toStringSource());
         //workaround
         setCurrentDirectory(getCurrentDirectory().getParentFile());
 	//JButtonOperator upOper = new JButtonOperator(getUpLevelButton());
@@ -378,7 +378,7 @@ public class JFileChooserOperator extends JComponentOperator
     public File goHome() {
         getQueueTool().waitEmpty();
 	output.printTrace("Go home in JFileChooser\n    : " +
-			  getSource().toString());
+			  toStringSource());
 	JButtonOperator homeOper = new JButtonOperator(getHomeButton());
 	homeOper.copyEnvironment(this);
 	homeOper.setOutput(output.createErrorOutput());
@@ -397,7 +397,7 @@ public class JFileChooserOperator extends JComponentOperator
 	output.printTrace("Click " + Integer.toString(clickCount) + 
 			  "times on " + Integer.toString(index) + 
 			  "`th file in JFileChooser\n    : " +
-			  getSource().toString());
+			  toStringSource());
 	JListOperator listOper = new JListOperator(getFileList());
 	waitPainted(index);
 	listOper.copyEnvironment(this);
@@ -415,7 +415,7 @@ public class JFileChooserOperator extends JComponentOperator
 	output.printTrace("Click " + Integer.toString(clickCount) + 
 			  "times on \"" + file + 
 			  "\" file in JFileChooser\n    : " +
-			  getSource().toString());
+			  toStringSource());
 	clickOnFile(findFileIndex(file, comparator), clickCount);
     }
 
@@ -558,7 +558,7 @@ public class JFileChooserOperator extends JComponentOperator
     public void selectPathDirectory(String dir, StringComparator comparator) {
         getQueueTool().waitEmpty();
 	output.printTrace("Select \"" + dir + "\" directory in JFileChooser\n    : " +
-			  getSource().toString());
+			  toStringSource());
 	JComboBoxOperator comboOper = new JComboBoxOperator(getPathCombo());
 	comboOper.copyEnvironment(this);
 	comboOper.setOutput(output.createErrorOutput());
@@ -595,7 +595,7 @@ public class JFileChooserOperator extends JComponentOperator
     public void selectFileType(String filter, StringComparator comparator) {
         getQueueTool().waitEmpty();
 	output.printTrace("Select \"" + filter + "\" file type in JFileChooser\n    : " +
-			  getSource().toString());
+			  toStringSource());
 	JComboBoxOperator comboOper = new JComboBoxOperator(getFileTypesCombo());
 	comboOper.copyEnvironment(this);
 	comboOper.setOutput(output.createErrorOutput());

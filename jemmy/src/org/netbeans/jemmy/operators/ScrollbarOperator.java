@@ -271,7 +271,7 @@ public class ScrollbarOperator extends ComponentOperator
      */
     public void scrollToValue(int value) {
 	output.printTrace("Scroll Scrollbar to " + Integer.toString(value) +
-			  " value\n" + getSource().toString());
+			  " value\n" + toStringSource());
 	output.printGolden("Scroll Scrollbar to " + Integer.toString(value) + " value");
 	scrollTo(new ValueScrollAdjuster(value));
     }
@@ -283,7 +283,7 @@ public class ScrollbarOperator extends ComponentOperator
      */
     public void scrollToValue(double proportionalValue) {
 	output.printTrace("Scroll Scrollbar to " + Double.toString(proportionalValue) +
-			  " proportional value\n" + getSource().toString());
+			  " proportional value\n" + toStringSource());
 	output.printGolden("Scroll Scrollbar to " + Double.toString(proportionalValue) + " proportional value");
 	scrollTo(new ValueScrollAdjuster((int)(getMinimum() + 
 					       (getMaximum() - 
@@ -297,7 +297,7 @@ public class ScrollbarOperator extends ComponentOperator
      */
     public void scrollToMinimum() {
 	output.printTrace("Scroll Scrollbar to minimum value\n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll Scrollbar to minimum value");
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
@@ -316,7 +316,7 @@ public class ScrollbarOperator extends ComponentOperator
      */
     public void scrollToMaximum() {
 	output.printTrace("Scroll Scrollbar to maximum value\n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll Scrollbar to maximum value");
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {

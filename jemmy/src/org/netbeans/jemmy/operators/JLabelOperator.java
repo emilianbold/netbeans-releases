@@ -243,7 +243,7 @@ public class JLabelOperator extends JComponentOperator {
      */
     public void waitText(String text) {
 	getOutput().printLine("Wait \"" + text + "\" text in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait \"" + text + "\" text");
 	waitState(new JLabelByLabelFinder(text, getComparator()));
     }

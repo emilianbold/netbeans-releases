@@ -222,7 +222,7 @@ public class FrameOperator extends WindowOperator implements Outputable {
      */
     public void waitTitle(final String title) {
 	getOutput().printLine("Wait \"" + title + "\" title of frame \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait \"" + title + "\" title");
 	waitState(new FrameByTitleFinder(title, getComparator()));
     }
@@ -231,7 +231,7 @@ public class FrameOperator extends WindowOperator implements Outputable {
      * Iconifies the frame.
      */
     public void iconify() {
- 	output.printLine("Iconifying frame\n    " + getSource().toString());
+ 	output.printLine("Iconifying frame\n    " + toStringSource());
  	output.printGolden("Iconifying frame");
 	driver.iconify(this);
 	if(getVerification()) {
@@ -242,7 +242,7 @@ public class FrameOperator extends WindowOperator implements Outputable {
      * Deiconifies the frame.
      */
     public void deiconify() {
- 	output.printLine("Deiconifying frame\n    " + getSource().toString());
+ 	output.printLine("Deiconifying frame\n    " + toStringSource());
  	output.printGolden("Deiconifying frame");
 	driver.deiconify(this);
 	if(getVerification()) {
@@ -253,7 +253,7 @@ public class FrameOperator extends WindowOperator implements Outputable {
      * Maximizes the frame.
      */
     public void maximize() {
- 	output.printLine("Maximizing frame\n    " + getSource().toString());
+ 	output.printLine("Maximizing frame\n    " + toStringSource());
  	output.printGolden("Maximizing frame");
 	driver.maximize(this);
 	if(getVerification()) {
@@ -264,7 +264,7 @@ public class FrameOperator extends WindowOperator implements Outputable {
      * Demaximizes the frame.
      */
     public void demaximize() {
- 	output.printLine("Demaximizing frame\n    " + getSource().toString());
+ 	output.printLine("Demaximizing frame\n    " + toStringSource());
  	output.printGolden("Demaximizing frame");
 	driver.demaximize(this);
 	if(getVerification()) {
@@ -280,7 +280,7 @@ public class FrameOperator extends WindowOperator implements Outputable {
 	getOutput().printLine("Wait frame to have " +
                               Integer.toString(state) +
 			      " state \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait frame to have " +
                                 Integer.toString(state) +
                                 " state");

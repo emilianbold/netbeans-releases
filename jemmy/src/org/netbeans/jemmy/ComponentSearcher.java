@@ -37,6 +37,8 @@ public class ComponentSearcher implements Outputable{
     private int ordinalIndex;
     private Container container;
     private TestOut out;
+    private QueueTool queueTool;
+    private String containerToString;
 
     /**
      * Contructor.
@@ -48,7 +50,9 @@ public class ComponentSearcher implements Outputable{
 	super();
 	container = c;
 	setOutput(JemmyProperties.getProperties().getOutput());
+        queueTool = new QueueTool();
     }
+    
 
     /**
      * Creates <code>ComponentChooser</code> implementation 
@@ -97,6 +101,23 @@ public class ComponentSearcher implements Outputable{
 	return(out);
     }
 
+    /** Returns container.toString(). It is called in dispatch thread.
+     * @return container.toString()
+     */
+    private String containerToString() {
+        if(containerToString == null) {
+            containerToString = container == null ? "null" : 
+                        (String)queueTool.invokeSmoothly(
+                                new QueueTool.QueueAction("container.toString()") {
+                                    public Object launch() {
+                                        return container.toString();
+                                    }
+                                }
+                        );
+        }
+        return containerToString;
+    }
+
     /**
      * Searches for a component.
      * The search for the component proceeds recursively in the component hierarchy
@@ -114,15 +135,23 @@ public class ComponentSearcher implements Outputable{
      */
     public Component findComponent(ComponentChooser chooser, int index) {
 	ordinalIndex = 0;
-	Component result = findComponentInContainer(container, chooser, index);
+	final Component result = findComponentInContainer(container, chooser, index);
 	if(result != null) {
+            // get result.toString() - run in dispatch thread
+            String resultToString = (String)queueTool.invokeSmoothly(
+                            new QueueTool.QueueAction("result.toString()") {
+                                public Object launch() {
+                                    return result.toString();
+                                }
+                            }
+            );
 	    out.printTrace("Component " + chooser.getDescription() +
-			   "\n    was found in container " + container.toString() + 
-			   "\n    " + result.toString());
+			   "\n    was found in container " + containerToString() + 
+			   "\n    " + resultToString);
 	    out.printGolden("Component \"" + chooser.getDescription() + "\" was found"); 
 	} else {
 	    out.printTrace("Component " + chooser.getDescription() +
-			   "\n    was not found in container " + container.toString());
+			   "\n    was not found in container " + containerToString());
 	    out.printGolden("Component \"" + chooser.getDescription() + "\" was not found"); 
 	}
 	return(result);

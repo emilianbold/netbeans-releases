@@ -325,7 +325,8 @@ public class EventTool implements Timeoutable, Outputable {
 	try {
 	    AWTEvent event = waitEvent(eventMask, waitTime, TestOut.getNullOutput());
 	    waiterOutput.printLine("AWT event was produced during waiting: ");
-	    waiterOutput.printLine(event.toString());
+            // used instead of event.toString() because it is not thread safe
+            waiterOutput.printLine(event.getClass().getName());
 	    return(false);
 	} catch(TimeoutExpiredException e) {
 	    return(true);

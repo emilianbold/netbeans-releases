@@ -291,7 +291,7 @@ public class CheckboxOperator extends ComponentOperator implements Outputable {
 		throw(new JemmyException("Interrupted!", e));
 	    }
 	    output.printLine("Change checkbox selection to " + (newValue ? "true" : "false") + 
-			     "\n    :" + getSource().toString());
+			     "\n    :" + toStringSource());
 	    output.printGolden("Change checkbox selection to " + (newValue ? "true" : "false"));
 	    driver.push(this);
             if(getVerification()) {
@@ -319,7 +319,7 @@ public class CheckboxOperator extends ComponentOperator implements Outputable {
      */
     public void waitSelected(final boolean selected) {
 	getOutput().printLine("Wait button to be selected \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait button to be selected");
 	waitState(new ComponentChooser() {
 		public boolean checkComponent(Component comp) {

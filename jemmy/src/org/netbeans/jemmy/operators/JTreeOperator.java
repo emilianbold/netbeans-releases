@@ -1209,7 +1209,7 @@ public class JTreeOperator extends JComponentOperator
     public void scrollToPath(TreePath path) {
         if(path != null) {
             output.printTrace("Scroll JTree to path \"" + path.toString() + "\"\n    : " +
-                              getSource().toString());
+                              toStringSource());
             output.printGolden("Scroll JTree to path \"" + path.toString() + "\"");
             makeComponentVisible();
             //try to find JScrollPane under.
@@ -1323,7 +1323,7 @@ public class JTreeOperator extends JComponentOperator
     public void waitExpanded(final TreePath path) {
         if(path != null) {
             getOutput().printLine("Wait \"" + path.toString() + "\" path to be expanded in component \n    : "+
-                                  getSource().toString());
+                                  toStringSource());
             getOutput().printGolden("Wait \"" + path.toString() + "\" path to be expanded");
             waitState(new ComponentChooser() {
                     public boolean checkComponent(Component comp) {
@@ -1344,7 +1344,7 @@ public class JTreeOperator extends JComponentOperator
      */
     public void waitExpanded(final int row) {
 	getOutput().printLine("Wait " + Integer.toString(row) + "'th row to be expanded in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait " + Integer.toString(row) + "'th row to be expanded");
 	waitState(new ComponentChooser() {
 		public boolean checkComponent(Component comp) {
@@ -1363,7 +1363,7 @@ public class JTreeOperator extends JComponentOperator
     public void waitCollapsed(final TreePath path) {
         if(path != null) {
             getOutput().printLine("Wait \"" + path.toString() + "\" path to be collapsed in component \n    : "+
-                                  getSource().toString());
+                                  toStringSource());
             getOutput().printGolden("Wait \"" + path.toString() + "\" path to be collapsed");
             waitState(new ComponentChooser() {
                     public boolean checkComponent(Component comp) {
@@ -1384,7 +1384,7 @@ public class JTreeOperator extends JComponentOperator
      */
     public void waitCollapsed(final int row) {
 	getOutput().printLine("Wait " + Integer.toString(row) + "'th row to be collapsed in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait " + Integer.toString(row) + "'th row to be collapsed");
 	waitState(new ComponentChooser() {
 		public boolean checkComponent(Component comp) {
@@ -1403,7 +1403,7 @@ public class JTreeOperator extends JComponentOperator
     public void waitVisible(final TreePath path) {
         if(path != null) {
             getOutput().printLine("Wait \"" + path.toString() + "\" path to be visible in component \n    : "+
-                                  getSource().toString());
+                                  toStringSource());
             getOutput().printGolden("Wait \"" + path.toString() + "\" path to be visible");
             waitState(new ComponentChooser() {
                     public boolean checkComponent(Component comp) {
@@ -1424,7 +1424,7 @@ public class JTreeOperator extends JComponentOperator
      */
     public void waitSelected(final TreePath[] paths) {
 	getOutput().printLine("Wait right selection in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait right selection");
 	waitState(new ComponentChooser() {
 		public boolean checkComponent(Component comp) {
@@ -1481,7 +1481,7 @@ public class JTreeOperator extends JComponentOperator
     public void waitRow(String rowText, int row) {
 	getOutput().printLine("Wait \"" + rowText + "\" text in " +
 			      Integer.toString(row) + "'th line in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait \"" + rowText + " \" text in " +
 				Integer.toString(row) + "'th line");
 	waitState(new JTreeByItemFinder(rowText, row, getComparator()));

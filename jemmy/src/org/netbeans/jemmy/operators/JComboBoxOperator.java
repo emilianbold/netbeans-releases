@@ -450,7 +450,7 @@ implements Timeoutable, Outputable {
      */
     public void selectItem(String item, StringComparator comparator) {
 	output.printLine("Select \"" + item + "\" item in combobox\n    : " +
-			 getSource().toString());
+			 toStringSource());
 	output.printGolden("Select \"" + item + "\" item in combobox");
 	selectItem(findItemIndex(item, comparator));
     }
@@ -486,7 +486,7 @@ implements Timeoutable, Outputable {
      */
     public void selectItem(int index) {
 	output.printLine("Select " + Integer.toString(index) + "\'th item in combobox\n    : " +
-			 getSource().toString());
+			 toStringSource());
 	output.printGolden("Select " + Integer.toString(index) + "\'th item in combobox");
 
 	driver.selectItem(this, index);
@@ -543,7 +543,7 @@ implements Timeoutable, Outputable {
     public void waitItemSelected(final int index) {
 	getOutput().printLine("Wait " + Integer.toString(index) + 
 			      "'th item to be selected in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait " + Integer.toString(index) + 
 				"'th item to be selected");
 	waitState(new ComponentChooser() {
@@ -563,7 +563,7 @@ implements Timeoutable, Outputable {
     public void waitItemSelected(final String item) {
 	getOutput().printLine("Wait \"" + item + 
 			      "\" item to be selected in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("WaitWait \"" + item + 
 				"\" item to be selected");
 	waitState(new JComboBoxByItemFinder(item, -1, getComparator()));

@@ -404,7 +404,7 @@ public class JInternalFrameOperator extends JComponentOperator
      * 
      */
     public void iconify() {
-	output.printLine("Iconify JInternalFrame\n    : " + getSource().toString());
+	output.printLine("Iconify JInternalFrame\n    : " + toStringSource());
 	output.printGolden("Iconify JInternalFrame \"" + getTitle() + "\"");
 	checkIconified(false);
 	makeComponentVisible();
@@ -421,7 +421,7 @@ public class JInternalFrameOperator extends JComponentOperator
      * 
      */
     public void deiconify() {
-	output.printLine("Deiconify JInternalFrame\n    : " + getSource().toString());
+	output.printLine("Deiconify JInternalFrame\n    : " + toStringSource());
 	output.printGolden("Deiconify JInternalFrame \"" + getTitle() + "\"");
 	checkIconified(true);
 	fDriver.deiconify(this);
@@ -437,7 +437,7 @@ public class JInternalFrameOperator extends JComponentOperator
      * @throws WrongInternalFrameStateException
      */
     public void maximize() {
-	output.printLine("Maximize JInternalFrame\n    : " + getSource().toString());
+	output.printLine("Maximize JInternalFrame\n    : " + toStringSource());
 	output.printGolden("Maximize JInternalFrame \"" + getTitle() + "\"");
 	checkIconified(false);
 	makeComponentVisible();
@@ -454,7 +454,7 @@ public class JInternalFrameOperator extends JComponentOperator
      * @throws WrongInternalFrameStateException
      */
     public void demaximize() {
-	output.printLine("Demaximize JInternalFrame\n    : " + getSource().toString());
+	output.printLine("Demaximize JInternalFrame\n    : " + toStringSource());
 	output.printGolden("Demaximize JInternalFrame \"" + getTitle() + "\"");
 	checkIconified(false);
 	makeComponentVisible();
@@ -476,7 +476,7 @@ public class JInternalFrameOperator extends JComponentOperator
 	output.printLine("Move JInternalFrame to (" +
 			 Integer.toString(x) + "," +
 			 Integer.toString(y) + ")" +
-			 " position\n    : " + getSource().toString());
+			 " position\n    : " + toStringSource());
 	output.printGolden("Move " + getTitle() + 
 			   " JInternalFrame to (" +
 			   Integer.toString(x) + "," +
@@ -497,7 +497,7 @@ public class JInternalFrameOperator extends JComponentOperator
 	output.printLine("Resize JInternalFrame to (" +
 			 Integer.toString(width) + "," +
 			 Integer.toString(height) + ")" +
-			 " size\n    : " + getSource().toString());
+			 " size\n    : " + toStringSource());
 	output.printGolden("Resize " + getTitle() + 
 			   " JInternalFrame to (" +
 			   Integer.toString(width) + "," +

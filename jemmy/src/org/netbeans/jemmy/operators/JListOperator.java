@@ -480,7 +480,7 @@ public class JListOperator extends JComponentOperator
      */
     public Object clickOnItem(final int itemIndex, final int clickCount) {
 	output.printLine("Click " + Integer.toString(clickCount) +
-			 " times on JList\n    : " + getSource().toString());
+			 " times on JList\n    : " + toStringSource());
 	output.printGolden("Click " + Integer.toString(clickCount) +
 			 " times on JList");
         checkIndex(itemIndex);
@@ -490,7 +490,7 @@ public class JListOperator extends JComponentOperator
 	    output.printStackTrace(e);
 	}
 	if(((JList)getSource()).getModel().getSize() <= itemIndex) {
-	    output.printErrLine("JList " + getSource().toString() + " does not contain " +
+	    output.printErrLine("JList " + toStringSource() + " does not contain " +
 				Integer.toString(itemIndex) + "'th item");
 	    return(null);
 	}
@@ -607,7 +607,7 @@ public class JListOperator extends JComponentOperator
      */
     public void scrollToItem(int itemIndex) {
 	output.printTrace("Scroll JList to " + Integer.toString(itemIndex) + "'th item\n    : " +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll JList to " + Integer.toString(itemIndex) + "'th item");
         checkIndex(itemIndex);
 	makeComponentVisible();
@@ -711,7 +711,7 @@ public class JListOperator extends JComponentOperator
     public void waitItemsSelection(final int[] itemIndices, final boolean selected) {
 	getOutput().printLine("Wait items to be " +
 			      (selected ? "" : "un") + "selected in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait items to be " +
 				(selected ? "" : "un") + "selected");
 	waitState(new ComponentChooser() {
@@ -748,7 +748,7 @@ public class JListOperator extends JComponentOperator
     public void waitItem(String item, int itemIndex) {
 	getOutput().printLine("Wait \"" + item + "\" at the " + Integer.toString(itemIndex) + 
 			      " position in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait \"" + item + "\" at the " + Integer.toString(itemIndex) + 
 				" position");
 	waitState(new JListByItemFinder(item, itemIndex, getComparator()));

@@ -359,7 +359,7 @@ public class JTextComponentOperator extends JComponentOperator
     public int getPositionByText(String text, TextChooser tChooser, int index) {
 	output.printLine("Find " + tChooser.getDescription() + "\"" + text + 
 			 "\" text in text component\n    : " +
-			 getSource().toString());
+			 toStringSource());
 	output.printGolden("Find " + tChooser.getDescription() + "\"" + text + 
 			   "\" text in text component");
 	String allText = getDisplayedText();
@@ -507,7 +507,7 @@ public class JTextComponentOperator extends JComponentOperator
 	output.printLine("Typing text \"" + text + "\" from " +
 			 Integer.toString(caretPosition) + " position " +
 			 "in text component\n    : " +
-			 getSource().toString());
+			 toStringSource());
 	output.printGolden("Typing text \"" + text + "\" in text component");
 	makeComponentVisible();
 	produceTimeRestricted(new Action() {
@@ -547,7 +547,7 @@ public class JTextComponentOperator extends JComponentOperator
 			 Integer.toString(startPosition) + " to " +
 			 Integer.toString(finalPosition) + 
 			 " in text component\n    : " +
-			 getSource().toString());
+			 toStringSource());
 	makeComponentVisible();
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
@@ -574,7 +574,7 @@ public class JTextComponentOperator extends JComponentOperator
 	output.printLine("Select " +
 			 Integer.toString(index) + "'th instance of \"" +
 			 text + "\" text in component\n    : " +
-			 getSource().toString());
+			 toStringSource());
 	makeComponentVisible();
 	int start = getPositionByText(text, index);
 	if(start == -1) {
@@ -601,7 +601,7 @@ public class JTextComponentOperator extends JComponentOperator
      */
     public void clearText() {
 	output.printLine("Clearing text in text component\n    : " +
-			 getSource().toString());
+			 toStringSource());
 	output.printGolden("Clearing text in text component");
 	makeComponentVisible();
 	produceTimeRestricted(new Action() {
@@ -622,7 +622,7 @@ public class JTextComponentOperator extends JComponentOperator
      */
     public void scrollToPosition(int position) {
 	output.printTrace("Scroll JTextComponent to " + Integer.toString(position) + " position\n    : " +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll JTextComponent to " + Integer.toString(position) + " position");
 	makeComponentVisible();
 	//try to find JScrollPane under.
@@ -655,7 +655,7 @@ public class JTextComponentOperator extends JComponentOperator
 	    return(doc.getText(0, doc.getLength()));
 	} catch(BadLocationException e) {
 	    throw(new JemmyException("Exception during text operation with\n    : " +
-				     getSource().toString(), e));
+				     toStringSource(), e));
 	}
     }
 
@@ -667,7 +667,7 @@ public class JTextComponentOperator extends JComponentOperator
     public void waitText(final String text, final int position) {
 	getOutput().printLine("Wait \"" + text + "\" text starting from " +
 			      Integer.toString(position) + " position in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait \"" + text + "\" text starting from " +
 				Integer.toString(position) + " position");
 	waitState(new ComponentChooser() {
@@ -697,7 +697,7 @@ public class JTextComponentOperator extends JComponentOperator
      */
     public void waitText(String text) {
 	getOutput().printLine("Wait \"" + text + "\" text in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait \"" + text + "\" text");
 	waitState(new JTextComponentByTextFinder(text, getComparator()));
     }
@@ -709,7 +709,7 @@ public class JTextComponentOperator extends JComponentOperator
     public void waitCaretPosition(final int position) {
 	getOutput().printLine("Wait caret to be at \"" + Integer.toString(position) + 
 			      " position in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait caret to be at \"" + Integer.toString(position) + 
 				" position");
 	waitState(new ComponentChooser() {

@@ -29,6 +29,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import org.netbeans.jemmy.QueueTool;
 
 /**
  * Auxiliary class to find an event sequence which should be posted
@@ -117,8 +118,16 @@ public class TrialListenerManager implements Outputable {
 	comp.addKeyListener(kListener);
     }
 
-    void printEvent(AWTEvent e) {
-	output.printLine(e.toString());
+    void printEvent(final AWTEvent event) {
+        // if event != null run toString in dispatch thread
+        String eventToString = (String)new QueueTool().invokeSmoothly(
+            new QueueTool.QueueAction("event.toString()") {
+                public Object launch() {
+                    return event.toString();
+                }
+            }
+        );
+	output.printLine(eventToString);
     }
 
     private class TrialMouseListener implements MouseListener {

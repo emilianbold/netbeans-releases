@@ -363,7 +363,7 @@ public class JSplitPaneOperator extends JComponentOperator
      */
     public void moveDivider(int dividerLocation) {
 	output.printTrace("Move JSplitPane divider to " + Integer.toString(dividerLocation) +
-			  " location. JSplitPane :    \n" + getSource().toString());
+			  " location. JSplitPane :    \n" + toStringSource());
 	output.printGolden("Move JSplitPane divider to " + Integer.toString(dividerLocation) +
 			  " location");
 	scrollTo(new ValueScrollAdjuster(dividerLocation));
@@ -376,7 +376,7 @@ public class JSplitPaneOperator extends JComponentOperator
      */
     public void moveDivider(double proportionalLocation) {
 	output.printTrace("Move JSplitPane divider to " + Double.toString(proportionalLocation) +
-			  " proportional location. JSplitPane :    \n" + getSource().toString());
+			  " proportional location. JSplitPane :    \n" + toStringSource());
 	output.printGolden("Move JSplitPane divider to " + Double.toString(proportionalLocation) +
 			  " proportional location");
 	scrollTo(new ValueScrollAdjuster(getMinimumDividerLocation() + 
@@ -388,7 +388,7 @@ public class JSplitPaneOperator extends JComponentOperator
      * Moves the divider all the way to the left/top.
      */
     public void moveToMinimum() {
-	output.printTrace("Scroll JSplitPane to minimum. JSplitPane :    \n" + getSource().toString());
+	output.printTrace("Scroll JSplitPane to minimum. JSplitPane :    \n" + toStringSource());
 	output.printGolden("Scroll JSplitPane to minimum.");
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
@@ -405,7 +405,7 @@ public class JSplitPaneOperator extends JComponentOperator
      * Moves the divider all the way to the right/bottom.
      */
     public void moveToMaximum() {
-	output.printTrace("Scroll JSplitPane to maximum. JSplitPane :    \n" + getSource().toString());
+	output.printTrace("Scroll JSplitPane to maximum. JSplitPane :    \n" + toStringSource());
 	output.printGolden("Scroll JSplitPane to maximum.");
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
@@ -430,7 +430,7 @@ public class JSplitPaneOperator extends JComponentOperator
 	} else {
 	    mess = mess + "bottom";
 	}
-	output.printTrace(mess + " JSplitPane side. JSplitPane :    \n" + getSource().toString());
+	output.printTrace(mess + " JSplitPane side. JSplitPane :    \n" + toStringSource());
 	output.printGolden(mess + " JSplitPane side.");
 	expandTo(0);
     }
@@ -446,7 +446,7 @@ public class JSplitPaneOperator extends JComponentOperator
 	} else {
 	    mess = mess + "top";
 	}
-	output.printTrace(mess + " JSplitPane side. JSplitPane :    \n" + getSource().toString());
+	output.printTrace(mess + " JSplitPane side. JSplitPane :    \n" + toStringSource());
 	output.printGolden(mess + " JSplitPane side.");
 	expandTo(1);
     }

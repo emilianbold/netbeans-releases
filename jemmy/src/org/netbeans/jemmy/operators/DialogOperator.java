@@ -268,7 +268,7 @@ public class DialogOperator extends WindowOperator {
      */
     public void waitTitle(final String title) {
 	getOutput().printLine("Wait \"" + title + "\" title of dialog \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait \"" + title + "\" title");
 	waitState(new DialogByTitleFinder(title, getComparator()));
     }

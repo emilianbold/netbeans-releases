@@ -372,7 +372,7 @@ public class TextComponentOperator extends ComponentOperator
      */
     public void clearText() {
 	output.printLine("Clearing text in text component\n    : " +
-			 getSource().toString());
+			 toStringSource());
 	output.printGolden("Clearing text in text component");
 	makeComponentVisible();
 	produceTimeRestricted(new Action() {
@@ -395,7 +395,7 @@ public class TextComponentOperator extends ComponentOperator
 	output.printLine("Typing text \"" + text + "\" from " +
 			 Integer.toString(caretPosition) + " position " +
 			 "in text component\n    : " +
-			 getSource().toString());
+			 toStringSource());
 	output.printGolden("Typing text \"" + text + "\" in text component");
 	makeComponentVisible();
 	produceTimeRestricted(new Action() {

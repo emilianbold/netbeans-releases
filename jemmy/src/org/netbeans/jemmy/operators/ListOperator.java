@@ -275,7 +275,7 @@ public class ListOperator extends ComponentOperator
      */
     public void selectItem(int index) {
 	output.printLine("Select " + Integer.toString(index) + "`th item in list\n    : " +
-			 getSource().toString());
+			 toStringSource());
 	output.printGolden("Select " + Integer.toString(index) + "`th item in list");
 	driver.selectItem(this, index);
 	if(getVerification()) {
@@ -291,7 +291,7 @@ public class ListOperator extends ComponentOperator
     public void selectItems(int from, int to) {
 	output.printLine("Select items from " + Integer.toString(from) + 
 			 "`th to " + Integer.toString(from) + "'th in list\n    : " +
-			 getSource().toString());
+			 toStringSource());
 	output.printGolden("Select items from " + Integer.toString(from) + 
 			 "`th to " + Integer.toString(from) + "'th");
 	driver.selectItems(this, new int[] {from, to});
@@ -309,7 +309,7 @@ public class ListOperator extends ComponentOperator
     public void waitItemsSelection(final int from, final int to, final boolean selected) {
 	getOutput().printLine("Wait items to be " +
 			      (selected ? "" : "un") + "selected in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait items to be " +
 				(selected ? "" : "un") + "selected");
 	waitState(new ComponentChooser() {

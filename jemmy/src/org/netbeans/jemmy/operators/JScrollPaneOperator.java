@@ -261,7 +261,7 @@ public class JScrollPaneOperator extends JComponentOperator
      */
     public void scrollToHorizontalValue(int value) {
 	output.printTrace("Scroll JScrollPane to " + Integer.toString(value) + " horizontal value \n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll JScrollPane to " + Integer.toString(value) + " horizontal value");
 	initOperators();
 	makeComponentVisible();
@@ -277,7 +277,7 @@ public class JScrollPaneOperator extends JComponentOperator
      */
     public void scrollToHorizontalValue(double proportionalValue) {
 	output.printTrace("Scroll JScrollPane to " + Double.toString(proportionalValue) + " proportional horizontal value \n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll JScrollPane to " + Double.toString(proportionalValue) + " proportional horizontal value");
 	initOperators();
 	makeComponentVisible();
@@ -293,7 +293,7 @@ public class JScrollPaneOperator extends JComponentOperator
      */
     public void scrollToVerticalValue(int value) {
 	output.printTrace("Scroll JScrollPane to " + Integer.toString(value) + " vertical value \n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll JScrollPane to " + Integer.toString(value) + " vertical value");
 	initOperators();
 	makeComponentVisible();
@@ -309,7 +309,7 @@ public class JScrollPaneOperator extends JComponentOperator
      */
     public void scrollToVerticalValue(double proportionalValue) {
 	output.printTrace("Scroll JScrollPane to " + Double.toString(proportionalValue) + " proportional vertical value \n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll JScrollPane to " + Double.toString(proportionalValue) + " proportional vertical value");
 	initOperators();
 	makeComponentVisible();
@@ -346,7 +346,7 @@ public class JScrollPaneOperator extends JComponentOperator
      */
     public void scrollToTop() {
 	output.printTrace("Scroll JScrollPane to top\n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll JScrollPane to top");
 	initOperators();
 	makeComponentVisible();
@@ -361,7 +361,7 @@ public class JScrollPaneOperator extends JComponentOperator
      */
     public void scrollToBottom() {
 	output.printTrace("Scroll JScrollPane to bottom\n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll JScrollPane to bottom");
 	initOperators();
 	makeComponentVisible();
@@ -376,7 +376,7 @@ public class JScrollPaneOperator extends JComponentOperator
      */
     public void scrollToLeft() {
 	output.printTrace("Scroll JScrollPane to left\n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll JScrollPane to left");
 	initOperators();
 	makeComponentVisible();
@@ -391,7 +391,7 @@ public class JScrollPaneOperator extends JComponentOperator
      */
     public void scrollToRight() {
 	output.printTrace("Scroll JScrollPane to right\n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll JScrollPane to right");
 	initOperators();
 	makeComponentVisible();
@@ -441,9 +441,16 @@ public class JScrollPaneOperator extends JComponentOperator
      * @param comp Component to scroll to.
      * @throws TimeoutExpiredException
      */
-    public void scrollToComponent(Component comp) {
-	output.printTrace("Scroll JScrollPane " + getSource().toString() + 
-			  "\nto component " + comp.toString());
+    public void scrollToComponent(final Component comp) {
+        String componentToString = (String)runMapping(
+            new Operator.MapAction("comp.toString()") {
+                public Object map() {
+                    return comp.toString();
+                } 
+            }
+        );
+	output.printTrace("Scroll JScrollPane " + toStringSource() + 
+			  "\nto component " + componentToString);
 	output.printGolden("Scroll JScrollPane to " + comp.getClass().getName() + " component.");
 	scrollToComponentRectangle(comp, 0, 0, comp.getWidth(), comp.getHeight());
     }

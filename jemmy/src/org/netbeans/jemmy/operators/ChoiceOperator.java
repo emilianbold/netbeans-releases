@@ -325,7 +325,7 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
      */
     public void selectItem(int index) {
 	output.printLine("Select " + Integer.toString(index) + "`th item in combobox\n    : " +
-			 getSource().toString());
+			 toStringSource());
 	output.printGolden("Select " + Integer.toString(index) + "`th item in combobox");
 	makeComponentVisible();
 	try {
@@ -346,7 +346,7 @@ public class ChoiceOperator extends ComponentOperator implements Outputable{
     public void waitItemSelected(final int index) {
 	getOutput().printLine("Wait " + Integer.toString(index) + 
 			      "'th item to be selected in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait " + Integer.toString(index) + 
 				"'th item to be selected");
 	waitState(new ComponentChooser() {

@@ -417,7 +417,7 @@ implements Timeoutable, Outputable{
      * Prepares the button to click.
      */
     protected void prepareToClick() {
-	output.printLine("Push menu item\n    :" + getSource().toString());
+	output.printLine("Push menu item\n    :" + toStringSource());
 	output.printGolden("Push menu item");
 	Timeouts times = timeouts.cloneThis();
 	times.setTimeout("AbstractButtonOperator.PushButtonTimeout", 

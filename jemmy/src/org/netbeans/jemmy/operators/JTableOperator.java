@@ -961,7 +961,7 @@ implements Outputable, Timeoutable {
     public void scrollToCell(int row, int column)  {
 	output.printTrace("Scroll JTable to (" + Integer.toString(row) +
 			  "," + Integer.toString(column) +") cell\n    : " +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll JTable to (" + Integer.toString(row) +
 			   "," + Integer.toString(column) + ")");
 	makeComponentVisible();
@@ -1121,7 +1121,7 @@ implements Outputable, Timeoutable {
 			      Integer.toString(row) + "," +
 			      Integer.toString(column) + ")" +
 			      " position in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait  \"" + cellText + "\" text at (" + 
 				Integer.toString(row) + "," +
 				Integer.toString(column) + ")" +

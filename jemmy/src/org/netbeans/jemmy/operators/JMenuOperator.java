@@ -412,8 +412,8 @@ implements Outputable, Timeoutable{
      * @throws TimeoutExpiredException
      */
     public JMenuItem pushMenu(String path, String delim, StringComparator comparator) {
-	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
-	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
+	output.printLine("Pushing " + path + " menu in \n    " + toStringSource());
+	output.printGolden("Pushing " + path + " menu in \n    " + toStringSource());
 	return(pushMenu(parseString(path, delim), comparator));
     }
 
@@ -425,8 +425,8 @@ implements Outputable, Timeoutable{
      * @throws TimeoutExpiredException
      */
     public JMenuItem pushMenu(String path, StringComparator comparator) {
-	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
-	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
+	output.printLine("Pushing " + path + " menu in \n    " + toStringSource());
+	output.printGolden("Pushing " + path + " menu in \n    " + toStringSource());
 	return(pushMenu(parseString(path), comparator));
     }
 
@@ -452,8 +452,8 @@ implements Outputable, Timeoutable{
      * @param comparator a string comparision algorithm
      */
     public void pushMenuNoBlock(String path, String delim, StringComparator comparator) {
-	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
-	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
+	output.printLine("Pushing " + path + " menu in \n    " + toStringSource());
+	output.printGolden("Pushing " + path + " menu in \n    " + toStringSource());
 	pushMenuNoBlock(parseString(path, delim), comparator);
     }
 
@@ -464,8 +464,8 @@ implements Outputable, Timeoutable{
      * @param comparator a string comparision algorithm
      */
     public void pushMenuNoBlock(String path, StringComparator comparator) {
-	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
-	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
+	output.printLine("Pushing " + path + " menu in \n    " + toStringSource());
+	output.printGolden("Pushing " + path + " menu in \n    " + toStringSource());
 	pushMenuNoBlock(parseString(path), comparator);
     }
 
@@ -492,8 +492,8 @@ implements Outputable, Timeoutable{
      * @throws TimeoutExpiredException
      */
     public JMenuItem pushMenu(String path, String delim) {
-	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
-	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
+	output.printLine("Pushing " + path + " menu in \n    " + toStringSource());
+	output.printGolden("Pushing " + path + " menu in \n    " + toStringSource());
 	return(pushMenu(parseString(path, delim)));
     }
 
@@ -504,8 +504,8 @@ implements Outputable, Timeoutable{
      * @throws TimeoutExpiredException
      */
     public JMenuItem pushMenu(String path) {
-	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
-	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
+	output.printLine("Pushing " + path + " menu in \n    " + toStringSource());
+	output.printGolden("Pushing " + path + " menu in \n    " + toStringSource());
 	return(pushMenu(parseString(path)));
     }
 
@@ -515,8 +515,8 @@ implements Outputable, Timeoutable{
      * @param delim String menupath divider ("/").
      */
     public void pushMenuNoBlock(String path, String delim) {
-	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
-	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
+	output.printLine("Pushing " + path + " menu in \n    " + toStringSource());
+	output.printGolden("Pushing " + path + " menu in \n    " + toStringSource());
 	pushMenuNoBlock(parseString(path, delim));
     }
 
@@ -525,8 +525,8 @@ implements Outputable, Timeoutable{
      * @param path String menupath representation ("File/New", for example).
      */
     public void pushMenuNoBlock(String path) {
-	output.printLine("Pushing " + path + " menu in \n    " + getSource().toString());
-	output.printGolden("Pushing " + path + " menu in \n    " + getSource().toString());
+	output.printLine("Pushing " + path + " menu in \n    " + toStringSource());
+	output.printGolden("Pushing " + path + " menu in \n    " + toStringSource());
 	pushMenuNoBlock(parseString(path));
     }
 

@@ -252,7 +252,7 @@ public class JProgressBarOperator extends JComponentOperator
     public void waitValue(final ValueChooser chooser) {
 	output.printLine("Wait \"" + chooser.getDescription() + 
 			 "\" value in progressbar\n    : " +
-			 getSource().toString());
+			 toStringSource());
 	output.printGolden("Wait \"" + chooser.getDescription() + 
 			 "\" value in progressbar");
 	Waiter wt = new Waiter(new Waitable() {
@@ -284,7 +284,7 @@ public class JProgressBarOperator extends JComponentOperator
     public void waitValue(final int value) {
 	output.printLine("Wait \"" + value + 
 			 "\" value in progressbar\n    : " +
-			 getSource().toString());
+			 toStringSource());
 	output.printGolden("Wait \"" + value +
 			 "\" value in progressbar");
 	waitState(new ComponentChooser() {
@@ -305,7 +305,7 @@ public class JProgressBarOperator extends JComponentOperator
     public void waitValue(final String value) {
 	output.printLine("Wait \"" + value + 
 			 "\" string in progressbar\n    : " +
-			 getSource().toString());
+			 toStringSource());
 	output.printGolden("Wait \"" + value +
 			 "\" string in progressbar");
 	waitState(new ComponentChooser() {

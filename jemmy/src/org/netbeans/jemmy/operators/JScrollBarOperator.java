@@ -358,7 +358,7 @@ public class JScrollBarOperator extends JComponentOperator
      */
     public void scrollToValue(int value) {
 	output.printTrace("Scroll JScrollBar to " + Integer.toString(value) +
-			  " value\n" + getSource().toString());
+			  " value\n" + toStringSource());
 	output.printGolden("Scroll JScrollBar to " + Integer.toString(value) + " value");
 	scrollTo(new ValueScrollAdjuster(value));
     }
@@ -370,7 +370,7 @@ public class JScrollBarOperator extends JComponentOperator
      */
     public void scrollToValue(double proportionalValue) {
 	output.printTrace("Scroll JScrollBar to " + Double.toString(proportionalValue) +
-			  " proportional value\n" + getSource().toString());
+			  " proportional value\n" + toStringSource());
 	output.printGolden("Scroll JScrollBar to " + Double.toString(proportionalValue) + " proportional value");
 	scrollTo(new ValueScrollAdjuster((int)(getMinimum() + 
 					       (getMaximum() - 
@@ -384,7 +384,7 @@ public class JScrollBarOperator extends JComponentOperator
      */
     public void scrollToMinimum() {
 	output.printTrace("Scroll JScrollBar to minimum value\n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll JScrollBar to minimum value");
 	initOperators();
 	produceTimeRestricted(new Action() {
@@ -404,7 +404,7 @@ public class JScrollBarOperator extends JComponentOperator
      */
     public void scrollToMaximum() {
 	output.printTrace("Scroll JScrollBar to maximum value\n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll JScrollBar to maximum value");
 	initOperators();
 	produceTimeRestricted(new Action() {

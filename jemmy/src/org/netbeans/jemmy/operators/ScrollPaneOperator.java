@@ -295,7 +295,7 @@ public class ScrollPaneOperator extends ContainerOperator
      */
     public void scrollToHorizontalValue(final int value) {
 	output.printTrace("Scroll ScrollPane to " + Integer.toString(value) + " horizontal value \n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll ScrollPane to " + Integer.toString(value) + " horizontal value");
 	scrollTo(new ValueScrollAdjuster(value, 
 					 Adjustable.HORIZONTAL, 
@@ -309,7 +309,7 @@ public class ScrollPaneOperator extends ContainerOperator
      */
     public void scrollToHorizontalValue(double proportionalValue) {
 	output.printTrace("Scroll ScrollPane to " + Double.toString(proportionalValue) + " proportional horizontal value \n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll ScrollPane to " + Double.toString(proportionalValue) + " proportional horizontal value");
 	Adjustable adj = getHAdjustable();
 	scrollTo(new ValueScrollAdjuster((int)(adj.getMinimum() + 
@@ -327,7 +327,7 @@ public class ScrollPaneOperator extends ContainerOperator
      */
     public void scrollToVerticalValue(final int value) {
 	output.printTrace("Scroll ScrollPane to " + Integer.toString(value) + " vertical value \n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll ScrollPane to " + Integer.toString(value) + " vertical value");
 	scrollTo(new ValueScrollAdjuster(value, 
 					 Adjustable.VERTICAL, 
@@ -341,7 +341,7 @@ public class ScrollPaneOperator extends ContainerOperator
      */
     public void scrollToVerticalValue(double proportionalValue) {
 	output.printTrace("Scroll ScrollPane to " + Double.toString(proportionalValue) + " proportional vertical value \n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll ScrollPane to " + Double.toString(proportionalValue) + " proportional vertical value");
 	Adjustable adj = getVAdjustable();
 	scrollTo(new ValueScrollAdjuster((int)(adj.getMinimum() + 
@@ -380,7 +380,7 @@ public class ScrollPaneOperator extends ContainerOperator
      */
     public void scrollToTop() {
 	output.printTrace("Scroll ScrollPane to top\n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll ScrollPane to top");
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
@@ -399,7 +399,7 @@ public class ScrollPaneOperator extends ContainerOperator
      */
     public void scrollToBottom() {
 	output.printTrace("Scroll ScrollPane to bottom\n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll ScrollPane to bottom");
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
@@ -418,7 +418,7 @@ public class ScrollPaneOperator extends ContainerOperator
      */
     public void scrollToLeft() {
 	output.printTrace("Scroll ScrollPane to left\n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll ScrollPane to left");
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
@@ -437,7 +437,7 @@ public class ScrollPaneOperator extends ContainerOperator
      */
     public void scrollToRight() {
 	output.printTrace("Scroll ScrollPane to right\n" +
-			  getSource().toString());
+			  toStringSource());
 	output.printGolden("Scroll ScrollPane to right");
 	produceTimeRestricted(new Action() {
 		public Object launch(Object obj) {
@@ -485,9 +485,16 @@ public class ScrollPaneOperator extends ContainerOperator
      * @param comp Component to scroll to.
      * @throws TimeoutExpiredException
      */
-    public void scrollToComponent(Component comp) {
-	output.printTrace("Scroll ScrollPane " + getSource().toString() + 
-			  "\nto component " + comp.toString());
+    public void scrollToComponent(final Component comp) {
+        String componentToString = (String)runMapping(
+        new Operator.MapAction("comp.toString()") {
+            public Object map() {
+                return comp.toString();
+            }
+        }
+        );
+	output.printTrace("Scroll ScrollPane " + toStringSource() + 
+			  "\nto component " + componentToString);
 	output.printGolden("Scroll ScrollPane to " + comp.getClass().getName() + " component.");
 	scrollToComponentRectangle(comp, 0, 0, comp.getWidth(), comp.getHeight());
     }

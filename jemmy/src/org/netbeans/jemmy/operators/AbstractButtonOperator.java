@@ -323,7 +323,7 @@ public class AbstractButtonOperator extends JComponentOperator
      * Pushs the button using a ButtonDriver registered for this operator.
      */
     public void push() {
-	output.printLine("Push button\n    :" + getSource().toString());
+	output.printLine("Push button\n    :" + toStringSource());
 	output.printGolden("Push button");
 	makeComponentVisible();
         try {
@@ -378,7 +378,7 @@ public class AbstractButtonOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public void press() {
-	output.printLine("Press button\n    :" + getSource().toString());
+	output.printLine("Press button\n    :" + toStringSource());
 	output.printGolden("Press button");
 	makeComponentVisible();
         try {
@@ -394,7 +394,7 @@ public class AbstractButtonOperator extends JComponentOperator
      * @throws TimeoutExpiredException
      */
     public void release() {
-	output.printLine("Release button\n    :" + getSource().toString());
+	output.printLine("Release button\n    :" + toStringSource());
 	output.printGolden("Release button");
         try {
             waitComponentEnabled();
@@ -410,7 +410,7 @@ public class AbstractButtonOperator extends JComponentOperator
      */
     public void waitSelected(final boolean selected) {
 	getOutput().printLine("Wait button to be selected \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait button to be selected");
 	waitState(new ComponentChooser() {
 		public boolean checkComponent(Component comp) {
@@ -429,7 +429,7 @@ public class AbstractButtonOperator extends JComponentOperator
      */
     public void waitText(String text) {
 	getOutput().printLine("Wait \"" + text + "\" text in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait \"" + text + "\" text");
 	waitState(new AbstractButtonByLabelFinder(text, getComparator()));
     }

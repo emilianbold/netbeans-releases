@@ -376,7 +376,7 @@ public class JTabbedPaneOperator extends JComponentOperator
      * @return a root corresponding to the page.
      */
     public Component selectPage(int index) {
-	output.printLine("Selecting " + index + "'th page in tabbed pane\n    :" + getSource().toString());
+	output.printLine("Selecting " + index + "'th page in tabbed pane\n    :" + toStringSource());
         makeComponentVisible();
 	driver.selectItem(this, index);
 	if(getVerification()) {
@@ -392,7 +392,7 @@ public class JTabbedPaneOperator extends JComponentOperator
      */
     public Component selectPage(TabPageChooser chooser) {
 	output.printLine("Selecting \"" + chooser.getDescription() + 
-                         "\" page in tabbed pane\n    :" + getSource().toString());
+                         "\" page in tabbed pane\n    :" + toStringSource());
  	return(selectPage(waitPage(chooser)));
     }
 
@@ -472,7 +472,7 @@ public class JTabbedPaneOperator extends JComponentOperator
     public void waitSelected(final int pageIndex) {
 	getOutput().printLine("Wait " + Integer.toString(pageIndex) + "'th page to be " +
 			      " selected in component \n    : "+
-			      getSource().toString());
+			      toStringSource());
 	getOutput().printGolden("Wait " + Integer.toString(pageIndex) + "'th page to be " +
 				" selected");
 	waitState(new ComponentChooser() {
@@ -844,7 +844,7 @@ public class JTabbedPaneOperator extends JComponentOperator
 			    return(false);
 			}
 		    }
-		    return(comparator.equals(tpo.getTitleAt(ii).toString(),
+		    return(comparator.equals(tpo.getTitleAt(ii),
 					     title));
 		}
 	    }
