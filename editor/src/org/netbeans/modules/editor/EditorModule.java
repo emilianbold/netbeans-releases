@@ -46,6 +46,7 @@ import org.openide.modules.ModuleInstall;
 import org.openide.nodes.Node;
 import org.openide.options.SystemOption;
 import org.openide.text.PrintSettings;
+import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.SharedClassObject;
 import org.openide.windows.TopComponent;
@@ -541,50 +542,35 @@ public class EditorModule extends ModuleInstall {
         public RepositListener() {
         }
 
-        private WindowManager getWindowManager() {
-            return (WindowManager) Lookup.getDefault().lookup(WindowManager.class);
-        }
-        
-        public void fileSystemAdded(RepositoryEvent ev){
-            if (Boolean.getBoolean("netbeans.full.hack") == true || ignoreRepositoryChanges){ //NOI18N
+        private void handleFSAddRemove(final FileSystem fs, final boolean add) {
+            if (fs == null || Boolean.getBoolean("netbeans.full.hack") || ignoreRepositoryChanges) {
                 return; 
             }
-            WindowManager wm = getWindowManager();
-            if(wm == null) return;
-                java.awt.Frame frm = wm.getMainWindow();
-                if(frm!=null && frm.isVisible()){
-                    if (ev.getFileSystem() != null){
-                        final FileSystem fs = ev.getFileSystem();
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    java.awt.Frame frm = WindowManager.getDefault().getMainWindow();
+                    if (frm != null && frm.isVisible()) {
                         getCCUpdateProcessor().post(new Runnable() {
                             public void run() {
                                 JCStorage storage = JCStorage.getStorage();
-                                storage.parseFSOnBackground(fs);
+                                if (add) {
+                                    storage.parseFSOnBackground(fs);
+                                } else {
+                                    storage.removeParsedFS(fs);
+                                }
                             }
                         });
-                        }
+                    }
                 }
-            
+            });
+        }
+
+        public void fileSystemAdded(RepositoryEvent ev){
+            handleFSAddRemove(ev.getFileSystem(), true);
         }
         
         public void fileSystemRemoved(RepositoryEvent ev){
-            if (Boolean.getBoolean("netbeans.full.hack") == true || ignoreRepositoryChanges){ //NOI18N
-                return;
-            }
-
-            WindowManager wm = getWindowManager();
-            if(wm == null) return;
-            java.awt.Frame frm = wm.getMainWindow();
-            if(frm!=null && frm.isVisible()){
-                if (ev.getFileSystem() != null){
-                    final FileSystem fs = ev.getFileSystem();
-                    getCCUpdateProcessor().post(new Runnable() {
-                        public void run() {
-                            JCStorage storage = JCStorage.getStorage();
-                            storage.removeParsedFS(fs);
-                        }
-                    });
-                }
-            }
+            handleFSAddRemove(ev.getFileSystem(), false);
         }
         
         public void fileSystemPoolReordered(RepositoryReorderedEvent ev){
