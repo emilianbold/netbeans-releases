@@ -491,7 +491,7 @@ public class ProxyClassLoader extends ClassLoader {
         c = loadInOrder(name, fileName, pkg);
 
         if (c != null) {
-            final ClassLoader owner2 = getClassClassLoader(c);
+            final ClassLoader owner2 = getClassClassLoader(c); // who got it?
             domainsByPackage.put(pkg, owner2);
         }
         return c;
@@ -502,7 +502,7 @@ public class ProxyClassLoader extends ClassLoader {
     private static ClassLoader getClassClassLoader(final Class c) {
         return (ClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
             public Object run() {
-                return c.getClassLoader(); // who got it?
+                return c.getClassLoader();
             }
         });
     }
