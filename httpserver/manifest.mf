@@ -1,8 +1,8 @@
 OpenIDE-Module: org.netbeans.modules.httpserver/1
 OpenIDE-Module-Name: HTTP Server
 OpenIDE-Module-Display-Category: Web
-OpenIDE-Module-Short-Description: Internal HTTP server with servlet support.
-OpenIDE-Module-Long-Description: Internal HTTP server with servlet support.
+OpenIDE-Module-Short-Description: Provides infrastructure for testing applets, RMI applications, and so on.
+OpenIDE-Module-Long-Description: The HTTP Server module provides the infrastructure necessary for a variety of tasks, such as testing applets, testing RMI and JINI applications, and viewing Javadocs in the external web browser.
 OpenIDE-Module-Install: org/netbeans/modules/httpserver/HttpServerModule.class
 OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
