@@ -4,7 +4,7 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javahelp/resources/Bundle
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Provides: org.netbeans.api.javahelp.Help
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.5
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.10
 OpenIDE-Module-Package-Dependencies: javax.help[HelpSet] > 1.0
 OpenIDE-Module-Layer: org/netbeans/modules/javahelp/resources/layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/javahelp/Installer.class
