@@ -24,8 +24,11 @@ import java.beans.Customizer;
 import java.beans.IntrospectionException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
@@ -34,6 +37,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.openide.DialogDescriptor;
+import org.openide.ServiceType;
 import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -336,12 +340,12 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         copy.setName(name);
 
         // overwrite existing
-        if (Registry.exist(copy)) {
-            Registry.remove(copy);
+        if(existInRegistry(copy)) {
+            removeFromRegistry(copy);
             savedNew = false;
         } else savedNew = true;
 
-        Registry.append(copy);
+        appendToRegistry(copy);
 
         return savedNew;
     }
@@ -408,8 +412,8 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
     }
     
     /** Class equality
-    * @return this.bean.getClass().equals(bean.getClass());
-    */
+     * @return this.bean.getClass().equals(bean.getClass());
+     */
     public boolean equals(Object obj) {
         try {
             return searchType.getClass().equals(((SearchTypePanel)obj).getSearchType().getClass());
@@ -422,5 +426,51 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
     public HelpCtx getHelpCtx() {
         return searchType.getHelpCtx();
     }
+    
+    // PENDING: It shoudn't be stored services this way
+    // in registry. It's necessary to meka out cleaner solution.
+    /** Tests whether exist specified search type. */
+    private static boolean existInRegistry(SearchType obj) {
+        ServiceType.Registry registry = TopManager.getDefault().getServices();
+        Enumeration en = registry.services(obj.getClass());
+
+        while (en.hasMoreElements()) {
+            SearchType next = (SearchType) en.nextElement();
+
+            if (next.getName().equals(obj.getName()))
+                return true;
+        }
+
+        return false;
+    }
+
+    /** Adds specified search type to services registry. */
+    private static void appendToRegistry(SearchType obj) {
+        ServiceType.Registry registry = TopManager.getDefault().getServices();
+        List result = registry.getServiceTypes();
+        result.add(obj);
+        registry.setServiceTypes(result);
+    }
+
+    /**
+     * Remove specified search type from service registry.
+     * @param obj service template - used name and class  */
+    private static void removeFromRegistry(SearchType obj) {
+        ServiceType.Registry registry = TopManager.getDefault().getServices();
+        List result = registry.getServiceTypes();
+
+        ArrayList ret = new ArrayList();
+
+        Iterator it = result.iterator();
+        while (it.hasNext()) {
+            ServiceType next = (ServiceType) it.next();
+
+            if ( ! next.getName().equals(obj.getName()) ||
+                    ! next.getClass().equals(obj.getClass()) )
+                ret.add(next);
+        }
+
+        registry.setServiceTypes(ret);
+    }    
     
 }
