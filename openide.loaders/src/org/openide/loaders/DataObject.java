@@ -444,7 +444,9 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
             }
 
             // try to use the loaders machinery
-            obj = ((DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class)).findDataObject (fo);
+            DataLoaderPool p = (DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class);
+            assert p != null : "No DataLoaderPool found in " + Lookup.getDefault();
+            obj = p.findDataObject (fo);
             if (obj != null) {
                 return obj;
             }
