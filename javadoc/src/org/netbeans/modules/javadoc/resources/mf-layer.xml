@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+  <folder name="Menu">
+	<folder name="Help">
+            <file name="org-netbeans-modules-javadoc-search-SearchDocAction.instance"/>
+	    <attr name="Separator1[javax-swing-JSeparator].instance/org-netbeans-modules-javadoc-search-SearchDocAction.instance" boolvalue="true" />
+        </folder>
+  </folder>
+
+  <folder name="Actions">
+    <folder name="Help">
+      <file name="Search Doc Action[org-netbeans-modules-javadoc-search-SearchDocAction].instance" />
+    </folder>
+    <folder name="Build">
+      <file name="Generate Javadoc Action[org-netbeans-modules-javadoc-GenerateDocAction].instance" />
+    </folder>
+    <folder name="Tools">
+      <file name="Auto Comment Action[org-netbeans-modules-javadoc-comments-AutoCommentAction].instance" />
+    </folder>
+  </folder>
+
+  <folder name="Shortcuts">
+	<file name="C-F1[org-netbeans-modules-javadoc-search-SearchDocAction].instance" />
+  </folder> 
+
+</filesystem>

@@ -54,48 +54,13 @@ public class JavadocModule extends ModuleInstall {
     * exists. If not creates it.
     */
     public void installed() {
-        // Install Search Action
-
-        try {
-            Utilities2.createAction (SearchDocAction.class,
-                                     DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help"), // NOI18N
-                                     "Documentation", true, true, false, false); // NOI18N
-
-            // Create Action in action pool
-            Utilities2.createAction (SearchDocAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); // NOI18N
-            Utilities2.createAction (GenerateDocAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Build")); // NOI18N
-            Utilities2.createAction (AutoCommentAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
-        }
-        catch (IOException e) {
-            if (System.getProperty ("netbeans.debug.exceptions") != null) {
-                e.printStackTrace ();
-            }
-            // ignore failure to install
-        }
-
+        // Install Search Action 
         restored();
     }
 
     /** By uninstalling module from the IDE do nothing.
     */
     public void uninstalled () {
-
-        // Remove doc search action
-        try {
-            Utilities2.removeAction (SearchDocAction.class,
-                                     DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().menus (), "Help")); // NOI18N
-
-            // remove actions from action pool
-            Utilities2.removeAction (SearchDocAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); // NOI18N
-            Utilities2.removeAction (GenerateDocAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Build")); // NOI18N
-            Utilities2.removeAction (AutoCommentAction.class, DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
-
-        }
-        catch (Exception e) {
-            if (System.getProperty ("netbeans.debug.exceptions") != null) {
-                e.printStackTrace ();
-            }
-        }
     }
 
     /** Called on IDE startup. Registers actions for generating documentation
