@@ -39,6 +39,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -534,7 +535,7 @@ public class FreeformProjectGenerator {
                     Element data = h[0].getPrimaryConfigurationData(true);
                     Document doc = data.getOwnerDocument();
 
-                    Node comment = doc.createComment("Do not use Project Properties customizer when editting this file manually."); // NOI18N
+                    Node comment = doc.createComment(NbBundle.getMessage(FreeformProjectGenerator.class, "LBL_Manual_Editing_Warning"));
                     data.appendChild(comment);
                     
                     Element nm = doc.createElementNS(FreeformProjectType.NS_GENERAL, "name"); // NOI18N
