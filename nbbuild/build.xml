@@ -400,7 +400,7 @@ workspaceswitcher
     <echo message="Building module vcscore..."/>
     <ant dir="../vcscore" target="netbeans"/>
   </target>
-  <target name="all-javacvs" depends="all-openide,all-openidex,all-vcscore">
+  <target name="all-javacvs" depends="all-openide,all-openidex,all-vcscore, all-diff">
     <echo message="Building module javacvs..."/>
     <ant dir="../javacvs" target="netbeans"/>
   </target>
