@@ -57,10 +57,6 @@ Microsystems, Inc. All Rights Reserved.
             <![CDATA[http://java.sun.com/]]>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
         </file>
-        <file name="forte4j-resource.url">
-            <![CDATA[http://www.sun.com/forte/ffj/resources/]]>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-        </file>
         <file name="apis-online.url">
             <![CDATA[http://openide.netbeans.org/]]>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
