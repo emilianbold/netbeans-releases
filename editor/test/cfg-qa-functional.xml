@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Validation tests-->
     
-    <testbag testattribs="all,validation,apps" name="TestApplication">
+    <testbag testattribs="all,validation,full,apps" name="TestApplication">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/app/tests/*Performer.class"/>
@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Editor Application non-validation tests -->
 
-    <testbag testattribs="all,apps" name="TestApplication Non-validation">
+    <testbag testattribs="all,apps" name="TestApplication Non-Validation">
         <testset dir="qa-functional/src">
             <patternset>  
                 <include name="org/netbeans/test/editor/app/tests/CompletionPerformer.class" />
@@ -108,10 +108,19 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-        
+
+    <testbag testattribs="all,full,focus" name="FocusTests">
+        <testset dir="qa-functional/src">
+            <patternset>            
+                <include name="org/netbeans/test/editor/suites/focus/FocusTestPerformer.class"/>            
+            </patternset>
+        </testset>
+    </testbag>
+    
+            
     <!-- Key bindings tests -->
     
-    <testbag testattribs="all,full,validation,actions" name="KeyBindings-Actions">
+    <testbag testattribs="all,full,validation" name="KeyBindings-Actions">
         <testset dir="qa-functional/src">
             <patternset>            
                 <include name="org/netbeans/test/editor/suites/keybindings/*Performer.class"/>            
