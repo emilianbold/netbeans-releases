@@ -12,14 +12,14 @@
 # Microsystems, Inc. All Rights Reserved.
 
 #
-# this script is a simple executor for Publishing Engine Server
+# this script is a simple executor for db feeder of PES
 #    - it handles running the code in an endless loop
 #    - its basic behaviour is similar to other services
 #          available on Unix systems
 #    - you can use:
-#          'xtest-pes.sh run' to tun the server
-#          'xtest-pes.sh stop' to stop the server
-#          'xtest-pes.sh kill' to kill the server
+#          'xtest-dbfeeder.sh run' to tun the server
+#          'xtest-dbfeeder.sh stop' to stop the server
+#          'xtest-dbfeeder.sh kill' to kill the server
 #   
 
 
