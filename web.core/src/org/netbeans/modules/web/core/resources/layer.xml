@@ -210,15 +210,6 @@ Microsystems, Inc. All Rights Reserved.
 	    <file name="org-netbeans-modules-web-core-resources-EntityCatalog.xml" url="entityCatalog.xml"/>
     </folder>
 
-    <folder name="Looks">
-        <!-- JSPDefaultLook class defines Basic look -->
-        <file name="org.openidex.nodes.looks.NodeProxyLook$Web-Basic.xml" url="look-web-basic.xml" />
-        <!-- JSPDefaultLook class defines composite look for servlet, JSP and DD objects 
-             it merges available (sub)set of sublooks -->
-        <file name="org.openidex.nodes.looks.CompositeLook$Web-Look.xml" url="web-look.xml"/>
-    </folder> <!-- Looks -->
-
-
     <folder name="JSP_Servlet">
       <file name="org-netbeans-modules-web-core-ServletSettings.settings" url="servlet.settings">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle" />

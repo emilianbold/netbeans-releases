@@ -11,7 +11,6 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1,org.netbeans.mod
   org.netbeans.modules.schema2beans/1,
   org.netbeans.modules.html/1,
   org.netbeans.modules.jarpackager/2,
-  org.openidex.util/2,
   org.netbeans.api.xml/1,
   org.netbeans.modules.xml.core/2 = @XML_CORE_IMPL_VERSION@,
   org.netbeans.modules.xml.catalog/2 > 0.9,
