@@ -58,6 +58,10 @@ public class InsertI18nStringAction extends CookieAction {
 
     private transient DataObject dataObject;
 
+    public InsertI18nStringAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }
+    
     /**
      * Open I18nPanel and grab user response then update Document.
      * @param activatedNodes currently activated nodes
@@ -270,9 +274,9 @@ public class InsertI18nStringAction extends CookieAction {
     /** Gets the action's icon location.
      * @return the action's icon location
      */
-//     protected String iconResource () {
-//         return "org/netbeans/modules/i18n/insertI18nStringAction.gif"; // NOI18N
-//     }
+     protected String iconResource () {
+         return "org/netbeans/modules/i18n/insertI18nStringAction.gif"; // NOI18N
+     }
 
     protected boolean asynchronous() {
       return false;

@@ -38,6 +38,10 @@ public class OpenFileAction extends CallableSystemAction {
     private static File currDir;
 
     
+    public OpenFileAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }
+    
     public String getName() {
         return NbBundle.getMessage(OpenFileAction.class, "LBL_openFile");
     }
@@ -47,7 +51,7 @@ public class OpenFileAction extends CallableSystemAction {
     }
 
     protected String iconResource() {
-        return null; //"org/netbeans/modules/openfile/openFile.gif"; // NOI18N
+        return "org/netbeans/modules/openfile/openFile.gif"; // NOI18N
     }
 
     /**

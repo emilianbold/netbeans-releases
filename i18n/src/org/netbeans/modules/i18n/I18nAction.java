@@ -35,6 +35,9 @@ public class I18nAction extends NodeAction {
     /** Generated sreial version UID. */
     static final long serialVersionUID =3322896507302889271L;
 
+    public I18nAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }    
     
     /** 
      * Actually performs the action. Implements superclass abstract method.
@@ -103,7 +106,7 @@ public class I18nAction extends NodeAction {
     /** Gets the action's icon location.
      * @return the action's icon location
      */
-//     protected String iconResource () {
-//         return "org/netbeans/modules/i18n/i18nAction.gif"; // NOI18N
-//     }
+     protected String iconResource () {
+         return "org/netbeans/modules/i18n/i18nAction.gif"; // NOI18N
+     }
 }

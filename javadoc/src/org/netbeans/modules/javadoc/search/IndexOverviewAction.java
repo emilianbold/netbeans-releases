@@ -43,7 +43,11 @@ import org.openide.util.actions.Presenter;
 public final class IndexOverviewAction extends SystemAction implements Presenter.Menu {
     
     private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.javadoc.search.IndexOverviewAction.IndexMenu"); // NOI18N
-        
+ 
+    public IndexOverviewAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }
+    
     public void actionPerformed(ActionEvent ev) {
         // do nothing -- should never be called
     }
@@ -53,7 +57,7 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
     }
     
     protected String iconResource() {
-        return null; //"org/netbeans/modules/javadoc/resources/JavaDoc.gif"; // NOI18N
+        return null;//"org/netbeans/modules/javadoc/resources/JavaDoc.gif"; // NOI18N
     }
     
     public HelpCtx getHelpCtx() {

@@ -25,6 +25,10 @@ import org.netbeans.core.ShortcutsEditor;
 */
 public class ConfigureShortcutsAction extends org.openide.util.actions.CallableSystemAction {
 
+    public ConfigureShortcutsAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }
+    
     public void performAction () {
         ShortcutsEditor se = new ShortcutsEditor ();
         DialogDescriptor dd = new DialogDescriptor (
@@ -46,7 +50,7 @@ public class ConfigureShortcutsAction extends org.openide.util.actions.CallableS
     }
 
     public String iconResource () {
-        return null; //"org/netbeans/core/resources/actions/configureShortcuts.gif"; // NOI18N
+        return "org/netbeans/core/resources/actions/configureShortcuts.gif"; // NOI18N
     }
 
     public HelpCtx getHelpCtx() {

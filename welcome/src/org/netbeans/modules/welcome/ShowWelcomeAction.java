@@ -32,6 +32,10 @@ import org.openide.windows.TopComponent;
  */
 public class ShowWelcomeAction extends CallableSystemAction {
 
+    public ShowWelcomeAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }
+    
     public void performAction() {        
         WelcomeComponent topComp = null;
         Set/*<TopComponent>*/ tcs = TopComponent.getRegistry().getOpened();
@@ -56,7 +60,7 @@ public class ShowWelcomeAction extends CallableSystemAction {
     }
     
     protected String iconResource() {
-        return "org/openide/resources/actions/empty.gif";  //NOI18N
+        return "org/netbeans/modules/welcome/resources/welcome.gif";  //NOI18N
     }
     
     public HelpCtx getHelpCtx() {

@@ -27,11 +27,15 @@ import org.netbeans.core.IDESettings;
 * @author Ian Formanek
 */
 public class HTMLViewAction extends CallableSystemAction {
-
+    
+    public HTMLViewAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }
+    
     public static final String MODE_NAME = "webbrowser"; // NOI18N
 
     protected String iconResource () {
-        return null; //"org/netbeans/core/resources/actions/htmlView.gif"; // NOI18N
+        return "org/netbeans/core/resources/actions/htmlView.gif"; // NOI18N
     }
 
     public void performAction() {

@@ -35,7 +35,10 @@ import java.awt.*;
 public final class ShowDocAction extends CookieAction {
 
     static final long serialVersionUID =3578357584245478L;
-    
+
+    public ShowDocAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }    
     /** Human presentable name of the action. This should be
     * presented as an item in a menu.
     * @return the name of the action
@@ -80,9 +83,9 @@ public final class ShowDocAction extends CookieAction {
         indexSearch.requestActive();
     }
 
-//    protected String iconResource(){
-//        return "org/netbeans/modules/javadoc/resources/showjavadoc.gif"; //NOI18N
-//    }
+    protected String iconResource(){
+        return "org/netbeans/modules/javadoc/resources/showjavadoc.gif"; //NOI18N
+    }
     
     /**
      * Attempts to find a suitable text from the node. 

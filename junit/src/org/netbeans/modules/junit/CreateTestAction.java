@@ -59,6 +59,10 @@ import org.openide.util.Utilities;
  * @author  Ondrej Rypacek
  */
 public class CreateTestAction extends CookieAction {
+
+    public CreateTestAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }    
     
     /* public members */
     public String getName() {
@@ -96,9 +100,9 @@ public class CreateTestAction extends CookieAction {
         putProperty(Action.SHORT_DESCRIPTION, NbBundle.getMessage(CreateTestAction.class, "HINT_Action_CreateTest"));
     }
     
-//      protected String iconResource() {
-//          return "org/netbeans/modules/junit/resources/CreateTestActionIcon.gif";
-//     }
+      protected String iconResource() {
+          return "org/netbeans/modules/junit/resources/CreateTestActionIcon.gif";
+     }
     
     protected int mode() {
         return MODE_ANY;    // allow creation of tests for multiple selected nodes (classes, packages)

@@ -73,6 +73,10 @@ import org.openide.windows.TopComponent;
  */
 public class OptionsAction extends CallableSystemAction {
 
+    public OptionsAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }
+    
     private static final String HELP_ID = "org.netbeans.core.actions.OptionsAction"; // NOI18N 
     
     /** Weak reference to the dialog showing singleton options. */
@@ -120,7 +124,7 @@ public class OptionsAction extends CallableSystemAction {
     }
 
     public String iconResource () {
-        return null; //"org/netbeans/core/resources/session.gif"; // NOI18N
+        return "org/netbeans/core/resources/session.gif"; // NOI18N
     }
 
     public HelpCtx getHelpCtx() {

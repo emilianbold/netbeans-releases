@@ -26,6 +26,10 @@ import javax.swing.SwingUtilities;
  */
 public final class SearchDocAction extends CallableSystemAction {
 
+    public SearchDocAction() {
+        putValue("noIconInMenu", Boolean.TRUE);
+    }
+    
     /** Human presentable name of the action. This should be
      * presented as an item in a menu.
      * @return the name of the action
@@ -34,12 +38,12 @@ public final class SearchDocAction extends CallableSystemAction {
         return NbBundle.getBundle (SearchDocAction.class).getString ("CTL_SEARCH_MenuItem");
     }
 
-//    /** The action's icon location.
-//     * @return the action's icon location
-//     */
-//    protected String iconResource () {
-//        return "org/netbeans/modules/javadoc/resources/searchDoc.gif"; // NOI18N
-//    }
+    /** The action's icon location.
+     * @return the action's icon location
+     */
+    protected String iconResource () {
+        return "org/netbeans/modules/javadoc/resources/searchDoc.gif"; // NOI18N
+    }
 
     /** Help context where to find more about the action.
      * @return the help context for this action
