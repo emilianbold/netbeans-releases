@@ -48,8 +48,10 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
   * Add applet executor
   */
   public void restored() {            
-    if (!HttpServerModule.optionsSerialized) {
+//System.out.println("restored - serialized : " + optionsSerialized);
+    if (!optionsSerialized) {
       // set the default value of the running property
+      new HttpServerSettings();  // this fills the options variable,  bugfix #3595
       HttpServerSettings.OPTIONS.isRunning();                                    
     }
   }
@@ -79,10 +81,13 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
 	* @param in ObjectInputStream
 	*/
  	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException	{
+//System.out.println("readExternal");
  	  Object obj = in.readObject();
  	  if (obj instanceof Boolean) {
  	    optionsSerialized = ((Boolean)obj).booleanValue();
+//System.out.println("boolean : " + optionsSerialized);
  	  }
+//System.out.println("class : " + ((obj == null) ? "null" : obj.getClass().getName()));
 	}	
 
   /** initiates HTTPServer so it runs */
@@ -91,7 +96,7 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
       return;
     synchronized (HttpServerSettings.OPTIONS) {  
       if (inSetRunning)
-        return;
+        return; 
       inSetRunning = true;
       try {
         if ((serverThread != null) && (!HttpServerSettings.OPTIONS.running)) {
@@ -113,9 +118,11 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
                 server = new HttpServer(config);
                 HttpServerSettings.OPTIONS.runSuccess();
                 // this is not a debug message, this is a server startup message
-                System.out.println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
-                  getString("CTL_ServerStarted"), new Object[] {new Integer(HttpServerSettings.OPTIONS.getPort())}));
-              } catch (Exception ex) {
+                if (HttpServerSettings.OPTIONS.isStartStopMessages())
+                  System.out.println(java.text.MessageFormat.format(NbBundle.getBundle(HttpServerModule.class).
+                    getString("CTL_ServerStarted"), new Object[] {new Integer(HttpServerSettings.OPTIONS.getPort())}));
+              } 
+              catch (Exception ex) {
                 // couldn't start
                 serverThread = null;
                 inSetRunning = false;
@@ -124,6 +131,9 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
                   TopManager.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getBundle(HttpServerModule.class).getString("MSG_HTTP_SERVER_START_FAIL"), 
                     NotifyDescriptor.Message.WARNING_MESSAGE));
+              }
+              finally {
+                HttpServerSettings.OPTIONS.setStartStopMessages(true);
               }
             }
           };
@@ -161,8 +171,9 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
           } 
           serverThread = null;
           // this is not a debug message, this is a server shutdown message
-          System.out.println(NbBundle.getBundle(HttpServerModule.class).
-            getString("CTL_ServerStopped"));
+          if (HttpServerSettings.OPTIONS.isStartStopMessages())
+            System.out.println(NbBundle.getBundle(HttpServerModule.class).
+              getString("CTL_ServerStopped"));
         }  
       }
       finally {  
@@ -176,6 +187,8 @@ public class HttpServerModule implements ModuleInstall, Externalizable {
 
 /*
  * Log
+ *  21   Gandalf   1.20        9/8/99   Petr Jiricka    Fixed 
+ *       NullPointerException at startup
  *  20   Gandalf   1.19        8/17/99  Petr Jiricka    Externalization - server
  *       startup during the first IDE start
  *  19   Gandalf   1.18        8/9/99   Petr Jiricka    Fixed bug with multiple 

@@ -80,6 +80,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   /** Reflects whether the server is actually running, not the running property */
   static boolean running = false;
   
+  private static boolean startStopMessages = true;
+  
   private static Properties mappedServlets = new Properties();
 
   /** http settings */
@@ -149,10 +151,13 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   }
 
   /** Restarts the server if it is running - must be called in a synchronized block */
-  private void restartIfNecessary() {
-    if (running) {
+  private void restartIfNecessary(boolean printMessages) {
+    if (running) {                             
+      if (!printMessages)
+        setStartStopMessages(false);
       HttpServerModule.stopHTTPServer();
       HttpServerModule.initHTTPServer();
+      // messages will be enabled by the server thread
     }
   }           
     
@@ -219,7 +224,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     // implement the change  
     synchronized (HttpServerSettings.OPTIONS) {
       this.repositoryBaseURL = newURL;
-      restartIfNecessary();
+      restartIfNecessary(false);
     }
     firePropertyChange("repositoryBaseURL", null, this.repositoryBaseURL);
   }
@@ -241,7 +246,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     // implement the change  
     synchronized (HttpServerSettings.OPTIONS) {
       this.classpathBaseURL = newURL;
-      restartIfNecessary();
+      restartIfNecessary(false);
     }
     firePropertyChange("classpathBaseURL", null, this.classpathBaseURL);
   }
@@ -261,7 +266,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   public void setPort(int p) {
     synchronized (HttpServerSettings.OPTIONS) {
       port = p;
-      restartIfNecessary();
+      restartIfNecessary(true);
     }                
     firePropertyChange("port", null, new Integer(port));
   }
@@ -281,6 +286,14 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   /** getter for host */
   public String getHost() {
     return host;
+  }
+  
+  public void setStartStopMessages(boolean ssm) {
+    startStopMessages = ssm;
+  }
+
+  public boolean isStartStopMessages() {
+    return startStopMessages;
   }
 
   public HelpCtx getHelpCtx () {
@@ -358,7 +371,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
       mappedServlets.put("SERVLET." + name + ".CLASS", className); 
       mappedServlets.put("SERVLET." + name + ".PATHS", urlPath); 
       mappedServlets.put("SERVLET." + name + ".Loader", NbLoader.class.getName()); 
-      restartIfNecessary();
+      restartIfNecessary(false);
     }  
   }
     
@@ -369,7 +382,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
       mappedServlets.remove("SERVLET." + name + ".CLASS"); 
       mappedServlets.remove("SERVLET." + name + ".PATHS"); 
       mappedServlets.remove("SERVLET." + name + ".Loader"); 
-      restartIfNecessary();
+      restartIfNecessary(false);
     }  
   }
 
@@ -439,6 +452,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  18   Gandalf   1.17        9/8/99   Petr Jiricka    Fixed 
+ *       NullPointerException at startup
  *  17   Gandalf   1.16        8/17/99  Petr Jiricka    Fixed startup of the 
  *       server during the first IDE start
  *  16   Gandalf   1.15        8/9/99   Ian Formanek    Generated Serial Version
