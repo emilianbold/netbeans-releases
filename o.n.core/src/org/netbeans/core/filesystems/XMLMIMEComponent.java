@@ -299,7 +299,7 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
         
         public void error(SAXParseException exception) throws SAXException {            
             // we are not validating should not occure
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, exception);
+            ErrorManager.getDefault().log(ErrorManager.WARNING, exception.getMessage());
             this.state = ERROR;
             throw STOP;
         }
