@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <property name="build.sysclasspath" value="ignore"/>
 
-    <property name="netbeans.home" location="../../../nb_all/nbbuild/netbeans/"/>
+    <property name="netbeans.home" location="../../nbbuild/netbeans/"/>
     <property name="netbeans.test.home" value="${netbeans.home}"/>
     
     <!-- Says how to create classpath for compilation and code tests.
@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Name of tested module -->
     <property name="xtest.module" value="form"/>
     
-    <property name="xtest.home" location="../../../nb_all/xtest"/>
+    <property name="xtest.home" location="../../xtest"/>
    
     <!-- default testtypes, attributes and executors -->
     <property name="xtest.testtype" value="qa-functional"/>
