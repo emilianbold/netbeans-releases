@@ -79,54 +79,58 @@ public class DataModel extends AbstractTableModel
 
     public void setValue(Object val, String pname, int row)
     {
-        int srow = row, erow = row;
-        ColumnItem xcol = (ColumnItem)data.elementAt(row);
-        xcol.setProperty(pname, val);
-        if (pname.equals(ColumnItem.PRIMARY_KEY) && val.equals(Boolean.TRUE)) {
+        if( row < getColumnCount() ) {
+            int srow = row, erow = row;
+            ColumnItem xcol = (ColumnItem)data.elementAt(row);
+            xcol.setProperty(pname, val);
+            if (pname.equals(ColumnItem.PRIMARY_KEY) && val.equals(Boolean.TRUE)) {
 
-            if (xcol.allowsNull()) xcol.setProperty(ColumnItem.NULLABLE, Boolean.FALSE);
-            if (!xcol.isIndexed()) xcol.setProperty(ColumnItem.INDEX, Boolean.TRUE);
-            if (!xcol.isUnique()) xcol.setProperty(ColumnItem.UNIQUE, Boolean.TRUE);
-            for (int i=0; i<data.size();i++) {
-                ColumnItem eitem = (ColumnItem)data.elementAt(i);
-                if (i!=row && eitem.isPrimaryKey()) {
-                    eitem.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
-                    if (i<row) srow = i; else erow = i;
+                if (xcol.allowsNull()) xcol.setProperty(ColumnItem.NULLABLE, Boolean.FALSE);
+                if (!xcol.isIndexed()) xcol.setProperty(ColumnItem.INDEX, Boolean.TRUE);
+                if (!xcol.isUnique()) xcol.setProperty(ColumnItem.UNIQUE, Boolean.TRUE);
+                for (int i=0; i<data.size();i++) {
+                    ColumnItem eitem = (ColumnItem)data.elementAt(i);
+                    if (i!=row && eitem.isPrimaryKey()) {
+                        eitem.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
+                        if (i<row) srow = i; else erow = i;
+                    }
                 }
             }
-        }
 
-        if (pname.equals(ColumnItem.NULLABLE)) {
-            if (val.equals(Boolean.TRUE)) {
-                xcol.setProperty(ColumnItem.UNIQUE, Boolean.FALSE);
-                xcol.setProperty(ColumnItem.INDEX, Boolean.FALSE);
-                xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
+            if (pname.equals(ColumnItem.NULLABLE)) {
+                if (val.equals(Boolean.TRUE)) {
+                    xcol.setProperty(ColumnItem.UNIQUE, Boolean.FALSE);
+                    xcol.setProperty(ColumnItem.INDEX, Boolean.FALSE);
+                    xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
+                }
             }
-        }
 
-        if (pname.equals(ColumnItem.INDEX)) {
-            if (val.equals(Boolean.TRUE)) {
-                if (xcol.allowsNull()) xcol.setProperty(ColumnItem.NULLABLE, Boolean.FALSE);
-                if (!xcol.isUnique()) xcol.setProperty(ColumnItem.UNIQUE, Boolean.TRUE);
-            } else xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
-        }
-
-        if (pname.equals(ColumnItem.UNIQUE)) {
-            if (val.equals(Boolean.TRUE)) {
-                xcol.setProperty(ColumnItem.NULLABLE, Boolean.FALSE);
-            } else {
-                xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
-                xcol.setProperty(ColumnItem.INDEX, Boolean.FALSE);
+            if (pname.equals(ColumnItem.INDEX)) {
+                if (val.equals(Boolean.TRUE)) {
+                    if (xcol.allowsNull()) xcol.setProperty(ColumnItem.NULLABLE, Boolean.FALSE);
+                    if (!xcol.isUnique()) xcol.setProperty(ColumnItem.UNIQUE, Boolean.TRUE);
+                } else xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
             }
-        }
 
-        fireTableRowsUpdated(srow, erow);
+            if (pname.equals(ColumnItem.UNIQUE)) {
+                if (val.equals(Boolean.TRUE)) {
+                    xcol.setProperty(ColumnItem.NULLABLE, Boolean.FALSE);
+                } else {
+                    xcol.setProperty(ColumnItem.PRIMARY_KEY, Boolean.FALSE);
+                    xcol.setProperty(ColumnItem.INDEX, Boolean.FALSE);
+                }
+            }
+
+            fireTableRowsUpdated(srow, erow);
+        }
     }
 
     public void setValueAt(Object val, int row, int col)
     {
-        String pname = (String)ColumnItem.getColumnNames().elementAt(col);
-        setValue(val, pname, row);
+        if( ( row < getRowCount() ) && ( col < getColumnCount() ) ){
+            String pname = (String)ColumnItem.getColumnNames().elementAt(col);
+            setValue(val, pname, row);
+        }
     }
 
     public String getColumnName(int col)
