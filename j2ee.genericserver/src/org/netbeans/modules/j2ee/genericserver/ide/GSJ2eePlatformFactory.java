@@ -45,6 +45,7 @@ public class GSJ2eePlatformFactory extends J2eePlatformFactory {
         
         public Set getSupportedSpecVersions() {
             Set result = new HashSet();
+            result.add(J2eeModule.J2EE_13);
             result.add(J2eeModule.J2EE_14);
             return result;
         }
