@@ -25,7 +25,7 @@
 L10N_LIST="xml/l10n.list"
 echo -n > $L10N_LIST
 
-for module in catalog compat core css tax text-edit tools tree-edit; do
+for module in api catalog compat core css tax text-edit tools tree-edit; do
     MODULE_HOME="xml/${module}"
     MODULE_L10N_LIST="${MODULE_HOME}/l10n.list"
     MODULE_L10N_LIST_TEMP="${MODULE_L10N_LIST}.temp"
@@ -38,7 +38,10 @@ for module in catalog compat core css tax text-edit tools tree-edit; do
         if [ -e $MODULE_SRC ]; then
             find $MODULE_SRC -name "Bundle.properties" >> ${MODULE_L10N_LIST_TEMP}
             find $MODULE_SRC -name "*.html" | grep -v "_ja.html" | grep -v "package.html" >> ${MODULE_L10N_LIST_TEMP}
-            find $MODULE_SRC -name "*.template" >> ${MODULE_L10N_LIST_TEMP}
+            find $MODULE_SRC -name "*.template" | grep -v "_ja.template" >> ${MODULE_L10N_LIST_TEMP}
+            find $MODULE_SRC -name "mf-layer.xml" | grep -v "mf-layer_ja.xml" >> ${MODULE_L10N_LIST_TEMP}
+            find $MODULE_SRC -name "*.xml" | grep -v "_ja.xml" | grep "/templates/" >> ${MODULE_L10N_LIST_TEMP}
+            find $MODULE_SRC -name "*.xsl" | grep -v "_ja.xsl" | grep "/templates/" >> ${MODULE_L10N_LIST_TEMP}
         fi
     done
     

@@ -6,8 +6,8 @@ xml/tax/lib/src/org/netbeans/tax/grammar/Bundle.properties
 xml/tax/lib/src/org/netbeans/tax/io/Bundle.properties
 xml/tax/lib/src/org/netbeans/tax/spec/Bundle.properties
 xml/tax/lib/src/org/netbeans/tax/traversal/Bundle.properties
-xml/tax/src/org/netbeans/modules/xml/tax/beans/beaninfo/Bundle.properties
 xml/tax/src/org/netbeans/modules/xml/tax/beans/Bundle.properties
+xml/tax/src/org/netbeans/modules/xml/tax/beans/beaninfo/Bundle.properties
 xml/tax/src/org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties
 xml/tax/src/org/netbeans/modules/xml/tax/beans/editor/Bundle.properties
 xml/tax/src/org/netbeans/modules/xml/tax/resources/Bundle.properties
