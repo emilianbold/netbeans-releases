@@ -118,6 +118,7 @@ public class QueueJMenuDriver extends LightSupportiveDriver implements MenuDrive
                 };
 	}
         //1.5 workaround
+        queueTool.setOutput(oper.getOutput().createErrorOutput());
         queueTool.waitEmpty(10);
         queueTool.waitEmpty(10);
         queueTool.waitEmpty(10);
@@ -158,6 +159,7 @@ public class QueueJMenuDriver extends LightSupportiveDriver implements MenuDrive
                                         waitingTime);
         waiter.getTimeouts().setTimeout("Waiter.TimeDelta", 100);
         //1.5 workaround
+        queueTool.setOutput(env.getOutput().createErrorOutput());
         queueTool.waitEmpty(10);
         queueTool.waitEmpty(10);
         queueTool.waitEmpty(10);

@@ -50,6 +50,7 @@ public class JComboMouseDriver extends LightSupportiveDriver implements ListDriv
     public void selectItem(ComponentOperator oper, int index) {
 	JComboBoxOperator coper = (JComboBoxOperator)oper;
         //1.5 workaround
+        queueTool.setOutput(oper.getOutput().createErrorOutput());
         queueTool.waitEmpty(10);
         queueTool.waitEmpty(10);
         queueTool.waitEmpty(10);
