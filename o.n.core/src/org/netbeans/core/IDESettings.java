@@ -103,7 +103,7 @@ public class IDESettings extends SystemOption {
     private static String proxyHost = System.getProperty(KEY_PROXY_HOST, "");
     private static String proxyPort = System.getProperty(KEY_PROXY_PORT, "");
 
-    private UIModeManager uiModeManager = null;
+    private static int uiMode = UIModeManager.SDI_MODE;
     private TabbedContainerUIManager tabbedContainerUIManager = null;
 
     // ------------------------------------------
@@ -419,12 +419,18 @@ public class IDESettings extends SystemOption {
         }
     }
 
+    /** Sets ui mode (MDI, SDI, Dialog SDI...) */ 
     public void setUIMode (int uiMode) {
-        getUIModeManager().setUIMode(uiMode);
+        if (this.uiMode == uiMode) {
+            return;
+        }
+        int oldValue = this.uiMode;
+        this.uiMode = uiMode;
+        firePropertyChange (PROP_UIMODE, new Integer(oldValue), new Integer(uiMode));
     }
 
     public int getUIMode () {
-        return getUIModeManager().getUIMode();
+        return uiMode;
     }
 
     public void setTabbedContainerUI (int tabbedContainerUI) {
@@ -450,13 +456,6 @@ public class IDESettings extends SystemOption {
             TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, e);
         }
         return nonProxy;
-    }
-
-    private UIModeManager getUIModeManager () {
-        if(uiModeManager == null) {
-            uiModeManager = WindowManagerImpl.getDefault().uiModeManager();
-        }
-        return uiModeManager;
     }
 
     private TabbedContainerUIManager getTabbedContainerUIManager () {
