@@ -77,7 +77,8 @@ Microsystems, Inc. All Rights Reserved.
 	     Fill apropriate classpathes in targets "${xtest.source.location}test-classath". -->
 	<property name="codetest.classpath" refid="codetest.classpath"/>
 	<echo message="nbxxx home ${xtest.workdir}/sys/ide "/>
-        <property name="xtest.extra.ide.mounts" value="${xtest.workdir}/sys/ide/sampledir;qa-fuctional/src/data"/>
+        <!--property name="xtest.extra.ide.mounts" value="${xtest.workdir}/sys/ide/sampledir;qa-fuctional/src/data"/-->
+	<property name="xtest.extra.ide.mounts" value="${xtest.workdir}/tmpdir;qa-fuctional/src/data"/>
 
     </target>
 
