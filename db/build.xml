@@ -15,10 +15,10 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="db" default="netbeans" basedir=".">
 
-  <property name="nbroot" value="../../nb_all"/>
-  <property name="f4jroot" value=".."/>
-  <property name="nbext" value="${nbroot}/nbbuild"/>
-  <property name="license.file" value="${f4jroot}/core/release/LICENSE.txt"/>
+  <property name="nbroot" location="../../nb_all"/>
+  <property name="f4jroot" location=".."/>
+  <property name="nbext" location="${nbroot}/nbbuild"/>
+  <property name="license.file" location="${f4jroot}/core/release/LICENSE.txt"/>
 
   <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbroot}/nbbuild/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
