@@ -89,11 +89,11 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     </checkhelpsets>
   </target>
 
-  <target name="netbeans" depends="jars,release,javahelp">
+  <target name="netbeans" depends="jars,release,javahelp" description="Build module.">
     <genlist targetname="nbm" outputfiledir="../nbbuild/netbeans"/>
   </target>
 
-  <target name="nbm" depends="netbeans">
+  <target name="nbm" depends="netbeans" description="Build module NBM file.">
     <makenbm file="ant.nbm"
              topdir="."
 	     manifest="manifest-subst.mf"
@@ -123,11 +123,11 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
       <zipfileset src="${binroot}/ant/release/modules/ext/ant-optional.jar" excludes="META-INF/MANIFEST.MF"/>
     </jar>
   </target>
-  <target name="test" depends="test-build">
+  <target name="test" depends="test-build" description="Test module inside running IDE.">
     <nbinstaller module="test/ant.jar" action="reinstall"/>
   </target>
 
-  <target name="clean">
+  <target name="clean" description="Clean out build products.">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
