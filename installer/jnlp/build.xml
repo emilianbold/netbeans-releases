@@ -25,9 +25,13 @@ All Rights Reserved.
         </javac>
     </target>
 
+    <!-- The main target -->
     <target depends="jnlp-expand1, create-war" name="netbeans">
     </target>
 
+    <!-- This target fills in the content of file nb-launch.jnlp.
+         Scans all the available jar files and adds entries to the .jnlp file.
+    -->
     <target depends="copy-to-release, create-jnlp-jars" name="create-config">
         <!-- This target creates the end of nb-launch.jnlp file -->
         <path id="jarfiles">
@@ -114,10 +118,6 @@ All Rights Reserved.
         </signjar>
     </target>
     
-    <target name="delete-release">
-        <delete dir="release"/>
-    </target>
-    
     <target name="nbm"/>
     
     <target description="Clean build products." name="clean">
@@ -146,7 +146,7 @@ All Rights Reserved.
         <pathelement location="${nb_all}/web/external/servlet-2.3.jar"/>
     </path>
     
-    <target name="jars" depends="compile, delete-release">
+    <target name="jars" depends="compile">
         <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         
         <repeat values="${allmodules}" name="maindir" target="buildjar"/>
@@ -154,6 +154,9 @@ All Rights Reserved.
         <delete file="jars/core/crimson-1.1.3.jar"/>
         <delete file="jars/core/regexp-1.2.jar"/>
         <delete file="jars/core/xml-apis-1.0b2.jar"/>
+        <!-- For some reason we still need xerces from core. It should not be
+             needed but somehow using this version prevents some bug. So
+             we include core's xerces -->
 <!--        <delete file="jars/core/xerces-2.0.2.jar"/> -->
         <mkdir dir="jars"/>
         <jar compress="false"
@@ -164,6 +167,7 @@ All Rights Reserved.
 
     </target>
 
+    <!-- copies and conditionally repackages all jars -->
     <target name="buildjar">
         <echo message="buildjar running with property maindir == ${maindir}"/>
         
@@ -244,7 +248,7 @@ All Rights Reserved.
                     the strings ${f1} .. ${f6}. It contains this strange
                     string in case the folder for conversion is emtpy.
                     Sorry I did not find any better way to decide whether
-                    a property is empty - it would reuire a dedicated task.
+                    a property is empty - it would require a dedicated task.
                 -->
                 <contains string="${forconversion}" substring="{f"/>
             </not>
@@ -260,8 +264,13 @@ All Rights Reserved.
     <target name="repackage">
         <echo message="Trying to repackage ${filetoconvert}"/>
         <basename property="fname" file="${filetoconvert}" suffix=".jar"/>
-        <basename property="fullname" file="${filetoconvert}"/>
-    
+        <uptodate srcfile="${filetoconvert}" targetfile="jars/${maindir}/${fname}.jar" property="jaruptodate"/>
+        <antcall target="repackage2"/>
+    </target>
+    <!-- This target takes a jar file and adds additional directory to the packed
+        directory structure
+    -->
+    <target name="repackage2" unless="jaruptodate">
         <mkdir dir="jars/${maindir}/tmp/${fname}"/>
         <unjar src="${filetoconvert}" dest="jars/${maindir}/tmp/${fname}"/>
         <echo file="jars/${maindir}/${fname}-manifest.mf"><![CDATA[Manifest-Version: 1.0
