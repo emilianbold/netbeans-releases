@@ -33,7 +33,7 @@ public class Kvetcher extends Task implements BuildListener {
     public final class Explanation {
         StringBuffer text = new StringBuffer();
         public void addText(String s) {
-            text.append(s);
+            text.append(getProject().replaceProperties(s));
         }
     }
     /** Provide some explanatory text for the message. */

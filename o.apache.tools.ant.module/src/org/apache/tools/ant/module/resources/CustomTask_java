@@ -89,12 +89,12 @@ public class CustomTask extends Task {
 
     /* For nested text:
     private StringBuffer text;
-    public void addText(String t) {
-        t = t.trim();
+    public void addText(String raw) {
+        String s = getProject().replaceProperties(raw.trim());
         if (text == null) {
-            text = new StringBuffer(t);
+            text = new StringBuffer(s);
         } else {
-            text.append(t);
+            text.append(s);
         }
     }
     // <customtask>

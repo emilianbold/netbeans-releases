@@ -82,7 +82,7 @@ public class MakeLNBM extends MatchingTask {
 	    //   Some text here.
 	    //   And another line.
 	    // </description>
-	    t = t.trim ();
+	    t = getProject().replaceProperties(t.trim());
 	    int min = Integer.MAX_VALUE;
 	    StringTokenizer tok = new StringTokenizer (t, "\n"); //NOI18N
 	    boolean first = true;
