@@ -83,8 +83,8 @@ final class IntMap {
     }
 
     public int[] getKeys () {
-        if (last == 0) {
-            return new int[] { 0 };
+        if (last == -1) {
+            return new int[0];
         }
         int[] result = new int[last+1];
         try {
