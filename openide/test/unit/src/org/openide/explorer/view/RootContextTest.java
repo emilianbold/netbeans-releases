@@ -141,7 +141,7 @@ public class RootContextTest extends NbTestCase {
         
         ExplorerPanel panel = new ExplorerPanel ();
         //#47021
-        panel.setName("prefferedID");
+        panel.setName("preferredID");
         ExplorerManager mgr = panel.getExplorerManager ();
         
         panel.add (view);
@@ -160,7 +160,7 @@ public class RootContextTest extends NbTestCase {
         
         ExplorerPanel panel = new ExplorerPanel ();
         //#47021
-        panel.setName("prefferedID");
+        panel.setName("preferredID");
         ExplorerManager mgr = panel.getExplorerManager ();
         
         panel.add (view);
@@ -179,7 +179,7 @@ public class RootContextTest extends NbTestCase {
         
         ExplorerPanel panel = new ExplorerPanel ();
         //#47021
-        panel.setName("prefferedID");
+        panel.setName("preferredID");
         ExplorerManager mgr = panel.getExplorerManager ();
         
         panel.add (view);
@@ -198,7 +198,7 @@ public class RootContextTest extends NbTestCase {
         
         ExplorerPanel panel = new ExplorerPanel ();
         //#47021
-        panel.setName("prefferedID");
+        panel.setName("preferredID");
         ExplorerManager mgr = panel.getExplorerManager ();
         
         panel.add (view);
@@ -217,7 +217,7 @@ public class RootContextTest extends NbTestCase {
         
         ExplorerPanel panel = new ExplorerPanel ();
         //#47021
-        panel.setName("prefferedID");
+        panel.setName("preferredID");
         ExplorerManager mgr = panel.getExplorerManager ();
         
         panel.add (view);
