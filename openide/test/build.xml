@@ -24,7 +24,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.source.location" value="jar"/>
     
     <property name="xtest.home" location="../../xtest"/>
-    <property name="xtest.extra.home" location="../../../nbextra/xtest"/>
     <property name="xtest.general.antfile" location="${xtest.home}/lib/module_harness.xml"/>
     
     <property name="xtest.results" location="results"/>

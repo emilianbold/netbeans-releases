@@ -24,7 +24,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.source.location" value="src"/>
     
     <property name="xtest.home" location="../../xtest"/>
-    <property name="xtest.extra.home" location="../../../nbextra/xtest"/>
 
     <property name="xtest.build" location="."/>    
     <property name="xtest.file.name" value="test.jar"/>
@@ -56,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="init">
         <taskdef name="nbpath" classname="org.netbeans.xtest.NbPath" classpath="${xtest.home}/lib/xtest.jar"/>
-        <nbpath nbhome="${netbeans.test.home}" xthome="${xtest.home}" xtexhome="${xtest.extra.home}"/>
+        <nbpath nbhome="${netbeans.test.home}" xthome="${xtest.home}" xtexhome="${xtest.home}"/>
     </target>
     
     <!-- ============ -->
