@@ -35,6 +35,7 @@ import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.openide.util.NbBundle;
 
 /** class observing CTRL-F11 key and launching NodeGenerator
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
@@ -51,6 +52,14 @@ public class NodeGeneratorRunnable implements Runnable, AWTEventListener {
     boolean defaultInline;
     boolean defaultNoBlock;
     
+    /** Creates new instance of NodeGeneratorRunnable
+     * @param directory String destination directory (root of packages)
+     * @param nodesPackage String package for nodes
+     * @param actionsPackage String package for actions
+     * @param defaultInline boolean default inline selection
+     * @param defaultNoBlock boolean default no block selection
+     * @param panel NodeGeneratorPanel (caller)
+     */    
     public NodeGeneratorRunnable(String directory, String nodesPackage, String actionsPackage, boolean defaultInline, boolean defaultNoBlock, NodeGeneratorPanel panel) {
         this.directory = directory;
         this.nodesPackage = nodesPackage;
@@ -85,27 +94,27 @@ public class NodeGeneratorRunnable implements Runnable, AWTEventListener {
                     Thread.currentThread().sleep(100);
                 }
                 start=false;
-                help.setText("Waiting for popup menu ..."); 
+                help.setText(NbBundle.getMessage(NodeGeneratorRunnable.class, "MSG_Waiting"));  // NOI18N
                 try {
                     JPopupMenuOperator popup=new JPopupMenuOperator();
-                    help.setText("Please wait, processing ..."); 
+                    help.setText(NbBundle.getMessage(NodeGeneratorRunnable.class, "MSG_PleaseWait"));  // NOI18N
                     int i=2;
-                    String name = "NewNode";
-                    String index = "";
-                    while ((file=new File(directory+"/"+nodesPackage.replace('.', '/')+"/"+name+index+".java")).exists()) { 
+                    String name = "NewNode"; // NOI18N
+                    String index = ""; // NOI18N
+                    while ((file=new File(directory+"/"+nodesPackage.replace('.', '/')+"/"+name+index+".java")).exists()) {  // NOI18N
                         index = String.valueOf(i++);
                     }
                     NodeGenerator gen = new NodeGenerator(actionsPackage, nodesPackage, name+index, popup, defaultInline, defaultNoBlock);
                     if (NodeEditorPanel.showDialog(gen)) {
                         gen.saveNewSources(directory);
-                        help.setText("Finished: "+gen.getNodeName()); 
+                        help.setText(NbBundle.getMessage(NodeGeneratorRunnable.class, "MSG_Finished")+gen.getNodeName());  // NOI18N
                     } else {
-                        help.setText("Operation canceled."); 
+                        help.setText(NbBundle.getMessage(NodeGeneratorRunnable.class, "MSG_Canceled"));  // NOI18N
                     }
                 } catch (JemmyException je) {
-                    help.setText("No Popup menu found, try it again (Use CTRL-F11).");
+                    help.setText(NbBundle.getMessage(NodeGeneratorRunnable.class, "ERR_NoPopup")); // NOI18N
                 } catch (Exception e) {
-                    help.setText("Exception: "+e.getMessage()); 
+                    help.setText(NbBundle.getMessage(NodeGeneratorRunnable.class, "MSG_Exception")+e.getMessage());  // NOI18N
 //                    e.printStackTrace();
                 }
             }

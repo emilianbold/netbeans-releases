@@ -44,6 +44,7 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreeNode;
+import org.openide.util.NbBundle;
 
 /** class with panel used for edit found components before generation
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
@@ -58,18 +59,18 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
     
     static {
         try {
-            InputStream in = NodeEditorPanel.class.getClassLoader().getResourceAsStream("org/netbeans/modules/testtools/generator/class.gif"); 
+            InputStream in = NodeEditorPanel.class.getClassLoader().getResourceAsStream("org/netbeans/modules/testtools/generator/class.gif"); // NOI18N
             byte b[] = new byte[in.available()];
             in.read(b);
             in.close();
             rootIcon = new ImageIcon(b);
             existIcon=rootIcon;
-            in = NodeEditorPanel.class.getClassLoader().getResourceAsStream("org/netbeans/modules/testtools/generator/new.gif"); 
+            in = NodeEditorPanel.class.getClassLoader().getResourceAsStream("org/netbeans/modules/testtools/generator/new.gif"); // NOI18N
             b = new byte[in.available()];
             in.read(b);
             in.close();
             newIcon = new ImageIcon(b);
-            in = NodeEditorPanel.class.getClassLoader().getResourceAsStream("org/netbeans/modules/testtools/generator/inline.gif"); 
+            in = NodeEditorPanel.class.getClassLoader().getResourceAsStream("org/netbeans/modules/testtools/generator/inline.gif"); // NOI18N
             b = new byte[in.available()];
             in.read(b);
             in.close();
@@ -165,6 +166,7 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
         splitPane.setDividerSize(4);
         splitPane.setResizeWeight(0.5);
         splitPane.setPreferredSize(new java.awt.Dimension(800, 400));
+        tree.setToolTipText(NbBundle.getMessage(NodeEditorPanel.class, "TTT_Tree"));
         tree.setShowsRootHandles(true);
         tree.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -179,11 +181,14 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
         });
 
         scrollPane.setViewportView(tree);
+        tree.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NodeEditorPanel.class, "TTT_Tree"));
 
         splitPane.setLeftComponent(scrollPane);
 
+        propertySheet.setToolTipText(NbBundle.getMessage(NodeEditorPanel.class, "TTT_Propertis"));
         propertySheet.setDisplayWritableOnly(true);
         splitPane.setRightComponent(propertySheet);
+        propertySheet.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NodeEditorPanel.class, "TTT_Propertis"));
 
         add(splitPane, java.awt.BorderLayout.CENTER);
 
@@ -199,7 +204,7 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
         if ((evt.getModifiers()==evt.BUTTON3_MASK)&&(tree.getSelectionCount()>0)&&!tree.isRowSelected(0)) {
             if (popup==null) {
                 popup=new JPopupMenu();
-                JMenuItem del=new JMenuItem("Delete");
+                JMenuItem del=new JMenuItem(NbBundle.getMessage(NodeEditorPanel.class, "CTL_Delete")); // NOI18N
                 del.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
                 del.addActionListener(new java.awt.event.ActionListener() {
                     public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -236,7 +241,7 @@ public class NodeEditorPanel extends javax.swing.JPanel implements ChangeListene
      * @param gen ComponentGenerator instance
      * @return boolean false when operation canceled */    
     public static boolean showDialog(NodeGenerator gen) {
-        DialogDescriptor desc = new DialogDescriptor(new NodeEditorPanel(gen), "Node Editor", true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null); 
+        DialogDescriptor desc = new DialogDescriptor(new NodeEditorPanel(gen), NbBundle.getMessage(NodeEditorPanel.class, "EditorTitle"), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);  // NOI18N
         TopManager.getDefault().createDialog(desc).show();
         return desc.getValue()==DialogDescriptor.OK_OPTION;
     }

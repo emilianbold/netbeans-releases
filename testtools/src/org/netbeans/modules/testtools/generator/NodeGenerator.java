@@ -1,10 +1,23 @@
 /*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.testtools.generator;
+
+/*
  * NodeGenerator.java
  *
  * Created on August 21, 2002, 1:44 PM
  */
-
-package org.netbeans.modules.testtools.generator;
 
 import java.io.*;
 import java.util.*;
@@ -31,35 +44,60 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
+/** Node Generator main class
+ * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
  */
 public class NodeGenerator {
     
-    private static final String nodeTemplate = ResourceBundle.getBundle("org.netbeans.modules.testtools.generator.NodeGenerator").getString("NodeTemplate");
+    private static final String nodeTemplate = NbBundle.getMessage(NodeGenerator.class, "NodeTemplate");
+    private static final String prefixInline = NbBundle.getMessage(NodeGenerator.class, "Prefix_inline");
+    private static final String prefixNew = NbBundle.getMessage(NodeGenerator.class, "Prefix_new");
     
+    /** abstract class representing action record bean */    
     public abstract class ActionRecord extends Object {
 
+        /** getter of full class name
+         * @return String full class name
+         */        
         public abstract String getFullClassName();
 
+        /** getter of action name
+         * @return String action name
+         */        
         public abstract String getName();
 
+        /** getter of popup path
+         * @return String popup path
+         */        
         public abstract String getPopupPath();
         
+        /** getter for constructor source code
+         * @return String constructor source code
+         */        
         public abstract String getConstructorCode();
         
+        /** getter for inline status
+         * @return boolean true when action should be generated as inline
+         */        
         public abstract boolean isInline();
 
+        /** getter for small version of action name
+         * @return String small version of action name
+         */        
         public String getSmallName() {
             String s=getName();
-            if (s.length()>6 && s.endsWith("Action"))
+            if (s.length()>6 && s.endsWith("Action")) // NOI18N
                 return Character.toLowerCase(s.charAt(0))+s.substring(1, s.length()-6);
             else
                 return Character.toLowerCase(s.charAt(0))+s.substring(1);
         }
 
+        /** checker if given popup is served by this action
+         * @param popupPath String popup path
+         * @return boolean result
+         */        
         public boolean isForPopup(String popupPath) {
             String popup = getPopupPath();
             if (popup==null) return false;
@@ -74,6 +112,9 @@ public class NodeGenerator {
         
         private DefaultMutableTreeNode node;
         
+        /** getter of tree node delegate for this action
+         * @return DefaultMutableTreeNode
+         */        
         public DefaultMutableTreeNode getNodeDelegate() {
             if (node==null) {
                 node=new DefaultMutableTreeNode(this);
@@ -84,39 +125,62 @@ public class NodeGenerator {
             
     }
 
+    /** ActionRecord extension representing existing and compiled action */    
     public class ExistingActionRecord extends ActionRecord {
         Action action;
+        /** created new ExistingActionRecord instance
+         * @param actionInstance Action instance
+         */        
         public ExistingActionRecord(Action actionInstance) {
             action=actionInstance;
         }
         
+        /** getter of full class name
+         * @return String full class name
+         */        
         public String getFullClassName() {
             return action.getClass().getName();
         }
 
+        /** getter of action name
+         * @return String action name
+         */        
         public String getName() {
             String s=getFullClassName();
             return s.substring(s.lastIndexOf('.')+1);
         }
         
+        /** getter of popup path
+         * @return String popup path
+         */        
         public String getPopupPath() {
             return action.getPopupPath();
         }
         
+        /** getter for constructor source code
+         * @return String constructor source code
+         */        
         public String getConstructorCode() {
-            return getName()+"()";
+            return getName()+"()"; // NOI18N
         }
         
+        /** returns String representation of this bean
+         * @return String representation of this bean
+         */        
         public String toString() {
             return getFullClassName();
         }
         
+        /** getter for inline status
+         * @return boolean true when action should be generated as inline
+         */        
         public boolean isInline() {
             return false;
         }
         
     }
     
+    /** ActionRecord extension representing new action */    
     public class NewActionRecord extends ActionRecord {
         private String popupPath;
         private String name;
@@ -126,117 +190,154 @@ public class NodeGenerator {
         private boolean noBlock;
         private boolean inline;
         
+        /** creates new NewActionRecord instance
+         * @param popupPath String popup path
+         * @param shortcut String shortcut name or null
+         */        
         public NewActionRecord(String popupPath, String shortcut) {
             this.popupPath=popupPath;
             if (shortcut!=null && shortcut.length()>0) {
                 this.shortcuts=new String[]{shortcut};
             }
-            name=toJavaIdentifier(popupPath)+"Action";
+            name=toJavaIdentifier(popupPath)+"Action"; // NOI18N
             noBlock=defaultNoBlock;
             inline=defaultInline;
         }
         
+        /** getter of full class name
+         * @return String full class name
+         */        
         public String getFullClassName() {
             if (inline) return null;
-            else return actionsPackage+"."+name;
+            else return actionsPackage+"."+name; // NOI18N
         }
         
+        /** getter of action name
+         * @return String action name
+         */        
         public String getName() {
             return name;
         }
         
+        /** setter for name
+         * @param newName String name
+         */        
         public void setName(String newName) {
             name=newName;
             fireStateChanged(this);
         }
 
+        /** getter for menu path
+         * @return String menu path
+         */        
         public String getMenuPath() {
             return menuPath;
         }
         
+        /** setter for menu path
+         * @param menuPath String menu path
+         */        
         public void setMenuPath(String menuPath) {
-            if (menuPath.equals("null")) menuPath=null;
+            if (menuPath.equals("null")) menuPath=null; // NOI18N
             this.menuPath = menuPath;
             fireStateChanged(this);
         }
         
+        /** getter for system action class
+         * @return String system action class
+         */        
         public String getSystemActionClass() {
             return systemActionClass;
         }
         
+        /** setter for system action class
+         * @param systemActionClass String system action class
+         */        
         public void setSystemActionClass(String systemActionClass) {
-            if (systemActionClass.equals("null")) systemActionClass=null;
+            if (systemActionClass.equals("null")) systemActionClass=null; // NOI18N
             this.systemActionClass = systemActionClass;
             fireStateChanged(this);
         }
         
+        /** getter for no block status
+         * @return boolean no block status
+         */        
         public boolean isNoBlock() {
             return noBlock;
         }
         
+        /** setter for no block status
+         * @param noBlock boolean no block status
+         */        
         public void setNoBlock(boolean noBlock) {
             this.noBlock = noBlock;
             fireStateChanged(this);
         }
         
+        /** getter for source code of action
+         * @return String source code
+         */        
         public String getSourceCode() {
             StringBuffer sb = new StringBuffer();
-            sb.append("/*\n * ");
+            sb.append("/*\n * "); // NOI18N
             sb.append(name);
-            sb.append(".java\n *\n * Created on ");
+            sb.append(".java\n *\n * Created on "); // NOI18N
             sb.append(new SimpleDateFormat().format(new Date()));
-            sb.append("\n */\n\npackage ");
+            sb.append("\n */\n\npackage "); // NOI18N
             sb.append(actionsPackage);
-            sb.append(";\n\nimport org.netbeans.jellytools.actions.*;\nimport java.awt.event.KeyEvent;\n\n/** ");
+            sb.append(";\n\nimport org.netbeans.jellytools.actions.*;\nimport java.awt.event.KeyEvent;\n\n/** "); // NOI18N
             sb.append(name);
-            sb.append(" Class\n * author ");
-            sb.append(System.getProperty("user.name"));
-            sb.append("\n */\npublic class ");
+            sb.append(" Class\n * author "); // NOI18N
+            sb.append(System.getProperty("user.name")); // NOI18N
+            sb.append("\n */\npublic class "); // NOI18N
             sb.append(name);
-            sb.append(" extends Action");
-            if (noBlock) sb.append("NoBlock");
-            sb.append(" {\n\n    /** creates new ");
+            sb.append(" extends Action"); // NOI18N
+            if (noBlock) sb.append("NoBlock"); // NOI18N
+            sb.append(" {\n\n    /** creates new "); // NOI18N
             sb.append(name);
-            sb.append(" instance */\n    public ");
+            sb.append(" instance */\n    public "); // NOI18N
             sb.append(name);
-            sb.append("() {\n        super(");
+            sb.append("() {\n        super("); // NOI18N
             sb.append(getConstructorArgs());
-            sb.append(");\n    }\n}\n");
+            sb.append(");\n    }\n}\n"); // NOI18N
             return sb.toString();
         }
         
+        /** getter for constructor arguments source code
+         * @return String constructor arguments source code
+         */        
         protected String getConstructorArgs() {
             StringBuffer sb = new StringBuffer();
             if (menuPath!=null && menuPath.length()>0) {
                 sb.append('\"');
                 sb.append(menuPath);
-                sb.append("\", ");
+                sb.append("\", "); // NOI18N
             } else {
-                sb.append("null, ");
+                sb.append("null, "); // NOI18N
             }
             if (popupPath!=null && popupPath.length()>0) {
                 sb.append('\"');
                 sb.append(popupPath);
                 sb.append('\"');
             } else {
-                sb.append("null");
+                sb.append("null"); // NOI18N
             }
             if (systemActionClass!=null && systemActionClass.length()>0) {
-                sb.append(", \"");
+                sb.append(", \""); // NOI18N
                 sb.append(systemActionClass);
                 sb.append('\"');
             }
             if (shortcuts!=null && shortcuts.length>0) {
                 if (shortcuts.length==1) {
-                    sb.append(", new Action.Shortcut(");
+                    sb.append(", new Action.Shortcut("); // NOI18N
                     sb.append(translateShortcut(shortcuts[0]));
                     sb.append(')');
                 } else {
-                    sb.append(", new Action.Shortcut[] {new Action.Shortcut(");
+                    sb.append(", new Action.Shortcut[] {new Action.Shortcut("); // NOI18N
                     sb.append(translateShortcut(shortcuts[0]));
                     sb.append(')');
                     for (int i=1; i<shortcuts.length; i++) {
-                        sb.append(", new Action.Shortcut(");
+                        sb.append(", new Action.Shortcut("); // NOI18N
                         sb.append(translateShortcut(shortcuts[i]));
                         sb.append(')');
                     }
@@ -247,49 +348,67 @@ public class NodeGenerator {
         }            
         
         private String translateShortcut(String shortcut) {
-            StringTokenizer st=new StringTokenizer(shortcut, " ,;-+_");
-            String modifiers="";
-            String key="KeyEvent.VK_UNDEFINED";
+            StringTokenizer st=new StringTokenizer(shortcut, " ,;-+_"); // NOI18N
+            String modifiers=""; // NOI18N
+            String key="KeyEvent.VK_UNDEFINED"; // NOI18N
             while (st.hasMoreTokens()) {
                 String token=st.nextToken().toUpperCase();
-                if (token.equals("CONTROL")||token.equals("CTRL")) modifiers+="|KeyEvent.CTRL_MASK";
-                else if (token.equals("ALT")) modifiers+="|KeyEvent.ALT_MASK";
-                else if (token.equals("ALT")) modifiers+="|KeyEvent.ALT_MASK";
-                else if (token.equals("META")) modifiers+="|KeyEvent.META_MASK";
-                else if (token.equals("SHIFT")) modifiers+="|KeyEvent.SHIFT_MASK";
-                else key="KeyEvent.VK_"+token;
+                if (token.equals("CONTROL")||token.equals("CTRL")) modifiers+="|KeyEvent.CTRL_MASK"; // NOI18N
+                else if (token.equals("ALT")) modifiers+="|KeyEvent.ALT_MASK"; // NOI18N
+                else if (token.equals("ALT")) modifiers+="|KeyEvent.ALT_MASK"; // NOI18N
+                else if (token.equals("META")) modifiers+="|KeyEvent.META_MASK"; // NOI18N
+                else if (token.equals("SHIFT")) modifiers+="|KeyEvent.SHIFT_MASK"; // NOI18N
+                else key="KeyEvent.VK_"+token; // NOI18N
             }
             if (modifiers.length()>0) modifiers=modifiers.substring(1);
-            return modifiers+", "+key;
+            return modifiers+", "+key; // NOI18N
         }
             
+        /** getter of popup path
+         * @return String popup path
+         */        
         public String getPopupPath() {
             return popupPath;
         }
         
+        /** setter for popup path
+         * @param popupPath Strin gpopup path
+         */        
         public void setPopupPath(String popupPath) {
-            if (popupPath.equals("null")) popupPath=null;
+            if (popupPath.equals("null")) popupPath=null; // NOI18N
             this.popupPath = popupPath;
             fireStateChanged(this);
         }
 
+        /** getter for inline status
+         * @return boolean true when action should be generated as inline
+         */        
         public boolean isInline() {
             return inline;
         }
         
+        /** setter for inline status
+         * @param inline boolean inline status
+         */        
         public void setInline(boolean inline) {
             this.inline = inline;
             fireStateChanged(this);
         }
         
+        /** getter for constructor source code
+         * @return String constructor source code
+         */        
         public String getConstructorCode() {
-            if (inline) return "Action"+(noBlock?"NoBlock":"")+"("+getConstructorArgs()+")";
-            else return name+"()";
+            if (inline) return "Action"+(noBlock?"NoBlock":"")+"("+getConstructorArgs()+")"; // NOI18N
+            else return name+"()"; // NOI18N
         }
         
+        /** returns String representation of this bean
+         * @return String representation of this bean
+         */        
         public String toString() {
-            if (inline) return "inline "+getConstructorCode();
-            else return "new "+getFullClassName();
+            if (inline) return prefixInline+getConstructorCode(); // NOI18N
+            else return prefixNew+getFullClassName(); // NOI18N
         }
         
         /** Indexed getter for property shortcuts.
@@ -348,11 +467,19 @@ public class NodeGenerator {
         matchingRecords=new ArrayList();
     }
     
+    /** Creates new instance of NodeGenerator
+     * @param actionsPackage String package name for actions
+     * @param nodePackage String package name for node
+     * @param nodeName String node name
+     * @param popupMenu JPopupMenuOperator op popup menu to be grabbed
+     * @param defaultInline boolean true makes new actions inline by default
+     * @param defaultNoBlock boolean true makes new actions no block by default
+     */    
     public NodeGenerator(String actionsPackage, String nodePackage, String nodeName, JPopupMenuOperator popupMenu, boolean defaultInline, boolean defaultNoBlock) {
         this(actionsPackage, nodePackage, nodeName, defaultInline, defaultNoBlock);
         ArrayList paths=new ArrayList();
         tool=new EventTool();
-        getPopupPaths("", popupMenu);
+        getPopupPaths("", popupMenu); // NOI18N
     }
     
     private void getPopupPaths(String path, JPopupMenuOperator popup) {
@@ -382,30 +509,48 @@ public class NodeGenerator {
         KeyStroke key=it.getAccelerator();
         if (key==null) return null;
         String s=KeyEvent.getKeyModifiersText(key.getModifiers());
-        return s+(s.length()>0?"+":"")+KeyEvent.getKeyText(key.getKeyCode());
+        return s+(s.length()>0?"+":"")+KeyEvent.getKeyText(key.getKeyCode()); // NOI18N
     }
     
+    /** getter for node name
+     * @return String node name
+     */    
     public String getNodeName() {
         return nodeName;
     }
     
+    /** setter for node name
+     * @param name String node name
+     */    
     public void setNodeName(String name) {
         nodeName=name;
         fireStateChanged(this);
     }
     
+    /** getter for node package
+     * @return String node package
+     */    
     public String getNodePackage() {
         return nodePackage;
     }
    
+    /** getter for actions package
+     * @return String actions package
+     */    
     public String getActionsPackage() {
         return actionsPackage;
     }
     
+    /** getter for defaultInline
+     * @return boolean default inline
+     */    
     public boolean isDefaultInline() {
         return defaultInline;
     }
     
+    /** getter for defaultNoBlock
+     * @return boolean defaultNoBlock
+     */    
     public boolean isDefaultNoBlock() {
         return defaultNoBlock;
     }
@@ -427,8 +572,8 @@ public class NodeGenerator {
         if (!clazz.isClass() || clazz.isInner()) return false;
         Identifier superc = clazz.getSuperclass();
         if (superc==null) return false;
-        if (!superc.getFullName().equals("org.netbeans.jellytools.actions.Action") &&
-        !superc.getFullName().equals("org.netbeans.jellytools.actions.ActionNoBlock")) return false;
+        if (!superc.getFullName().equals("org.netbeans.jellytools.actions.Action") && // NOI18N
+        !superc.getFullName().equals("org.netbeans.jellytools.actions.ActionNoBlock")) return false; // NOI18N
         int mod = clazz.getModifiers();
         if (Modifier.isAbstract(mod) || !Modifier.isPublic(mod)) return false;
         ConstructorElement constructor = clazz.getConstructor(new Type[0]);
@@ -465,7 +610,7 @@ public class NodeGenerator {
             Enumeration fobjects = ((FileSystem)fsystems.nextElement()).getRoot().getData(true);
             while (fobjects.hasMoreElements()) {
                 FileObject fo = (FileObject)fobjects.nextElement();
-                if (fo.getName().endsWith("Action")) try {
+                if (fo.getName().endsWith("Action")) try { // NOI18N
                     DataObject dob=DataObject.find(fo);
                     SourceCookie source = (SourceCookie)dob.getCookie(SourceCookie.class);
                     if (source!=null) {
@@ -489,8 +634,8 @@ public class NodeGenerator {
     
     private String getImportCode() {
         TreeMap imports=new TreeMap();
-        imports.put("org.netbeans.jellytools.actions", "*");
-        imports.put("org.netbeans.jellytools.nodes", "Node");
+        imports.put("org.netbeans.jellytools.actions", "*"); // NOI18N
+        imports.put("org.netbeans.jellytools.nodes", "Node"); // NOI18N
         Iterator it=matchingRecords.iterator();
         while (it.hasNext()) {
             ActionRecord rec=(ActionRecord)it.next();
@@ -501,7 +646,7 @@ public class NodeGenerator {
                     pack=pack.substring(0, i);
                     if (!pack.equals(nodePackage)) {
                         if (imports.containsKey(pack)) {
-                            imports.put(pack, "*");
+                            imports.put(pack, "*"); // NOI18N
                         } else {
                             imports.put(pack,  rec.getName());
                         }
@@ -513,11 +658,11 @@ public class NodeGenerator {
         StringBuffer sb=new StringBuffer();
         while (it.hasNext()) {
             String s=(String)it.next();
-            sb.append("import ");
+            sb.append("import "); // NOI18N
             sb.append(s);
             sb.append('.');
             sb.append(imports.get(s));
-            sb.append(";\n");
+            sb.append(";\n"); // NOI18N
         }
         return sb.toString();
     }
@@ -527,11 +672,11 @@ public class NodeGenerator {
         Iterator it=matchingRecords.iterator();
         while (it.hasNext()) {
             ActionRecord rec=(ActionRecord)it.next();
-            sb.append("    private static final Action ");
+            sb.append("    private static final Action "); // NOI18N
             sb.append(rec.getSmallName());
-            sb.append("Action = new ");
+            sb.append("Action = new "); // NOI18N
             sb.append(rec.getConstructorCode());
-            sb.append(";\n");
+            sb.append(";\n"); // NOI18N
         }
         return sb.toString();
     }
@@ -541,13 +686,13 @@ public class NodeGenerator {
         Iterator it=matchingRecords.iterator();
         while (it.hasNext()) {
             ActionRecord rec=(ActionRecord)it.next();
-            sb.append("\n    /** performs ");
+            sb.append("\n    /** performs "); // NOI18N
             sb.append(rec.getName());
-            sb.append(" with this node */\n    public void ");
+            sb.append(" with this node */\n    public void "); // NOI18N
             sb.append(rec.getSmallName());
-            sb.append("() {\n        ");
+            sb.append("() {\n        "); // NOI18N
             sb.append(rec.getSmallName());
-            sb.append("Action.perform(this);\n    }\n");
+            sb.append("Action.perform(this);\n    }\n"); // NOI18N
         }
         return sb.toString();
     }
@@ -556,14 +701,14 @@ public class NodeGenerator {
         StringBuffer sb=new StringBuffer();
         Iterator it=matchingRecords.iterator();
         if (it.hasNext()) {
-            sb.append("            ");
+            sb.append("            "); // NOI18N
             sb.append(((ActionRecord)it.next()).getSmallName());
-            sb.append("Action");
+            sb.append("Action"); // NOI18N
         }
         while (it.hasNext()) {
-            sb.append(",\n            ");
+            sb.append(",\n            "); // NOI18N
             sb.append(((ActionRecord)it.next()).getSmallName());
-            sb.append("Action");
+            sb.append("Action"); // NOI18N
         }
         return sb.toString();
     }
@@ -576,23 +721,33 @@ public class NodeGenerator {
         }
     }
     
+    /** getter for source code of node
+     * @return String source code
+     */    
     public String getSourceCode() {
         StringBuffer sb=new StringBuffer(nodeTemplate);
-        replace(sb, "__IMPORTS__", getImportCode());
-        replace(sb, "__DECLARATION__", getDeclarationCode());
-        replace(sb, "__FUNCTIONAL__", getFunctionalCode());
-        replace(sb, "__VERIFICATION__", getVerificationCode());
-        replace(sb, "__PACKAGE__", nodePackage);
-        replace(sb, "__NAME__", nodeName);
-        replace(sb, "__DATE__", new SimpleDateFormat().format(new Date()));
-        replace(sb, "__USER__", System.getProperty("user.name"));
+        replace(sb, "__IMPORTS__", getImportCode()); // NOI18N
+        replace(sb, "__DECLARATION__", getDeclarationCode()); // NOI18N
+        replace(sb, "__FUNCTIONAL__", getFunctionalCode()); // NOI18N
+        replace(sb, "__VERIFICATION__", getVerificationCode()); // NOI18N
+        replace(sb, "__PACKAGE__", nodePackage); // NOI18N
+        replace(sb, "__NAME__", nodeName); // NOI18N
+        replace(sb, "__DATE__", new SimpleDateFormat().format(new Date())); // NOI18N
+        replace(sb, "__USER__", System.getProperty("user.name")); // NOI18N
         return sb.toString();
     }
     
+    /** getter for list of all action records
+     * @return List of ActionRecords
+     */    
     public List getActionRecords() {
         return matchingRecords;
     }
     
+    /** saves all new sources (node and actions)
+     * @param packagesRootDir String path of the root of packages where sources have to be saved
+     * @throws FileNotFoundException when some problem with directories occures
+     */    
     public void saveNewSources(String packagesRootDir) throws FileNotFoundException {
         Iterator it = matchingRecords.iterator();
         while (it.hasNext()) {
@@ -600,7 +755,7 @@ public class NodeGenerator {
             if (o instanceof NewActionRecord) {
                 NewActionRecord rec=(NewActionRecord)o;
                 if (!rec.isInline()) {
-                    File f=new File(packagesRootDir, rec.getFullClassName().replace('.', '/')+".java");
+                    File f=new File(packagesRootDir, rec.getFullClassName().replace('.', '/')+".java"); // NOI18N
                     f.getParentFile().mkdirs();
                     PrintStream out=new PrintStream(new FileOutputStream(f));
                     out.print(rec.getSourceCode());
@@ -608,15 +763,18 @@ public class NodeGenerator {
                 }
             }
         }
-        File f=new File(packagesRootDir, nodePackage.replace('.', '/')+"/"+nodeName+".java");
+        File f=new File(packagesRootDir, nodePackage.replace('.', '/')+"/"+nodeName+".java"); // NOI18N
         f.getParentFile().mkdirs();
         PrintStream out=new PrintStream(new FileOutputStream(f));
         out.print(getSourceCode());
         out.close();
     }
    
+    /** returns String representation of Node bean
+     * @return String repreentation of Node bean
+     */    
     public String toString() {
-        return nodePackage+"."+nodeName;
+        return nodePackage+"."+nodeName; // NOI18N
     }
         
     /** Utility field holding list of ChangeListeners. */
@@ -648,6 +806,9 @@ public class NodeGenerator {
     
     private DefaultMutableTreeNode node;
 
+    /** getter for tree node delegate
+     * @return DefaultMutableTreeNode
+     */    
     public DefaultMutableTreeNode getNodeDelegate() {
         if (node==null) {
             node=new DefaultMutableTreeNode(this);
