@@ -457,7 +457,12 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         Set found = new HashSet();
         DTD dtd = getDTD();
         
-        if(elem == null) return result;
+        if(elem == null) {
+            if(offset > 0) {
+                elem = getElementChain( offset - 1);
+                if(elem == null) return result;
+            } else return result;
+        }
         
         for( ; elem != null; elem = elem.getPrevious() ) {
             if( elem.getType() == SyntaxElement.TYPE_ENDTAG && elem.getText().endsWith(">") ) {
