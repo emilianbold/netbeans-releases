@@ -24,12 +24,13 @@ To implement:
 - JavaHelp sanity: targets exist in various modules
 - use of NbBundle.getBundle(getClass()) etc.
 - use of netbeans.debug.exceptions (change to ErrorManager)
-- bundle values beginning or ending with a space
+- bundle values beginning or ending with a space (but see JLF recommendations on ui.netbeans.org)
 - readObject etc. methods with incorrect signature (e.g. returning Object)
 - standalone usage checker for library JARs (all classes must resolvable) (or part of openide test suite)
 - nbrescurr: where nbres: suffices
 - use of org.netbeans.core from modules (except apisupport to reload, autoupdate, maybe projects)
 - System.getProperty("java.version").startsWith(...) [cf. #16813]
+- overrides of initialize(), addNotify(), removeNotify() that do not somewhere call super
 -->
 
 <project name="Source Monitor" default="all" basedir=".">
