@@ -47,7 +47,11 @@ import org.openide.util.NbBundle;
  * WWW_Activate creates always new window on Win9x so we don't use it.
  * Also it accepts only "0xFFFFFFFF" for WWW_Activate on WinNT/Win2K.
  *
- * @author  rkubacki
+ * <P>Documentation can be found 
+ * <a href="http://developer.netscape.com/docs/manuals/communicator/DDE/ddevb.htm">
+ * here</a>.
+ *
+ * @author  Radim Kubacki
  */
 public class NbDdeBrowserImpl extends ExtBrowserImpl {
 
@@ -331,7 +335,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     }
                     catch (NbBrowserException ex) {
                         startBrowser (task);
-                        winID = windowId (task.browser.realDDEServer(), hasNoWindow? -1: task.browser.currWinID)+",0x0"; // NOI18N
+                        winID = windowId (task.browser.realDDEServer(), -1)+",0x0"; // NOI18N
                         data = task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_ACTIVATE,winID,5000);
                         hasNoWindow = false;
                     }
