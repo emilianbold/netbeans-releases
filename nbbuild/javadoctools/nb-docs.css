@@ -9,6 +9,12 @@
   color: grey;
 }
 
+.warning {
+  font-weight: bold;
+  font-style: italic;
+  color: red;
+}
+
 samp {
   border: dashed;
   border-color: #DDFFDD;
