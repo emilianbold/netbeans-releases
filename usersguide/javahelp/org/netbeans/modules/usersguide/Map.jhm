@@ -320,13 +320,6 @@
 <mapID target="debug.window.classes" url="debug/environment/classes_view.html" />
 <mapID target="debug.window.watches" url="debug/environment/watches_view.html" />
 <mapID target="debug.window.variables" url="debug/environment/variables_view.html" />
-<mapID target="debug.window.brkpt_line" url="debug/environment/brkpt_line.html" />
-<mapID target="debug.window.brkpt_method" url="debug/environment/brkpt_method.html" />
-<mapID target="debug.window.brkpt_exception" url="debug/environment/brkpt_exception.html" />
-<mapID target="debug.window.brkpt_class" url="debug/environment/brkpt_class.html" />
-<mapID target="debug.window.brkpt_thread" url="debug/environment/brkpt_thread.html" />
-<mapID target="debug.window.brkpt_variable" url="debug/environment/brkpt_variable.html" />
-
 <mapID target="debug.options" url="debug/environment/options.html" />
 <mapID target="debug.toolbar" url="debug/environment/toolbar.html" />
 <mapID target="debug.attachvm.window" url="debug/environment/attachvm_window.html" />
@@ -495,7 +488,9 @@
 <mapID target="workspace.clone" url="workspace/clone.html" />
 <mapID target="workspace.customize" url="workspace/workspace_customize.html" />
 
-<mapID target="propfiles.prop" url="propfiles/propfile.html" />
+<mapID target="propfiles.editbundles" url="propfiles/editbundles.html" />
+<mapID target="propfiles.prop" url="java/nodes/properties.html" />
+<mapID target="propfiles.intro" url="propfiles/propfile.html" />
 <mapID target="propfiles.creating" url="propfiles/creatingprops.html" />
 <mapID target="propfiles.adding" url="propfiles/addingprops.html" />
 <mapID target="propfiles.removing" url="propfiles/removingprops.html" />
@@ -504,15 +499,17 @@
 <mapID target="propfiles.editlocale" url="propfiles/editinglocale.html" />
 
 <mapID target="internation.internation" url="internationalize/international.html" />
-<mapID target="internation.autoinsert" url="internationalize/autoinsert.html" />
+<mapID target="internation.autoinsert" url="internationalize/addparams.html" />
 <mapID target="internation.maninsert" url="internationalize/manualinsert.html" />
 <mapID target="internation.formed" url="internationalize/formedstrings.html" />
 <mapID target="internation.addparams" url="internationalize/addparams.html" />
-<mapID target="internation.custom" url="internationalize/custominter.html" />
+<mapID target="internation.settings" url="internationalize/custominter.html" />
 <mapID target="internation.runlocale" url="internationalize/runninglocale.html" />
 <mapID target="internation.wizard" url="internationalize/i18nwizard.html" />
 <mapID target="internation.replformat" url="internationalize/replacingformat.html" />
 <mapID target="internation.testing" url="internationalize/testingwizard.html" />
+<mapID target="internation.custom" url="internationalize/replacingformat.html" />
+<mapID target="internation.singlefile" url="internationalize/autoinsert.html" />
 
 <mapID target="script.scripting" url="scripting/scripting.html" />
 <mapID target="script.runscript" url="scripting/runningscript.html" />
@@ -533,8 +530,6 @@
 <mapID target="ant.sampleclasscode" url="ant/exp-classpath.html" />
 
 <mapID target="configure" url="configure/configure.html" />
-<mapID target="configure.options" url="configure/configure_options.html" />
-<mapID target="configure.startup-switches" url="configure/configure_startup-switches.html" />
 <mapID target="configure.setup" url="configure/setup.html" />
 <mapID target="configure.menu" url="configure/menu.html" />
 <mapID target="configure.menucommands" url="configure/menu_commands.html" />
@@ -562,6 +557,8 @@
 <mapID target="csh.openimage" url="pending.html" />
 
 <!--CSH-->
+
+<mapID target="org.netbeans.modules.i18n.I18nOptions" url="internationalize/custominter.html" />
 
 <mapID target="org.netbeans.core.services.CompilerTypes" url="compile/options_jump.html" />
 <mapID target="org.netbeans.core.services.ExecutorTypes" url="run/executor_options.html" />
@@ -968,7 +965,7 @@
    <mapID target="org.netbeans.modules.cvsclient.JavaCvsSettings" url="vcs-nb/cvs-nb/cvs_settings.html" />
    <mapID target="VCS_VariableEditor" url="vcs-nb/vcsgeneric/vcsgeneric_variables.html" />
    <mapID target="VCS_CommandEditor" url="vcs-nb/vcsgeneric/vcsgeneric_command-props.html" />
-   <mapID target="org.netbeans.modules.vcs.advanced.VcsCustomizer" url="vcs-nb/vcsgeneric/vcs_vcsgeneric.html" />
+   <mapID target="org.netbeans.modules.vcs.advanced.VcsCustomizer" url="vcs-nb/vcsgeneric/vcsgeneric_customizer.html" />
    <mapID target="org.netbeans.modules.vcs.cmdline.CvsCustomizer" url="vcs-nb/cvs-nb/cvs_create-fs.html" />
    <mapID target="org.netbeans.modules.vcs.cmdline.commands.CvsRevisionChooserPanel" url="pending.html" />
    <mapID target="org.netbeans.modules.vcs.cmdline.commands.CvsBranchFrame" url="pending.html" />
@@ -1007,7 +1004,7 @@
    <!--csh for CVS Password Manager-->
    <mapID target="org.netbeans.modules.cvsclient.login.LoginManagerAction" url="vcs-nb/cvs-nb/cvs_password.html" />
    <!--csh for Verify VCS Group-->
-   <mapID target="org.netbeans.modules.vcscore.ui.VerifyGroupPanel" url="vcs-nb/vcsgroups/vcs_groupsverify.html" />
+   <mapID target="org.netbeans.modules.vcscore.ui.VerifyGroupPanel" url="vcs-nb/vcsgroups/vcs_groupsresolve.html" />
    <!--csh for Javacvs Customizer-->
    <mapID target="org.netbeans.modules.cvsclient.customizer.NbJavaCvsCustomizer" url="vcs-nb/cvs-nb/cvs_customizer.html" />
 

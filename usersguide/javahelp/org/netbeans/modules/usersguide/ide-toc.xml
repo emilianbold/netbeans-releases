@@ -261,6 +261,7 @@
     <tocitem text="Variables View" target="debug.window.variables"></tocitem>
     <tocitem text="Classes View" target="debug.window.classes"></tocitem>
     <tocitem text="Configuring the Debug Toolbar" target="debug.toolbar"></tocitem>
+    <tocitem text="Setting Debugging Options for the Environment" target="debug.options"></tocitem>
   </tocitem>
   <tocitem text="Starting a Debugging Session" target="debug.running.debugger" />
   <tocitem text="Running Your Program in the Debugger" target="debug.running.jump">
@@ -297,7 +298,7 @@
      <tocitem text="Modifying a Variable from the Watches Tab" target="debug.watch.modify" />
      <tocitem text="Deleting a Watch Variable or Expression" target="debug.watch.delete" />
    </tocitem>
-  <tocitem text="Modifying a Variable" target="debug.variables.value"/>
+  <tocitem text="Modifying Variables" target="debug.variables.value"/>
   <tocitem text="Examining Classes" target="debug.environment.classes" />
   <tocitem text="Attaching the Debugger to a Running Process" target="debug.attach" />
   <tocitem text="Debugging Multiple Sessions" target="debug.sessions.jump">
@@ -310,7 +311,6 @@
     <tocitem text="Default Debugger (JPDA)" target="debug.debugger.default"/>
     <tocitem text="Applet Debugger" target="debug.debugger.applet"/>
     <tocitem text="JDK 1.1 Debugger" target="debug.debugger.jdk"/>
-    <tocitem text="Setting Debugger Options for the Environment" target="debug.options"></tocitem>
     <tocitem text="Specifying the Default Debugger" target="debug.debugger.project_default"/>
     <tocitem text="Defining a New Debugger Type" target="debug.service.new"/>
     <tocitem text="Setting a Debugger Type in a Template" target="debug.debugger.template" />
@@ -377,8 +377,8 @@
 </tocitem>
 
 
-<tocitem text="Editing Resource Bundles">
-  <tocitem text="Setting Properties Files" target="propfiles.prop">
+<tocitem text="Editing Resource Bundles" target="propfiles.editbundles">
+  <tocitem text="Setting Properties Files" target="propfiles.intro">
     <tocitem text="Creating a .properties File" target="propfiles.creating" />
     <tocitem text="Adding Properties" target="propfiles.adding" />
     <tocitem text="Modifying a .properties File" target="propfiles.modifying" />
@@ -394,7 +394,7 @@
     <tocitem text="Testing Bundles for Internationalized Strings" target="internation.testing" />
     <tocitem text="Code Formats For Internationalized Strings" target="internation.replformat" />
     <tocitem text="Adding Arguments for Message Formats" target="internation.addparams" />
-    <tocitem text="Configuring Internationalization Settings" target="internation.custom" />
+    <tocitem text="Configuring Internationalization Settings" target="internation.settings" />
     <tocitem text="Running a Localized Application" target="internation.runlocale" />
   </tocitem>
 </tocitem>
@@ -549,8 +549,7 @@
 
 
 <tocitem text="Configuring the Environment" target="configure">
-    <tocitem text="Options Window" target="configure.options" />
-    <tocitem text="Managing Modules" target="modules.manage">
+  <tocitem text="Managing Modules" target="modules.manage">
     <tocitem text="Creating an IDE Module" target="ide.newmodule" />
     <tocitem text="Enabling or Disabling a Module" target="configure.module" />
     <tocitem text="Updating the IDE" target="ide.autoupdate" />
@@ -595,8 +594,6 @@
     <tocitem text="Menu Shortcuts" target="shortcuts.menus" />
     <tocitem text="Editor Shortcuts" target="shortcuts.editor" />
   </tocitem>
-    <tocitem text="IDE Startup Parameters" target="configure.startup-switches" />
-
 </tocitem>
 
 <tocitem text="Accessibility" target="accessibility.home">
