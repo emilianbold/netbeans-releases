@@ -18,6 +18,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.ArrayList;
@@ -319,7 +320,21 @@ public abstract class NbTopManager extends TopManager {
     * @param helpCtx thehelp to be shown
     */
     public void showHelp(HelpCtx helpCtx) {
-        Help.getDefault ().showHelp (helpCtx);
+        // Awkward but should work.
+        try {
+            Class c = systemClassLoader().loadClass("org.netbeans.api.javahelp.Help"); // NOI18N
+            Object o = Lookup.getDefault().lookup(c);
+            if (o != null) {
+                Method m = c.getMethod("showHelp", new Class[] {HelpCtx.class}); // NOI18N
+                m.invoke(o, new Object[] {helpCtx});
+                return;
+            }
+        } catch (Exception e) {
+            // ignore - maybe javahelp module is not installed
+            getErrorManager().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        // Did not work.
+        Toolkit.getDefaultToolkit().beep();
     }
 
     /** Provides support for www documents.

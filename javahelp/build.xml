@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="core/javahelp" default="netbeans" basedir=".">
+
+    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
+    <property name="binroot" location="../../../nbextra"/>
+    <property name="xmlparser" value="xerces.jar"/>
+
+    <target name="compile">
+        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+            <classpath>
+                <pathelement location="../../openide/openide-13javac-workaround.jar"/>
+                <fileset dir="../../openide/netbeans/lib">
+                    <include name="openide*.jar" />
+                </fileset>
+                <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
+                <pathelement location="${binroot}/core/release/lib/ext/${xmlparser}"/>
+                <pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jars" depends="compile">
+        <mkdir dir="netbeans/modules/autoload"/>
+        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+        <locjar jarfile="netbeans/modules/autoload/javahelp-api.jar"
+                basedir="src"
+                manifest="manifest-subst.mf"
+                excludesfile="../../nbbuild/standard-jar-excludes.txt"
+	        compress="false">
+            <locale name="ja"/>
+        </locjar>
+    </target>
+
+    <target name="release">
+        <mkdir dir="netbeans/modules/autoload/ext"/>
+        <copy file="${binroot}/core/release/lib/ext/jh.jar" tofile="netbeans/modules/autoload/ext/jh-1.1.2_02.jar"/>
+    </target>
+
+    <target name="netbeans" depends="jars,release"/>
+
+    <target name="test-build" depends="jars">
+        <mkdir dir="reload/ext"/>
+        <copy file="netbeans/modules/autoload/javahelp-api.jar" tofile="reload/javahelp-api.jar"/>
+        <copy file="${binroot}/core/release/lib/ext/jh.jar" tofile="reload/ext/jh-1.1.2_02.jar"/>
+    </target>
+    <target name="test" depends="test-build">
+        <nbinstaller module="reload/javahelp-api.jar" action="reinstall"/>
+    </target>
+
+    <target name="clean">
+        <delete>
+            <fileset dir="src">
+                <include name="**/*.class"/>
+            </fileset>
+        </delete>
+        <delete dir="netbeans"/>
+        <delete dir="reload"/>
+    </target>
+
+</project>

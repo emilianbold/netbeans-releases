@@ -634,7 +634,6 @@
 <mapID target="set.arguments.window" url="run/arguments.html" />
 
   <mapID target="org.openide.util.HelpCtx.DEFAULT_HELP" url="pending.html" />
-  <mapID target="org.openide.actions.HelpAction" url="pending.html" />
   <!--the above two should remain mapped to pending -->
   <mapID target="org.openide.actions.ExecuteAction" url="pending.html" />
   <mapID target="org.openide.actions.CompileAction" url="pending.html" />

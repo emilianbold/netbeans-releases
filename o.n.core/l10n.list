@@ -24,8 +24,8 @@ core/src/org/netbeans/core/resources/templatesFileSystems.html
 core/src/org/netbeans/core/resources/templatesFolder.html
 core/src/org/netbeans/core/resources/templatesJarFS.html
 core/src/org/netbeans/core/resources/templatesLocalFS.html
-core/src/org/netbeans/core/resources/masterHelpPage.html
-core/src/org/netbeans/core/resources/masterHelpSet.xml
+core/javahelp/src/org/netbeans/modules/javahelp/resources/masterHelpPage.html
+core/javahelp/src/org/netbeans/modules/javahelp/resources/masterHelpSet.xml
 core/src/org/netbeans/docs/startup/info-NewTemplateAction.html
 core/src/org/netbeans/docs/startup/info-ProxySettingsAction.html
 core/src/org/netbeans/docs/startup/info.html

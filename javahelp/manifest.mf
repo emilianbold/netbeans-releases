@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.javahelp/1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javahelp/resources/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.0
+OpenIDE-Module-Package-Dependencies: javax.help[HelpSet] > 1.0
+OpenIDE-Module-Layer: org/netbeans/modules/javahelp/resources/layer.xml
+OpenIDE-Module-Install: org/netbeans/modules/javahelp/Installer.class
+Class-Path: ext/jh-1.1.2_02.jar
+

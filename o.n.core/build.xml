@@ -28,7 +28,6 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/${xmlparser}"/>
-        <pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
       </classpath>
     </javac>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
@@ -40,7 +39,6 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/${xmlparser}"/>
-        <pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
         <pathelement location="libsrc"/>
       </classpath>
     </javac>
@@ -69,7 +67,10 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </copy>
     <copy todir="netbeans">
-      <fileset dir="${binroot}/core/release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="${binroot}/core/release" excludesfile="../nbbuild/standard-jar-excludes.txt">
+        <!-- Only in this position for historical reasons; cf. core/javahelp/build.xml -->
+        <exclude name="lib/ext/jh.jar"/>
+      </fileset>
     </copy>
     <!-- [PENDING] may according to wishes give another attribute: eof="add" -->
     <fixcrlf srcdir="netbeans/bin" cr="add">

@@ -87,7 +87,7 @@ workspaceswitcher
     <!-- But this it is OK to change: -->
     <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true ${tryme.args.additional}"/>
     <!-- Only useful to override in conjunction with merge target during development: -->
-    <property name="fixedmodules" value="core,openide"/>
+    <property name="fixedmodules" value="core,openide,core/javahelp"/>
     <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
     <property name="moduleconfig" value="stable"/>
     <!-- You can also explicitly set a particular list of modules if you prefer: -->
@@ -117,13 +117,17 @@ workspaceswitcher
     <echo message="Building IDE core implementation..."/>
     <ant dir="../core" target="netbeans"/>
   </target>
+  <target name="all-core/javahelp" depends="all-openide">
+    <echo message="Building module core/javahelp..."/>
+    <ant dir="../core/javahelp" target="netbeans"/>
+  </target>
 
   <!-- And the modules: -->
   <target name="all-ant" depends="all-openide">
     <echo message="Building module ant..."/>
     <ant dir="../ant" target="netbeans"/>
   </target>
-  <target name="all-apisupport" depends="all-openide,all-core,all-jarpackager,all-ant,all-apisupport/lite">
+  <target name="all-apisupport" depends="all-openide,all-core,all-core/javahelp,all-jarpackager,all-ant,all-apisupport/lite">
     <echo message="Building module apisupport..."/>
     <ant dir="../apisupport" target="netbeans"/>
   </target>
