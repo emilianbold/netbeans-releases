@@ -22,6 +22,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -100,8 +101,11 @@ final class ResultView extends TopComponent
     private Node[] lastSearchNodes;
     /** */
     private List lastEnabledSearchTypes;
+    
+    /** template for display of number of nodes found so far */
+    private MessageFormat nodeCountFormat;
 
-
+    
     /**
      * Returns a singleton of this class.
      *
@@ -487,6 +491,9 @@ final class ResultView extends TopComponent
         
         root.setDisplayName(NbBundle.getMessage(ResultView.class,
                                                 "TEXT_SEARCHING___"));  //NOI18N
+        nodeCountFormat = new MessageFormat(
+                NbBundle.getMessage(ResultView.class,
+                                    "TXT_RootSearchedNodes"));          //NOI18N
         
         searchInProgress = true;
         updateShowAllDetailsBtn();
@@ -649,11 +656,8 @@ final class ResultView extends TopComponent
     private void updateRootDisplayName() {
         assert !EventQueue.isDispatchThread();
         
-        int count = children.getSize();
-        final String display = NbBundle.getMessage(
-                                       ResultModel.class,
-                                       "TXT_RootSearchedNodes",   //NOI18N
-                                       Integer.toString(count));
+        final String display = nodeCountFormat.format(
+                new Object[] {new Integer(children.getSize())});
         try {
             EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
