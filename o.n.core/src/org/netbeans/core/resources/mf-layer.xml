@@ -463,6 +463,7 @@ Microsystems, Inc. All Rights Reserved.
 ]]>
               <attr name="template" boolvalue="true" />
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+              <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.MountNode.createIterator" />
           </file>
           <file name="org-netbeans-core-ExJarFileSystem.settings">
 <![CDATA[
@@ -474,6 +475,7 @@ Microsystems, Inc. All Rights Reserved.
 ]]>
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
               <attr name="template" boolvalue="true" />
+              <attr name="templateWizardIterator" methodvalue="org.netbeans.core.ui.MountNode.createIterator" />
           </file>
       </folder>
 
