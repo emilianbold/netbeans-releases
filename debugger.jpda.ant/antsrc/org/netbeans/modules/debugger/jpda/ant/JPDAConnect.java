@@ -30,15 +30,8 @@ import org.openide.util.RequestProcessor;
 public class JPDAConnect extends Task {
     
     private String host = "localhost";
-    /**
-     * Host to connect to.
-     * By default, localhost.
-     */
-    public void setHost (String h) {
-        host = h;
-    }
-    
-    private int port = 8888;
+
+    private String address;
     
     /** Explicit sourcepath of the debugged process. */
     private Path sourcepath = null;
@@ -48,13 +41,30 @@ public class JPDAConnect extends Task {
     
     /** Explicit bootclasspath of the debugged process. */
     private Path bootclasspath = null;
+        
+    /** Name which will represent this debugging session in debugger UI.
+     * If known in advance it should be name of the app which will be debugged.
+     */
+    private String name;
+
+    /** Default transport is socket*/
+    private String transport = "dt_socket";
+    
     
     /**
-     * JPDA server port to connect to.
-     * By default, 8888.
+     * Host to connect to.
+     * By default, localhost.
      */
-    public void setPort (int p) {
-        port = p;
+    public void setHost (String h) {
+        host = h;
+    }
+    
+    public void setAddress (String address) {
+        this.address = address;
+    }
+    
+    private String getAddress () {
+        return address;
     }
     
     public void addClasspath (Path path) {
@@ -75,8 +85,33 @@ public class JPDAConnect extends Task {
         sourcepath = path;
     }
     
+    public void setTransport (String transport) {
+        this.transport = transport;
+    }
+    
+    private String getTransport () {
+        return transport;
+    }
+    
+    public void setName (String name) {
+        this.name = name;
+    }
+    
+    private String getName () {
+        return name;
+    }
+    
     public void execute () throws BuildException {
+        
+        if (name == null)
+            throw new BuildException ("name attribute must specify name of this debugging session", getLocation ());
+        if (address == null)
+            throw new BuildException ("address attribute must specify port number or memory allocation unit name of connection", getLocation ());
+        if (transport == null)
+            transport = "dt_socket";
+        
         final Object[] exc = new Object [1];
+        
         final ClassPath sourcePath = JPDAStart.createSourcePath (
             getProject (),
             classpath, 
@@ -88,8 +123,15 @@ public class JPDAConnect extends Task {
                 //System.err.println("TG: " + Thread.currentThread().getThreadGroup());
                 // VirtualMachineManagerImpl can be initialized here, so needs
                 // to be inside RP thread.
-                AttachingDICookie info = AttachingDICookie.create 
-                    (host, port);
+                AttachingDICookie info = null;
+                if (transport.equals ("dt_socket"))
+                    try {
+                        AttachingDICookie.create (host, Integer.parseInt (address));
+                    } catch (NumberFormatException e) {
+                        throw new BuildException ("address attribute must specify port number for dt_socket connection", getLocation ());
+                    }
+                else
+                    AttachingDICookie.create (address);
                 DebuggerInfo di = DebuggerInfo.create (
                     AttachingDICookie.ID, 
                     new Object [] {
@@ -100,6 +142,9 @@ public class JPDAConnect extends Task {
                 DebuggerManager.getDebuggerManager ().startDebugging (di);
             }
         });
-        log ("Attached JPDA debugger to " + host + ":" + port);
+        if (host == null)
+            log ("Attached JPDA debugger to " + address);
+        else
+            log ("Attached JPDA debugger to " + host + ":" + address);
     }
 }
