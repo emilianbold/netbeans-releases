@@ -108,9 +108,9 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
 
     /** Sets the dirty flag - if the document was modified after last parsing. */
     void setDocumentDirty(boolean b) {
-        synchronized (parseResultLock) {
+        //synchronized (parseResultLock) {
             documentDirty = b;
-        }
+        //}
     }
 
     /** Tests the documentDirty flag. */
