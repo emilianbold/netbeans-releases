@@ -22,10 +22,12 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.NodeModelFilter;
+import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.TreeModelListener;
@@ -37,7 +39,7 @@ import org.openide.util.NbBundle;
  * @author   Jan Jancura
  */
 public class MonitorModel implements TreeModelFilter, NodeModelFilter, 
-NodeActionsProviderFilter {
+NodeActionsProviderFilter, TableModel, Constants {
 
     public static final String CONTENDED_MONITOR =
         "org/netbeans/modules/debugger/resources/allInOneView/ContendedMonitor"; // NOI18N
@@ -272,6 +274,49 @@ NodeActionsProviderFilter {
             return;
         } else
         model.performDefaultAction (o);
+    }
+    
+    
+    // TableModel ..............................................................
+    
+    public Object getValueAt (Object node, String columnID) throws 
+    UnknownTypeException {
+        if (node instanceof ThreadWithBordel) {
+            if (columnID == THREAD_STATE_COLUMN_ID)
+                return "";
+            if (columnID == THREAD_SUSPENDED_COLUMN_ID)
+                return null;
+        }
+        if (node instanceof OwnedMonitors)
+            if (columnID == THREAD_STATE_COLUMN_ID)
+                return "";
+            if (columnID == THREAD_SUSPENDED_COLUMN_ID)
+                return null;
+        if (node instanceof ContendedMonitor)
+            if (columnID == THREAD_STATE_COLUMN_ID)
+                return "";
+            if (columnID == THREAD_SUSPENDED_COLUMN_ID)
+                return null;
+        throw new UnknownTypeException (node);
+    }
+    
+    public boolean isReadOnly (Object node, String columnID) throws 
+    UnknownTypeException {
+        if ( columnID == THREAD_STATE_COLUMN_ID || 
+             columnID == THREAD_SUSPENDED_COLUMN_ID
+        ) {
+            if (node instanceof ThreadWithBordel)
+                return true;
+            if (node instanceof OwnedMonitors)
+                return true;
+            if (node instanceof ContendedMonitor)
+                return true;
+        }
+        throw new UnknownTypeException (node);
+    }
+    
+    public void setValueAt (Object node, String columnID, Object value) 
+    throws UnknownTypeException {
     }
     
     
