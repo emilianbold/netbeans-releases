@@ -28,13 +28,12 @@ import org.openide.windows.TopComponent;
  */
 public class XmlMultiViewElement implements MultiViewElement {
 
-    //private static final long serialVersionUID = 123456L;
     private TopComponent comp;
     private XmlMultiViewEditorSupport support;
     MultiViewElementCallback observer;
     private UndoRedo undoRedo;
     private javax.swing.JComponent toolbar;
-
+    
     /** Creates a new instance of XmlMultiviewElement */
     public XmlMultiViewElement(TopComponent comp, XmlMultiViewEditorSupport support) {
         this.comp=comp;
