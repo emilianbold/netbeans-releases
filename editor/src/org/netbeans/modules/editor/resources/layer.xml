@@ -45,4 +45,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="strict.dtd" url="DTDs/4_01/strict.dtd"/>
         </folder>
     </folder>
+
+    <folder name="Shortcuts">
+        <file name="AS-O[org.netbeans.modules.editor.java.JavaFastOpenAction].instance" />
+    </folder>
+
 </filesystem>
