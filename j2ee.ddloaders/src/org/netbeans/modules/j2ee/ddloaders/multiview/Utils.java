@@ -35,10 +35,12 @@ import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.src.ClassElement;
 import org.openide.src.Identifier;
@@ -375,6 +377,29 @@ public class Utils {
         }
         return name;
     }
+
+    public static void openEditorFor(FileObject ejbJarFile, ClassElement classElement) {
+        if (classElement == null) {
+            return;
+        }
+        FileObject sourceFile = getSourceFile(getSourceClassPath(ejbJarFile), classElement.getVMName());
+        if (sourceFile != null) {
+            DataObject javaDo;
+            try {
+                javaDo = DataObject.find(sourceFile);
+            } catch (DataObjectNotFoundException e) {
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(getBundleMessage("MSG_sourceNotFound")));
+                return;
+            }
+            OpenCookie cookie = (OpenCookie) javaDo.getCookie(OpenCookie.class);
+            if (cookie != null) {
+                cookie.open();
+            }
+        }
+    }
+
+
 
     private static class ClassPathImpl implements ClassPathImplementation {
 

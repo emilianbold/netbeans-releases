@@ -16,9 +16,11 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbImplementationAndInterfacesForm;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.netbeans.modules.xml.multiview.ui.LinkButton;
 import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.src.ClassElement;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
@@ -64,6 +66,11 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
     };
 
     private String className = null;
+    private static final String LINK_BEAN = "linkBean";
+    private static final String LINK_LOCAL = "linkLocal";
+    private static final String LINK_LOCAL_HOME = "linkLocalHome";
+    private static final String LINK_REMOTE = "linkRemote";
+    private static final String LINK_REMOTE_HOME = "linkRemoteHome";
 
     /**
      * Creates new form BeanForm
@@ -120,7 +127,10 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
 
         addRefreshable(new ItemCheckBoxHelper(getLocalInterfaceCheckBox()) {
             public boolean getItemValue() {
-                return ejb.getLocal() != null;
+                boolean value = ejb.getLocal() != null;
+                getLocalComponentLinkButton().setVisible(value);
+                getLocalHomeLinkButton().setVisible(value);
+                return value;
             }
 
             public void setItemValue(boolean value) {
@@ -137,7 +147,10 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
 
         addRefreshable(new ItemCheckBoxHelper(getRemoteInterfaceCheckBox()) {
             public boolean getItemValue() {
-                return ejb.getRemote() != null;
+                boolean value = ejb.getRemote() != null;
+                getRemoteComponentLinkButton().setVisible(value);
+                getRemoteHomeLinkButton().setVisible(value);
+                return value;
             }
 
             public void setItemValue(boolean value) {
@@ -151,6 +164,16 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
                 }
             }
         });
+
+        initLinkButton(getBeanClassLinkButton(), LINK_BEAN);
+        initLinkButton(getLocalComponentLinkButton(), LINK_LOCAL);
+        initLinkButton(getLocalHomeLinkButton(), LINK_LOCAL_HOME);
+        initLinkButton(getRemoteComponentLinkButton(), LINK_REMOTE);
+        initLinkButton(getRemoteHomeLinkButton(), LINK_REMOTE_HOME);
+    }
+
+    private void initLinkButton(AbstractButton button, String key) {
+        LinkButton.initLinkButton(button, this, null, key);
     }
 
     private void addInterfaces(boolean local) {
@@ -213,6 +236,29 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         if (source instanceof EntityAndSession) {
             scheduleRefreshView();
         }
+    }
+
+    public void linkButtonPressed(Object ddBean, String ddProperty) {
+        ClassElement classElement;
+        if(ddProperty == LINK_BEAN) {
+            classElement = helper.beanClass;
+        } else if(ddProperty == LINK_LOCAL) {
+            classElement = helper.getLocalBusinessInterfaceClass();
+        } else if(ddProperty == LINK_LOCAL_HOME) {
+            classElement = helper.getLocalHomeInterfaceClass();
+        } else if(ddProperty == LINK_REMOTE) {
+            classElement = helper.getRemoteBusinessInterfaceClass();
+        } else if (ddProperty == LINK_REMOTE_HOME) {
+            classElement = helper.getHomeInterfaceClass();
+        } else {
+            classElement = null;
+        }
+        if (classElement != null) {
+            Utils.openEditorFor(helper.ejbJarFile, classElement);
+        }
+
+
+
     }
 
     private abstract class NonEditableDocument extends PlainDocument {

@@ -57,6 +57,11 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
         moveClassButton = new javax.swing.JButton();
         renameClassButton = new javax.swing.JButton();
         spacerLabel = new javax.swing.JLabel();
+        beanClassLinkButton = new javax.swing.JButton();
+        localComponentLinkButton = new javax.swing.JButton();
+        localHomeLinkButton = new javax.swing.JButton();
+        remoteComponentLinkButton = new javax.swing.JButton();
+        remoteHomeLinkButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -209,15 +214,74 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
 
         spacerLabel.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(spacerLabel, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(beanClassLinkButton, org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_GoToSource"));
+        beanClassLinkButton.setBorderPainted(false);
+        beanClassLinkButton.setContentAreaFilled(false);
+        beanClassLinkButton.setFocusPainted(false);
+        beanClassLinkButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(beanClassLinkButton, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(localComponentLinkButton, org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_GoToSource"));
+        localComponentLinkButton.setBorderPainted(false);
+        localComponentLinkButton.setContentAreaFilled(false);
+        localComponentLinkButton.setFocusPainted(false);
+        localComponentLinkButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(localComponentLinkButton, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(localHomeLinkButton, org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_GoToSource"));
+        localHomeLinkButton.setBorderPainted(false);
+        localHomeLinkButton.setContentAreaFilled(false);
+        localHomeLinkButton.setFocusPainted(false);
+        localHomeLinkButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(localHomeLinkButton, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(remoteComponentLinkButton, org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_GoToSource"));
+        remoteComponentLinkButton.setBorderPainted(false);
+        remoteComponentLinkButton.setContentAreaFilled(false);
+        remoteComponentLinkButton.setFocusPainted(false);
+        remoteComponentLinkButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(remoteComponentLinkButton, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(remoteHomeLinkButton, org.openide.util.NbBundle.getMessage(EjbImplementationAndInterfacesForm.class, "LBL_GoToSource"));
+        remoteHomeLinkButton.setBorderPainted(false);
+        remoteHomeLinkButton.setContentAreaFilled(false);
+        remoteHomeLinkButton.setFocusPainted(false);
+        remoteHomeLinkButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(remoteHomeLinkButton, gridBagConstraints);
+
     }//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton beanClassLinkButton;
     private javax.swing.JTextField beanClassTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -226,11 +290,15 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JButton localComponentLinkButton;
     private javax.swing.JTextField localComponentTextField;
+    private javax.swing.JButton localHomeLinkButton;
     private javax.swing.JTextField localHomeTextField;
     private javax.swing.JCheckBox localInterfaceCheckBox;
     private javax.swing.JButton moveClassButton;
+    private javax.swing.JButton remoteComponentLinkButton;
     private javax.swing.JTextField remoteComponentTextField;
+    private javax.swing.JButton remoteHomeLinkButton;
     private javax.swing.JTextField remoteHomeTextField;
     private javax.swing.JCheckBox remoteInterfaceCheckBox;
     private javax.swing.JButton renameClassButton;
@@ -283,5 +351,25 @@ public class EjbImplementationAndInterfacesForm extends SectionInnerPanel {
 
     public JButton getRenameClassButton() {
         return renameClassButton;
+    }
+
+    public JButton getBeanClassLinkButton() {
+        return beanClassLinkButton;
+    }
+
+    public JButton getLocalComponentLinkButton() {
+        return localComponentLinkButton;
+    }
+
+    public JButton getLocalHomeLinkButton() {
+        return localHomeLinkButton;
+    }
+
+    public JButton getRemoteComponentLinkButton() {
+        return remoteComponentLinkButton;
+    }
+
+    public JButton getRemoteHomeLinkButton() {
+        return remoteHomeLinkButton;
     }
 }
