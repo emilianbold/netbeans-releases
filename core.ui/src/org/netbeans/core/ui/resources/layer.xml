@@ -76,7 +76,6 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="View">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-CloseViewAction.instance"/>
             <file name="org-openide-actions-CustomizeAction.instance"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
         </folder>        
@@ -308,15 +307,6 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
 	</file>
 
-        
-        <!--<file name="C-7.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.HTMLViewAction"/>
-	</file>-->
-
-        <!--<file name="A-RIGHT.instance">
-	    <attr name="instanceClass" stringvalue="org.openide.actions.NextTabAction"/>
-	</file>-->
-
         <file name="C-V.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.PasteAction"/>
 	</file>
@@ -333,14 +323,6 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="instanceClass" stringvalue="org.openide.actions.FindAction"/>
 	</file>
     
-<!--        <file name="A-LEFT.instance"> 
-	    <attr name="instanceClass" stringvalue="org.openide.actions.PreviousTabAction"/>
-	</file>-->
-
-        <file name="C-F4.instance">
-	    <attr name="instanceClass" stringvalue="org.openide.actions.CloseViewAction"/>
-	</file>
-
         <file name="C-S.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.SaveAction"/>
 	</file>
@@ -368,10 +350,6 @@ Microsystems, Inc. All Rights Reserved.
         <file name="C-P.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.PrintAction"/>
 	</file>
-
-        <!--Switch to editor action has this now. <file name="C-0.instance">
-	    <attr name="instanceClass" stringvalue="org.openide.actions.OpenLocalExplorerAction"/>
-	</file>-->
 
         <file name="C-N.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.NewTemplateCallableAction"/>
