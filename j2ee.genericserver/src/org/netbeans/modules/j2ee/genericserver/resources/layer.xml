@@ -43,13 +43,13 @@
         </folder>
     </folder>
 
-    <folder name="Services">
+    <!--folder name="Services">
         <folder name="J2EEServers">
-            <file name="PluginOptions.settings" url="PluginOptions.xml">
+            <file name="GenericPluginOptions.settings" url="PluginOptions.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.genericserver.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/genericserver/resources/GSInstanceIcon.gif"/>
             </file>
         </folder>
-    </folder>
+    </folder-->
 
 </filesystem>
