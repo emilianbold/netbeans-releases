@@ -177,6 +177,9 @@ Microsystems, Inc. All Rights Reserved.
         <file name="CS-F8.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddBreakpointAction.instance"/>
         </file>
+        <file name="CS-F7.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+        </file>
         <file name="C-F8.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
         </file>
@@ -192,7 +195,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="F8.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
         </file>
-        <file name="C-F5.shadowe">
+        <file name="C-F5.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
         </file>
         <file name="S-F5.shadow">
