@@ -23,6 +23,7 @@ import org.xml.sax.helpers.*;
 import org.openide.*;
 import org.openide.actions.*;
 import org.openide.filesystems.*;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -176,9 +177,26 @@ public class AntProjectDataLoader extends UniFileLoader {
             return;
         }
         try {
+            FileSystem fs = fo.getFileSystem ();
+            if (! fs.isValid ()) {
+                // Unmounted FS; maybe a layer, for example. Skip it.
+                return;
+            }
+            if (fs == TopManager.getDefault ().getRepository ().getDefaultFileSystem ()) {
+                // SystemFileSystem. Skip it. We do not want .nbattrs
+                // being written all over the user's system folder just because
+                // there happen to be some XML files there.
+                return;
+            }
+        } catch (FileStateInvalidException fsie) {
+            // Bogus file object, skip it.
+            AntModule.err.notify (ErrorManager.INFORMATIONAL, fsie);
+            return;
+        }
+        try {
             fo.setAttribute (KNOWN_ANT_FILE, new Boolean (mine));
         } catch (IOException ioe) {
-            TopManager.getDefault ().getErrorManager ().notify (ErrorManager.INFORMATIONAL, ioe);
+            AntModule.err.notify (ErrorManager.INFORMATIONAL, ioe);
         }
     }
 
