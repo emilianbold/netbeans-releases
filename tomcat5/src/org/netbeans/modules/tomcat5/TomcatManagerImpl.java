@@ -42,7 +42,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author  Radim Kubacki
  */
-class TomcatManagerImpl implements ProgressObject, Runnable {
+public class TomcatManagerImpl implements ProgressObject, Runnable {
     
     /** RequestProcessor processor that serializes management tasks. */
     private static RequestProcessor rp;
@@ -97,15 +97,9 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
      */
     public void install (Target t, File wmfile, File deplPlan) {
         // WAR file
-        String docBase = null;
-        try {
-            docBase = wmfile.toURL ().toExternalForm ();
-            if (docBase.endsWith ("/")) { // NOI18N
-                docBase = docBase.substring (0, docBase.length ()-1);
-            }
-        }
-        catch (java.net.MalformedURLException e) {
-            docBase = "file:"+wmfile.getAbsolutePath (); // NOI18N
+        String docBase = wmfile.toURI ().toASCIIString ();
+        if (docBase.endsWith ("/")) { // NOI18N
+            docBase = docBase.substring (0, docBase.length ()-1);
         }
         if (wmfile.isFile ()) {
             // WAR file
@@ -121,17 +115,18 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
                 else {
                     ctxPath = "/"+wmfile.getName ().substring (0, wmfile.getName ().lastIndexOf ('.'));    // NOI18N
                 }
-                command = "install?path="+ctxPath; // NOI18N
+                tmId = new TomcatModule (t, ctxPath); // NOI18N
+                command = "deploy?update=true&path="+ctxPath+"&war="+docBase; // NOI18N
             }
             else {
                 FileInputStream in = new FileInputStream (deplPlan);
                 Context ctx = Context.createGraph (in);
                 tmId = new TomcatModule (t, ctx.getAttributeValue ("path")); // NOI18N
-                command = "install?config="+ctxPath; // NOI18N
+                command = "install?update=true&config="+deplPlan.toURI ()+ // NOI18N
+                    "&war="+docBase; // NOI18N
             }
             
             // call the command
-            command = command+"&war="+docBase; // NOI18N
             cmdType = CommandType.DISTRIBUTE;
             pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
             
@@ -201,6 +196,17 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
             }
         }
         return (TargetModuleID [])modules.toArray ();
+    }
+    
+    /** Queries Tomcat server to get JMX beans containing management information
+     * @param param encoded parameter(s) for query
+     * @return server output
+     */
+    public String jmxProxy (String query) {
+        command = "jmxproxy/?qry="+query; // NOI18N
+        run ();
+        // PENDING : error check
+        return output;
     }
     
     /** JSR88 method. */
@@ -291,9 +297,9 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
 
             // Set up an authorization header with our credentials
             String input = tm.getUsername () + ":" + tm.getPassword ();
-            String output = new String(Base64.encode(input.getBytes()));
+            String auth = new String(Base64.encode(input.getBytes()));
             hconn.setRequestProperty("Authorization", // NOI18N
-                                     "Basic " + output); // NOI18N
+                                     "Basic " + auth); // NOI18N
 
             // Establish the connection with the server
             hconn.connect();
@@ -320,7 +326,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
             StringBuffer buff = new StringBuffer();
             String error = null;
             String msg = null;
-            boolean first = true;
+            boolean first = !command.startsWith ("jmxproxy");   // NOI18N
             while (true) {
                 // PENDING append to output var
                 int ch = reader.read();
@@ -341,7 +347,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
                         }
                         first = false;
                     }
-                    output += buff.toString ()+"\n";    // NOI18N
+                    output += line+"\n";    // NOI18N
                 } else {
                     buff.append((char) ch);
                 }
