@@ -62,9 +62,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation"/>
       <module name="jarpackager"  	testtypes="qa-functional"  attributes="validation"/>
       <module name="java"   	testtypes="qa-functional"  attributes="validation"/>
-      <!-- no longer in validation suite
       <module name="javacvs"   	testtypes="qa-functional"  attributes="validation"/>
-      -->
       <module name="jndi"    	testtypes="qa-functional"  attributes="validation">
           <property file="../../../nbextra/qa/jndi/jndi.properties"/>
       </module>      
@@ -101,9 +99,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation"/>
       <module name="jarpackager"  	testtypes="qa-functional"  attributes="validation"/>
       <module name="java"   	testtypes="qa-functional"  attributes="validation"/>
-      <!-- no longer in validation suite
       <module name="javacvs"   	testtypes="qa-functional"  attributes="validation"/>
-      -->
       <module name="jndi"    	testtypes="qa-functional"  attributes="validation">
           <property file="../../../nbextra/qa/jndi/jndi.properties"/>
       </module>      
