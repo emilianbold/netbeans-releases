@@ -60,8 +60,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="release">
     <copy todir="netbeans" includeEmptyDirs="false">
       <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt">
-        <!-- Unless/until OS/2 gets a JDK 1.4 port, exclude its launcher: -->
-        <exclude name="bin/runideos2.cmd"/>
         <!-- These do not currently work anyway: -->
         <exclude name="bin/unsupported/nbscript*"/>
       </fileset>
