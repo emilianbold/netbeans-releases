@@ -152,7 +152,7 @@ public class ShowDocAction extends CookieAction {
             // search forwards and backwards for the identifier boundary:
             int begin = dot; 
             int end;
-            if (Character.isJavaIdentifierPart(contents.charAt(begin))) {
+            if (begin < contents.length() && Character.isJavaIdentifierPart(contents.charAt(begin))) {
                 while (begin > 0 && Character.isJavaIdentifierPart(contents.charAt(begin - 1)))
                     begin--;
                 end = dot + 1;
@@ -162,7 +162,7 @@ public class ShowDocAction extends CookieAction {
                     begin++;
                 end = begin + 1;
             }
-            if (begin > contents.length())
+            if (begin >= contents.length())
                 return null;
             while (end < contents.length() &&
                 Character.isJavaIdentifierStart(contents.charAt(end)))
