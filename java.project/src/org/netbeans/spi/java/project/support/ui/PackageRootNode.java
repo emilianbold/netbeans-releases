@@ -28,6 +28,7 @@ import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
@@ -149,11 +150,15 @@ final class PackageRootNode extends AbstractNode {
         }
         
         public Node findPath( Node root, Object object ) {
-                 
-            if ( !( object instanceof FileObject ) ) {
+            FileObject fo;
+            if (object instanceof FileObject) {
+                fo = (FileObject) object;
+            } else if (object instanceof DataObject) {
+                fo = ((DataObject) object).getPrimaryFile();
+            } else {
                 return null;
             }
-            FileObject fo = (FileObject)object;        
+            
             FileObject groupRoot = group.getRootFolder();
             if ( FileUtil.isParentOf( groupRoot, fo ) /* && group.contains( fo ) */ ) {
                 // The group contains the object
@@ -174,9 +179,26 @@ final class PackageRootNode extends AbstractNode {
                     path = new String[] { packageName, fo.getName() };                    
                 } 
                 try {
+                    // XXX if there are two files differing only by extension in the package,
+                    // this will be wrong...
                     return NodeOp.findPath( root, path );
                 }
                 catch ( NodeNotFoundException e ) {
+                    if (!fo.isFolder()) {
+                        // If it is a DefaultDataObject, the node name contains the extension.
+                        if (lastSlashIndex == -1) {
+                            path = new String[] {"", fo.getNameExt()};
+                        } else {
+                            String packageName = relPath.substring(0, lastSlashIndex).replace('/', '.'); // NOI18N
+                            path = new String[] {packageName, fo.getNameExt()};
+                        }
+                        try {
+                            return NodeOp.findPath(root, path);
+                        } catch (NodeNotFoundException e2) {
+                            // already handled
+                        }
+                    }
+                    // did not manage to find it after all... why?
                     return null;
                 }
             }   
@@ -192,6 +214,10 @@ final class PackageRootNode extends AbstractNode {
             }
 
             return null;
+        }
+        
+        public String toString() {
+            return "PathFinder[" + group + "]"; // NOI18N
         }
                     
     }

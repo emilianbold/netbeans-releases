@@ -33,23 +33,22 @@ public class PackageView {
         return new PackageRootNode( group );
     }
     
-    /** Finds node representing given object. Currently only works for 
-     * FileObjects.
-     * @param rootNode the node which should contain the object
+    /**
+     * Finds the node representing given object, if any.
+     * The current implementation works only for {@link org.openide.filesystems.FileObject}s
+     * and {@link org.openide.loaders.DataObject}s.
+     * @param rootNode a node some descendant of which should contain the object
      * @param object object to find
-     * @return node which represents given object or null if no node was found
-     * @throws IllegalArgumentException if the supplied node is not a source group root
-     *         node created by the {@link #createPackageView(SourceGroup)} method.
+     * @return a node representing the given object, or null if no such node was found
      */
-    public static Node findPath(Node rootNode, Object object) throws IllegalArgumentException {
+    public static Node findPath(Node rootNode, Object object) {
         
         PackageRootNode.PathFinder pf = (PackageRootNode.PathFinder)rootNode.getLookup().lookup( PackageRootNode.PathFinder.class );
         
         if ( pf != null ) {
             return pf.findPath( rootNode, object );
-        }
-        else {
-            throw new IllegalArgumentException( rootNode + " is not a node provided by the PackageView.createPackageView( Source group ) method." );
+        } else {
+            return null;
         }
     }
 }

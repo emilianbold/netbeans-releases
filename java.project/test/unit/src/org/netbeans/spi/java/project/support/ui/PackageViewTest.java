@@ -15,16 +15,13 @@ package org.netbeans.spi.java.project.support.ui;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
-import junit.framework.*;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.junit.NbTestCase;
-
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
@@ -231,18 +228,21 @@ public class PackageViewTest extends NbTestCase {
         FileObject dp_java = FileUtil.createData( root, "src/DP" );
         FileObject a_b_c_java = FileUtil.createData( root, "src/a/b/c/ABC" );
         FileObject a_b_java = FileUtil.createData( root, "src/a/b/AB" );
-        FileObject e_f_g_java = FileUtil.createData( root, "src/e/f/g/EFG" );
+        FileObject e_f_g_java = FileUtil.createData( root, "src/e/f/g/EFG.someext" );
         
         // Try to find standard files
         Node n;
         n = PackageView.findPath( sourceRoot, a_b_c_java );
         assertNode( n, "ABC" );
+        // Check also DataObject:
+        n = PackageView.findPath(sourceRoot, DataObject.find(a_b_c_java));
+        assertNode(n, "ABC");
                 
         n = PackageView.findPath( sourceRoot, a_b_java );
         assertNode( n, "AB" );
         
         n = PackageView.findPath( sourceRoot, e_f_g_java );
-        assertNode( n, "EFG" );
+        assertNode( n, "EFG.someext" );
         
         // Try to find folders
         n = PackageView.findPath( sourceRoot, a_b_c );
@@ -294,7 +294,7 @@ public class PackageViewTest extends NbTestCase {
     public static void assertNode( Node n, String name ) {
         
         if ( name != null ) {
-            assertNotNull( "Node not found", n  );
+            assertNotNull( "Node " + name +" not found", n  );
             assertEquals( "Wrong name", name, n.getName() );             
         }
         else {
