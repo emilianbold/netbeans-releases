@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,7 +26,6 @@ import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -35,6 +33,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -44,7 +43,6 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-
 import org.openide.util.MutexException;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -404,13 +402,13 @@ public class J2SEProjectProperties {
     
     private void setPlatform(boolean isDefault, String platformAntID) {
         Element pcd = antProjectHelper.getPrimaryConfigurationData( true );
-        NodeList sps = pcd.getElementsByTagName( "explicit-platform" ); // NOI18N
+        NodeList sps = pcd.getElementsByTagNameNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); // NOI18N
         if (isDefault && sps.getLength() > 0) {
             pcd.removeChild(sps.item(0));
         } else if (!isDefault) {
             Element el;
             if (sps.getLength() == 0) {
-                el = pcd.getOwnerDocument().createElement("explicit-platform"); // NOI18N
+                el = pcd.getOwnerDocument().createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); // NOI18N
                 pcd.appendChild(el);
             } else {
                 el = (Element)sps.item(0);
