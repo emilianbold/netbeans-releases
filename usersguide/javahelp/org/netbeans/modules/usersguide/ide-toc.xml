@@ -387,14 +387,14 @@
     <tocitem text="Editing a Locale" target="propfiles.editlocale" />
   </tocitem>
   <tocitem text="Internationalizing Source Code" target="internation.internation">
-    <tocitem text="Generating Internationalization Strings Automatically" target="internation.autoinsert" />
-    <tocitem text="Internationalizing Strings with the Internationalization Wizard" target="internation.wizard" />
+    <tocitem text="Internationalizing a Single File" target="internation.autoinsert" />
+    <tocitem text="Internationalizing a Set of Files With the Internationalization Wizard" target="internation.wizard" />
     <tocitem text="Inserting Internationalized Strings Into Source Code" target="internation.maninsert" />
     <tocitem text="Setting Internationalization Strings With the Form Editor" target="internation.formed" />
     <tocitem text="Testing Bundles for Internationalized Strings" target="internation.testing" />
-    <tocitem text="Replacing the Code Format" target="internation.replformat" />
+    <tocitem text="Code Formats For Internationalized Strings" target="internation.replformat" />
     <tocitem text="Adding Arguments for Message Formats" target="internation.addparams" />
-    <tocitem text="Customizing Internationalization" target="internation.custom" />
+    <tocitem text="Configuring Internationalization Settings" target="internation.custom" />
     <tocitem text="Running a Localized Application" target="internation.runlocale" />
   </tocitem>
 </tocitem>
