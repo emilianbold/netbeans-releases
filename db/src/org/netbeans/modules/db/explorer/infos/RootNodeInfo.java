@@ -51,6 +51,7 @@ implements ConnectionOwnerOperations
 	public void addConnection(DBConnection cinfo)
 	throws DatabaseException
 	{
+		getChildren(); // force restore
 		Vector cons = RootNode.getOption().getConnections();
 		if (cons.contains(cinfo)) throw new DatabaseException("connection already exists");
 		try {
