@@ -53,7 +53,8 @@ public class ImportProjectAction extends CallableSystemAction {
             return;
         }
         
-        final Importer importer = new Importer(eclProjects, destination);
+        final Importer importer = new Importer(eclProjects, destination, 
+                wizard.getRecursively());
         
         // prepare progress dialog
         final ProgressPanel progressPanel = new ProgressPanel();

@@ -30,6 +30,7 @@ public final class ProjectImporterWizard {
     
     private Set projects;
     private String destination;
+    private boolean recursively;
     private boolean cancelled;
     private int numberOfImportedProjects;
     
@@ -53,6 +54,7 @@ public final class ProjectImporterWizard {
         if (!cancelled) {
             projects = iterator.getProjects();
             destination = iterator.getDestination();
+            recursively = iterator.getRecursively();
             numberOfImportedProjects = iterator.getNumberOfImportedProject();
         }
     }
@@ -75,6 +77,10 @@ public final class ProjectImporterWizard {
      */
     public String getDestination() {
         return destination;
+    }
+    
+    public boolean getRecursively() {
+        return recursively;
     }
     
     /**

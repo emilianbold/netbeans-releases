@@ -62,6 +62,7 @@ final class Importer {
     
     private Set eclProjects;
     private String destination;
+    private boolean recursively;
     private J2SEProject[] nbProjects;
     private Set recursionCheck = new HashSet();
     private Map loadedProject = new HashMap();
@@ -74,9 +75,10 @@ final class Importer {
     private JavaPlatform[] nbPlfs; // All netbeans platforms
     private String nbDefPlfDir; // NetBeans default platform directory
     
-    Importer(final Set eclProjects, final String destination) {
+    Importer(final Set eclProjects, String destination, boolean recursively) {
         this.eclProjects = eclProjects;
         this.destination = destination;
+        this.recursively = recursively;
         this.nbProjects = new J2SEProject[eclProjects.size()];
     }
     
@@ -202,15 +204,17 @@ final class Importer {
         }
         
         // create projects the main project depends on
-        Collection projects = eclProject.getProjects();
-        for (Iterator it = projects.iterator(); it.hasNext(); ) {
-            EclipseProject eclSubProject = (EclipseProject) it.next();
-            J2SEProject nbSubProject = importProject(eclSubProject);
-            AntArtifact[] artifact =
-                    AntArtifactQuery.findArtifactsByType(nbSubProject,
-                    JavaProjectConstants.ARTIFACT_TYPE_JAR);
-            nbProjectClassPath.addAntArtifact(
-                    artifact[0], artifact[0].getArtifactLocations()[0]);
+        if (recursively) {
+            Collection projects = eclProject.getProjects();
+            for (Iterator it = projects.iterator(); it.hasNext(); ) {
+                EclipseProject eclSubProject = (EclipseProject) it.next();
+                J2SEProject nbSubProject = importProject(eclSubProject);
+                AntArtifact[] artifact =
+                        AntArtifactQuery.findArtifactsByType(nbSubProject,
+                        JavaProjectConstants.ARTIFACT_TYPE_JAR);
+                nbProjectClassPath.addAntArtifact(
+                        artifact[0], artifact[0].getArtifactLocations()[0]);
+            }
         }
         
         // set platform used by an Eclipse project

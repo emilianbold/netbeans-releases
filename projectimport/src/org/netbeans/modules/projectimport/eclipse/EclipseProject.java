@@ -221,9 +221,11 @@ public final class EclipseProject implements Comparable {
     
     public Collection getUserLibrariesJars() {
         Collection userLibrariesJars = new HashSet();
-        for (Iterator it = cp.getUserLibraries().iterator(); it.hasNext(); ) {
-            userLibrariesJars.addAll(
-                    workspace.getJarsForUserLibrary((String) it.next()));
+        if (workspace != null) {
+            for (Iterator it = cp.getUserLibraries().iterator(); it.hasNext(); ) {
+                userLibrariesJars.addAll(
+                        workspace.getJarsForUserLibrary((String) it.next()));
+            }
         }
         return userLibrariesJars;
     }

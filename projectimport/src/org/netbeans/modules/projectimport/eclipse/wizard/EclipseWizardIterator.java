@@ -91,6 +91,13 @@ final class EclipseWizardIterator implements
             workspacePanel.getProjectDestinationDir());
     }
     
+    /**
+     * Returns whether selected projects should be imported recursively or not.
+     */
+    boolean getRecursively() {
+        return workspacePanel.isWorkspaceChosen();
+    }
+    
     public void addChangeListener(ChangeListener l) {
         if (changeListeners == null) {
             changeListeners = new ArrayList(2);
