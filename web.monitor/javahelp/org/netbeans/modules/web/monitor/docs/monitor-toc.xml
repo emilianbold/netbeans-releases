@@ -7,11 +7,11 @@
 
 <toc version="1.0">
 
-<!-- last updated 04Feb04 -->
+<!-- last updated 09Feb04 -->
 <tocitem text="Core IDE Help">
 <tocitem text="HTTP Monitor">
     <!-- ctx_monitorintro is csh for F1 on HTTP Monitor -->
-    <tocitem text="Monitoring Data Flow on the Web Server" target="ctx_monitorintro"> 
+    <tocitem text="Monitoring Data Flow on the Web Server" target="ctx_monitorintro" /> 
 	<tocitem text="Viewing HTTP Monitor Data Records" target="monitor_view" /> 
 	<tocitem text="Using the HTTP Monitor Toolbar" target="monitor_sort" />
 	<!-- monitor_resend is csh for Help button on Edit and replay dialog -->
