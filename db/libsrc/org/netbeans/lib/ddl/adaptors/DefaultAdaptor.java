@@ -3922,14 +3922,13 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable {
 
     // Extended properties
 
-    public boolean getCapitializeUsername()
-    {
-        Boolean flag = (Boolean)properties.get(PROP_CAPITALIZE_USERNAME);
-        if (flag == null) {
-            flag = Boolean.TRUE;
-            properties.put(PROP_CAPITALIZE_USERNAME, flag);
+    public boolean getCapitializeUsername() {
+        Boolean flag = (Boolean) properties.get("capitializeUsername");
+        if(flag == null) {
+            //flag = Boolean.TRUE;
+            flag = Boolean.FALSE; 
+            properties.put("capitializeUsername", flag);
         }
-
         return flag.booleanValue();
     }
 
