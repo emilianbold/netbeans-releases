@@ -28,8 +28,6 @@ public class JspBreakpointsReader implements Properties.Reader {
     
     public Object read (String typeID, Properties properties) {
         
-        System.err.println("!!!!!!!!!!!READ: " + typeID + ",  " + properties);
-
         JspLineBreakpoint b = null;
         if (typeID.equals (JspLineBreakpoint.class.getName ())) {
             b = JspLineBreakpoint.create (
@@ -52,7 +50,6 @@ public class JspBreakpointsReader implements Properties.Reader {
     
     public void write (Object object, Properties properties) {
 
-        System.err.println("!!!!!!!!!!!WRITE: " + object + ",  " + properties);
         if (object instanceof JspLineBreakpoint) {
             JspLineBreakpoint b = (JspLineBreakpoint) object;
             properties.setString (JspLineBreakpoint.PROP_PRINT_TEXT, b.getPrintText ());
