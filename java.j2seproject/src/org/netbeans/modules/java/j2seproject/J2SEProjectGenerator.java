@@ -38,10 +38,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * Create a fresh J2SEProject from scratch.
- * Currently does not permit much to be specified - feel free to add more parameters
- * as needed.
- * @author Jesse Glick
+ * Creates a J2SEProject from scratch according to some initial configuration.
  */
 public class J2SEProjectGenerator {
     
@@ -119,43 +116,53 @@ public class J2SEProjectGenerator {
         data.appendChild(minant);
         h.putPrimaryConfigurationData(data, true);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        // XXX the following just for testing, TBD:
-        ep.setProperty("dist.dir", "dist");
-        ep.setComment("dist.dir", new String[]{"# this directory is removed during the project clean"}, false);
-        ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar");
-        ep.setProperty("javac.classpath", new String[0]);
-        ep.setProperty("run.classpath", new String[]{"${javac.classpath}"+File.pathSeparatorChar,
-            "${build.classes.dir}"});
-        ep.setProperty("debug.classpath", new String[]{"${run.classpath}"});
-        ep.setProperty("application.args", "");
-        ep.setProperty("jar.compress", "false");
+        ep.setProperty("dist.dir", "dist"); // NOI18N
+        ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
+        ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
+        ep.setProperty("javac.classpath", new String[0]); // NOI18N
+        ep.setProperty("run.classpath", new String[] { // NOI18N
+            "${javac.classpath}:", // NOI18N
+            "${build.classes.dir}", // NOI18N
+        });
+        ep.setProperty("debug.classpath", new String[] { // NOI18N
+            "${run.classpath}", // NOI18N
+        });
+        ep.setProperty("application.args", ""); // NOI18N
+        ep.setProperty("jar.compress", "false"); // NOI18N
         if (!isLibrary) {
-            ep.setProperty("main.class", mainClass == null ? "" : mainClass );
+            ep.setProperty("main.class", mainClass == null ? "" : mainClass); // NOI18N
         }
-        ep.setProperty("javac.source", "${default.javac.source}");
-        ep.setProperty("javac.target", "${default.javac.target}");
-        ep.setProperty("javac.debug", "true");
-        ep.setProperty("javac.deprecation", "false");
-        ep.setProperty("javac.test.classpath", new String[]{"${javac.classpath}"+File.pathSeparatorChar,
-            "${build.classes.dir}"+File.pathSeparatorChar,"${libs.junit.classpath}"});
-        ep.setProperty("run.test.classpath", new String[]{"${javac.test.classpath}"+File.pathSeparatorChar,
-            "${build.test.classes.dir}"});
-        ep.setProperty("debug.test.classpath", new String[]{"${run.test.classpath}"});
-        ep.setProperty("src.dir", srcRoot == null ? "" : srcRoot);
+        ep.setProperty("javac.source", "${default.javac.source}"); // NOI18N
+        ep.setProperty("javac.target", "${default.javac.target}"); // NOI18N
+        ep.setProperty("javac.debug", "true"); // NOI18N
+        ep.setProperty("javac.deprecation", "false"); // NOI18N
+        ep.setProperty("javac.test.classpath", new String[] {
+            "${javac.classpath}:", // NOI18N
+            "${build.classes.dir}:", // NOI18N
+            "${libs.junit.classpath}", // NOI18N
+        });
+        ep.setProperty("run.test.classpath", new String[] { // NOI18N
+            "${javac.test.classpath}:", // NOI18N
+            "${build.test.classes.dir}", // NOI18N
+        });
+        ep.setProperty("debug.test.classpath", new String[] { // NOI18N
+            "${run.test.classpath}", // NOI18N
+        });
+        ep.setProperty("src.dir", srcRoot == null ? "" : srcRoot); // NOI18N
         if (testRoot != null) {
-            ep.setProperty("test.src.dir", testRoot);
+            ep.setProperty("test.src.dir", testRoot); // NOI18N
         }
-        ep.setProperty("build.dir", "build");
-        ep.setComment("build.dir", new String[]{"# this directory is removed during the project clean"}, false);
-        ep.setProperty("build.classes.dir", "${build.dir}/classes");
-        ep.setProperty("build.test.classes.dir", "${build.dir}/test/classes");
-        ep.setProperty("build.test.results.dir", "${build.dir}/test/results");
-        ep.setProperty("build.classes.excludes", "**/*.java,**/*.form");
-        ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc");
-        ep.setProperty("platform.active", "default_platform");
+        ep.setProperty("build.dir", "build"); // NOI18N
+        ep.setComment("build.dir", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_build.dir")}, false); // NOI18N
+        ep.setProperty("build.classes.dir", "${build.dir}/classes"); // NOI18N
+        ep.setProperty("build.test.classes.dir", "${build.dir}/test/classes"); // NOI18N
+        ep.setProperty("build.test.results.dir", "${build.dir}/test/results"); // NOI18N
+        ep.setProperty("build.classes.excludes", "**/*.java,**/*.form"); // NOI18N
+        ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
+        ep.setProperty("platform.active", "default_platform"); // NOI18N
 
-        ep.setProperty("run.jvmargs", "");
-        ep.setComment("run.jvmargs", new String[]{"# space separated list of JVM arguments for VM in which the project will run"}, false);
+        ep.setProperty("run.jvmargs", ""); // NOI18N
+        ep.setComment("run.jvmargs", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_run.jvmargs")}, false); // NOI18N
 
         ep.setProperty(J2SEProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
@@ -173,7 +180,7 @@ public class J2SEProjectGenerator {
 
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.setProperty("application.args", "");
+        ep.setProperty("application.args", ""); // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_PREVIEW, "true"); // NOI18N
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         return h;
