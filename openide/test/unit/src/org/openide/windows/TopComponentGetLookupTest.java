@@ -439,7 +439,12 @@ public class TopComponentGetLookupTest extends NbTestCase {
         l.checkAtLeast ("There should be no change, but alas there is one right now", checkAtLeastCount());
         
     }
-    
+
+    public void testMapKeys45323 () {
+        assertNotNull (top.getActionMap ().keys ());
+    }
+     
+     
     protected int checkAtLeastCount() {
         return 1;
     }
