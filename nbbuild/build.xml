@@ -220,8 +220,8 @@ treefs
   <target name="firststart" depends="build-messaging">
     <nbmerge dest="firststart" topdir=".." modules="openide,core,${modules}" targetprefix="all-"/>
     <!-- XXX chmod does not work reliably...investigate -->
-    <chmod file="firststart/bin/ffj.sh" perm="ugo+x"/>
-    <chmod file="firststart/bin/ffj_multiuser.sh" perm="ugo+x"/>
+    <chmod file="firststart/bin/runide.sh" perm="ugo+x"/>
+    <chmod file="firststart/bin/runide_multiuser.sh" perm="ugo+x"/>
     <echo message="Starting the IDE..."/>
     <echo message="(This both acts as a test, and primes some files"/>
     <echo message="to make the first user start faster and better.)"/>
@@ -229,12 +229,12 @@ treefs
     <!-- XXX check these OS names...still need Windows 95/98, and does this work for 2000? -->
     <!-- XXX better would be to scan first start log for stacktraces and just show those; -->
     <!-- possibly after filtering for duplicates or something like this. -->
-    <exec os="Windows NT" dir="firststart/bin" command="forte4j.exe ${firststart.args}" failonerror="yes"/>
-    <exec os="Linux" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" failonerror="yes"/>
-    <exec os="SunOS" dir="firststart/bin" command="sh ffj.sh ${firststart.args}" failonerror="yes"/>
+    <exec os="Windows NT" dir="firststart/bin" command="runide.exe ${firststart.args}" failonerror="yes"/>
+    <exec os="Linux" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes"/>
+    <exec os="SunOS" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes"/>
     <!-- XXX ideal would be a timeout after which the process would get SIGQUIT then SIGINT then SIGKILL -->
     <echo message="Successfully started, cleaning up detritus..."/>
-    <delete file="firststart/system/forte4j.log"/>
+    <delete file="firststart/system/ide.log"/>
     <delete file="firststart/system/project.basic"/>
     <delete file="firststart/system/project.last"/>
     <delete file="firststart/beans/libs.properties"/>
