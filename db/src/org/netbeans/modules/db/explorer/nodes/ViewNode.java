@@ -40,7 +40,7 @@ public class ViewNode extends DatabaseNode {
             super.setName(newname);
             info.put(DatabaseNode.TABLE, newname);
         } catch (CommandNotSupportedException exc) {
-            String message = MessageFormat.format(bundle.getString("EXC_UnableToChangeName"), new String[] {exc.getCommand()}); // NOI18N
+            String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_UnableToChangeName"), new String[] {exc.getCommand()}); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception e) {
             e.printStackTrace();

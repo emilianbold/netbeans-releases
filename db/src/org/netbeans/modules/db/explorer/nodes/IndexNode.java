@@ -19,7 +19,6 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 
-import org.openide.nodes.Children;
 import org.openide.nodes.NodeTransfer;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -77,7 +76,7 @@ public class IndexNode extends DatabaseNode {
 
         /* @return Human presentable name of this paste type. */
         public String getName() {
-            return bundle.getString("IndexPasteTypeName"); //NOI18N
+            return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("IndexPasteTypeName"); //NOI18N
         }
 
         /** Performs the paste action.
@@ -112,7 +111,7 @@ public class IndexNode extends DatabaseNode {
                         rs.close();
 
                         if (ixrm.contains(info.getName())) {
-                            String message = MessageFormat.format(bundle.getString("EXC_IndexContainsColumn"), new String[] {index, info.getName()}); // NOI18N
+                            String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_IndexContainsColumn"), new String[] {index, info.getName()}); // NOI18N
                             throw new IOException(message);
                         }
 
@@ -134,7 +133,6 @@ public class IndexNode extends DatabaseNode {
                         rs = drvSpec.getResultSet();
                         if (rs != null) {
                             IndexNodeInfo ixinfo;
-                            Object value;
                             while (rs.next()) {
                                 rset = drvSpec.getRow();
                                 String ixname = (String) rset.get(new Integer(6));
@@ -144,7 +142,7 @@ public class IndexNode extends DatabaseNode {
                                     if (ixinfo != null)
                                         ((DatabaseNodeChildren)destinfo.getNode().getChildren()).createSubnode(ixinfo,true);
                                     else
-                                        throw new Exception(bundle.getString("EXC_UnableToCreateIndexNodeInfo")); //NOI18N
+                                        throw new Exception(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_UnableToCreateIndexNodeInfo")); //NOI18N
                                 }
                                 rset.clear();
                             }
@@ -156,7 +154,7 @@ public class IndexNode extends DatabaseNode {
                 }
 
             } else
-                throw new IOException(bundle.getString("EXC_CannotFindIndexOwnerInformation"));
+                throw new IOException(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotFindIndexOwnerInformation"));
             
             return null;
         }

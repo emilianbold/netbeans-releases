@@ -58,7 +58,7 @@ public class RootNode extends DatabaseNode {
             
             DatabaseNodeInfo nfo = DatabaseNodeInfo.createNodeInfo(null, "root"); //NOI18N
             if (sfactory != null) nfo.setSpecificationFactory(sfactory);
-            else throw new Exception(bundle.getString("EXC_NoSpecificationFactory"));
+            else throw new Exception(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_NoSpecificationFactory"));
 
             setInfo(nfo);
             getInfo().setNode(this);

@@ -21,7 +21,6 @@ import javax.swing.Action;
 import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
-import org.openide.util.MapFormat;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.db.explorer.*;
@@ -30,7 +29,6 @@ import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 public class DatabaseNode extends AbstractNode implements Node.Cookie {
-    static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
     
     /** Cookie */
     private DatabaseNodeInfo info;
@@ -88,12 +86,6 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie {
         super.setName(info.getName());
         setIconBase(info.getIconBase());
 
-        String fmt = info.getDisplayname();
-        if (fmt != null) {
-            String dname = MapFormat.format(fmt, info);
-            //			if (dname != null) setDisplayName(dname);
-        }
-        
         // Read options
         // Cut, copy and delete flags
 
@@ -241,9 +233,9 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie {
                         else pc = Class.forName(pclass);
 
                         try {
-                            pname = bundle.getString(pname);
+                            pname = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString(pname);
                         } catch (MissingResourceException e) {
-                            pdesc = bundle.getString("DatabaseNodeUntitled"); //NOI18N
+                            pdesc = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("DatabaseNodeUntitled"); //NOI18N
                         }
 
                         psitem = createPropertySupport(key, pc, pname, pdesc, info, canWrite, expert);
