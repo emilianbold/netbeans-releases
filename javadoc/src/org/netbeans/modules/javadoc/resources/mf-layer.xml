@@ -56,7 +56,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="NetBeans_IDE">
             <!-- public ID defined by LibraryProcessor -->
             <file name="DTD_JavadocLibrary.instance">
-                <attr name="instanceCreate" newvalue="org.netbeans.modules.javadoc.search.environment.JavadocProcessor" />
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.javadoc.search.environment.JavadocProcessor" />
             </file>
         </folder>    
     </folder>
