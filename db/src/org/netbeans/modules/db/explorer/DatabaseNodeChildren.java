@@ -25,6 +25,8 @@ import org.openide.nodes.Children;
 import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
+import org.netbeans.modules.db.DatabaseModule;
 
 public class DatabaseNodeChildren extends Children.Array
 {
@@ -45,13 +47,66 @@ public class DatabaseNodeChildren extends Children.Array
                     DatabaseNodeInfo dni = (DatabaseNodeInfo) sinfo;
                     if (dni.getName().equals("Connection")) //NOI18N
                         dni.setName(dni.getName() + " " + dni.getDatabase());
+
+                    // aware! in this method is clone of instance dni created    
                     snode = createNode(dni);
+                    
+                    // if specific connection to pointbase is restored then this connection is opened
+                    if ( dni.getName().startsWith("Connection") //NOI18N
+                        && dni.getDriver().equals("com.pointbase.jdbc.jdbcUniversalDriver") //NOI18N
+                        && dni.getDatabase().equals("jdbc:pointbase://embedded/sample") //NOI18N
+                        && dni.getUser().equals("public")) { //NOI18N
+
+                            // node reference to ConnectionNodeInfo is set
+                            ConnectionNodeInfo cinfo = (ConnectionNodeInfo)((DatabaseNode)snode).getInfo();
+
+                            // set password
+                            cinfo.setPassword("public"); //NOI18N
+                            cinfo.put(DatabaseNodeInfo.REMEMBER_PWD, new Boolean(true));
+
+                            // open connection
+                            cinfo.connect();
+                    }
                 }
                 else
                     if (sinfo instanceof Node)
                         snode = (Node)sinfo;
                 if (snode != null)
                     children.add(snode);
+            }
+            
+            /* if this database module is newly installed then connection to pointbase is created (and opened)
+               (as a son of Database node) */
+            if (DatabaseModule.isNewlyInstalled && (nodeinfo.getName().startsWith("Databases"))) { //NOI18N
+
+                ConnectionNodeInfo cni = (ConnectionNodeInfo)DatabaseNodeInfo.createNodeInfo(nodeinfo, DatabaseNode.CONNECTION);
+                cni.setName( "jdbc:pointbase://embedded/sample" ); //NOI18N
+                cni.setUser( "public" ); //NOI18N
+                cni.setDriver( "com.pointbase.jdbc.jdbcUniversalDriver" ); //NOI18N
+                cni.setDatabase( "jdbc:pointbase://embedded/sample" ); //NOI18N
+
+                // create of node
+                // aware! in this method is clone of instance dni created
+                Node cnode = createNode(cni);
+
+                // node reference to ConnectionNodeInfo is set
+                ConnectionNodeInfo cinfo = (ConnectionNodeInfo)((DatabaseNode)cnode).getInfo();
+
+                // set password
+                cinfo.setPassword("public"); //NOI18N
+                cinfo.put(DatabaseNodeInfo.REMEMBER_PWD, new Boolean(true));
+
+                // adding connection to list (in DatabaseOption class)
+                Vector cons = RootNode.getOption().getConnections();
+                DatabaseConnection conn = (DatabaseConnection)cinfo.getDatabaseConnection();
+                cons.add(conn);
+
+                // open connection
+                cinfo.connect();
+
+                // adding node into children of Database node
+                children.add(cnode);
+
             }
         } catch (Exception e) {
             e.printStackTrace();
