@@ -24,12 +24,6 @@ import java.util.Map;
 import java.util.Iterator;
 
 /* TODO
-  x generation of form's properties/events
-  - generation of container's add code
-  - adding event handlers  (connection to JavaEditor's interior sections)
-  - removing event handlers  (connection to JavaEditor's interior sections)
-  - renaming event handlers  (connection to JavaEditor's interior sections)
-  
   - connection to indentation engine
   - Indent AWT Hierarchy
   - Exception handling in guarded blocks - from FormSettings???, or as a property of formManager
@@ -94,9 +88,6 @@ public class JavaCodeGenerator extends CodeGenerator {
       errorInitializing = true;
     }
 
-    // regenerate on init
-    regenerateInitializer ();
-    regenerateVariables ();
   }
 
   /** Alows the code generator to provide synthetic properties for specified component
@@ -638,6 +629,7 @@ public class JavaCodeGenerator extends CodeGenerator {
   private class JCGFormListener implements FormListener {
 
     public void formChanged () {
+      // 1. regenerate initializer
       regenerateInitializer ();
     }
     
@@ -645,7 +637,9 @@ public class JavaCodeGenerator extends CodeGenerator {
     * @param evt the event object describing the event
     */
     public void componentAdded (FormEvent evt) {
+      // 1. regenerate variables
       regenerateVariables ();
+      // 2. regenerate initializer
       regenerateInitializer ();
     }
 
@@ -653,7 +647,9 @@ public class JavaCodeGenerator extends CodeGenerator {
     * @param evt the event object describing the event
     */
     public void componentRemoved (FormEvent evt) {
+      // 1. regenerate variables
       regenerateVariables ();
+      // 2. regenerate initializer
       regenerateInitializer ();
     }
 
@@ -662,7 +658,9 @@ public class JavaCodeGenerator extends CodeGenerator {
     * @param evt the event object describing the event
     */
     public void componentChanged (FormPropertyEvent evt) {
+      // 1. regenerate variables
       regenerateVariables ();
+      // 2. regenerate initializer
       regenerateInitializer ();
     }
 
@@ -670,6 +668,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     * @param evt the event object describing the event
     */
     public void propertyChanged (FormPropertyEvent evt) {
+      // 1. regenerate initializer
       regenerateInitializer ();
     }
 
@@ -677,9 +676,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     * @param evt the event object describing the event
     */
     public void eventAdded (FormEventEvent evt) {
-      // 1. add event handler method according to handler type
-
-      // 2. regenerate initializer
+      // 1. regenerate initializer
       regenerateInitializer ();
     }
 
@@ -687,9 +684,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     * @param evt the event object describing the event
     */
     public void eventRemoved (FormEventEvent evt) {
-      // 1. remove event handler method according to handler type
-
-      // 2. regenerate initializer
+      // 1. regenerate initializer
       regenerateInitializer ();
     }
 
@@ -697,9 +692,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     * @param evt the event object describing the event
     */
     public void eventRenamed (FormEventEvent evt) {
-      // 1. rename event handler method according to handler type
-
-      // 2. regenerate initializer
+      // 1. regenerate initializer
       regenerateInitializer ();
     }
   }
@@ -707,6 +700,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  17   Gandalf   1.16        5/26/99  Ian Formanek    
  *  16   Gandalf   1.15        5/24/99  Ian Formanek    Non-Visual components
  *  15   Gandalf   1.14        5/24/99  Ian Formanek    
  *  14   Gandalf   1.13        5/16/99  Ian Formanek    
