@@ -122,7 +122,11 @@ public class CreateTableDialog {
             pane.add(label);
 
             Vector users = new Vector();
-            users.add(nfo.getDriverSpecification().getSchema());
+            String schema = nfo.getDriverSpecification().getSchema();
+            if (schema != null)
+                users.add(schema);
+            else
+                users.add(""); //NOI18N
 
             constr.fill = GridBagConstraints.HORIZONTAL;
             constr.weightx = 0.0;
