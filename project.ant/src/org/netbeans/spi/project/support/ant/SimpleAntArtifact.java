@@ -48,11 +48,14 @@ final class SimpleAntArtifact extends AntArtifact {
     
     public URI getArtifactLocation() {
         String locationResolved = h.evaluate(locationProperty);
+        if (locationResolved == null) {
+            return URI.create("file:/UNDEFINED"); // NOI18N
+        }
         try {
             return new URI(locationResolved);
         } catch (URISyntaxException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            return URI.create("BROKEN"); // NOI18N
+            return URI.create("file:/BROKEN"); // NOI18N
         }
     }
     
