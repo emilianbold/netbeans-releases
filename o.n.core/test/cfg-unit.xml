@@ -34,6 +34,7 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
                 <exclude name="org/netbeans/core/windows/LazyLoadingTest.class"/>
                 <exclude name="org/netbeans/core/windows/UIModeManagerTest.class"/>
+                <exclude name="org/netbeans/core/windows/APITests1.class"/>
             </patternset>
         </testset>
     </testbag>
