@@ -136,8 +136,6 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- run also wizard's tests -->
                 <include name="org/openide/WizardDescTest.class"/>
                 <include name="org/openide/InstantiatingIteratorTest.class"/>
-                <!-- issue 44444: called instantiate() before storing the setting from the last panel -->
-                <exclude name="org/openide/InstantiatingIteratorTest.class/testOrderStoreSettingAndInstantiate"/>
                 
                 <!-- run also window system tests -->
                 <include name="org/openide/windows/*Test.class"/>
