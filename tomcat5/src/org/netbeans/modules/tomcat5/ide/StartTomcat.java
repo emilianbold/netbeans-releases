@@ -75,8 +75,11 @@ public final class StartTomcat implements StartServer
     /** Start Tomcat server if the TomcatManager is not connected.
      */
     public ProgressObject startDeploymentManager () {
-        if (tm.isConnected ())
-            return null;
+        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+            TomcatFactory.getEM ().log ("StartTomcat.startDeploymentManager called on "+tm);    // NOI18N
+        }
+        // PENDING check whether is runs or not
+        System.out.println("begining");
         String uri = tm.getUri ();
         String home = tm.getCatalinaHome ();
         String base = tm.getCatalinaBase ();
@@ -84,12 +87,14 @@ public final class StartTomcat implements StartServer
             base = home;
         }
         
+        System.out.println("get home");
         InstalledFileLocator ifl = InstalledFileLocator.getDefault ();
         File homeDir = new File (home);
         if (!homeDir.isAbsolute ()) {
             homeDir = ifl.locate (home, null, false);
         }
         
+        System.out.println("get base");
         File baseDir = new File (base);
         if (!baseDir.isAbsolute ()) {
             File baseDir2 = ifl.locate (base, null, false);
@@ -99,6 +104,7 @@ public final class StartTomcat implements StartServer
         }
         // XXX check for null's
         
+        System.out.println("exec");
         NbProcessDescriptor pd  = defaultExecDesc ();
         try { 
             Process p = pd.exec (
@@ -116,6 +122,7 @@ public final class StartTomcat implements StartServer
             return null;
         }
         
+        System.out.println("done");
         return null; // PENDING
     }
     
@@ -141,21 +148,30 @@ public final class StartTomcat implements StartServer
      *  @return File with absolute path for created dir or <CODE>null</CODE> when ther is an error.
      */
     private File createBaseDir (File baseDir, File homeDir) {
+        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+            TomcatFactory.getEM ().log ("creating base dir for "+tm);    // NOI18N
+        }
+        FileObject targetFolder;
         if (!baseDir.isAbsolute ()) {
             baseDir = new File(System.getProperty("netbeans.user")+System.getProperty("file.separator")+baseDir);
+            FileObject [] targetFO = FileUtil.fromFile (new File(System.getProperty("netbeans.user")));
+            targetFolder = targetFO.length > 0? targetFO[0]: null;
+        }
+        else {
+            FileObject [] targetFO = FileUtil.fromFile (baseDir.getParentFile ());
+            targetFolder = targetFO.length > 0? targetFO[0]: null;
         }
         try {
-            if (!baseDir.mkdir ()) {
-                TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot create "+baseDir.getPath ());
+            
+            if (targetFolder == null) {
+                TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot find parent folder for base dir "+baseDir.getPath ());
                 return null;
             }
+            FileObject baseDirFO = targetFolder.createFolder (baseDir.getName ());
             // create directories
             String [] subdirs = new String [] { "conf", "logs", "work", "temp" /*, "webapps"*/ };
             for (int i = 0; i<subdirs.length; i++) {
-                if (!new File (baseDir, subdirs[i]).mkdir ()) {
-                    TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot create "+baseDir.getPath ());
-                    return null;
-                }
+                baseDirFO.createFolder (subdirs[i]);
             }
             // copy config files
             File confDir = new File (baseDir, "conf");  // NOI18N
@@ -171,8 +187,8 @@ public final class StartTomcat implements StartServer
             };
             File homeConfDir = new File (homeDir, "conf"); // NOI18N
             FileObject [] homeFO = FileUtil.fromFile (homeConfDir);
-            FileObject [] baseFO = FileUtil.fromFile (confDir);
-            if (homeFO.length == 0 || baseFO.length == 0) {
+            FileObject baseConfFO = baseDirFO.getFileObject ("conf");
+            if (homeFO.length == 0 || baseConfFO == null) {
                 TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot find FileObject for home dir or base dir");
                 return null;
             }       
@@ -182,7 +198,7 @@ public final class StartTomcat implements StartServer
                     TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot find config file "+files[i]+"."+exts[i]);
                     return null;
                 }
-                FileUtil.copyFile (homeFO[0].getFileObject (files[i], exts[i]), baseFO[0], files[i], exts[i]);
+                FileUtil.copyFile (homeFO[0].getFileObject (files[i], exts[i]), baseConfFO, files[i], exts[i]);
             }
             // modify server.xml
             if (!copyAndPatch (
