@@ -55,7 +55,6 @@ ToDo:
      <!-- cmdline Ant -->
      <pathelement location="${ant.jar}"/>
      <!-- Ant in NB -->
-     <!-- Note: in NB 3.6, ${ant.home}/lib/ant.jar will work as is -->
      <!-- XXX so delete the following line when NB 3.6 is released: -->
      <pathelement path="${netbeans.library.path}"/>
      <fileset dir="..">
@@ -129,40 +128,28 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   </target>
 
-  <!-- How to build the IDE core: -->
+  <!-- Platform modules: -->
   <target name="all-openide" depends="init">
     <echo message="Building Open APIs..."/>
     <ant dir="../openide" target="netbeans"/>
-  </target>
-  <target name="all-openide/deprecated" depends="all-openide,all-java/srcmodel,all-debuggercore/oldapi,all-openide/compiler,all-openide/io,all-openide/execution,all-openide/execution/deprecated">
-    <echo message="Building openide/deprecated..."/>
-    <ant dir="../openide/deprecated" target="netbeans"/>
   </target>
   <target name="all-openide/loaders" depends="all-openide">
     <echo message="Building openide/loaders..."/>
     <ant dir="../openide/loaders" target="netbeans"/>
   </target>
-  <target name="all-openide/compiler" depends="all-openide,all-openide/io,all-openide/execution,all-openide/execution/deprecated">
-    <echo message="Building openide/compiler..."/>
-    <ant dir="../openide/compiler" target="netbeans"/>
-  </target>
   <target name="all-openide/execution" depends="all-openide,all-openide/io">
     <echo message="Building openide/execution..."/>
     <ant dir="../openide/execution" target="netbeans"/>
-  </target>
-  <target name="all-openide/execution/deprecated" depends="all-openide,all-openide/io,all-openide/loaders,all-openide/execution">
-    <echo message="Building openide/execution/deprecated..."/>
-    <ant dir="../openide/execution/deprecated" target="netbeans"/>
   </target>
   <target name="all-openide/io" depends="all-openide">
     <echo message="Building openide/io..."/>
     <ant dir="../openide/io" target="netbeans"/>
   </target>
-  <target name="all-core/deprecated" depends="all-openide/deprecated,all-core,all-openide/execution,all-openide/execution/deprecated">
+  <target name="all-core/deprecated" depends="build-platform">
     <echo message="Building core/deprecated..."/>
     <ant dir="../core/deprecated" target="netbeans"/>
   </target>
-  <target name="all-java/srcmodel" depends="all-openide,all-openide/loaders,all-java/api">
+  <target name="all-java/srcmodel" depends="build-platform,all-java/api">
     <echo message="Building java/srcmodel..."/>
     <ant dir="../java/srcmodel" target="netbeans"/>
   </target>
@@ -177,10 +164,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="all-core/javahelp" depends="all-openide,all-openide/loaders">
     <echo message="Building module core/javahelp..."/>
     <ant dir="../core/javahelp" target="netbeans"/>
-  </target>
-  <target name="all-core/compiler" depends="all-openide,all-core,all-openide/compiler,all-openide/io,all-core/output">
-    <echo message="Building module core/compiler..."/>
-    <ant dir="../core/compiler" target="netbeans"/>
   </target>
   <target name="all-core/execution" depends="all-openide,all-openide/io,all-openide/execution,all-core,all-core/bootstrap">
     <echo message="Building module core/execution..."/>
@@ -198,18 +181,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module core/ui..."/>
     <ant dir="../core/ui" target="netbeans"/>
   </target>
-  <target name="all-contrib/naming" depends="all-openide">
-    <echo message="Building module contrib/naming..."/>
-    <ant dir="../contrib/naming" target="netbeans"/>
-  </target>
-  <target name="all-contrib/bookmarks" depends="all-contrib/naming">
-    <echo message="Building module bookmarks ..."/>
-    <ant dir="../contrib/bookmarks" target="netbeans"/>
-  </target>
-  <target name="all-contrib/htmldiff" depends="all-openide,all-diff">
-    <echo message="Building module htmldiff ..."/>
-    <ant dir="../contrib/htmldiff" target="netbeans"/>
-  </target>
   <target name="all-core/windows" depends="all-openide,all-openide/loaders,all-core,all-core/swing/tabcontrol">
     <echo message="Building module core/windows..."/>
     <ant dir="../core/windows" target="netbeans"/>
@@ -226,223 +197,263 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module core/settings..."/>
     <ant dir="../core/settings" target="netbeans"/>
   </target>
-  <target name="all-openide/looks" depends="all-openide,all-openide/registry,all-core/registry">
-    <echo message="Building module openide/looks..."/>
-    <ant dir="../openide/looks" target="netbeans"/>
-  </target>
-  <target name="all-openide/registry" depends="all-openide">
-    <echo message="Building module openide/registry..."/>
-    <ant dir="../openide/registry" target="netbeans"/>
-  </target>
-  <target name="all-core/registry" depends="all-openide,all-openide/registry,all-openide/loaders,all-core,all-openide/convertor">
-    <echo message="Building module core/registry..."/>
-    <ant dir="../core/registry" target="netbeans"/>
-  </target>
-  <target name="all-openide/convertor" depends="all-openide">
-    <echo message="Building module openide/convertor..."/>
-    <ant dir="../openide/convertor" target="netbeans"/>
-  </target>
   <target name="all-openide/masterfs" depends="all-openide">
     <echo message="Building module openide/masterfs..."/>
     <ant dir="../openide/masterfs" target="netbeans"/>
-  </target>
-
-  <!-- And the modules: -->
-  <target name="all-a11y" depends="all-openide,all-openide/io,all-form,all-junit,all-xtest">
-    <echo message="Building module a11y..."/>
-    <ant dir="../a11y" target="netbeans"/>
-  </target>
-  <target name="all-ant" depends="all-openide,all-core/javahelp,all-openide/execution,all-openide/io,all-java/api">
-    <echo message="Building module ant..."/>
-    <ant dir="../ant" target="netbeans"/>
-  </target>
-  <target name="all-ant/docs" depends="all-openide">
-    <echo message="Building module ant/docs..."/>
-    <ant dir="../ant/docs" target="netbeans"/>
-  </target>
-  <target name="all-ant/grammar" depends="all-openide,all-ant,all-xml/core">
-    <echo message="Building module ant/grammar..."/>
-    <ant dir="../ant/grammar" target="netbeans"/>
-  </target>
-  <target name="all-ant/browsetask" depends="all-openide">
-    <echo message="Building module ant/browsetask..."/>
-    <ant dir="../ant/browsetask" target="netbeans"/>
-  </target>
-  <target name="all-apisupport" depends="all-openide,all-core/javahelp,all-java/api,all-openide/io,all-openide/loaders,all-java/srcmodel">
-    <echo message="Building module apisupport..."/>
-    <ant dir="../apisupport" target="netbeans"/>
-  </target>
-  <target name="all-apisupport/ant" depends="all-openide,all-core">
-    <echo message="Building module apisupport/ant..."/>
-    <ant dir="../apisupport/ant" target="netbeans"/>
-  </target>
-  <!-- Deps include modules for which we build APIs: -->
-  <target name="all-apisupport/apidocs" depends="init,makeparserdb-modules,all-openide/registry,all-openide/looks,all-core/registry,all-openide/convertor,all-java/api,all-core/javahelp">
-    <echo message="Building module apisupport/apidocs..."/>
-    <ant dir="../apisupport/apidocs" target="netbeans"/>
-  </target>
-  <target name="all-apisupport/lite" depends="all-openide,all-java/srcmodel,all-openide/loaders">
-    <echo message="Building module apisupport lite..."/>
-    <ant dir="../apisupport/lite" target="netbeans"/>
-  </target>
-  <target name="all-applet" depends="all-openide,all-debuggercore,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-debuggercore/oldapi">
-    <echo message="Building module applet..."/>
-    <ant dir="../applet" target="netbeans"/>
   </target>
   <target name="all-autoupdate" depends="all-openide,all-core">
     <echo message="Building module autoupdate..."/>
     <ant dir="../autoupdate" target="netbeans"/>
   </target>
-  <target name="all-ide/updatecenters" depends="all-autoupdate">
+  <target name="all-projects/queries" depends="all-openide">
+      <echo message="Building module projects/queries..."/>
+      <ant dir="../projects/queries" target="netbeans"/>
+  </target>
+  <target name="all-core/swing/plaf">
+     <echo message="Building look and feel library..."/>
+     <ant dir="../core/swing/plaf" target="netbeans"/>
+  </target>
+  <target name="all-core/swing/tabcontrol">
+     <echo message="Building tabcontrol javabean..."/>
+     <ant dir="../core/swing/tabcontrol" target="netbeans"/>
+  </target>
+
+  <!-- And the rest of modules - all should depend on build-platform: -->
+  <target name="all-openide/deprecated" depends="build-platform">
+    <echo message="Building openide/deprecated..."/>
+    <ant dir="../openide/deprecated" target="netbeans"/>
+  </target>
+  <target name="all-openide/compiler" depends="build-platform,all-openide/execution/deprecated">
+    <echo message="Building openide/compiler..."/>
+    <ant dir="../openide/compiler" target="netbeans"/>
+  </target>
+  <target name="all-openide/execution/deprecated" depends="build-platform">
+    <echo message="Building openide/execution/deprecated..."/>
+    <ant dir="../openide/execution/deprecated" target="netbeans"/>
+  </target>
+  <target name="all-core/compiler" depends="build-platform,all-openide/compiler">
+    <echo message="Building module core/compiler..."/>
+    <ant dir="../core/compiler" target="netbeans"/>
+  </target>
+  <target name="all-contrib/naming" depends="build-platform">
+    <echo message="Building module contrib/naming..."/>
+    <ant dir="../contrib/naming" target="netbeans"/>
+  </target>
+  <target name="all-contrib/bookmarks" depends="build-platform,all-contrib/naming">
+    <echo message="Building module bookmarks ..."/>
+    <ant dir="../contrib/bookmarks" target="netbeans"/>
+  </target>
+  <target name="all-contrib/htmldiff" depends="build-platform,all-diff">
+    <echo message="Building module htmldiff ..."/>
+    <ant dir="../contrib/htmldiff" target="netbeans"/>
+  </target>
+  <target name="all-openide/looks" depends="build-platform,all-openide/registry,all-core/registry">
+    <echo message="Building module openide/looks..."/>
+    <ant dir="../openide/looks" target="netbeans"/>
+  </target>
+  <target name="all-openide/registry" depends="build-platform">
+    <echo message="Building module openide/registry..."/>
+    <ant dir="../openide/registry" target="netbeans"/>
+  </target>
+  <target name="all-core/registry" depends="build-platform,all-openide/registry,all-openide/convertor">
+    <echo message="Building module core/registry..."/>
+    <ant dir="../core/registry" target="netbeans"/>
+  </target>
+  <target name="all-openide/convertor" depends="build-platform">
+    <echo message="Building module openide/convertor..."/>
+    <ant dir="../openide/convertor" target="netbeans"/>
+  </target>
+
+  <target name="all-a11y" depends="build-platform,all-form,all-junit,all-xtest">
+    <echo message="Building module a11y..."/>
+    <ant dir="../a11y" target="netbeans"/>
+  </target>
+  <target name="all-ant" depends="build-platform,all-java/api">
+    <echo message="Building module ant..."/>
+    <ant dir="../ant" target="netbeans"/>
+  </target>
+  <target name="all-ant/docs" depends="build-platform">
+    <echo message="Building module ant/docs..."/>
+    <ant dir="../ant/docs" target="netbeans"/>
+  </target>
+  <target name="all-ant/grammar" depends="build-platform,all-ant,all-xml/core">
+    <echo message="Building module ant/grammar..."/>
+    <ant dir="../ant/grammar" target="netbeans"/>
+  </target>
+  <target name="all-ant/browsetask" depends="build-platform">
+    <echo message="Building module ant/browsetask..."/>
+    <ant dir="../ant/browsetask" target="netbeans"/>
+  </target>
+  <target name="all-apisupport" depends="build-platform,all-java/api,all-java/srcmodel">
+    <echo message="Building module apisupport..."/>
+    <ant dir="../apisupport" target="netbeans"/>
+  </target>
+  <target name="all-apisupport/ant" depends="build-platform">
+    <echo message="Building module apisupport/ant..."/>
+    <ant dir="../apisupport/ant" target="netbeans"/>
+  </target>
+  <!-- Deps include modules for which we build APIs: -->
+  <target name="all-apisupport/apidocs" depends="build-platform,makeparserdb-modules,all-openide/registry,all-openide/looks,all-core/registry,all-openide/convertor,all-java/api">
+    <echo message="Building module apisupport/apidocs..."/>
+    <ant dir="../apisupport/apidocs" target="netbeans"/>
+  </target>
+  <target name="all-apisupport/lite" depends="build-platform,all-java/srcmodel">
+    <echo message="Building module apisupport lite..."/>
+    <ant dir="../apisupport/lite" target="netbeans"/>
+  </target>
+  <target name="all-applet" depends="build-platform,all-debuggercore,all-java/srcmodel,all-openide/compiler,all-debuggercore/oldapi">
+    <echo message="Building module applet..."/>
+    <ant dir="../applet" target="netbeans"/>
+  </target>
+  <target name="all-ide/updatecenters" depends="build-platform">
     <echo message="Building module ide/updatecenters..."/>
     <ant dir="../ide/updatecenters" target="netbeans"/>
   </target>
-  <target name="all-beans" depends="all-openide,all-java,all-java/srcmodel">
+  <target name="all-beans" depends="build-platform,all-java,all-java/srcmodel">
     <echo message="Building module beans..."/>
     <ant dir="../beans" target="netbeans"/>
   </target>
-  <target name="all-classfile" depends="all-openide">
+  <target name="all-classfile" depends="build-platform">
     <echo message="Building module classfile..."/>
     <ant dir="../classfile" target="netbeans"/>
   </target>
-  <target name="all-classclosure" depends="all-openide,all-classfile,all-logger,all-java/srcmodel,all-openide/compiler">
+  <target name="all-classclosure" depends="build-platform,all-classfile,all-logger,all-java/srcmodel,all-openide/compiler">
     <echo message="Building module classclosure..."/>
     <ant dir="../classclosure" target="netbeans"/>
   </target>
-  <target name="all-clazz" depends="all-openide,all-classfile,all-java/srcmodel,all-openide/execution,all-debuggercore/oldapi,all-java/api">
+  <target name="all-clazz" depends="build-platform,all-classfile,all-java/srcmodel,all-debuggercore/oldapi,all-java/api">
     <echo message="Building module clazz..."/>
     <ant dir="../clazz" target="netbeans"/>
   </target>
-  <target name="all-db" depends="all-openide,all-openidex,all-form,all-openide/io">
+  <target name="all-db" depends="build-platform,all-openidex,all-form">
     <echo message="Building module db..."/>
     <ant dir="../db" target="netbeans"/>
   </target>
-  <target name="all-debuggercore/oldapi" depends="all-openide,all-java/srcmodel,all-openide/execution,all-openide/loaders,all-openide/execution/deprecated">
+  <target name="all-debuggercore/oldapi" depends="build-platform,all-java/srcmodel,all-openide/execution/deprecated">
     <echo message="Building module debuggercore/oldapi..."/>
     <ant dir="../debuggercore/oldapi" target="netbeans"/>
   </target>
-  <target name="all-debuggercore/api" depends="all-openide">
+  <target name="all-debuggercore/api" depends="build-platform">
     <echo message="Building module debuggercore/api ..."/>
     <ant dir="../debuggercore/api" target="netbeans"/>
   </target>
-  <target name="all-debuggercore/viewmodel" depends="all-openide">
+  <target name="all-debuggercore/viewmodel" depends="build-platform">
     <echo message="Building module debuggercore/viewmodel ..."/>
     <ant dir="../debuggercore/viewmodel" target="netbeans"/>
   </target>
-  <target name="all-debuggercore" depends="all-debuggercore/api,all-debuggercore/viewmodel,all-openide">
+  <target name="all-debuggercore" depends="build-platform,all-debuggercore/api,all-debuggercore/viewmodel">
     <echo message="Building module debuggercore ..."/>
     <ant dir="../debuggercore" target="netbeans"/>
   </target>
-  <target name="all-debuggerjpda/api" depends="all-debuggercore/api,all-debuggercore/viewmodel">
+  <target name="all-debuggerjpda/api" depends="build-platform,all-debuggercore/api,all-debuggercore/viewmodel">
     <echo message="Building module debuggerjpda/api ..."/>
     <ant dir="../debuggerjpda/api" target="netbeans"/>
   </target>
-  <target name="all-debuggerjpda" depends="all-debuggercore/api,all-debuggercore/viewmodel,all-debuggerjpda/api,all-openide">
+  <target name="all-debuggerjpda" depends="build-platform,all-debuggercore/api,all-debuggercore/viewmodel,all-debuggerjpda/api">
     <echo message="Building module debuggerjpda..."/>
     <ant dir="../debuggerjpda" target="netbeans"/>
   </target>
-  <target name="all-debuggerjpda/ui" depends="all-debuggercore/api,all-debuggercore/viewmodel,all-debuggercore,all-debuggerjpda/api,all-debuggerjpda,all-openide,all-openide/io,all-openide/loaders,all-java/srcmodel">
+  <target name="all-debuggerjpda/ui" depends="build-platform,all-debuggercore/api,all-debuggercore/viewmodel,all-debuggercore,all-debuggerjpda/api,all-debuggerjpda,all-java/srcmodel">
     <echo message="Building module debuggerjpda/ui ..."/>
     <ant dir="../debuggerjpda/ui" target="netbeans"/>
   </target>
-  <target name="all-debuggerjpda/ant" depends="all-debuggercore/api,all-debuggerjpda/api,all-openide,all-openide/loaders,all-java/api,all-java/srcmodel,all-projects/projectapi,all-projects/projectuiapi">
+  <target name="all-debuggerjpda/ant" depends="build-platform,all-debuggercore/api,all-debuggerjpda/api,all-java/api,all-java/srcmodel,all-projects/projectapi,all-projects/projectuiapi">
     <echo message="Building module debuggerjpda/ant..."/>
     <ant dir="../debuggerjpda/ant" target="netbeans"/>
   </target>
-  <!-- XXX illegal dependence on core! -->
-  <target name="all-editor" depends="all-openide,all-openide/loaders,all-core,all-java/srcmodel,all-debuggercore/oldapi,all-java/api,all-projects/queries">
+  <target name="all-editor" depends="build-platform,all-java/srcmodel,all-debuggercore/oldapi,all-java/api,all-projects/queries">
     <echo message="Building module editor..."/>
     <ant dir="../editor" target="netbeans"/>
   </target>
-  <target name="all-diff" depends="all-openide,all-editor,all-openide/loaders">
+  <target name="all-diff" depends="build-platform,all-editor">
     <echo message="Building module diff..."/>
     <ant dir="../diff" target="netbeans"/>
   </target>
-  <target name="all-extbrowser" depends="all-openide,all-openide/execution">
+  <target name="all-extbrowser" depends="build-platform">
     <echo message="Building module extbrowser..."/>
     <ant dir="../extbrowser" target="netbeans"/>
   </target>
-  <target name="all-extbrowser/webclient" depends="all-openide,all-httpserver">
+  <target name="all-extbrowser/webclient" depends="build-platform,all-httpserver">
     <echo message="Building module webclient..."/>
     <ant dir="../extbrowser/webclient" target="netbeans"/>
   </target>
-  <target name="all-filecopy" depends="all-openide,all-openide/io,all-openide/execution">
+  <target name="all-filecopy" depends="build-platform">
     <echo message="Building module filecopy..."/>
     <ant dir="../filecopy" target="netbeans"/>
   </target>
-  <target name="all-form" depends="all-java/api,all-java,all-openide,all-openide/loaders,all-java/srcmodel,all-openide/execution,all-openide/io,all-java/platform,all-core/javahelp">
+  <target name="all-form" depends="build-platform,all-java/api,all-java,all-java/srcmodel,all-java/platform">
     <echo message="Building module form..."/>
     <ant dir="../form" target="netbeans"/>
   </target>
-  <target name="all-freestylebrowser" depends="all-openide,all-openidex,all-beans,all-java,all-clazz">
+  <target name="all-freestylebrowser" depends="build-platform,all-openidex,all-beans,all-java,all-clazz">
     <echo message="Building module freestylebrowser..."/>
     <ant dir="../freestylebrowser" target="netbeans"/>
   </target>
-  <target name="all-html" depends="all-openide ">
+  <target name="all-html" depends="build-platform">
     <echo message="Building module html..."/>
     <ant dir="../html" target="netbeans"/>
   </target>
-  <target name="all-httpserver" depends="all-openide, all-httpserver/servletapi">
+  <target name="all-httpserver" depends="build-platform,all-httpserver/servletapi">
     <echo message="Building module httpserver..."/>
     <ant dir="../httpserver" target="netbeans"/>
   </target>
-  <target name="all-httpserver/servletapi" depends="all-openide">
+  <target name="all-httpserver/servletapi" depends="build-platform">
     <echo message="Building module httpserver/servletapi..."/>
     <ant dir="../httpserver/servletapi" target="netbeans"/>
   </target>
-  <target name="all-i18n" depends="all-core,all-core/javahelp,all-properties,all-openide,all-openide/loaders,all-openide/execution,all-java/srcmodel">
+  <target name="all-i18n" depends="build-platform,all-properties,all-java/srcmodel">
     <echo message="Building module i18n..."/>
     <ant dir="../i18n" target="netbeans"/>
   </target>
   <target name="all-installer" description="Dummy target for build system compatibility"/>
-  <target name="all-itutor" depends="all-openide,all-core">
+  <target name="all-itutor" depends="build-platform">
     <echo message="Building module itutor..."/>
     <ant dir="../itutor" target="netbeans"/>
   </target>
-  <target name="all-icebrowser" depends="all-openide">
+  <target name="all-icebrowser" depends="build-platform">
     <echo message="Building module icebrowser..."/>
     <ant dir="../icebrowser" target="netbeans"/>
   </target>
-  <target name="all-image" depends="all-openide,all-openide/loaders">
+  <target name="all-image" depends="build-platform">
     <echo message="Building module image..."/>
     <ant dir="../image" target="netbeans"/>
   </target>
-  <target name="all-innertesters" depends="all-openide,all-openide/execution,all-openide/compiler,all-openide/deprecated">
+  <target name="all-innertesters" depends="build-platform,all-openide/compiler,all-openide/deprecated">
     <echo message="Building module innertesters..."/>
     <ant dir="../innertesters" target="netbeans"/>
   </target>
-  <target name="all-j2eeserver" depends="all-openide,all-debuggercore,all-debuggerjpda,all-java/srcmodel,all-openide/execution,all-openide/io,all-j2eeserver/j2eeapis,all-projects/projectapi,build-schema2beans/anttask,all-xml/api,all-core/settings,all-core/javahelp">
+  <target name="all-j2eeserver" depends="build-platform,all-debuggercore,all-debuggerjpda,all-java/srcmodel,all-j2eeserver/j2eeapis,all-projects/projectapi,build-schema2beans/anttask,all-xml/api">
     <echo message="Building module j2eeserver..."/>
     <ant dir="../j2eeserver" target="netbeans"/>
   </target>
-  <target name="all-j2eeserver/j2eeapis">
+  <target name="all-j2eeserver/j2eeapis" depends="build-platform">
     <echo message="Building module j2eeserver/j2eeapis..."/>
     <ant dir="../j2eeserver/j2eeapis" target="netbeans"/>
   </target>
-  <target name="all-j2eeserver/ant" depends="all-j2eeserver">
+  <target name="all-j2eeserver/ant" depends="build-platform,all-j2eeserver">
     <echo message="Building module j2eeserver/ant..."/>
     <ant dir="../j2eeserver/ant" target="netbeans"/>
   </target>
-  <target name="all-junit" depends="all-openide,all-openide/loaders,all-java/srcmodel,all-ant,all-java/api">
+  <target name="all-junit" depends="build-platform,all-java/srcmodel,all-ant,all-java/api">
     <echo message="Building module junit..."/>
     <ant dir="../junit" target="netbeans"/>
   </target>
   <target name="all-jarpackager">
   </target>
-  <target name="all-java" depends="all-java/api,all-projects/queries,all-openide,all-debuggercore/oldapi,all-openide/execution,all-openide/loaders,all-java/srcmodel">
+  <target name="all-java" depends="build-platform,all-java/api,all-debuggercore/oldapi,all-java/srcmodel">
     <echo message="Building module java..."/>
     <ant dir="../java" target="netbeans"/>
   </target>
-  <target name="all-java/fastjavac" depends="all-openide,all-openide/compiler,all-openide/execution,all-openide/loaders,all-java">
+  <target name="all-java/fastjavac" depends="build-platform,all-openide/compiler,all-java">
     <echo message="Building module java/fastjavac..."/>
     <ant dir="../java/fastjavac" target="netbeans"/>
   </target>
-  <target name="all-java/api" depends="all-openide,all-openide/execution,all-openide/io,all-projects/queries">
+  <target name="all-java/api" depends="build-platform">
     <!-- dependency on all-projects/queries is temporary -->
     <echo message="Building Java support APIs.."/>
     <ant dir="../java/api" target="netbeans"/>
   </target>
-  <target name="all-javadoc" depends="all-java/api,all-java,all-core/javahelp,all-openide,all-openide/loaders,all-java/srcmodel,all-projects/queries">
+  <target name="all-javadoc" depends="build-platform,all-java/api,all-java,all-java/srcmodel">
     <!-- dependency on all-projects/queries is temporary -->
     <echo message="Building module javadoc..."/>
     <ant dir="../javadoc" target="netbeans"/>
@@ -453,102 +464,102 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../javaembeddedserver" target="netbeans"/>
   </target>
   -->
-  <target name="all-jellytools" depends="all-openide,all-openide/loaders,all-core,all-core/term,all-core/windows,all-jemmy,all-xtest">
+  <target name="all-jellytools" depends="build-platform,all-jemmy,all-xtest">
     <echo message="Building module jellytools..."/>
     <ant dir="../jellytools" target="netbeans"/>
   </target>
-  <target name="all-jemmy" depends="makeparserdb-modules">
+  <target name="all-jemmy" depends="build-platform,makeparserdb-modules">
     <echo message="Building module jemmy..."/>
     <ant dir="../jemmy" target="netbeans"/>
   </target>
-  <target name="all-jemmysupport" depends="all-openide,all-openide/execution,all-jemmy,all-diff">
+  <target name="all-jemmysupport" depends="build-platform,all-jemmy,all-diff">
     <echo message="Building module jemmysupport..."/>
     <ant dir="../jemmysupport" target="netbeans"/>
   </target>
-  <target name="all-jini" depends="all-openide,all-httpserver">
+  <target name="all-jini" depends="build-platform,all-httpserver">
     <echo message="Building module jini..."/>
     <ant dir="../jini" target="netbeans"/>
   </target>
-  <target name="all-jndi" depends="all-openide,all-openidex,all-openide/deprecated,all-projects">
+  <target name="all-jndi" depends="build-platform,all-openidex,all-openide/deprecated,all-projects">
     <echo message="Building module jndi..."/>
     <ant dir="../jndi" target="netbeans"/>
   </target>
-  <target name="all-logger" depends="all-openide,all-core">
+  <target name="all-logger" depends="build-platform">
     <echo message="Building module logger..."/>
     <ant dir="../logger" target="netbeans"/>
   </target>
-  <target name="all-lexer" depends="all-openide">
+  <target name="all-lexer" depends="build-platform">
     <echo message="Building module lexer..."/>
     <ant dir="../lexer" target="netbeans"/>
   </target>
-  <target name="all-lexer/editorbridge" depends="all-openide,all-editor,all-lexer">
+  <target name="all-lexer/editorbridge" depends="build-platform,all-editor,all-lexer">
     <echo message="Building module lexer/editorbridge..."/>
     <ant dir="../lexer/editorbridge" target="netbeans"/>
   </target>
-  <target name="all-lexer/editorbridge/calc" depends="all-openide,all-editor,all-lexer,all-lexer/editorbridge">
+  <target name="all-lexer/editorbridge/calc" depends="build-platform,all-editor,all-lexer,all-lexer/editorbridge">
     <echo message="Building module lexer/editorbridge/calc..."/>
     <ant dir="../lexer/editorbridge/calc" target="netbeans"/>
   </target>
-  <target name="all-makefile" depends="all-openide,all-openide/compiler,all-openide/execution,all-openide/deprecated,all-openide/loaders,all-debuggercore/oldapi">
+  <target name="all-makefile" depends="build-platform,all-openide/compiler,all-openide/deprecated,all-debuggercore/oldapi">
     <echo message="Building module makefile..."/>
     <ant dir="../makefile" target="netbeans"/>
   </target>
-  <target name="all-metrics" depends="all-openide,all-classfile,all-clazz,all-java">
+  <target name="all-metrics" depends="build-platform,all-classfile,all-clazz,all-java">
     <echo message="Building module metrics..."/>
     <ant dir="../metrics" target="netbeans"/>
   </target>
   <!-- XXX remove dep on all-web/servletapi23 when possible (unused at runtime) -->
-  <target name="all-monitor" depends="all-openide,all-web/core,all-schema2beans/rt,all-html,all-httpserver,all-tomcatint/tomcat5/bundled,all-httpserver/servletapi,all-web/servletapi23">
+  <target name="all-monitor" depends="build-platform,all-web/core,all-schema2beans/rt,all-html,all-httpserver,all-tomcatint/tomcat5/bundled,all-httpserver/servletapi,all-web/servletapi23">
     <echo message="Building module monitor..."/>
     <ant dir="../monitor" target="netbeans"/>
   </target>
-  <target name="all-mdr" depends="all-openide,all-openide/loaders,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof,all-mdr/nbjmiutils,all-mdr/jmiutils,all-mdr/lib,all-mdr/module">
+  <target name="all-mdr" depends="build-platform,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof,all-mdr/nbjmiutils,all-mdr/jmiutils,all-mdr/lib,all-mdr/module">
   </target>
-  <target name="all-mdr/module" depends="all-openide,all-openide/loaders,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof,all-mdr/nbjmiutils,all-mdr/jmiutils,all-mdr/lib">
+  <target name="all-mdr/module" depends="build-platform,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof,all-mdr/nbjmiutils,all-mdr/jmiutils,all-mdr/lib">
     <echo message="Building module mdr/module..."/>
     <ant dir="../mdr/module" target="netbeans"/>
   </target>
-  <target name="all-mdr/lib" depends="all-openide,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof,all-mdr/nbjmiutils,all-mdr/jmiutils">
+  <target name="all-mdr/lib" depends="build-platform,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof,all-mdr/nbjmiutils,all-mdr/jmiutils">
     <echo message="Building mdr library..."/>
     <ant dir="../mdr" target="jar"/>
   </target>
-  <target name="all-mdr/nbjmiutils" depends="all-mdr/jmiutils,all-openide,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof">
+  <target name="all-mdr/nbjmiutils" depends="build-platform,all-mdr/jmiutils,all-openide,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof">
     <echo message="Building module mdr/nbjmiutils..."/>
     <ant dir="../mdr/nbjmiutils" target="netbeans"/>
   </target>
-  <target name="all-mdr/jmiutils" depends="all-openide,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof">
+  <target name="all-mdr/jmiutils" depends="build-platform,all-mdr/mdrapi,all-mdr/jmi,all-mdr/mof">
     <echo message="Building module mdr/jmiutils..."/>
     <ant dir="../mdr/jmiutils" target="jar"/>
   </target>
-  <target name="all-mdr/mdrapi" depends="all-mdr/jmi,all-mdr/mof,all-openide">
+  <target name="all-mdr/mdrapi" depends="build-platform,all-mdr/jmi,all-mdr/mof">
     <echo message="Building module mdr/mdrapi..."/>
     <ant dir="../mdr/mdrapi" target="netbeans"/>
   </target>
-  <target name="all-mdr/mof" depends="all-mdr/jmi">
+  <target name="all-mdr/mof" depends="build-platform,all-mdr/jmi">
     <echo message="Building module mdr/mof..."/>
     <ant dir="../mdr/mof" target="netbeans"/>
   </target>
-  <target name="all-mdr/jmi" depends="">
+  <target name="all-mdr/jmi" depends="build-platform">
     <echo message="Building module mdr/jmi..."/>
     <ant dir="../mdr/jmi" target="netbeans"/>
   </target>
   
-  <target name="all-multicompile" depends="all-openide,all-openide/compiler,all-openide/execution">
+  <target name="all-multicompile" depends="build-platform,all-openide/compiler">
     <echo message="Building module multicompile..."/>
     <ant dir="../multicompile" target="netbeans"/>
   </target>
-  <target name="all-objectbrowser" depends="all-openide">
+  <target name="all-objectbrowser" depends="build-platform">
     <echo message="Building module objectbrowser..."/>
     <ant dir="../objectbrowser" target="netbeans"/>
   </target>
-  <target name="all-openidex" depends="all-openide,all-openide/loaders">
+  <target name="all-openidex" depends="build-platform">
     <echo message="Building module openidex..."/>
     <ant dir="../openidex" target="netbeans"/>
   </target>
   <target name="all-projects">
     <fail>projects is no more</fail>
   </target>
-  <target name="all-properties" depends="all-openide,all-editor,all-openide/loaders">
+  <target name="all-properties" depends="build-platform,all-editor">
     <echo message="Building module properties..."/>
     <ant dir="../properties" target="netbeans"/>
   </target>
@@ -556,108 +567,107 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module remotefs..."/>
     <ant dir="../remotefs" target="netbeans"/>
   </target>
-  <target name="all-rmi" depends="all-openide,all-java,all-debuggercore,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-debuggercore/oldapi">
+  <target name="all-rmi" depends="build-platform,all-java,all-debuggercore,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-debuggercore/oldapi">
     <echo message="Building module rmi..."/>
     <ant dir="../rmi" target="netbeans"/>
   </target>
-  <target name="all-schema2beans/rt" depends="all-openide">
+  <target name="all-schema2beans/rt" depends="build-platform">
     <echo message="Building module schema2beans/rt..."/>
     <ant dir="../schema2beans/rt" target="netbeans"/>
   </target>
   <!-- Not a module: -->
-  <target name="build-schema2beans/anttask" depends="all-schema2beans/rt,all-schema2beans/dev">
+  <target name="build-schema2beans/anttask" depends="build-platform,all-schema2beans/rt,all-schema2beans/dev">
     <echo message="Building schema2beans/anttask..."/>
     <ant dir="../schema2beans/anttask" target="jars"/>
   </target>
-  <target name="all-schema2beans/dev" depends="all-schema2beans/rt">
+  <target name="all-schema2beans/dev" depends="build-platform,all-schema2beans/rt">
     <echo message="Building module schema2beans/dev..."/>
     <ant dir="../schema2beans/dev" target="netbeans"/>
   </target>
-  <!-- XXX illegal dependence on core! -->
-  <target name="all-scripting" depends="all-openide,all-openidex,all-core,all-openide/deprecated,all-openide/execution,all-openide/io">
+  <target name="all-scripting" depends="build-platform,all-openidex,all-openide/deprecated">
     <echo message="Building module scripting..."/>
     <ant dir="../scripting" target="netbeans"/>
   </target>
-  <target name="all-serialversion" depends="all-openide,all-openide/compiler,all-openide/io,all-java/srcmodel">
+  <target name="all-serialversion" depends="build-platform,all-openide/compiler,all-java/srcmodel">
     <echo message="Building module serialversion..."/>
     <ant dir="../serialversion" target="netbeans"/>
   </target>
-  <target name="all-sysprops" depends="all-openide">
+  <target name="all-sysprops" depends="build-platform">
     <echo message="Building module sysprops..."/>
     <ant dir="../sysprops" target="netbeans"/>
   </target>
 
   <!-- Tasklist modules -->
-  <target name="all-tasklist/api" depends="all-openide,all-java">
+  <target name="all-tasklist/api" depends="build-platform,all-java">
     <echo message="Building module tasklist/api..."/>
     <ant dir="../tasklist/api" target="netbeans"/>
   </target>
-  <target name="all-tasklist/copyright" depends="all-openide,all-openide/loaders,all-tasklist/api,all-tasklist/core,all-editor">
+  <target name="all-tasklist/copyright" depends="build-platform,all-tasklist/api,all-tasklist/core,all-editor">
     <echo message="Building module tasklist/copyright..."/>
     <ant dir="../tasklist/copyright" target="netbeans"/>
   </target>  
-  <target name="all-tasklist/core" depends="all-openide,all-core/settings,all-tasklist/api">
+  <target name="all-tasklist/core" depends="build-platform,all-core/settings,all-tasklist/api">
     <echo message="Building module tasklist/core..."/>
     <ant dir="../tasklist/core" target="netbeans"/>
   </target>
-  <target name="all-tasklist/usertasks" depends="all-openide,all-tasklist/api,all-tasklist/core">
+  <target name="all-tasklist/usertasks" depends="build-platform,all-tasklist/api,all-tasklist/core">
     <echo message="Building module tasklist/usertasks..."/>
     <ant dir="../tasklist/usertasks" target="netbeans"/>
   </target>
-  <target name="all-tasklist/suggestions" depends="all-openide,all-tasklist/api,all-tasklist/core">
+  <target name="all-tasklist/suggestions" depends="build-platform,all-tasklist/api,all-tasklist/core">
     <echo message="Building module tasklist/suggestions..."/>
     <ant dir="../tasklist/suggestions" target="netbeans"/>
   </target>
-  <target name="all-tasklist/suggestions/ui" depends="all-tasklist/api,all-tasklist/core,all-tasklist/suggestions">
+  <target name="all-tasklist/suggestions/ui" depends="build-platform,all-tasklist/api,all-tasklist/core,all-tasklist/suggestions">
     <echo message="Building module tasklist/suggestions/ui..."/>
     <ant dir="../tasklist/suggestions/ui" target="netbeans"/>
   </target>
-  <target name="all-tasklist/docscan" depends="all-openide,all-java/api,all-projects/projectapi,all-projects/projectuiapi,all-tasklist/api,all-tasklist/core,all-tasklist/suggestions">
+  <target name="all-tasklist/docscan" depends="build-platform,all-java/api,all-projects/projectapi,all-projects/projectuiapi,all-tasklist/api,all-tasklist/core,all-tasklist/suggestions">
     <echo message="Building module tasklist/docscan..."/>
     <ant dir="../tasklist/docscan" target="netbeans"/>
   </target>
-  <target name="all-tasklist/editor" depends="all-openide,all-editor,all-tasklist/api,all-tasklist/core,all-tasklist/usertasks">
+  <target name="all-tasklist/editor" depends="build-platform,all-editor,all-tasklist/api,all-tasklist/core,all-tasklist/usertasks">
     <echo message="Building module tasklist/editor..."/>
     <ant dir="../tasklist/editor" target="netbeans"/>
   </target>
-  <target name="all-tasklist/bugs" depends="all-openide,all-tasklist/api,all-tasklist/core">
+  <target name="all-tasklist/bugs" depends="build-platform,all-tasklist/api,all-tasklist/core">
     <echo message="Building module tasklist/bugs..."/>
     <ant dir="../tasklist/bugs" target="netbeans"/>
   </target>
-  <target name="all-tasklist/pmd" depends="all-openide,all-tasklist/api,all-tasklist/core,all-contrib/pmd-nb-wrapper,all-java/srcmodel">
+  <target name="all-tasklist/pmd" depends="build-platform,all-tasklist/api,all-tasklist/core,all-contrib/pmd-nb-wrapper,all-java/srcmodel">
     <echo message="Building module tasklist/pmd..."/>
     <ant dir="../tasklist/pmd" target="netbeans"/>
   </target>
-  <target name="all-tasklist/javaparser" depends="all-openide,all-tasklist/api,all-tasklist/core,all-java">
+  <target name="all-tasklist/javaparser" depends="build-platform,all-tasklist/api,all-tasklist/core,all-java">
     <echo message="Building module tasklist/javaparser..."/>
     <ant dir="../tasklist/javaparser" target="netbeans"/>
   </target>
-  <target name="all-tasklist/javadoc" depends="all-openide,all-tasklist/api,all-tasklist/core,all-java,all-javadoc">
+  <target name="all-tasklist/javadoc" depends="build-platform,all-tasklist/api,all-tasklist/core,all-java,all-javadoc">
     <echo message="Building module tasklist/javadoc..."/>
     <ant dir="../tasklist/javadoc" target="netbeans"/>
   </target>
-  <target name="all-tasklist/html" depends="all-openide,all-tasklist/api,all-tasklist/core,all-html,all-diff">
+  <target name="all-tasklist/html" depends="build-platform,all-tasklist/api,all-tasklist/core,all-html,all-diff">
     <echo message="Building module tasklist/html..."/>
     <ant dir="../tasklist/html" target="netbeans"/>
   </target>
-  <target name="all-tasklist/compiler" depends="all-openide,all-tasklist/api,all-tasklist/core,all-core/settings,all-openide/compiler,all-core/compiler">
+  <target name="all-tasklist/compiler" depends="build-platform,all-tasklist/api,all-tasklist/core,all-openide/compiler,all-core/compiler">
     <echo message="Building module tasklist/compiler..."/>
     <ant dir="../tasklist/compiler" target="netbeans"/>
   </target>
 
-  <target name="all-testtools" depends="all-openide,all-openide/compiler,all-openide/execution,all-openide/io,all-core,all-java,all-ant,all-jemmy,all-jemmysupport,all-jellytools">
+  <target name="all-testtools" depends="build-platform,all-openide/compiler,all-java,all-ant,all-jemmy,all-jemmysupport,all-jellytools">
     <echo message="Building module testtools..."/>
     <ant dir="../testtools" target="netbeans"/>
   </target>
-  <target name="all-text" depends="all-openide">
+  <target name="all-text" depends="build-platform">
     <echo message="Building module text..."/>
     <ant dir="../text" target="netbeans"/>
   </target>
-  <target name="all-tomcatint/tomcat5" depends="all-openide,all-ant,all-schema2beans/rt,all-java/srcmodel,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-j2eeserver,all-web/ddapi,build-schema2beans/anttask">
+  <target name="all-tomcatint/tomcat5" depends="build-platform,all-ant,all-schema2beans/rt,all-java/srcmodel,all-debuggercore/oldapi,all-j2eeserver,all-web/ddapi,build-schema2beans/anttask">
     <echo message="Building module tomcatint/tomcat5..."/>
     <ant dir="../tomcatint/tomcat5" target="netbeans"/>
   </target>
-  <target name="all-tomcatint/tomcat5/bundled" depends="all-tomcatint/tomcat5">
+  <target name="all-tomcatint/tomcat5/bundled" depends="build-platform,all-tomcatint/tomcat5">
     <echo message="Building module tomcatint/tomcat5/bundled..."/>
     <ant dir="../tomcatint/tomcat5/bundled" target="netbeans"/>
   </target>
@@ -665,60 +675,60 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module translatedfiles..."/>
     <ant dir="../translatedfiles" target="netbeans"/>
   </target>
-  <target name="all-usersguide" depends="all-openide">
+  <target name="all-usersguide" depends="build-platform">
     <echo message="Building module usersguide..."/>
     <ant dir="../usersguide" target="netbeans"/>
   </target>
-  <target name="all-utilities" depends="all-openide,all-openide/io,all-openidex,all-core/javahelp,all-core/bootstrap">
+  <target name="all-utilities" depends="build-platform,all-openidex">
     <echo message="Building module utilities..."/>
     <ant dir="../utilities" target="netbeans"/>
   </target>
-  <target name="all-utilities/group" depends="all-openide,all-openidex,all-core/settings">
+  <target name="all-utilities/group" depends="build-platform,all-openidex">
     <echo message="Building module utilities/group..."/>
     <ant dir="../utilities/group" target="netbeans"/>
   </target>
-  <target name="all-vcscvs" depends="all-openide,all-openidex,all-editor,all-vcscore">
+  <target name="all-vcscvs" depends="build-platform,all-openidex,all-editor,all-vcscore">
     <echo message="Building module vcscvs..."/>
     <ant dir="../vcscvs" target="netbeans"/>
   </target>
-  <target name="all-vcscvs/compat" depends="all-openide,all-openidex,all-vcscore,all-vcsgeneric">
+  <target name="all-vcscvs/compat" depends="build-platform,all-openidex,all-vcscore,all-vcsgeneric">
     <echo message="Building module vcscvs compat..."/>
     <ant dir="../vcscvs/compat" target="netbeans"/>
   </target>
-  <target name="all-vcsgeneric" depends="all-openide,all-openidex,all-vcscore,all-diff">
+  <target name="all-vcsgeneric" depends="build-platform,all-openidex,all-vcscore,all-diff">
     <echo message="Building module vcsgeneric..."/>
     <ant dir="../vcsgeneric" target="netbeans"/>
   </target>
 
-  <target name="all-vcsgeneric/profiles/cvsprofiles" depends="all-vcsgeneric,all-javacvs/libmodule">
+  <target name="all-vcsgeneric/profiles/cvsprofiles" depends="build-platform,all-vcsgeneric,all-javacvs/libmodule">
     <echo message="Building module vcsgeneric/profiles/cvsprofiles"/>
     <ant dir="../vcsgeneric/profiles/cvsprofiles" target="netbeans"/>
   </target>
 
-  <target name="all-vcsgeneric/profiles/clearcase" depends="all-vcsgeneric,all-openide/deprecated">
+  <target name="all-vcsgeneric/profiles/clearcase" depends="build-platform,all-vcsgeneric,all-openide/deprecated">
     <echo message="Building module vcsgeneric/profiles/clearcase"/>
     <ant dir="../vcsgeneric/profiles/clearcase" target="netbeans"/>
   </target>
 
-  <target name="all-vcsgeneric/profiles/pvcs" depends="all-vcsgeneric">
+  <target name="all-vcsgeneric/profiles/pvcs" depends="build-platform,all-vcsgeneric">
     <echo message="Building module vcsgeneric/profiles/pvcs"/>
     <ant dir="../vcsgeneric/profiles/pvcs" target="netbeans"/>
   </target>
 
-  <target name="all-vcsgeneric/profiles/vss" depends="all-vcsgeneric">
+  <target name="all-vcsgeneric/profiles/vss" depends="build-platform,all-vcsgeneric">
     <echo message="Building module vcsgeneric/profiles/vss"/>
     <ant dir="../vcsgeneric/profiles/vss" target="netbeans"/>
   </target>
 
-  <target name="all-vcscore" depends="all-openide,all-openidex,all-openide/io,all-openide/execution,all-openide/loaders,all-openide/masterfs">
+  <target name="all-vcscore" depends="build-platform,all-openidex">
     <echo message="Building module vcscore..."/>
     <ant dir="../vcscore" target="netbeans"/>
   </target>
-  <target name="all-javacvs" depends="all-openide,all-openidex,all-vcscore, all-diff,all-openide/deprecated">
+  <target name="all-javacvs" depends="build-platform,all-openidex,all-vcscore, all-diff,all-openide/deprecated">
     <echo message="Building module javacvs..."/>
     <ant dir="../javacvs" target="netbeans"/>
   </target>
-  <target name="all-javacvs/compat" depends="all-openide,all-vcscore,all-vcsgeneric,all-vcsgeneric/profiles/cvsprofiles">
+  <target name="all-javacvs/compat" depends="build-platform,all-vcscore,all-vcsgeneric,all-vcsgeneric/profiles/cvsprofiles">
     <echo message="Building module javacvs compat..."/>
     <ant dir="../javacvs/compat" target="netbeans"/>
   </target>
@@ -726,7 +736,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module javacvs/libmodule..."/>
     <ant dir="../javacvs/libmodule" target="netbeans"/>
   </target>
-  <target name="all-web/servletapi23" depends="all-web/core">
+  <target name="all-web/servletapi23" depends="build-platform,all-web/core">
     <echo message="Building module web/servletapi23..."/>
     <ant dir="../web/servletapi23" target="netbeans"/>
   </target>
@@ -738,69 +748,65 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/jstl11..."/>
     <ant dir="../web/jstl11" target="netbeans"/>
   </target>
-  <target name="all-web/ddapi" depends="all-openide,all-schema2beans/rt,build-schema2beans/anttask,all-libs/xerces">
+  <target name="all-web/ddapi" depends="build-platform,all-schema2beans/rt,build-schema2beans/anttask,all-libs/xerces">
     <echo message="Building module web/ddapi..."/>
     <ant dir="../web/ddapi" target="netbeans"/>
   </target>
-  <target name="all-web/webapi" depends="all-openide/loaders,all-openide,all-schema2beans/rt,all-java/api,all-projects/queries">
+  <target name="all-web/webapi" depends="build-platform,all-schema2beans/rt,all-java/api">
     <echo message="Building module web/webapi..."/>
     <ant dir="../web/webapi" target="netbeans" />
   </target>
-  <target name="all-web/project" depends="all-web/webapi,all-web/servletapi24,all-web/jstl11,all-java/api,all-openide/execution,all-java/platform,all-java/project,all-ant/project,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-projects/queries,all-openide/loaders,all-openide,all-schema2beans/rt">
+  <target name="all-web/project" depends="build-platform,all-web/webapi,all-web/servletapi24,all-web/jstl11,all-java/api,all-java/platform,all-java/project,all-ant/project,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-schema2beans/rt">
     <echo message="Building module web/project..."/>
     <ant dir="../web/project" target="netbeans" />
   </target>
-  <target name="all-web/core" depends="all-openide,all-java,all-editor,all-web/ddapi,all-web/webapi,all-j2eeserver,all-html,all-httpserver,all-debuggercore,all-openidex,all-schema2beans/rt,all-xml/api,all-xml/catalog,all-java/srcmodel,all-java/api,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects/projectapi,all-web/jspsyntax">
+  <target name="all-web/core" depends="build-platform,all-java,all-editor,all-web/ddapi,all-web/webapi,all-j2eeserver,all-html,all-httpserver,all-debuggercore,all-openidex,all-schema2beans/rt,all-xml/api,all-xml/catalog,all-java/srcmodel,all-java/api,all-debuggercore/oldapi,all-projects/projectapi,all-web/jspsyntax">
     <echo message="Building module web/core..."/>
     <ant dir="../web/core" target="netbeans"/>
   </target>
-  <target name="all-web/jspparser" depends="all-web/servletapi24,all-openide/execution,all-openide/io">
+  <target name="all-web/jspparser" depends="build-platform,all-web/servletapi24">
     <echo message="Building module web/jspparser..."/>
     <ant dir="../web/jspparser" target="netbeans"/>
   </target>
-  <target name="all-web/jspsyntax" depends="all-web/jspparser,all-xml/text-edit">
+  <target name="all-web/jspsyntax" depends="build-platform,all-web/jspparser,all-xml/text-edit">
     <echo message="Building module web/jspsyntax..."/>
     <ant dir="../web/jspsyntax" target="netbeans"/>
   </target>
-  <target name="all-web/jspdebug" depends="all-web/core,all-openide/deprecated,all-java/srcmodel,all-openide/execution,all-debuggercore/api, all-debuggerjpda/api">
+  <target name="all-web/jspdebug" depends="build-platform,all-web/core,all-openide/deprecated,all-java/srcmodel,all-debuggercore/api, all-debuggerjpda/api">
     <echo message="Building module web/jspdebug..."/>
     <ant dir="../web/jspdebug" target="netbeans"/>
   </target>
-  <target name="all-web/taglibed" depends="all-web/core,all-jarpackager,all-xml/core,all-openide/deprecated,all-java/srcmodel,all-openide/io">
+  <target name="all-web/taglibed" depends="build-platform,all-web/core,all-jarpackager,all-xml/core,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module web/taglibed..."/>
     <ant dir="../web/taglibed" target="netbeans"/>
   </target>
-  <target name="all-web/advanced" depends="all-web/core,all-web/jspsyntax,all-jarpackager,all-debuggercore,all-j2eeserver,all-html,all-openidex,all-openide/deprecated,all-java/srcmodel,all-openide/execution">
+  <target name="all-web/advanced" depends="build-platform,all-web/core,all-web/jspsyntax,all-jarpackager,all-debuggercore,all-j2eeserver,all-html,all-openidex,all-openide/deprecated,all-java/srcmodel">
     <echo message="Building module web/advanced..."/>
     <ant dir="../web/advanced" target="netbeans"/>
   </target>
-  <target name="all-webl" depends="all-openide,all-java,all-openide/compiler,all-openide/execution,all-openide/deprecated">
+  <target name="all-webl" depends="build-platform,all-java,all-openide/compiler,all-openide/deprecated">
     <echo message="Building module webl..."/>
     <ant dir="../webl" target="netbeans"/>
   </target>
-  <target name="all-cpplite" depends="all-openide,all-editor,all-java,all-openide/deprecated,all-openide/compiler,all-openide/execution">
+  <target name="all-cpplite" depends="build-platform,all-editor,all-java,all-openide/deprecated,all-openide/compiler">
     <echo message="Building module cpplite..."/>
     <ant dir="../cpplite" target="netbeans"/>
   </target>
-
-  <!-- XXX illegal dependence on core! -->
-  <target name="all-cpp" depends="all-openide,all-editor,all-core,all-openide/deprecated,all-openide/compiler,all-openide/execution,all-openide/io">
+  <target name="all-cpp" depends="build-platform,all-editor,all-openide/deprecated,all-openide/compiler">
     <echo message="Building module cpp..."/>
     <ant dir="../cpp" target="netbeans"/>
   </target>
-
-  <!-- XXX illegal dependence on core! -->
-  <target name="all-externaleditor" depends="all-openide,all-editor,all-core">
+  <target name="all-externaleditor" depends="build-platform,all-editor">
     <echo message="Building module externaleditor..."/>
     <ant dir="../externaleditor" target="netbeans"/>
   </target>
 
-  <target name="all-corba" depends="all-openide,all-editor,all-java,all-openide/compiler,all-openide/execution,all-projects">
+  <target name="all-corba" depends="build-platform,all-editor,all-java,all-openide/compiler,all-projects">
     <echo message="Building module corba..."/>
     <ant dir="../corba" target="netbeans"/>
   </target>
 
-  <target name="all-ide/welcome" depends="all-openide,all-utilities,all-autoupdate">
+  <target name="all-ide/welcome" depends="build-platform,all-utilities">
     <echo message="Building module ide/welcome..."/>
     <ant dir="../ide/welcome" target="netbeans"/>
   </target>
@@ -835,114 +841,114 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
 
   <!-- XML modules -->
-  <target name="all-xml/api" depends="all-openide, all-libs/jaxp">
+  <target name="all-xml/api" depends="build-platform, all-libs/jaxp">
       <echo message="Building module xml/api..."/>
       <ant dir="../xml/api" target="netbeans"/>
   </target>
 
-  <target name="all-xml/core" depends="all-openide,all-xml/api,all-openide/execution,all-openide/io">
+  <target name="all-xml/core" depends="build-platform,all-xml/api">
       <echo message="Building module xml/core..."/>
       <ant dir="../xml/core" target="netbeans"/>
   </target>
 
-  <target name="all-xml/tax" depends="all-openide,all-xml/api,all-xml/core">
+  <target name="all-xml/tax" depends="build-platform,all-xml/api,all-xml/core">
       <echo message="Building module xml/tax..."/>
       <ant dir="../xml/tax" target="netbeans"/>
   </target>
 
- <target name="all-xml/catalog" depends="all-openide,all-xml/api,all-xml/core">
+ <target name="all-xml/catalog" depends="build-platform,all-xml/api,all-xml/core">
       <echo message="Building module xml/catalog..."/>
       <ant dir="../xml/catalog" target="netbeans"/>
   </target>
 
-  <target name="all-xml/tools" depends="all-openide, all-libs/jaxp, all-xml/api, all-xml/tax, all-xml/core,all-java/srcmodel,all-java/api">
+  <target name="all-xml/tools" depends="build-platform, all-libs/jaxp, all-xml/api, all-xml/tax, all-xml/core,all-java/srcmodel,all-java/api">
       <echo message="Building module xml/tools..."/>
       <ant dir="../xml/tools" target="netbeans"/>
   </target>
 
-  <target name="all-xml/text-edit" depends="all-openide, all-editor, all-xml/tax, all-xml/core">
+  <target name="all-xml/text-edit" depends="build-platform, all-editor, all-xml/tax, all-xml/core">
       <echo message="Building module xml/text-edit..."/>
       <ant dir="../xml/text-edit" target="netbeans"/>
   </target>
 
-  <target name="all-xml/tree-edit" depends="all-openide,all-xml/api,all-xml/tax,all-xml/core">
+  <target name="all-xml/tree-edit" depends="build-platform,all-xml/api,all-xml/tax,all-xml/core">
       <echo message="Building module xml/tree-edit..."/>
       <ant dir="../xml/tree-edit" target="netbeans"/>
   </target>
 
-  <target name="all-xml/css" depends="all-openide,all-editor,all-xml/api,all-openide/io">
+  <target name="all-xml/css" depends="build-platform,all-editor,all-xml/api">
       <echo message="Building module xml/css..."/>
       <ant dir="../xml/css" target="netbeans"/>
   </target>
 
-  <target name="all-xml/xsl" depends="all-openide,all-httpserver/servletapi,all-libs/jaxp,all-xml/api,all-xml/tax,all-xml/core,all-openide/execution">
+  <target name="all-xml/xsl" depends="build-platform,all-httpserver/servletapi,all-libs/jaxp,all-xml/api,all-xml/tax,all-xml/core">
       <echo message="Building module xml/xsl..."/>
       <ant dir="../xml/xsl" target="netbeans"/>
   </target>
 
-  <target name="all-xml/schema" depends="all-openide, all-libs/jaxp, all-xml/api, all-xml/tax, all-xml/core">
+  <target name="all-xml/schema" depends="build-platform, all-libs/jaxp, all-xml/api, all-xml/tax, all-xml/core">
       <echo message="Building xml/schema module..."/>
       <ant dir="../xml/schema" target="netbeans"/>
   </target>
 
   <target name="all-xml" depends="all-xml/api, all-xml/tax, all-xml/core, all-xml/catalog, all-xml/tools, all-xml/text-edit, all-xml/tree-edit, all-xml/css, all-xml/xsl, all-xml/schema"/>
 
-  <target name="all-treefs" depends="all-openide,all-java/srcmodel">
+  <target name="all-treefs" depends="build-platform,all-java/srcmodel">
     <echo message="Building module treefs..."/>
     <ant dir="../treefs" target="netbeans"/>
   </target>
 
-  <target name="all-utilities/loaderswitcher" depends="all-openide">
+  <target name="all-utilities/loaderswitcher" depends="build-platform">
       <echo message="Building module utilities/loaderswitcher..."/>
       <ant dir="../utilities/loaderswitcher" target="netbeans"/>
   </target>
 
-  <target name="all-xtest" depends="all-openide,all-openide/loaders,all-openide/io,all-openide/execution,all-core,all-core/execution,all-core/term,all-core/output,all-projects/projectui,all-java/j2seproject">
+  <target name="all-xtest" depends="build-platform,all-java/j2seproject">
       <echo message="Building module xtest..."/>
       <ant dir="../xtest" antfile="build.xml" target="netbeans"/>
   </target>
 
-  <target name="all-workspaceswitcher/navigator" depends="all-openide/looks,all-openide,all-openide/registry,all-openide/loaders">
+  <target name="all-workspaceswitcher/navigator" depends="build-platform,all-openide/looks,all-openide/registry">
     <echo message="Building module workspaceswitcher/navigator..."/>
     <ant dir="../workspaceswitcher/navigator" target="netbeans"/>
   </target>
 
-  <target name="all-workspaceswitcher/navigator/javagator" depends="all-workspaceswitcher/navigator,all-java/srcmodel,all-openide,all-openide/looks">
+  <target name="all-workspaceswitcher/navigator/javagator" depends="build-platform,all-workspaceswitcher/navigator,all-java/srcmodel,all-openide/looks">
     <echo message="Building module workspaceswitcher/navigator/javagator..."/>
     <ant dir="../workspaceswitcher/navigator/javagator" target="netbeans"/>
   </target>
 
-  <target name="all-workspaceswitcher/navigator/beanigator" depends="all-workspaceswitcher/navigator,all-java/srcmodel,all-openide,all-openide/looks,all-beans">
+  <target name="all-workspaceswitcher/navigator/beanigator" depends="build-platform,all-workspaceswitcher/navigator,all-java/srcmodel,all-openide/looks,all-beans">
     <echo message="Building module workspaceswitcher/navigator/beanigator..."/>
     <ant dir="../workspaceswitcher/navigator/beanigator" target="netbeans"/>
   </target>
 
-  <target name="all-contrib/statuspopup" depends="all-openide">
+  <target name="all-contrib/statuspopup" depends="build-platform">
     <echo message="Building module contrib/statuspopup..."/>
     <ant dir="../contrib/statuspopup" target="netbeans"/>
   </target>
   
-  <target name="all-contrib/coloreditor" depends="all-openide">
+  <target name="all-contrib/coloreditor" depends="build-platform">
     <echo message="Building module contrib/coloreditor"/>
     <ant dir="../contrib/coloreditor" target="netbeans"/>
   </target>
   
-  <target name="all-contrib/dropshadow" depends="all-openide">
+  <target name="all-contrib/dropshadow" depends="build-platform">
     <echo message="Building module contrib/dropshadow"/>
     <ant dir="../contrib/dropshadow" target="netbeans"/>
   </target>
   
-  <target name="all-contrib/editorthemes" depends="all-openide,all-editor">
+  <target name="all-contrib/editorthemes" depends="build-platform,all-editor">
     <echo message="Building module contrib/editorthemes"/>
     <ant dir="../contrib/editorthemes" target="netbeans"/>
   </target>
   
-  <target name="all-contrib/archiver" depends="all-openide,all-openide/loaders,all-openide/io,all-java/api">
+  <target name="all-contrib/archiver" depends="build-platform,all-java/api">
     <echo message="Building module contrib/archiver..."/>
     <ant dir="../contrib/archiver" target="netbeans"/>
   </target>
 
-  <target name="all-contrib/docbook" depends="all-openide,all-openide/loaders,all-openide/io,all-xml/catalog">
+  <target name="all-contrib/docbook" depends="build-platform,all-xml/catalog">
     <echo message="Building module contrib/docbook..."/>
     <ant dir="../contrib/docbook" target="netbeans"/>
   </target>
@@ -952,110 +958,95 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../contrib/pmd-nb-wrapper" target="netbeans"/>
   </target>
 
-  <target name="all-contrib/pmd-nb-ext" depends="all-openide,all-contrib/pmd-nb-wrapper">
+  <target name="all-contrib/pmd-nb-ext" depends="build-platform,all-contrib/pmd-nb-wrapper">
     <echo message="Building module contrib/pmd-nb-ext..."/>
     <ant dir="../contrib/pmd-nb-ext" target="netbeans"/>
   </target>
 
-  <target name="all-contrib/insertunicode" depends="all-openide,all-editor">
+  <target name="all-contrib/insertunicode" depends="build-platform,all-editor">
     <echo message="Building module contrib/insertunicode..."/>
     <ant dir="../contrib/insertunicode" target="netbeans"/>
   </target>
 
-  <target name="all-contrib/workplace" depends="all-openide,all-openide/loaders">
+  <target name="all-contrib/workplace" depends="build-platform">
     <echo message="Building module contrib/workplace..."/>
     <ant dir="../contrib/workplace" target="netbeans"/>
   </target>
 
-  <target name="all-contrib/favourites" depends="all-openide,all-openide/loaders">
+  <target name="all-contrib/favourites" depends="build-platform">
     <echo message="Building module contrib/favourites..."/>
     <ant dir="../contrib/favourites" target="netbeans"/>
   </target>
   
-  <target name="all-jasm" depends="all-openide,all-openide/loaders,all-editor,all-java/srcmodel,all-openide/deprecated,all-openide/execution,all-openide/compiler,all-clazz">
+  <target name="all-jasm" depends="build-platform,all-editor,all-java/srcmodel,all-openide/deprecated,all-openide/compiler,all-clazz">
       <echo message="Building module jasm..."/>
       <ant dir="../jasm" target="netbeans"/>
   </target>
   
-  <target name="all-projects/projectapi" depends="all-projects/queries,all-openide">
+  <target name="all-projects/projectapi" depends="build-platform">
       <echo message="Building module projects/projectapi..."/>
       <ant dir="../projects/projectapi" target="netbeans"/>
   </target>
-  <target name="all-projects/projectuiapi" depends="all-projects/projectapi,all-openide,all-openide/loaders">
+  <target name="all-projects/projectuiapi" depends="build-platform,all-projects/projectapi">
       <echo message="Building module projects/projectapi..."/>
       <ant dir="../projects/projectuiapi" target="netbeans"/>
   </target>
-  <target name="all-projects/libraries" depends="all-openide,all-projects/projectapi,all-ant/project,all-java/api">
+  <target name="all-projects/libraries" depends="build-platform,all-projects/projectapi,all-ant/project,all-java/api">
       <echo message="Building module projects/libraries..."/>
       <ant dir="../projects/libraries" target="netbeans"/>
   </target>
-  <target name="all-projects/projectui" depends="all-openide,all-projects/projectapi,all-projects/projectuiapi,all-openide/loaders,all-openide/masterfs,all-openidex">
+  <target name="all-projects/projectui" depends="build-platform,all-projects/projectapi,all-projects/projectuiapi,all-openide/masterfs,all-openidex">
       <echo message="Building module projects/projectui..."/>
       <ant dir="../projects/projectui" target="netbeans"/>
   </target>
-  <target name="all-projects/queries" depends="all-openide">
-      <echo message="Building module projects/queries..."/>
-      <ant dir="../projects/queries" target="netbeans"/>
-  </target>
-  <target name="all-java/platform" depends="all-openide,all-openide/loaders,all-java/api">
+  <target name="all-java/platform" depends="build-platform,all-java/api">
     <echo message="Building module java/platform..."/>
     <ant dir="../java/platform" target="netbeans"/>
   </target>
-  <target name="all-java/j2seplatform" depends="all-openide,all-openide/loaders,all-java/api,all-java/platform,all-ant/project,all-projects/libraries">
+  <target name="all-java/j2seplatform" depends="build-platform,all-java/api,all-java/platform,all-ant/project,all-projects/libraries">
     <echo message="Building module java/j2seplatform..."/>
     <ant dir="../java/j2seplatform" target="netbeans"/>
   </target>
-  <target name="all-java/j2seproject" depends="all-java/api,all-openide/execution,all-java/platform,all-java/project,all-ant/project,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi,all-projects/queries,all-openide/loaders,all-openide">
+  <target name="all-java/j2seproject" depends="build-platform,all-java/api,all-java/platform,all-java/project,all-ant/project,all-projects/projectapi,all-projects/libraries,all-projects/projectuiapi">
     <echo message="Building module java/j2seproject..."/>
     <ant dir="../java/j2seproject" target="netbeans"/>
   </target>
-  <target name="all-ant/project" depends="all-ant,all-projects/projectapi,all-projects/queries,all-openide,all-openide/execution,all-openide/loaders">
+  <target name="all-ant/project" depends="build-platform,all-ant,all-projects/projectapi">
       <echo message="Building module ant/project..."/>
       <ant dir="../ant/project" target="netbeans"/>
   </target>
-  <target name="all-java/project" depends="all-openide,all-openide/loaders,all-openidex,all-projects/projectapi,all-projects/projectuiapi,all-java/api,all-java,all-java/platform,all-ant/project,all-projects/libraries,all-projects/queries">
+  <target name="all-java/project" depends="build-platform,all-openidex,all-projects/projectapi,all-projects/projectuiapi,all-java/api,all-java,all-java/platform,all-ant/project,all-projects/libraries">
     <echo message="Building module java/project..."/>
     <ant dir="../java/project" target="netbeans"/>
   </target>
-  <target name="all-apisupport/project" depends="all-projects/projectapi,all-projects/projectuiapi,all-ant/project,all-projects/queries,all-java/api,all-java/platform,all-java/project,all-openide,all-openide/execution,all-openide/loaders">
+  <target name="all-apisupport/project" depends="build-platform,all-projects/projectapi,all-projects/projectuiapi,all-ant/project,all-java/api,all-java/platform,all-java/project">
     <echo message="Building module apisupport/project..."/>
     <ant dir="../apisupport/project" target="netbeans"/>
   </target>
-  <target name="all-i18n/form" depends="all-form,all-i18n,all-java,all-properties,all-openide,all-openide/loaders,all-java/srcmodel">
+  <target name="all-i18n/form" depends="build-platform,all-form,all-i18n,all-java,all-properties,all-java/srcmodel">
     <echo message="Building module i18n/form..."/>
     <ant dir="../i18n/form" target="netbeans"/>
   </target>
 
-  <target name="all-core/swing/plaf">
-     <echo message="Building look and feel library..."/>
-     <ant dir="../core/swing/plaf" target="netbeans"/>
-  </target>
-
-  <target name="all-core/swing/tabcontrol">
-     <echo message="Building tabcontrol javabean..."/>
-     <ant dir="../core/swing/tabcontrol" target="netbeans"/>
-  </target>
-
-  <target name="all-ide/features/basic" depends="init">
+  <target name="all-ide/features/basic" depends="build-ide">
     <echo message="Building module features/basic..."/>
     <ant dir="../ide/features/basic" target="netbeans"/>
   </target>
 
-  <target name="all-ide/features/desktop" depends="init">
+  <target name="all-ide/features/desktop" depends="build-ide">
     <echo message="Building module features/desktop..."/>
     <ant dir="../ide/features/desktop" target="netbeans"/>
   </target>
 
-  <target name="all-ide/features/ideplugin" depends="init">
+  <target name="all-ide/features/ideplugin" depends="build-ide">
     <echo message="Building module features/ideplugin..."/>
     <ant dir="../ide/features/ideplugin" target="netbeans"/>
   </target>
 
-  <target name="all-ide/features/web" depends="init">
+  <target name="all-ide/features/web" depends="build-ide">
     <echo message="Building module features/web..."/>
     <ant dir="../ide/features/web" target="netbeans"/>
   </target>
-  
   <!-- targets for branding of NetBeans IDE -->
   <target name="all-ide/branding/core" depends="init">
     <echo message="Building module ide/branding/core..."/>
@@ -1064,6 +1055,51 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="all-ide/branding/core/windows" depends="init">
     <echo message="Building module ide/branding/core/windows..."/>
     <ant dir="../ide/branding/core/windows" target="netbeans"/>
+  </target>
+  
+  <target name="build-platform" depends="init" unless="platform-is-built">
+    <echo message="Building platform modules"/>
+    <mkdir dir="${netbeans.dest}"/>
+    <nbmerge failonerror="${stop.when.broken.modules}" 
+             dest="${netbeans.dest}" 
+             topdir="${nb_all}" 
+             fixedmodules="${nb.cluster.platform}" 
+             modules=""
+             builtmodulesproperty="${built.modules.property}" 
+             targetprefix="all-" 
+             mergedependentmodules="${merge.dependent.modules}">
+    </nbmerge>
+    <property name="platform-is-built" value="true"/>
+  </target>
+  
+  <target name="build-ide" depends="build-platform" unless="ide-is-built">
+    <echo message="Building ide modules"/>
+    <mkdir dir="${netbeans.dest}"/>
+    <nbmerge failonerror="${stop.when.broken.modules}" 
+             dest="${netbeans.dest}" 
+             topdir="${nb_all}" 
+             fixedmodules="" 
+             modules="${nb.pkg.idesupport},${nb.pkg.ideextensions},${nb.pkg.javarefactoring},${nb.pkg.webapp},${nb.pkg.ide},${nb.pkg.nb}"
+             builtmodulesproperty="${built.modules.property}" 
+             targetprefix="all-" 
+             mergedependentmodules="${merge.dependent.modules}">
+    </nbmerge>
+    <property name="ide-is-built" value="true"/>
+  </target>
+  
+  <target name="build-features" depends="build-ide" unless="features-is-built">
+    <echo message="Building ide modules"/>
+    <mkdir dir="${netbeans.dest}"/>
+    <nbmerge failonerror="${stop.when.broken.modules}" 
+             dest="${netbeans.dest}" 
+             topdir="${nb_all}" 
+             fixedmodules="" 
+             modules="${nb.features.basic},${nb.features.desktop},${nb.features.ideplugin},${nb.features.web}"
+             builtmodulesproperty="${built.modules.property}" 
+             targetprefix="all-" 
+             mergedependentmodules="${merge.dependent.modules}">
+    </nbmerge>
+    <property name="features-is-built" value="true"/>
   </target>
 
   <!-- #27098: MakeParserDB requires several modules to have been successfully built. -->
@@ -1157,39 +1193,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       </eager>
     </createmodulexml>
   </target>
-
-  <!-- Iterates over all modules in one specific cluster and creates their configuration
-    files as part of nb4.0 cluster. Makes all modules autoloads. Used for implementation of
-    NetBeans feature packs - super modules with dependencies on there regular ones
-    -->
-  <target name="mask-module-xmls-for-one-cluster" >
-    <taskdef name="createmodulexml" classname="org.netbeans.nbbuild.CreateModuleXML" classpath="nbantext.jar"/>
-    <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
-    <loadproperties srcFile="cluster.properties" />
-    <loadproperties srcFile="directories.properties" />
-    <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
-    
-    <mkdir dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.system.dir}/Modules"/>
-    <createmodulexml xmldir="${netbeans.dest.dir}/${nb.pkg.nb.dir}/${nb.system.dir}/Modules">
-      <autoload dir="${netbeans.dest.dir}/${one.cluster.dir}">
-        <include name="${nb.modules/autoload.dir}/*.jar"/>
-        <include name="${nb.modules.dir}/*.jar"/>
-        <include name="${nb.modules/eager.dir}/*.jar"/>
-      </autoload>
-    </createmodulexml>
-  </target>
   
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
-  <target name="build-nozip" depends="merge" description="Build the IDE but do not create a final ZIP file.">
+  <target name="build-nozip" depends="build-features" description="Build the IDE but do not create a final ZIP file.">
     <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
     <loadproperties srcFile="cluster.properties" />
     <repeat target="create-module-xmls-for-one-cluster" name="one.cluster.name" values="${clusters.list}" /> 
      
-    <!-- all ide4 modules are going to be autoloads in nb4.0 -->     
-    <repeat target="mask-module-xmls-for-one-cluster" name="one.cluster.name" values="${clusters.ide.list}" /> 
-
     <loadproperties srcfile="${netbeans.dest.dir}/moduleCluster.properties" />
         
     <mkdir dir="${netbeans.dest.dir}/bin" />
@@ -1294,13 +1306,16 @@ the ${netbeans.dest}/bin/ directory.
   <target name="zip-one-cluster">
     <taskdef name="setclusterpatternset" classname="org.netbeans.nbbuild.SetClusterPatternSet" classpath="nbantext.jar"/>
     <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
+    <taskdef name="resolve" classname="org.netbeans.nbbuild.ResolveProperty" classpath="nbantext.jar"/>
     <loadproperties srcFile="cluster.properties" />
+    <loadproperties srcFile="cluster-description.properties" />
     <loadproperties srcFile="directories.properties" />
     <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
     
     <setclusterpatternset cluster="${one.cluster.name}" name="${one.cluster.name}.files" trackingpath="${netbeans.dest.dir}" clusterdir="${one.cluster.dir}"/>
     
-    <zip destfile="${netbeans.build.dir}/libnb-${one.cluster.name}-${buildnum}.zip" update="true" duplicate="preserve">
+    <resolve name="zipcluster.file" property="${one.cluster.name}.pkg.filename"/>
+    <zip destfile="${netbeans.build.dir}/${clusters.prefix}-${zipcluster.file}-${buildnum}.zip" update="true" duplicate="preserve">
       <fileset dir="${netbeans.dest.dir}">
         <patternset refID="${one.cluster.name}.files"/>
       </fileset>

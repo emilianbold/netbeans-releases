@@ -151,7 +151,7 @@ class UpdateTracking {
         }        
     }
 
-    private String getTrackingFileName() {
+    public String getTrackingFileName() {
         String trackingFileName = module.getCodenamebase();
         trackingFileName = trackingFileName.replace('.', '-') + ".xml";
         return trackingFileName;

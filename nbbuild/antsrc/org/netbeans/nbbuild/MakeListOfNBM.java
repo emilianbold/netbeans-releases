@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.jar.JarFile;
+import java.util.ArrayList;
 
 /**
  * Create an update tracking file automatically.
@@ -91,6 +92,12 @@ public class MakeListOfNBM extends Task {
         }
         
         UpdateTracking.Version version = track.addNewModuleVersion( codename, versionSpecNum );
+
+        String systemDir = this.getProject().getProperty("nb.system.dir");
+        if (systemDir == null)
+            throw new BuildException( "Can't read nb.system.dir property");
+        
+        fs.createInclude().setName(systemDir + File.separator + "Modules" + File.separator + track.getTrackingFileName());
         
         DirectoryScanner ds = fs.getDirectoryScanner( this.getProject() );
         String excludes[]={"Info/info.xml", "main/**"};
@@ -121,8 +128,12 @@ public class MakeListOfNBM extends Task {
         String clusterDir = this.getProject().getProperty("cluster.dir");
         String moduleName = this.getProject().getProperty("module.name");
         String outputPath = absolutePath.substring(0,absolutePath.length() - clusterDir.length());
+        String[] inc = new String[include.length+1];
+        for (int i=0; i < include.length; i++)
+            inc[i] = include[i];
+        inc[include.length] = systemDir + File.separator + "Modules" + File.separator + track.getTrackingFileName();
         ModuleTracking moduleTracking = new ModuleTracking( outputPath );
-        moduleTracking.putModule(moduleName, absolutePath, include);
+        moduleTracking.putModule(moduleName, absolutePath, inc);
         moduleTracking.write();
     }
 }
