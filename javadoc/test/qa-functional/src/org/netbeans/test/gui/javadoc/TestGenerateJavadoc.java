@@ -88,7 +88,7 @@ public class TestGenerateJavadoc extends JellyTestCase {
         NbDialogOperator nbDialogOper_1 = new NbDialogOperator(questionWinTitle);
         nbDialogOper_1.no();
         
-        assertTrue("index.html doesn't exist!", new File(userHome + sep + "javadoc" + sep + "index.html").exists()); // NOI18N
+        verifyCommonJdocFiles(userHome);
         assertTrue("MemoryView doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
                    "advanced" + sep + "MemoryView.html").exists()); // NOI18N
         new EventTool().waitNoEvent(1000);
@@ -100,7 +100,7 @@ public class TestGenerateJavadoc extends JellyTestCase {
         NbDialogOperator nbDialogOper_2 = new NbDialogOperator(questionWinTitle);
         nbDialogOper_2.no();
         
-        assertTrue("index.html doesn't exist!", new File(userHome + sep + "javadoc" + sep + "index.html").exists()); // NOI18N
+        verifyCommonJdocFiles(userHome);
         assertTrue("ColorPicker doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
                    "colorpicker" + sep + "ColorPicker.html").exists()); // NOI18N
         new EventTool().waitNoEvent(1000);
@@ -112,13 +112,37 @@ public class TestGenerateJavadoc extends JellyTestCase {
         NbDialogOperator nbDialogOper_3 = new NbDialogOperator(questionWinTitle);
         nbDialogOper_3.no();
         
-        assertTrue("index.html doesn't exist!", new File(userHome + sep + "javadoc" + sep + "index.html").exists()); // NOI18N
+        verifyCommonJdocFiles(userHome);
         assertTrue("ClockFrame doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
                    "clock" + sep + "ClockFrame.html").exists()); // NOI18N
         assertTrue("ImageFrame doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
                    "imageviewer" + sep + "ImageFrame.html").exists()); // NOI18N
+        assertTrue("ImageViewer doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
+                   "imageviewer" + sep + "ImageViewer.html").exists()); // NOI18N
+        assertTrue("MemoryView doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
+                   "advanced" + sep + "MemoryView.html").exists()); // NOI18N
+        assertTrue("Ted doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
+                   "texteditor" + sep + "Ted.html").exists()); // NOI18N
+        assertTrue("About doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
+                   "texteditor" + sep + "About.html").exists()); // NOI18N
+        assertTrue("Finder doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
+                   "texteditor" + sep + "Finder.html").exists()); // NOI18N
+        assertTrue("ColorPicker doesn't exist!", new File(userHome + sep + "javadoc" + sep + "examples" + sep + // NOI18N
+                   "colorpicker" + sep + "ColorPicker.html").exists()); // NOI18N
         new EventTool().waitNoEvent(1000);
         
+    }
+    
+    private void verifyCommonJdocFiles(String base) {
+        assertTrue("index.html doesn't exist!", new File(base + sep + "javadoc" + sep + "index.html").exists()); // NOI18N
+        assertTrue("index-all.html doesn't exist!", new File(base + sep + "javadoc" + sep + "index-all.html").exists()); // NOI18N
+        assertTrue("allclasses-frame.html doesn't exist!", new File(base + sep + "javadoc" + sep + "allclasses-frame.html").exists()); // NOI18N
+        assertTrue("allclasses-noframe.html doesn't exist!", new File(base + sep + "javadoc" + sep + "allclasses-noframe.html").exists()); // NOI18N
+        assertTrue("packages.html doesn't exist!", new File(base + sep + "javadoc" + sep + "packages.html").exists()); // NOI18N
+        assertTrue("stylesheet.css doesn't exist!", new File(base + sep + "javadoc" + sep + "stylesheet.css").exists()); // NOI18N
+        assertTrue("package-list doesn't exist!", new File(base + sep + "javadoc" + sep + "package-list").exists()); // NOI18N
+        assertTrue("help-doc.html doesn't exist!", new File(base + sep + "javadoc" + sep + "help-doc.html").exists()); // NOI18N
+        assertTrue("overview-tree.html doesn't exist!", new File(base + sep + "javadoc" + sep + "overview-tree.html").exists()); // NOI18N
     }
     
     /** Use for internal test execution inside IDE
