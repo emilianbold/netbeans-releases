@@ -21,8 +21,13 @@ import org.openide.filesystems.FileUtil;
 
 import java.net.URL;
 import java.net.MalformedURLException;
-import java.io.IOException;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.Iterator;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
+
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
@@ -80,17 +85,19 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         return false;
     }
     
-    private static class Result implements SourceForBinaryQuery.Result {
+    private static class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
 
         private FileObject[] cache;
         private AntProjectHelper helper;
         private PropertyEvaluator evaluator;
         private String propName;
-        
+        private ArrayList listeners;
+
         public Result (AntProjectHelper helper, PropertyEvaluator evaluator, String propName) {
             this.helper = helper;
             this.evaluator = evaluator;
             this.propName = propName;
+            this.evaluator.addPropertyChangeListener(this);
         }
         
         public synchronized FileObject[] getRoots () {
@@ -99,23 +106,59 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
                 FileObject srcFile = null;
                 if (srcDir != null) {
                     srcFile = this.helper.resolveFileObject(srcDir);
-                    if (srcFile != null && FileUtil.isArchiveFile(srcFile)) {
-                        srcFile = FileUtil.getArchiveRoot (srcFile);
-                    }                
+                    if (srcFile != null) {
+                        if (!srcFile.isValid()) {
+                            srcFile = null;
+                        }
+                        else if (FileUtil.isArchiveFile(srcFile)) {
+                            srcFile = FileUtil.getArchiveRoot (srcFile);
+                        }
+                    }
                 }               
                 this.cache = (srcFile == null ? new FileObject[0] : new FileObject[] {srcFile});
             }
             return this.cache;
         }
         
-        public void addChangeListener (ChangeListener l) {
-            //If Immutable ignore otherwise set cache to null when src.dir changes
+        public synchronized void addChangeListener (ChangeListener l) {
+            if (this.listeners == null) {
+                this.listeners = new ArrayList();
+            }
+            this.listeners.add (l);
         }
         
-        public void removeChangeListener (ChangeListener l) {
-            //If Immutable ignore otherwise set cache to null when src.dir changes
+        public synchronized void removeChangeListener (ChangeListener l) {
+            if (this.listeners == null) {
+                return;
+            }
+            this.listeners.remove (l);
         }
-        
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (propName.equals(evt.getPropertyName())) {
+                synchronized(this) {
+                    this.cache = null;
+                }
+                this.fireChange ();
+            }
+        }
+
+
+
+        private void fireChange() {
+            Iterator it;
+            synchronized (this) {
+                if (this.listeners == null) {
+                    return;
+                }
+                it = ((ArrayList)this.listeners.clone()).iterator();
+            }
+            ChangeEvent event = new ChangeEvent(this);
+            while (it.hasNext()) {
+                ((ChangeListener)it.next()).stateChanged(event);
+            }
+        }
+
     }
     
 }
