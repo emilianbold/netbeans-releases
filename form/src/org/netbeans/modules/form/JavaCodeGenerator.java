@@ -18,6 +18,8 @@ import org.openide.util.Utilities;
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 
+import java.awt.Dimension;
+import java.awt.Point;
 import java.beans.*;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -128,7 +130,67 @@ public class JavaCodeGenerator extends CodeGenerator {
     for (int i = 0; i < nonVisualComponents.length; i++) {
       addInitCode (nonVisualComponents[i], text, "    "); // [PENDING - indentation engine]
     }
+    // for visual forms append sizing text
+    if (form.getTopLevelComponent () instanceof RADVisualFormContainer) {
+      RADVisualFormContainer visualForm = (RADVisualFormContainer)form.getTopLevelComponent ();
+
+      int formPolicy = visualForm.getFormSizePolicy ();
+      boolean genSize = visualForm.getGenerateSize();
+      boolean genPosition = visualForm.getGeneratePosition();
+      boolean genCenter = visualForm.getGenerateCenter();
+      Dimension formSize = visualForm.getFormSize ();
+      Point formPosition = visualForm.getFormPosition ();
+
+      String sizeText = "";
+
+      switch (formPolicy) {
+        case RADVisualFormContainer.GEN_PACK: 
+            sizeText = "pack ();\n";
+            break;
+        case RADVisualFormContainer.GEN_BOUNDS: 
+            if (genCenter) {
+              StringBuffer sizeBuffer = new StringBuffer ();
+              String twoIndents = oneIndent+oneIndent;
+              if (genSize) {
+                sizeBuffer.append (twoIndents);
+                sizeBuffer.append ("pack ();\n");
+                sizeBuffer.append (twoIndents);
+                sizeBuffer.append ("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n");
+                sizeBuffer.append (twoIndents);
+                sizeBuffer.append ("java.awt.Dimension dialogSize = getSize();\n");
+                sizeBuffer.append (twoIndents);
+                sizeBuffer.append ("setSize (new java.awt.Dimension ("+formSize.width + ", " + formSize.height + "));\n");
+                sizeBuffer.append (twoIndents);
+                sizeBuffer.append ("setLocation((screenSize.width-"+formSize.width+")/2, (screenSize.height-"+formSize.height+")/2)\n");
+              } else {
+                sizeBuffer.append (twoIndents);
+                sizeBuffer.append ("pack ();\n");
+                sizeBuffer.append (twoIndents);
+                sizeBuffer.append ("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n");
+                sizeBuffer.append (twoIndents);
+                sizeBuffer.append ("java.awt.Dimension dialogSize = getSize();\n");
+                sizeBuffer.append (twoIndents);
+                sizeBuffer.append ("setLocation((screenSize.width-dialogSize.width)/2, (screenSize.height-dialogSize.height)/2)\n");
+              }
+
+              sizeText = sizeBuffer.toString ();
+
+            } else if (genPosition && genSize) { // both size and position
+              sizeText = twoIndents + "setBounds ("+formPosition.x + ", " + formPosition.y +", " + formSize.width + ", " + formSize.height + ");\n";
+            } else if (genPosition) { // position only
+              sizeText = twoIndents + "setLocation (new java.awt.Point ("+formPosition.x + ", " + formPosition.y + "));\n";
+            } else if (genSize) { // size only
+              sizeText = twoIndents + "setSize (new java.awt.Dimension ("+formSize.width + ", " + formSize.height + "));\n";
+            }
+            break;
+      }
+
+      text.append (sizeText);
+    }
+
     text.append (INIT_COMPONENTS_FOOTER);
+
+    // set the text into the guarded block
     synchronized (GEN_LOCK) {
       initComponentsSection.setText (text.toString ());
     }
@@ -224,7 +286,12 @@ public class JavaCodeGenerator extends CodeGenerator {
     PropertyDescriptor desc = prop.getPropertyDescriptor ();
     Method writeMethod = desc.getWriteMethod ();
     String indentToUse = indent;
-    PropertyEditor ed = prop.getPropertyEditor ();
+    PropertyEditor ed = null;
+    try {
+      ed = (PropertyEditor)prop.getCurrentEditor ().getClass ().newInstance ();
+    } catch (Exception e) {
+      return; // cannot generate code for this property without the property editor
+    }
     Object value = null;
     try {
       value = prop.getValue ();
@@ -735,6 +802,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  25   Gandalf   1.24        6/24/99  Ian Formanek    Generation of size for 
+ *       visaul forms
  *  24   Gandalf   1.23        6/10/99  Ian Formanek    Regeneration on layout 
  *       changes
  *  23   Gandalf   1.22        6/9/99   Ian Formanek    ---- Package Change To 
