@@ -30,7 +30,7 @@ public class LoggingEventQueue extends EventQueue {
     private static Method popMethod = null;
     static {
         try {
-            popMethod = EventQueue.class.getDeclaredMethod ("pop", (Class)null);
+            popMethod = EventQueue.class.getDeclaredMethod ("pop", null);
             popMethod.setAccessible(true);
         } catch (Exception e) {
             // XXX exception handling
@@ -112,7 +112,7 @@ public class LoggingEventQueue extends EventQueue {
                 throw new IllegalStateException("Can't access EventQueue.pop");
             }
             EventQueue result = Toolkit.getDefaultToolkit().getSystemEventQueue();
-            popMethod.invoke(result, (Class) null);
+            popMethod.invoke(result, null);
             return result;
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
