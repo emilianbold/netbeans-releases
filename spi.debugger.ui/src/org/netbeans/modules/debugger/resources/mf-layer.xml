@@ -337,7 +337,6 @@ SystemFileSystem
      </folder>
 
      <folder name="WindowManager">
-        <attr name="Running/Debugging" boolvalue="true" />
         <file name="Debugging.wswksp" url="Debugging.wswksp"/>
         <folder name="Debugging">
 
