@@ -19,6 +19,7 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Date;
+import java.util.Locale;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
@@ -706,8 +707,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     
     
     public static String getDefaultEncoding() {
-        String language = System.getProperty("user.language");
-        if ("en".equals(language)) {
+        String language = Locale.getDefault().getLanguage();
+        if (language.startsWith("en")) {
             // we are English
             return "ISO-8859-1"; // NOI18N
             // per JSP 1.2 specification, the default encoding is always ISO-8859-1,
