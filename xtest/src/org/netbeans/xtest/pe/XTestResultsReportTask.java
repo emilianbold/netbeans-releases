@@ -66,7 +66,7 @@ public class XTestResultsReportTask extends Task{
     
     public void setHost(String host) {
         if (host.startsWith("${")|host.equals("")) {
-            this.host = SystemInfo.getHost();
+            this.host = SystemInfo.getCurrentHost();
         } else {
             this.host = host;
         }
