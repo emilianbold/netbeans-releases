@@ -279,7 +279,7 @@ Microsystems, Inc. All Rights Reserved.
                   <include name="org/openide/nodes/*"/>
                   <include name="org/openide/cookies/*"/>
                   
-                  <!-- exlude localized resources, they are part of openide.jar -->
+                  <!-- exclude localized resources, they are part of openide.jar -->
                   <exclude name="org/openide/nodes/*_*" />
                   <exclude name="org/openide/cookies/*_*" />
              </fileset>
@@ -287,6 +287,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>        
 
   <!-- Open API documentation. -->
+  <!-- XXX ignore open-apis-up-to-date if dir OpenAPIs does not exist at all -->
   <target name="open-apis-check-timestamps" unless="open-apis-force-rebuild">
     <uptodate property="open-apis-up-to-date" targetfile="OpenAPIs.zip">
       <srcfiles dir="src">
