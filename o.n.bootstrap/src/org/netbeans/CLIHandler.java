@@ -517,6 +517,9 @@ public abstract class CLIHandler extends Object {
                     } catch (java.net.SocketTimeoutException ex2) {
                         // connection failed, the port is dead
                         enterState(33, block);
+                    } catch (java.net.ConnectException ex2) {
+                        // connection failed, the port is dead
+                        enterState(33, block);
                     } catch (IOException ex2) {
                         // some strange exception
                         ex2.printStackTrace();
