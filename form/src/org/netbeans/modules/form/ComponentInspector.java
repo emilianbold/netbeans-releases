@@ -153,6 +153,22 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
             FormUtils.getBundleString("ACSD_ComponentTree")); // NOI18N
     }
 
+    
+
+    public void open() {
+        // #37141 Rough workaround.
+        WindowManager wm = WindowManager.getDefault();
+        Mode mode = wm.findMode(this);
+        if(mode == null) {
+            mode = wm.findMode("inspector"); // NOI18N
+            if(mode != null) {
+                mode.dockInto(this);
+            }
+        }
+        
+        super.open();
+    }
+    
     // ------------
     // activating and focusing
 
