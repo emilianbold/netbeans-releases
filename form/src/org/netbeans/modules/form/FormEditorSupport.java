@@ -192,7 +192,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
      * @return always non null editor
      */
     protected EditorSupport.Editor openAt(PositionRef pos) {
-        openForm();
+//        openForm();
         return super.openAt(pos);
 
     }
