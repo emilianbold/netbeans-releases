@@ -361,6 +361,16 @@ public class DataViewWindow extends TopComponent {
         }
     }
     
+    /**Overriden to provide preferred value
+     * for unique TopComponent Id returned by getID. Returned value is used as starting
+     * value for creating unique TopComponent ID.
+     * Value should be preferably unique, but need not be.
+     * @since 4.13
+     */
+    protected String preferredID() {
+        return getName();
+    }
+    
     /** Overriden to explicitely set persistence type of DataViewWindow
      * to PERSISTENCE_NEVER */
     public int getPersistenceType() {
