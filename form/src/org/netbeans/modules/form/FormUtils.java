@@ -140,6 +140,39 @@ public class FormUtils extends Object {
 // -----------------------------------------------------------------------------
 // JavaBeans helper mthods
 
+  public static Object cloneObject (Object o) throws CloneNotSupportedException {
+    if (o == null) return null;
+    else if ((o instanceof Byte) ||
+             (o instanceof Short) ||
+             (o instanceof Integer) ||
+             (o instanceof Long) ||
+             (o instanceof Float) ||
+             (o instanceof Double) ||
+             (o instanceof Boolean) ||
+             (o instanceof Character) ||
+             (o instanceof String)) {
+      return o; // no need to change reference
+    } else if (o instanceof Font) return Font.getFont (((Font)o).getAttributes ());
+    else if (o instanceof Color) return new Color (((Color)o).getRGB ());
+    else if (o instanceof Dimension) return new Dimension ((Dimension)o);
+    else if (o instanceof Point) return new Point ((Point)o);
+    else if (o instanceof Rectangle) return new Rectangle ((Rectangle)o);
+    else if (o instanceof Serializable) {
+      try {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream ();
+        ObjectOutputStream oos = new ObjectOutputStream (baos);
+        oos.writeObject (o);
+        oos.close ();
+        ByteArrayInputStream bais = new ByteArrayInputStream (baos.toByteArray ());
+        ObjectInputStream ois = new ObjectInputStream (bais);
+        return ois.readObject ();
+      } catch (Exception e) {
+        throw new CloneNotSupportedException ();
+      }
+    }
+    throw new CloneNotSupportedException ();
+  }
+
   /** A utility method for checking whether specified component is
   * heavyweight or lightweight.
   * @param comp The component to check
@@ -355,6 +388,7 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  19   Gandalf   1.18        10/5/99  Ian Formanek    cloneObject added
  *  18   Gandalf   1.17        9/17/99  Ian Formanek    Removed obsoleted code, 
  *       findCommonAncestor method added
  *  17   Gandalf   1.16        7/27/99  Ian Formanek    getAdapterForListener ->
