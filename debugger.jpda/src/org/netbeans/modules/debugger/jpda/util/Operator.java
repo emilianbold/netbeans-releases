@@ -59,7 +59,7 @@ public class Operator {
               }
               Executor exec = null;
               if (e.request () == null) {
-                System.out.println ("EVENT: " + e + " REQUEST: null");          
+                System.out.println ("EVENT: " + e + " REQUEST: null"); // NOI18N
               } else 
                 exec = (Executor) e.request ().getProperty ("executor");
               
@@ -85,11 +85,11 @@ public class Operator {
         if (finalizer != null) finalizer.run ();
         //S ystem.out.println ("Operator end");          
       }
-    }, "Debugger operator thread").start ();
+    }, "Debugger operator thread").start (); // NOI18N
   }
   
   public void register (EventRequest req, Executor e) {
-    req.putProperty ("executor", e);
+    req.putProperty ("executor", e); // NOI18N
   }
   
   /**
@@ -102,23 +102,23 @@ public class Operator {
   private void printEvent (Event e, Executor exec) {
     try {
       if (e instanceof ClassPrepareEvent) {
-        System.out.println ("EVENT: ClassPrepareEvent " + ((ClassPrepareEvent) e).referenceType ());
+        System.out.println ("EVENT: ClassPrepareEvent " + ((ClassPrepareEvent) e).referenceType ()); // NOI18N
       } else
       if (e instanceof ClassUnloadEvent) {
-        System.out.println ("EVENT: ClassUnloadEvent " + ((ClassUnloadEvent) e).className ());
+        System.out.println ("EVENT: ClassUnloadEvent " + ((ClassUnloadEvent) e).className ()); // NOI18N
       } else
       if (e instanceof ThreadStartEvent) {
         try {
-          System.out.println ("EVENT: ThreadStartEvent " + ((ThreadStartEvent) e).thread ());
+          System.out.println ("EVENT: ThreadStartEvent " + ((ThreadStartEvent) e).thread ()); // NOI18N
         } catch (Exception ex) {
-          System.out.println ("EVENT: ThreadStartEvent1 " + e);
+          System.out.println ("EVENT: ThreadStartEvent1 " + e); // NOI18N
         }
       } else
       if (e instanceof ThreadDeathEvent) {
         try {
-          System.out.println ("EVENT: ThreadDeathEvent " + ((ThreadDeathEvent) e).thread ());
+          System.out.println ("EVENT: ThreadDeathEvent " + ((ThreadDeathEvent) e).thread ()); // NOI18N
         } catch (Exception ex) {
-          System.out.println ("EVENT: ThreadDeathEvent1 " + e);
+          System.out.println ("EVENT: ThreadDeathEvent1 " + e); // NOI18N
         } 
       } else
       if (e instanceof MethodEntryEvent) {
@@ -132,9 +132,9 @@ public class Operator {
 //        System.out.println ("EVENT: BreakpointEvent " + ((BreakpointEvent) e).thread () + " : " + ((BreakpointEvent) e).location ());
       } else
       if (e instanceof StepEvent) {
-        System.out.println ("EVENT: BreakpointEvent " + ((StepEvent) e).thread () + " : " + ((StepEvent) e).location ());
+        System.out.println ("EVENT: BreakpointEvent " + ((StepEvent) e).thread () + " : " + ((StepEvent) e).location ()); // NOI18N
       } else
-        System.out.println ("EVENT: " + e + " : " + exec);          
+        System.out.println ("EVENT: " + e + " : " + exec); // NOI18N
     } catch (Exception ex) {
     }
   }
@@ -142,6 +142,7 @@ public class Operator {
 
 /*
  * Log
+ *  9    Gandalf   1.8         1/13/00  Daniel Prusa    NOI18N
  *  8    Gandalf   1.7         1/4/00   Jan Jancura     Use trim () on user 
  *       input.
  *  7    Gandalf   1.6         11/9/99  Jan Jancura     sout commented out.
