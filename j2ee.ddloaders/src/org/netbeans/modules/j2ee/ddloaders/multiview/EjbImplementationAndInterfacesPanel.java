@@ -16,6 +16,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbImplementationAndInterfacesForm;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -117,22 +118,36 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
             }
         });
 
-        getLocalInterfaceCheckBox().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (ejb.getLocal() != null) {
-                    removeInterfaces(true);
-                } else {
-                    addInterfaces(true);
+        addRefreshable(new ItemCheckBoxHelper(getLocalInterfaceCheckBox()) {
+            public boolean getItemValue() {
+                return ejb.getLocal() != null;
+            }
+
+            public void setItemValue(boolean value) {
+                if (value != getItemValue()) {
+                    if (value) {
+                        addInterfaces(true);
+                    } else {
+                        removeInterfaces(true);
+                    }
+                    refresh();
                 }
             }
         });
 
-        getRemoteInterfaceCheckBox().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (ejb.getRemote() != null) {
-                    removeInterfaces(false);
-                } else {
-                    addInterfaces(false);
+        addRefreshable(new ItemCheckBoxHelper(getRemoteInterfaceCheckBox()) {
+            public boolean getItemValue() {
+                return ejb.getRemote() != null;
+            }
+
+            public void setItemValue(boolean value) {
+                if (value != getItemValue()) {
+                    if (value) {
+                        addInterfaces(false);
+                    } else {
+                        removeInterfaces(false);
+                    }
+                    refresh();
                 }
             }
         });
