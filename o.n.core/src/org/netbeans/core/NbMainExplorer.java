@@ -164,6 +164,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
                 throw new InternalError ("Property Sheet must not not veto selection");
               }
           }
+          updateTitle ();
         }
       }
     );
@@ -347,6 +348,8 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  6    Gandalf   1.5         3/18/99  Ian Formanek    The title now updates 
+*       when tab is switched
 *  5    Gandalf   1.4         3/16/99  Ian Formanek    SINGLE mode removed, as 
 *       it is there by default
 *  4    Gandalf   1.3         3/16/99  Ian Formanek    Title improved
