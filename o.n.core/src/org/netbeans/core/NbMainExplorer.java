@@ -424,7 +424,7 @@ public final class NbMainExplorer extends CloneableTopComponent
     /** Common explorer top component which composites bean tree view
     * to view given context. */
     public static class ExplorerTab extends ExplorerPanel
-        implements DeferredPerformer.DeferredCommand {
+        implements DeferredPerformer.DeferredCommand, TopComponent.Cloneable {
         static final long serialVersionUID =-8202452314155464024L;
         /** composited view */
         protected TreeView view;
@@ -687,6 +687,17 @@ public final class NbMainExplorer extends CloneableTopComponent
             }
         }
 
+        public TopComponent cloneComponent() {
+            ExplorerTab nue = new ExplorerTab();
+            nue.getExplorerManager().setRootContext(getExplorerManager().getRootContext());
+            try {
+                nue.getExplorerManager().setSelectedNodes(getExplorerManager().getSelectedNodes());
+            } catch (PropertyVetoException pve) {
+                ErrorManager.getDefault().notify(pve);
+            }
+            return nue;
+        }
+        
         /** Multi - purpose listener, listens to: <br>
         * 1) Changes of name, icon, short description of root context.
         * 2) Changes of IDE settings, namely delete confirmation settings */
