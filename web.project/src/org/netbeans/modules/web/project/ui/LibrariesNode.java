@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractAction;
@@ -627,32 +628,37 @@ final class LibrariesNode extends AbstractNode {
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
             chooser.setMultiSelectionEnabled( true );
             chooser.setDialogTitle( NbBundle.getMessage( LibrariesNode.class, "LBL_AddJar_DialogTitle" ) ); // NOI18N
-            chooser.setFileFilter( new SimpleFileFilter (
+            FileFilter fileFilter = new SimpleFileFilter (
                     NbBundle.getMessage( LibrariesNode.class, "LBL_ZipJarFolderFilter" ),                  // NOI18N
-                    new String[] {"ZIP","JAR"} ) );                                                                 // NOI18N
+                    new String[] {"ZIP","JAR"} );   // NOI18N
+            chooser.setFileFilter(fileFilter);
             chooser.setAcceptAllFileFilterUsed( false );
             File curDir = FoldersListSettings.getDefault().getLastUsedClassPathFolder();
             chooser.setCurrentDirectory (curDir);
             int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() );
             if ( option == JFileChooser.APPROVE_OPTION ) {
                 File files[] = chooser.getSelectedFiles();
-                addJarFiles( files );
+                addJarFiles( files, fileFilter );
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                 FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
             }
         }
 
-        private void addJarFiles (File[] files) {
+        private void addJarFiles (File[] files, FileFilter fileFilter) {
             WebProjectClassPathExtender cpExtender = (WebProjectClassPathExtender) project.getLookup().lookup(WebProjectClassPathExtender.class);
             if (cpExtender != null) {
-                FileObject[] fileObjects = new FileObject[files.length];
+                List fileObjects = new LinkedList();
                 for (int i = 0; i < files.length; i++) {
-                    FileObject fo = FileUtil.toFileObject (files[i]);
-                    assert fo != null : files[i];
-                    fileObjects[i] = fo;
+                    if (fileFilter.accept(files[i])) {
+                        FileObject fo = FileUtil.toFileObject (files[i]);
+                        assert fo != null : files[i];
+                        fileObjects.add(fo);
+                    }
                 }
                 try {
-                    cpExtender.addArchiveFiles(classPathId, fileObjects, webModuleElementName);                    
+                    FileObject[] fileObjectArray = new FileObject[fileObjects.size()];
+                    fileObjects.toArray(fileObjectArray);
+                    cpExtender.addArchiveFiles(classPathId, fileObjectArray, webModuleElementName);                    
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().notify(ioe);
                 }
