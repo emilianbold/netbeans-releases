@@ -139,7 +139,7 @@ public class MeasureActions  {
         
 //TODO    suite.addTest(new AddToFavorites("testAddToFavoritesFolders", "Add to Favorites folders"));
 
-*/        
+        
         return suite;
     }
     
