@@ -21,6 +21,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
+import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.DialogDisplayer;
@@ -165,16 +166,20 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
             }
         }
         if (found) {
-            Object DELETE_OPTION = NbBundle.getMessage (PanelSourceFolders.class, "TXT_DeleteOption"); // NOI18N
-            Object KEEP_OPTION = NbBundle.getMessage (PanelSourceFolders.class, "TXT_KeepOption"); // NOI18N
-            Object CANCEL_OPTION = NbBundle.getMessage (PanelSourceFolders.class, "TXT_CancelOption"); // NOI18N
+            JButton DELETE_OPTION = new JButton (NbBundle.getMessage (PanelSourceFolders.class, "TXT_DeleteOption")); // NOI18N
+            JButton KEEP_OPTION = new JButton (NbBundle.getMessage (PanelSourceFolders.class, "TXT_KeepOption")); // NOI18N
+            JButton CANCEL_OPTION = new JButton (NbBundle.getMessage (PanelSourceFolders.class, "TXT_CancelOption")); // NOI18N
+            KEEP_OPTION.setMnemonic(NbBundle.getMessage (PanelSourceFolders.class, "MNE_KeepOption").charAt(0));
+            DELETE_OPTION.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (PanelSourceFolders.class, "AD_DeleteOption"));
+            KEEP_OPTION.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (PanelSourceFolders.class, "AD_KeepOption"));
+            CANCEL_OPTION.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (PanelSourceFolders.class, "AD_CancelOption"));
             NotifyDescriptor desc = new NotifyDescriptor (
                     NbBundle.getMessage (PanelSourceFolders.class, "MSG_FoundClassFiles"), // NOI18N
                     NbBundle.getMessage (PanelSourceFolders.class, "MSG_FoundClassFiles_Title"), // NOI18N
                     NotifyDescriptor.YES_NO_CANCEL_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE,
                     new Object[] {DELETE_OPTION, KEEP_OPTION, CANCEL_OPTION},
-                    null
+                    DELETE_OPTION
                     );
             Object result = DialogDisplayer.getDefault().notify(desc);
             if (DELETE_OPTION.equals (result)) {
