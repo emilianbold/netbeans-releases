@@ -395,8 +395,15 @@ public final class Actions implements ActionProvider {
         }
         
         public boolean isEnabled() {
-            // XXX check for existence of script, perhaps
-            return true;
+            String script;
+            Element scriptEl = Util.findElement(actionEl, "script", FreeformProjectType.NS_GENERAL); // NOI18N
+            if (scriptEl != null) {
+                script = Util.findText(scriptEl);
+            } else {
+                script = "build.xml"; // NOI18N
+            }
+            String scriptLocation = p.evaluator().evaluate(script);
+            return p.helper().resolveFileObject(scriptLocation) != null;
         }
         
         public Object getValue(String key) {
