@@ -182,8 +182,9 @@ public final class ServerRegistry implements java.io.Serializable {
         
         // Make sure defaultInstance cache is reset
         ServerString def = getDefaultInstance();
-        if (url.equals(def.getUrl()))
+        if (url.equals(def.getUrl())) {
             defaultInstance = null;
+        }
         
         ServerInstance instance = (ServerInstance) instances.remove(url);
         if (instance != null) {
@@ -191,6 +192,7 @@ public final class ServerRegistry implements java.io.Serializable {
             fireInstanceListeners(ss, false);
             removeInstanceFromFile(instance.getUrl());
         }
+        getDefaultInstance(false);
     }
     
     public ServerInstance[] getServerInstances() {
@@ -324,7 +326,7 @@ public final class ServerRegistry implements java.io.Serializable {
     }
     
     public void setDefaultInstance(ServerString instance) {
-        if ((instance == null && defaultInstance == null) || instance == null || instance.equals (defaultInstance)) {
+        if (instance == null || instance.equals (defaultInstance)) {
             return;
         }
         if (ServerStringConverter.writeServerInstance(instance, DIR_INSTALLED_SERVERS, FILE_DEFAULT_INSTANCE)) {
@@ -333,11 +335,14 @@ public final class ServerRegistry implements java.io.Serializable {
             fireDefaultInstance(oldValue, instance);
         }
     }
-    
+
     public ServerString getDefaultInstance() {
-        if (defaultInstance == null) {
+        return getDefaultInstance(true);
+    }
+    
+    public ServerString getDefaultInstance(boolean readFromFile) {
+        if (defaultInstance == null && readFromFile) {
             defaultInstance = ServerStringConverter.readServerInstance(DIR_INSTALLED_SERVERS, FILE_DEFAULT_INSTANCE);
-            System.out.println("getDefaultInstance.1: defaultInstance="+defaultInstance);
         }
         
         if (defaultInstance == null) {

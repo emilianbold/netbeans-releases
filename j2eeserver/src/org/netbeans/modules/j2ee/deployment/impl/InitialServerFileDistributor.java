@@ -62,6 +62,12 @@ public class InitialServerFileDistributor extends ServerProgress {
         DeployableObject deployable = deployment.getDeployableObject(null);
         try {
             File dir = fileLayout.getDirectoryForNewApplication (target, deployable, deployment.getDeploymentConfiguration ());
+            if (dir == null) {
+                //PENDING in-place distribute
+                setStatusDistributeFailed("In-Place deployment not supported yet!");//NOI18N
+                return null;
+            }
+            
             _distribute(source.getArchiveContents(), dir, null);
 
             if (source instanceof J2eeModuleContainer) {

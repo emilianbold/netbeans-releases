@@ -19,18 +19,16 @@
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
 import java.awt.Component;
-
 import java.util.*;
-
 import java.lang.reflect.InvocationTargetException;
-
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
-
+import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
 import org.netbeans.modules.j2ee.deployment.impl.*;
+import org.netbeans.modules.j2ee.deployment.impl.ui.FilterXNode;
 
 /**
  * The server registry node is a node representing the registry in global options.
@@ -74,18 +72,27 @@ public class ServerRegistryNode extends AbstractNode {
                     updateKeys();
                 }
             };
-
+            
             instanceListener = new ServerRegistry.InstanceListener() {
                 public void instanceAdded(ServerString instance) {
-                    //                    System.err.println("Adding instance in the node");
-                    getServerNode(instance.getServer()).refreshChildren();
+                    refreshServerNode(instance);
                 }
                 public void instanceRemoved(ServerString instance) {
-                    removeInstance(instance.getServerInstance());
+                    refreshServerNode(instance);
                 }
                 public void changeDefaultInstance(ServerString oldInstance, ServerString instance) {
                     //                    System.err.println("Changing default to " + instance);
                     setInstance(instance == null ? null : instance.getServerInstance());
+                }
+                private void refreshServerNode(ServerString instance) {
+                    Server server = instance.getServer();
+                    Node node = getServerNode(server);
+                    ServerNode serverNode;
+                    if (node instanceof FilterXNode)
+                        serverNode = (ServerNode) ((FilterXNode)node).getXNode();
+                    else
+                        serverNode = (ServerNode) node;
+                    serverNode.refreshChildren();
                 }
             };
             
@@ -93,30 +100,10 @@ public class ServerRegistryNode extends AbstractNode {
             updateKeys();
             
             Collection instances = ServerRegistry.getInstance().getInstances(instanceListener);
-            Iterator i = instances.iterator();
-            /*while(i.hasNext())
-                addInstance((ServerInstance)i.next());*/
             
-            //ServerRegistry.addServerRegistryListener(listener);
-            //
-            // PENDING - Where do we remove this?
-            //
         } catch (Exception e) {
-            e.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION,  e);
         }
-    }
-    
-    /*private void addInstance(ServerInstance instance) {
-        Server server = instance.getServer();
-        ServerNode node = getServerNode(server);
-        node.addInstance(instance);
-    }*/
-    
-    private void removeInstance(ServerInstance instance) {
-        Server server = instance.getServer();
-        ServerNode node = getServerNode(server);
-        //node.removeInstance(instance);
-        node.refreshChildren();
     }
     
     private void updateKeys() {
@@ -124,10 +111,10 @@ public class ServerRegistryNode extends AbstractNode {
         ((ServerChildren) getChildren()).updateKeys();
     }
     
-    ServerNode getServerNode(Server s) {
-        ServerNode node = (ServerNode) serverNodes.get(s);
+    Node getServerNode(Server s) {
+        Node node = (Node) serverNodes.get(s);
         if(node == null) {
-            node = new ServerNode(s);
+            node = s.getNodeProvider().createServerNode(s);
             serverNodes.put(s,node);
         }
         return node;
@@ -149,25 +136,25 @@ public class ServerRegistryNode extends AbstractNode {
     public void setInstance(ServerInstance inst) {
         String message = NbBundle.getMessage(ServerRegistryNode.class,"SERVER_REGISTRY_NODE_NO_DEFAULT");//NOI18N
         if(inst != null) {
-            message = NbBundle.getMessage(ServerRegistryNode.class,"SERVER_REGISTRY_NODE_DEFAULT",inst.getDisplayName());//NOI18N
+            message = NbBundle.getMessage(ServerRegistryNode.class,"SERVER_REGISTRY_NODE_DEFAULT", inst.getDisplayName());//NOI18N
         }
         setDisplayName(message);
     }
+
+    private static class ServerChildren extends Children.Keys {
+        
+        public ServerChildren() {
+            updateKeys();
+        }
+        public void updateKeys() {
+            setKeys(ServerRegistry.getInstance().getServers());
+        }
+        protected Node[] createNodes(Object key) {
+            Server s = (Server) key;
+            //return new Node[] {new FilterNode(((ServerRegistryNode)getNode()).getServerNode(s))};
+            return new Node[] {((ServerRegistryNode)getNode()).getServerNode(s)};
+        }
+    }
 }
 
-class ServerChildren extends Children.Keys {
-    
-    public ServerChildren() {
-        updateKeys();
-    }
-    public void updateKeys() {
-        setKeys(ServerRegistry.getInstance().getServers());
-    }
-    protected Node[] createNodes(Object key) {
-        //        System.err.println("Creating node for " + key);
-        Server s = (Server) key;
-        
-        return new Node[] {new FilterNode(((ServerRegistryNode)getNode()).getServerNode(s))};
-    }
-}
 

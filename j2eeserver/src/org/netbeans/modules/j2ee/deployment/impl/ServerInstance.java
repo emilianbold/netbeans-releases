@@ -295,7 +295,6 @@ public class ServerInstance implements Node.Cookie {
             return true;
         
         if (! RequestProcessor.getDefault().isRequestProcessorThread()) {
-            Thread.dumpStack();
             //PENDING maybe a modal dialog instead of async is needed here
             RequestProcessor.Task t = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
@@ -602,8 +601,8 @@ public class ServerInstance implements Node.Cookie {
     }
     
     public ServerTarget getCoTarget() {
-        if (! isRunning() && getStartServer().needsStartForTargetList())
-            return null;
+        /*if (! isRunning() && getStartServer().needsStartForTargetList())
+            return null;*/
         
         ServerTarget[] childs = getTargets();
         for (int i=0; i<childs.length; i++) {

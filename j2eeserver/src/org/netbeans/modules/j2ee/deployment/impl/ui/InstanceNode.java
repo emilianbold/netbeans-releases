@@ -48,24 +48,20 @@ public class InstanceNode extends AbstractNode implements ServerInstance.Refresh
     
     public javax.swing.Action[] getActions(boolean context) {
         SystemAction startOrStop = getStartOrStopAction();
-        if (startOrStop != null)
+        if (startOrStop != null) {
             return new SystemAction[] {
                 startOrStop,
-                // SystemAction.get(SetAsDefaultServerAction.class),
-                // SystemAction.get(NodeHelpAction.class),
-                SystemAction.get(RemoveInstanceAction.class),
-                SystemAction.get(RefreshAction.class)
+                SystemAction.get(RemoveInstanceAction.class)/*,
+                SystemAction.get(RefreshAction.class)*/
             };  
-
+        }
         return new SystemAction[] {
-            // SystemAction.get(SetAsDefaultServerAction.class),
-            // SystemAction.get(NodeHelpAction.class),
             SystemAction.get(RemoveInstanceAction.class),
             SystemAction.get(RefreshAction.class)
         };
     }
     
-    private ServerInstance getServerInstance() {
+    ServerInstance getServerInstance() {
         return (ServerInstance) getCookieSet().getCookie(ServerInstance.class);
     }
     
@@ -92,28 +88,25 @@ public class InstanceNode extends AbstractNode implements ServerInstance.Refresh
     }
     
     class Refresher implements RefreshAction.RefreshCookie {
-        
         public void refresh() {
             instance.refresh();
-            
         }
-      
     }
-    
 
-        public void handleRefresh() {
-            Children old = getChildren();
-            Children replacing = new InstanceChildren(instance);
-            //PENDING: traverse old subtree to remove listener.
-            setChildren(replacing);
-        }           
+    public void handleRefresh() {
+        InstanceChildren ch = (InstanceChildren) getChildren();
+        ch.updateKeys();
+    }    
     
-    protected static class InstanceChildren extends Children.Keys {
+     public static class InstanceChildren extends Children.Keys {
         ServerInstance serverInstance;
-        InstanceChildren(ServerInstance inst) {
+        public InstanceChildren(ServerInstance inst) {
             this.serverInstance = inst;
         }
         protected void addNotify() {
+            setKeys(serverInstance.getTargets());
+        }
+        public void updateKeys() {
             setKeys(serverInstance.getTargets());
         }
         protected void removeNotify() {

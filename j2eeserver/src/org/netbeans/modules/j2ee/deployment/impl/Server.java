@@ -20,6 +20,7 @@ import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
 import javax.enterprise.deploy.spi.*;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.*;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
+import org.netbeans.modules.j2ee.deployment.impl.ui.RegistryNodeProvider;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.Lookup;
@@ -36,6 +37,7 @@ public class Server implements Node.Cookie {
     final Class factoryCls;
     DeploymentFactory factory = null;
     DeploymentManager manager = null;
+    RegistryNodeProvider nodeProvider = null;
     final String name;
     Map configMap;
     Map customMap;
@@ -251,7 +253,20 @@ public class Server implements Node.Cookie {
         String className = dep.getDeploymentPlanSplitter();
         return (DeploymentPlanSplitter) getClassFromPlugin(className);
     }
-
+    
+    public RegistryNodeProvider getNodeProvider() {
+        if (nodeProvider != null)
+            return nodeProvider;
+        
+        RegistryNodeFactory nodeFact = (RegistryNodeFactory) lkp.lookup(RegistryNodeFactory.class);
+        if (nodeFact == null) {
+            String msg = NbBundle.getMessage(Server.class, "MSG_NoInstance", name, RegistryNodeFactory.class);
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
+        }
+        nodeProvider = new RegistryNodeProvider(nodeFact); //null is acceptable
+        return nodeProvider;
+    }
+    
     public ManagementMapper getManagementMapper() {
         ManagementMapper o = (ManagementMapper) lkp.lookup (ManagementMapper.class);
         if (o != null) {
@@ -280,5 +295,9 @@ public class Server implements Node.Cookie {
     
     public WebContextRoot getWebContextRoot() {
         return dep.getWebContextRoot();
+    }
+    
+    public DeploymentFactory getDeploymentFactory() {
+        return factory;
     }
 }
