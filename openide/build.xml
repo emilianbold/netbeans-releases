@@ -51,7 +51,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="release" depends="init">
     <copy todir="${netbeans.dest.dir}/${cluster.dir}" includeEmptyDirs="false">
       <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <mapper type="glob" from="system/*" to="${nb.system.dir}/*" />
     </copy>
   </target>
 
