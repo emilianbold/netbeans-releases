@@ -139,11 +139,18 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
          */
         public CloneableOpenSupport findCloneableOpenSupport() {
             DataObject obj = getDataObject ();
+            DefaultES ret;
             if (obj instanceof DefaultDataObject) {
-                return (DefaultES)((DefaultDataObject)obj).getCookie (DefaultES.class, true);
+                ret = (DefaultES)((DefaultDataObject)obj).getCookie (DefaultES.class, true);
             } else {
-                return (DefaultES)getDataObject().getCookie(DefaultES.class);
+                ret = (DefaultES)getDataObject().getCookie(DefaultES.class);
             }
+            
+            // this is necessary as for large files, this methods sets flag that
+            // prevents UserQuestionException
+            super.findCloneableOpenSupport ();
+
+            return ret;
         }
     } // End of nested Environment class.
 

@@ -241,7 +241,19 @@ public abstract class OpenSupport extends CloneableOpenSupport {
         * data object
         */
         public CloneableOpenSupport findCloneableOpenSupport() {
-            return (CloneableOpenSupport)getDataObject ().getCookie (CloneableOpenSupport.class);
+            Object obj = getDataObject ().getCookie (CloneableOpenSupport.class);
+            if (obj instanceof CloneableOpenSupport) {
+                return (CloneableOpenSupport)obj;
+            }
+            obj = getDataObject ().getCookie (org.openide.cookies.OpenCookie.class);
+            if (obj instanceof CloneableOpenSupport) {
+                return (CloneableOpenSupport)obj;
+            }
+            obj = getDataObject ().getCookie (org.openide.cookies.EditorCookie.class);
+            if (obj instanceof CloneableOpenSupport) {
+                return (CloneableOpenSupport)obj;
+            }
+            return null;
         }
         
         /** Accepts property changes from DataObject and fires them to

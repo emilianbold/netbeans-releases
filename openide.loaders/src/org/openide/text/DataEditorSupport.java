@@ -500,6 +500,22 @@ public class DataEditorSupport extends CloneableEditorSupport {
             // Closes the components.
             firePropertyChange(Env.PROP_VALID, Boolean.TRUE, Boolean.FALSE);            
         }
+        
+        public CloneableOpenSupport findCloneableOpenSupport() {
+            CloneableOpenSupport cos = super.findCloneableOpenSupport ();
+            if (cos instanceof DataEditorSupport) {
+                Object o = ((DataEditorSupport)cos).env;
+                if (o != this && o instanceof Env) {
+                   ((Env)o).warned = this.warned;
+                }
+            }
+            return cos;
+        }
+        
+        private void readObject (ObjectInputStream ois) throws ClassNotFoundException, IOException {
+            ois.defaultReadObject ();
+            warned = true;
+        }
     } // end of Env
     
     /** Listener on file object that notifies the Env object
