@@ -160,7 +160,7 @@ public class IntroPanel extends javax.swing.JPanel implements WizardDescriptor.P
     }
 
     public HelpCtx getHelp () {
-        return HelpCtx.DEFAULT_HELP;//XXX
+        return new HelpCtx("ant.wizard.shortcut");
     }
 
     public boolean isValid () {

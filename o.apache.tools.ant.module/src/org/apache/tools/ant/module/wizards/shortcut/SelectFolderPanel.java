@@ -151,7 +151,7 @@ public class SelectFolderPanel extends javax.swing.JPanel implements WizardDescr
 
     public HelpCtx getHelp () {
         // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;//XXX
+        return new HelpCtx("ant.wizard.shortcut");
     }
 
     public boolean isValid () {

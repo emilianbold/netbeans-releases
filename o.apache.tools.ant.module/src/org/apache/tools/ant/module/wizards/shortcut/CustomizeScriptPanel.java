@@ -110,7 +110,7 @@ public class CustomizeScriptPanel extends javax.swing.JPanel implements WizardDe
     }
 
     public HelpCtx getHelp () {
-        return HelpCtx.DEFAULT_HELP;//XXX
+        return new HelpCtx("ant.wizard.shortcut");
     }
 
     public boolean isValid () {
