@@ -23,7 +23,6 @@ import javax.enterprise.deploy.spi.*;
 import org.netbeans.modules.j2ee.deployment.config.ui.ConfigUtils;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.WebContextRoot;
 import org.openide.ErrorManager;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.WebContextResolver;
 
 /*
  * ConfigSupportImpl.java
@@ -36,19 +35,14 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
     private ServerString server;
     private String webContextRootXpath;
     private String webContextRootPropName;
-    private WebContextResolver resolver;
     
     /** Creates a new instance of ConfigSupportImpl */
     public ConfigSupportImpl(J2eeDeploymentLookup deployment) {
         this.deployment = deployment;
         server = deployment.getJ2eeProfileSettings().getServerString();
-        Server s = server.getServer();
-        resolver = s.getWebContextResolver ();
-        if (resolver == null) {
-            WebContextRoot webContextRoot = server.getServer().getWebContextRoot();
-            webContextRootXpath = webContextRoot.getXpath();
-            webContextRootPropName = webContextRoot.getPropName();
-        }
+        WebContextRoot webContextRoot = server.getServer().getWebContextRoot();
+        webContextRootXpath = webContextRoot.getXpath();
+        webContextRootPropName = webContextRoot.getPropName();
     }
     
     private DConfigBean getWebContextDConfigBean() {
@@ -59,8 +53,10 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
             DDBeanRoot ddBeanRoot = deployable.getDDBeanRoot();
             DConfigBeanRoot configBeanRoot = dc.getDConfigBeanRoot(ddBeanRoot);
             DDBean[] ddBeans = ddBeanRoot.getChildBean(webContextRootXpath);
-            if (ddBeans == null || ddBeans.length != 1)
+            if (ddBeans == null || ddBeans.length != 1) {
+                ErrorManager.getDefault ().log ("DDBeans not found");
                 return null; //better than throw exception
+            }
             return configBeanRoot.getDConfigBean(ddBeans[0]);
             
         } catch (Exception e) {
@@ -84,12 +80,9 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
      * @return string value, null if not set or could not find
      */
     public String getWebContextRoot() {
-        if (resolver != null) {
-            DeploymentConfiguration dc = deployment.getStorage().getDeploymentConfiguration();
-            return resolver.getWebContext (dc);
-        }
         DConfigBean configBean = getWebContextDConfigBean();
         if (configBean == null) {
+            ErrorManager.getDefault ().log ("Configuration not found");
             return null;
         }
         return (String) ConfigUtils.getBeanPropertyValue(configBean, webContextRootPropName);
@@ -98,15 +91,11 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
      * Set context root
      */
     public void setWebContextRoot(String contextRoot) {
-        if (resolver != null) {
-            DeploymentConfiguration dc = deployment.getStorage().getDeploymentConfiguration();
-            resolver.setWebContext (dc, contextRoot);
-        } else {
-            DConfigBean configBean = getWebContextDConfigBean();
-            if (configBean == null) {
-                return;
-            }
-            ConfigUtils.setBeanPropertyValue(configBean, webContextRootPropName, contextRoot);
+        DConfigBean configBean = getWebContextDConfigBean();
+        if (configBean == null) {
+            ErrorManager.getDefault ().log ("Configuration not found");
+            return;
         }
+        ConfigUtils.setBeanPropertyValue(configBean, webContextRootPropName, contextRoot);
     }
 }

@@ -28,7 +28,6 @@ import org.openide.nodes.Node;
 import java.util.*;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.FindServer;
 
 
 public class Server implements Node.Cookie {
@@ -281,9 +280,5 @@ public class Server implements Node.Cookie {
     
     public WebContextRoot getWebContextRoot() {
         return dep.getWebContextRoot();
-    }
-    
-    public WebContextResolver getWebContextResolver () {
-        return (WebContextResolver) lkp.lookup (WebContextResolver.class);
     }
 }
