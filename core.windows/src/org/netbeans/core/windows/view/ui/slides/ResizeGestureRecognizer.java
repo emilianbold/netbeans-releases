@@ -80,8 +80,13 @@ public class ResizeGestureRecognizer implements AWTEventListener {
         }
         Point leftTop = new Point(0, 0);
         leftTop = SwingUtilities.convertPoint(comp, leftTop, SwingUtilities.getRoot(comp));
-        Point evtPoint = SwingUtilities.convertPoint(event.getComponent(), 
-                              event.getPoint(), SwingUtilities.getRoot(event.getComponent()));
+        Component comp = event.getComponent();
+        if (!comp.isDisplayable()) {
+            //#54329 under specific conditions the component in the event can be gone.
+            return false;
+        }
+        Point evtPoint = SwingUtilities.convertPoint(comp, 
+                              event.getPoint(), SwingUtilities.getRoot(comp));
         if (Constants.BOTTOM.equals(side)) {
             if (evtPoint.x > leftTop.x && evtPoint.x < (leftTop.x + comp.getBounds().width)) {
                 if ( Math.abs(evtPoint.y - leftTop.y) < RESIZE_BUFFER) {
