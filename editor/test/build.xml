@@ -30,4 +30,12 @@ Microsystems, Inc. All Rights Reserved.
         </antcall>
     </target>
     
+    <!-- Run code completion qa-functional tests -->
+    <target name="cc-qa">
+        <antcall target="all">
+            <param name="xtest.testtype" value="qa-functional"/>
+            <param name="xtest.attribs" value="completion-15"/>
+        </antcall>
+    </target>
+    
 </project>
