@@ -143,7 +143,6 @@ final class EjbJarProject implements Project, AntProjectListener {
         sourcesHelper.addPrincipalSourceRoot("${"+EjbJarProjectProperties.SRC_DIR+"}", srcJavaLabel, /*XXX*/null, null);
         
         sourcesHelper.addTypedSourceRoot("${"+EjbJarProjectProperties.SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
-        //sourcesHelper.addTypedSourceRoot("${"+EjbJarProjectProperties.WEB_DOCBASE_DIR+"}", EjbProjectConstants.TYPE_DOC_ROOT, webPagesLabel, /*XXX*/null, null);
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -444,11 +443,10 @@ final class EjbJarProject implements Project, AntProjectListener {
             
             "Templates/J2EE/Session", // NOI18N
             "Templates/J2EE/RelatedCMP", // NOI18N
-            "Templates/J2EE/Message", //NOI18N
             "Templates/J2EE/Entity",  // NOI18N
-            "Templates/Classes/Class.java", // NOI18N
-            "Templates/Other/Folder", // NOI18N
-            "Templates/J2EE/WebService" // NOI18N
+            "Templates/J2EE/Message", //NOI18N
+            "Templates/J2EE/WebService", // NOI18N
+            "Templates/Classes/Class.java" // NOI18N
         };
         
         public String[] getRecommendedTypes() {

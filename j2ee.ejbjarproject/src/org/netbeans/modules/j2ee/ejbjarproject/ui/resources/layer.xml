@@ -120,13 +120,6 @@ Microsystems, Inc. All Rights Reserved.
              </file>
           </folder>
        </folder>
-       <folder name="clazz">
-          <folder name="explorer">
-             <file name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview.ejb.session.BeanClassFactory.instance">
-             <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.session.BeanClassFactory.getDefault"/>
-             </file>
-          </folder>
-       </folder>
     </folder>
 
     <folder name="org-netbeans-modules-j2ee-ejbjarproject">
