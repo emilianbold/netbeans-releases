@@ -101,7 +101,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="makedist">
      <!-- build xtest from nbbuild, so required openide/core modules are built as well -->     
-     <ant dir="../nbbuild" target="all-xtest">
+     <ant dir="../nbbuild" target="all-xtest" inheritAll="false">
         <property name="netbeans.no.pre.unscramble" value="true"/>
      </ant>
      <zip zipfile="xtest-distribution.zip">     
@@ -160,7 +160,10 @@ Microsystems, Inc. All Rights Reserved.
  
   
   <target name="all-xtest">
-     <ant dir="../nbbuild" antfile="build.xml" target="all-xtest"/>
+     <!-- build xtest from nbbuild, so required openide/core modules are built as well -->     
+     <ant dir="../nbbuild" target="all-xtest" inheritAll="false">
+        <property name="netbeans.no.pre.unscramble" value="true"/>
+     </ant>
   </target>  
   
   <!-- xtest module targets -> module is currently not maintained -->
