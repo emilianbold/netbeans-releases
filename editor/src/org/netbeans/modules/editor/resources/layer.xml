@@ -60,6 +60,30 @@ Microsystems, Inc. All Rights Reserved.
         <file name="AS-O[org.netbeans.modules.editor.java.JavaFastOpenAction].instance" />
     </folder>
 
+    <folder name="Editors">
+        <folder name="AnnotationTypes">
+            <file name="bookmark.xml" url="AnnotationTypes/bookmark.xml"/>
+      </folder>
+    </folder>
+
+    <folder name="xml">
+        <folder name="entities">
+            <folder name="NetBeans">
+                <file name="DTD_annotation_type_1_0" url="nbrescurr:/org/netbeans/modules/editor/resources/AnnotationTypes/annotation-type-1_0.dtd"/>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="xml">
+        <folder name="lookups">
+          <folder name="NetBeans">
+               <file name="DTD_annotation_type_1_0.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.options.AnnotationTypeProcessor" />
+               </file>
+          </folder>
+        </folder>
+    </folder>
+
     <folder name="Services">
 
         <file name="AllOptions.settings">
@@ -163,6 +187,13 @@ Microsystems, Inc. All Rights Reserved.
 
             </folder>
         </folder>
+    </folder>
+
+    <folder name="Services">
+        <file name="AnnotationtTypes.instance">
+            <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.options.AnnotationTypesNode" />
+            <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+        </file>
     </folder>
 
 

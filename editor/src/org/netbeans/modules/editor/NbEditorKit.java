@@ -36,6 +36,16 @@ import org.openide.util.actions.Presenter;
 import org.openide.actions.UndoAction;
 import org.openide.actions.RedoAction;
 import org.openide.windows.TopComponent;
+import org.openide.text.Annotation;
+import org.netbeans.editor.Bookmarks;
+import org.openide.text.Line;
+import org.netbeans.editor.ActionFactory.ToggleBookmarkAction;
+import org.netbeans.editor.ActionFactory.GotoNextBookmarkAction;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import javax.swing.text.BadLocationException;
+import org.netbeans.editor.Annotations;
 
 /**
 * Java editor kit with appropriate document
@@ -49,6 +59,8 @@ public class NbEditorKit extends ExtKit {
     /** Action property that stores the name of the corresponding nb-system-action */
     public static final String SYSTEM_ACTION_CLASS_NAME_PROPERTY = "systemActionClassName";
 
+    public static final String BOOKMARK_ANNOTATION_TYPE = "editor-bookmark";
+    
     static final long serialVersionUID =4482122073483644089L;
 
     public Document createDefaultDocument() {
@@ -64,6 +76,8 @@ public class NbEditorKit extends ExtKit {
                                        new NbBuildPopupMenuAction(),
                                        new NbUndoAction(),
                                        new NbRedoAction(),
+                                       new NbToggleBookmarkAction(),
+                                       new NbGotoNextBookmarkAction(BaseKit.gotoNextBookmarkAction, false)
                                    };
         return TextAction.augmentList(super.createActions(), nbEditorActions);
     }
@@ -212,6 +226,117 @@ public class NbEditorKit extends ExtKit {
     }
 
 
+    public static class NbToggleBookmarkAction extends ToggleBookmarkAction {
 
+        static final long serialVersionUID = 8870696224845563318L;
+
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            if (target == null)
+                return;
+
+            BaseDocument doc = (BaseDocument)target.getDocument();
+            Caret caret = target.getCaret();
+
+            int line = 0;
+            try {
+                line = Utilities.getLineOffset(doc, caret.getDot());
+            } catch (BadLocationException e) {
+                target.getToolkit().beep();
+                return;
+            }
+
+            Bookmarks bookmarks = doc.getBookmarks();
+            
+            Annotation anno = null;
+            Bookmark bookmark = (Bookmark)bookmarks.getBookmark(line);
+            if (bookmark != null)
+                anno = bookmark.getAnno();
+            
+            if (anno == null) {
+                anno = new BookmarkAnnotation();
+                
+                Line lineObj = NbEditorUtilities.getLine(doc, caret.getDot(), false);
+                anno.attach(lineObj);
+
+                bookmarks.putBookmark(new Bookmark(anno));
+            } else {
+                anno.detach();
+                bookmarks.removeBookmark(bookmark);
+            }
+        }
+    }
+
+    public static class NbGotoNextBookmarkAction extends GotoNextBookmarkAction {
+
+        static final long serialVersionUID =-6305740718286540539L;
+
+        public NbGotoNextBookmarkAction(String nm, boolean select) {
+            super(nm, select);
+        }
+
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            if (target == null)
+                return;
+                
+            BaseDocument doc = (BaseDocument)target.getDocument();
+            Caret caret = target.getCaret();
+
+            int line = 0;
+            
+            try {
+                line = Utilities.getLineOffset(doc, caret.getDot());
+            } catch (BadLocationException e) {
+                target.getToolkit().beep();
+                return;
+            }
+
+            Bookmarks bookmarks = doc.getBookmarks();
+            
+            Bookmark bookmark = (Bookmark)bookmarks.getNextLineBookmark(line+1);
+
+            if (bookmark == null)
+                bookmark = (Bookmark)bookmarks.getNextLineBookmark(0);
+                
+            if (bookmark == null)
+                return;
+
+            Annotation anno = bookmark.getAnno();
+            anno.moveToFront();
+            ((Line)anno.getAttachedAnnotatable()).show(Line.SHOW_GOTO);
+        }
+    }
+    
+    /** Annotation implementation for bookmarks */
+    private static class BookmarkAnnotation extends Annotation {
+        private Line line;
+        
+        public String getAnnotationType() {
+            return BOOKMARK_ANNOTATION_TYPE;
+        }
+        
+        public String getShortDescription() {
+            return "";
+        }
+    }
+
+    /** Description of bookmark */
+    private static class Bookmark implements Bookmarks.Bookmark {
+        
+        private Annotation anno;
+        
+        public Bookmark(Annotation anno) {
+            this.anno = anno;
+        }
+        
+        public int getLine() {
+            return ((Line)anno.getAttachedAnnotatable()).getLineNumber();
+        }
+
+        public Annotation getAnno() {
+            return anno;
+        }
+        
+    }
+    
 
 }

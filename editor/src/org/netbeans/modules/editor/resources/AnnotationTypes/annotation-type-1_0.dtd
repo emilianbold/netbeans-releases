@@ -1,0 +1,26 @@
+<!--
+-//NetBeans//DTD annotation type 1.0//EN
+http://www.netbeans.org/dtds/annotation-type-1_0.dtd
+Document type declaration for AnnotationType.
+-->
+
+<!ELEMENT type (actions?, combinations?)>
+<!ATTLIST type name CDATA #REQUIRED>
+<!ATTLIST type description_key CDATA #REQUIRED>
+<!ATTLIST type localizing_bundle CDATA #REQUIRED>
+<!ATTLIST type visible (true | false) "true">
+<!ATTLIST type glyph CDATA ''>
+<!ATTLIST type highlight CDATA #REQUIRED>
+<!ATTLIST type foreground CDATA ''>
+<!ATTLIST type type (line|linepart) "line">
+
+<!ELEMENT actions (action+)>
+
+<!ELEMENT action EMPTY>
+<!ATTLIST action name CDATA #REQUIRED>
+
+<!ELEMENT combinations (combine+)>
+<!ATTLIST combinations tiptext_key CDATA #REQUIRED>
+
+<!ELEMENT combine EMPTY>
+<!ATTLIST combine annotationtype CDATA #REQUIRED>

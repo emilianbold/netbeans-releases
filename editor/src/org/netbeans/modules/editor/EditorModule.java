@@ -44,6 +44,15 @@ import org.openide.loaders.DataObject;
 import org.openide.util.WeakListener;
 import org.openide.filesystems.RepositoryListener;
 import org.openide.filesystems.Repository;
+import org.netbeans.modules.editor.options.AnnotationTypesFolder;
+import org.openide.nodes.Node;
+import org.openide.nodes.AbstractNode;
+import java.beans.IntrospectionException;
+import org.openide.nodes.Children;
+import java.util.Iterator;
+import org.openide.nodes.BeanNode;
+import org.netbeans.modules.editor.options.AnnotationTypeOptions;
+import org.netbeans.editor.AnnotationType;
 
 
 /**
@@ -81,6 +90,13 @@ public class EditorModule extends ModuleInstall implements Runnable {
 
         // Initializations
         DialogSupport.setDialogFactory( new NbDialogSupport() );
+        
+        // register loader for annotation types
+        AnnotationType.registerLoader( new AnnotationType.Loader() {
+                public void load() {
+                    AnnotationTypesFolder.getAnnotationTypesFolder();
+                }
+            } );
 
         // Settings
         NbEditorSettingsInitializer.init();
@@ -125,7 +141,6 @@ public class EditorModule extends ModuleInstall implements Runnable {
             }
         }
          */
-
     }
 
     public void run () {
