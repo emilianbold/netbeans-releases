@@ -24,9 +24,11 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
  * (of FormProperty type). The interface has two methods.
  * First:
  *     boolean useMultipleEditors();
- * describes whether the FormPropertyEditor can be used for editing properties
- * (multiple property editors feature - e.g. with old TuborgPersistenceManager
- * it's not possible, and e.g. for event properties it's not suitable).
+ * describes whether the FormPropertyEditor can be used for editing properties.
+ * This property editor encapsulates multiple property editors which can be used
+ * for given property - this feature is not suitable e.g. for event properties,
+ * and sometimes not possible beacuase of restrictions in XML storage format
+ * (which must stay compatible with previous versions).
  *
  * Second:
  *     void initPropertyEditor(PropertyEditor prEd);
@@ -36,6 +38,7 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
  *
  * @author Tomas Pavek
  */
+
 public interface FormPropertyContext {
 
     public boolean useMultipleEditors();
@@ -58,8 +61,6 @@ public interface FormPropertyContext {
         public boolean useMultipleEditors() {
             FormModel formModel = getFormModel();
             return formModel != null;
-//                     formModel.getFormEditorSupport().supportsAdvancedFeatures() :
-//                     false;
         }
         
         public void initPropertyEditor(PropertyEditor prEd) {
@@ -87,8 +88,7 @@ public interface FormPropertyContext {
         public abstract FormModel getFormModel();
     }
 
-    /** Defualt implementation of FormPropertyContext interface.
-     */
+    /** Defualt implementation of FormPropertyContext interface. */
     public static class DefaultImpl extends DefaultSupport {
 
         FormModel formModel;
@@ -102,8 +102,7 @@ public interface FormPropertyContext {
         }
     }
 
-    /** "Empty" implementation of FormPropertyContext.
-     **/
+    /** "Empty" implementation of FormPropertyContext. */
     public static class EmptyImpl implements FormPropertyContext {
 
         public boolean useMultipleEditors() {
