@@ -37,13 +37,7 @@ public class I18nOptions extends SystemOption {
     /** Property name for replacing init java . */
     public static final String PROP_REGULAR_EXPRESSION = "regularExpression"; // NOI18N
 
-    {
-        setInitJavaCode(I18nUtil.getInitFormatItems()[0]);
-        setReplaceJavaCode(I18nUtil.getReplaceFormatItems()[0]);
-        setRegularExpression(I18nUtil.getRegExpItems()[0]);
-    }
 
-    
     /** Provided due exeternaliazation only. 
      * Don't create this object directly use superclass <code>findObject</code> method instead. */
     public I18nOptions() {
@@ -69,6 +63,10 @@ public class I18nOptions extends SystemOption {
     
     /** Getter for init java code property. */
     public String getInitJavaCode() {
+        // Lazy init.
+        if(getProperty(PROP_INIT_JAVA_CODE) == null)
+            setInitJavaCode(I18nUtil.getInitFormatItems()[0]);
+        
         return (String)getProperty(PROP_INIT_JAVA_CODE);
     }
 
@@ -84,6 +82,10 @@ public class I18nOptions extends SystemOption {
     
     /** Getter for replace java code property. */
     public String getReplaceJavaCode() {
+        // Lazy init.
+        if(getProperty(PROP_REPLACE_JAVA_CODE) == null)
+            setReplaceJavaCode(I18nUtil.getReplaceFormatItems()[0]);
+        
         return (String)getProperty(PROP_REPLACE_JAVA_CODE);
     }
 
@@ -99,6 +101,10 @@ public class I18nOptions extends SystemOption {
 
     /** Getter for regular expression property. */
     public String getRegularExpression() {
+        // Lazy init.
+        if(getProperty(PROP_REGULAR_EXPRESSION) == null)
+            setRegularExpression(I18nUtil.getRegExpItems()[0]);
+        
         return (String)getProperty(PROP_REGULAR_EXPRESSION);
     }
 
