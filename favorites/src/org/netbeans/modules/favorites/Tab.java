@@ -196,8 +196,7 @@ implements Runnable, ExplorerManager.Provider {
     private void initializeWithRootContext (Node rc) {
         // update TC's attributes
         setIcon(rc.getIcon(BeanInfo.ICON_COLOR_16x16));
-        setToolTipText(rc.getShortDescription());
-        // bugfix #15136
+        setToolTipText(rc.getDisplayName());
         setName(rc.getDisplayName());
         updateTitle();
         // attach listener
