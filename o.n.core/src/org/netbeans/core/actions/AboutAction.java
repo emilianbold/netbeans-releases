@@ -39,7 +39,7 @@ public class AboutAction extends CallableSystemAction {
     * @return URL to the action icon
     */
     public String iconResource () {
-        return "/org/netbeans/core/resources/actions/about.gif"; // NOI18N
+        return "org/netbeans/core/resources/actions/about.gif"; // NOI18N
     }
 
     public HelpCtx getHelpCtx() {

@@ -36,7 +36,7 @@ public class HTMLViewAction extends CallableSystemAction {
     * @return name of resource for icon
     */
     protected String iconResource () {
-        return "/org/netbeans/core/resources/actions/htmlView.gif"; // NOI18N
+        return "org/netbeans/core/resources/actions/htmlView.gif"; // NOI18N
     }
 
     public void performAction() {
