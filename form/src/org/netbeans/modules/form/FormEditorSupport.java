@@ -17,6 +17,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.Iterator;
+import java.util.Hashtable;
 
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
@@ -53,6 +54,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
   /** lock for opening form */
   private static final Object OPEN_FORM_LOCK = new Object ();
+  
+  /** Table of FormManager instances of open forms */
+  private static Hashtable openForms = new Hashtable ();
 
   public FormEditorSupport (MultiDataObject.Entry javaEntry, FormDataObject formObject) {
     super (javaEntry);
@@ -94,6 +98,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
         }
       }
     }
+    openForms.put (this, getFormManager ());
     // 1. show the ComponentInspector
     FormEditor.getComponentInspector().focusForm (getFormManager ());
     boolean isEditingWorkspace = isCurrentWorkspaceEditing ();
@@ -237,6 +242,10 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       formWin.close ();
     }
     FormEditor.getComponentInspector().focusForm (null);
+    openForms.remove (this);
+    if (openForms.isEmpty ()) {
+      FormEditor.getComponentInspector().close ();
+    }
     SourceChildren sc = (SourceChildren)formObject.getNodeDelegate ().getChildren ();
     sc.remove (new RADComponentNode [] { formRootNode });
     formRootNode = null;
@@ -421,6 +430,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  37   Gandalf   1.36        11/24/99 Pavel Buzek     Component Inspector is 
+ *       closed with the last form
  *  36   Gandalf   1.35        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  35   Gandalf   1.34        9/29/99  Ian Formanek    Fixed bug 3853 - 
