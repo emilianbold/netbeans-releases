@@ -76,7 +76,7 @@
     <file name="CS-CANCEL[org.netbeans.modules.debugger.support.actions.ResumeDebuggerAction].instance" />
     <file name="C-9[org.netbeans.modules.objectbrowser.ShowBrowserAction].instance" />
     <file name="CS-N[org.netbeans.modules.projects.NewProjectAction].instance" />
-    <file name="CA-F8[org.netbeans.modules.debugger.support.actions.AddBreakpointAction].instance" />
+    <file name="CS-F8[org.netbeans.modules.debugger.support.actions.AddBreakpointAction].instance" />
     <file name="CS-M[org.netbeans.modules.projects.SetMainClassAction].instance" />
     <file name="C-8[org.netbeans.modules.form.actions.ComponentInspectorAction].instance" />
     <file name="C-5[org.netbeans.modules.debugger.support.actions.DebuggerViewAction].instance" />
