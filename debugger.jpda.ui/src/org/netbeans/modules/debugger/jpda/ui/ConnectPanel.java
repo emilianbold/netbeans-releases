@@ -80,7 +80,20 @@ Controller, ActionListener {
         connectors = new ArrayList ();
         connectors.addAll (vmm.attachingConnectors ());
         connectors.addAll (vmm.listeningConnectors ());
-        
+           
+        // We temporary do not support these three connectors
+        for (Iterator ci = connectors.iterator(); ci.hasNext(); ) {
+            String name = ((Connector)ci.next()).name();
+            int index = name.lastIndexOf('.');
+            if (index >= 0)
+                    name = name.substring(index + 1);
+           
+            if (name.equalsIgnoreCase("SACoreAttachingConnector") || 
+                name.equalsIgnoreCase("SAPIDAttachingConnector") ||
+                name.equalsIgnoreCase("SADebugServerAttachingConnector"))
+                ci.remove();
+        }
+                
         if (connectors.size () == 0) {
             // no attaching connectors available => print message only
             add (new JLabel (
@@ -105,6 +118,7 @@ Controller, ActionListener {
                 if ((lacn != null) && connector.name ().equals (lacn))
                     defaultIndex = i;
                 int jj = connector.name ().lastIndexOf ('.');
+                              
                 String s = (jj < 0) ? 
                     connector.name () : 
                     connector.name ().substring (jj + 1);
