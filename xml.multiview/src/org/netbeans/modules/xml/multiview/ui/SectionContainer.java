@@ -60,14 +60,14 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
                 popup.show(foldButton,e.getX(), e.getY());
             }
         });
-        setIcon(false);
-        foldButton.setSelected(false);
-        contentPanel.setVisible(false);
-        filler.setVisible(false);
-        if (!foldable) {  
+        
+        if (foldable) {
+            foldButton.setSelected(true);
+        } else {
             remove(filler);
             remove(foldButton);
         }
+        setIcon(true);
     }
     
     /** Method from NodeSectionPanel interface */
@@ -77,10 +77,12 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     
     /** Method from NodeSectionPanel interface */
     public void open(){
-        foldButton.setSelected(true);
-        contentPanel.setVisible(true);
-        filler.setVisible(true);
-        setIcon(true);
+        if (foldable) {
+            foldButton.setSelected(true);
+            contentPanel.setVisible(true);
+            filler.setVisible(true);
+            setIcon(true);
+        }
     }
 
     /** Method from NodeSectionPanel interface */
@@ -275,15 +277,17 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
 
     private void titleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_titleButtonActionPerformed
         // TODO add your handling code here:
-        if (!foldButton.isSelected()) {
-            open();
-            foldButton.setSelected(true);
-        } else {
-            if (isActive()) {
-                foldButton.setSelected(false);
-                contentPanel.setVisible(false);
-                filler.setVisible(false);
-                setIcon(false);
+        if (foldable) {
+            if (!foldButton.isSelected()) {
+                open();
+                foldButton.setSelected(true);
+            } else {
+                if (isActive()) {
+                    foldButton.setSelected(false);
+                    contentPanel.setVisible(false);
+                    filler.setVisible(false);
+                    setIcon(false);
+                }
             }
         }
         if (!isActive()) setActive(true);
