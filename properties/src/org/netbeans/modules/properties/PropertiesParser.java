@@ -224,7 +224,7 @@ class PropertiesParser {
             fl.stringValue = fl.line.toString();
             lines.add(fl);
             int nowPos;
-            while (UtilConvert.continueLine(fl.line)) {
+            while (isPartialLine(fl.line)) {
                 // do something with the previous line
                 fl.stringValue = fl.stringValue.substring(0, fl.stringValue/*fix: was: line*/.length() - 1);
                 // now the new line
@@ -447,7 +447,18 @@ class PropertiesParser {
 
     } // End of nested class PropertiesReader.
 
-    
+    /**
+     * Returns true if the given line is a line that must
+     * be appended to the next line
+     */
+    private static boolean isPartialLine (StringBuffer line) {
+        int slashCount = 0;
+        int index = line.length() - 1;
+        while((index >= 0) && (line.charAt(index--) == '\\'))
+            slashCount++;
+        return (slashCount % 2 == 1);
+    }
+
     /** Nested class which maps positions in a string to positions in the underlying file.
      * @see FlaggedLine */
     private static class PositionMap {
