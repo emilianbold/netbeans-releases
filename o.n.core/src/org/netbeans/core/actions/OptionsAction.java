@@ -16,6 +16,7 @@ package org.netbeans.core.actions;
 import java.io.ObjectStreamException;
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 import java.beans.PropertyChangeListener;
@@ -31,7 +32,6 @@ import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.explorer.view.TreeView;
 import org.openide.explorer.view.TreeTableView;
-import org.openide.awt.SplittedPanel;
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.windows.WindowManager;
 import org.openide.loaders.DataObject;
@@ -172,18 +172,24 @@ public class OptionsAction extends CallableSystemAction {
             }
             return singleton;
         }
+        
+        public void reshape (int x, int y, int w, int h) {
+            super.reshape (x,y,w,h);
+            //issue 34104, bad sizing/split location for Chinese locales that require
+            //a larger default font size
+            split.setDividerLocation ((w / 3) + (w/7));
+        }
 
+        private transient JSplitPane split=null;
         protected TreeView initGui () {
             TTW view = new TTW ();
-
-            SplittedPanel split = new SplittedPanel();
+            
+            
+            split = new JSplitPane (JSplitPane.HORIZONTAL_SPLIT);
             PropertySheetView propertyView = new PropertySheetView();
             
-            split.setSplitPosition(SplittedPanel.SECOND_PREFERRED);
-            view.setPreferredSize(new Dimension(500, 450));
-            split.add(view, SplittedPanel.ADD_LEFT);
-            propertyView.setPreferredSize(new Dimension(300, 450));
-            split.add(propertyView, SplittedPanel.ADD_RIGHT);
+            split.setLeftComponent(view);
+            split.setRightComponent(propertyView);
 
             setLayout (new java.awt.GridBagLayout ());
 
@@ -241,6 +247,32 @@ public class OptionsAction extends CallableSystemAction {
             help.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (OptionsAction.class, "ACSD_help_button"));
             
             return view;
+        }
+
+        /** Overridden to provide a larger preferred size if the default font
+         *  is larger, for locales that require this.   */
+        public Dimension getPreferredSize() {
+            //issue 34104, bad sizing/split location for Chinese locales that require
+            //a larger default font size
+            Dimension result = super.getPreferredSize();
+            int fontsize = 
+                javax.swing.UIManager.getFont ("Tree.font").getSize(); //NOI18N
+            if (fontsize > 11) {
+                int factor = fontsize - 11;
+                result.height += 15 * factor;
+                result.width += 50 * factor;
+                Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+                if (result.height > screen.height) {
+                    result.height = screen.height -30;
+                }
+                if (result.width > screen.width) {
+                    result.width = screen.width -30;
+                }
+            } else {
+                result.width += 20;
+                result.height +=20;
+            }
+            return result;
         }
         
         public synchronized void prepareNodes () {
@@ -456,13 +488,13 @@ public class OptionsAction extends CallableSystemAction {
                         public void run () {
                             // change columns
                             setProperties (set);
-
                             // set preferred colunm sizes
                             setTreePreferredWidth(set.length == 1 ? 480 : 300);
                             setTableColumnPreferredWidth (0, 20);
                             for (int i = 1; i < set.length; i++)
                                 setTableColumnPreferredWidth (i, 60);
-                        }
+                       }
+ 
                     });
 
                     // remeber the last set of columns
