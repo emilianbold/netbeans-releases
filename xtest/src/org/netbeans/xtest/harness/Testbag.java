@@ -261,27 +261,31 @@ public class Testbag implements XMLSerializable {
         
         public String[][] getIncludes() {
            Vector vector = new Vector();
-           for (int j=0; j<patternsets.length; j++) {
-               InExclude includes[] = patternsets[j].getIncludes();
-               if (includes != null) {
-                   for (int k=0; k<includes.length; k++) {
-                       vector.add(new String[] {includes[k].getName(), includes[k].getExpectedFail()});
+           if (patternsets != null) {
+               for (int j=0; j<patternsets.length; j++) {
+                   InExclude includes[] = patternsets[j].getIncludes();
+                   if (includes != null) {
+                       for (int k=0; k<includes.length; k++) {
+                           vector.add(new String[] {includes[k].getName(), includes[k].getExpectedFail()});
+                       }
                    }
                }
            }
            if (getParent().getParent().getAdditionalIncludes() != null)
-             for (int i=0; i<getParent().getParent().getAdditionalIncludes().length; i++)
+             for (int i=0; i<getParent().getParent().getAdditionalIncludes().length; i++) 
                vector.add(new String[] { getParent().getParent().getAdditionalIncludes()[i], null});
            return (String[][])vector.toArray(new String[0][0]);
         }
     
         public String[][] getExcludes() {
            Vector vector = new Vector();
-           for (int j=0; j<patternsets.length; j++) {
-               InExclude excludes[] = patternsets[j].getExcludes();
-               if (excludes != null) {
-                   for (int k=0; k<excludes.length; k++) {
-                       vector.add(new String[] {excludes[k].getName(), excludes[k].getExpectedFail()});
+           if (patternsets != null) {
+               for (int j=0; j<patternsets.length; j++) {
+                   InExclude excludes[] = patternsets[j].getExcludes();
+                   if (excludes != null) {
+                       for (int k=0; k<excludes.length; k++) {
+                           vector.add(new String[] {excludes[k].getName(), excludes[k].getExpectedFail()});
+                       }
                    }
                }
            }
