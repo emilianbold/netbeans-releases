@@ -1262,7 +1262,7 @@ the ${netbeans.dest}/bin/ directory.
   </target>
 
   <target name="check-for-build"  >
-    <available property="have-build" file="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+    <available property="have-build" file="${netbeans.dest}/bin/netbeans"/>
   </target>
   <target name="maybe-build-nozip" depends="check-for-build" unless="have-build">
     <ant dir="." target="build-nozip"/>
