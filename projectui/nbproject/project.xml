@@ -18,12 +18,20 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.netbeans.modules.projectui</code-name-base>
             <path>projects/projectui</path>
             <module-dependencies>
+                <!-- XXX is this still necessary? -->
                 <dependency>
                     <code-name-base>org.netbeans.core.ui</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>                                
+                <dependency>
+                    <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
@@ -71,15 +79,6 @@ Microsystems, Inc. All Rights Reserved.
                     <run-dependency>
                         <release-version>3</release-version>
                         <specification-version>3.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.masterfs</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
