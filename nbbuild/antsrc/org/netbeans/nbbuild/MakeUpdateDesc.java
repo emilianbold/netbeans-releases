@@ -36,6 +36,7 @@ public class MakeUpdateDesc extends Task {
 	public void setName (String s) {
 	    name = s;
 	}
+        // [PENDING] should support nested <fileset>s to match *.nbm?
 	public Nbm createNbm () {
 	    Nbm n = new Nbm ();
 	    nbms.add (n);
