@@ -37,7 +37,7 @@ public class URLDataLoader extends UniFileLoader {
       SystemAction.get(OpenAction.class),
       SystemAction.get(OpenInNewWindowAction.class),
       null,
-      SystemAction.get(EditURLAction.class),
+      SystemAction.get(EditAction.class),
       null,
       SystemAction.get(CutAction.class),
       SystemAction.get(CopyAction.class),
@@ -71,6 +71,7 @@ public class URLDataLoader extends UniFileLoader {
 
 /*
  * Log
+ *  6    Gandalf   1.5         7/11/99  Ian Formanek    employed EditAction
  *  5    Gandalf   1.4         6/9/99   Ian Formanek    ToolsAction
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----

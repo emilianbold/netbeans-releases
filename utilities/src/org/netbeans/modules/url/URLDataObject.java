@@ -17,18 +17,21 @@ import java.io.*;
 
 import org.openide.*;
 import org.openide.awt.HtmlBrowser;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.*;
 import org.openide.util.actions.*;
 import org.openide.nodes.*;
 
+
 /** Object that represents one file containing url in the tree of
 * beans representing data systems.
 *
 * @author Ian Formanek
 */
-public class URLDataObject extends MultiDataObject {
+public class URLDataObject extends MultiDataObject implements EditCookie, OpenCookie, URLNodeCookie {
   /** generated Serialized Version UID */
 //  static final long serialVersionUID = -6035788991669336965L;
 
@@ -44,95 +47,7 @@ public class URLDataObject extends MultiDataObject {
   public URLDataObject(final FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
     super(pf, loader);
     urlFile = pf;
-    getCookieSet ().add (new org.openide.cookies.OpenCookie () {
-        /** Invokes the open action */
-        public void open () {
-          String urlString = getURLString ();
-          if (urlString == null) return;
-          
-          java.net.URL url = null;
-          try {
-            url = new java.net.URL (urlString);
-            TopManager.getDefault ().showUrl (url);
-          } catch (java.net.MalformedURLException e) {
-            try {
-              url = new java.net.URL ("http://"+urlString); // try to prepend http protocol
-              TopManager.getDefault ().showUrl (url);
-            } catch (java.net.MalformedURLException e2) {
-              if (urlString.length () > 50) { // too long URL
-                TopManager.getDefault ().notify (
-                    new NotifyDescriptor.Message (
-                        NbBundle.getBundle (URLDataObject.class).getString("MSG_MalformedURLError"),
-                        NotifyDescriptor.ERROR_MESSAGE
-                    )
-                );
-              } else {            
-                TopManager.getDefault ().notify (
-                    new NotifyDescriptor.Message (
-                        java.text.MessageFormat.format (
-                            NbBundle.getBundle (URLDataObject.class).getString("MSG_FMT_MalformedURLError"),
-                            new Object[] { urlString }
-                        ),
-                        NotifyDescriptor.ERROR_MESSAGE
-                    )
-                );
-              }
-            }
-          }
-        }
-      }
-    );
-    getCookieSet ().add (new URLNodeCookie () {
-        public void openInNewWindow () {
-          String urlString = getURLString ();
-          if (urlString == null) return;
-          
-          java.net.URL url = null;
-          try {
-            url = new java.net.URL (urlString);
-          } catch (java.net.MalformedURLException e) {
-            try {
-              url = new java.net.URL ("http://"+urlString); // try to prepend http protocol
-            } catch (java.net.MalformedURLException e2) {
-              if (urlString.length () > 50) { // too long URL
-                TopManager.getDefault ().notify (
-                    new NotifyDescriptor.Message (
-                        NbBundle.getBundle (URLDataObject.class).getString("MSG_MalformedURLError"),
-                        NotifyDescriptor.ERROR_MESSAGE
-                    )
-                );
-              } else {            
-                TopManager.getDefault ().notify (
-                    new NotifyDescriptor.Message (
-                        java.text.MessageFormat.format (
-                            NbBundle.getBundle (URLDataObject.class).getString("MSG_FMT_MalformedURLError"),
-                            new Object[] { urlString }
-                        ),
-                        NotifyDescriptor.ERROR_MESSAGE
-                    )
-                );
-              }
-              return;
-            }
-          }
-
-          HtmlBrowser.BrowserComponent htmlViewer = new HtmlBrowser.BrowserComponent ();
-          htmlViewer.setURL (url);
-          htmlViewer.open ();
-          htmlViewer.requestFocus ();
-        }
-
-        public void editURL () {
-          String urlString = getURLString ();
-          if (urlString == null) return;
-          NotifyDescriptor.InputLine urlLine = new NotifyDescriptor.InputLine ("URL:", "Edit URL");
-          urlLine.setInputText (urlString);
-          TopManager.getDefault ().notify (urlLine);
-          if (urlLine.getValue () == NotifyDescriptor.OK_OPTION) 
-            setURLString (urlLine.getInputText ());
-        }
-      }
-    );
+    getCookieSet ().add (this);
   }
 
   /** @return the URL String stored in the file. If there are multiple lines of text in the 
@@ -218,6 +133,110 @@ public class URLDataObject extends MultiDataObject {
     return new URLNode (this);
   }
 
+// -----------------------------------------------------------------
+// OpenCookie implementation
+
+  /** Invokes the open action */
+  public void open () {
+    String urlString = getURLString ();
+    if (urlString == null) return;
+    
+    java.net.URL url = null;
+    try {
+      url = new java.net.URL (urlString);
+      TopManager.getDefault ().showUrl (url);
+    } catch (java.net.MalformedURLException e) {
+      try {
+        url = new java.net.URL ("http://"+urlString); // try to prepend http protocol
+        TopManager.getDefault ().showUrl (url);
+      } catch (java.net.MalformedURLException e2) {
+        if (urlString.length () > 50) { // too long URL
+          TopManager.getDefault ().notify (
+              new NotifyDescriptor.Message (
+                  NbBundle.getBundle (URLDataObject.class).getString("MSG_MalformedURLError"),
+                  NotifyDescriptor.ERROR_MESSAGE
+              )
+          );
+        } else {            
+          TopManager.getDefault ().notify (
+              new NotifyDescriptor.Message (
+                  java.text.MessageFormat.format (
+                      NbBundle.getBundle (URLDataObject.class).getString("MSG_FMT_MalformedURLError"),
+                      new Object[] { urlString }
+                  ),
+                  NotifyDescriptor.ERROR_MESSAGE
+              )
+          );
+        }
+      }
+    }
+  }
+
+// -----------------------------------------------------------------
+// URLNodeCookie implementation
+
+  public void openInNewWindow () {
+    String urlString = getURLString ();
+    if (urlString == null) return;
+    
+    java.net.URL url = null;
+    try {
+      url = new java.net.URL (urlString);
+    } catch (java.net.MalformedURLException e) {
+      try {
+        url = new java.net.URL ("http://"+urlString); // try to prepend http protocol
+      } catch (java.net.MalformedURLException e2) {
+        if (urlString.length () > 50) { // too long URL
+          TopManager.getDefault ().notify (
+              new NotifyDescriptor.Message (
+                  NbBundle.getBundle (URLDataObject.class).getString("MSG_MalformedURLError"),
+                  NotifyDescriptor.ERROR_MESSAGE
+              )
+          );
+        } else {            
+          TopManager.getDefault ().notify (
+              new NotifyDescriptor.Message (
+                  java.text.MessageFormat.format (
+                      NbBundle.getBundle (URLDataObject.class).getString("MSG_FMT_MalformedURLError"),
+                      new Object[] { urlString }
+                  ),
+                  NotifyDescriptor.ERROR_MESSAGE
+              )
+          );
+        }
+        return;
+      }
+    }
+  
+    HtmlBrowser.BrowserComponent htmlViewer = new HtmlBrowser.BrowserComponent ();
+    htmlViewer.setURL (url);
+    htmlViewer.open ();
+    htmlViewer.requestFocus ();
+  }
+  
+// -----------------------------------------------------------------
+// EditCookie implementation
+
+
+  /** Instructs an editor to be opened. The operation can
+  * return immediately and the editor be opened later.
+  * There can be more than one editor open, so one of them is
+  * arbitrarily chosen and opened.
+  */
+  public void edit () {
+    String urlString = getURLString ();
+    if (urlString == null) return;
+    NotifyDescriptor.InputLine urlLine = new NotifyDescriptor.InputLine ("URL:", "Edit URL");
+    urlLine.setInputText (urlString);
+    TopManager.getDefault ().notify (urlLine);
+    if (urlLine.getValue () == NotifyDescriptor.OK_OPTION) 
+      setURLString (urlLine.getInputText ());
+  }
+
+// -----------------------------------------------------------------
+// Innerclasses
+
+
   /** URL Node implementation.
   * Leaf node, default action opens editor or instantiates template.
   * Icons redefined.
@@ -244,6 +263,7 @@ public class URLDataObject extends MultiDataObject {
 
 /*
  * Log
+ *  12   Gandalf   1.11        7/11/99  Ian Formanek    employed EditAction
  *  11   Gandalf   1.10        6/24/99  Jesse Glick     Gosh-honest HelpID's.
  *  10   Gandalf   1.9         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
