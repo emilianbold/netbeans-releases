@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -499,7 +499,10 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         
         if ( !Boolean.getBoolean( "netbeans.full.hack" ) ) { // NOI18N
             // Avoid showing the tasks in the dialog when running internal tests
-            pendingTasks.addAll( ExecutionEngine.getExecutionEngine().getRunningTasks() );
+            ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
+            if (ee != null) {
+                pendingTasks.addAll(ee.getRunningTasks());
+            }
         }
         
         // [PENDING] When it'll be added another types of tasks (locks etc.)
@@ -525,7 +528,11 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
     
    /** Tries to kill running executions */
    private static void killRunningExecutors() {
-       ArrayList tasks = new ArrayList( ExecutionEngine.getExecutionEngine().getRunningTasks() );
+       ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
+       if (ee == null) {
+           return;
+       }
+       ArrayList tasks = new ArrayList(ee.getRunningTasks());
        
        for ( Iterator it = tasks.iterator(); it.hasNext(); ) {
            ExecutorTask et = (ExecutorTask) it.next();
@@ -558,7 +565,10 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                 WeakListener.propertyChange(propertyListener, ModuleActions.INSTANCE)
             );
             
-            ExecutionEngine.getExecutionEngine().addExecutionListener( this );
+            ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
+            if (ee != null) {
+                ee.addExecutionListener(this);
+            }
         }
 
         /** Implements superclass abstract method. Creates nodes from key.
@@ -571,8 +581,10 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
             }
             else if ( key instanceof ExecutorTask ) {
                 AbstractNode an = new AbstractNode( Children.LEAF );
-                an.setName( NbBundle.getBundle(ExitDialog.class).getString("CTL_PendingExternalProcess") + 
-                            ExecutionEngine.getExecutionEngine().getRunningTaskName( (ExecutorTask) key ) );
+                an.setName(key.toString());
+                an.setDisplayName(NbBundle.getMessage(ExitDialog.class, "CTL_PendingExternalProcess2", 
+                    // getExecutionEngine() had better be non-null, since getPendingTasks gave an ExecutorTask:
+                    ExecutionEngine.getExecutionEngine().getRunningTaskName((ExecutorTask) key)));
                 an.setIconBase( "org/netbeans/core/resources/execution" ); //NOI18N
                 n = an;
             }
@@ -589,7 +601,10 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
             super.removeNotify();
-            ExecutionEngine.getExecutionEngine().removeExecutionListener( this );
+            ExecutionEngine ee = ExecutionEngine.getExecutionEngine();
+            if (ee != null) {
+                ee.removeExecutionListener(this);
+            }
         }
         
         // ExecutionListener implementation ------------------------------------
