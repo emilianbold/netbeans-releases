@@ -357,14 +357,20 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         
         lastCurrentDir = chooser.getCurrentDirectory();
     }
-
+    
     // XXX #18270. Enter doesn't work when expecting folder change,
     // Accessibility problem. We hack default behaviour here.
     /** Creates hacked fileChooser, responding on Enter the way it
      * performs folder change. */
     public static JFileChooser createHackedFileChooser() {
         final JFileChooser chooser = new JFileChooser();
-
+        hackFileChooser(chooser);
+        return chooser;
+    }
+    
+    /** Hacks fileChooser, responding on Enter the way it
+     * performs folder change. */
+    public static void hackFileChooser(final JFileChooser chooser) {
         chooser.getAccessibleContext().setAccessibleDescription( getString("ACSD_FileEditor") );
         
         // Only jdk1.3 there is not the action in action map, i.e. also no 
@@ -419,8 +425,6 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
                 });
             }
         }
-
-        return chooser;
     }
     
     /** Wraps java.io.FileFilter to javax.swing.filechooser.FileFilter. */

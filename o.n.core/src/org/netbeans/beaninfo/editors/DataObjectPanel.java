@@ -40,157 +40,23 @@ public class DataObjectPanel extends JPanel {
     
     final static int DEFAULT_INSET = 10;
     
-    private ExplorerPanel			expPanel;
-    private TreeView                    	reposTree;
+    protected DataFilter       folderFilter;
+    protected DataFilter       dataFilter;
+    protected NodeAcceptor     nodeFilter;
+    protected Insets           insets;
+    protected String           subTitle;
+    protected DataObject       rootObject;
     
-    private DataFilter				folderFilter;
-    private DataFilter				dataFilter;
-    private NodeAcceptor			nodeFilter;
-    private Insets				insets;
-    private String				subTitle;
-    private DataObject				rootObject;
+    protected Node             rootNode;
+    protected DataObject       dObj;
+    /** Set to true when panel is used by DataObjectArrayEditor. Relevant only
+     * for list view. Tree view allows only single selection. */
+    protected boolean          multiSelection;
     
-    private Node                                rootNode;
-    private DataObject                          dObj;
+    protected PropertyEditorSupport myEditor;
     
-    private DataObjectEditor                    myEditor;
-    
-    public DataObjectPanel(DataObjectEditor my) {
+    public DataObjectPanel(PropertyEditorSupport my) {
         myEditor = my;
-        initComponent();
-        
-        reposTree.getAccessibleContext().setAccessibleName( NbBundle.getBundle (DataObjectPanel.class).getString ( "ACSN_DataObjectPanel" ) );
-        setDescription( NbBundle.getBundle (DataObjectPanel.class).getString ( "ACSD_DataObjectPanel" ) );
-    }
-    
-    public void addNotify() {
-        completeInitialization();
-        super.addNotify();
-    }
-    
-    /** Called from the constructor. */
-    private void initComponent() {
-        expPanel = new ExplorerPanel();
-        expPanel.setLayout(new BorderLayout());
-        reposTree = new SingleSelectionBeanTreeView();
-        reposTree.setPopupAllowed(false);
-        reposTree.setDefaultActionAllowed(false);
-        expPanel.add(reposTree, "Center"); // NOI18N
-    }
-
-    /** Called from addNotify. */
-    private void completeInitialization() {
-        if (insets != null) {
-            setBorder(new EmptyBorder(insets));
-        } else {
-            setBorder(new EmptyBorder(12, 12, 0, 11));
-        }
-        setLayout(new BorderLayout(0, 2));
-        
-        if (subTitle != null) {
-            JLabel l = new JLabel(subTitle);
-            l.setLabelFor(reposTree);
-            add(l, BorderLayout.NORTH);
-        }
-        
-        if (rootNode == null) {
-            if (dataFilter != null) {
-                if (folderFilter != null) {
-                    DataFilter dFilter = new DataFilter() {
-                        public boolean acceptDataObject(DataObject obj) {
-                            if (folderFilter.acceptDataObject(obj)) {
-                                return true;
-                            }
-                            return dataFilter.acceptDataObject(obj);
-                        }
-                    };
-                    rootNode = RepositoryNodeFactory.getDefault().repository(dFilter);
-                } else {
-                    rootNode = RepositoryNodeFactory.getDefault().repository(dataFilter);
-                }
-            } else {
-                if (folderFilter != null) {
-                    rootNode = RepositoryNodeFactory.getDefault().repository(folderFilter);
-                } else {
-                    rootNode = RepositoryNodeFactory.getDefault().repository(DataFilter.ALL);
-                }
-            }
-        }
-
-        if (nodeFilter != null) {
-            FilteredChildren children = 
-                new FilteredChildren(rootNode, nodeFilter, dataFilter);
-            FilterNode n = new FilterNode(rootNode, children);
-            rootNode = n;
-        }
-        
-        Node rNode = rootNode;
-        if (rootObject != null) {
-            Node n = findNodeForObj(rootNode, rootObject);
-            if (n != null) {
-                NodeAcceptor naccep = nodeFilter;
-                if (naccep == null) {
-                    naccep = new NodeAcceptor() {
-                        public boolean acceptNodes(Node [] nodes) {
-                            return false;
-                        }
-                    };
-                }
-                FilteredChildren children =
-                    new FilteredChildren(n, naccep, dataFilter);
-                FilterNode filtNode = new FilterNode(n, children);
-                rNode = filtNode;
-            }
-        }
-        
-        expPanel.getExplorerManager().setRootContext(rNode);
-        
-        Node theNode = null;
-        if (dObj != null) {
-            theNode = findNodeForObj(rNode, dObj);
-        }
-        if (theNode != null) {
-            try {
-                expPanel.getExplorerManager().setSelectedNodes
-                (new Node [] { theNode });
-            } catch (PropertyVetoException pve) {
-                ErrorManager.getDefault().notify(
-                ErrorManager.INFORMATIONAL, pve);
-            } catch (IllegalArgumentException iae) {
-                ErrorManager.getDefault().notify(
-                ErrorManager.INFORMATIONAL, iae);
-            }
-        }
-        
-        expPanel.getExplorerManager().addPropertyChangeListener(
-        new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals
-                (ExplorerManager.PROP_SELECTED_NODES)) {
-                    Node [] nodes = (Node []) evt.getNewValue();
-                    DataObject d = getDataObject();
-                    boolean enableOK = false;
-                    if ((nodes != null) && (nodes.length > 0) && 
-                    (dataFilter != null) && (d != null)) {
-                        enableOK = dataFilter.acceptDataObject( d );
-                    } else {
-                        enableOK = ( d != null );
-                    }
-                    if ( enableOK )
-                        myEditor.setValue( d );
-                    myEditor.setOkButtonEnabled( enableOK );
-                }
-            }
-        });
-        
-        add(expPanel, BorderLayout.CENTER);
-        
-        if ((dataFilter != null) && (getDataObject() != null)) {
-            myEditor.setOkButtonEnabled(
-                dataFilter.acceptDataObject(getDataObject())); 
-        } else {
-            myEditor.setOkButtonEnabled(getDataObject() != null);
-        }
     }
     
     /**
@@ -279,16 +145,25 @@ public class DataObjectPanel extends JPanel {
     }
     
     /**
+     * Sets selection mode for dialog. It is valid only for list view GUI (JFileChooser).
+     * It is set to false when used by DataObjectEditor and to true when used by
+     * DataObjectArrayEditor.
+     *
+     * @param multiSelection True if multiple object selection is enabled.
+     */
+    public void setMultiSelection (boolean multiSelection) {
+        this.multiSelection = multiSelection;
+    }
+    
+    /**
      * Sets description of the panel.
      *
      * @param desc Desciption of the panel.
      */
     public void setDescription(String desc) {
-        getAccessibleContext().setAccessibleDescription(desc);
-        reposTree.getAccessibleContext().setAccessibleDescription(desc);
     }
     
-    private Node findNode(Node parent, DataObject val) {
+    protected Node findNode(Node parent, DataObject val) {
         Children children = parent.getChildren();
         Node theNode = children.findChild(val.getName());
         if (theNode == null) {
@@ -308,7 +183,7 @@ public class DataObjectPanel extends JPanel {
         return theNode;
     }
     
-    private Node findNodeForObj(Node rootNode, DataObject dObj) {
+    protected Node findNodeForObj(Node rootNode, DataObject dObj) {
         Node node = null;
         DataFolder df = dObj.getFolder();
         Vector v = new Vector();
@@ -331,7 +206,7 @@ public class DataObjectPanel extends JPanel {
         return node;
     }
     
-    private Node findParentNode(Vector v, Children children) {
+    protected Node findParentNode(Vector v, Children children) {
         DataFolder df = (DataFolder) v.lastElement();
         
         //Node n = children.findChild (df.getPrimaryFile ().getName ());
@@ -364,12 +239,7 @@ public class DataObjectPanel extends JPanel {
      * @return The currently selected DataObject or null if there is no node seleted
      */
     public DataObject getDataObject() {
-        DataObject retValue = null;
-        Node[] na = expPanel.getExplorerManager().getSelectedNodes();
-        if ((na != null) && (na.length>0)) {
-            retValue = (DataObject)na[0].getCookie(DataObject.class);
-        }
-        return retValue;
+        return null;
     }
     
     /**
@@ -377,12 +247,7 @@ public class DataObjectPanel extends JPanel {
      * @return The currently selected Node or null if there is no node seleted
      */
     public Node getNode() {
-        Node retValue = null;
-        Node[] na = expPanel.getExplorerManager().getSelectedNodes();
-        if ((na != null) && (na.length>0)) {
-            retValue = na[0];
-        }
-        return retValue;
+        return null;
     }
     
     /** Get the customized property value.
@@ -394,18 +259,14 @@ public class DataObjectPanel extends JPanel {
         return getDataObject();
     }
     
-    /**
-     * Class resulting from bugfix of #19165
-     * @author raccah@netbeans.org (Rochelle Raccah)
-     */
-    private static class SingleSelectionBeanTreeView extends BeanTreeView {
-	public SingleSelectionBeanTreeView() {
-		super();
-		tree.getSelectionModel().setSelectionMode(
-                            TreeSelectionModel.SINGLE_TREE_SELECTION);
-	}
+    protected void setOkButtonEnabled (boolean b) {
+        if (myEditor instanceof DataObjectEditor) {
+            ((DataObjectEditor) myEditor).setOkButtonEnabled(b);
+        } else if (myEditor instanceof DataObjectArrayEditor) {
+            ((DataObjectArrayEditor) myEditor).setOkButtonEnabled(b);
+        }
     }
-
+    
     static class FilteredChildren extends FilterNode.Children {
         private NodeAcceptor nodeAcceptor;
         private DataFilter dFilter;
@@ -440,4 +301,5 @@ public class DataObjectPanel extends JPanel {
             return new Node [0];
         }
     }
+    
 }
