@@ -178,7 +178,7 @@ public class NonGui extends NbTopManager implements Runnable {
     }
 
     protected static void showHelp() {
-        System.out.println(getString("TEXT_help"));
+        System.err.println(getString("TEXT_help"));
     }
 
     public static void parseCommandLine(String[] args) {
@@ -210,17 +210,17 @@ public class NonGui extends NbTopManager implements Runnable {
                 try {
                     uiClass = Class.forName(args[++i]);
                 } catch(ArrayIndexOutOfBoundsException e) {
-                    System.out.println(getString("ERR_UIExpected"));
+                    System.err.println(getString("ERR_UIExpected"));
                 } catch (ClassNotFoundException e2) {
-                    System.out.println(getString("ERR_UINotFound"));
+                    System.err.println(getString("ERR_UINotFound"));
                 }
             } else if (args[i].equalsIgnoreCase("-fontsize")) { // NOI18N
                 try {
                     uiFontSize = Integer.parseInt (args[++i]);
                 } catch(ArrayIndexOutOfBoundsException e) {
-                    System.out.println(getString("ERR_FontSizeExpected"));
+                    System.err.println(getString("ERR_FontSizeExpected"));
                 } catch (NumberFormatException e2) {
-                    System.out.println(getString("ERR_BadFontSize"));
+                    System.err.println(getString("ERR_BadFontSize"));
                 }
 
             } else if (args[i].equalsIgnoreCase("-locale")) { // NOI18N
@@ -254,13 +254,13 @@ public class NonGui extends NbTopManager implements Runnable {
             }
             else if (args[i].equalsIgnoreCase("-?") || args[i].equalsIgnoreCase("-help")) { // NOI18N
                 showHelp();
-                doExit(0);
+                doExit(2);
             }
             else {
                 // XXX should use a format
-                System.out.println(getString("ERR_UnknownOption")+": "+args[i]);
+                System.err.println(getString("ERR_UnknownOption")+": "+args[i]);
                 showHelp();
-                doExit(0);
+                doExit(2);
             }
         }
 
