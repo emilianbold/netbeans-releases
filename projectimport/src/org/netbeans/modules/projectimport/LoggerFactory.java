@@ -33,8 +33,8 @@ public class LoggerFactory {
     
     private static LoggerFactory factory = new LoggerFactory();
     
-    // used level
-    // TODO: mkrauskopf: this have to be customized (e.g. with a system property)
+    // used logging level adjustable with "projectimport.logging.level" system
+    // property
     private static Level LEVEL = Level.INFO;
     
     // TOTO: mkrauskopf - enhance this

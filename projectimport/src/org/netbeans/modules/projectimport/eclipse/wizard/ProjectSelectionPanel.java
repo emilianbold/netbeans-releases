@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 import javax.swing.AbstractCellEditor;
@@ -138,6 +139,8 @@ final class ProjectSelectionPanel extends JPanel {
     /** Error message displayed by wizard. */
     private String errorMessage;
     
+    private String workspaceDir;
+    
     private class ProjectTableModel extends AbstractTableModel {
         public Object getValueAt(int rowIndex, int columnIndex) {
             EclipseProject project = projects[rowIndex];
@@ -205,7 +208,8 @@ final class ProjectSelectionPanel extends JPanel {
     }
     
     // Helper for recursion check
-    private Set solved;
+    private Stack solved = new Stack();
+    private EclipseProject currentRoot;
     
     /**
      * Solves project dependencies. Fills up <code>requiredProjects</code> as
@@ -213,34 +217,54 @@ final class ProjectSelectionPanel extends JPanel {
      */
     private void solveDependencies() {
         requiredProjects.clear();
-        solved = new HashSet();
-        fillUpRequiredProjects(selectedProjects);
-        solved = null;
-    }
-    
-    private void fillUpRequiredProjects(Set parentProjects) {
-        if (parentProjects == null || parentProjects.isEmpty()) {
+        if (selectedProjects == null || selectedProjects.isEmpty()) {
             return;
         }
-        for (Iterator it = parentProjects.iterator(); it.hasNext(); ) {
-            EclipseProject project = (EclipseProject) it.next();
-            Set reqProjects = project.getProjects();
-            requiredProjects.addAll(reqProjects);
-            if (solved.contains(project)) {
-                NotifyDescriptor d = new DialogDescriptor.Message(
-                        ProjectImporterWizard.getMessage("MSG_CycleDependencies"), // NOI18N
-                        NotifyDescriptor.WARNING_MESSAGE);
-                DialogDisplayer.getDefault().notify(d);
-                logger.warning("Cycle dependencies was detected. Project: " + project); // NOI18N
-                return;
-            }
-            solved.add(project); // this one is as solved
-            fillUpRequiredProjects(reqProjects);
+        for (Iterator it = selectedProjects.iterator(); it.hasNext(); ) {
+            EclipseProject selProject = (EclipseProject) it.next();
+            solved.push(selProject);
+            currentRoot = selProject;
+            fillUpRequiredProjects(selProject);
+            assert solved.pop().equals(currentRoot);
+            assert solved.isEmpty();
+            currentRoot = null;
         }
     }
     
-    private ProjectTableModel model = new ProjectTableModel();
-    private String workspaceDir;
+    private void fillUpRequiredProjects(EclipseProject project) {
+        Set children = project.getProjects();
+        if (children == null && children.isEmpty()) {
+            return;
+        }
+        for (Iterator it = children.iterator(); it.hasNext(); ) {
+            EclipseProject child = (EclipseProject) it.next();
+            if (solved.contains(child)) {
+                recursionDetected(child);
+                return;
+            }
+            requiredProjects.add(child);
+            solved.push(child);
+            fillUpRequiredProjects(child);
+            assert solved.pop().equals(child);
+        }
+    }
+    
+    private void recursionDetected(EclipseProject start) {
+        int where = solved.search(start);
+        assert where != -1 : "Cannot find start of the cycle."; // NOI18N
+        EclipseProject rootOfCycle = 
+                (EclipseProject) solved.get(solved.size() - where);
+        StringBuffer cycle = new StringBuffer();
+        for (Iterator it = solved.iterator(); it.hasNext(); ) {
+            cycle.append(((EclipseProject)it.next()).getName() + " --> "); // NOI18N
+        }
+        cycle.append(rootOfCycle.getName() + " --> ..."); // NOI18N
+        logger.warning("Cycle dependencies was detected. Detected cycle: " + cycle); // NOI18N
+        NotifyDescriptor d = new DialogDescriptor.Message(
+                ProjectImporterWizard.getMessage("MSG_CycleDependencies", cycle.toString()), // NOI18N
+                NotifyDescriptor.WARNING_MESSAGE);
+        DialogDisplayer.getDefault().notify(d);
+    }
     
     /** Creates new form ProjectSelectionPanel */
     public ProjectSelectionPanel() {
@@ -255,7 +279,7 @@ final class ProjectSelectionPanel extends JPanel {
     }
     
     private void init() {
-        projectTable.setModel(model);
+        projectTable.setModel(new ProjectTableModel());
         projectTable.setTableHeader(null);
         projectTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         projectTable.setDefaultRenderer(Boolean.class, new ProjectCellRenderer());
