@@ -17,7 +17,6 @@ import org.openide.filesystems.*;
 import java.io.*;
 import java.util.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.common.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import javax.enterprise.deploy.model.*;
@@ -65,7 +64,9 @@ public class ServerFileDistributor extends ServerProgress {
                 childModuleMap = new HashMap();
                 J2eeModule[] childModules = ((J2eeModuleContainer)source).getModules(null);
                 for (int i=0; i<childModules.length; i++) {
-                    childModuleFiles.put(childModules[i].getUrl(), childModules[i].getArchiveContents());
+                    Iterator contents = childModules[i].getArchiveContents();
+                    if (contents != null)
+                        childModuleFiles.put(childModules[i].getUrl(), contents);
                     childModuleMap.put(childModules[i].getUrl(), childModules[i]);
                 }
             }
@@ -87,13 +88,17 @@ public class ServerFileDistributor extends ServerProgress {
         return (List) j2eeTypeMap.get(module.getModuleType());
     }
     
-    private AppChanges createModuleChangeDescriptor(TargetModuleID target) {
-        String moduleUrl = incremental.getModuleUrl(target);
-        J2eeModule module;
+    private J2eeModule getJ2eeModule(TargetModuleID target) {
         if (target.getParentTargetModuleID() == null)
-            module = dtarget.getModule();
-        else
-            module = (J2eeModule) childModuleMap.get(moduleUrl);
+            return dtarget.getModule();
+        else {
+            String moduleUrl = incremental.getModuleUrl(target);
+            return (J2eeModule) childModuleMap.get(moduleUrl);
+        }
+    }
+    
+    private AppChanges createModuleChangeDescriptor(TargetModuleID target) {
+        J2eeModule module = getJ2eeModule(target);
         List descriptorRelativePaths = getDescriptorPath(module);
         
         ModuleType moduleType = (ModuleType) J2eeDeploymentLookup.translateModule.get (module.getModuleType ());
@@ -105,29 +110,81 @@ public class ServerFileDistributor extends ServerProgress {
         long lastDeployTime = targetModule.getTimestamp();
         TargetModuleID[] childModules = targetModule.getChildTargetModuleID();
         AppChanges changes = new AppChanges();
-        //PENDING: whether module need to be stop first
-        for (int i=0; childModules != null && i<childModules.length; i++) {
-            String url = incremental.getModuleUrl(targetModule.delegate());
-            Iterator source = (Iterator) childModuleFiles.get(url);
-            changes.record(_distribute(source, childModules[i], url, lastDeployTime));
+        File destDir = null;
+        
+        try {
+            
+            //PENDING: whether module need to be stop first
+            for (int i=0; childModules != null && i<childModules.length; i++) {
+                String url = incremental.getModuleUrl(targetModule.delegate());
+                destDir = incremental.getDirectoryForModule(childModules[i]);
+                Iterator source = (Iterator) childModuleFiles.get(url);
+                if (destDir == null)
+                    changes.record(_distribute(childModules[i], lastDeployTime));
+                else
+                    changes.record(_distribute(source, destDir, targetModule.delegate(), url, lastDeployTime));
+            }
+            
+            //PENDING: whether ordering of copying matters
+            destDir = incremental.getDirectoryForModule(targetModule.delegate());
+            if (destDir == null)
+                changes.record(_distribute(targetModule.delegate(), lastDeployTime));
+            else
+                changes.record(_distribute(rootModuleFiles, destDir, targetModule.delegate(), null, lastDeployTime));
+            
+            if (mcr != null)
+                changes.record(mcr, lastDeployTime);
+            
+            setStatusDistributeCompleted(NbBundle.getMessage(
+                ServerFileDistributor.class, "MSG_DoneIncrementalDeploy", targetModule));
+            
+        } catch (Exception e) {
+            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.getMessage());
+            setStatusDistributeFailed(e.getMessage());
+            return null;
         }
-        //PENDING: whether ordering of copying matters
-        changes.record(_distribute(rootModuleFiles, targetModule.delegate(), null, lastDeployTime));
-        if (mcr != null)
-            changes.record(mcr, lastDeployTime);
-        setStatusDistributeCompleted(NbBundle.getMessage(
-        ServerFileDistributor.class, "MSG_DoneIncrementalDeploy", targetModule));
         return changes;
     }
     
-    public AppChanges _test_distribute(Iterator source, TargetModuleID target, long lastDeployTime) {
-        return _distribute(source, target, null, lastDeployTime);
+    public AppChanges _test_distribute(Iterator source, File destDir, TargetModuleID target, long lastDeployTime) throws IOException {
+        return _distribute(source, destDir, target, null, lastDeployTime);
     }
-    private AppChanges _distribute(Iterator source, TargetModuleID target, String moduleUrl, long lastDeployTime) {
+    
+    private AppChanges _distribute(TargetModuleID target,  long lastDeployTime) throws IOException {
+        AppChanges mc = createModuleChangeDescriptor(target);
+        setStatusDistributeRunning(NbBundle.getMessage(
+        ServerFileDistributor.class, "MSG_RunningIncrementalDeploy", target));
+        
+        FileObject contentDir = null;
+        contentDir = getJ2eeModule(target).getContentDirectory();
+        
+        //System.out.println("In-place deployment at: "+FileUtil.toFile(contentDir));
+        
+        Enumeration contentFiles = contentDir.getChildren(true);
+        Date lastDeployed = new Date(lastDeployTime);
+        int beginIndex = contentDir.getPath().length();
+        
+        while (contentFiles.hasMoreElements()) {
+            FileObject file = (FileObject) contentFiles.nextElement();
+            if (file.isFolder())
+                continue;
+            if (file.lastModified().after(lastDeployed)) {
+                String relativePath = file.getPath().substring(beginIndex);
+                //System.out.println("Changed: "+relativePath);
+                //System.out.println("lastDeployTime="+lastDeployTime+" lastModified="+file.lastModified().getTime());
+                mc.record(relativePath);
+            }
+            
+        }
+
+        return mc;
+    }
+    
+    private AppChanges _distribute(Iterator source, File destDir, TargetModuleID target, String moduleUrl, long lastDeployTime) throws IOException {
         AppChanges mc = createModuleChangeDescriptor(target);
         if (source == null) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "There is no contents for "+target); //NOI18N
-            return mc;
+            ErrorManager.getDefault().log(ErrorManager.ERROR, "There is no contents for "+target); //NOI18N
+            throw new IOException(NbBundle.getMessage(ServerFileDistributor.class, "MSG_NoContents", target));
         }
         setStatusDistributeRunning(NbBundle.getMessage(
         ServerFileDistributor.class, "MSG_RunningIncrementalDeploy", target));
@@ -137,33 +194,33 @@ public class ServerFileDistributor extends ServerProgress {
             //get relative-path-key map from FDL
             File dir = incremental.getDirectoryForModule(target);
             //System.out.println("Distributing files for "+target+" to "+dir);
-            dir.mkdirs();
-            File parent = dir.getParentFile();
+            destDir.mkdirs();
+            File parent = destDir.getParentFile();
             lfs = new LocalFileSystem();
             lfs.setRootDirectory(parent);
             Repository.getDefault().addFileSystem(lfs);
-            FileObject destRoot = lfs.findResource(dir.getName());
+            FileObject destRoot = lfs.findResource(destDir.getName());
             //System.out.println("destRoot="+destRoot.getPath());
             
             // create target FOs map keyed by relative paths
-            java.util.Enumeration destFiles = destRoot.getChildren (true);
+            java.util.Enumeration destFiles = destRoot.getChildren(true);
             Map destMap = new HashMap();
-            int rootPathLen = destRoot.getPath ().length ();
-            for (; destFiles.hasMoreElements (); ) {
-                FileObject destFO = (FileObject) destFiles.nextElement ();
+            int rootPathLen = destRoot.getPath().length();
+            for (; destFiles.hasMoreElements(); ) {
+                FileObject destFO = (FileObject) destFiles.nextElement();
                 //System.out.println("Dest : relpath="+relPaths[0]+" file="+files[0]);
-                destMap.put(destFO.getPath ().substring (rootPathLen + 1), destFO);
+                destMap.put(destFO.getPath().substring(rootPathLen + 1), destFO);
             }
             
             // iterate through source changes
             for (Iterator j=source; j.hasNext();) {
                 J2eeModule.RootedEntry entry = (J2eeModule.RootedEntry) j.next();
                 String relativePath = entry.getRelativePath();
-                FileObject sourceFO = entry.getFileObject ();
+                FileObject sourceFO = entry.getFileObject();
                 FileObject targetFO = (FileObject) destMap.get(relativePath);
                 FileObject destFolder;
-                if (sourceFO.isFolder ()) {
-                    destMap.remove (relativePath);
+                if (sourceFO.isFolder()) {
+                    destMap.remove(relativePath);
                     System.out.println("entering folder:"+relativePath);
                     continue;
                 }
@@ -196,7 +253,7 @@ public class ServerFileDistributor extends ServerProgress {
                 FileObject removedFO = (FileObject)destMap.remove(rPaths[n]);
                 System.out.println("Sparing plan file: "+rPaths[n]+" removedFO="+removedFO);
             }
-
+             
             // Cleanup destination
             for (Iterator k=destMap.values().iterator(); k.hasNext();) {
                 FileObject remainingFO = (FileObject) k.next();
@@ -219,7 +276,7 @@ public class ServerFileDistributor extends ServerProgress {
                 if (! paths[n].exists() || paths[n].lastModified() < configFile.lastModified())
                     mc.record(rPaths[n]);
             }
-
+            
             if (mc.serverDescriptorChanged()) {
                 DeploymentConfigurationProvider dcp = dtarget.getDeploymentConfigurationProvider();
                 DeploymentConfiguration config = dcp.getDeploymentConfiguration();
@@ -253,7 +310,7 @@ public class ServerFileDistributor extends ServerProgress {
      */
     public static FileObject findOrCreateParentFolder(FileObject dest, String relativePath) throws IOException {
         File parentRelativePath = (new File(relativePath)).getParentFile();
-        if (parentRelativePath == null) 
+        if (parentRelativePath == null)
             return dest;
         
         FileObject folder = dest.getFileSystem().findResource(parentRelativePath.getPath());
@@ -272,9 +329,9 @@ public class ServerFileDistributor extends ServerProgress {
         notify(createFailedProgressEvent(CommandType.DISTRIBUTE, message));
     }
     private void setStatusDistributeCompleted(String message) {
-        notify(createCompletedProgressEvent(CommandType.DISTRIBUTE, message)); 
+        notify(createCompletedProgressEvent(CommandType.DISTRIBUTE, message));
     }
-
+    
     
     static class AppChanges implements AppChangeDescriptor {
         
@@ -305,7 +362,7 @@ public class ServerFileDistributor extends ServerProgress {
         }
         
         private void record(String relativePath) {
-            if (! classesChanged && relativePath.endsWith(".class")) { //NOI18N
+            if (! classesChanged && (relativePath.endsWith(".class") || relativePath.endsWith(".jsp") || relativePath.endsWith(".java"))) { //NOI18N
                 classesChanged = true;
                 return;
             }
@@ -321,13 +378,11 @@ public class ServerFileDistributor extends ServerProgress {
             }
         }
         private void record(ModuleChangeReporter mcr, long since) {
-            if (! ejbsChanged) {
-                EjbChangeDescriptor ecd = mcr.getEjbChanges(since);
-                ejbsChanged = ecd.ejbsChanged();
-                String[] ejbs = ecd.getChangedEjbs();
-                if (ejbs != null && ejbs.length > 0)
-                    changedEjbs.addAll(Arrays.asList(ejbs));
-            }
+            EjbChangeDescriptor ecd = mcr.getEjbChanges(since);
+            ejbsChanged = ecd.ejbsChanged();
+            String[] ejbs = ecd.getChangedEjbs();
+            if (ejbs != null && ejbs.length > 0)
+                changedEjbs.addAll(Arrays.asList(ejbs));
             if (! manifestChanged)
                 manifestChanged = mcr.isManifestChanged(since);
         }

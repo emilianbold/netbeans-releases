@@ -201,14 +201,6 @@ public class TargetServer {
                     j.remove();
                 }
             }
-        } else { // make sure getDirectoryForModule return non-null directory for incremental
-            for (Iterator k=toRedeploy.iterator(); k.hasNext();) {
-                TargetModule tm = (TargetModule) k.next();
-                if (incremental.getDirectoryForModule(tm.delegate()) == null) {
-                    incremental = null;
-                    break;
-                }
-            }
         }
 
         redeployTargetModules = (TargetModule[]) toRedeploy.toArray(new TargetModule[toRedeploy.size()]);
@@ -312,13 +304,16 @@ public class TargetServer {
         public void handleProgressEvent(ProgressEvent progressEvent) {
             StateType state = progressEvent.getDeploymentStatus().getState();
             if (state == StateType.COMPLETED) {
-            System.err.println("nam IncrementalEventHandler.handleProgressEvent state= " + state);
                 TargetModuleID[] modules = po.getResultTargetModuleIDs();
                 saveRootTargetModules(modules);
+                if (po != null)
+                    po.removeProgressListener(this);
                 po = null;
                 wakeUp();
             }
             else if (state == StateType.FAILED) {
+                if (po != null)
+                    po.removeProgressListener(this);
                 po = null;
                 wakeUp();
             }
