@@ -28,6 +28,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="template" boolvalue="true" />
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/dbschema/jdbcimpl/resources/DBSchema.html" />
          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.dbschema.jdbcimpl.wizard.DBSchemaWizardIterator.singleton" />
+         <attr name="templateCategory" stringvalue="web-types,ejb-types"/>
       </file>
       <attr name="Database Schema.dbschema/JDBC Form Wizard.java" boolvalue="true"/>
     </folder>
