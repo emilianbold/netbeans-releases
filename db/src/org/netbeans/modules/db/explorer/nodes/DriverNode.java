@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,13 +15,16 @@ package org.netbeans.modules.db.explorer.nodes;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.openide.util.RequestProcessor;
 
 public class DriverNode extends LeafNode implements PropertyChangeListener {
+    
     public void setInfo(DatabaseNodeInfo info) {
         super.setInfo(info);
         DatabaseDriver drv = (DatabaseDriver)info.get(DatabaseNodeInfo.DBDRIVER);
@@ -46,6 +49,17 @@ public class DriverNode extends LeafNode implements PropertyChangeListener {
     
     public String getShortDescription() {
         return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_Driver"); //NOI18N
+    }
+
+    public void destroy() throws IOException {
+        getInfo().delete();
+        DatabaseNodeInfo parent = getInfo().getParent();
+        super.destroy();
+        try{
+            parent.refreshChildren();
+        } catch (Exception ex){
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+        }
     }
 
 }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -58,6 +58,7 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
     private JDBCDriverConvertor() {}
 
     public static JDBCDriverConvertor createProvider(FileObject reg) {
+        fo = reg;
         return new JDBCDriverConvertor();
     }
     
@@ -68,6 +69,7 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
     InstanceContent cookies = new InstanceContent();
     
     XMLDataObject holder;
+    static FileObject fo;
     
     Lookup lookup;
     
@@ -101,6 +103,8 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
             H handler = new H();
             try {
                 XMLReader reader = XMLUtil.createXMLReader();
+                if (holder == null)
+                    holder = (XMLDataObject) DataObject.find(fo);
                 InputSource is = new org.xml.sax.InputSource(holder.getPrimaryFile().getInputStream());
                 is.setSystemId(holder.getPrimaryFile().getPackageNameExt('/', '.'));
                 reader.setContentHandler(handler);
