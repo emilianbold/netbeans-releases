@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/* $Id$ */
-
 package org.netbeans.modules.form.layoutsupport;
 
 import java.awt.*;
@@ -136,13 +134,17 @@ public abstract class AbstractLayoutSupport implements LayoutSupport
         return null;
     }
 
-    public int getNewIndex(Container cont, Point posInCont,
-                           Component comp, Point posInComp) {
-        return -1;
+    public int getNewIndex(Container container,
+                           Point posInCont,
+                           Component component,
+                           Point posInComp) {
+        return container.getComponentCount();
     }
 
-    public boolean paintDragFeedback(Container cont, Point posInCont,
-                                     Component comp, Point posInComp,
+    public boolean paintDragFeedback(Container container,
+                                     Component component,
+                                     ConstraintsDesc newConstraints,
+                                     int newIndex,
                                      Graphics g) {
         return false;
     }

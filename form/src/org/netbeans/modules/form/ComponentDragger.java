@@ -17,6 +17,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
 import javax.swing.*;
+import java.util.*;
+import java.util.List;
 
 import org.netbeans.modules.form.layoutsupport.*;
 
@@ -42,10 +44,6 @@ class ComponentDragger
         this.selectedComponents = selectedComponents;
         this.hotspot = hotspot;
         this.mousePosition = hotspot;
-
-        if (System.getProperty("netbeans.form.dnd") == null) { // NOI18N
-            this.selectedComponents = new RADVisualComponent[0];
-        }
     }
 
     void mouseDragged(Point p) {
@@ -68,50 +66,125 @@ class ComponentDragger
         Container cont = metacont.getContainerDelegate(comp);
 
         FormModel model = formDesigner.getModel();
-        LayoutSupport.ConstraintsDesc constraints[] =
-            new LayoutSupport.ConstraintsDesc[selectedComponents.length];
         int indices[] = new int[selectedComponents.length];
 
         Point posInCont = SwingUtilities.convertPoint(handleLayer, point, cont);
 
         for (int i = 0; i < selectedComponents.length; i++) {
             RADVisualComponent metacomp = selectedComponents[i];
+
+            if (metacomp == metacont
+                || (metacomp instanceof RADVisualContainer
+                    && ((RADVisualContainer)metacomp).isAncestorOf(metacont))
+                ) {
+                selectedComponents[i] = null;
+                continue;
+            }
+                
             Component component = (Component) formDesigner.getComponent(metacomp);
             Point posInComp = SwingUtilities.convertPoint(handleLayer,
                                                           hotspot,
                                                           component);
             indices[i] = layoutSupport.getNewIndex(
                 cont, posInCont, component, posInComp);
-            constraints[i] = layoutSupport.getNewConstraints(
-                cont, posInCont, component, posInComp);
         }
 
         for (int i = 0; i < selectedComponents.length; i++) {
             RADVisualComponent metacomp = selectedComponents[i];
-            Component component = (Component) formDesigner.getComponent(metacomp);
-            if (component.getParent() != cont)
+            if (metacomp == null)
                 continue;
-            if (indices[i] < 0 && constraints[i] == null) {
+            
+            Component component = (Component) formDesigner.getComponent(metacomp);
+            if (component == null || component.getParent() != cont)
+                continue;
+
+            Point posInComp = SwingUtilities.convertPoint(handleLayer,
+                                                          hotspot,
+                                                          component);
+            
+            LayoutSupport.ConstraintsDesc constr =
+                layoutSupport.getNewConstraints(cont, posInCont, component, posInComp);
+            
+            if (indices[i] < 0 && constr== null) {
                 selectedComponents[i] = null;
+            }
+        }
+
+        Component[] components = cont.getComponents();
+        LinkedList newComponents = new LinkedList();
+        LinkedList constraints = new LinkedList();
+        
+        for (int i = 0; i < components.length; i++) {
+            RADComponent metacomp = formDesigner.getMetaComponent(components[i]);
+            if (metacomp instanceof RADVisualComponent) {
+                newComponents.add(metacomp);
+                constraints.add(((RADVisualComponent)metacomp).getConstraintsDesc(
+                                    layoutSupport.getClass()));
             }
         }
         
         for (int i = 0; i < selectedComponents.length; i++) {
             RADVisualComponent metacomp = selectedComponents[i];
             if (metacomp == null)
-                return;
+                continue;
             
-            model.removeComponent(metacomp);
+            int newindex = indices[i];
+            int oldindex = newComponents.indexOf(metacomp);
+            if (oldindex >= 0) {
+                newComponents.remove(metacomp);
+                if (oldindex < newindex) {
+                    newindex--;
+                }
+            }
+            if ( newindex < 0 || newindex >= components.length) {
+                newComponents.add(metacomp);
+            }
+            else {
+                if (newindex >= newComponents.size())
+                    newComponents.add(metacomp);
+                else
+                    newComponents.add(newindex, metacomp);
+            }
+            Component component = (Component) formDesigner.getComponent(metacomp);
+            Point posInComp = SwingUtilities.convertPoint(handleLayer,
+                                                          hotspot,
+                                                          component);
+
+            LayoutSupport.ConstraintsDesc constr =
+                layoutSupport.getNewConstraints(cont, posInCont, component, posInComp);
+            constraints.add(constr);
+        }
+        
+        int start = 0;
+        for (int i = 0; i < newComponents.size() && i < components.length; i++) {
+            if (newComponents.get(i) != components[i]) {
+                start = i;
+                break;
+            }
         }
 
-        for (int i = 0; i < selectedComponents.length; i++) {
-            RADVisualComponent metacomp = selectedComponents[i];
-            if (metacomp == null)
-                return;
+        List oldSelectedComponents = formDesigner.getSelectedComponents();
+        
+        for (int i = start; i < newComponents.size(); i++) {
+            RADComponent metacomp = (RADComponent) newComponents.get(i);
+            model.removeComponent(metacomp);
+        }
             
+        for (int i = start; i < newComponents.size(); i++) {
+            RADVisualComponent metacomp = (RADVisualComponent) newComponents.get(i);
             LayoutSupport.ConstraintsDesc constr =
-                layoutSupport.fixConstraints(constraints[i]);
+                (LayoutSupport.ConstraintsDesc) constraints.get(i);
+            if (constr != null) {
+                constr = layoutSupport.fixConstraints(constr);
+            }
             model.addVisualComponent(metacomp, metacont, constr);
+        }
+
+        formDesigner.clearSelection();
+        Iterator iter = oldSelectedComponents.iterator();
+        while (iter.hasNext()) {
+            formDesigner.addComponentToSelection(
+                (RADComponent) iter.next());
         }
     }
 
@@ -152,21 +225,29 @@ class ComponentDragger
             if (!(formDesigner.getComponent(metacomp) instanceof Component))
                 continue;
             
-            if (layoutSupport != null) {
+            if (metacomp != metacont && layoutSupport != null) {
                 Component component = (Component) formDesigner.getComponent(metacomp);
                 Point posInComp = SwingUtilities.convertPoint(handleLayer,
                                                               hotspot,
                                                               component);
-                g.translate(contPos.x, contPos.y);
-                boolean drawn = layoutSupport.paintDragFeedback(
-                    cont, posInCont, component, posInComp, g);
-                g.translate(- contPos.x, - contPos.y);
-                if (drawn)
-                    continue;
+                
+                int newIndex = layoutSupport.getNewIndex(
+                    cont, posInCont, component, posInComp);
+                LayoutSupport.ConstraintsDesc newConstraints =
+                    layoutSupport.getNewConstraints(
+                        cont, posInCont, component, posInComp);
+                
+                if (newIndex >= 0 || newConstraints != null) {
+                    g.translate(contPos.x, contPos.y);
+                    boolean drawn = layoutSupport.paintDragFeedback(
+                        cont, component, newConstraints, newIndex, g);
+                    g.translate(- contPos.x, - contPos.y);
+                    if (drawn)
+                        continue;
+                }
             }
             paintDragFeedback(g, metacomp);
         }
-        
         
         g.setColor(oldColor);
         g.setStroke(oldStroke);
