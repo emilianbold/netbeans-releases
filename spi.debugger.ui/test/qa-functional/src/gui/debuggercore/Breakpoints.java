@@ -26,6 +26,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
@@ -56,6 +57,7 @@ public class Breakpoints extends JellyTestCase {
         suite.addTest(new Breakpoints("testMethodBreakpointCreation"));
         suite.addTest(new Breakpoints("testMethodBreakpointFunctionalityInPrimaryClass"));
         suite.addTest(new Breakpoints("testMethodBreakpointFunctionalityInSecondClass"));
+        suite.addTest(new Breakpoints("testMethodBreakpointFunctionalityOnAllMethods"));
         suite.addTest(new Breakpoints("testClassBreakpointPrefilledInClass"));
         suite.addTest(new Breakpoints("testClassBreakpointPrefilledInInitializer"));
         suite.addTest(new Breakpoints("testClassBreakpointPrefilledInConstructor"));
@@ -83,16 +85,18 @@ public class Breakpoints extends JellyTestCase {
     
     /** setUp method  */
     public void setUp() {
-        Utilities.sleep(1000);
         System.out.println("########  " + getName() + "  #######");
     }
     
     /** tearDown method */
     public void tearDown() {
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
         Utilities.deleteAllBreakpoints();
     }
     
     public void setupBreakpointsTests() {
+        Utilities.sleep(1000);
         Node projectNode = new Node(new JTreeOperator(new ProjectsTabOperator()), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction(Utilities.setMainProjectAction);
@@ -101,14 +105,14 @@ public class Breakpoints extends JellyTestCase {
         javaNode.select();
         javaNode.performPopupAction(Utilities.openSourceAction);
         
+        new Action(null, null, Utilities.buildProjectShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText(Utilities.buildCompleteStatusBarText);
+
         Utilities.showBreakpointsView();
     }
     
     public void testLineBreakpointCreation() {
-        new EditorOperator("MemoryView.java").setCaretPosition(73, 1);
-        Utilities.sleep(2000);
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
-        new Action(null, null, Utilities.toggleBreakpointShortcut).performShortcut();
+        Utilities.toggleBreakpoint(73);
         Utilities.sleep(1000);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         if (!"Line MemoryView.java:73".equals(jTableOperator.getValueAt(0, 0).toString()) )
@@ -116,103 +120,60 @@ public class Breakpoints extends JellyTestCase {
     }
     
     public void testLineBreakpointFunctionality() {
-        new EditorOperator("MemoryView.java").setCaretPosition(73, 1);
-        Utilities.sleep(2000);
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
-        new Action(null, null, Utilities.toggleBreakpointShortcut).performShortcut();
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
-        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Breakpoint hit at line 73 in class examples.advanced.MemoryView by thread main.");
+        Utilities.toggleBreakpoint(73);
+        Utilities.startDebugger("Breakpoint hit at line 73 in class examples.advanced.MemoryView by thread main.");
     }
     
     public void testLineBreakpointFunctionalityAfterContinue() {
-        new EditorOperator("MemoryView.java").setCaretPosition(91, 1);
-        Utilities.sleep(2000);
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
-        new Action(null, null, Utilities.toggleBreakpointShortcut).performShortcut();
+        Utilities.toggleBreakpoint(73);
+        Utilities.startDebugger("Breakpoint hit at line 73 in class examples.advanced.MemoryView by thread main.");
+        Utilities.toggleBreakpoint(91);
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
         new Action(null, null, Utilities.continueShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText("Breakpoint hit at line 91 in class examples.advanced.MemoryView by thread main.");
-        
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
     }
     
     public void testLineBreakpointFunctionalityInStaticMethod() {
-        new EditorOperator("MemoryView.java").setCaretPosition(107, 1);
-        Utilities.sleep(2000);
-        new Action(null, null, Utilities.toggleBreakpointShortcut).performShortcut();
-        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Breakpoint hit at line 107 in class examples.advanced.MemoryView by thread main.");
+        Utilities.toggleBreakpoint(107);
+        Utilities.startDebugger("Breakpoint hit at line 107 in class examples.advanced.MemoryView by thread main.");
     }
     
     public void testLineBreakpointFunctionalityInInitializer() {
-        new EditorOperator("MemoryView.java").setCaretPosition(38, 1);
-        Utilities.sleep(2000);
-        new Action(null, null, Utilities.toggleBreakpointShortcut).performShortcut();
-        new Action(null, null, Utilities.continueShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Breakpoint hit at line 38 in class examples.advanced.MemoryView by thread main.");
+        Utilities.toggleBreakpoint(38);
+        Utilities.startDebugger("Breakpoint hit at line 38 in class examples.advanced.MemoryView by thread main.");
     }
     
     public void testLineBreakpointFunctionalityInConstructor() {
-        new EditorOperator("MemoryView.java").setCaretPosition(45, 1);
-        Utilities.sleep(2000);
-        new Action(null, null, Utilities.toggleBreakpointShortcut).performShortcut();
-        new Action(null, null, Utilities.continueShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Breakpoint hit at line 45 in class examples.advanced.MemoryView by thread main.");
+        Utilities.toggleBreakpoint(45);
+        Utilities.startDebugger("Breakpoint hit at line 45 in class examples.advanced.MemoryView by thread main.");
     }
     
     public void testLineBreakpointFunctionalityInInnerClass() {
-        new EditorOperator("MemoryView.java").setCaretPosition(116, 1);
-        Utilities.sleep(2000);
-        new Action(null, null, Utilities.toggleBreakpointShortcut).performShortcut();
-        new Action(null, null, Utilities.continueShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Breakpoint hit at line 116 in class examples.advanced.MemoryView$1 by thread Thread-0.");
+        Utilities.toggleBreakpoint(116);
+        Utilities.startDebugger("Breakpoint hit at line 116 in class examples.advanced.MemoryView$1 by thread Thread-0.");
     }
     
     public void testLineBreakpointFunctionalityInSecondaryClass() {
-        new EditorOperator("MemoryView.java").setCaretPosition(147, 1);
-        Utilities.sleep(2000);
-        new Action(null, null, Utilities.toggleBreakpointShortcut).performShortcut();
-        new Action(null, null, Utilities.continueShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Breakpoint hit at line 147 in class examples.advanced.Helper by thread main.");
-        
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
+        Utilities.toggleBreakpoint(147);
+        Utilities.startDebugger("Breakpoint hit at line 147 in class examples.advanced.Helper by thread main.");
     }
     
     public void testConditionalLineBreakpointFunctionality() {
-        new EditorOperator("MemoryView.java").setCaretPosition(62, 1);
-        Utilities.sleep(2000);
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
-        new Action(null, null, Utilities.toggleBreakpointShortcut).performShortcut();
+        Utilities.toggleBreakpoint(62);
         Utilities.sleep(1000);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         if ("Line MemoryView.java:62".equals(jTableOperator.getValueAt(0, 0).toString()) ) {
             new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenuNoBlock("Customize");
-            Utilities.sleep(1000);
             NbDialogOperator dialog = new NbDialogOperator("Customize Breakpoint");
             new JTextFieldOperator(dialog, 0).setText("i > 10");
             dialog.ok();
         } else
             assertTrue("Line breakpoint was not created.", false);
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
-        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:62.");
-        
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
+        Utilities.startDebugger("Thread main stopped at MemoryView.java:62.");
     }
 
     public void testMethodBreakpointPrefilledConstructor() {
-        new EditorOperator("MemoryView.java").setCaretPosition(45, 1);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(45, 1);
         new JComboBoxOperator(dialog, 0).selectItem("Method");
         Utilities.sleep(1000);
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 1).getText()));
@@ -222,12 +183,7 @@ public class Breakpoints extends JellyTestCase {
     }
     
     public void testMethodBreakpointPrefilledInitializer() {
-        new EditorOperator("MemoryView.java").setCaretPosition(38, 1);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(38, 1);
         new JComboBoxOperator(dialog, 0).selectItem("Method");
         Utilities.sleep(1000);
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 1).getText()));
@@ -237,11 +193,7 @@ public class Breakpoints extends JellyTestCase {
     }
     
     public void testMethodBreakpointPrefilledMethod() {
-        new EditorOperator("MemoryView.java").setCaretPosition(89, 1);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        NbDialogOperator dialog = Utilities.newBreakpoint(89, 1);
         Utilities.sleep(1000);
         new JComboBoxOperator(dialog, 0).selectItem("Method");
         Utilities.sleep(1000);
@@ -252,65 +204,65 @@ public class Breakpoints extends JellyTestCase {
     }
     
     public void testMethodBreakpointCreation() {
-        new EditorOperator("MemoryView.java").setCaretPosition(89, 1);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(89, 1);
         new JComboBoxOperator(dialog, 0).selectItem("Method");
         Utilities.sleep(1000);
         dialog.ok();
+        Utilities.sleep(1000);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         if (!"Method MemoryView.updateStatus".equals(jTableOperator.getValueAt(0, 0).toString()) )
             assertTrue("Method breakpoint was not created.", false);
     }
 
     public void testMethodBreakpointFunctionalityInPrimaryClass() {
-        new EditorOperator("MemoryView.java").setCaretPosition(89, 1);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(89, 1);
         new JComboBoxOperator(dialog, 0).selectItem("Method");
         Utilities.sleep(1000);
         dialog.ok();
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
-        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Method breakpoint hit in examples.advanced.MemoryView.updateStatus at line 86 by thread main.");
-
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("User program finished");
+        Utilities.startDebugger("Method breakpoint hit in examples.advanced.MemoryView.updateStatus at line 86 by thread main.");
     }
     
     public void testMethodBreakpointFunctionalityInSecondClass() {
-        new EditorOperator("MemoryView.java").setCaretPosition(147, 1);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(147, 1);
         new JComboBoxOperator(dialog, 0).selectItem("Method");
         Utilities.sleep(1000);
         dialog.ok();
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
-        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Method breakpoint hit in examples.advanced.Helper.test at line 147 by thread main.");
-
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("User program finished");
+        Utilities.startDebugger("Method breakpoint hit in examples.advanced.Helper.test at line 147 by thread main.");
+    }
+    
+    public void testMethodBreakpointFunctionalityOnAllMethods() {
+        NbDialogOperator dialog = Utilities.newBreakpoint(77, 1);
+        new JComboBoxOperator(dialog, 0).selectItem("Method");
+        Utilities.sleep(1000);
+        new JCheckBoxOperator(dialog, 1).setSelected(true);
+        Utilities.sleep(1000);
+        dialog.ok();
+        Utilities.startDebugger("Method breakpoint hit in examples.advanced.MemoryView.<clinit> at line 33 by thread main.");
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
+        new Action(null, null, Utilities.continueShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText("Method breakpoint hit in examples.advanced.MemoryView.main at line 107 by thread main.");
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
+        new Action(null, null, Utilities.continueShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText("Method breakpoint hit in examples.advanced.MemoryView.<init> at line 44 by thread main.");
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
+        new Action(null, null, Utilities.continueShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText("Method breakpoint hit in examples.advanced.MemoryView.class$ at line 45 by thread main.");
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
+        new Action(null, null, Utilities.continueShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText("Method breakpoint hit in examples.advanced.MemoryView.inner at line 114 by thread main.");
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
+        new Action(null, null, Utilities.continueShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText("Method breakpoint hit in examples.advanced.MemoryView.updateConsumption at line 73 by thread main.");
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
+        new Action(null, null, Utilities.continueShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText("Method breakpoint hit in examples.advanced.MemoryView.updateStatus at line 86 by thread main.");
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
+        new Action(null, null, Utilities.continueShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText("Method breakpoint hit in examples.advanced.MemoryView.updateStatus at line 86 by thread main.");
     }
 
     public void testClassBreakpointPrefilledInClass() {
-        new EditorOperator("MemoryView.java").setCaretPosition(27, 1);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(27, 1);
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         Utilities.sleep(1000);
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 0).getText()));
@@ -319,12 +271,7 @@ public class Breakpoints extends JellyTestCase {
     }
         
     public void testClassBreakpointPrefilledInInitializer() {
-        new EditorOperator("MemoryView.java").setCaretPosition(38, 1);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(38, 1);
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         Utilities.sleep(1000);
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 0).getText()));
@@ -333,12 +280,7 @@ public class Breakpoints extends JellyTestCase {
     }
 
     public void testClassBreakpointPrefilledInConstructor() {
-        new EditorOperator("MemoryView.java").setCaretPosition(45, 1);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(45, 1);
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         Utilities.sleep(1000);
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 0).getText()));
@@ -347,12 +289,7 @@ public class Breakpoints extends JellyTestCase {
     }
 
     public void testClassBreakpointPrefilledInMethod() {
-        new EditorOperator("MemoryView.java").setCaretPosition(73, 1);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(73, 1);
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         Utilities.sleep(1000);
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 0).getText()));
@@ -361,12 +298,7 @@ public class Breakpoints extends JellyTestCase {
     }
 
     public void testClassBreakpointPrefilledInSecondClass() {
-        new EditorOperator("MemoryView.java").setCaretPosition(137, 1);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(137, 1);
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         Utilities.sleep(1000);
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 0).getText()));
@@ -375,78 +307,45 @@ public class Breakpoints extends JellyTestCase {
     }
     
     public void testClassBreakpointCreation() {
-        new EditorOperator("MemoryView.java").setCaretPosition(73, 1);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(73, 1);
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         Utilities.sleep(1000);
         dialog.ok();
+        Utilities.sleep(1000);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         if (!"Class MemoryView prepare / unload".equals(jTableOperator.getValueAt(0, 0).toString()) )
             assertTrue("Class breakpoint was not created.", false);
     }
 
     public void testClassBreakpointFunctionalityOnPrimaryClass() {
-        new EditorOperator("MemoryView.java").setCaretPosition(73, 1);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(73, 1);
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         Utilities.sleep(1000);
         dialog.ok();
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
-        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Class breakpoint hit for class examples.advanced.MemoryView");
+        Utilities.startDebugger("Class breakpoint hit for class examples.advanced.MemoryView");
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
         new Action(null, null, Utilities.continueShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText(Utilities.runningStatusBarText);
-        
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
     }
     
     public void testClassBreakpointFunctionalityOnSecondClass() {
-        new EditorOperator("MemoryView.java").setCaretPosition(147, 1);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(147, 1);
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         Utilities.sleep(1000);
         dialog.ok();
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
-        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Class breakpoint hit for class examples.advanced.Helper");
+        Utilities.startDebugger("Class breakpoint hit for class examples.advanced.Helper");
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
         new Action(null, null, Utilities.continueShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText(Utilities.runningStatusBarText);
-        
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
     }
     
     public void testClassBreakpointFunctionalityWithFilter() {
-        new EditorOperator("MemoryView.java").setCaretPosition(73, 1);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(73, 1);
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         Utilities.sleep(1000);
         new JTextFieldOperator(dialog, 1).setText("*");
         dialog.ok();
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
-        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Class breakpoint hit for class examples.advanced.Helper.");
+        Utilities.startDebugger("Class breakpoint hit for class examples.advanced.Helper.");
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
         new Action(null, null, Utilities.continueShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText("Class breakpoint hit for class examples.advanced.MemoryView.");
@@ -456,19 +355,10 @@ public class Breakpoints extends JellyTestCase {
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
         new Action(null, null, Utilities.continueShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText(Utilities.runningStatusBarText);
-        
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
     }
     
     public void testVariableBreakpointPrefilledValues() {
-        new EditorOperator("MemoryView.java").setCaretPosition(35, 19);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(35, 19);
         new JComboBoxOperator(dialog, 0).selectItem("Variable");
         Utilities.sleep(1000);
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 1).getText()));
@@ -478,12 +368,7 @@ public class Breakpoints extends JellyTestCase {
     }
     
     public void testVariableBreakpointCreation() {
-        new EditorOperator("MemoryView.java").setCaretPosition(35, 19);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(35, 19);
         new JComboBoxOperator(dialog, 0).selectItem("Variable");
         Utilities.sleep(1000);
         new JComboBoxOperator(dialog, 1).selectItem("Variable Access");
@@ -494,53 +379,31 @@ public class Breakpoints extends JellyTestCase {
     }
     
     public void testVariableBreakpointFunctionalityAccess() {
-        new EditorOperator("MemoryView.java").setCaretPosition(30, 34);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(30, 34);
         new JComboBoxOperator(dialog, 0).selectItem("Variable");
         Utilities.sleep(1000);
         new JComboBoxOperator(dialog, 1).selectItem("Variable Access");
         dialog.ok();
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
-        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Field breakpoint hit at line 98 in class examples.advanced.MemoryView by thread main.");
-
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
+        Utilities.startDebugger("Field breakpoint hit at line 98 in class examples.advanced.MemoryView by thread main.");
     }
     
     public void testVariableBreakpointFunctionalityModification() {
-        new EditorOperator("MemoryView.java").setCaretPosition(33, 24);
-        Utilities.sleep(2000);
-        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
-        new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
-        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
+        NbDialogOperator dialog = Utilities.newBreakpoint(33, 24);
         new JComboBoxOperator(dialog, 0).selectItem("Variable");
         Utilities.sleep(1000);
         new JComboBoxOperator(dialog, 1).selectItem("Variable Modification");
         dialog.ok();
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
-        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Field breakpoint hit at line 33 in class examples.advanced.MemoryView by thread main.");
-
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
+        Utilities.startDebugger("Field breakpoint hit at line 33 in class examples.advanced.MemoryView by thread main.");
     }
     
     public void testThreadBreakpointCreation() {
         //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
         new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
         new JComboBoxOperator(dialog, 0).selectItem("Thread");
         Utilities.sleep(1000);
         dialog.ok();
+        Utilities.sleep(1000);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         if (!"Thread started".equals(jTableOperator.getValueAt(0, 0).toString()) )
             assertTrue("Thread breakpoint was not created.", false);
@@ -550,13 +413,10 @@ public class Breakpoints extends JellyTestCase {
         //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
         new ActionNoBlock(null, null, Utilities.newBreakpointShortcut).performShortcut();
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
-        Utilities.sleep(1000);
         new JComboBoxOperator(dialog, 0).selectItem("Thread");
         Utilities.sleep(1000);
         dialog.ok();
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
-        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Thread breakpoint hit by thread Signal Dispatcher.");
+        Utilities.startDebugger("Thread breakpoint hit by thread Signal Dispatcher.");
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
         new Action(null, null, Utilities.continueShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText("Thread breakpoint hit by thread main.");
@@ -566,10 +426,6 @@ public class Breakpoints extends JellyTestCase {
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
         new Action(null, null, Utilities.continueShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText(Utilities.runningStatusBarText);
-
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
     }
         
     public void testExceptionBreakpointCreation() {
@@ -583,6 +439,7 @@ public class Breakpoints extends JellyTestCase {
         new JComboBoxOperator(dialog, 2).typeText("NullPointerException");
         new JComboBoxOperator(dialog, 1).selectItem("Caught or Uncaught");
         dialog.ok();
+        Utilities.sleep(1000);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         if (!"Exception NullPointerException".equals(jTableOperator.getValueAt(0, 0).toString()) )
             assertTrue("Thread breakpoint was not created.", false);
@@ -599,15 +456,9 @@ public class Breakpoints extends JellyTestCase {
         new JComboBoxOperator(dialog, 2).typeText("ClassNotFoundException");
         new JComboBoxOperator(dialog, 1).selectItem("Caught or Uncaught");
         dialog.ok();
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
-        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Exception breakpoint hit in java.lang.ClassLoader");
+        Utilities.startDebugger("Exception breakpoint hit in java.lang.ClassLoader");
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
         new Action(null, null, Utilities.continueShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText("Exception breakpoint hit in java.net.URLClassLoader$1");
-
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
     }
 }

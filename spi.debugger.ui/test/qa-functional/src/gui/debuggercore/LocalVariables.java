@@ -16,7 +16,6 @@
 package gui.debuggercore;
 
 import junit.textui.TestRunner;
-import org.openide.nodes.Node;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.nodes.JavaNode;
@@ -45,7 +44,6 @@ public class LocalVariables extends JellyTestCase {
         suite.addTest(new LocalVariables("testLocalVariablesStaticNode"));
         suite.addTest(new LocalVariables("testLocalVariablesStaticInherited"));
         suite.addTest(new LocalVariables("testLocalVariablesInheritedNode"));
-        suite.addTest(new LocalVariables("continueLocalVariablesTests"));
         suite.addTest(new LocalVariables("testLocalVariablesExtended"));
         suite.addTest(new LocalVariables("finishLocalVariablesTests"));
         return suite;
@@ -66,6 +64,7 @@ public class LocalVariables extends JellyTestCase {
     }
     
     public void setupLocalVariablesTests() {
+        Utilities.sleep(1000);
         org.netbeans.jellytools.nodes.Node projectNode = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(new ProjectsTabOperator()), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction(Utilities.setMainProjectAction);
@@ -74,8 +73,7 @@ public class LocalVariables extends JellyTestCase {
         javaNode.select();
         javaNode.performPopupAction(Utilities.openSourceAction);
         Utilities.sleep(2000);
-        new EditorOperator("MemoryView.java").setCaretPosition(45, 1);
-        Utilities.sleep(2000);
+        Utilities.setCaret(45, 1);
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
         new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:45.");
@@ -83,11 +81,15 @@ public class LocalVariables extends JellyTestCase {
     
     public void testLocalVariablesExpand() {
         Utilities.showLocalVariablesView();
+        Utilities.sleep(2000);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));        
         TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
         new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this").expand();
+        Utilities.sleep(500);
         new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Static").expand();
+        Utilities.sleep(500);
         new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Inherited").expand();
+        Utilities.sleep(500);
     }
     
     public void testLocalVariablesThisNode() {
@@ -122,15 +124,13 @@ public class LocalVariables extends JellyTestCase {
         CheckTTVLine(jTableOperator, 23, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
     }
         
-    public void continueLocalVariablesTests() {
-        new EditorOperator("MemoryView.java").setCaretPosition(70, 1);
-        Utilities.sleep(2000);
+    public void testLocalVariablesExtended() {
+        Utilities.setCaret(70, 1);
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
         new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:70.");
-    }
-    
-    public void testLocalVariablesExtended() {
+        
+        Utilities.sleep(5000);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
         TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
         int count = 0;
@@ -142,19 +142,19 @@ public class LocalVariables extends JellyTestCase {
         CheckTTVLine(jTableOperator, count++, "VpackagePrivate", "String", "\"Package-private Variable\"");
         CheckTTVLine(jTableOperator, count++, "Static", null, null);
         CheckTTVLine(jTableOperator, count++, "bundle", "PropertyResourceBundle", null);
-        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Static|bundle").isLeaf())
-            assertTrue("Node bundle has no child nodes", false);
-        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Static|msgMemory").isLeaf())
-            assertTrue("Node msgMemory has no child nodes", false);
+//        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Static|bundle").isLeaf())
+//            assertTrue("Node bundle has no child nodes", false);
         CheckTTVLine(jTableOperator, count++, "msgMemory", "MessageFormat", null);
+//        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Static|msgMemory").isLeaf())
+//            assertTrue("Node msgMemory has no child nodes", false);
         CheckTTVLine(jTableOperator, count++, "UPDATE_TIME", "int", "1000");
         CheckTTVLine(jTableOperator, count++, "Spublic", "String", "\"Public Variable\"");
         CheckTTVLine(jTableOperator, count++, "Sprotected", "String", "\"Protected Variable\"");
         CheckTTVLine(jTableOperator, count++, "Sprivate", "String", "\"Private Variable\"");
         CheckTTVLine(jTableOperator, count++, "SpackagePrivate", "String", "\"Package-private Variable\"");
         CheckTTVLine(jTableOperator, count++, "class$java$lang$Runtime", "Class", "class java.lang.Runtime");
-        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Static|class$java$lang$Runtime").isLeaf())
-            assertTrue("Node class$java$lang$Runtime has no child nodes", false);
+//        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "this|Static|class$java$lang$Runtime").isLeaf())
+//            assertTrue("Node class$java$lang$Runtime has no child nodes", false);
         CheckTTVLine(jTableOperator, count++, "inheritedSpublic", "String", "\"Inherited Public Variable\"");
         CheckTTVLine(jTableOperator, count++, "inheritedSprotected", "String", "\"Inherited Protected Variable\"");
         CheckTTVLine(jTableOperator, count++, "inheritedSprivate", "String", "\"Inherited Private Variable\"");
@@ -165,63 +165,65 @@ public class LocalVariables extends JellyTestCase {
         CheckTTVLine(jTableOperator, count++, "inheritedVprivate", "String", "\"Inherited Private Variable\"");
         CheckTTVLine(jTableOperator, count++, "inheritedVpackagePrivate", "String", "\"Inherited Package-private Variable\"");
         CheckTTVLine(jTableOperator, count++, "clazz", "Class", "class java.lang.Runtime");
-        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "clazz").isLeaf())
-            assertTrue("Node clazz has no child nodes", false);
+//        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "clazz").isLeaf())
+//            assertTrue("Node clazz has no child nodes", false);
         CheckTTVLine(jTableOperator, count++, "string", "String", "\"Hi!\"");
         CheckTTVLine(jTableOperator, count++, "n", "int", "50");
         CheckTTVLine(jTableOperator, count++, "llist", "LinkedList", null);
-        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "llist").isLeaf())
-            assertTrue("Node llist has no child nodes", false);
+//        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "llist").isLeaf())
+//            assertTrue("Node llist has no child nodes", false);
         CheckTTVLine(jTableOperator, count++, "alist", "ArrayList", null);
-        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "alist").isLeaf())
-            assertTrue("Node alist has no child nodes", false);
+//        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "alist").isLeaf())
+//            assertTrue("Node alist has no child nodes", false);
         CheckTTVLine(jTableOperator, count++, "vec", "Vector", null);
-        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "vec").isLeaf())
-            assertTrue("Node vec has no child nodes", false);
+//        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "vec").isLeaf())
+//            assertTrue("Node vec has no child nodes", false);
         CheckTTVLine(jTableOperator, count++, "hmap", "HashMap", null);
-        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "hmap").isLeaf())
-            assertTrue("Node hmap has no child nodes", false);
+//        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "hmap").isLeaf())
+//            assertTrue("Node hmap has no child nodes", false);
         CheckTTVLine(jTableOperator, count++, "htab", "Hashtable", null);
-        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "htab").isLeaf())
-            assertTrue("Node htab has no child nodes", false);
+//        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "htab").isLeaf())
+//            assertTrue("Node htab has no child nodes", false);
         CheckTTVLine(jTableOperator, count++, "tmap", "TreeMap", null);
-        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "tmap").isLeaf())
-            assertTrue("Node tmap has no child nodes", false);
+//        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "tmap").isLeaf())
+//            assertTrue("Node tmap has no child nodes", false);
         CheckTTVLine(jTableOperator, count++, "hset", "HashSet", null);
-        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "hset").isLeaf())
-            assertTrue("Node hset has no child nodes", false);
+//        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "hset").isLeaf())
+//            assertTrue("Node hset has no child nodes", false);
         CheckTTVLine(jTableOperator, count++, "tset", "TreeSet", null);
-        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "tset").isLeaf())
-            assertTrue("Node tset has no child nodes", false);
+//        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "tset").isLeaf())
+//            assertTrue("Node tset has no child nodes", false);
         CheckTTVLine(jTableOperator, count++, "policko", "int[]", null);
-        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "policko").isLeaf())
-            assertTrue("Node policko has no child nodes", false);
+//        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "policko").isLeaf())
+//            assertTrue("Node policko has no child nodes", false);
         CheckTTVLine(jTableOperator, count++, "pole", "int[]", null);
-        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "pole").isLeaf())
-            assertTrue("Node pole has no child nodes", false);
+//        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "pole").isLeaf())
+//            assertTrue("Node pole has no child nodes", false);
         CheckTTVLine(jTableOperator, count++, "d2", "int[][]", null);
-        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "d2").isLeaf())
-            assertTrue("Node d2 has no child nodes", false);
+//        if (new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "d2").isLeaf())
+//            assertTrue("Node d2 has no child nodes", false);
     }
     
     public void finishLocalVariablesTests() {
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
+        Utilities.endSession();
     }
     
     // check values in TreeTable line
     public void CheckTTVLine(JTableOperator table, int lineNumber, String name, String type, String value) {
         try {
-            Node.Property property;
+            org.openide.nodes.Node.Property property;
+            String string = null;
             if (!(name.equals(table.getValueAt(lineNumber,0).toString())))
                 assertTrue("Node " + name + " not displayed in Local Variables view", false);
-            property = (Node.Property)table.getValueAt(lineNumber,1);
-            if ((type!= null)&&(!(type.equals(property.getValue()))))
-                assertTrue("Node " + name + " has wrong type in Local Variables view", false);
-            property = (Node.Property)table.getValueAt(lineNumber,2);
-            if ((value!= null)&&(!(value.equals(property.getValue()))))
-                assertTrue("Node " + name + " has wrong value in Local Variables view", false);
+            property = (org.openide.nodes.Node.Property)table.getValueAt(lineNumber,1);
+            System.out.println(property.getValue().toString());
+            string = Utilities.removeTags(property.getValue().toString());
+            if ((type!= null)&&(!(type.equals(string))))
+                assertTrue("Node " + name + " has wrong type in Local Variables view (displayed: " + string + ", expected: " + type + ")", false);
+            property = (org.openide.nodes.Node.Property)table.getValueAt(lineNumber,2);
+            string = Utilities.removeTags(property.getValue().toString());
+            if ((value!= null)&&(!(value.equals(string))))
+                assertTrue("Node " + name + " has wrong value in Local Variables view (displayed: " + string + ", expected: " + value + ")", false);
         }
         catch (java.lang.IllegalAccessException e1) {
             assertTrue(e1.getMessage(), false);

@@ -19,6 +19,7 @@ import java.awt.event.KeyEvent;
 
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 
@@ -60,7 +61,8 @@ public class Utilities {
     
     public static String runningStatusBarText = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_running");
     public static String finishedStatusBarText = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_finished");
-
+    public static String buildCompleteStatusBarText = "Finished building";
+    
     public static String openSourceAction = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
     public static String setMainProjectAction = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
     public static String projectPropertiesAction = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_CustomizeProjectAction_Popup_Name");
@@ -77,11 +79,13 @@ public class Utilities {
     public static Action.Shortcut stepIntoShortcut = new Action.Shortcut(KeyEvent.VK_F7);
     public static Action.Shortcut continueShortcut = new Action.Shortcut(KeyEvent.VK_F5, KeyEvent.CTRL_MASK);
     public static Action.Shortcut killSessionShortcut = new Action.Shortcut(KeyEvent.VK_F5, KeyEvent.SHIFT_MASK);
+    public static Action.Shortcut buildProjectShortcut = new Action.Shortcut(KeyEvent.VK_F11);
     
     public Utilities() {}
     
     public static void deleteAllBreakpoints() {
         showBreakpointsView();
+        sleep(2000);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(breakpointsViewTitle));
         if (jTableOperator.getRowCount() > 0)
             new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenu("Delete All");
@@ -89,6 +93,7 @@ public class Utilities {
     
     public static void deleteAllWatches() {
         showWatchesView();
+        sleep(500);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(watchesViewTitle));
         if (jTableOperator.getRowCount() > 0)
             new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenu("Delete All");
@@ -96,11 +101,18 @@ public class Utilities {
     
     public static void closeZombieSessions() {
         MainWindowOperator mwo = MainWindowOperator.getDefault();
-        
         showSessionsView();
+        sleep(500);
         TopComponentOperator sessionsOper = new TopComponentOperator(sessionsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(sessionsOper);
         
+        for (int i = 0; i < jTableOperator.getRowCount(); i++) {
+            //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+            new Action(null, null, Utilities.killSessionShortcut).performShortcut();
+            Utilities.sleep(1000);
+        }
+        
+        jTableOperator = new JTableOperator(sessionsOper);            
         if (jTableOperator.getRowCount() > 0) {
             for (int i = 0; i < jTableOperator.getRowCount(); i++) {
                 jTableOperator.selectCell(i,0);
@@ -109,7 +121,6 @@ public class Utilities {
                 mwo.waitStatusText("User program finished");
             }
         }
-        
         sessionsOper.close();
     }
     
@@ -162,6 +173,57 @@ public class Utilities {
             Thread.sleep(ms);
         }
         catch (Exception ex) {};
+    }
+    
+    public static String removeTags(String in) {
+        String out = "";
+        in = in.trim();
+        if (in.indexOf('<') == -1) {
+            out = in;
+        } else {
+            while (in.indexOf('<') >= 0) {
+                if (in.indexOf('<') == 0) {
+                    in = in.substring(in.indexOf('>')+1, in.length());
+                } else {
+                    out += in.substring(0, in.indexOf('<'));
+                    in = in.substring(in.indexOf('<'), in.length());
+                }
+            }
+        }
+        return out;
+    }
+    
+    public static void setCaret(int row, int column ) {
+        new EditorOperator("MemoryView.java").setCaretPosition(row, column);
+        Utilities.sleep(2000);
+    }
+    
+    public static void toggleBreakpoint(int row) {
+        setCaret(row, 1);
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
+        new Action(null, null, Utilities.toggleBreakpointShortcut).performShortcut();
+        Utilities.sleep(200);
+    }
+    
+    public static NbDialogOperator newBreakpoint(int row, int column) {
+        setCaret(row, column);
+        //new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
+        new ActionNoBlock(null, null, newBreakpointShortcut).performShortcut();
+        NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
+        Utilities.sleep(1000);
+        return dialog;
+    }
+    
+    public static void endSession() {
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
+    }
+    
+    public static void startDebugger(String statusText) {
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
+        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText(statusText);
     }
 }
 

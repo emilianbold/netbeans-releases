@@ -47,16 +47,17 @@ public class StartDebugger extends JellyTestCase {
     
     /** setUp method  */
     public void setUp() {
-        Utilities.sleep(1000);
         System.out.println("########  " + getName() + "  #######");
     }
     
     /** tearDown method */
     public void tearDown() {
-        Utilities.closeZombieSessions();
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
     }
     
     public void setupStartTests() {
+        Utilities.sleep(1000);
         Node projectNode = new Node(new JTreeOperator(new ProjectsTabOperator()), Utilities.testProjectName);
         projectNode.select();
         projectNode.performPopupAction(Utilities.setMainProjectAction);
@@ -64,16 +65,15 @@ public class StartDebugger extends JellyTestCase {
         JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
         javaNode.performPopupAction(Utilities.openSourceAction);
+        Utilities.sleep(2000);
+        
+        new Action(null, null, Utilities.buildProjectShortcut).performShortcut();
+        Utilities.sleep(5000);
+        MainWindowOperator.getDefault().waitStatusText(Utilities.buildCompleteStatusBarText);
     }
     
     public void testRunInDebugger() {
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
-        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.runningStatusBarText);
-
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
-        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
+        Utilities.startDebugger(Utilities.runningStatusBarText);
     }
     
     public void testRunDebuggerStepInto() {
