@@ -90,28 +90,32 @@ public class WebProjectModule extends ModuleInstall {
                         try {
                             EditableProperties ep = PropertyUtils.getGlobalProperties();
                             boolean changed = false;
-                            if (ep.getProperty(JSPC_CLASSPATH) == null) {
-                                // JSPC classpath
-                                StringBuffer sb = new StringBuffer();
-                                // Ant is needed in classpath if we are forking JspC into another process
-                                sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false));
-                                sb.append(":"); // NOI18N
-                                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/servlet-api-2.4.jar", null, false));
-                                sb.append(":"); // NOI18N
-                                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jsp-api-2.0.jar", null, false));
-                                sb.append(":"); // NOI18N
-                                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.0.27.jar", null, false));
-                                sb.append(":"); // NOI18N
-                                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.0.27.jar", null, false));
-                                sb.append(":"); // NOI18N
-                                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false));
-                                sb.append(":"); // NOI18N
-                                sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-logging-api.jar", null, false));
-                                ep.setProperty(JSPC_CLASSPATH, sb.toString());
+                            // JSPC classpath
+                            StringBuffer sb = new StringBuffer();
+                            // Ant is needed in classpath if we are forking JspC into another process
+                            sb.append(InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false));
+                            sb.append(":"); // NOI18N
+                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/servlet-api-2.4.jar", null, false));
+                            sb.append(":"); // NOI18N
+                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jsp-api-2.0.jar", null, false));
+                            sb.append(":"); // NOI18N
+                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.0.27.jar", null, false));
+                            sb.append(":"); // NOI18N
+                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.0.27.jar", null, false));
+                            sb.append(":"); // NOI18N
+                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false));
+                            sb.append(":"); // NOI18N
+                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-logging-api.jar", null, false));
+                            String jspc_cp_old = ep.getProperty(JSPC_CLASSPATH);
+                            String jspc_cp = sb.toString();
+                            if (jspc_cp_old == null || !jspc_cp_old.equals (jspc_cp)) {
+                                ep.setProperty(JSPC_CLASSPATH, jspc_cp);
                                 changed = true;
                             }
-                            if (ep.getProperty(COPYFILES_CLASSPATH) == null) {
-                                ep.setProperty(COPYFILES_CLASSPATH, InstalledFileLocator.getDefault().locate("ant/extra/copyfiles.jar", null, false).toString());
+                            String copy_files = InstalledFileLocator.getDefault().locate("ant/extra/copyfiles.jar", null, false).toString();
+                            String copy_files_old = ep.getProperty(COPYFILES_CLASSPATH);
+                            if (copy_files_old == null || !copy_files_old.equals(copy_files)) {
+                                ep.setProperty(COPYFILES_CLASSPATH, copy_files);
                                 changed = true;
                             }
                             if (changed) {
