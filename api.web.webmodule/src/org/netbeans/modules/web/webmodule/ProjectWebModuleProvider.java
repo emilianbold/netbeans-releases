@@ -11,32 +11,27 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.web.project;
+package org.netbeans.modules.web.webmodule;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 public class ProjectWebModuleProvider implements WebModuleProvider {
     
     public ProjectWebModuleProvider () {
     }
     
-    public WebModule findWebModule (FileObject file) {
+    public org.netbeans.modules.web.api.webmodule.WebModule findWebModule (org.openide.filesystems.FileObject file) {
         Project project = FileOwnerQuery.getOwner (file);
-        if (project != null && project instanceof WebProject) {
-            WebProject wp = (WebProject) project;
-            FileObject src = wp.getSourceDirectory ();
-            FileObject web = wp.getWebModule ().getDocumentBase ();
-            if (src.equals (file) || web.equals (file) || FileUtil.isParentOf (src, file) || FileUtil.isParentOf (web, file)) {
-                return WebModuleFactory.createWebModule (wp.getWebModule ());
+        if (project != null) {
+            WebModuleProvider provider = (WebModuleProvider) project.getLookup ().lookup (WebModuleProvider.class);
+            if (provider != null) {
+                return provider.findWebModule (file);
             }
         }
         return null;
     }
-    
 }

@@ -154,7 +154,8 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             aux,
             helper.createCacheDirectoryProvider(),
             spp,
-            webModule,
+            new ProjectWebModuleProvider (),
+            webModule, //implements J2eeModuleProvider
             new WebActionProvider( this, helper, refHelper ),
             new WebPhysicalViewProvider(this, helper, evaluator (), spp, refHelper),
             new WebCustomizerProvider( this, helper, refHelper ),

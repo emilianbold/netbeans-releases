@@ -43,6 +43,7 @@ import org.openide.loaders.TemplateWizard;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.project.ProjectWebModule;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileStateInvalidException;
@@ -128,7 +129,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         FileObject dir = FileUtil.toFileObject (dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
         
-        WebModule wm = WebModule.getWebModule(p.getProjectDirectory());
+        ProjectWebModule wm = (ProjectWebModule) p.getLookup ().lookup (ProjectWebModule.class);
         if (wm != null) //should not be null
             wm.setContextPath(contextPath);
 

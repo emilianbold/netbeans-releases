@@ -24,11 +24,7 @@ public interface WebModuleImplementation {
 
     public FileObject getDocumentBase ();
     
-    public ClassPath getJavaSources ();
-    
     public String getContextPath ();
-    
-    public void setContextPath (String path);
     
     public String getJ2eePlatformVersion ();
 }

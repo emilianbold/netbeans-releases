@@ -49,24 +49,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="copyfiles.xml" url="copyfiles.xml"/>
         </folder>
     </folder>
-<!--    
-    <folder name="Actions">
-      <file name="org-netbeans-modules-web-project-ui-ValidateAction.instance"/>
-    </folder>
-    
-    <folder name="Menu">
-      <folder name="BuildProject">
-        <file name="org-netbeans-modules-web-project-ui-ValidateAction.instance"/>
-      </folder>
-    </folder>
--->    
     <folder name="org-netbeans-modules-web-project">
         <file name="web-2.3.xml" url="web-2.3.xml"/>
         <file name="web-2.4.xml" url="web-2.4.xml"/>
-    </folder>
-    <folder name="Services">
-        <folder name="Hidden">
-            <file name="org-netbeans-modules-web-project-ProjectWebModuleProvider.instance"/>
-        </folder>
     </folder>
 </filesystem>

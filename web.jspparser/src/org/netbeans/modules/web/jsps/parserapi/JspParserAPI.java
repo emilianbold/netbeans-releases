@@ -33,13 +33,17 @@ public interface JspParserAPI {
 
     public static abstract class WebModule {
         
-        /** Property name that denotes the libraries of the web module. A PropertyChangeEvent with this property is fired if
+        /**
+         * Property name that denotes the libraries of the web module. A PropertyChangeEvent with this property is fired if
          * the list of libraries changes, or if the timestamp of any of these libraries changes.
+         * @deprecated use classpath API to obtain classpath for document base folder
          */
         public static final String PROP_LIBRARIES = "libraries"; // NOI18N
         
-        /** Property name that denotes the package root directories of the web module. A PropertyChangeEvent with this property is fired if
+        /**
+         * Property name that denotes the package root directories of the web module. A PropertyChangeEvent with this property is fired if
          * the list of package roots changes, or if the timestamp of any of the files contained in these package roots changes.
+         * @deprecated use classpath API to obtain classpath for document base folder
          */
         public static final String PROP_PACKAGE_ROOTS = "package_roots"; // NOI18N
         
@@ -54,25 +58,15 @@ public interface JspParserAPI {
          */
         public abstract java.io.InputStream getEditorInputStream (FileObject fo);
         
-//                CloneableEditorSupport ces = (CloneableEditorSupport)myWm.getProjectMember(fo).
-//                    getLookup().lookup(CloneableEditorSupport.class);
-//                if (ces != null) {
-//                    try {
-//                        InputStream result = ces.getInputStream();
-//                        if (result != null) {
-//                            return result;
-//                        }
-//                    }
-//                    catch (IOException e) {
-//                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-//                    }
-//                }
-        
-        /** Returns the list of libraries used by this web module.
+        /**
+         * Returns the list of libraries used by this web module.
+         * @deprecated use classpath API to obtain classpath for document base folder
          */
         public abstract FileObject[] getLibraries();
         
-        /** Returns the list package roots used by this web module.
+        /**
+         * Returns the list package roots used by this web module.
+         * @deprecated use classpath API to obtain classpath for document base folder
          */
         public abstract FileObject[] getPackageRoots();
         

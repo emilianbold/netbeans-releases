@@ -17,9 +17,9 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 
 /**
- * Provider interface for classpaths.
+ * Provider interface for webmodules.
  * <p>
- * The <code>org.netbeans.modules.java.project</code> module registers an
+ * The <code>org.netbeans.modules.web.webapi</code> module registers an
  * implementation of this interface to global lookup which looks for the
  * project which owns a file (if any) and checks its lookup for this interface,
  * and if it finds an instance, delegates to it. Therefore it is not normally
@@ -49,6 +49,7 @@ import org.openide.filesystems.FileObject;
  * </div>
  * @see ClassPath#getClassPath
  * @author Jesse Glick
+ * @since org.netbeans.api.java/1 1.4
  */
 public interface WebModuleProvider {
     

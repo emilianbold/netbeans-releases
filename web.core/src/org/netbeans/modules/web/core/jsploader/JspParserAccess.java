@@ -102,7 +102,14 @@ public class JspParserAccess {
         }
         
         public FileObject[] getPackageRoots() {
-            return webModule.getJavaSources ().getRoots ();
+            FileObject[] roots = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.EXECUTE).getRoots();
+            ArrayList folders = new ArrayList();
+            for (int i = 0; i < roots.length; i++){
+                if (!roots[i].isData ()) { //NOI18N
+                    folders.add(roots[i]);
+                }
+            }
+            return (FileObject[])folders.toArray(new FileObject[folders.size()]);
         }
         
         public FileObject[] getLibraries() {

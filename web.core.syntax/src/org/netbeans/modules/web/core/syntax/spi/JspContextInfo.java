@@ -46,7 +46,7 @@ public abstract class JspContextInfo {
     
     public static synchronized JspContextInfo getContextInfo () {
         if (instance == null) {
-            FileObject f = Repository.getDefault().findResource(CONTEXT_NAME); // NOI18N
+            FileObject f = Repository.getDefault().getDefaultFileSystem().findResource(CONTEXT_NAME); // NOI18N
             if (f != null) {
                 try {
                     DataFolder folder = (DataFolder)DataObject.find(f).getCookie(DataFolder.class);

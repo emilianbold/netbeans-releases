@@ -433,7 +433,6 @@ public class WebProjectProperties {
         removed.removeAll( newArtifacts );
         for( Iterator it = removed.iterator(); it.hasNext(); ) {
             VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
-            System.out.println( "removing reference " + vcpi.getRaw() );
             refHelper.destroyForeignFileReference( vcpi.getRaw() );
         }
                 

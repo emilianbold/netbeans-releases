@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
+import org.netbeans.modules.web.project.ProjectWebModule;
+
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -21,20 +23,19 @@ import javax.swing.text.Document;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 
 public class CustomizerRun extends JPanel implements WebCustomizer.Panel, DocumentListener {
     
     // Helper for storing properties
     private VisualPropertySupport vps;
-    private WebModule wm;
+    private ProjectWebModule wm;
     private Document doc;
 
     String[] serverInstanceIDs;
     String[] serverNames;
     
     /** Creates new form CustomizerCompile */
-    public CustomizerRun(WebProjectProperties webProperties, WebModule wm) {
+    public CustomizerRun(WebProjectProperties webProperties, ProjectWebModule wm) {
         initComponents();
 
         this.wm = wm;        

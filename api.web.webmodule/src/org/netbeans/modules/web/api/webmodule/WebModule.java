@@ -25,13 +25,13 @@ import org.openide.util.Lookup;
  * A client may obtain a WebModule instance using 
  * <code>WebModule.getWebModule(fileObject)</code> static method, for any 
  * FileObject in the web module directory structure.
+ * </p>
+ * <p>
+ * Use classpath API to obtain classpath for the document base.
  * <p>
  * <div class="nonnormative">
- * Note that the directory structure for web module is not guaranteed by this API.
- * For example the folder returned for {@link WebModule#getJavaSourcesFolder} may 
- * or may not be a subfolder of the {@link WebModule#getDocumentBase} folder, 
- * <code>WEB-INF</code> folder or various deployment descriptors can be located 
- * anywhere in source tree, etc.
+ * Note that the particular directory structure for web module is not guaranteed 
+ * by this API.
  * </div>
  *
  * @author  Pavel Buzek
@@ -87,19 +87,17 @@ public final class WebModule {
     
     /** Folder that contains Java sources for the web module.
      */
-    public ClassPath getJavaSources () {
-        return impl.getJavaSources ();
-    }
+    //compilation classpath - not sources
+    //source level query
+    //what is needed for boothclasspath, is it accepted by jspparser?
+    //is this used or the classpath.getClasspath ??
     
     public String getContextPath () {
         return impl.getContextPath ();
     }
     
-    public void setContextPath (String path) {
-        impl.setContextPath (path);
-    }
-    
     public String getJ2eePlatformVersion () {
         return impl.getJ2eePlatformVersion ();
     }
+    
 }
