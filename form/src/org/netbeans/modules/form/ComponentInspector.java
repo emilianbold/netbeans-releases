@@ -125,11 +125,11 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
                 return;
             if (focusedForm == null)
                 return;
-            
+
             FormDesigner designer = focusedForm.getFormDesigner();
             if (designer == null)
                 return;
-                        
+
             Node[] selectedNodes = getExplorerManager().getSelectedNodes();
 
             if (CPManager.getDefault().getMode() == PaletteAction.MODE_CONNECTION) {
@@ -138,12 +138,19 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
 
                 RADComponentCookie cookie = (RADComponentCookie)
                     selectedNodes[0].getCookie(RADComponentCookie.class);
+                if (cookie != null
+                    && cookie.getRADComponent() == designer.getConnectionSource()
+                    && selectedNodes.length > 1)
+                {
+                    cookie = (RADComponentCookie)
+                        selectedNodes[selectedNodes.length-1].getCookie(RADComponentCookie.class);
+                }
                 if (cookie != null)
                     designer.connectBean(cookie.getRADComponent(), true);
             }
             else if (!focusingOnForm) {
                 designer.clearSelectionImpl();
-                
+
                 for (int i = 0; i < selectedNodes.length; i++) {
                     RADComponentCookie cookie =
                         (RADComponentCookie) selectedNodes[i].getCookie(RADComponentCookie.class);
