@@ -91,10 +91,12 @@ public class FormDataObject extends JavaDataObject {
 
     private class OpenEdit implements OpenCookie, EditCookie {
         public void open() {
-            getFormEditor().openForm(); // open form and java source
+            // open form editor with form designer selected
+            getFormEditor().openFormEditor();
         }
         public void edit() {
-            getFormEditor().open(); // open java source only
+            // open form editor with java editor selected (form not loaded)
+            getFormEditor().open();
         }
     }
 

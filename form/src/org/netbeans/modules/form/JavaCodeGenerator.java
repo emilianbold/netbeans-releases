@@ -2095,8 +2095,8 @@ class JavaCodeGenerator extends CodeGenerator {
     private void gotoEventHandler(String handlerName) {
         JavaEditor.InteriorSection sec = getEventHandlerSection(handlerName);
         if (sec != null && initialized) {
-            sec.openAt();
             formEditorSupport.gotoEditor();
+            sec.openAt();
         }
     }
 

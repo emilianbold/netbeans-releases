@@ -547,7 +547,8 @@ class HandleLayer extends JPanel
     private void showContextMenu(Point popupPos) {
         ComponentInspector inspector = ComponentInspector.getInstance();
         TopComponent activated = TopComponent.getRegistry().getActivated();
-        if (activated != formDesigner && activated != inspector)
+        if (activated != formDesigner.multiViewObserver.getTopComponent()
+                && activated != inspector)
             return;
 
         formDesigner.componentActivated(); // just for sure...

@@ -24,8 +24,6 @@ import org.openide.actions.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.loaders.DataObject;
 
-import org.netbeans.modules.form.actions.*;
-
 /**
  * A common superclass for nodes used in Form Editor.
  *
@@ -76,8 +74,6 @@ public class FormNode extends AbstractNode implements FormCookie {
     public javax.swing.Action[] getActions(boolean context) {
         if (systemActions == null) // from AbstractNode
             systemActions = new SystemAction[] {
-                SystemAction.get(GotoEditorAction.class),
-                null,
                 SystemAction.get(PropertiesAction.class) 
             };
         return systemActions;

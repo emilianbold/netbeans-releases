@@ -18,6 +18,7 @@ import java.util.*;
 import java.io.*;
 import javax.swing.*;
 
+import org.netbeans.core.spi.multiview.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -26,6 +27,7 @@ import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.awt.UndoRedo;
+import org.openide.ErrorManager;
 
 import org.netbeans.modules.form.palette.CPManager;
 import org.netbeans.modules.form.wizard.ConnectionWizard;
@@ -45,7 +47,7 @@ import org.netbeans.modules.form.wizard.ConnectionWizard;
  * @author Tran Duc Trung, Tomas Pavek, Josef Kozak
  */
 
-public class FormDesigner extends TopComponent
+public class FormDesigner extends TopComponent implements MultiViewElement
 {
     static final String PROP_DESIGNER_SIZE = "designerSize"; // NOI18N
 
@@ -109,7 +111,6 @@ public class FormDesigner extends TopComponent
         layeredPane.add(handleLayer, new Integer(1001));
 
         setLayout(new BorderLayout());
-        add(formToolBar, BorderLayout.NORTH);
 
         JScrollPane scrollPane = new JScrollPane(layeredPane);
         scrollPane.setBorder(null); // disable border, winsys will handle borders itself
@@ -121,13 +122,12 @@ public class FormDesigner extends TopComponent
     public void initialize() {
         updateWholeDesigner();
     }
-    
-    /** Overriden to explicitely set persistence type of FormDesigner
-     * to PERSISTENCE_ONLY_OPENED */
+
+    // only MultiViewDescriptor is stored, not MultiViewElement
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ONLY_OPENED;
+        return TopComponent.PERSISTENCE_NEVER;
     }
-    
+
     void setModel(FormModel m) {
         if (formModel != null) {
             if (formModelListener != null)
@@ -750,37 +750,7 @@ public class FormDesigner extends TopComponent
         return new HelpCtx("gui.formeditor"); // NOI18N
     }
 
-    public void writeExternal(ObjectOutput out) throws IOException {
-        if (formEditorSupport == null)
-            return;
-
-        super.writeExternal(out);
-        out.writeObject(formEditorSupport.getFormDataObject());
-    }
-
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        super.readExternal(in);
-        Object o = in.readObject();
-        if (o instanceof FormDataObject) {
-            formEditorSupport = ((FormDataObject)o).getFormEditor();
-            formEditorSupport.setFormDesigner(this);
-            if (!formEditorSupport.isOpened())
-                // invoke loading in AWT event queue, but don't block it
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        if (formEditorSupport.loadForm()) {
-                            setModel(formEditorSupport.getFormModel());
-                            initialize();
-                            ComponentInspector ci = ComponentInspector.getInstance();
-                            if (ci.getFocusedForm() == null)
-                                ci.focusForm(formEditorSupport);
-                        }
-                    }
-                });
-        }
-    }
-
-    protected void componentActivated() {
+    public void componentActivated() {
         if (formModel == null)
             return;
 
@@ -798,7 +768,7 @@ public class FormDesigner extends TopComponent
             handleLayer.requestFocus();
     }
 
-    protected void componentDeactivated() {
+    public void componentDeactivated() {
         if (formModel == null)
             return;
 
@@ -813,6 +783,77 @@ public class FormDesigner extends TopComponent
         UndoRedo ur = formModel != null ? formModel.getUndoRedoManager() : null;
         return ur != null ? ur : super.getUndoRedo();
     }
+
+    // ------
+    // multiview stuff
+
+    public JComponent getToolbarRepresentation() {
+        return getFormToolBar();
+    }
+
+    public JComponent getVisualRepresentation() {
+        return this;
+    }
+
+    transient MultiViewElementCallback multiViewObserver;
+
+    public void setMultiViewCallback(MultiViewElementCallback callback) {
+        multiViewObserver = callback;
+        multiViewObserver.updateTitle(getDisplayName());
+
+        // needed for deserialization...
+        if (formEditorSupport != null) {
+            // this is used (or misused?) to obtain the deserialized multiview
+            // topcomponent and set it to FormEditorSupport
+            formEditorSupport.setTopComponent(callback.getTopComponent());
+        }
+    }
+
+    public void requestVisible() {
+        if (multiViewObserver != null)
+            multiViewObserver.requestVisible();
+        else
+            super.requestVisible();
+    }
+
+    public void requestActive() {
+        if (multiViewObserver != null)
+            multiViewObserver.requestActive();
+        else
+            super.requestActive();
+    }
+
+    public void componentClosed() {
+        super.componentClosed();
+    }
+
+    public void componentShowing() {
+        super.componentShowing();
+        FormEditorSupport.checkGroupVisibility();
+    }
+
+    public void componentHidden() {
+        super.componentHidden();
+        FormEditorSupport.checkGroupVisibility();
+    }
+
+    public void componentOpened() {
+        super.componentOpened();
+    }
+
+    public void setDisplayName(String displayName) {
+        super.setDisplayName(displayName);
+        if (multiViewObserver != null)
+            multiViewObserver.updateTitle(getDisplayName());
+    }    
+
+    public CloseOperationState canCloseElement() {
+        // return a placeholder state - to be sure our CloseHandler is called
+        return MultiViewFactory.createUnsafeCloseState(
+            "ID_FORM_CLOSING", // dummy ID // NOI18N
+            MultiViewFactory.NOOP_CLOSE_ACTION,
+            MultiViewFactory.NOOP_CLOSE_ACTION);
+    }    
 
     // -----------
     // innerclasses

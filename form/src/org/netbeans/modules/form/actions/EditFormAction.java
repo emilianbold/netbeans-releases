@@ -43,7 +43,6 @@ public class EditFormAction extends NodeAction {
             if (metacomp != null) { //instanceof RADVisualContainer
                 FormDesigner designer = metacomp.getFormModel().getFormDesigner();
                 designer.resetTopDesignComponent(true);
-                designer.open();
                 designer.requestActive();
             }
         }

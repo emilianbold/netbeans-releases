@@ -38,7 +38,7 @@ import org.netbeans.modules.form.actions.TestAction;
 class FormToolBar extends JToolBar {
 
     private FormDesigner formDesigner;
-    
+
     private JToggleButton selectionButton;
     private JToggleButton connectionButton;
     private JToggleButton paletteButton;
@@ -55,8 +55,7 @@ class FormToolBar extends JToolBar {
         // the toolbar should have roll-over buttons and no handle for dragging
         setFloatable(false);
         setRollover(true);
-        Border b = UIManager.getBorder("ToolBar.border"); // NOI18N
-        setBorder(new CompoundBorder(b, new EmptyBorder(2, 2, 2, 2)));
+        setBorder(new EmptyBorder(0, 0, 0, 0));
 
         listener = new Listener();
 

@@ -52,8 +52,6 @@ class FormRootNode extends FormNode {
             systemActions = new SystemAction[] {
                 SystemAction.get(ReloadAction.class),
                 null,
-                SystemAction.get(GotoEditorAction.class),
-                null,
                 SystemAction.get(PropertiesAction.class) 
             };
         return systemActions;
