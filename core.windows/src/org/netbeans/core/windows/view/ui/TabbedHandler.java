@@ -421,6 +421,12 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
             }
 
             while (comp != null && !(comp instanceof ModeComponent)) {
+                if (comp instanceof TopComponent && 
+                    Boolean.TRUE.equals(((TopComponent) comp).getClientProperty(
+                    "dontActivate"))) { //NOI18N
+                        
+                    return;
+                }
                 comp = comp.getParent();
             }
 
