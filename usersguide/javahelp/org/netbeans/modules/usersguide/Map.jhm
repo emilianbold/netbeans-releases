@@ -659,6 +659,7 @@
 
 <mapID target="org.netbeans.core.windows.MainWindow" url="pending.html" />
 
+<mapID target="i18n.pe.i18nString" url="internationalize/i18nwizard.html" />
 <mapID target="org.netbeans.modules.i18n.I18nOptions" url="internationalize/custominter.html" />
 <mapID target="ant.wizard.shortcut" url="ant/shortcut.html" />
 <mapID target="ant.wizard.properties" url="ant/ant-props.html" />
@@ -912,6 +913,9 @@
    <mapID target="org.netbeans.modules.clazz.SerDataObject" url="java/nodes/prototype.html" /> 
    <mapID target="org.netbeans.modules.clazz.ClassDataObject" url="java/nodes/class.html" />
    <mapID target="org.openide.src.nodes.InterfaceNode" url="java/nodes/interface.html" /> 
+
+<!-- Java node property sheet CSH -->
+   <mapID target="org.netbeans.modules.java.JavaNode.textProperties" url="java/encoding.html" />
 
    <mapID target="org.netbeans.modules.text.TXTDataObject" url="objects/objects.html" />
    <mapID target="org.netbeans.modules.text.ConvertToTextAction" url="objects/objects_treat-as-text.html" />
