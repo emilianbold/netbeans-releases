@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 <project name="QA compilers" basedir="." default="all">
     <!-- path to close source repository -->
     <property name="nbextra.repository" location="../../../nbextra"/>
-    <property name="nb.repository" location="../../../nb_all"/>
+    <property name="nb.repository" location="../.."/>
 
     <!-- =================== -->
     <!-- Setting classpathes -->
