@@ -13,19 +13,24 @@
 
 package org.netbeans.installer;
 
-import java.io.*;
-import java.net.Socket;
-import java.util.*;
-import com.installshield.product.*;
-import com.installshield.product.service.desktop.DesktopService;
-import com.installshield.product.service.product.*;
-import com.installshield.util.*;
-import com.installshield.wizard.*;
-import com.installshield.wizard.platform.win32.*;
-import com.installshield.wizard.service.file.*;
+import com.installshield.product.ProductAction;
+import com.installshield.product.ProductActionSupport;
+import com.installshield.product.ProductBuilderSupport;
+import com.installshield.product.ProductException;
+import com.installshield.product.RequiredBytesTable;
+import com.installshield.util.Log;
+import com.installshield.wizard.platform.win32.Win32RegistryService;
 import com.installshield.wizard.service.MutableOperationState;
-import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizard.service.exitcode.ExitCodeService;
+import com.installshield.wizard.service.file.FileService;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.Arrays;
 
 public class InstallJ2sdkAction extends ProductAction implements FileFilter {
     
@@ -119,9 +124,6 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
 		String jdkInstallScript = uninstDir + File.separator 
                 + "custom-install-jdk.template";
 		createInstallScriptJDKWindows(jdkInstallScript, "custom-install-jdk.bat");
-		String jdkUninstallScript = uninstDir + File.separator 
-		+ "custom-uninstall.template";
-		createUninstallScriptWindows(jdkUninstallScript, "custom-uninstall.bat");
             }
             String execName;
             String driveName;
@@ -170,15 +172,16 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             logEvent(this, Log.DBG,"Start Invoking JDK installer: cmdArray -> " + Arrays.asList(cmdArray).toString());
             runCommand(cmdArray, envP, support);
             
-            // Clean up jdk bat file
-            File file;
-            file = new File(cmdArray[0]);
-            if (file.exists()) {
-                file.delete();
-                logEvent(this, Log.DBG,"Now cleaning up this file " + file.getAbsolutePath());
-            }
-            
             //Run JRE installer separately on Win NT / Win 98.
+            //Update status description
+            if (Util.isWindowsOS() && !Util.isJREAlreadyInstalled()) {
+                statusDesc = resolveString("$L(org.netbeans.installer.Bundle,ProgressPanel.installMessage,"
+                + "$L(org.netbeans.installer.Bundle,JRE.shortName))")
+                + " "
+                + resolveString("$L(org.netbeans.installer.Bundle,ProgressPanel.waitMessage)") ;
+        
+                support.getOperationState().setStatusDescription(statusDesc);
+            }
             if (Util.isWindowsNT() || Util.isWindows98()) {
                 //Install public JRE only when it is not already installed.
                 if (!Util.isJREAlreadyInstalled()) {
@@ -210,27 +213,14 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                     logEvent(this, Log.DBG,"# # # # # # # #");
                     logEvent(this, Log.DBG,"Start Invoking JRE installer: cmdArray -> " + Arrays.asList(cmdArray).toString());
                     runCommand(cmdArray, envP, support);
-                    
-                    // Clean up jre bat file
-                    file = new File(cmdArray[0]);
-                    if (file.exists()) {
-                        file.delete();
-                        logEvent(this, Log.DBG,"Now cleaning up this file " + file.getAbsolutePath());
-                    }
                 }
             }
             
-            //workaround
-            if (Util.isWindowsNT() || Util.isWindows98()) {
-                file = new File(uninstDir + File.separator + "custom-install-jdk.bat" );
-                if (file.exists()) {
-                    file.delete();
-                    logEvent(this, Log.DBG,"Now cleaning up this file " + file.getAbsolutePath());
-                }
-                file = new File(uninstDir + File.separator + "custom-install-jre.bat" );
-                if (file.exists()) {
-                    file.delete();
-                    logEvent(this, Log.DBG,"Now cleaning up this file " + file.getAbsolutePath());
+            //Delete _uninst dir on Windows
+            if (Util.isWindowsOS()) {
+                File uninstDirFile = new File(uninstDir);
+                if (uninstDirFile.exists()) {
+                    deleteCompletely(uninstDirFile);
                 }
             }
             
@@ -243,6 +233,29 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             logEvent(this, Log.DBG, ex);
         }
         logEvent(this, Log.DBG,"J2SE installation took: (ms) " + (System.currentTimeMillis() - currtime));
+    }
+    
+    /** Delete given file/folder completely. It is called recursively when necessary.
+     * @file - name of file/folder to be deleted
+     */
+    private void deleteCompletely (File file) {
+        if (file.isDirectory()) {
+            //Delete content of folder
+            File [] fileArr = file.listFiles();
+            for (int i = 0; i < fileArr.length; i++) {
+                if (fileArr[i].isDirectory()) {
+                    deleteCompletely(fileArr[i]);
+                }
+                logEvent(this, Log.DBG,"Delete file: " + fileArr[i].getPath());
+                if (!fileArr[i].delete()) {
+                    logEvent(this, Log.DBG,"Cannot delete file: " + fileArr[i].getPath());
+                }
+            }
+        }
+        logEvent(this, Log.DBG,"Delete file: " + file.getPath());
+        if (!file.delete()) {
+            logEvent(this, Log.DBG,"Cannot delete file: " + file.getPath());
+        }
     }
     
     /** Does nothing. JDK is not uninstalled by jdkbundle uninstaller. */
@@ -656,9 +669,6 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         }
         reader.close();
         
-	if (!templateFile.delete()) {
-	    logEvent(this, Log.ERROR, "Could not delete file: " + templateFile);
-	}              
         writer.close();
 	return true;
     }
@@ -696,49 +706,6 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         }
         reader.close();
         
-	if (!templateFile.delete()) {
-	    logEvent(this, Log.ERROR, "Could not delete file: " + templateFile);
-	}              
-        writer.close();
-	return true;
-    }
-    
-    /** Create the j2se install script from the provided template.
-     * @template - the script to use as a template
-     * @scriptName - the name of the generated script
-     */
-    private boolean createUninstallScriptWindows(String template, String scriptName)
-	throws Exception {
-
-	File templateFile = new File(template);
-	String parent = templateFile.getParent();
-	if (parent == null) {
-	    return false; // should always have j2se as parent
-	}
-        File scriptFile = new File(parent + File.separator + scriptName);
-
-        BufferedReader reader = new BufferedReader(new FileReader(templateFile));
-        BufferedWriter writer = new BufferedWriter(new FileWriter(scriptFile));
-
-	String installerName = findJDKWindowsInstaller(j2seInstallDir);
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-            if (line.startsWith("SET INSTALLER_NAME=")) {
-                line = "SET INSTALLER_NAME=" + installerName;
-            } else if (line.startsWith("SET TMP=")) {
-                line = "SET TMP=" + tempDir;
-            } else if (line.startsWith("SET TEMP=")) {
-                line = "SET TEMP=" + tempDir;
-            }
-            writer.write(line + System.getProperty("line.separator"));
-        }
-        reader.close();
-        
-	if (!templateFile.delete()) {
-	    logEvent(this, Log.ERROR, "Could not uninstall template file: " + templateFile);
-	}
-              
         writer.close();
 	return true;
     }

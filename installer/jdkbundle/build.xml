@@ -135,7 +135,6 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-windows" depends="init, compile">
     <copy file="scripts/custom-install-jdk.template" tofile="build/scripts/_uninst/custom-install-jdk.template"/>
     <copy file="scripts/custom-install-jre.template" tofile="build/scripts/_uninst/custom-install-jre.template"/>
-    <copy file="scripts/custom-uninstall.template" tofile="build/scripts/_uninst/custom-uninstall.template"/>
      <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="windows.xml" />
       <arg value="-build" />
