@@ -21,9 +21,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -35,6 +37,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
@@ -538,10 +541,74 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
             return false; //Project name not specified
         }
         
+        String result = checkValidity (this.projectName.getText(), this.projectLocation.getText());
+        if (result != null) {
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", result); //NOI18N
+            return false;
+        }
+
         wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
         
         return true;
     }
+
+    static String checkValidity (final String projectName, final String projectLocation) {
+        File projLoc = new File (projectLocation).getAbsoluteFile();
+
+        if (PanelProjectLocationVisual.getCanonicalFile(projLoc) == null) {
+            return NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectLocation");
+        }
+
+        while (projLoc != null && !projLoc.exists()) {
+            projLoc = projLoc.getParentFile();
+        }
+        if (projLoc == null || !projLoc.canWrite()) {
+            return NbBundle.getMessage(PanelSourceFolders.class,"MSG_ProjectFolderReadOnly");
+        }
+
+        File destFolder = FileUtil.normalizeFile(new File( projectLocation ));
+        File[] kids = destFolder.listFiles();
+        if ( destFolder.exists() && kids != null && kids.length > 0) {
+            String file = null;
+            for (int i=0; i< kids.length; i++) {
+                String childName = kids[i].getName();
+                if ("nbproject".equals(childName)) {   //NOI18N
+                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_NetBeansProject");
+                }
+                else if ("build".equals(childName)) {    //NOI18N
+                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildFolder");
+                }
+                else if ("dist".equals(childName)) {   //NOI18N
+                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_DistFolder");
+                }
+                else if ("build.xml".equals(childName)) {   //NOI18N
+                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_BuildXML");
+                }
+                else if ("manifest.mf".equals(childName)) { //NOI18N
+                    file = NbBundle.getMessage (PanelSourceFolders.class,"TXT_Manifest");
+                }
+                if (file != null) {
+                    String format = NbBundle.getMessage (PanelSourceFolders.class,"MSG_ProjectFolderInvalid");
+                    return MessageFormat.format(format, new Object[] {file});
+                }
+            }
+        }
+
+        if (destFolder.isDirectory()) {
+            FileObject destFO = FileUtil.toFileObject(destFolder);
+            assert destFO != null : "No FileObject for " + destFolder;
+            boolean clear = false;
+            try {
+                clear = ProjectManager.getDefault().findProject(destFO) == null;
+            } catch (IOException e) {
+                // need not report here; clear remains false -> error
+            }
+            if (!clear) {
+                return NbBundle.getMessage(PanelSourceFolders.class, "MSG_ProjectFolderHasDeletedProject");
+            }
+        }
+        return null;
+    }        
 
     void read (WizardDescriptor d) {
     }
