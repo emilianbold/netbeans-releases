@@ -100,7 +100,8 @@ Microsystems, Inc. All Rights Reserved.
         <antcall target="print-errors"/>
 
         <!-- print summary -->
-        <printSummary resultsDir="${xtest.results}"/>        
+        <property name="xtest.fail.on.failure" value="false"/>
+        <printSummary resultsDir="${xtest.results}" failOnFailure="${xtest.fail.on.failure}"/>
     </target>
     
     <target name="mail-results" unless="xtest.no.mail.results">

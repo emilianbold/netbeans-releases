@@ -43,6 +43,16 @@ public class PrintSummary extends Task {
         this.resultsDir = resultsDir;
     }
     
+    
+    private boolean failOnFailure = false;
+    public void setFailOnFailure(boolean fail) {
+        failOnFailure=fail;
+    }
+    
+    public boolean failOnFailure() {
+        return failOnFailure;
+    }
+    
     public void execute () throws BuildException {
         
         if (!resultsDir.isDirectory()) {
@@ -77,22 +87,30 @@ public class PrintSummary extends Task {
                 log(" Test Results Summary (from the current test run):");
                 log("");
                 log(" Expected Passes: "+(testRun.getTestsPass()-testRun.getTestsUnexpectedPass())+
-                    "  Unexpected Passes: "+testRun.getTestsUnexpectedPass());
+                "  Unexpected Passes: "+testRun.getTestsUnexpectedPass());
                 log(" Expected Fails: "+testRun.getTestsExpectedFail()+
-                    "  Unexpected Fails: "+(testRun.getTestsFail()-testRun.getTestsExpectedFail())+
-                    "  Errors: "+testRun.getTestsError());
+                "  Unexpected Fails: "+(testRun.getTestsFail()-testRun.getTestsExpectedFail())+
+                "  Errors: "+testRun.getTestsError());
                 log(" Total: "+testRun.getTestsTotal()+
-                    "  Success Rate: "+formattedRate);
+                "  Success Rate: "+formattedRate);
                 // this is JDK 1.4 only :-(
-                //File reportIndex = new File(resultsDir, PEConstants.INDEX_HTML_FILE);
-                //log("\n Report URL: "+reportIndex.toURI().toString());
-                String reportURL = "file://"+resultsDir.getPath().replace('\\','/')+"/index.html";
+                File reportIndex = new File(resultsDir, PEConstants.INDEX_HTML_FILE);
                 log("");
-                log(" Report URL: "+reportURL);
+                log(" Report URL: "+reportIndex.toURI().toString());
+                
+                if (failOnFailure()) {
+                    if (successRate < 100.0) {
+                        throw new BuildException("Some of the tests failed or there were some errors");
+                    }
+                }
+                
+            } else {
+                throw new BuildException("Cannot find TestRun. results are probably broken");
             }
+        } else {
+            throw new BuildException("Cannot load test report");
         }
     }
-    
-    
+
     
 }

@@ -1114,6 +1114,7 @@ the ${netbeans.dest}/bin/ directory.
     <property name="xtest.home" location="../xtest"/>
     <ant dir="${xtest.home}/instance" target="runtests">
         <property name="xtest.config" value="commit-validation-nb"/>
+        <property name="xtest.fail.on.failure" value="true"/>
     </ant>
   </target>
 
