@@ -75,7 +75,15 @@ Microsystems, Inc. All Rights Reserved.
                                 It also does some other less important stuff.
                             </answer>
                             -->
-                            <xsl:value-of select="substring-before(description, '.')" disable-output-escaping="yes"/>.
+                            <xsl:variable name="first-sentence" select="substring-before(description, '. ')" />
+                            <xsl:choose>
+                                <xsl:when test="$first-sentence" >
+                                    <xsl:value-of select="$first-sentence" />.
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="substring-before(description, '.')" />.
+                                </xsl:otherwise>
+                            </xsl:choose>
                         </li>
                     </xsl:when>
                     <xsl:otherwise>
