@@ -13,7 +13,10 @@
 
 package org.netbeans.modules.form.editors;
 
+import javax.swing.text.Document;
+
 import org.openide.nodes.Node;
+import org.openide.loaders.DataObject;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 /** Customizer for "code properties" used by JavaCodeGenerator.
@@ -25,7 +28,7 @@ public class CustomCodeEditor extends javax.swing.JPanel
                               implements EnhancedCustomPropertyEditor
 {
     /** Creates new form CustomCodeEditor */
-    public CustomCodeEditor(Node.Property property) {
+    public CustomCodeEditor(Node.Property property, DataObject dataObject) {
         initComponents();
 
         codeEditorPane.setContentType("text/x-java");  // NOI18N
@@ -43,6 +46,7 @@ public class CustomCodeEditor extends javax.swing.JPanel
         jLabel1.setDisplayedMnemonic(
             bundle.getString("CustomCodeEditor.label1.mnemonic").charAt(0)); // NOI18N
         jLabel1.setLabelFor(codeEditorPane);
+        codeEditorPane.getDocument().putProperty(Document.StreamDescriptionProperty, dataObject);
         codeEditorPane.setPreferredSize(new java.awt.Dimension(440, 200));
         codeEditorPane.requestFocus();
         codeEditorPane.getCaret().setVisible(codeEditorPane.hasFocus());
