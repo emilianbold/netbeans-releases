@@ -131,7 +131,12 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
         URL baseURL = descriptorFile.getURL();
         InputSource input = new InputSource(baseURL.toExternalForm());
         input.setByteStream(descriptorFile.getInputStream()); // #33554 workaround
-        parser.parse(input);
+        try {
+            parser.parse(input);
+        } catch (SAXException e) {
+            ErrorManager.getDefault().annotate(e, ErrorManager.UNKNOWN, "From " + baseURL, null, null, null);
+            throw e;
+        }
     }
 
     private static void writeLibrary (final FileObject storage, final LibraryImplementation library) throws IOException {

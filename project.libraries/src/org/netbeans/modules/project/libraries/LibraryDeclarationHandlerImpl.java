@@ -92,7 +92,7 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
     public void end_library() throws SAXException {
         LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider(this.libraryType);
         if (provider == null)
-            throw new IllegalArgumentException ("Invalid library type"); //NOI18N
+            throw new SAXParseException("Invalid library type " + libraryType, null); //NOI18N
         this.library = provider.createLibrary();
         this.library.setLocalizingBundle (this.localizingBundle);
         this.library.setName (this.libraryName);
