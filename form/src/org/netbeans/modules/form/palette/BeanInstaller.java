@@ -189,7 +189,7 @@ public final class BeanInstaller extends Object {
   * @param pal palettecategory where to place beans.
   */
   private static void finishInstall(JarFileSystem jar, final Collection list, String pal) {
-    addJarFileSystem (jar);
+    if (jar != null) addJarFileSystem (jar);
 
     if (pal == null) {
       pal = "Beans"; // default palette category // NOI18N
@@ -755,6 +755,7 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  33   Gandalf   1.32        1/19/00  Pavel Buzek     
  *  32   Gandalf   1.31        1/17/00  Jesse Glick     Localized filenames.
  *  31   Gandalf   1.30        1/16/00  Ian Formanek    Different format in 
  *       properties files.
