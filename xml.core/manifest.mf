@@ -5,7 +5,10 @@ OpenIDE-Module-Layer: org/netbeans/modules/xml/core/resources/mf-layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.6
 OpenIDE-Module-Specification-Version: @CORE_SPEC_VERS_SUBST@
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.xml.tax/1 > @TAX_SPEC_VERS_SUBST@, org.openidex.util/2 > 2.1.1
+OpenIDE-Module-Module-Dependencies: 
+ org.netbeans.modules.xml.tax/1 > @TAX_SPEC_VERS_SUBST@, 
+ org.openidex.util/2 > 2.1.1,
+ org.netbeans.api.xml/1 > 0.1
 Class-Path: docs/xml-core.jar
 
 Name: org/netbeans/modules/xml/core/XMLDataLoader.class

@@ -22,22 +22,25 @@ import org.openide.loaders.*;
 
 import org.netbeans.tax.*;
 import org.netbeans.modules.xml.core.*;
-import org.netbeans.modules.xml.core.actions.CollectDTDAction;
+import org.netbeans.modules.xml.core.actions.*;
+
+import org.netbeans.api.xml.cookies.*;
 
 /**
  * checks DTD file sending results to output window.
  *
  * @author  Petr Kuzel
  * @version 1.0
+ * @deprecated To be eliminated once a API CheckXMLAction will be introduced
  */
 public class CheckDTDAction extends CookieAction implements CollectDTDAction.DTDAction {
 
     /** serialVersionUID */
     private static final long serialVersionUID = -8772119268950444992L;
 
-    /** */
+    /** Be hooked on XMLDataObjectLook narking XML nodes. */
     protected Class[] cookieClasses () {
-        return new Class[] { DTDDataObject.class };
+        return new Class[] { CheckXMLCookie.class };
     }
 
     /** All selected nodes must be XML one to allow this action */
@@ -50,11 +53,18 @@ public class CheckDTDAction extends CookieAction implements CollectDTDAction.DTD
 
         if (nodes == null) return;
 
-        XMLDisplayer output = new XMLDisplayer();
-        XMLCompiler comp = new XMLCompiler(output);
-        comp.parseDTD(nodes);
-
-        output.display(Util.THIS.getString("MSG_DTD_valid_end"), true);
+        InputOutputReporter console = new InputOutputReporter();
+        
+        for (int i = 0; i<nodes.length; i++) {
+            Node node = nodes[i];
+            CheckXMLCookie cake = (CheckXMLCookie) node.getCookie(CheckXMLCookie.class);
+            if (cake == null) continue;
+            console.setNode(node); //??? how can console determine which editor to highlight
+            cake.checkXML(console);
+        }
+        
+        console.message(Util.THIS.getString("MSG_DTD_valid_end"));
+        console.moveToFront();
     }
 
     /** Human presentable name. */

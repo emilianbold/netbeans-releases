@@ -36,8 +36,8 @@ public class AbstractUtilTest extends TestCase {
         try {
             String pack = getClass().getPackage().getName();
 
-            assert("Class package detection failed! " + testPackage(), testPackage().equals(pack));
-            assert("Inner class package detection failed! " + Inner.testPackage(), Inner.testPackage().equals(pack));
+            assertTrue("Class package detection failed! " + testPackage(), testPackage().equals(pack));
+            assertTrue("Inner class package detection failed! " + Inner.testPackage(), Inner.testPackage().equals(pack));
         } catch (Exception ex) {
             ex.printStackTrace(new PrintWriter(System.out));
         }

@@ -69,6 +69,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${core_root}/src/"/>
                 <pathelement location="${tax_lib_root}/src/"/>
                 <pathelement location="${jaxp-transform}"/> <!-- JAXP/transform API -->
+                <pathelement location="../api/src/"/>
             </classpath>
         </javac>
     </target>

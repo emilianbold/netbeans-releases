@@ -67,6 +67,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${nbroot}/openidex/netbeans/modules/autoload/openidex.jar"/>
                 <pathelement location="${parserimpl}"/>
                 <pathelement location="${tax_lib_root}/src/"/>
+                <pathelement location="../api/src/"/>
             </classpath>
         </javac>
 

@@ -22,13 +22,16 @@ import org.openide.loaders.*;
 
 import org.netbeans.tax.*;
 import org.netbeans.modules.xml.core.*;
-import org.netbeans.modules.xml.core.actions.CollectXMLAction;
+import org.netbeans.modules.xml.core.actions.*;
+
+import org.netbeans.api.xml.cookies.*;
 
 /**
  * Checks well-formess of XML file sending results to output window.
  *
  * @author  Petr Kuzel
  * @version 1.0
+ * @deprecated To be eliminated once a API CheckXMLAction will be intorduces
  */
 public class CheckAction extends CookieAction implements CollectXMLAction.XMLAction {
 
@@ -37,7 +40,7 @@ public class CheckAction extends CookieAction implements CollectXMLAction.XMLAct
 
     /** Be hooked on XMLDataObjectLook narking XML nodes. */
     protected Class[] cookieClasses () {
-        return new Class[] { XMLDataObjectLook.class };
+        return new Class[] { CheckXMLCookie.class };
     }
 
     /** All selected nodes must be XML one to allow this action */
@@ -50,11 +53,18 @@ public class CheckAction extends CookieAction implements CollectXMLAction.XMLAct
 
         if (nodes == null) return;
 
-        XMLDisplayer output = new XMLDisplayer();
-        XMLCompiler comp = new XMLCompiler(output);
-        comp.parse(nodes, false);
-
-        output.display(Util.THIS.getString("MSG_XML_check_end"), true);
+        InputOutputReporter console = new InputOutputReporter();
+        
+        for (int i = 0; i<nodes.length; i++) {
+            Node node = nodes[i];
+            CheckXMLCookie cake = (CheckXMLCookie) node.getCookie(CheckXMLCookie.class);
+            if (cake == null) continue;
+            console.setNode(node); //??? how can console determine which editor to highlight
+            cake.checkXML(console);
+        }
+        
+        console.message(Util.THIS.getString("MSG_XML_check_end"));
+        console.moveToFront();
     }
 
     /** Human presentable name. */

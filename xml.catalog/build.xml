@@ -60,9 +60,12 @@ Microsystems, Inc. All Rights Reserved.
                 <fileset dir="${nbroot}/openide/netbeans/lib">
                     <include name="openide*.jar"/>
                 </fileset>
-                <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+                <pathelement location="${binroot}/core/release/lib/ext/sax.jar"/>
+                <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/> <!-- actually needed by dead code -->
+                <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/> <!-- is covered by above -->
                 <pathelement location="${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
                 <pathelement location="${core_root}/src/"/>
+                <pathelement location="../api/src/"/>
             </classpath>
         </javac>
 

@@ -22,7 +22,9 @@ import org.openide.loaders.*;
 
 import org.netbeans.tax.*;
 import org.netbeans.modules.xml.core.*;
-import org.netbeans.modules.xml.core.actions.CollectXMLAction;
+import org.netbeans.modules.xml.core.actions.*;
+
+import org.netbeans.api.xml.cookies.*;
 
 /**
  * Validates XML file sending results to output window.
@@ -38,7 +40,7 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
     
     /** Be hooked on XMLDataObjectLook narking XML nodes. */
     protected Class[] cookieClasses () {
-        return new Class[] { XMLDataObjectLook.class };
+        return new Class[] { ValidateXMLCookie.class };
     }
 
     /** All selected nodes must be XML one to allow this action */
@@ -48,14 +50,21 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
 
     /** Check all selected nodes. */
     protected void performAction (Node[] nodes) {
-        if (nodes == null)
-            return;
 
-        XMLDisplayer output = new XMLDisplayer();
-        XMLCompiler comp = new XMLCompiler (output);
-        comp.parse (nodes, true);
+        if (nodes == null) return;
+
+        InputOutputReporter console = new InputOutputReporter();
         
-        output.display(Util.THIS.getString("MSG_XML_valid_end"), true);        
+        for (int i = 0; i<nodes.length; i++) {
+            Node node = nodes[i];
+            ValidateXMLCookie cake = (ValidateXMLCookie) node.getCookie(ValidateXMLCookie.class);
+            if (cake == null) continue;
+            console.setNode(node); //??? how can console determine which editor to highlight
+            cake.validateXML(console);
+        }
+        
+        console.message(Util.THIS.getString("MSG_XML_valid_end"));
+        console.moveToFront();
     }
 
     /** Human presentable name. */

@@ -20,7 +20,7 @@ import org.netbeans.modules.xml.catalog.spi.*;
 import org.netbeans.modules.xml.catalog.lib.*;
 import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
 
-import org.netbeans.modules.xml.core.tree.ModuleEntityResolver;
+import org.netbeans.api.xml.services.SourceResolver;
 
 /**
  * An entity resolver that can resolve all registrations
@@ -34,7 +34,7 @@ import org.netbeans.modules.xml.core.tree.ModuleEntityResolver;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class CatalogEntityResolver implements ModuleEntityResolver {
+public class CatalogEntityResolver extends SourceResolver {
 
     /** Creates new CatalogEntityResolver */
     public CatalogEntityResolver() {
