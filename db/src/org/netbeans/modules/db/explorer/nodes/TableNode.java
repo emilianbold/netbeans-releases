@@ -76,7 +76,7 @@ public class TableNode extends DatabaseNode
 				return;
 			}
 */	
-			nfo = (DatabaseNodeInfo)NodeTransfer.cookie(t, NodeTransfer.COPY, ColumnNodeInfo.class);
+			nfo = (DatabaseNodeInfo)NodeTransfer.cookie(t, NodeTransfer.MOVE, ColumnNodeInfo.class);
 			if (nfo != null) {
 				s.add(new ColumnPasteType((ColumnNodeInfo)nfo, null));
 				return;
