@@ -116,6 +116,14 @@ Microsystems, Inc. All Rights Reserved.
     </genjavadoc>
   </target>
 
+  
+  <!-- This target compile all XML sub-modules. -->
+  <target name="all-xml">
+    <echo message="Compile all XML sub-modules ..."/>
+    <ant dir=".." target="clean"/>
+    <ant dir=".." target="compile"/>
+  </target>
+
 
   <!-- Run tests. -->
   <target name="test">

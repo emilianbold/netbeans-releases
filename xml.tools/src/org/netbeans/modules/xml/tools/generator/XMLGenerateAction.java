@@ -92,7 +92,7 @@ public abstract class XMLGenerateAction extends CookieAction {
 
     //////////////////////////////////////
     // class GenerateDocumentHandlerAction
-    public static class GenerateDocumentHandlerAction extends XMLGenerateAction implements CollectXMLAction.XMLAction {
+    public static class GenerateDocumentHandlerAction extends XMLGenerateAction implements CollectDTDAction.DTDAction {
         /** generated Serialized Version UID */
         private static final long serialVersionUID = 1342753912956042368L;
 
@@ -118,7 +118,7 @@ public abstract class XMLGenerateAction extends CookieAction {
 
     /////////////////////////////////
     // class GenerateDOMScannerAction
-    public static class GenerateDOMScannerAction extends XMLGenerateAction implements CollectXMLAction.XMLAction {
+    public static class GenerateDOMScannerAction extends XMLGenerateAction implements CollectDTDAction.DTDAction {
         /** generated Serialized Version UID */
         private static final long serialVersionUID = 2567846356902367312L;
 

@@ -62,13 +62,19 @@ Microsystems, Inc. All Rights Reserved.
 
 
   <!-- Build xml module and all modules which is depend on. -->
-  <target name="all-xml" depends="all-openide,all-editor,clean,netbeans"/>
+  <target name="all-xml" depends="all-openide,all-openidex,all-editor,clean,netbeans"/>
 
   <!-- Targets to build IDE core -->
   <target name="all-openide">
     <echo message="Building Open APIs..."/>
     <ant dir="${nbroot}/openide" target="clean"/>
     <ant dir="${nbroot}/openide" target="netbeans"/>
+  </target>
+
+  <target name="all-openidex">
+    <echo message="Building Open API extensions..."/>
+    <ant dir="${nbroot}/openidex" target="clean"/>
+    <ant dir="${nbroot}/openidex" target="netbeans"/>
   </target>
 
   <target name="all-core" depends="all-openide">

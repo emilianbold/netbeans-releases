@@ -26,6 +26,9 @@ Microsystems, Inc. All Rights Reserved.
 
       <file name="org-netbeans-modules-xml-tools-doclet-DocletAction.instance" />
 
+      <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateSupportFactory$Creator.instance" />
+      <file name="org-netbeans-modules-xml-tools-generator-DTDGenerateSupportFactory$Creator.instance" />
+
       <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDTDAction.instance" />
       <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDocumentHandlerAction.instance" />
       <file name="org-netbeans-modules-xml-tools-generator-XMLGenerateAction$GenerateDOMScannerAction.instance" />

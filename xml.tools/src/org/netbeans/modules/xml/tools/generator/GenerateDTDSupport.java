@@ -38,15 +38,17 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
     TreeElement element;
 //      ElementNode node;
 
-//      public GenerateDTDSupport (XMLDataObject DO) {
-//  	this.DO = DO;
-//  	this.element = null;
-//      }
 
-    public GenerateDTDSupport (DataObject DO, TreeElement element) {
-        this.DO = DO;
-        this.element = element;
+    public GenerateDTDSupport (XMLDataObject DO) {
+  	this.DO = DO;
+  	this.element = null;
     }
+
+
+//      public GenerateDTDSupport (DataObject DO, TreeElement element) {
+//          this.DO = DO;
+//          this.element = element;
+//      }
 
 //      public GenerateDTDSupport (ElementNode node, TreeElement element) {
 //          this.node = node;
@@ -306,4 +308,5 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
         }
                 
     } // end of inner class DTDElement
+
 }
