@@ -263,6 +263,10 @@ workspaceswitcher
     <echo message="Building module makefile..."/>
     <ant dir="../makefile" target="netbeans"/>
   </target>
+  <target name="all-mdr" depends="all-openide,all-openidex">
+    <echo message="Building module mdr..."/>
+    <ant dir="../mdr" target="netbeans"/>
+  </target>
   <target name="all-multicompile" depends="all-openide">
     <echo message="Building module multicompile..."/>
     <ant dir="../multicompile" target="netbeans"/>
