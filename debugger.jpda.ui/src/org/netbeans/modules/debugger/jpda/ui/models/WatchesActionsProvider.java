@@ -38,19 +38,19 @@ public class WatchesActionsProvider implements NodeActionsProvider {
     
     
     private static final Action NEW_WATCH_ACTION = new AbstractAction
-        ("New Watch ...") {
+        (NbBundle.getBundle(WatchesActionsProvider.class).getString("CTL_WatchAction_AddNew")) {
             public void actionPerformed (ActionEvent e) {
                 newWatch ();
             }
     };
     private static final Action DELETE_ALL_ACTION = new AbstractAction 
-        ("Delete All") {
+        (NbBundle.getBundle(WatchesActionsProvider.class).getString("CTL_WatchAction_DeleteAll")) {
             public void actionPerformed (ActionEvent e) {
                 DebuggerManager.getDebuggerManager ().removeAllWatches ();
             }
     };
     private static final Action DELETE_ACTION = Models.createAction (
-        "Delete", 
+        NbBundle.getBundle(WatchesActionsProvider.class).getString("CTL_WatchAction_Delete"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -64,7 +64,7 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_ANY
     );
     private static final Action CUSTOMIZE_ACTION = Models.createAction (
-        "Customize", 
+        NbBundle.getBundle(WatchesActionsProvider.class).getString("CTL_WatchAction_Customize"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -81,13 +81,14 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         if (node == TreeModel.ROOT) 
             return new Action [] {
                 NEW_WATCH_ACTION,
+                null,
                 DELETE_ALL_ACTION
             };
         if (node instanceof JPDAWatch)
             return new Action [] {
-                DELETE_ACTION,
-                null,
                 NEW_WATCH_ACTION,
+                null,
+                DELETE_ACTION,
                 DELETE_ALL_ACTION,
                 null,
                 CUSTOMIZE_ACTION
@@ -117,7 +118,8 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         ResourceBundle bundle = NbBundle.getBundle (WatchesActionsProvider.class);
         org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (
             panel,
-            bundle.getString ("CTL_Edit_Watch_Dialog_Title") // NOI18N
+            java.text.MessageFormat.format(bundle.getString("CTL_Edit_Watch_Dialog_Title"), // NOI18N
+                                           new Object [] { w.getExpression() })
         );
         dd.setHelpCtx (new HelpCtx ("debug.customize.watch"));
         Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
