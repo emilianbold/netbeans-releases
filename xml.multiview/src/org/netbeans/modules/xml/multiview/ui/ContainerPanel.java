@@ -41,4 +41,9 @@ public interface ContainerPanel {
      * @param section component(JPanel) to be removed from container
      */ 
     public void removeSection(NodeSectionPanel section);
+    
+    /** Gets node corresponding to this container panel
+     * @return Node corresponding node
+     */  
+    public org.openide.nodes.Node getRoot();
 }

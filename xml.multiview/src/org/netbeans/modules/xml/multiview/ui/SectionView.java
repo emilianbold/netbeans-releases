@@ -128,15 +128,30 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         mapSection(section.getNode(), section);
         sectionCount++;
     }
-    
-    public void removeSection(Node key) {
-        NodeSectionPanel section = getSection(key);
-        java.awt.Container cont = ((java.awt.Component)section).getParent();
-        while (cont!=null && !(cont instanceof ContainerPanel)) {
-            cont = cont.getParent();
-        }
-        if ( cont!= null) {
-            ((ContainerPanel)cont).removeSection(section);
+    /** Removing section and its corresponding node
+     */
+    public void removeSection(Node node) {
+        NodeSectionPanel section = getSection(node);
+        if (section!=null) {
+            // looking for enclosing container
+            java.awt.Container cont = ((java.awt.Component)section).getParent();
+            while (cont!=null && !(cont instanceof ContainerPanel)) {
+                cont = cont.getParent();
+            }
+            if ( cont!= null) {
+                // removing last active component
+                ContainerPanel contPanel = (ContainerPanel)cont;
+                if (section instanceof SectionPanel) {
+                    Object key = ((SectionPanel)section).getKey();
+                    if (key!=null && key==getLastActive()) {
+                        setLastActive(null);
+                    }
+                }
+                // removing section
+                contPanel.removeSection(section);
+                // removing node
+                contPanel.getRoot().getChildren().remove(new Node[]{node});
+            }
         }
     }
     
@@ -179,7 +194,7 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         }
         this.activePanel = activePanel;
         if (activePanel instanceof SectionPanel) {
-            ((ToolBarDesignEditor)getParent().getParent()).setLastActive(((SectionPanel)activePanel).getKey());
+            setLastActive(((SectionPanel)activePanel).getKey());
         }
     }
     
@@ -246,6 +261,14 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
                 panel.setActive(true);
             }
         }
+    }
+    
+    private Object getLastActive() {
+        return ((ToolBarDesignEditor)getParent().getParent()).getLastActive();
+    }
+    
+    private void setLastActive(Object key) {
+        ((ToolBarDesignEditor)getParent().getParent()).setLastActive(key);
     }
 
 }

@@ -88,6 +88,10 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
             open();
         }
     }
+    
+    public SectionView getSectionView() {
+        return sectionView;
+    }
 
     protected void openInnerPanel() {
         if (innerPanel != null) {

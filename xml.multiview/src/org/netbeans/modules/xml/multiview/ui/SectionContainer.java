@@ -74,6 +74,10 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     public Node getNode() {
         return root; 
     }
+    /** Method from ContainerPanel interface */
+    public Node getRoot() {
+        return root; 
+    }
     
     /** Method from NodeSectionPanel interface */
     public void open(){
