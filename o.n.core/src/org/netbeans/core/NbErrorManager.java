@@ -31,10 +31,41 @@ import org.openide.util.NbBundle;
 */
 public final class NbErrorManager extends ErrorManager {
 
-    public NbErrorManager() {}
+    public NbErrorManager() {
+        this(null, defaultSeverity());
+    }
+    
+    private static int defaultSeverity() {
+        String dsev = System.getProperty("ErrorManager.minimum");
+        // use e.g. 17 to avoid logging WARNING messages.
+        if (dsev != null) {
+            try {
+                return Integer.parseInt(dsev);
+            } catch (NumberFormatException nfe) {
+                nfe.printStackTrace();
+            }
+        }
+        // I.e. 2: avoid logging INFORMATIONAL messages.
+        return ErrorManager.INFORMATIONAL + 1;
+    }
+    
+    private NbErrorManager(String pfx, int sev) {
+        prefix = pfx;
+        minLogSeverity = sev;
+        synchronized (uniquifiedIds) {
+            Integer i = (Integer)uniquifiedIds.get(pfx);
+            if (i == null) {
+                uniquifier = 1;
+            } else {
+                uniquifier = i.intValue() + 1;
+            }
+            uniquifiedIds.put(pfx, new Integer(uniquifier));
+        }
+        //System.err.println("NbErrorManager[" + pfx + " #" + uniquifier + "]: minLogSeverity=" + sev);
+    }
 
     /** maps Throwables to java.util.List (Ann) */
-    private static Map map = new WeakHashMap (11);
+    private static final Map map = new WeakHashMap (11);
 
     /** The writer to the log file*/
     private PrintWriter logWriter;
@@ -42,16 +73,16 @@ public final class NbErrorManager extends ErrorManager {
    /** assciates each thread with the lastly notified throwable
     * (Thread, Reference (Throwable))
     */
-    private static Map lastException = new WeakHashMap (27);
+    private static final Map lastException = new WeakHashMap (27);
 
     /** Minimum value of severity to write message to the log file*/
-    private int minLogSeverity = ErrorManager.INFORMATIONAL + 1; // NOI18N
+    private final int minLogSeverity;
 
     /** Prefix preprended to customized loggers, if any. */
-    private String prefix = null;
+    private final String prefix;
     
     // Make sure two distinct EM impls log differently even with the same name.
-    private int uniquifier = 0; // 0 for root EM (prefix == null), else >= 1
+    private final int uniquifier; // 0 for root EM (prefix == null), else >= 1
     private static final Map uniquifiedIds = new HashMap(20); // Map<String,Integer>
     
     static {
@@ -133,12 +164,27 @@ public final class NbErrorManager extends ErrorManager {
         return t;
     }
 
+    /** Honor configured min-severity levels, more or less.
+     * Actually bump up the effective severity of an exception by one.
+     * Thus by default INFORMATIONAL stack traces are displayed, but not
+     * messages. By playing with min log severity levels, you can get
+     * both, or neither.
+     * @see #24056
+     */
+    public boolean isNotifiable(int severity) {
+        return isLoggable(severity + 1);
+    }
+
     /** Notifies all the exceptions associated with
     * this thread.
     */
     public synchronized void notify (int severity, Throwable t) {
         // synchronized to ensure that only one exception is
         // written to the thread
+        
+        if (!isNotifiable(severity)) {
+            return;
+        }
 
         Annotation[] ann = findAnnotations (t);
 
@@ -174,6 +220,7 @@ public final class NbErrorManager extends ErrorManager {
 
     public void log(int severity, String s) {
         if (isLoggable (severity)) {
+            //System.err.println(toString() + " logging '" + s + "' at " + severity);
             PrintWriter log = getLogWriter ();
             
             if (prefix != null) {
@@ -219,25 +266,15 @@ public final class NbErrorManager extends ErrorManager {
      * a hierarchy.
      */
     public final ErrorManager getInstance(String name) {
-        NbErrorManager newEM = new NbErrorManager();
-        newEM.prefix = (prefix == null) ? name : prefix + '.' + name;
-        synchronized (uniquifiedIds) {
-            Integer i = (Integer)uniquifiedIds.get(newEM.prefix);
-            if (i == null) {
-                newEM.uniquifier = 1;
-            } else {
-                newEM.uniquifier = i.intValue() + 1;
-            }
-            uniquifiedIds.put(newEM.prefix, new Integer(newEM.uniquifier));
-        }
-        newEM.minLogSeverity = minLogSeverity;
-        String prop = newEM.prefix;
+        String pfx = (prefix == null) ? name : prefix + '.' + name;
+        int sev = minLogSeverity;
+        String prop = pfx;
         while (prop != null) {
             String value = System.getProperty (prop);
             //System.err.println ("Trying; prop=" + prop + " value=" + value);
             if (value != null) {
                 try {
-                    newEM.minLogSeverity = Integer.parseInt (value);                    
+                    sev = Integer.parseInt (value);                    
                 } catch (NumberFormatException nfe) {
                     notify (WARNING, nfe);
                 }
@@ -251,7 +288,7 @@ public final class NbErrorManager extends ErrorManager {
             }
         }
         //System.err.println ("getInstance: prefix=" + prefix + " mls=" + minLogSeverity + " name=" + name + " prefix2=" + newEM.prefix + " mls2=" + newEM.minLogSeverity);
-        return newEM;
+        return new NbErrorManager(pfx, sev);
     }    
     
     /** Method (or field) names in various exception classes which give
