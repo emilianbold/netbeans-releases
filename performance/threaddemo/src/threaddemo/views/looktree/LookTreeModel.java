@@ -13,6 +13,7 @@
 
 package threaddemo.views.looktree;
 
+import java.io.IOException;
 import java.util.*;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -84,9 +85,9 @@ final class LookTreeModel implements TreeModel {
     public void valueForPathChanged(TreePath path, Object newValue) {
         LookTreeNode n = (LookTreeNode)path.getLastPathComponent();
         try {
-            n.getLook().setName( n.getData(), (String)newValue, n.getLookup() );
+            n.getLook().rename( n.getData(), (String)newValue, n.getLookup() );
             // XXX cell renderer does not adjust size to match new value...
-        } catch (IllegalArgumentException e) {
+        } catch (IOException e) {
             // More or less normal.
             System.err.println(e);
         }

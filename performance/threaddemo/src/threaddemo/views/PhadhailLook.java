@@ -133,13 +133,9 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         return true;
     }
     
-    public void setName(Object o, String newName, Lookup e) {
+    public void rename(Object o, String newName, Lookup e) throws IOException {
         Phadhail ph = (Phadhail)o;
-        try {
-            ph.rename(newName);
-        } catch (IOException x) {
-            throw new IllegalArgumentException(x.toString());
-        }
+        ph.rename(newName);
     }
     
     public boolean canDestroy(Object o, Lookup e) {
