@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -269,6 +271,7 @@ final class NbModuleProject implements Project {
                 // be able to access its classes. <compile-dependency> is what we care about.
                 if (compile == null) {
                     compile = createCompileClasspath();
+                    System.err.println("compile-time classpath for " + getName() + ": " + compile);//XXX
                 }
                 return compile;
             } else if (type.equals(ClassPath.SOURCE)) {
@@ -315,6 +318,17 @@ final class NbModuleProject implements Project {
                 }
                 File moduleJar = module.getJarLocation(nbroot);
                 try {
+                    // XXX creating a jar:file:/tmp/foo.jar!/ URL does *not* yet
+                    // work; bug in URLMapper (fixed in trunk but not in base tag yet):
+                    // java.lang.NullPointerException
+                    //         at org.openide.filesystems.AbstractFileSystem.findResource(AbstractFileSystem.java:140)
+                    //         at org.openide.filesystems.URLMapper$DefaultURLMapper.geFileObjectBasicImpl(URLMapper.java:240)
+                    //         at org.openide.filesystems.URLMapper$DefaultURLMapper.getFileObjects(URLMapper.java:148)
+                    //         at org.openide.filesystems.URLMapper.findFileObjects(URLMapper.java:108)
+                    //         at org.netbeans.api.java.classpath.ClassPath$Entry.getRoot(ClassPath.java:449)
+                    // Cf. also hack in ClassPath.getJarRoot which automagically translates
+                    // file:/tmp/foo.jar to the root of some JarFileSystem; i.e. duplicating what
+                    // URLMapper is already supposed to be doing.
                     entries.add(ClassPathSupport.createResource(moduleJar.toURI().toURL()));
                 } catch (MalformedURLException e) {
                     ErrorManager.getDefault().notify(e);
@@ -328,12 +342,42 @@ final class NbModuleProject implements Project {
     
     private final class SourceForBinary implements SourceForBinaryQueryImplementation {
         
+        private URL moduleJarUrl;
+        
         SourceForBinary() {}
         
         public FileObject[] findSourceRoot(URL binaryRoot) {
-            // XXX
-            System.err.println("findSourceRoot: " + binaryRoot);
-            return null;
+            //System.err.println("findSourceRoot: " + binaryRoot);
+            // XXX handle also jar: URLs here
+            if (binaryRoot.equals(getModuleJarUrl())) {
+                FileObject srcDir = getSourceDirectory();
+                //System.err.println("\t-> " + srcDir);
+                return new FileObject[] {srcDir};
+            }
+            // XXX handle also tests, and build/classes dir
+            return new FileObject[0];
+        }
+        
+        private URL getModuleJarUrl() {
+            if (moduleJarUrl == null) {
+                //String moduleJarDir = helper.evaluate("module.jar.dir");
+                if (moduleJarDir == null) {
+                    moduleJarDir = "modules";
+                }
+                // XXX handle also other possible substitutions - most easily with better support in APH
+                File actualJar = new File(new File(new File(
+                            FileUtil.toFile(getProjectDirectory()),
+                            "netbeans"), // NOI18N
+                        moduleJarDir.replace('/', File.separatorChar)),
+                    getName().replace('.', '-') + ".jar"); // NOI18N
+                try {
+                    moduleJarUrl = actualJar.toURI().toURL();
+                } catch (MalformedURLException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+                //System.err.println("Module JAR: " + moduleJarUrl);
+            }
+            return moduleJarUrl;
         }
         
     }
