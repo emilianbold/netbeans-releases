@@ -15,9 +15,9 @@ Microsystems, Inc. All Rights Reserved.
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:p="http://www.netbeans.org/ns/project/1"
                 xmlns:xalan="http://xml.apache.org/xslt"
-                xmlns:j2se="http://www.netbeans.org/ns/j2se-project/1"
+                xmlns:web="http://www.netbeans.org/ns/web-project/1"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
-                exclude-result-prefixes="xalan p j2se projdeps">
+                exclude-result-prefixes="xalan p web projdeps">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
 
@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
         <property file="${{user.properties.file}}"/>
         <property file="nbproject/project.properties"/>
-        <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+        <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
             <!-- XXX Ugly but Ant does not yet support recursive property evaluation: -->
             <property name="file.tmp" location="${{java.io.tmpdir}}/platform.properties"/>
             <echo file="${{file.tmp}}">
@@ -57,16 +57,10 @@ Microsystems, Inc. All Rights Reserved.
         <fail unless="build.test.results.dir">Must set build.test.results.dir</fail>
         <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
         <fail unless="dist.jar">Must set dist.jar</fail>
-        <xsl:if test="/p:project/p:configuration/j2se:data/j2se:use-manifest">
+        <xsl:if test="/p:project/p:configuration/web:data/web:use-manifest">
             <fail unless="manifest.file">Must set manifest.file</fail>
         </xsl:if>
-        <available property="have.tests" file="${{test.src.dir}}"/>
-        <condition property="netbeans.home+have.tests">
-            <and>
-                <isset property="netbeans.home"/>
-                <isset property="have.tests"/>
-            </and>
-        </condition>
+
         <condition property="no.deps">
             <istrue value="${{no.dependencies}}"/>
         </condition>
@@ -86,7 +80,7 @@ Microsystems, Inc. All Rights Reserved.
           <fileset dir="${{web.docbase.dir}}"/>
         </copy>
         <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+            <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
                 <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" source="${{javac.source}}" includeantruntime="false" fork="yes" executable="${{platform.home}}/bin/javac">
                     <classpath>
                         <path path="${{javac.classpath}}"/>
@@ -142,7 +136,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${{task-tmp.out.dir}}"/>
 
         <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+            <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
                 <javac srcdir="${{task-tmp.src.dir}}" destdir="${{task-tmp.out.dir}}"
                     debug="${{task-tmp.debug}}" deprecation="${{javac.deprecation}}"
                     source="${{javac.source}}" includes="${{javac.includes}}" includeantruntime="false"
@@ -173,50 +167,38 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="run" depends="init,compile">
-        <xsl:choose>
-        <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-        <java fork="true" classname="${{main.class}}" jvm="${{platform.home}}/bin/java">
-        <xsl:call-template name="run-java-body"/>
-        </java>
-        </xsl:when>
-        <xsl:otherwise>
-        <java fork="true" classname="${{main.class}}">
-        <xsl:call-template name="run-java-body"/>
-        </java>
-        </xsl:otherwise>
-        </xsl:choose>
+        <nbdeploy debugmode="false" clientUrlPart="${{client.urlPart}}">
+<!--            <xsl:call-template name="run-java-body"/>-->
+        </nbdeploy>
+        <nbbrowse url="${{client.url}}"/>
     </target>
 
-    <target name="do-debug" depends="init">
-        <xsl:choose>
-        <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-        <java fork="true" classname="${{main.class}}" jvm="${{platform.home}}/bin/java">
-        <xsl:call-template name="debug-java-body"/>
-        </java>
-        </xsl:when>
-        <xsl:otherwise>
-        <java fork="true" classname="${{main.class}}">
-        <xsl:call-template name="debug-java-body"/>
-        </java>
-        </xsl:otherwise>
-        </xsl:choose>
-    </target>
-    
+<!--    <xsl:template name="run-java-body">
+        <classpath>
+            <path path="${{run.classpath}}"/>
+        </classpath>
+        <arg line="${{application.args}}"/>
+    </xsl:template>
+
     <target name="debug" depends="init,compile,do-debug">
     </target>
+-->
 
     <target name="debug-nb" depends="init,compile" if="netbeans.home">
-        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${{main.class}}">
+        <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}">
+<!--        <xsl:call-template name="debug-java-body"/>-->
+        </nbdeploy>
+        <nbjpdaconnect host="${{jpda.host}}" port="${{jpda.port}}">
             <classpath>
                 <path path="${{debug.classpath}}"/>
             </classpath>
-            <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+            <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
             <bootclasspath>
                 <path path="${{platform.bootcp}}"/>
             </bootclasspath>
             </xsl:if>
-        </nbjpdastart>
-        <antcall target="do-debug"/>
+        </nbjpdaconnect>
+        <nbbrowse url="${{client.url}}"/>
     </target>
 
     <target name="debug-fix-nb" depends="init" if="netbeans.home">
@@ -251,7 +233,7 @@ Microsystems, Inc. All Rights Reserved.
             <sourcepath>
                 <pathelement location="${{src.dir}}"/>
             </sourcepath>
-            <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+            <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
             <bootclasspath>
                 <path path="${{platform.bootcp}}"/>
             </bootclasspath>
@@ -262,114 +244,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="javadoc-nb" depends="init,javadoc" if="netbeans.home" unless="no.javadoc.preview">
         <nbbrowse file="${{dist.javadoc.dir}}/index.html"/>
-    </target>
-
-    
-    <target name="test-build" depends="init,compile" if="have.tests">
-        <mkdir dir="${{build.test.classes.dir}}"/>
-        <javac srcdir="test" destdir="${{build.test.classes.dir}}"
-               debug="true" deprecation="${{javac.deprecation}}"
-               source="${{javac.source}}" includeantruntime="false">
-            <classpath>
-                <path path="${{javac.test.classpath}}"/>
-            </classpath>
-            <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-            <bootclasspath>
-                <path path="${{platform.bootcp}}"/>
-            </bootclasspath>
-            </xsl:if>
-        </javac>
-        <copy todir="${{build.test.classes.dir}}">
-            <fileset dir="${{test.src.dir}}">
-                <exclude name="**/*.java"/>
-            </fileset>
-        </copy>
-    </target>
-
-    <target name="test" depends="init,test-build" if="have.tests">
-        <mkdir dir="${{build.test.results.dir}}"/>
-        <xsl:choose>
-        <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" jvm="${{platform.home}}/bin/java">
-        <xsl:call-template name="test-junit-body"/>
-        </junit>
-        </xsl:when>
-        <xsl:otherwise>
-        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
-        <xsl:call-template name="test-junit-body"/>
-        </junit>
-        </xsl:otherwise>
-        </xsl:choose>
-        <!-- TBD
-        <junitreport todir="${{build.test.results.dir}}">
-            <fileset dir="${{build.test.results.dir}}">
-                <include name="TEST-*.xml"/>
-            </fileset>
-            <report format="noframes" todir="${{build.test.results.dir}}"/>
-        </junitreport>
-        -->
-        <fail if="tests.failed">Some tests failed; see details above.</fail>
-    </target>
-
-    <target name="test-nb" depends="init,test" if="netbeans.home+have.tests">
-        <!-- TBD
-        <nbbrowse file="${{build.test.results.dir}}/junit-noframes.html"/>
-        -->
-    </target>
-
-    <target name="test-single" depends="init,test-build" if="have.tests">
-        <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
-        <mkdir dir="${{build.test.results.dir}}"/>
-        <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed" jvm="${{platform.home}}/bin/java">
-                    <xsl:call-template name="test-single-junit-body"/>
-                </junit>
-            </xsl:when>
-            <xsl:otherwise>
-                <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
-                    <xsl:call-template name="test-single-junit-body"/>
-                </junit>
-            </xsl:otherwise>
-        </xsl:choose>
-        <fail if="tests.failed">Some tests failed; see details above.</fail>
-    </target>
-
-    <target name="test-single-nb" depends="init,test-single" if="netbeans.home+have.tests">
-        <!-- nothing -->
-    </target>
-    
-    <target name="do-debug-test-single" depends="init" if="have.tests">
-        <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-        <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                <java fork="true" classname="junit.textui.TestRunner" jvm="${{platform.home}}/bin/java">
-                    <xsl:call-template name="debug-test-single-java-body"/>
-                </java>
-            </xsl:when>
-            <xsl:otherwise>
-                <java fork="true" classname="junit.textui.TestRunner">
-                    <xsl:call-template name="debug-test-single-java-body"/>
-                </java>
-            </xsl:otherwise>
-        </xsl:choose>
-    </target>
-
-    <target name="debug-test-single" depends="init,test-build,do-debug-test-single" if="have.tests">
-    </target>
-
-    <target name="debug-test-single-nb" depends="init,test-build" if="netbeans.home+have.tests">
-        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${{test.class}}">
-            <classpath>
-                <path path="${{debug.test.classpath}}"/>
-            </classpath>
-            <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                <bootclasspath>
-                    <path path="${{platform.bootcp}}"/>
-                </bootclasspath>
-            </xsl:if>
-        </nbjpdastart>
-        <antcall target="do-debug-test-single"/>
     </target>
 
     <xsl:call-template name="deps.target">
@@ -461,13 +335,6 @@ to simulate
         </target>
     </xsl:template>
 
-    <xsl:template name="run-java-body">
-        <classpath>
-            <path path="${{run.classpath}}"/>
-        </classpath>
-        <arg line="${{application.args}}"/>
-    </xsl:template>
-
     <xsl:template name="debug-java-body">
         <jvmarg value="-Xdebug"/>
         <jvmarg value="-Xnoagent"/>
@@ -477,35 +344,6 @@ to simulate
             <path path="${{debug.classpath}}"/>
         </classpath>
         <arg line="${{application.args}}"/>
-    </xsl:template>
-
-    <xsl:template name="test-junit-body">
-        <batchtest todir="${{build.test.results.dir}}">
-            <fileset dir="${{test.src.dir}}">
-                <!-- XXX could include only out-of-date tests... -->
-                <include name="**/*Test.java"/>
-            </fileset>
-        </batchtest>
-        <classpath>
-            <path path="${{run.test.classpath}}"/>
-        </classpath>
-        <formatter type="brief" usefile="false"/>
-        <!-- TBD
-        <formatter type="xml"/>
-        -->
-    </xsl:template>
-
-    <xsl:template name="test-single-junit-body">
-        <batchtest todir="${{build.test.results.dir}}">
-            <fileset dir="${{test.src.dir}}" includes="${{test.includes}}"/>
-        </batchtest>
-        <classpath>
-            <path path="${{run.test.classpath}}"/>
-        </classpath>
-        <formatter type="brief" usefile="false"/>
-        <!-- TBD
-        <formatter type="xml"/>
-        -->
     </xsl:template>
 
     <xsl:template name="debug-test-single-java-body">
