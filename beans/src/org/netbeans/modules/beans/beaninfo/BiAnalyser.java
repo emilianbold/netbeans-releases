@@ -20,12 +20,14 @@ import org.netbeans.modules.beans.EventSetPattern;
 import org.netbeans.modules.beans.IdxPropertyPattern;
 import org.netbeans.modules.beans.PatternAnalyser;
 import org.netbeans.modules.beans.PropertyPattern;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.src.ClassElement;
 import org.openide.src.MethodElement;
 import org.openide.src.MethodParameter;
+import org.openide.util.RequestProcessor;
 
 /** Analyses the ClassElement trying to find source code patterns i.e.
  * properties or event sets;
@@ -431,7 +433,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         }
 
         SwingUtilities.invokeLater( new Runnable() {
-                                                    public void run() {
+                                                    public void run()  {
                                                         bis.open();
                                                         regenerateBeanDescriptor();
                                                         regenerateProperties();
@@ -442,6 +444,15 @@ public class BiAnalyser extends Object implements Node.Cookie {
                                                         regenerateIcons();
                                                         regenerateDefaultIdx();
                                                         regenerateSuperclass();
+                                                        
+                                                        RequestProcessor.getDefault().post(new Runnable() {
+                                                            public void run() {
+                                                                JavaMetamodel manager = JavaMetamodel.getManager();
+                                                                manager.addModified(bis.getDataObject());
+                                                                manager.getDefaultRepository().beginTrans(true);
+                                                                manager.getDefaultRepository().endTrans();
+                                                            }
+                                                        });
                                                     }
                                                 } );
     }
