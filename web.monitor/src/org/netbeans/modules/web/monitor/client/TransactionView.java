@@ -410,13 +410,9 @@ public class TransactionView extends ExplorerPanel implements
 	browserCookieButton.setToolTipText(msgs.getString("MON_Browser_cookie"));
 	browserCookieButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
-
-		    if(!((ToolbarToggleButton)e.getSource()).isSelected())
-			return;
-		    else {
-			savedCookieButton.setSelected(false);
-			controller.setUseBrowserCookie(true); 
-		    }
+		    browserCookieButton.setSelected(true);
+		    savedCookieButton.setSelected(false);
+		    controller.setUseBrowserCookie(true); 
 
 		}});
 
@@ -424,13 +420,9 @@ public class TransactionView extends ExplorerPanel implements
 	savedCookieButton.setToolTipText(msgs.getString("MON_Saved_cookie"));
 	savedCookieButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
-		    
-		    if(!((ToolbarToggleButton)e.getSource()).isSelected())
-			return;
-		    else {
-			browserCookieButton.setSelected(false);
-			controller.setUseBrowserCookie(false); 
-		    }
+		    browserCookieButton.setSelected(false);
+		    savedCookieButton.setSelected(true);
+		    controller.setUseBrowserCookie(false); 
 		}});
 
 

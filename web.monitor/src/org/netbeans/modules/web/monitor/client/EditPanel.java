@@ -38,6 +38,7 @@
 package org.netbeans.modules.web.monitor.client; 
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -185,6 +186,8 @@ public class EditPanel extends javax.swing.JPanel implements
     public void showDialog() {
 
 	Object[] options = {
+	    createSessionButtonPanel(),
+	    //createSeparator(),
             sendButton,
             cancelButton
 	};
@@ -193,7 +196,7 @@ public class EditPanel extends javax.swing.JPanel implements
 					  msgs.getString("MON_EditReplay"),
 					  false, 
 					  options,
-					  options[0],
+					  options[1],
 					  DialogDescriptor.BOTTOM_ALIGN,
 					  null,
 					  this);
@@ -376,7 +379,7 @@ public class EditPanel extends javax.swing.JPanel implements
     }
     
 
-    JToolBar createSessionButtonPanel() { 
+    private JToolBar createSessionButtonPanel() { 
 
 	JToolBar buttonPanel = new JToolBar();
 	buttonPanel.setFloatable (false);
@@ -388,15 +391,12 @@ public class EditPanel extends javax.swing.JPanel implements
 	browserCookieButton.setToolTipText(msgs.getString("MON_Browser_cookie"));
 	browserCookieButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
+		    browserCookieButton.setSelected(true);
+		    savedCookieButton.setSelected(false);
+		    useBrowserCookie = true; 
+		}
 
-		    if(!((ToolbarToggleButton)e.getSource()).isSelected())
-			return;
-		    else {
-			savedCookieButton.setSelected(false);
-			useBrowserCookie = true; 
-		    }
-
-		}});
+	    });
 
 	savedCookieButton = 
 	    new ToolbarToggleButton(TransactionView.savedCookieIcon,
@@ -404,14 +404,11 @@ public class EditPanel extends javax.swing.JPanel implements
 	savedCookieButton.setToolTipText(msgs.getString("MON_Saved_cookie"));
 	savedCookieButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
-		    
-		    if(!((ToolbarToggleButton)e.getSource()).isSelected())
-			return;
-		    else {
-			browserCookieButton.setSelected(false);
-			useBrowserCookie = false; 
-		    }
-		}});
+		    savedCookieButton.setSelected(true);
+		    browserCookieButton.setSelected(false);
+		    useBrowserCookie = false; 
+		}
+	    });
 
 	buttonPanel.add(browserCookieButton);
 	buttonPanel.add(savedCookieButton);
@@ -419,5 +416,17 @@ public class EditPanel extends javax.swing.JPanel implements
     }
     
 
-
+    private Component createSeparator() { 
+	JPanel sep = new JPanel() {
+		public float getAlignmentX() {
+		    return 0;
+		}
+		public float getAlignmentY() {
+		    return 0;
+		}
+	    };
+	sep.setMinimumSize(new Dimension(10, 10));
+	return sep;
+    }
+    
 } // EditPanel

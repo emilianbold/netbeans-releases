@@ -203,15 +203,7 @@ public class EditPanelHeaders extends DataDisplay {
 		}});
 	
 	int gridx = -1;
-	addGridBagComponent(this, 
-			    editPanel.createSessionButtonPanel(),
-			    ++gridx, ++gridy,
-			    1, 1, 1.0, 0, 
-			    java.awt.GridBagConstraints.WEST,
-			    java.awt.GridBagConstraints.NONE,
-			    buttonInsets,
-			    0, 0);
-	addGridBagComponent(this, createGlue(), ++gridx, gridy,
+	addGridBagComponent(this, createGlue(), ++gridx, ++gridy,
 			    1, 1, 1.0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,

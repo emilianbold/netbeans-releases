@@ -115,11 +115,6 @@ public class Controller  {
 	saveBeans = new Hashtable();
 	
 	createNodeStructure();
-	if(debug) log("Creating port server"); // NOI18N
-	PortServer ps = new PortServer();
-	if(debug) log("Created port server, about to run it"); // NOI18N
-	ps.start();
-	if(debug) log("Running port server"); // NOI18N
     }
 
     /**
@@ -1073,6 +1068,11 @@ public class Controller  {
 		serverRunning = false; 
 	    }
 	    else if(!setting.isRunning()) {
+		if(debug) 
+		    System.out.println("Now starting the internal server");
+		setting.setRunning(true);
+	    }
+	    if(!setting.isRunning()) {
 		if(debug) 
 		    log("Server is not running"); //NOI18N 
 		serverRunning = false;
