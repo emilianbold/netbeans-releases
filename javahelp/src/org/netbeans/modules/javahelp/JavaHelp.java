@@ -574,7 +574,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         public void show() {
             if (run != null) {
                 Installer.err.log("posting request from progress dialog...");
-                getHelpLoader().postRequest(run).addTaskListener(this);
+                getHelpLoader().post(run).addTaskListener(this);
                 run = null;
             }
             super.show();
