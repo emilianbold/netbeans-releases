@@ -33,7 +33,7 @@ import java.util.zip.ZipInputStream;
  * as a Main-Class in Manifest.
  * <p>
  * Destination NetBeans root directory ("nb_all") is taken from first command-line
- * argument or else from "nbroot" property otherwise current working directory is used.
+ * argument or else from "nbroot".
  * <p>
  * Installer checks if destination is a part of CVS repository to avoid later
  * conflicts and may asks for confirmation. Property "ignoreCVS" set to true
@@ -55,9 +55,9 @@ public class Installer {
     private static final String jelly2JAR = "netbeans/modules/ext/jelly2-nb.jar";
     private static final String xtestFolder = "netbeans/xtest-distribution/";
     
-    private static final String jemmyTarget = "../nbextra/jemmy/jemmy.jar";
-    private static final String jellyTarget = "../nbextra/jellytools/jelly-nb.jar";
-    private static final String jelly2Target = "../nbextra/jellytools/jelly2-nb.jar";
+    private static final String jemmyTarget = "jemmy/builds/jemmy.jar";
+    private static final String jellyTarget = "jellytools/builds/jelly-nb.jar";
+    private static final String jelly2Target = "jellytools/builds/jelly2-nb.jar";
     private static final String xtestTarget = "xtest/";
     
     private static final ZipInputStream jemmyNBM = getStream("jemmy.nbm");
@@ -143,10 +143,14 @@ public class Installer {
     public static void main(String[] args) {
         if (args.length>0) {
             targetFolder=args[0];
-        } else try {
-            System.out.println("NetBeans root directory (\"nb_all\") is not defined as command-line argument, using "+new File(targetFolder).getCanonicalPath());
-        } catch (IOException ioe) {
-            err(ioe.getMessage());
+        } else {
+            System.out.println("NetBeans root directory (\"nb_all\") is not defined as command-line argument!");
+            System.out.println();
+            System.out.println("This installer is designed to extract fresh libraries and XTest harness into test repository for usage in automated process.");
+            System.out.println("Usage: java -jar <zip file> <root directory>");
+            System.out.println("Example: java -jar testtools_nbms.zip C:\\space\\test-repository\\nb_all");
+            System.out.println("To install modules into running IDE for test developmnet purpose use Update Center wizard on extracted NBMs.");
+            System.exit(-1);
         }
         testTarget(jemmyTarget);
         testTarget(jellyTarget);
@@ -191,7 +195,7 @@ public class Installer {
             jellyNBM.close();
             xtestNBM.close();
             System.out.println("Finished.");
-            System.out.println("Warning: Several files were also installed into parent directory structure ("+new File(targetFolder, "../nbextra").getCanonicalPath()+").");
+//            System.out.println("Warning: Several files were also installed into parent directory structure ("+new File(targetFolder, "../nbextra").getCanonicalPath()+").");
         } catch (IOException ioe) {
             err(ioe.getMessage());
         }
