@@ -37,6 +37,8 @@ import org.netbeans.modules.web.project.WebProject;
  */
 public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Provider {
     
+    private File projectFld;
+    
     public CustomizerSources( WebProjectProperties uiProperties ) {
         initComponents();
         jScrollPane1.getViewport().setBackground( sourceRoots.getBackground() );
@@ -50,6 +52,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         FileObject projectFolder = uiProperties.getProject().getProjectDirectory();
         File pf = FileUtil.toFile( projectFolder );
         this.projectLocation.setText( pf == null ? "" : pf.getPath() ); // NOI18N
+        this.projectFld = pf;
         
         jTextFieldWebPages.setDocument(uiProperties.WEB_DOCBASE_DIR_MODEL);
         
@@ -432,11 +435,13 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
-//        if (jTextFieldWebPages.getText().length() > 0 && getWebPages().exists()) {
-//            chooser.setSelectedFile(getWebPages());
-//        } else {
-            chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
-//        }
+        File webPages = new File(jTextFieldWebPages.getText());
+        if (webPages.exists()) {
+            chooser.setSelectedFile(webPages.isAbsolute() ? webPages :
+                new File(projectFld, webPages.getPath()));
+        } else {
+            chooser.setSelectedFile(projectFld);
+        }
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File webPagesDir = FileUtil.normalizeFile(chooser.getSelectedFile());
             jTextFieldWebPages.setText(webPagesDir.getAbsolutePath());
