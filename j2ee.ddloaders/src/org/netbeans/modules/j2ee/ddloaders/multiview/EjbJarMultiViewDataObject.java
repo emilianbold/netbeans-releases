@@ -546,8 +546,8 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     }
 
     public void fileRenamed(FileRenameEvent fileRenameEvent) {
-        System.out.println("fileRenamed");                              //NOI18N
-        System.out.println("fileRenameEvent : " + fileRenameEvent);     //NOI18N
+//        System.out.println("fileRenamed");                              //NOI18N
+//        System.out.println("fileRenameEvent : " + fileRenameEvent);     //NOI18N
 
         FileObject fo = fileRenameEvent.getFile();
         String resourceName = getPackageName(fo);
@@ -566,8 +566,8 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     }
 
     public void fileDeleted(FileEvent fileEvent) {
-        System.out.println("fileDeleted");                              //NOI18N
-        System.out.println("fileEvent : " + fileEvent);                 //NOI18N
+//        System.out.println("fileDeleted");                              //NOI18N
+//        System.out.println("fileEvent : " + fileEvent);                 //NOI18N
 
         FileObject fo = fileEvent.getFile();
         String resourceName = getPackageName(fo);
@@ -946,10 +946,10 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
 
     private boolean fireEvent(String oldResourceName, String resourceName,
             int eventType) {
-        System.out.println("fireEvent");                            //NOI18N
-        System.out.println("oldResourceName : " + oldResourceName); //NOI18N
-        System.out.println("resourceName : " + resourceName);       //NOI18N
-        System.out.println("eventType : " + eventType);             //NOI18N
+//       System.out.println("fireEvent");                            //NOI18N
+//        System.out.println("oldResourceName : " + oldResourceName); //NOI18N
+//        System.out.println("resourceName : " + resourceName);       //NOI18N
+//        System.out.println("eventType : " + eventType);             //NOI18N
 
         boolean elementFound = false;
         String resource = null;
@@ -991,10 +991,10 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
 
     private void updateDD(String oldResourceName, String resourceName,
             int eventType) {
-        System.out.println("updateDD");                                 //NOI18N
-        System.out.println("oldResourceName : " + oldResourceName);     //NOI18N
-        System.out.println("resourceName : " + resourceName);           //NOI18N
-        System.out.println("eventType : " + eventType);                 //NOI18N
+//        System.out.println("updateDD");                                 //NOI18N
+//        System.out.println("oldResourceName : " + oldResourceName);     //NOI18N
+//        System.out.println("resourceName : " + resourceName);           //NOI18N
+//        System.out.println("eventType : " + eventType);                 //NOI18N
 
         switch (eventType) {
             case DDChangeEvent.EJB_CLASS_CHANGED:

@@ -577,8 +577,8 @@ public class EarDataObject extends DD2beansDataObject
     }
 
     public void fileRenamed(org.openide.filesystems.FileRenameEvent fileRenameEvent) {
-        System.out.println("fileRenamed");                              //NOI18N
-        System.out.println("fileRenameEvent : " + fileRenameEvent);     //NOI18N
+//        System.out.println("fileRenamed");                              //NOI18N
+//        System.out.println("fileRenameEvent : " + fileRenameEvent);     //NOI18N
 
         FileObject fo = fileRenameEvent.getFile();
         String resourceName = getPackageName (fo);
@@ -611,8 +611,8 @@ public class EarDataObject extends DD2beansDataObject
     }
     
     public void fileDeleted(org.openide.filesystems.FileEvent fileEvent) {
-        System.out.println("fileDeleted");                              //NOI18N
-        System.out.println("fileEvent : " + fileEvent);                 //NOI18N
+//        System.out.println("fileDeleted");                              //NOI18N
+//        System.out.println("fileEvent : " + fileEvent);                 //NOI18N
 
         FileObject fo = fileEvent.getFile();
         String resourceName = getPackageName (fo);
@@ -852,10 +852,10 @@ public class EarDataObject extends DD2beansDataObject
 
     private boolean fireEvent(String oldResourceName, String resourceName,
                 int eventType){
-            System.out.println("fireEvent");                            //NOI18N
-            System.out.println("oldResourceName : " + oldResourceName); //NOI18N
-            System.out.println("resourceName : " + resourceName);       //NOI18N
-            System.out.println("eventType : " + eventType);             //NOI18N
+//            System.out.println("fireEvent");                            //NOI18N
+//            System.out.println("oldResourceName : " + oldResourceName); //NOI18N
+//            System.out.println("resourceName : " + resourceName);       //NOI18N
+//            System.out.println("eventType : " + eventType);             //NOI18N
 
             boolean elementFound = false;
             String resource = null;
@@ -897,10 +897,10 @@ public class EarDataObject extends DD2beansDataObject
 
     private void updateDD(String oldResourceName, String resourceName,
                 int eventType){
-        System.out.println("updateDD");                                 //NOI18N
-        System.out.println("oldResourceName : " + oldResourceName);     //NOI18N
-        System.out.println("resourceName : " + resourceName);           //NOI18N
-        System.out.println("eventType : " + eventType);                 //NOI18N
+//        System.out.println("updateDD");                                 //NOI18N
+//        System.out.println("oldResourceName : " + oldResourceName);     //NOI18N
+//        System.out.println("resourceName : " + resourceName);           //NOI18N
+//        System.out.println("eventType : " + eventType);                 //NOI18N
 
         boolean ddModified = false;
 
