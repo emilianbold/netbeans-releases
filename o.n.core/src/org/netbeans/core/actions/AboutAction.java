@@ -43,7 +43,7 @@ public class AboutAction extends CallableSystemAction {
   }
 
   public HelpCtx getHelpCtx() {
-    return org.openide.util.HelpCtx.DEFAULT_HELP;
+    return new org.openide.util.HelpCtx (AboutAction.class);
   }
 
   public String getName() {
@@ -54,6 +54,7 @@ public class AboutAction extends CallableSystemAction {
 
 /*
  * Log
+ *  7    Gandalf   1.6         6/24/99  Jesse Glick     Gosh-honest HelpID's.
  *  6    Gandalf   1.5         6/22/99  Ian Formanek    employed DEFAULT_HELP
  *  5    Gandalf   1.4         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
