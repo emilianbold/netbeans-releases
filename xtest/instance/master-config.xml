@@ -213,6 +213,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="projects" 	testtypes="qa-functional"   attributes="validation,full,jdk14"/>
       <module name="qa" 	testtypes="serialization"   attributes="validation,full"/>
       <module name="qa"       	testtypes="qa-functional"   attributes="validation,full"/>
+      <module name="qa"   	testtypes="qa-performance"  attributes="measure_ide"/>  
       <module name="vcscore"	testtypes="qa-functional"   attributes="validation,full"/>      
       <module name="vcsgeneric"	testtypes="qa-functional"   attributes="validation,full"/>      
       <module name="xml"	testtypes="qa-functional"  attributes="validation,full"/>
@@ -259,6 +260,7 @@ Microsystems, Inc. All Rights Reserved.
           <property file="../../../nbextra/qa/jndi/jndi.properties"/>
       </module>      
       <module name="core"   	testtypes="qa-performance" attributes="measure_ui"/>  
+      <module name="qa"   	testtypes="qa-performance"  attributes="measure_ide"/>  
   </config>      
 
   <!-- QA functional tests for FFJ EE on jdk 1.3 -->
@@ -269,6 +271,10 @@ Microsystems, Inc. All Rights Reserved.
       </module>      
       <module name="rmi" 	testtypes="qa-functional"   attributes="validation,full"/>
   </config>      
+  
+  <config name="qa-performance">
+  	<module name="qa"   	testtypes="qa-performance"  attributes="measure_ide"/>  
+  </config>
   
   <config name="david">
       <module name="jndi"    	testtypes="qa-functional"  attributes="validation">
