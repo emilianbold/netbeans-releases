@@ -111,7 +111,7 @@ Microsystems, Inc. All Rights Reserved.
          <pathelement location="${nbroot}/httpserver/netbeans/modules/httpserver.jar"/>
          <pathelement location="${nbroot}/web/core/netbeans/modules/jsp.jar"/>
          <pathelement location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar"/> 
-
+         <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
          <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
       </classpath>
      </javac>
@@ -142,6 +142,7 @@ Microsystems, Inc. All Rights Reserved.
        excludes="**/SCCS/**, **/CVS/**">
 
        <classpath>
+         <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
          <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
          <pathelement location="extra/servlet.jar"/>
        </classpath>
