@@ -8,7 +8,3 @@ OpenIDE-Module-Requires: org.openide.TopManager
 OpenIDE-Module-Specification-Version: 2.5
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 
-Name: org/netbeans/modules/debugger/support/nodes/DebuggerNode.class
-OpenIDE-Module-Class: Node
-Type: Environment
-
