@@ -86,6 +86,19 @@ public class CreateTestAction extends CookieAction {
         return MODE_ANY;    // allow creation of tests for multiple selected nodes (classes, packages)
     }
     
+    /**
+     * Creates a progress dialog.
+     *
+     * @return  created progress dialog
+     */
+    private JUnitProgress createProgressDialog() {
+        String msg = NbBundle.getMessage(
+                JUnitProgress.class,
+                "LBL_generator_progress_title");                        //NOI18N
+        JUnitProgress progress = new JUnitProgress(msg);
+        return progress;
+    }
+    
     protected void performAction(Node[] nodes) {
         FileSystem      fsTest = null;
         DataObject      doTestTempl = null;
@@ -127,8 +140,15 @@ public class CreateTestAction extends CookieAction {
         }
         
         TestCreator.initialize();
+        
+        String msg;
+        JUnitProgress progress = createProgressDialog();
         progress.showMe(true);
-        progress.displayStatusText(NbBundle.getMessage(CreateTestAction.class, "MSG_StatusBar_CreateTest_Begin"));
+        
+        msg = NbBundle.getMessage(
+                CreateTestAction.class,
+                "MSG_StatusBar_CreateTest_Begin");                      //NOI18N
+        progress.displayStatusText(msg);
         try {
             // go through all nodes
             for(int nodeIdx = 0; nodeIdx < nodes.length; nodeIdx++) {
@@ -141,11 +161,17 @@ public class CreateTestAction extends CookieAction {
                     }
                 }
             }
-            progress.displayStatusText(NbBundle.getMessage(CreateTestAction.class, "MSG_StatusBar_CreateTests_Finished"));
+            msg = NbBundle.getMessage(
+                    CreateTestAction.class,
+                    "MSG_StatusBar_CreateTests_Finished");              //NOI18N
+            progress.displayStatusText(msg);
         }
         catch (CreateTestCanceledException e) {
             // tests creation has been canceled by the user
-            progress.displayStatusText(NbBundle.getMessage(CreateTestAction.class, "MSG_StatusBar_CreateTests_Cancelled"));
+            msg = NbBundle.getMessage(
+                    CreateTestAction.class,
+                    "MSG_StatusBar_CreateTests_Cancelled");             //NOI18N
+            progress.displayStatusText(msg);
         }
         finally {
             progress.hideMe();
@@ -160,7 +186,6 @@ public class CreateTestAction extends CookieAction {
     private static final String msgScanning = NbBundle.getMessage(CreateTestAction.class, "LBL_generator_status_scanning");
     private static final String msgIgnoring = NbBundle.getMessage(CreateTestAction.class, "LBL_generator_status_ignoring");
     
-    private JUnitProgress progress = new JUnitProgress(NbBundle.getMessage(JUnitProgress.class, "LBL_generator_progress_title"));
     private class CreateTestCanceledException extends Exception {}
     
     private void createSuiteTest(FileSystem fsTest, DataFolder folder, LinkedList suite, DataObject doSuiteT, LinkedList parentSuite) {
@@ -175,6 +200,7 @@ public class CreateTestAction extends CookieAction {
             // generate the test suite for all listed test classes
             classTargets = TestUtil.getAllClassElementsFromDataObject(doTarget);
             
+            JUnitProgress progress = createProgressDialog();
             for (int i=0; i < classTargets.length; i++) {
                 ClassElement classTarget = classTargets[i];
                 progress.setMessage(msgCreating + classTarget.getName().getFullName() + " ...");
@@ -195,6 +221,7 @@ public class CreateTestAction extends CookieAction {
     }
     
     private void createTest(FileSystem fsTest, FileObject foSource, DataObject doTestT, DataObject doSuiteT, LinkedList parentSuite) throws CreateTestCanceledException {
+        JUnitProgress progress = createProgressDialog();
         if (foSource.isFolder()) {
             // recurse of subfolders
             FileObject  childs[] = foSource.getChildren();
