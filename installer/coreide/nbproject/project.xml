@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.ant.freeform</type>
-    <name>NetBeans Installer</name>
     <configuration>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
             <name>NetBeans Installer</name>
@@ -12,10 +11,28 @@
             <folders>
                 <source-folder>
                     <label>src</label>
-                    <location>src</location>
                     <type>java</type>
+                    <location>src</location>
                 </source-folder>
             </folders>
+            <ide-actions>
+                <action name="build">
+                    <target>build</target>
+                </action>
+                <action name="clean">
+                    <target>clean</target>
+                </action>
+                <action name="rebuild">
+                    <target>clean</target>
+                    <target>build</target>
+                </action>
+                <action name="run">
+                    <target>run</target>
+                </action>
+                <action name="test">
+                    <target>test</target>
+                </action>
+            </ide-actions>
             <view>
                 <items>
                     <source-file>
@@ -44,24 +61,6 @@
                     </action>
                 </context-menu>
             </view>
-            <ide-actions>
-                <action name="build">
-                    <target>build</target>
-                </action>
-                <action name="clean">
-                    <target>clean</target>
-                </action>
-                <action name="rebuild">
-                    <target>clean</target>
-                    <target>build</target>
-                </action>
-                <action name="run">
-                    <target>run</target>
-                </action>
-                <action name="test">
-                    <target>test</target>
-                </action>
-            </ide-actions>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
