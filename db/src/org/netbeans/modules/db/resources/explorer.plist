@@ -185,8 +185,13 @@
 				prefix = "jdbc:oracle:oci8:@<SID>";
 			},
 			{
-				name = "PostgreSQL";
+				name = "PostgreSQL (v6.5 and earlier)";
 				driver = "postgresql.Driver";
+				prefix = "jdbc:postgresql://<HOST>:<PORT>/<DB>";
+			},
+			{
+				name = "PostgreSQL (v7.0 and later)";
+				driver = "org.postgresql.Driver";
 				prefix = "jdbc:postgresql://<HOST>:<PORT>/<DB>";
 			},
 			{
