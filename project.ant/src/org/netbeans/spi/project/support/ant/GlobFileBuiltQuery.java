@@ -48,6 +48,7 @@ import org.openide.util.WeakListeners;
 final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
     
     private final AntProjectHelper helper;
+    private final PropertyEvaluator eval;
     private final FileObject projectDir;
     private final File projectDirF;
     private final String[] fromPrefixes;
@@ -63,8 +64,9 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
      * Create a new query implementation based on an Ant-based project.
      * @see AntProjectHelper#createGlobFileBuiltQuery
      */
-    public GlobFileBuiltQuery(AntProjectHelper helper, String[] from, String[] to) throws IllegalArgumentException {
+    public GlobFileBuiltQuery(AntProjectHelper helper, PropertyEvaluator eval, String[] from, String[] to) throws IllegalArgumentException {
         this.helper = helper;
+        this.eval = eval;
         projectDir = helper.getProjectDirectory();
         projectDirF = FileUtil.toFile(projectDir);
         assert projectDirF != null;
@@ -97,7 +99,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
         projectDir.addFileChangeListener(FileUtil.weakFileChangeListener(fileL, projectDir));
          */
         weakFileL = FileUtil.weakFileChangeListener(fileL, null);
-        // XXX add properties listener to helper... if anything changes, refresh all
+        // XXX add properties listener to evaluator... if anything changes, refresh all
         // status objects and clear the stati cache; can then also keep a cache of
         // evaluated path prefixes & suffixes
     }
@@ -154,7 +156,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
             throw new IllegalArgumentException("Cannot check for status on file " + file + " outside of " + projectDir); // NOI18N
         }
         for (int i = 0; i < fromPrefixes.length; i++) {
-            String prefixEval = helper.evaluateString(fromPrefixes[i]);
+            String prefixEval = eval.evaluate(fromPrefixes[i]);
             if (prefixEval == null) {
                 return null;
             }
@@ -162,7 +164,7 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
                 continue;
             }
             String remainder = path.substring(prefixEval.length());
-            String suffixEval = helper.evaluateString(fromSuffixes[i]);
+            String suffixEval = eval.evaluate(fromSuffixes[i]);
             if (suffixEval == null) {
                 continue;
             }
@@ -170,11 +172,11 @@ final class GlobFileBuiltQuery implements FileBuiltQueryImplementation {
                 continue;
             }
             String particular = remainder.substring(0, remainder.length() - suffixEval.length());
-            String toPrefixEval = helper.evaluateString(toPrefixes[i]);
+            String toPrefixEval = eval.evaluate(toPrefixes[i]);
             if (toPrefixEval == null) {
                 continue;
             }
-            String toSuffixEval = helper.evaluateString(toSuffixes[i]);
+            String toSuffixEval = eval.evaluate(toSuffixes[i]);
             if (toSuffixEval == null) {
                 continue;
             }

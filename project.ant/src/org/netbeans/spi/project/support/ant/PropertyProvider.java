@@ -25,7 +25,7 @@ import javax.swing.event.ChangeListener;
  * synchronously.
  * @author Jesse Glick
  */
-/*XXX public*/ interface PropertyProvider {
+public interface PropertyProvider {
     
     /**
      * Get all defined properties.

@@ -312,7 +312,7 @@ public class ReferenceHelperTest extends NbTestCase {
     public void testAddRemoveArtifact() throws Exception {
         // Add one artifact. Check that the raw reference is there.
         assertFalse("project not initially modified", pm.isModified(p));
-        AntArtifact art = new SimpleAntArtifact(sisterh, "jar", "build.jar", "dojar", "clean");
+        AntArtifact art = sisterh.createSimpleAntArtifact("jar", "build.jar", "dojar", "clean");
         assertTrue("added a ref to proj2.dojar", r.addReference(art));
         assertTrue("project now modified", pm.isModified(p));
         ReferenceHelper.RawReference[] refs = r.getRawReferences();
@@ -340,7 +340,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertFalse("no-op add", r.addReference(art));
         assertFalse("project not modified by no-op add", pm.isModified(p));
         // Try another artifact from the same project.
-        art = new SimpleAntArtifact(sisterh, "javadoc", "build.javadoc", "dojavadoc", "clean");
+        art = sisterh.createSimpleAntArtifact("javadoc", "build.javadoc", "dojavadoc", "clean");
         assertTrue("added a ref to proj2.dojavadoc", r.addReference(art));
         assertTrue("project now modified", pm.isModified(p));
         refs = r.getRawReferences();
@@ -370,7 +370,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertFalse("project not modified by no-op add", pm.isModified(p));
         // Try modifying the second artifact in some way.
         // Note that only changes in the type, clean target, and artifact path count as modifications.
-        art = new SimpleAntArtifact(sisterh, "javadoc.html", "build.javadoc", "dojavadoc", "clean");
+        art = sisterh.createSimpleAntArtifact("javadoc.html", "build.javadoc", "dojavadoc", "clean");
         assertTrue("successful modification of proj2.dojavadoc by type", r.addReference(art));
         assertTrue("project modified by ref mod", pm.isModified(p));
         refs = r.getRawReferences();
@@ -381,10 +381,10 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("correct script location", URI.create("build.xml"), ref.getScriptLocation());
         assertEquals("correct target name", "dojavadoc", ref.getTargetName());
         assertEquals("correct clean target name", "clean", ref.getCleanTargetName());
-        art = new SimpleAntArtifact(sisterh, "javadoc.html", "build.javadoc", "dojavadoc", "realclean");
+        art = sisterh.createSimpleAntArtifact("javadoc.html", "build.javadoc", "dojavadoc", "realclean");
         assertTrue("successful modification of proj2.dojavadoc by clean target", r.addReference(art));
         pm.saveProject(p);
-        art = new SimpleAntArtifact(sisterh, "javadoc.html", "build.javadoc.complete", "dojavadoc", "realclean");
+        art = sisterh.createSimpleAntArtifact("javadoc.html", "build.javadoc.complete", "dojavadoc", "realclean");
         assertTrue("successful modification of proj2.dojavadoc by artifact location property", r.addReference(art));
         assertTrue("project modified by ref mod", pm.isModified(p));
         refs = r.getRawReferences();
@@ -467,11 +467,11 @@ public class ReferenceHelperTest extends NbTestCase {
      * @throws Exception in case of unexpected failures
      */
     public void testSubprojectProviderImpl() throws Exception {
-        AntArtifact art = new SimpleAntArtifact(sisterh, "jar", "build.jar", "dojar", "clean");
+        AntArtifact art = sisterh.createSimpleAntArtifact("jar", "build.jar", "dojar", "clean");
         assertTrue("added a ref to proj2.dojar", r.addReference(art));
-        art = new SimpleAntArtifact(sisterh, "javadoc", "build.javadoc", "dojavadoc", "clean");
+        art = sisterh.createSimpleAntArtifact("javadoc", "build.javadoc", "dojavadoc", "clean");
         assertTrue("added a ref to proj2.dojavadoc", r.addReference(art));
-        art = new SimpleAntArtifact(seph, "jar", "build.jar", "dojar", "clean");
+        art = seph.createSimpleAntArtifact("jar", "build.jar", "dojar", "clean");
         assertTrue("added a ref to proj3.dojar", r.addReference(art));
         SubprojectProvider sp = r.createSubprojectProvider();
         Set/*<Project>*/ subprojs = sp.getSubProjects();

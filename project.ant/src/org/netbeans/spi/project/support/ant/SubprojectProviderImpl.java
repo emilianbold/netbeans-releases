@@ -52,7 +52,7 @@ final class SubprojectProviderImpl implements SubprojectProvider {
                     String foreignProjectName = (String)it.next();
                     String prop = "project." + foreignProjectName; // NOI18N
                     AntProjectHelper h = helper.getAntProjectHelper();
-                    String foreignProjectDirS = h.evaluate(prop);
+                    String foreignProjectDirS = helper.eval.getProperty(prop);
                     if (foreignProjectDirS == null) {
                         // Missing for some reason. Skip it.
                         continue;

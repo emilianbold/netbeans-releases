@@ -151,7 +151,7 @@ public class PropertyUtils {
      * is changed.
      * @return a property producer
      */
-    /*XXX public*/ static synchronized PropertyProvider globalPropertyProvider() {
+    public static synchronized PropertyProvider globalPropertyProvider() {
         if (globalPropertyProvider != null) {
             PropertyProvider pp = (PropertyProvider)globalPropertyProvider.get();
             if (pp != null) {
@@ -234,6 +234,7 @@ public class PropertyUtils {
      * @param predefs an unevaluated set of initial definitions
      * @param defs an ordered list of property mappings, e.g. {@link EditableProperties} instances
      * @return a value for the property, or null if it was not defined or a circularity error was detected
+     * @deprecated Please use {@link #fixedPropertyProvider} and {@link #sequentialPropertyEvaluator} instead.
      */
     public static String evaluate(String prop, Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
         // XXX could be faster for large mappings by using reverse analysis
@@ -256,6 +257,7 @@ public class PropertyUtils {
      * @param defs an ordered list of property mappings, e.g. {@link EditableProperties} instances
      * @param predefs an unevaluated set of initial definitions
      * @return values for all defined properties, or null if a circularity error was detected
+     * @deprecated Please use {@link #fixedPropertyProvider} and {@link #sequentialPropertyEvaluator} instead.
      */
     public static Map/*<String,String>*/ evaluateAll(Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
         Map/*<String,String>*/ m = new HashMap(predefs);
@@ -311,6 +313,7 @@ public class PropertyUtils {
      * @param predefs an unevaluated set of initial definitions
      * @param defs an ordered list of property mappings, e.g. {@link EditableProperties} instances
      * @return a value for the text, or null if a circularity error was detected
+     * @deprecated Please use {@link #fixedPropertyProvider} and {@link #sequentialPropertyEvaluator} instead.
      */
     public static String evaluateString(String text, Map/*<String,String>*/ predefs, List/*<Map<String,String>>*/ defs) {
         // XXX could be faster for large mappings; see evaluate(...)
@@ -541,7 +544,7 @@ public class PropertyUtils {
      *             after passing it to this method)
      * @return a matching property producer
      */
-    /*XXX public?*/ static PropertyProvider fixedPropertyProvider(Map/*<String,String>*/ defs) {
+    public static PropertyProvider fixedPropertyProvider(Map/*<String,String>*/ defs) {
         return new FixedPropertyProvider(defs);
     }
     
@@ -572,7 +575,7 @@ public class PropertyUtils {
      * @param providers a sequential list of property groups
      * @return an evaluator
      */
-    /*XXX public*/ static PropertyEvaluator sequentialPropertyEvaluator(PropertyProvider preprovider, PropertyProvider[] providers) {
+    public static PropertyEvaluator sequentialPropertyEvaluator(PropertyProvider preprovider, PropertyProvider[] providers) {
         return new SequentialPropertyEvaluator(preprovider, providers);
     }
     

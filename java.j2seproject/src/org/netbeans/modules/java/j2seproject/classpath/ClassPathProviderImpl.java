@@ -12,6 +12,8 @@
  */
 package org.netbeans.modules.java.j2seproject.classpath;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
@@ -25,28 +27,38 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.WeakListeners;
 
 /**
  * Defines the various class paths for a J2SE project.
  */
-public final class ClassPathProviderImpl implements ClassPathProvider, AntProjectListener {
+public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
+    
+    private static final String SRC_DIR = "src.dir"; // NOI18N
+    private static final String TEST_SRC_DIR = "test.src.dir"; // NOI18N
+    private static final String BUILD_CLASSES_DIR = "build.classes.dir"; // NOI18N
+    private static final String DIST_JAR = "dist.jar"; // NOI18N
+    private static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
     
     private final AntProjectHelper helper;
+    private final PropertyEvaluator evaluator;
     private final Reference[] cache = new SoftReference[7];
 
-    private final Map dirCache = new HashMap ();
+    private final Map/*<String,FileObject>*/ dirCache = new HashMap();
 
-    public ClassPathProviderImpl(AntProjectHelper helper) {
+    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator) {
         this.helper = helper;
-        this.helper.addAntProjectListener (this);
+        this.evaluator = evaluator;
+        evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
     private synchronized FileObject getDir(String propname) {
         FileObject fo = (FileObject) this.dirCache.get (propname);
         if (fo == null ||  !fo.isValid()) {
-            String prop = helper.evaluate(propname);
+            String prop = evaluator.getProperty(propname);
             if (prop != null) {
                 fo = helper.resolveFileObject(prop);
                 this.dirCache.put (propname, fo);
@@ -56,23 +68,23 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
     }
     
     private FileObject getPrimarySrcDir() {
-        return getDir("src.dir"); // NOI18N
+        return getDir(SRC_DIR);
     }
     
     private FileObject getTestSrcDir() {
-        return getDir("test.src.dir"); // NOI18N
+        return getDir(TEST_SRC_DIR);
     }
     
     private FileObject getBuildClassesDir() {
-        return getDir("build.classes.dir");    //NOI18N
+        return getDir(BUILD_CLASSES_DIR);
     }
     
-    private FileObject getBuildJar() {
-        return getDir("dist.jar");            //NOI18N
+    private FileObject getDistJar() {
+        return getDir(DIST_JAR);
     }
     
     private FileObject getBuildTestClassesDir() {
-        return getDir("build.test.classes.dir");   //NOI18N
+        return getDir(BUILD_TEST_CLASSES_DIR);
     }
     
     private int getType(FileObject file) {
@@ -88,7 +100,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
             return 2;
         }
-        dir = getBuildJar();
+        dir = getDistJar();
         if (dir != null && (dir.equals(file))) {     //TODO: When MasterFs check also isParentOf
             return 2;
         }
@@ -108,11 +120,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if (cache[2+type] == null || (cp = (ClassPath)cache[2+type].get()) == null) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper,"javac.classpath"));      //NOI18N
+                new ProjectClassPathImplementation(helper, "javac.classpath", evaluator)); // NOI18N
             }
             else {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper,"javac.test.classpath")); //NOI18N
+                new ProjectClassPathImplementation(helper, "javac.test.classpath", evaluator)); // NOI18N
             }
             cache[2+type] = new SoftReference(cp);
         }
@@ -130,11 +142,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if (cache[4+type] == null || (cp = (ClassPath)cache[4+type].get())== null) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper,"run.classpath")); // NOI18N
+                new ProjectClassPathImplementation(helper, "run.classpath", evaluator)); // NOI18N
             }
             else if (type == 1) {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper,"run.test.classpath")); // NOI18N
+                new ProjectClassPathImplementation(helper, "run.test.classpath", evaluator)); // NOI18N
             }
             cache[4+type] = new SoftReference(cp);
         }
@@ -150,11 +162,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if (cache[type] == null || (cp = (ClassPath)cache[type].get()) == null) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper,"src.dir")); // NOI18N
+                new ProjectClassPathImplementation(helper, SRC_DIR, evaluator)); // NOI18N
             }
             else {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper,"test.src.dir")); // NOI18N
+                new ProjectClassPathImplementation(helper, TEST_SRC_DIR, evaluator)); // NOI18N
             }
             cache[type] = new SoftReference(cp);
         }
@@ -164,7 +176,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
     private ClassPath getBootClassPath() {
         ClassPath cp = null;
         if (cache[6] == null || (cp = (ClassPath)cache[6].get()) == null) {
-            cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(helper));
+            cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(helper, evaluator));
             cache[6] = new SoftReference(cp);
         }
         return cp;
@@ -220,13 +232,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         return null;
     }
 
-
-    public void configurationXmlChanged(AntProjectEvent ev) {
+    public void propertyChange(PropertyChangeEvent evt) {
+        dirCache.remove(evt.getPropertyName());
     }
-
-    public synchronized void propertiesChanged(AntProjectEvent ev) {
-        this.dirCache.clear();
-    }
-
+    
 }
 

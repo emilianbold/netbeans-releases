@@ -22,6 +22,7 @@ import javax.swing.event.ChangeListener;
 import javax.xml.transform.Result;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 /**
  * Finds Javadoc (if it is built) corresponding to binaries in J2SE project.
@@ -29,10 +30,12 @@ import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
  */
 public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
 
-    private AntProjectHelper helper;
+    private final AntProjectHelper helper;
+    private final PropertyEvaluator evaluator;
 
-    public JavadocForBinaryQueryImpl (AntProjectHelper helper) {
+    public JavadocForBinaryQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator) {
         this.helper = helper;
+        this.evaluator = evaluator;
     }
 
     public JavadocForBinaryQuery.Result findJavadoc(final URL binaryRoot) {
@@ -64,7 +67,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
             if (FileUtil.getArchiveFile(binaryRoot) != null) {
                 binaryRoot = FileUtil.getArchiveFile(binaryRoot);
             }
-            String outDir = helper.evaluate(binaryProperty);
+            String outDir = evaluator.getProperty(binaryProperty);
             if (outDir != null) {
                 File f = helper.resolveFile (outDir);
                 URL url = f.toURI().toURL();
@@ -74,7 +77,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                 }
                 if (url.equals(binaryRoot) || 
                         binaryRoot.toExternalForm().startsWith(url.toExternalForm())) {
-                    String javadocDir = helper.evaluate (javadocProperty);
+                    String javadocDir = evaluator.getProperty(javadocProperty);
                     if (javadocDir != null) {
                         f = helper.resolveFile(javadocDir);
                         return f.toURI().toURL();

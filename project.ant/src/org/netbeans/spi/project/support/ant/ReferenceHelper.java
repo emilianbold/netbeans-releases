@@ -83,20 +83,38 @@ public final class ReferenceHelper {
     static final String REFS_NS = "http://www.netbeans.org/ns/ant-project-references/1"; // NOI18N
     
     private final AntProjectHelper h;
+    final PropertyEvaluator eval;
     private final AuxiliaryConfiguration aux;
 
+    /** @deprecated Use the constructor that takes a property evaluator instead. */
+    public ReferenceHelper(AntProjectHelper helper, AuxiliaryConfiguration aux) {
+        this(helper, aux, helper.getStandardPropertyEvaluator());
+    }
+    
     /**
      * Create a new reference helper.
      * It needs an {@link AntProjectHelper} object in order to update references
      * in <code>project.xml</code>,
      * as well as set project or private properties referring to the locations
      * of foreign projects on disk.
+     * <p>
+     * The property evaluator may be used in {@link #getForeignFileReferenceAsArtifact},
+     * {@link ReferenceHelper.RawReference#toAntArtifact}, or
+     * {@link #createSubprojectProvider}. Typically this would
+     * be {@link AntProjectHelper#getStandardPropertyEvaluator}. You can substitute
+     * a custom evaluator but be warned that this helper class assumes that
+     * {@link AntProjectHelper#PROJECT_PROPERTIES_PATH} and {@link AntProjectHelper#PRIVATE_PROPERTIES_PATH}
+     * have their customary meanings; specifically that they are both used when evaluating
+     * properties (such as the location of a foreign project) and that private properties
+     * can override public properties.
      * @param helper an Ant project helper object representing this project's configuration
      * @param aux an auxiliary configuration provider needed to store references
+     * @param eval a property evaluator
      */
-    public ReferenceHelper(AntProjectHelper helper, AuxiliaryConfiguration aux) {
+    public ReferenceHelper(AntProjectHelper helper, AuxiliaryConfiguration aux, PropertyEvaluator eval) {
         h = helper;
         this.aux = aux;
+        this.eval = eval;
     }
 
     /**
@@ -827,7 +845,7 @@ public final class ReferenceHelper {
             return (AntArtifact)ProjectManager.mutex().readAccess(new Mutex.Action() {
                 public Object run() {
                     AntProjectHelper h = helper.h;
-                    String path = h.evaluate("project." + foreignProjectName); // NOI18N
+                    String path = helper.eval.getProperty("project." + foreignProjectName); // NOI18N
                     if (path == null) {
                         // Undefined foreign project.
                         return null;

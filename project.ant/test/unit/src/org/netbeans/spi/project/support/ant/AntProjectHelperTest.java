@@ -544,5 +544,61 @@ public class AntProjectHelperTest extends NbTestCase {
         // or other general fixed metadata
         // XXX try overwriting data
     }
+    
+    public void testCreatePropertyProvider() throws Exception {
+        PropertyProvider pp = h.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        Map/*<String,String>*/ defs = pp.getProperties();
+        assertEquals("correct number of defs", 3, defs.size());
+        assertEquals("correct value", "value1", defs.get("shared.prop"));
+        // Test changes.
+        PropertyUtilsTest.TestCL l = new PropertyUtilsTest.TestCL();
+        pp.addChangeListener(l);
+        EditableProperties p = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        p.setProperty("foo", "bar");
+        assertFalse("no events from uncommitted changes", l.changed);
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        assertTrue("got a change from setting a property", l.changed);
+        l.changed = false;
+        defs = pp.getProperties();
+        assertEquals("correct new size", 4, defs.size());
+        assertEquals("correct new value", "bar", defs.get("foo"));
+        // No-op changes.
+        p = p.cloneProperties();
+        p.setProperty("foo", "bar2");
+        p.setProperty("foo", "bar");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        assertFalse("no events from no-op changes", l.changed);
+        // Deleting a property file.
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, null);
+        assertTrue("got a change from removing a property file", l.changed);
+        l.changed = false;
+        assertEquals("now have no definitions", Collections.EMPTY_MAP, pp.getProperties());
+        // Start off with no file, then create it.
+        String path = "foo.properties";
+        pp = h.getPropertyProvider(path);
+        pp.addChangeListener(l);
+        assertEquals("no defs initially", Collections.EMPTY_MAP, pp.getProperties());
+        assertNull("no file made yet", h.getProjectDirectory().getFileObject(path));
+        p = new EditableProperties();
+        p.setProperty("one", "1");
+        p.setProperty("two", "2");
+        h.putProperties(path, p);
+        assertTrue("making the file fired a change", l.changed);
+        l.changed = false;
+        defs = pp.getProperties();
+        assertEquals("two defs", 2, defs.size());
+        assertEquals("right value #1", "1", defs.get("one"));
+        assertEquals("right value #2", "2", defs.get("two"));
+        assertNull("no file yet saved to disk", h.getProjectDirectory().getFileObject(path));
+        p.setProperty("three", "3");
+        assertFalse("no events from uncomm. change", l.changed);
+        h.putProperties(path, p);
+        assertTrue("now have changed new file", l.changed);
+        l.changed = false;
+        defs = pp.getProperties();
+        assertEquals("three defs", 3, defs.size());
+        // XXX test that saving the project fires no additional changes
+        // XXX test changes fired if file modified (or created or removed) on disk
+    }
 
 }

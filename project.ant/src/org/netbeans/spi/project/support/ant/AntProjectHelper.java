@@ -140,20 +140,17 @@ public final class AntProjectHelper {
     private final Set/*<String>*/ modifiedMetadataPaths = new HashSet();
     
     /**
-     * Properties loaded from metadata files on disk.
-     * Keys are project-relative paths such as {@link #PROJECT_PROPERTIES_PATH}.
-     * Values are loaded properties objects, or null if the file did not exist.
-     * If the key does not exist then it needs to be checked on disk.
-     */
-    private final Map/*<String,EditableProperties|null>*/ properties = new HashMap();
-    
-    /**
      * Registered listeners.
      * Access must be directly synchronized.
      */
     private final List/*<AntProjectListener>*/ listeners = new ArrayList();
     
-    // XXX lock any loaded files while the project is modified, to prevent manual editing,
+    /**
+     * List of loaded properties.
+     */
+    private final ProjectProperties properties;
+    
+    // XXX lock any loaded XML files while the project is modified, to prevent manual editing,
     // and reload any modified files if the project is unmodified
     
     private AntProjectHelper(FileObject dir, Document projectXml, ProjectState state, AntBasedProjectType type) {
@@ -165,6 +162,7 @@ public final class AntProjectHelper {
         assert type != null;
         this.projectXml = projectXml;
         assert projectXml != null;
+        properties = new ProjectProperties(dir);
     }
     
     /**
@@ -463,31 +461,7 @@ public final class AntProjectHelper {
                 saveXml(privateXml, path);
             } else {
                 // All else is assumed to be a properties file.
-                FileObject f = dir.getFileObject(path);
-                assert properties.containsKey(path);
-                EditableProperties p = (EditableProperties)properties.get(path);
-                if (p != null) {
-                    // Supposed to create/modify the file.
-                    if (f == null) {
-                        f = FileUtil.createData(dir, path);
-                    }
-                    FileLock lock = f.lock();
-                    try {
-                        OutputStream os = f.getOutputStream(lock);
-                        try {
-                            p.store(os);
-                        } finally {
-                            os.close();
-                        }
-                    } finally {
-                        lock.releaseLock();
-                    }
-                } else {
-                    // We are supposed to remove any existing file.
-                    if (f != null) {
-                        f.delete();
-                    }
-                }
+                properties.write(path);
             }
             // As metadata files are saved, take them off the modified list.
             it.remove();
@@ -508,51 +482,10 @@ public final class AntProjectHelper {
      * @return a set of properties
      */
     public EditableProperties getProperties(String path) {
-        EditableProperties p = getPropertiesOrNull(path);
-        if (p != null) {
-            return p;
-        } else {
-            return new EditableProperties(true);
+        if (path.equals(AntProjectHelper.PROJECT_XML_PATH) || path.equals(AntProjectHelper.PRIVATE_XML_PATH)) {
+            throw new IllegalArgumentException("Attempt to load properties from a project XML file"); // NOI18N
         }
-    }
-    
-    /**
-     * Like {@link #getProperties} but a missing or broken file results
-     * in a null return rather than an empty properties object.
-     */
-    private EditableProperties getPropertiesOrNull(String path) {
-        if (path.equals(PROJECT_XML_PATH) || path.equals(PRIVATE_XML_PATH)) {
-            throw new IllegalArgumentException("Attempt to load/store properties from a project XML file"); // NOI18N
-        }
-        if (properties.containsKey(path)) {
-            // In cache.
-            EditableProperties p = (EditableProperties)properties.get(path);
-            if (p == null) {
-                return null;
-            } else {
-                return p.cloneProperties();
-            }
-        }
-        // Not in cache.
-        FileObject fo = dir.getFileObject(path);
-        if (fo != null) {
-            try {
-                InputStream is = fo.getInputStream();
-                try {
-                    EditableProperties p = new EditableProperties(true);
-                    p.load(is);
-                    properties.put(path, p);
-                    return p.cloneProperties();
-                } finally {
-                    is.close();
-                }
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-        }
-        // Broken or missing.
-        properties.put(path, null);
-        return null;
+        return properties.getProperties(path);
     }
     
     /**
@@ -569,12 +502,27 @@ public final class AntProjectHelper {
      * @param props a set of properties to store, or null to delete any existing properties file there
      */
     public void putProperties(String path, EditableProperties props) {
-        if (Utilities.compareObjects(props, getPropertiesOrNull(path))) {
-            // No change.
-            return;
+        if (path.equals(AntProjectHelper.PROJECT_XML_PATH) || path.equals(AntProjectHelper.PRIVATE_XML_PATH)) {
+            throw new IllegalArgumentException("Attempt to store properties from a project XML file"); // NOI18N
         }
-        properties.put(path, props.cloneProperties());
-        modifying(path);
+        if (properties.putProperties(path, props)) {
+            modifying(path);
+        }
+    }
+    
+    /**
+     * Get a property provider that works with loadable project properties.
+     * Its current values should match {@link #getProperties}, and calls to
+     * {@link #putProperties} should cause it to fire changes.
+     * @param path a relative URI in the project directory, e.g.
+     *             {@link #PROJECT_PROPERTIES_PATH} or {@link #PRIVATE_PROPERTIES_PATH}
+     * @return a property provider implementation
+     */
+    public PropertyProvider getPropertyProvider(String path) {
+        if (path.equals(AntProjectHelper.PROJECT_XML_PATH) || path.equals(AntProjectHelper.PRIVATE_XML_PATH)) {
+            throw new IllegalArgumentException("Attempt to store properties from a project XML file"); // NOI18N
+        }
+        return properties.getPropertyProvider(path);
     }
     
     /**
@@ -717,6 +665,11 @@ public final class AntProjectHelper {
         return new ExtensibleMetadataProviderImpl(this);
     }
     
+    /** @deprecated Use the variant that accepts a property evaluator instead. */
+    public FileBuiltQueryImplementation createGlobFileBuiltQuery(String[] from, String[] to) throws IllegalArgumentException {
+        return createGlobFileBuiltQuery(getStandardPropertyEvaluator(), from, to);
+    }
+    
     /**
      * Create an implementation of {@link FileBuiltQuery} that works with files
      * within the project based on simple glob pattern mappings.
@@ -728,7 +681,7 @@ public final class AntProjectHelper {
      * glob pattern - this must include exactly one asterisk (<code>*</code>)
      * representing a variable portion of a source file path (always slash-separated
      * and relative to the project directory) and may include some Ant property
-     * references which will be resolved as per {@link AntProjectHelper#evaluateString}.
+     * references which will be resolved as per the property evaluator.
      * A file is considered out of date if there is no file represented by the
      * matching target pattern (which has the same format), or the target file is older
      * than the source file, or the source file is modified as per
@@ -753,6 +706,7 @@ public final class AntProjectHelper {
      * <li><samp>${test.build.classes.dir}/*.class</samp>
      * </ol>
      * </div>
+     * @param a property evaluator to interpret the patterns with
      * @param from a list of glob patterns for source files
      * @param to a matching list of glob patterns for built files
      * @return a query implementation
@@ -760,8 +714,13 @@ public final class AntProjectHelper {
      *                                  have zero or multiple asterisks,
      *                                  or the arrays are not of equal lengths
      */
-    public FileBuiltQueryImplementation createGlobFileBuiltQuery(String[] from, String[] to) throws IllegalArgumentException {
-        return new GlobFileBuiltQuery(this, from, to);
+    public FileBuiltQueryImplementation createGlobFileBuiltQuery(PropertyEvaluator eval, String[] from, String[] to) throws IllegalArgumentException {
+        return new GlobFileBuiltQuery(this, eval, from, to);
+    }
+
+    /** @deprecated Use the variant that accepts a PropertyEvaluator instead. */
+    public AntArtifact createSimpleAntArtifact(String type, String locationProperty, String targetName, String cleanTargetName) {
+        return createSimpleAntArtifact(type, locationProperty, getStandardPropertyEvaluator(), targetName, cleanTargetName);
     }
     
     /**
@@ -770,14 +729,20 @@ public final class AntProjectHelper {
      * @param type the type of artifact, e.g. {@link AntArtifact#TYPE_JAR}
      * @param locationProperty an Ant property name giving the project-relative
      *                         location of the artifact, e.g. <samp>dist.jar</samp>
+     * @param eval a way to evaluate the location property (e.g. {@link #getStandardPropertyEvaluator})
      * @param targetName the name of an Ant target which will build the artifact,
      *                   e.g. <samp>jar</samp>
      * @param cleanTargetName the name of an Ant target which will delete the artifact
      *                        (and maybe other build products), e.g. <samp>clean</samp>
      * @return an artifact
      */
-    public AntArtifact createSimpleAntArtifact(String type, String locationProperty, String targetName, String cleanTargetName) {
-        return new SimpleAntArtifact(this, type, locationProperty, targetName, cleanTargetName);
+    public AntArtifact createSimpleAntArtifact(String type, String locationProperty, PropertyEvaluator eval, String targetName, String cleanTargetName) {
+        return new SimpleAntArtifact(this, type, locationProperty, eval, targetName, cleanTargetName);
+    }
+    
+    /** @deprecated Use the variant that takes a property evaluator instead. */
+    public SharabilityQueryImplementation createSharabilityQuery(String[] sourceRoots, String[] buildDirectories) {
+        return createSharabilityQuery(getStandardPropertyEvaluator(), sourceRoots, buildDirectories);
     }
     
     /**
@@ -816,7 +781,8 @@ public final class AntProjectHelper {
      * Typical usage would be:
      * </p>
      * <pre>
-     * helper.createSharabilityQuery(new String[] {"${src.dir}", "${test.src.dir}"},
+     * helper.createSharabilityQuery(helper.getStandardPropertyEvaluator(),
+     *                               new String[] {"${src.dir}", "${test.src.dir}"},
      *                               new String[] {"${build.dir}", "${dist.dir}"})
      * </pre>
      * <p>
@@ -837,19 +803,20 @@ public final class AntProjectHelper {
      * this implementation in your project lookup and may return <code>UNKNOWN</code>.
      * </p>
      * </div>
+     * @param eval a property evaluator to interpret paths with
      * @param sourceRoots a list of additional paths to treat as sharable
      * @param buildDirectories a list of paths to treat as not sharable
      * @return a sharability query implementation suitable for the project lookup
      * @see Project#getLookup
      */
-    public SharabilityQueryImplementation createSharabilityQuery(String[] sourceRoots, String[] buildDirectories) {
+    public SharabilityQueryImplementation createSharabilityQuery(PropertyEvaluator eval, String[] sourceRoots, String[] buildDirectories) {
         String[] includes = new String[sourceRoots.length + 1];
         System.arraycopy(sourceRoots, 0, includes, 0, sourceRoots.length);
         includes[sourceRoots.length] = ""; // NOI18N
         String[] excludes = new String[buildDirectories.length + 1];
         System.arraycopy(buildDirectories, 0, excludes, 0, buildDirectories.length);
         excludes[buildDirectories.length] = "nbproject/private"; // NOI18N
-        return new SharabilityQueryImpl(this, includes, excludes);
+        return new SharabilityQueryImpl(this, eval, includes, excludes);
     }
         
     /**
@@ -870,10 +837,10 @@ public final class AntProjectHelper {
      * @see #PRIVATE_PROPERTIES_PATH
      * @see PropertyUtils#getGlobalProperties
      * @see #PROJECT_PROPERTIES_PATH
+     * @deprecated Please use {@link #getStandardPropertyEvaluator} instead.
      */
     public String evaluate(String prop) {
-        // XXX could be cached
-        return PropertyUtils.evaluate(prop, makeEvalPredefs(), makeEvalDefs());
+        return getStandardPropertyEvaluator().getProperty(prop);
     }
     
     /**
@@ -885,10 +852,10 @@ public final class AntProjectHelper {
      * @see #PRIVATE_PROPERTIES_PATH
      * @see PropertyUtils#getGlobalProperties
      * @see #PROJECT_PROPERTIES_PATH
+     * @deprecated Please use {@link #getStandardPropertyEvaluator} instead.
      */
     public Map/*<String,String>*/ evaluateAll() {
-        // XXX could be cached
-        return PropertyUtils.evaluateAll(makeEvalPredefs(), makeEvalDefs());
+        return getStandardPropertyEvaluator().getProperties();
     }
     
     /**
@@ -901,55 +868,86 @@ public final class AntProjectHelper {
      * @see #PRIVATE_PROPERTIES_PATH
      * @see PropertyUtils#getGlobalProperties
      * @see #PROJECT_PROPERTIES_PATH
+     * @deprecated Please use {@link #getStandardPropertyEvaluator} instead.
      */
     public String evaluateString(String text) {
-        return PropertyUtils.evaluateString(text, makeEvalPredefs(), makeEvalDefs());
+        return getStandardPropertyEvaluator().evaluate(text);
     }
     
-    /**
-     * Create stock predefs: ${basedir} and system properties.
-     */
-    private Map/*<String,String>*/ makeEvalPredefs() {
-        Map/*<String,String>*/ m = new HashMap();
-        Properties p = System.getProperties();
-        synchronized (p) {
-            m.putAll(p);
-        }
-        m.put("basedir", FileUtil.toFile(dir).getAbsolutePath()); // NOI18N
-        return m;
-    }
+    private PropertyProvider stockPropertyPreprovider = null;
     
     /**
-     * Create stock defs: private project props, global user build props, shared project props.
+     * Get a property provider which defines <code>basedir</code> according to
+     * the project directory and also copies all system properties in the current VM.
+     * @return a stock property provider for initial Ant-related definitions
+     * @see PropertyUtils#sequentialPropertyEvaluator
      */
-    private List/*<Map<String,String>>*/ makeEvalDefs() {
-        Map/*<String,String>*/ privprops = getProperties(PRIVATE_PROPERTIES_PATH);
-        // XXX not very efficient...
-        String userPropsFile = PropertyUtils.evaluate("user.properties.file", makeEvalPredefs(), Collections.singletonList(privprops));
-        Map/*<String,String>*/ globprops;
-        if (userPropsFile != null) {
-            globprops = new Properties();
-            File f = resolveFile(userPropsFile);
-            if (f.isFile() && f.canRead()) {
-                try {
-                    InputStream is = new FileInputStream(f);
-                    try {
-                        ((Properties)globprops).load(is);
-                    } finally {
-                        is.close();
-                    }
-                } catch (IOException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
+    public PropertyProvider getStockPropertyPreprovider() {
+        if (stockPropertyPreprovider == null) {
+            Map/*<String,String>*/ m = new HashMap();
+            Properties p = System.getProperties();
+            synchronized (p) {
+                m.putAll(p);
             }
-        } else {
-            globprops = PropertyUtils.getGlobalProperties();
+            m.put("basedir", FileUtil.toFile(dir).getAbsolutePath()); // NOI18N
+            stockPropertyPreprovider = PropertyUtils.fixedPropertyProvider(m);
         }
-        return Arrays.asList(new Map/*<String,String>*/[] {
-            privprops,
-            globprops,
-            getProperties(PROJECT_PROPERTIES_PATH),
-        });
+        return stockPropertyPreprovider;
+    }
+    
+    private PropertyEvaluator standardPropertyEvaluator = null;
+    
+    /**
+     * Get a property evaluator that can evaluate properties according to the default
+     * file layout for Ant-based projects.
+     * First, {@link #getStockPropertyPreprovider stock properties} are predefined.
+     * Then {@link #PRIVATE_PROPERTIES_PATH} is loaded via {@link #getPropertyProvider},
+     * then global definitions from {@link PropertyUtils#globalPropertyProvider}
+     * (though these may be overridden using the property <code>user.properties.file</code>
+     * in <code>private.properties</code>), then {@link #PROJECT_PROPERTIES_PATH}.
+     * @return a standard property evaluator
+     */
+    public PropertyEvaluator getStandardPropertyEvaluator() {
+        if (standardPropertyEvaluator == null) {
+            PropertyEvaluator findUserPropertiesFile = PropertyUtils.sequentialPropertyEvaluator(
+                getStockPropertyPreprovider(),
+                new PropertyProvider[] {
+                    getPropertyProvider(PRIVATE_PROPERTIES_PATH),
+                }
+            );
+            String userPropertiesFile = findUserPropertiesFile.getProperty("user.properties.file"); // NOI18N
+            PropertyProvider globalProperties;
+            if (userPropertiesFile != null) {
+                // XXX listen to changes in this, maybe...
+                // (both in findUserPropertiesFile and in this file on disk)
+                Properties globprops = new Properties();
+                File f = resolveFile(userPropertiesFile);
+                if (f.isFile() && f.canRead()) {
+                    try {
+                        InputStream is = new FileInputStream(f);
+                        try {
+                            globprops.load(is);
+                        } finally {
+                            is.close();
+                        }
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    }
+                }
+                globalProperties = PropertyUtils.fixedPropertyProvider(globprops);
+            } else {
+                globalProperties = PropertyUtils.globalPropertyProvider();
+            }
+            standardPropertyEvaluator = PropertyUtils.sequentialPropertyEvaluator(
+                getStockPropertyPreprovider(),
+                new PropertyProvider[] {
+                    getPropertyProvider(PRIVATE_PROPERTIES_PATH),
+                    globalProperties,
+                    getPropertyProvider(PROJECT_PROPERTIES_PATH),
+                }
+            );
+        }
+        return standardPropertyEvaluator;
     }
     
     /**

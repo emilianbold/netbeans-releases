@@ -22,6 +22,7 @@ import org.openide.filesystems.FileUtil;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.IOException;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 /**
  * Finds sources corresponding to binaries in a J2SE project.
@@ -29,10 +30,12 @@ import java.io.IOException;
  */
 public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
 
-    private AntProjectHelper helper;
+    private final AntProjectHelper helper;
+    private final PropertyEvaluator evaluator;
 
-    public CompiledSourceForBinaryQuery (AntProjectHelper helper) {
+    public CompiledSourceForBinaryQuery(AntProjectHelper helper, PropertyEvaluator evaluator) {
         this.helper = helper;
+        this.evaluator = evaluator;
     }
 
     public FileObject[] findSourceRoot(URL binaryRoot) {
@@ -54,7 +57,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
 
     private FileObject getSources (URL binaryRoot, String binaryProperty, String sourceProperty) {
         try {
-            String outDir = helper.evaluate(binaryProperty);
+            String outDir = evaluator.getProperty(binaryProperty);
             if (outDir != null) {
                 File f = helper.resolveFile (outDir);
                 URL url = f.toURI().toURL();
@@ -64,7 +67,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
                     url = new URL(url.toExternalForm() + "/");
                 }
                 if (url.equals (binaryRoot)) {
-                    String srcDir = helper.evaluate (sourceProperty);
+                    String srcDir = evaluator.getProperty(sourceProperty);
                     if (srcDir != null) {
                         FileObject srcFile = helper.resolveFileObject(srcDir);
                         if (FileUtil.isArchiveFile(srcFile)) {

@@ -32,22 +32,24 @@ final class SimpleAntArtifact extends AntArtifact {
     private final AntProjectHelper h;
     private final String type;
     private final String locationProperty;
+    private final PropertyEvaluator eval;
     private final String targetName;
     private final String cleanTargetName;
     
     /**
      * @see AntProjectHelper#createSimpleAntArtifact
      */
-    public SimpleAntArtifact(AntProjectHelper helper, String type, String locationProperty, String targetName, String cleanTargetName) {
+    public SimpleAntArtifact(AntProjectHelper helper, String type, String locationProperty, PropertyEvaluator eval, String targetName, String cleanTargetName) {
         this.h = helper;
         this.type = type;
         this.locationProperty = locationProperty;
+        this.eval = eval;
         this.targetName = targetName;
         this.cleanTargetName = cleanTargetName;
     }
     
     public URI getArtifactLocation() {
-        String locationResolved = h.evaluate(locationProperty);
+        String locationResolved = eval.getProperty(locationProperty);
         if (locationResolved == null) {
             return URI.create("file:/UNDEFINED"); // NOI18N
         }

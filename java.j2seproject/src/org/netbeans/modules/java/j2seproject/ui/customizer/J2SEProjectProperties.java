@@ -36,6 +36,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.ErrorManager;
@@ -157,12 +158,14 @@ public class J2SEProjectProperties {
     private Project project;
     private HashMap properties;    
     private AntProjectHelper antProjectHelper;
+    private PropertyEvaluator evaluator;
     private ReferenceHelper refHelper;
     
-    public J2SEProjectProperties( Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+    public J2SEProjectProperties( Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {
         this.project = project;
         this.properties = new HashMap();
         this.antProjectHelper = antProjectHelper;
+        this.evaluator = evaluator;
         this.refHelper = refHelper;
         read();                                
     }
@@ -258,7 +261,7 @@ public class J2SEProjectProperties {
             else {
                 // Standard properties
                 String raw = ((EditableProperties)eProps.get( pd.dest )).getProperty( pd.name );
-                String eval = antProjectHelper.evaluate( pd.name );
+                String eval = evaluator.getProperty(pd.name);
                 properties.put( pd.name, new PropertyInfo( pd, raw, eval ) );            
             }
         }
@@ -429,7 +432,7 @@ public class J2SEProjectProperties {
             this.propertyDesciptor = propertyDesciptor;
             this.rawValue = rawValue;
             this.evaluatedValue = evaluatedValue;
-            this.value = propertyDesciptor.parser.decode( rawValue, antProjectHelper, refHelper );
+            this.value = propertyDesciptor.parser.decode( rawValue, antProjectHelper, evaluator, refHelper );
             this.newValue = null;
         }
         
@@ -484,7 +487,7 @@ public class J2SEProjectProperties {
     
     private static abstract class PropertyParser {
         
-        public abstract Object decode( String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper );
+        public abstract Object decode( String raw, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper );
         
         public abstract String encode( Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper );
         
@@ -492,7 +495,7 @@ public class J2SEProjectProperties {
     
     private static class StringParser extends PropertyParser {
         
-        public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+        public Object decode(String raw, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
             return raw;
         }        
         
@@ -504,7 +507,7 @@ public class J2SEProjectProperties {
     
     private static class BooleanParser extends PropertyParser {
         
-        public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+        public Object decode(String raw, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
             
             if ( raw != null ) {
                String lowecaseRaw = raw.toLowerCase();
@@ -526,8 +529,8 @@ public class J2SEProjectProperties {
     
     private static class InverseBooleanParser extends BooleanParser {
         
-        public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {                    
-            return ((Boolean)super.decode( raw, antProjectHelper, refHelper )).booleanValue() ? Boolean.FALSE : Boolean.TRUE;           
+        public Object decode(String raw, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {                    
+            return ((Boolean)super.decode(raw, antProjectHelper, evaluator, refHelper)).booleanValue() ? Boolean.FALSE : Boolean.TRUE;           
         }
         
         public String encode(Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
@@ -550,7 +553,7 @@ public class J2SEProjectProperties {
         };
         
         
-        public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+        public Object decode(String raw, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {
             
             String pe[] = PropertyUtils.tokenizePath( raw );
             List cpItems = new ArrayList( pe.length );
@@ -587,12 +590,12 @@ public class J2SEProjectProperties {
                     AntArtifact artifact = refHelper.getForeignFileReferenceAsArtifact( pe[i] );                     
                     if ( artifact != null ) {
                         // Sub project artifact
-                        String eval = antProjectHelper.evaluate( getAntPropertyName( pe[i] ) );
+                        String eval = evaluator.getProperty(getAntPropertyName(pe[i]));
                         cpItem = new VisualClassPathItem( artifact, VisualClassPathItem.TYPE_ARTIFACT, pe[i], eval );
                     }
                     else {
                         // Standalone jar or property
-                        String eval = antProjectHelper.evaluate( getAntPropertyName( pe[i] ) );
+                        String eval = evaluator.getProperty(getAntPropertyName(pe[i]));
                         String[] tokenizedPath = PropertyUtils.tokenizePath( raw );                                                
                         cpItem = new VisualClassPathItem( tokenizedPath, VisualClassPathItem.TYPE_JAR, pe[i], eval );
                     }
@@ -655,7 +658,7 @@ public class J2SEProjectProperties {
     
     private static class PlatformParser extends PropertyParser {
         
-        public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
+        public Object decode(String raw, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
             
             JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();            
             for( int i = 0; i < platforms.length; i++ ) {

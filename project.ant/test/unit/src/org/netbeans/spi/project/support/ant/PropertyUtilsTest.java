@@ -438,7 +438,7 @@ public class PropertyUtilsTest extends NbTestCase {
         
     }
     
-    private static final class TestCL implements ChangeListener {
+    static final class TestCL implements ChangeListener {
         
         public boolean changed = false;
         

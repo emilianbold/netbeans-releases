@@ -19,16 +19,19 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImplementation {
 
-    private AntProjectHelper helper;
+    private final AntProjectHelper helper;
+    private final PropertyEvaluator evaluator;
 
-    public UnitTestForSourceQueryImpl(AntProjectHelper helper) {
+    public UnitTestForSourceQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator) {
         this.helper = helper;
+        this.evaluator = evaluator;
     }
 
     public URL findUnitTest(FileObject source) {
@@ -44,11 +47,11 @@ public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImpleme
         if (p == null) {
             return null;
         }
-        FileObject fromRoot = helper.resolveFileObject(helper.evaluate(from));
+        FileObject fromRoot = helper.resolveFileObject(evaluator.getProperty(from));
         if (!fromRoot.equals(file)) {
             return null;
         }
-        String path = helper.resolvePath(helper.evaluate(to));
+        String path = helper.resolvePath(evaluator.getProperty(to));
         try {
             return helper.resolveFile(path).toURI().normalize().toURL();
         } catch (MalformedURLException e) {

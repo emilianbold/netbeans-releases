@@ -23,8 +23,10 @@ import java.util.Map;
  * it will be used with the project manager mutex. Changes should be fired
  * synchronously.
  * @author Jesse Glick
+ * @see PropertyUtils#sequentialPropertyEvaluator
+ * @see AntProjectHelper#getStandardPropertyEvaluator
  */
-/*XXX: public*/ interface PropertyEvaluator {
+public interface PropertyEvaluator {
     
     /**
      * Evaluate a single property.

@@ -49,6 +49,7 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
@@ -71,14 +72,16 @@ final class J2SEProject implements Project, AntProjectListener {
     private static final Icon J2SE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif")); // NOI18N
         
     private final AntProjectHelper helper;
+    private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     
     J2SEProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
+        eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
-        refHelper = new ReferenceHelper(helper, aux);
+        refHelper = new ReferenceHelper(helper, aux, eval);
         genFilesHelper = new GeneratedFilesHelper(helper);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
@@ -92,13 +95,22 @@ final class J2SEProject implements Project, AntProjectListener {
         return "J2SEProject[" + getProjectDirectory() + "]"; // NOI18N
     }
     
+    private PropertyEvaluator createEvaluator() {
+        // XXX might need to use a custom evaluator to handle active platform substitutions... TBD
+        return helper.getStandardPropertyEvaluator();
+    }
+    
+    PropertyEvaluator evaluator() {
+        return eval;
+    }
+    
     public Lookup getLookup() {
         return lookup;
     }
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(new String[] {
+        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(evaluator(), new String[] {
             "${src.dir}/*.java", // NOI18N
             "${test.src.dir}/*.java", // NOI18N
         }, new String[] {
@@ -111,17 +123,17 @@ final class J2SEProject implements Project, AntProjectListener {
             helper.createCacheDirectoryProvider(),
             spp,
             new J2SEActionProvider( this, helper ),
-            new J2SEPhysicalViewProvider(this, helper, spp),
-            new J2SECustomizerProvider( this, helper, refHelper ),
-            new ClassPathProviderImpl(helper),
-            new CompiledSourceForBinaryQuery(helper),
-            new JavadocForBinaryQueryImpl(helper),
+            new J2SEPhysicalViewProvider(this, helper, evaluator(), spp),
+            new J2SECustomizerProvider(this, helper, evaluator(), refHelper),
+            new ClassPathProviderImpl(helper, evaluator()),
+            new CompiledSourceForBinaryQuery(helper, evaluator()),
+            new JavadocForBinaryQueryImpl(helper, evaluator()),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
-            new UnitTestForSourceQueryImpl(helper),
+            new UnitTestForSourceQueryImpl(helper, evaluator()),
             new J2SESourceGroup(this, helper),
-            helper.createSharabilityQuery(new String[] {
+            helper.createSharabilityQuery(evaluator(), new String[] {
                 "${src.dir}", // NOI18N
                 "${test.src.dir}", // NOI18N
             }, new String[] {
@@ -142,21 +154,22 @@ final class J2SEProject implements Project, AntProjectListener {
     }
 
     public void propertiesChanged(AntProjectEvent ev) {
-        // currently ignored
+        // currently ignored (probably better to listen to evaluator() if you need to)
     }
     
     // Package private methods -------------------------------------------------
     
     FileObject getSourceDirectory() {
-        String srcDir = helper.evaluate("src.dir"); // NOI18N
+        String srcDir = evaluator().getProperty("src.dir"); // NOI18N
         if (srcDir == null) {
+            // XXX cleaner to define some simple defaults in the evaluator itself?
             return null;
         }
         return helper.resolveFileObject(srcDir);
     }
     
     FileObject getTestSourceDirectory() {
-        String testSrcDir = helper.evaluate("test.src.dir"); // NOI18N
+        String testSrcDir = evaluator().getProperty("test.src.dir"); // NOI18N
         if (testSrcDir == null) {
             return null;
         }
@@ -164,7 +177,7 @@ final class J2SEProject implements Project, AntProjectListener {
     }
     
     File getTestClassesDirectory() {
-        String testClassesDir = helper.evaluate("build.test.classes.dir"); // NOI18N
+        String testClassesDir = evaluator().getProperty("build.test.classes.dir"); // NOI18N
         if (testClassesDir == null) {
             return null;
         }
@@ -292,7 +305,7 @@ final class J2SEProject implements Project, AntProjectListener {
 
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
-                helper.createSimpleAntArtifact(AntArtifact.TYPE_JAR, "dist.jar", "jar", "clean"), // NOI18N
+                helper.createSimpleAntArtifact(AntArtifact.TYPE_JAR, "dist.jar", evaluator(), "jar", "clean"), // NOI18N
             };
         }
 

@@ -13,6 +13,8 @@
 
 package org.netbeans.spi.project.support.ant;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,9 +26,10 @@ import org.openide.util.WeakListeners;
  * Standard impl of {@link SharabilityQueryImplementation}.
  * @author Jesse Glick
  */
-final class SharabilityQueryImpl implements SharabilityQueryImplementation, AntProjectListener {
+final class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyChangeListener {
     
     private final AntProjectHelper h;
+    private final PropertyEvaluator eval;
     private final String[] includes;
     private final String[] excludes;
     /** Absolute paths of directories or files to treat as sharable (except for the excludes). */
@@ -34,12 +37,13 @@ final class SharabilityQueryImpl implements SharabilityQueryImplementation, AntP
     /** Absolute paths of directories or files to treat as not sharable. */
     private String[] excludePaths;
     
-    SharabilityQueryImpl(AntProjectHelper h, String[] includes, String[] excludes) {
+    SharabilityQueryImpl(AntProjectHelper h, PropertyEvaluator eval, String[] includes, String[] excludes) {
         this.h = h;
+        this.eval = eval;
         this.includes = includes;
         this.excludes = excludes;
         computeFiles();
-        h.addAntProjectListener((AntProjectListener)WeakListeners.create(AntProjectListener.class, this, h));
+        eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
     }
     
     /** Compute the absolute paths which are and are not sharable. */
@@ -56,7 +60,7 @@ final class SharabilityQueryImpl implements SharabilityQueryImplementation, AntP
     private String[] computeFrom(String[] list) {
         List/*<String>*/ result = new ArrayList(list.length);
         for (int i = 0; i < list.length; i++) {
-            String val = h.evaluateString(list[i]);
+            String val = eval.evaluate(list[i]);
             if (val != null) {
                 File f = h.resolveFile(val);
                 result.add(f.getAbsolutePath());
@@ -97,12 +101,8 @@ final class SharabilityQueryImpl implements SharabilityQueryImplementation, AntP
         return false;
     }
     
-    public void propertiesChanged(AntProjectEvent ev) {
+    public void propertyChange(PropertyChangeEvent evt) {
         computeFiles();
-    }
-    
-    public void configurationXmlChanged(AntProjectEvent ev) {
-        // ignore
     }
     
 }
