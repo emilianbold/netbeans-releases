@@ -15,22 +15,12 @@
 
 package gui.debuggercore;
 
-//import java.io.File;
-//import java.util.Enumeration;
-//
-//import JPopupMenu;
-//
+import java.awt.event.KeyEvent;
+
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
-//import org.netbeans.jellytools.actions.MountAction;
-//import org.netbeans.jellytools.nodes.Node;
-//
-//import org.netbeans.jemmy.EventTool;
-//import org.netbeans.jemmy.TimeoutExpiredException;
-//import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-//import org.netbeans.jemmy.operators.JTreeOperator;
 
 public class Utilities {
     
@@ -79,6 +69,14 @@ public class Utilities {
     
     public static String testProjectName = "debugTestProject";
     
+    public static Action.Shortcut toggleBreakpointShortcut = new Action.Shortcut(KeyEvent.VK_F8, KeyEvent.CTRL_MASK);
+    public static Action.Shortcut newBreakpointShortcut = new Action.Shortcut(KeyEvent.VK_F8, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK);
+    public static Action.Shortcut newWatchShortcut = new Action.Shortcut(KeyEvent.VK_F7, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK);
+    public static Action.Shortcut debugProjectShortcut = new Action.Shortcut(KeyEvent.VK_F5);
+    public static Action.Shortcut runToCursorShortcut = new Action.Shortcut(KeyEvent.VK_F4);
+    public static Action.Shortcut stepIntoShortcut = new Action.Shortcut(KeyEvent.VK_F7);
+    public static Action.Shortcut continueShortcut = new Action.Shortcut(KeyEvent.VK_F5, KeyEvent.CTRL_MASK);
+    public static Action.Shortcut killSessionShortcut = new Action.Shortcut(KeyEvent.VK_F5, KeyEvent.SHIFT_MASK);
     
     public Utilities() {}
     
@@ -124,34 +122,50 @@ public class Utilities {
     }
     
     public static void showLocalVariablesView() {
-        new Action(windowMenu + "|" + debugMenu + "|" + localVarsItem, null).perform();
+        //new Action(windowMenu + "|" + debugMenu + "|" + localVarsItem, null).perform();
+        new Action(null, null, new Action.Shortcut(KeyEvent.VK_1, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
     }
     
     public static void showWatchesView() {
-        new Action(windowMenu + "|" + debugMenu + "|" + watchesItem, null).perform();
+        //new Action(windowMenu + "|" + debugMenu + "|" + watchesItem, null).perform();
+        new Action(null, null, new Action.Shortcut(KeyEvent.VK_2, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
     }
     
     public static void showCallStackView() {
-        new Action(windowMenu + "|" + debugMenu + "|" + callStackItem, null).perform();
+        //new Action(windowMenu + "|" + debugMenu + "|" + callStackItem, null).perform();
+        new Action(null, null, new Action.Shortcut(KeyEvent.VK_3, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
     }
     
     public static void showClassesView() {
-        new Action(windowMenu + "|" + debugMenu + "|" + classesItem, null).perform();
+        //new Action(windowMenu + "|" + debugMenu + "|" + classesItem, null).perform();
+        new Action(null, null, new Action.Shortcut(KeyEvent.VK_4, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
     }
     
     public static void showBreakpointsView() {
-        new Action(windowMenu + "|" + debugMenu + "|" + breakpointsItem, null).perform();
+        //new Action(windowMenu + "|" + debugMenu + "|" + breakpointsItem, null).perform();
+        new Action(null, null, new Action.Shortcut(KeyEvent.VK_5, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
     }
     
     public static void showSessionsView() {
-        new Action(windowMenu + "|" + debugMenu + "|" + sessionsItem, null).perform();
+        //new Action(windowMenu + "|" + debugMenu + "|" + sessionsItem, null).perform();
+        new Action(null, null, new Action.Shortcut(KeyEvent.VK_6, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
     }
     
     public static void showThreadsView() {
-        new Action(windowMenu + "|" + debugMenu + "|" + threadsItem, null).perform();
+        //new Action(windowMenu + "|" + debugMenu + "|" + threadsItem, null).perform();
+        new Action(null, null, new Action.Shortcut(KeyEvent.VK_7, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
     }
     
     public static void showSourcesView() {
-        new Action(windowMenu + "|" + debugMenu + "|" + sourcesItem, null).perform();
+        //new Action(windowMenu + "|" + debugMenu + "|" + sourcesItem, null).perform();
+        new Action(null, null, new Action.Shortcut(KeyEvent.VK_8, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK)).performShortcut();
+    }
+    
+    public static void sleep(long ms) {
+        try {
+            Thread.sleep(ms);
+        }
+        catch (Exception ex) {};
     }
 }
+
