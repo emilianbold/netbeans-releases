@@ -1122,6 +1122,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             //invalidate();
 
             innerLayoutChanged();
+            controlCenter.newSelection(getSelectedProxies());
 
             //designPanel.revalidate();
             //designPanel.repaint();
