@@ -409,6 +409,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         // TODO: get imports from the source file
         List imports = new ArrayList();
         List staticImports = new ArrayList();
+        imports.add("java.lang.*");
 
         try {
             org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator = expression.evaluator(
