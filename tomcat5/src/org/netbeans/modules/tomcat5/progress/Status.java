@@ -75,4 +75,7 @@ public class Status implements DeploymentStatus {
         return StateType.RUNNING.equals (state);
     }
     
+    public String toString () {
+        return "A="+getAction ()+" S="+getState ()+" "+getMessage ();
+    }
 }
