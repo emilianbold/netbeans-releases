@@ -224,12 +224,22 @@ public class BaseOptions extends OptionSupport {
     }
 
     public static BaseOptions getOptions(Class kitClass) {
-        BaseOptions option = (BaseOptions)kitClass2Options.get(kitClass);
+        //check also all superclasses whether they are not in the 
+        //kitClass2Options map
+        Class c = kitClass;
+        BaseOptions option = null;
         
-        if (option == null) {
-            AllOptionsFolder.getDefault().loadMIMEOption(kitClass, false);
+        while (option == null && c != null) {
+            option = (BaseOptions)kitClass2Options.get(c);
+            if (option != null) 
+                break;
             
-            option = (BaseOptions)kitClass2Options.get(kitClass);
+            AllOptionsFolder.getDefault().loadMIMEOption(c, false);
+            option = (BaseOptions)kitClass2Options.get(c);
+            if (option != null)
+                break;
+            
+            c = c.getSuperclass();
         }
         
         return option;
