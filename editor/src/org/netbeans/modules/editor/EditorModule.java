@@ -38,6 +38,7 @@ import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import com.netbeans.developer.modules.text.java.JCStorage;
+import com.netbeans.developer.modules.text.java.NbEditorJavaKit;
 
 /**
 * Module installation class for editor
@@ -56,7 +57,7 @@ public class EditorModule extends ModuleInstall {
   /** Kit replacements that will be installed into JEditorPane */
   KitInfo[] replacements = new KitInfo[] {
     new KitInfo(MIME_PLAIN, "com.netbeans.developer.modules.text.NbEditorPlainKit"),
-    new KitInfo(MIME_JAVA, "com.netbeans.developer.modules.text.NbEditorJavaKit"),
+    new KitInfo(MIME_JAVA, "com.netbeans.developer.modules.text.java.NbEditorJavaKit"),
     new KitInfo(MIME_HTML, "com.netbeans.developer.modules.text.NbEditorHTMLKit"),
   };
 
@@ -72,6 +73,7 @@ public class EditorModule extends ModuleInstall {
   }
 
   static final long serialVersionUID =-929863607593944237L;
+
   private static void registerIndents() {
     IndentEngine.register(MIME_JAVA,
         new FilterIndentEngine(Formatter.getFormatter(JavaKit.class)));
@@ -114,6 +116,29 @@ public class EditorModule extends ModuleInstall {
 
   }
 
+  public void uninstalled() {
+    if (Boolean.getBoolean("netbeans.module.test")) {
+      /* Reset the hashtable holding the editor kits, so the editor kit
+      * can be refreshed. As the JEditorPane.kitRegistryKey is private
+      * it must be accessed through the reflection.
+      */
+      try {
+        java.lang.reflect.Field kitRegistryKeyField = JEditorPane.class.getDeclaredField("kitRegistryKey"); 
+        if (kitRegistryKeyField != null) {
+          kitRegistryKeyField.setAccessible(true);
+          Object kitRegistryKey = kitRegistryKeyField.get(JEditorPane.class);
+          if (kitRegistryKey != null) {
+            // Set a fresh hashtable. It can't be null as there is a hashtable in AppContext
+            sun.awt.AppContext.getAppContext().put(kitRegistryKey, new java.util.Hashtable());
+          }
+        }
+      } catch (Throwable t) {
+        t.printStackTrace();
+      }
+    }
+  }
+
+
   static class KitInfo {
 
     /** Content type for which the kits will be switched */
@@ -155,6 +180,7 @@ public class EditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  37   Gandalf   1.36        1/4/00   Miloslav Metelka 
  *  36   Gandalf   1.35        11/27/99 Patrik Knakal   
  *  35   Gandalf   1.34        11/9/99  Miloslav Metelka 
  *  34   Gandalf   1.33        11/8/99  Miloslav Metelka 

@@ -21,6 +21,7 @@ import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.explorer.propertysheet.PropertyModel;
 import com.netbeans.editor.Coloring;
 import com.netbeans.editor.Settings;
+import com.netbeans.editor.DefaultSettings;
 import com.netbeans.developer.editors.FontEditor;
 import com.netbeans.developer.editors.ColorEditor;
 
@@ -64,8 +65,8 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
   public ColoringEditorPanel() {
     support = new PropertyChangeSupport(this); 
 
-    Coloring def =  new Coloring( Font.decode( null ), Color.black, Color.white );    
-    value = new ColoringBean(def, "null", def, true );
+    value = new ColoringBean(DefaultSettings.defaultColoring, "null",
+        DefaultSettings.defaultColoring, true );
     
     initComponents ();
 
