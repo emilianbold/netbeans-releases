@@ -353,7 +353,7 @@ workspaceswitcher
     <echo message="Building module web/jspsyntax..."/>
     <ant dir="../web/jspsyntax" target="netbeans"/>
   </target>
-  <target name="all-cpplite" depends="all-openide,all-editor">
+  <target name="all-cpplite" depends="all-openide,all-editor,all-java">
     <echo message="Building module cpplite..."/>
     <ant dir="../cpplite" target="netbeans"/>
   </target>
