@@ -140,7 +140,7 @@ final class J2SEProject implements Project, AntProjectListener {
             helper.createCacheDirectoryProvider(),
             spp,
             new J2SEActionProvider( this, helper ),
-            new J2SEPhysicalViewProvider(this, helper, evaluator(), spp),
+            new J2SEPhysicalViewProvider(this, helper, evaluator(), spp, refHelper),
             new J2SECustomizerProvider(this, helper, evaluator(), refHelper),
             new ClassPathProviderImpl(helper, evaluator()),
             new CompiledSourceForBinaryQuery(helper, evaluator()),
