@@ -647,6 +647,15 @@
       <tocitem text="Setting Font and Color for the Help Viewer" target="accessibility.stylesheet"/>
       <tocitem text="Displaying Help in a Web Browser" target="accessibility.alternate.browser" />
   </tocitem>
+  
+  
+  <tocitem text="JUnit Module"><!--QUESTION(tm) : now that junit is built in should this title change? should this section live elsewhere in the TOC?-->
+    <tocitem text="About" target="junit_about"></tocitem>
+    <tocitem text="Test Generation" target="junit_creatingtests"></tocitem>
+    <tocitem text="Working with Tests" target="junit_runningtests"></tocitem>
+    <tocitem text="JUnit Module Settings" target="junit_configuringsettings"></tocitem>
+  </tocitem>
+  
 </tocitem>
 </toc>
 
