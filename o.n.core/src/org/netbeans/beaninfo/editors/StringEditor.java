@@ -104,7 +104,8 @@ public class StringEditor extends PropertyEditorSupport implements ExPropertyEdi
             //editor
             instructions = (String) prop.getValue ("instructions"); //NOI18N
             oneline = Boolean.TRUE.equals (prop.getValue ("oneline")); //NOI18N
-            customEd = !Boolean.TRUE.equals (prop.getValue ("suppressCustomEditor"));
+            customEd = !Boolean.TRUE.equals (prop.getValue 
+                ("suppressCustomEditor")); //NOI18N
         }
     }
 }
