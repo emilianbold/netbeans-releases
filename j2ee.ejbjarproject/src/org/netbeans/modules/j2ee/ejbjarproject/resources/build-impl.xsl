@@ -354,11 +354,22 @@ is divided into following sections:
     COMPILATION SECTION
     ===================
     </xsl:comment>
-
+           
             <xsl:call-template name="deps.target">
-                <xsl:with-param name="targetname" select="'deps-jar'"/>
+                <xsl:with-param name="targetname" select="'deps-module-jar'"/>
                 <xsl:with-param name="type" select="'jar'"/>
             </xsl:call-template>
+
+            <xsl:call-template name="deps.target">
+                <xsl:with-param name="targetname" select="'deps-ear-jar'"/>
+                <xsl:with-param name="type" select="'jar'"/>
+                <xsl:with-param name="ear" select="'true'"/>
+            </xsl:call-template>
+
+            <target name="deps-jar">
+                <xsl:attribute name="depends">init, deps-module-jar, deps-ear-jar</xsl:attribute>
+                <xsl:attribute name="unless">no.dependencies</xsl:attribute>
+            </target>
 
             <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service|/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-service-clients/ejbjarproject2:web-service-client">
 				<target name="wscompile-init" depends="init">
@@ -1106,9 +1117,19 @@ to simulate
     <xsl:template name="deps.target">
         <xsl:param name="targetname"/>
         <xsl:param name="type"/>
+        <xsl:param name="ear"/>
         <target name="{$targetname}">
             <xsl:attribute name="depends">init</xsl:attribute>
-            <xsl:attribute name="unless">${no.dependencies}</xsl:attribute>
+            
+            <xsl:choose>
+                <xsl:when test="$ear">
+                    <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:attribute name="unless">dist.ear.dir</xsl:attribute>
+                </xsl:otherwise>
+            </xsl:choose>
+            
             <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
             <xsl:for-each select="$references/projdeps:reference[not($type) or projdeps:artifact-type = $type]">
                 <xsl:variable name="subproj" select="projdeps:foreign-project"/>
@@ -1123,36 +1144,25 @@ to simulate
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="script" select="projdeps:script"/>
-                <xsl:variable name="scriptdir" select="substring-before($script, '/')"/>
-                <xsl:variable name="scriptdirslash">
-                    <xsl:choose>
-                        <xsl:when test="$scriptdir = ''"/>
-                        <xsl:otherwise>
-                            <xsl:text>/</xsl:text>
-                            <xsl:value-of select="$scriptdir"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
-                <xsl:variable name="scriptfileorblank" select="substring-after($script, '/')"/>
-                <xsl:variable name="scriptfile">
-                    <xsl:choose>
-                        <xsl:when test="$scriptfileorblank != ''">
-                            <xsl:value-of select="$scriptfileorblank"/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:value-of select="$script"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:variable>
-                <ant target="{$subtarget}" inheritall="false">
-                    <!-- XXX #43624: cannot use inline attr on JDK 1.5 -->
-                    <xsl:attribute name="dir">${project.<xsl:value-of select="$subproj"/>}<xsl:value-of select="$scriptdirslash"/></xsl:attribute>
-                    <xsl:if test="$scriptfile != 'build.xml'">
-                        <xsl:attribute name="antfile">
-                            <xsl:value-of select="$scriptfile"/>
-                        </xsl:attribute>
-                    </xsl:if>
-                </ant>
+                <!-- Distinguish build of a dependent project as standalone module or as a part of an ear -->
+                <xsl:choose>
+                    <xsl:when test="$ear">
+                        <xsl:choose>
+                            <!-- call standart target if the artifact type is jar (java libraries) -->
+                            <xsl:when test="$subtarget = 'jar'">
+                                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <ant target="dist-ear" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
+                                    <property name="dist.ear.dir" location="${{build.dir}}"/>
+                                </ant>                            
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
+                    </xsl:otherwise>
+                </xsl:choose>
             </xsl:for-each>
         </target>
     </xsl:template>
