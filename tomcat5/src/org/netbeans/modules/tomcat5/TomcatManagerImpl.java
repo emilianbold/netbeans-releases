@@ -303,138 +303,150 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, command /* message */, StateType.RUNNING));
         
         output = ""; 
+        
+        int retries = 4;
+        
         // similar to Tomcat's Ant task
         URLConnection conn = null;
         InputStreamReader reader = null;
         
         URL urlToConnectTo = null;
-        try {
 
-            // Create a connection for this command
-            String uri = tm.getUri ();
-            if (uri.indexOf ("http:") > 0) {  // NOI18N
-                // strip home & base
-                uri = uri.substring (uri.indexOf ("http:")); // NOI18N
-            }
-            urlToConnectTo = new URL(uri + command);
-            if (Boolean.getBoolean("org.netbeans.modules.tomcat5.LogManagerCommands")) { // NOI18N
-                String message = "Tomcat 5 sending manager command: " + urlToConnectTo;
-                System.out.println(message);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(message));
-            }
-            
-            URLWait.waitForStartup(tm, 30000);
-            
-            conn = urlToConnectTo.openConnection();
-            HttpURLConnection hconn = (HttpURLConnection) conn;
+        String msg = null;
+        while (retries >= 0) {
+            retries = retries - 1;
+            try {
 
-            // Set up standard connection characteristics
-            hconn.setAllowUserInteraction(false);
-            hconn.setDoInput(true);
-            hconn.setUseCaches(false);
-            if (istream != null) {
-                hconn.setDoOutput(true);
-                hconn.setRequestMethod("PUT");   // NOI18N
-                hconn.setRequestProperty("Content-Type", "application/octet-stream");   // NOI18N
-//                if (contentLength >= 0) {
-//                    hconn.setRequestProperty("Content-Length",   // NOI18N
-//                                             "" + contentLength);
-//                }
-            } else {
-                hconn.setDoOutput(false);
-                hconn.setRequestMethod("GET"); // NOI18N
-            }
-            hconn.setRequestProperty("User-Agent", // NOI18N
-                                     "NetBeansIDE-Tomcat-Manager/1.0"); // NOI18N
-
-            // Set up an authorization header with our credentials
-            String input = tm.getUsername () + ":" + tm.getPassword ();
-            String auth = new String(Base64.encode(input.getBytes()));
-            hconn.setRequestProperty("Authorization", // NOI18N
-                                     "Basic " + auth); // NOI18N
-
-            // Establish the connection with the server
-            hconn.connect();
-
-            // Send the request data (if any)
-            if (istream != null) {
-                BufferedOutputStream ostream =
-                    new BufferedOutputStream(hconn.getOutputStream(), 1024);
-                byte buffer[] = new byte[1024];
-                while (true) {
-                    int n = istream.read(buffer);
-                    if (n < 0) {
-                        break;
-                    }
-                    ostream.write(buffer, 0, n);
+                // Create a connection for this command
+                String uri = tm.getUri ();
+                if (uri.indexOf ("http:") > 0) {  // NOI18N
+                    // strip home & base
+                    uri = uri.substring (uri.indexOf ("http:")); // NOI18N
                 }
-                ostream.flush();
-                ostream.close();
-                istream.close();
-            }
+                urlToConnectTo = new URL(uri + command);
+                if (Boolean.getBoolean("org.netbeans.modules.tomcat5.LogManagerCommands")) { // NOI18N
+                    String message = "Tomcat 5 sending manager command: " + urlToConnectTo;
+                    System.out.println(message);
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new Exception(message));
+                }
 
-            // Process the response message
-            reader = new InputStreamReader(hconn.getInputStream());
-            StringBuffer buff = new StringBuffer();
-            String error = null;
-            String msg = null;
-            boolean first = !command.startsWith ("jmxproxy");   // NOI18N
-            while (true) {
-                int ch = reader.read();
-                if (ch < 0) {
-                    output += buff.toString ()+"\n";    // NOI18N
-                    break;
-                } else if ((ch == '\r') || (ch == '\n')) {
-                    String line = buff.toString();
-                    buff.setLength(0);
-                    TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, line);
-                    if (first) {
-                        if (!line.startsWith("OK -")) { // NOI18N
-                            error = line;
-                        }
-                        else { 
-                            msg = line;
-                        }
-                        first = false;
-                    }
-                    pes.fireHandleProgressEvent (
-                        tmId, 
-                        new Status (ActionType.EXECUTE, cmdType, line, StateType.RUNNING)
-                    );
-                    output += line+"\n";    // NOI18N
+                URLWait.waitForStartup(tm, 30000);
+
+                conn = urlToConnectTo.openConnection();
+                HttpURLConnection hconn = (HttpURLConnection) conn;
+
+                // Set up standard connection characteristics
+                hconn.setAllowUserInteraction(false);
+                hconn.setDoInput(true);
+                hconn.setUseCaches(false);
+                if (istream != null) {
+                    hconn.setDoOutput(true);
+                    hconn.setRequestMethod("PUT");   // NOI18N
+                    hconn.setRequestProperty("Content-Type", "application/octet-stream");   // NOI18N
                 } else {
-                    buff.append((char) ch);
+                    hconn.setDoOutput(false);
+                    hconn.setRequestMethod("GET"); // NOI18N
                 }
-            }
-            if (buff.length() > 0) {
-                TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, buff.toString());
-            }
-            if (error != null) {
-                throw new Exception(error);
-            }
-            pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, msg, StateType.COMPLETED));
+                hconn.setRequestProperty("User-Agent", // NOI18N
+                                         "NetBeansIDE-Tomcat-Manager/1.0"); // NOI18N
 
-        } catch (Exception e) {
-            TomcatFactory.getEM().log("TomcatManagerImpl connecting to: " + urlToConnectTo); // NOI18N
-            TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, e);
-            pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, e.getLocalizedMessage (), StateType.FAILED));
-            // throw t;
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (java.io.IOException ioe) { // ignore this
-                }
-                reader = null;
-            }
-            if (istream != null) {
-                try {
+                // Set up an authorization header with our credentials
+                String input = tm.getUsername () + ":" + tm.getPassword ();
+                String auth = new String(Base64.encode(input.getBytes()));
+                hconn.setRequestProperty("Authorization", // NOI18N
+                                         "Basic " + auth); // NOI18N
+
+                // Establish the connection with the server
+                hconn.connect();
+
+                // Send the request data (if any)
+                if (istream != null) {
+                    BufferedOutputStream ostream =
+                        new BufferedOutputStream(hconn.getOutputStream(), 1024);
+                    byte buffer[] = new byte[1024];
+                    while (true) {
+                        int n = istream.read(buffer);
+                        if (n < 0) {
+                            break;
+                        }
+                        ostream.write(buffer, 0, n);
+                    }
+                    ostream.flush();
+                    ostream.close();
                     istream.close();
-                } catch (java.io.IOException ioe) { // ignore this
                 }
-                istream = null;
+
+                // Process the response message
+                reader = new InputStreamReader(hconn.getInputStream());
+                retries = -1;
+                StringBuffer buff = new StringBuffer();
+                String error = null;
+                msg = null;
+                boolean first = !command.startsWith ("jmxproxy");   // NOI18N
+                while (true) {
+                    int ch = reader.read();
+                    if (ch < 0) {
+                        output += buff.toString ()+"\n";    // NOI18N
+                        break;
+                    } else if ((ch == '\r') || (ch == '\n')) {
+                        String line = buff.toString();
+                        buff.setLength(0);
+                        TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, line);
+                        if (first) {
+                            if (!line.startsWith("OK -")) { // NOI18N
+                                error = line;
+                            }
+                            else { 
+                                msg = line;
+                            }
+                            first = false;
+                        }
+                        pes.fireHandleProgressEvent (
+                            tmId, 
+                            new Status (ActionType.EXECUTE, cmdType, line, StateType.RUNNING)
+                        );
+                        output += line+"\n";    // NOI18N
+                    } else {
+                        buff.append((char) ch);
+                    }
+                }
+                if (buff.length() > 0) {
+                    TomcatFactory.getEM ().log(ErrorManager.INFORMATIONAL, buff.toString());
+                }
+                if (error != null) {
+                    throw new Exception(error);
+                }
+
+            } catch (Exception e) {
+                TomcatFactory.getEM().log("TomcatManagerImpl connecting to: " + urlToConnectTo); // NOI18N
+                TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, e);
+                if (retries < 0) {
+                    pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, e.getLocalizedMessage (), StateType.FAILED));
+                }
+                // throw t;
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (java.io.IOException ioe) { // ignore this
+                    }
+                    reader = null;
+                }
+                if (istream != null) {
+                    try {
+                        istream.close();
+                    } catch (java.io.IOException ioe) { // ignore this
+                    }
+                    istream = null;
+                }
             }
-        }
+            if (retries >=0) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {}
+            }
+        } // while
+        pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, msg, StateType.COMPLETED));
 
     }
 
