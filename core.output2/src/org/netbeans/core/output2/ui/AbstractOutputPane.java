@@ -161,6 +161,13 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     public final Document getDocument() {
         return textView.getDocument();
     }
+    
+    /**
+     * This method is here for use *only* by unit tests.
+     */
+    public final JTextComponent getTextView() {
+        return textView;
+    }
 
     public final void copy() {
         if (caret.getDot() != caret.getMark()) {
@@ -240,7 +247,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         } else {
             caret.setDot(position);
             //Less lines if wrapped - could end up out of view
-            if (idx + (isWrapped() ? 1 : 3) < getLineCount()) {
+            if (idx + 3 < getLineCount()) {
                 //Ensure a little more than the requested line is in view
                 try {
                     Rectangle r = textView.modelToView(textView.getDocument().getDefaultRootElement().getElement (idx + 3).getStartOffset());

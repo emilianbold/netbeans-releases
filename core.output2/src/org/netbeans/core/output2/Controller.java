@@ -1009,7 +1009,7 @@ public class Controller { //XXX public only for debug access to logging code
             try {
                 //Try to nav to a line one or two below the error line
                 int sendTo = line + 2;
-                while (line == out.lineCount()) line--;
+                while (line >= out.lineCount()) line--;
                 comp.getOutputPane().sendCaretToLine(sendTo, false);
                 //To ensure next error works correctly from editor, now move
                 //it above
