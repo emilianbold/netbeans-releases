@@ -35,6 +35,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
+import org.openide.loaders.DataObject;
 
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.BaseKit;
@@ -46,6 +47,7 @@ import org.netbeans.editor.ext.java.JavaCompletion;
 import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.editor.ext.java.JavaDrawLayerFactory;
 import org.netbeans.editor.ext.html.HTMLSyntax;
+import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.editor.ext.plain.PlainSyntax;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.editor.java.JavaKit;
@@ -78,7 +80,9 @@ public class JSPKit extends NbEditorKit {
 
     /** Creates a new instance of the syntax coloring parser */
     public Syntax createSyntax(Document doc) {
-        FileObject fobj = NbEditorUtilities.getDataObject(doc).getPrimaryFile();
+        DataObject dobj = NbEditorUtilities.getDataObject(doc);
+        FileObject fobj = (dobj != null) ? dobj.getPrimaryFile() : null;
+        
         //String mimeType = NbEditorUtilities.getMimeType(doc);
         
         Syntax contentSyntax   = getSyntaxForLanguage(doc, JspUtils.getContentLanguage());
@@ -86,7 +90,7 @@ public class JSPKit extends NbEditorKit {
         final Jsp11Syntax newSyntax = new Jsp11Syntax(contentSyntax, scriptingSyntax);
 
         // tag library coloring data stuff
-        JSPColoringData data = JspUtils.getJSPColoringData (doc, fobj);
+        JSPColoringData data = data = JspUtils.getJSPColoringData (doc, fobj); 
         // construct the listener
         PropertyChangeListener pList = new ColoringListener(doc, data, newSyntax);
         // attach the listener
@@ -161,9 +165,13 @@ public class JSPKit extends NbEditorKit {
 
     /** Create syntax support */
     public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
-        FileObject fobj = NbEditorUtilities.getDataObject(doc).getPrimaryFile();
-        return new JspSyntaxSupport(doc, 
-            JspContextInfo.getContextInfo().getCachedOpenInfo(doc, fobj, false).isXmlSyntax());
+        DataObject dobj = NbEditorUtilities.getDataObject(doc);
+        if (dobj != null) {
+            return new JspSyntaxSupport(doc, 
+                JspContextInfo.getContextInfo().getCachedOpenInfo(doc, dobj.getPrimaryFile(), false).isXmlSyntax());
+        }
+        return new JspSyntaxSupport(doc, false);
+        
     }
 
     /** Returns completion for given language (MIME type).
@@ -187,7 +195,11 @@ public class JSPKit extends NbEditorKit {
     
     public Completion createCompletion(ExtEditorUI extEditorUI) {
         BaseDocument doc = extEditorUI.getDocument();
-        FileObject fobj = (doc == null) ? null : NbEditorUtilities.getDataObject(doc).getPrimaryFile();
+        FileObject fobj = null;
+        if (doc != null){
+            DataObject dobj = NbEditorUtilities.getDataObject(doc);
+            fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile(): null;
+        }
         
         String mimeType = NbEditorUtilities.getMimeType(doc);
         Completion contentCompletion = (!mimeType.equals(JSP_MIME_TYPE)) ? 

@@ -24,6 +24,7 @@ import javax.servlet.jsp.tagext.*;
 
 import org.openide.filesystems.FileObject;
 import org.openide.ErrorManager;
+import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
@@ -107,7 +108,12 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     public JspSyntaxSupport(BaseDocument doc, boolean isXml) {
         super(doc);
-        fobj = (doc == null) ? null : NbEditorUtilities.getDataObject(doc).getPrimaryFile();
+        fobj = null;
+        if (doc != null){
+            DataObject dobj = NbEditorUtilities.getDataObject(doc);
+            fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile(): null;
+        }
+        
         isXmlSyntax = isXml;
     }
     

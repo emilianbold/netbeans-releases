@@ -57,11 +57,13 @@ public class JspContextInfoImpl extends JspContextInfo {
 
     private static TagLibParseSupport getTagLibParseSupport(Document doc, FileObject fo){
         TagLibParseSupport tlps = null;
-        try {
-            tlps = (TagLibParseSupport)DataObject.find(fo).getCookie(TagLibParseSupport.class);
-        }
-        catch (org.openide.loaders.DataObjectNotFoundException e){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        if (fo != null){
+            try {
+                tlps = (TagLibParseSupport)DataObject.find(fo).getCookie(TagLibParseSupport.class);
+            }
+            catch (org.openide.loaders.DataObjectNotFoundException e){
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
         }
         return tlps;
     }
