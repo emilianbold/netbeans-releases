@@ -93,8 +93,9 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
     public javax.swing.Action[] getActions(boolean context) {
         List actions = new ArrayList();
         actions.addAll(Arrays.asList(getOriginal().getActions(context)));
-        Boolean isRunning = instance.checkRunning();
-        if (isRunning != null && isRunning.booleanValue()) {
+        /*Boolean isRunning = instance.checkRunning();
+        if (isRunning != null && isRunning.booleanValue()) {*/
+        if (getServerTarget() != null) {
             actions.addAll(Arrays.asList(getDelegateTargetNode().getActions(context)));
         } else {
             actions.add(SystemAction.get(SetAsDefaultServerAction.class));
