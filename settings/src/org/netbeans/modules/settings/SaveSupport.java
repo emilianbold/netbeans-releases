@@ -246,7 +246,7 @@ final class SaveSupport {
         }
         
         public void markDirty() {
-            if (isChanged) return;
+            if (isChanged || !ip.getDataObject().isValid()) return;
             if (knownToBeTemplate == null) knownToBeTemplate = ip.getDataObject().isTemplate() ? Boolean.TRUE : Boolean.FALSE;
             if (knownToBeTemplate.booleanValue()) return;
             isChanged = true;
@@ -254,7 +254,7 @@ final class SaveSupport {
         }
         
         public void requestSave() throws java.io.IOException {
-            if (isChanged) return;
+            if (isChanged || !ip.getDataObject().isValid()) return;
             if (knownToBeTemplate == null) knownToBeTemplate = ip.getDataObject().isTemplate() ? Boolean.TRUE : Boolean.FALSE;
             if (knownToBeTemplate.booleanValue()) return;
             isChanged = true;
