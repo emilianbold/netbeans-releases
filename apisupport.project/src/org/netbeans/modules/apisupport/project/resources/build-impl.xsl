@@ -75,6 +75,7 @@ NOTE: nbbuild/build.xml should contain:
 <project name="{$path}/impl" default="netbeans" basedir="..">
 
     <target name="init">
+        <!-- Synch the following with NbModuleProject.makeEvalDefs: -->
         <property file="nbproject/private/private.properties"/>
         <!--
         <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
