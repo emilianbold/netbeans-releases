@@ -62,8 +62,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     
     private static final long serialVersionUID = 1L;
     private String buildfileName = GeneratedFilesHelper.BUILD_XML_PATH;
-    private boolean imp = true;
-    
+
     private String moduleLoc;
     
     /** Create a new wizard iterator. */
@@ -84,10 +83,6 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     }
     
     public Set/*<DataObject>*/ instantiate(TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
-        //project creation cancelled
-        if (!isImport())
-            return null;
-        
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         File dirSrcF = (File) wiz.getProperty (WizardProperties.SOURCE_ROOT);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
@@ -144,15 +139,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     private void setBuildfile(String name) {
         buildfileName = name;
     }
-    
-    private boolean isImport() {
-        return imp;
-    }
 
-    private void setImport(boolean imp) {
-        this.imp = imp;
-    }
-    
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
 
@@ -396,7 +383,6 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         public void validate() throws WizardValidationException {
             File dirF = new File(panel.projectLocationTextField.getText());
             if (!new File(dirF, GeneratedFilesHelper.BUILD_XML_PATH).exists()) {
-                setImport(false);
                 setBuildfile(GeneratedFilesHelper.BUILD_XML_PATH);
             } else {
                 File buildFile = new File(dirF, getBuildfile());
@@ -417,7 +403,6 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
                     if (descriptor.getValue() != ok) {
                         throw new WizardValidationException(panel.projectLocationTextField, "", "");
                     }
-                    setImport(true);
                     setBuildfile(ibf.getBuildName());
                 }
             }
