@@ -49,7 +49,7 @@ public class SearchDocAction extends CallableSystemAction {
   * @return the help context for this action
   */
   public HelpCtx getHelpCtx () {
-    return HelpCtx.DEFAULT_HELP;
+    return new HelpCtx (SearchDocAction.class);
   }
 
   /** This method is called by one of the "invokers" as a result of
@@ -80,6 +80,7 @@ public class SearchDocAction extends CallableSystemAction {
 
 /*
  * Log
+ *  9    Gandalf   1.8         6/24/99  Jesse Glick     Gosh-honest HelpID's.
  *  8    Gandalf   1.7         6/23/99  Petr Hrebejk    HTML doc view & sort 
  *       modes added
  *  7    Gandalf   1.6         6/11/99  Petr Hrebejk    Better support for 

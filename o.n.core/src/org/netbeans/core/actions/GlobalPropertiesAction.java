@@ -36,13 +36,12 @@ public final class GlobalPropertiesAction extends CallableSystemAction {
   }
 
   public String getName() {
-    return NbBundle.getBundle(OutputWindowAction.class).getString("GlobalProperties");
+    return NbBundle.getBundle(GlobalPropertiesAction.class).getString("GlobalProperties");
   }
 
   /** @return the action's help context */
   public HelpCtx getHelpCtx() {
-    // PENDING
-    return HelpCtx.DEFAULT_HELP;
+    return new HelpCtx (GlobalPropertiesAction.class);
   }
 
   /**
@@ -56,6 +55,7 @@ public final class GlobalPropertiesAction extends CallableSystemAction {
 
 /*
 * Log
+*  4    src-jtulach1.3         6/24/99  Jesse Glick     Gosh-honest HelpID's.
 *  3    src-jtulach1.2         6/8/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----
 *  2    src-jtulach1.1         4/27/99  Jesse Glick     new HelpCtx () -> 

@@ -49,7 +49,7 @@ public class ImageDataObject extends MultiDataObject {
   * @return the help context
   */
   public org.openide.util.HelpCtx getHelpCtx () {
-    return org.openide.util.HelpCtx.DEFAULT_HELP;
+    return new org.openide.util.HelpCtx (ImageDataObject.class);
   }
 
   /** Get a URL for the image.

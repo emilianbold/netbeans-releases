@@ -38,7 +38,7 @@ public class ImageViewer extends CloneableTopComponent {
   }
 
   public HelpCtx getHelp() {
-    return new HelpCtx("com.netbeans.developer.help.BaseLoadersImageImageViewer");
+    return new HelpCtx(ImageViewer.class);
   }
 
   // Cloning the viewer uses the same underlying data object.

@@ -54,7 +54,7 @@ public class DatabaseAction extends CookieAction
     * @return the help context for this action
     */
     public HelpCtx getHelpCtx() {
-      return HelpCtx.DEFAULT_HELP;
+      return new HelpCtx (DatabaseAction.class);
     }
 
 	protected Class[] cookieClasses()

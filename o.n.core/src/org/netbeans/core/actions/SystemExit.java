@@ -57,7 +57,7 @@ public class SystemExit extends CallableSystemAction {
   * @return the help context for this action
   */
   public HelpCtx getHelpCtx() {
-    return org.openide.util.HelpCtx.DEFAULT_HELP;
+    return new HelpCtx (SystemExit.class);
   }
 
   /** Name of this action's icon.
@@ -87,7 +87,7 @@ public class SystemExit extends CallableSystemAction {
             exitOptions,                                                     // options
             secondaryExitOptions [0],                                        // initial value
             DialogDescriptor.RIGHT_ALIGN,                                    // option align
-            org.openide.util.HelpCtx.DEFAULT_HELP,                           // HelpCtx // [PENDING]
+            new org.openide.util.HelpCtx (SystemExit.class.getName () + ".dialog"), // HelpCtx
             exitComponent                                                    // Action Listener
         );
         exitDlgDescriptor.setAdditionalOptions (secondaryExitOptions);
@@ -255,6 +255,7 @@ public class SystemExit extends CallableSystemAction {
 
 /*
  * Log
+ *  13   Gandalf   1.12        6/24/99  Jesse Glick     Gosh-honest HelpID's.
  *  12   Gandalf   1.11        6/22/99  Ian Formanek    employed DEFAULT_HELP
  *  11   Gandalf   1.10        6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----

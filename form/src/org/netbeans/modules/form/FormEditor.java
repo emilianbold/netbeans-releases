@@ -507,7 +507,7 @@ final public class FormEditor extends Object {
     * @see org.openide.HelpCtx
     */
     public org.openide.util.HelpCtx getHelp() {
-      return org.openide.util.HelpCtx.DEFAULT_HELP;
+      return new org.openide.util.HelpCtx (ComponentInspector.class);
     }
 
     /** replaces this in object stream */
@@ -606,6 +606,7 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  22   Gandalf   1.21        6/24/99  Jesse Glick     Gosh-honest HelpID's.
  *  21   Gandalf   1.20        6/22/99  Ian Formanek    employed DEFAULT_HELP
  *  20   Gandalf   1.19        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----

@@ -48,13 +48,14 @@ public class HTMLViewAction extends CallableSystemAction {
 
   /** @return the action's help context */
   public HelpCtx getHelpCtx() {
-    return org.openide.util.HelpCtx.DEFAULT_HELP;
+    return new org.openide.util.HelpCtx (HTMLViewAction.class);
   }
 
 }
 
 /*
  * Log
+ *  11   Gandalf   1.10        6/24/99  Jesse Glick     Gosh-honest HelpID's.
  *  10   Gandalf   1.9         6/22/99  Ian Formanek    employed DEFAULT_HELP
  *  9    Gandalf   1.8         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----

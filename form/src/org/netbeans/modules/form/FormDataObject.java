@@ -103,7 +103,7 @@ public class FormDataObject extends JavaDataObject {
   * @return help context
   */
   public org.openide.util.HelpCtx getHelpCtx () {
-    return null; // [PENDING]
+    return new org.openide.util.HelpCtx (FormDataObject.class);
   }
 
   /** Provides node that should represent this data object. When a node for representation
@@ -135,6 +135,7 @@ public class FormDataObject extends JavaDataObject {
 
 /*
  * Log
+ *  19   Gandalf   1.18        6/24/99  Jesse Glick     Gosh-honest HelpID's.
  *  18   Gandalf   1.17        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  17   Gandalf   1.16        5/17/99  Ian Formanek    Fixed bug 1803 - Newly 

@@ -38,7 +38,7 @@ public class InstallBeanAction extends CallableSystemAction {
   * @return the help context for this action
   */
   public HelpCtx getHelpCtx() {
-    return HelpCtx.DEFAULT_HELP;
+    return new HelpCtx (InstallBeanAction.class);
   }
 
   /** Icon resource.
@@ -59,6 +59,7 @@ public class InstallBeanAction extends CallableSystemAction {
 
 /*
  * Log
+ *  4    Gandalf   1.3         6/24/99  Jesse Glick     Gosh-honest HelpID's.
  *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  2    Gandalf   1.1         5/26/99  Ian Formanek    Actions cleanup

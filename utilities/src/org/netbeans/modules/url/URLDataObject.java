@@ -201,8 +201,7 @@ public class URLDataObject extends MultiDataObject {
   * @return help context
   */
   public org.openide.util.HelpCtx getHelpCtx () {
-    return HelpCtx.DEFAULT_HELP;
-    //[PENDING]
+    return new HelpCtx (URLDataObject.class);
   }
 
   /** Provides node that should represent this data object. When a node for representation
@@ -245,6 +244,7 @@ public class URLDataObject extends MultiDataObject {
 
 /*
  * Log
+ *  11   Gandalf   1.10        6/24/99  Jesse Glick     Gosh-honest HelpID's.
  *  10   Gandalf   1.9         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  9    Gandalf   1.8         6/7/99   Ian Formanek    Fixed bug 1585 - URL 
