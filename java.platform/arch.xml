@@ -1,10 +1,22 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?><!-- -*- sgml-indent-step: 1 -*- -->
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
   <!ENTITY api-questions SYSTEM "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
 
 <api-answers
-  question-version="1.23"
+  question-version="1.24"
   module="java/platform"
   author="jglick@netbeans.org"
 >
@@ -30,7 +42,7 @@
  <answer id="arch-overall">
   <api group="java" name="JavaPlatformAPI" type="export" category="devel">
    The Java Platform API permits access to installed Java platforms (for example,
-   the J2SDK, or various mobile-device emulators for J2ME). Particular platform
+   the J2SE JDK, or various mobile-device emulators for J2ME). Particular platform
    types are registered by modules and can store customized information about the
    platform to disk.
   </api>
@@ -95,7 +107,7 @@
    platforms and information about each one; typically this would be used by
    project type providers to implement a customizer dialog. The SPI is intended
    to be implemented by a few modules supply support for locating and
-   introspecting installed platforms, for example a J2SDK setup wizard.
+   introspecting installed platforms, for example a JDK setup wizard.
   </p>
  </answer>
 
@@ -135,8 +147,8 @@
 
 <answer id="compat-i18n">
 <p>
-Yes. The only UI of platform module is a platform template wizard and it is localized.
-Platforms can provide display names.
+Yes. The only UI of platform module is a platform template wizard and customizer and it is localized.
+Platforms can provide display names. The main portion of the wizard/customizer UI is supplied by the platform type.
 </p>
 </answer>
 
@@ -225,12 +237,60 @@ The platform module does not provide any persistence mechanism.
         </question>
 -->
 
-<answer id="dep-nb">
-<p>
-   Openide, openide.loaders (<code>FolderInstance</code> is used only internally),
-   Java Support APIs (to return <q>bootstrap libraries</q> and <q>standard libraries</q> as a<code>ClassPath</code>).
-</p>
-</answer>
+ <answer id="dep-nb">
+  <ol>
+   <li>
+    <api group="java" name="Filesystems" type="import" category="official">
+     <p>
+      Various purposes.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="Actions" type="import" category="official">
+     <p>
+      Registration of platform manager action.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="Datasystems" type="import" category="official">
+     <p>
+      <code>FolderInstance</code> is used only internally.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="JavaSupportAPIs" type="import" category="official">
+     <p>
+      To return <q>bootstrap libraries</q> and <q>standard libraries</q> as
+      a <code>ClassPath</code>.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="Wizards" type="import" category="official">
+     <p>
+      Dialogs used to customize platforms.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="Modules" type="import" category="official">
+     <p>
+      <code>SpecificationVersion</code> used in the API.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="Nodes" type="import" category="official">
+     <p>
+      For miscellaneous GUI.
+     </p>
+    </api>
+   </li>
+  </ol>
+ </answer>
 
 
 
@@ -287,10 +347,9 @@ The platform module does not provide any persistence mechanism.
 -->
 
  <answer id="deploy-dependencies">
-  <!-- XXX  -->
-  <p>
-   Regular module dependency.
-  </p>
+  <pre>
+   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java.platform/0 &gt; @SPECIFICATION-VERSION@
+  </pre>
  </answer>
 
 
@@ -472,8 +531,7 @@ The platform module does not provide any persistence mechanism.
 -->
  <answer id="exec-process">
   <p>
-   No. A platform provider would typically use a trivial Java spawned process to
-   introspect the JDK version etc. from a platform installation.
+   No.
   </p>
  </answer>
 
@@ -500,8 +558,7 @@ The platform module does not provide any persistence mechanism.
 
  <answer id="exec-property">
   <p>
-   No. A platform provider would typically read system properties from a platform
-   installation and expose them as part of the platform's metadata.
+   No.
   </p>
  </answer>
 
@@ -637,9 +694,18 @@ clients should use <code>PlatformManager.getInstalledPlatforms()</code>.
 -->
 
 <answer id="lookup-register">
-<p>
-No.
-</p>
+  <ul>
+   <li>
+    <p>
+     Default (J2SE) platform.
+    </p>
+   </li>
+   <li>
+    <p>
+     Query implementations relating to Java platforms.
+    </p>
+   </li>
+  </ul>
 </answer>
 
 
@@ -682,7 +748,7 @@ No.
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   No.
+   Nothing large.
   </p>
  </answer>
 
@@ -751,8 +817,7 @@ No.
 -->
  <answer id="perf-progress">
   <p>
-   No. Platform providers may run a quick external process as part of a platform
-   recognition wizard; might take a second or so to run.
+   No.
   </p>
  </answer>
 
@@ -789,9 +854,9 @@ No.
 -->
 
 <answer id="perf-spi">
-<p>
-TBD.
-</p>
+  <p>
+   No special provisions.
+  </p>
 </answer>
 
 
@@ -838,7 +903,7 @@ TBD.
 -->
  <answer id="resources-file">
   <p>
-   No.
+   For miscellaneous purposes.
   </p>
  </answer>
 
@@ -861,15 +926,12 @@ TBD.
 -->
 <answer id="resources-layer">
 <p>
-Yes
-</p>
-<p>
-The folder org-netbeans-api-java/platform/installers on the system filesystem is used
+   The folder <code>org-netbeans-api-java/platform/installers</code> on the system filesystem is used
 to store the <code>PlatformInstall</code> instance files.
 </p>
 <p>
-The folder Services/Platforms/org-netbeans-api-java-Platform on the system filesystem is used
-to store the java platform definitions.
+   The folder <code>Services/Platforms/org-netbeans-api-java-Platform</code> on the system filesystem is used
+to store the Java platform definitions.
 </p>
 </answer>
 
@@ -910,7 +972,42 @@ to store the java platform definitions.
 -->
 <answer id="resources-read">
 <p>
-<code>JavaPlatform</code> instance files <code>PlatformInstall</code> instance files and are red from system filesystem.
+<code>JavaPlatform</code> and <code>PlatformInstall</code> instances are read from the system filesystem.
 </p>
 </answer>
+
+
+<!--
+        <question id="security-grant" when="final">
+            Does your code grant additional rights to some other code?
+            <hint>Avoid using a class loader that adds extra
+            permissions to loaded code unless really necessary.
+            Also note that your API implementation
+            can also expose unneeded permissions to enemy code by
+            calling AccessController.doPrivileged().</hint>
+        </question>
+-->
+ <answer id="security-grant">
+  <p>
+   No.
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="security-policy" when="final">
+            Does your functionality require modifications to the standard policy file?
+            <hint>Your code might pass control to third-party code not
+            coming from trusted domains. This could be code downloaded over the
+            network or code coming from libraries that are not bundled
+            with NetBeans. Which permissions need to be granted to which domains?</hint>
+        </question>
+-->
+ <answer id="security-policy">
+  <p>
+   No.
+  </p>
+ </answer>
+
 </api-answers>
