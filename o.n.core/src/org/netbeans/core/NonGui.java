@@ -100,11 +100,15 @@ public class NonGui extends NbTopManager implements Runnable {
         if (userDir == null) {
             userDir = System.getProperty ("netbeans.user");
             
+            if ("memory".equals (userDir)) { // NOI18N
+                return "memory"; // NOI18N
+            }
+            
             if (userDir == null) {
                 System.err.println(NbBundle.getMessage(NonGui.class, "ERR_no_user_directory"));
                 doExit(1);
             }
-            if (userDir.equals(getHomeDir())) {
+            if (userDir.equals(getHomeDir())) { 
                 System.err.println(NbBundle.getMessage(NonGui.class, "ERR_user_directory_is_home"));
                 doExit(1);
             }
