@@ -69,6 +69,9 @@ public class ServiceTypePanel extends ExplorerPanel {
 
         getExplorerManager ().addPropertyChangeListener (new java.beans.PropertyChangeListener () {
                     public void propertyChange (java.beans.PropertyChangeEvent ev) {
+                        if ( ev.getPropertyName() == ExplorerManager.PROP_SELECTED_NODES ) {
+                            firePropertyChange( DialogDescriptor.PROP_HELP_CTX, null, null );
+                        }
                         firePropertyChange ();
                     }
                 });
