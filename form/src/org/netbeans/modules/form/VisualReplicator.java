@@ -438,18 +438,18 @@ public class VisualReplicator {
         throws Exception
     {
         Object clone;
-        boolean containerConverted;
-        if (needsConversion(metacomp)) {
+        boolean convertedToRPC;
+        if (needsConversion(metacomp)) { // clone with conversion
             clone = cloneComponentWithConversion(
                     metacomp,
                     metacomp == getTopMetaComponent() ? requiredTopClass : null,
                     relativeProperties);
-            containerConverted = clone instanceof RootPaneContainer
+            convertedToRPC = clone instanceof RootPaneContainer
                 && !(metacomp.getBeanInstance() instanceof RootPaneContainer);
         }
-        else { // simply clone the bean otherwise
+        else { // just clone the bean otherwise
             clone = metacomp.cloneBeanInstance(relativeProperties);
-            containerConverted = false;
+            convertedToRPC = false;
         }
 
         metaToClone.put(metacomp, clone);
@@ -460,14 +460,18 @@ public class VisualReplicator {
 
         if (metacomp instanceof RADVisualContainer) {
             RADVisualContainer metacont = (RADVisualContainer) metacomp;
-            final Container cont = containerConverted ?
-                    metacont.getContainerDelegate(clone) : (Container) clone;
+            final Container cont = (Container)
+                (convertedToRPC ? // if converted to RootPaneContainer,
+                  // the cloned container was put to the content pane
+                ((RootPaneContainer)clone).getContentPane().getComponent(0)
+                : // otherwise it's the clone itself
+                clone);
             final Container contDelegate = metacont.getContainerDelegate(cont);
 
             // copy menu
-            RADMenuComponent menuComp = metacont.getContainerMenu();
-            if (menuComp != null) {
-                Object menu = cloneComponent(menuComp, relativeProperties);
+            if (metacont.getContainerMenu() != null) {
+                Object menu = cloneComponent(metacont.getContainerMenu(),
+                                             relativeProperties);
                 setContainerMenu(cont, menu);
             }
 
@@ -636,11 +640,11 @@ public class VisualReplicator {
             if (!RootPaneContainer.class.isAssignableFrom(beanClass)
                 && !Window.class.isAssignableFrom(beanClass) // AWT
                 && !java.applet.Applet.class.isAssignableFrom(beanClass))
-            { // RootPaneContainer container is required,
-              // with the clone as content pane
-                Container contentCont =
-                    (Container) metacomp.cloneBeanInstance(relativeProperties);
-                ((RootPaneContainer)component).setContentPane(contentCont);
+            {   // conversion to RootPaneContainer is required => add the
+                // clone to the content pane
+                Component clone = (Component)
+                    metacomp.cloneBeanInstance(relativeProperties);
+                ((RootPaneContainer)component).getContentPane().add(clone);
                 return component;
             }
         }
