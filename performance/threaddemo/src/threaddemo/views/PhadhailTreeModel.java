@@ -56,7 +56,7 @@ final class PhadhailTreeModel implements TreeModel {
     public void removeTreeModelListener(TreeModelListener l) {}
     
     public void valueForPathChanged(TreePath path, Object newValue) {
-        throw new IllegalStateException();
+        assert false;
     }
     
 }

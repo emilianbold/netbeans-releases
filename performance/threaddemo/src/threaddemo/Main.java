@@ -118,11 +118,10 @@ public final class Main extends JFrame {
         } else if (spunButton.isSelected()) {
             model = Phadhails.spun(root);
             modelType = "Spun";
-        } else if (swungButton.isSelected()) {
+        } else {
+            assert swungButton.isSelected();
             model = Phadhails.swung(root);
             modelType = "Swung";
-        } else {
-            throw new IllegalStateException();
         }
         Component view;
         final String viewType;
@@ -135,11 +134,10 @@ public final class Main extends JFrame {
         } else if (lookButton.isSelected()) {
             view = PhadhailViews.lookView(model);
             viewType = "Look";
-        } else if (rawButton.isSelected()) {
+        } else {
+            assert rawButton.isSelected();
             view = PhadhailViews.rawView(model);
             viewType = "Raw";
-        } else {
-            throw new IllegalStateException();
         }
         final JFrame frame = new JFrame();
         // For the benefit of Swung model which will produce the root path asynch:
