@@ -19,15 +19,17 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-favorites-View.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.view" />
             </file>
-            <file name="org-netbeans-modules-favorites-Select.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.select" />
-            </file>
             <file name="org-netbeans-modules-favorites-Add.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.add" />
             </file>
             <file name="org-netbeans-modules-favorites-Remove.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.remove" />
             </file>
+            <folder name="SelectDocumentNode">
+                <file name="org-netbeans-modules-favorites-Select.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.select" />
+                </file>
+            </folder>
         </folder>
     </folder>
 
@@ -42,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="SelectDocumentNode">
                 <attr name="org-netbeans-modules-project-ui-SelectInFiles.shadow/SelectInFavoritesTabAction.shadow" boolvalue="true" />
                 <file name="SelectInFavoritesTabAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-Select.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-favorites-Select.instance"/>
                 </file>
             </folder>
         </folder>
@@ -53,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-View.instance"/>
 	</file>
         <file name="DS-3.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-Select.instance"/>
+	    <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-favorites-Select.instance"/>
 	</file>
     </folder>
     

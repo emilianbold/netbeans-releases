@@ -82,6 +82,9 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Window">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
+            <folder name="SelectDocumentNode">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.actions.Bundle" />
+            </folder>
         </folder>
         
         <folder name="Help">
