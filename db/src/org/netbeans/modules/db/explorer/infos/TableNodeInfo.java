@@ -230,7 +230,8 @@ public class TableNodeInfo extends DatabaseNodeInfo {
                 DatabaseNodeChildren chld = (DatabaseNodeChildren)getNode().getChildren();
                 DatabaseNode dnode = chld.createSubnode(nfo, true);
             }
-
+            // refresh list of columns
+            refreshChildren();
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
         }
