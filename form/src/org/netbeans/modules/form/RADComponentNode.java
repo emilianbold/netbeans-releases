@@ -318,13 +318,14 @@ public class RADComponentNode extends FormNode
                                                  .getCustomizerClass() != null;
     }
 
-    /** Get the customizer component.
-     * @return the component, or <CODE>null</CODE> if there is no customizer
+    /** Creates the customizer component for the node.
+     * @return the component, or null if there is no customizer
      */
-    public java.awt.Component getCustomizer() {
+    protected Component createCustomizer() {
         Class customizerClass =
             component.getBeanInfo().getBeanDescriptor().getCustomizerClass();
-        if (customizerClass == null) return null;
+        if (customizerClass == null)
+            return null;
 
         Object customizerObject;
         try {
@@ -339,8 +340,9 @@ public class RADComponentNode extends FormNode
             return null;
         }
 
-        if (!(customizerObject instanceof Component) ||
-            !(customizerObject instanceof Customizer)) return null;
+        if (!(customizerObject instanceof Component)
+                || !(customizerObject instanceof Customizer))
+            return null;
 
         if (customizerObject instanceof FormAwareEditor)
             ((FormAwareEditor)customizerObject)
@@ -368,11 +370,10 @@ public class RADComponentNode extends FormNode
                     properties = component.getAllBeanProperties();
                     evt = null;
                 }
-
                 updatePropertiesFromCustomizer(properties, evt);
             }
         });
-        // [undo/redo for customizer probably does not work]
+        // [undo/redo for customizer probably does not work...]
 
         return (Component) customizerObject;
     }

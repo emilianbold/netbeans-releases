@@ -90,7 +90,7 @@ public class LayoutNode extends FormNode
                && layoutSupport.getCustomizerClass() != null;
     }
 
-    public Component getCustomizer() {
+    protected Component createCustomizer() {
         Class customizerClass = layoutSupport.getCustomizerClass();
         if (customizerClass == null)
             return null;

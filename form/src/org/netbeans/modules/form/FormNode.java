@@ -13,6 +13,11 @@
 
 package org.netbeans.modules.form;
 
+import java.awt.Component;
+import java.awt.Window;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
 import org.openide.nodes.*;
 import org.openide.cookies.*;
 import org.openide.actions.*;
@@ -71,14 +76,49 @@ public class FormNode extends AbstractNode implements FormCookie {
         };
     }
 
+    public Component getCustomizer() {
+        Component customizer = createCustomizer();
+        if (customizer instanceof Window) {
+            // register the customizer window (probably a dialog) to be closed
+            // automatically when the form is closed
+            FormEditorSupport fes = FormEditorSupport.getSupport(formModel);
+            if (fes != null) {
+                Window customizerWindow = (Window) customizer;
+                fes.registerFloatingWindow(customizerWindow);
+                // attach a listener to unregister the window when it is closed
+                customizerWindow.addWindowListener(new WindowAdapter() {
+                    public void windowClosing(WindowEvent e) {
+                        if (e.getSource() instanceof Window) {
+                            Window window = (Window) e.getSource();
+                            FormEditorSupport fes =
+                                FormEditorSupport.getSupport(formModel);
+                            if (fes != null)
+                                fes.unregisterFloatingWindow(window);
+                            window.removeWindowListener(this);
+                        }
+                    }
+                });
+            }
+        }
+        return customizer;
+    }
+
+    // to be implemented in FormNode descendants (instead of getCustomizer)
+    protected Component createCustomizer() {
+        return null;
+    }
+
+    // ----------
+    // automatic children updates
+
     void updateChildren() {
         Children children = getChildren();
         if (children instanceof FormNodeChildren)
             ((FormNodeChildren)children).updateKeys();
     }
 
-    // ----------
-
+    // Special children class - to be implemented in FormNode descendants (if
+    // they know their set of children nodes and can update them).
     protected abstract static class FormNodeChildren extends Children.Keys {
         protected void updateKeys() {}
     }
@@ -88,7 +128,7 @@ public class FormNode extends AbstractNode implements FormCookie {
     // (standalone) properties window when IDE exits. We don't restore the
     // original node after IDE restarts (would require to load the form), but
     // provide a fake node which destroys itself immediately - closing the
-    // properties window. [Would be nice to find some better soultion...]
+    // properties window. [Would be nice to find some better solution...]
 
     public Node.Handle getHandle() {
         return new Handle();

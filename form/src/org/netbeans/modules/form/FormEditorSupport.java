@@ -53,6 +53,9 @@ public class FormEditorSupport extends JavaEditor
     /** The designer of the form */
     private FormDesigner formDesigner;
 
+    /** List of floating windows - must be closed when the form is closed. */
+    private ArrayList floatingWindows;
+
     /** The code generator for the form */
 //    private CodeGenerator codeGenerator;
 
@@ -60,7 +63,7 @@ public class FormEditorSupport extends JavaEditor
     private PersistenceManager persistenceManager;
 
     /** List of exceptions occurred during the last persistence operation */
-    private List persistenceErrors;
+    private ArrayList persistenceErrors;
 
     /** An indicator whether the form has been loaded (from the .form file) */
     private boolean formLoaded = false; 
@@ -331,6 +334,19 @@ public class FormEditorSupport extends JavaEditor
         }
 
         resetPersistenceErrorLog();
+    }
+
+    public void registerFloatingWindow(java.awt.Window window) {
+        if (floatingWindows == null)
+            floatingWindows = new ArrayList();
+        else
+            floatingWindows.remove(window);
+        floatingWindows.add(window);
+    }
+
+    public void unregisterFloatingWindow(java.awt.Window window) {
+        if (floatingWindows != null)
+            floatingWindows.remove(window);
     }
 
     /** @return the FormDesigner for this form */
@@ -773,6 +789,19 @@ public class FormEditorSupport extends JavaEditor
             FormEditorSupport next = (FormEditorSupport)
                                      openForms.values().iterator().next();
             ComponentInspector.getInstance().focusForm(next);
+        }
+
+        // close the floating windows
+        if (floatingWindows != null) {
+            if (floatingWindows.size() > 0) {
+                Iterator it = ((List)floatingWindows.clone()).iterator();
+                while (it.hasNext()) {
+                    java.awt.Window window = (java.awt.Window) it.next();
+                    if (window.isVisible())
+                        window.setVisible(false);
+                }
+            }
+            floatingWindows = null;
         }
 
         // close the designer
