@@ -81,6 +81,8 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
 
             if (code.equals(DatabaseNode.PRIMARY_KEY)) {
                 col = (TableColumn)cmd.createPrimaryKeyColumn(getName());
+            } else if (code.equals(DatabaseNode.INDEXED_COLUMN)) {
+                col = (TableColumn)cmd.createUniqueColumn(getName());
             } else if (code.equals(DatabaseNode.FOREIGN_KEY)) {
                 col = null;
             } else if (code.equals(DatabaseNode.COLUMN)) {
