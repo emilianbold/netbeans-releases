@@ -38,4 +38,13 @@ Microsystems, Inc. All Rights Reserved.
     </folder> <!-- Services -->
   </folder> <!-- UI -->
 
+  <folder name="Services">
+      <folder name="Hidden">
+          <file name="org-netbeans-modules-httpserver-urlmapper.instance">
+              <attr name="instanceClass" stringvalue="org.netbeans.modules.httpserver.HttpServerURLMapper"/>
+              <attr name="instanceOf" stringvalue="org.openide.filesystems.URLMapper"/>
+          </file>
+      </folder> <!-- Hidden -->
+  </folder> <!-- Services -->
+  
 </filesystem>

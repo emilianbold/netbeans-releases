@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
     	<!-- this classpath will be used for compiling tests against jars -->
 	<path id="compiletest.classpath">        
 	    <pathelement location="../netbeans/modules/httpserver.jar"/>
-	    <pathelement location="../servletapi/netbeans/modules/ext/servlet-2.2.jar"/>
+	    <pathelement location="../servletapi/netbeans/modules/autoload/ext/servlet-2.2.jar"/>
 	        <fileset dir="../../openide/netbeans/lib">
                     <include name="openide*.jar"/>
                 </fileset>

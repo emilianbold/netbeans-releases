@@ -14,7 +14,9 @@
 package org.netbeans.modules.httpserver;
 
 import java.io.InputStream;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -51,7 +53,7 @@ public class WrapperServlet extends NbBaseServlet {
      * @param url original URL
      * @return translated URL or null if processing failed
      */ 
-    public static URL createHttpURL (URL url) {
+/*    public static URL createHttpURL (URL url) {
         if (url == null)
             return null;
         
@@ -120,7 +122,7 @@ public class WrapperServlet extends NbBaseServlet {
         catch (Exception ex) {
             return null;
         }
-    }
+    }*/
     
     /** Processes the request for both HTTP GET and POST methods
      * @param request servlet request
@@ -133,13 +135,12 @@ public class WrapperServlet extends NbBaseServlet {
                                NbBundle.getBundle(NbBaseServlet.class).getString("MSG_HTTP_FORBIDDEN"));
             return;
         }
-        
         // output your page here
-        String path = request.getPathInfo ();
+        //String path = request.getPathInfo ();
         ServletOutputStream out = response.getOutputStream ();
         try {
             // resource name
-            if (path.startsWith ("/")) path = path.substring (1); // NOI18N
+            /*if (path.startsWith ("/")) path = path.substring (1); // NOI18N
             
             StringTokenizer slashTok = new StringTokenizer(path, "/", true); // NOI18N
             StringBuffer newPath = new StringBuffer();
@@ -155,7 +156,18 @@ public class WrapperServlet extends NbBaseServlet {
             
             String internalUrl = newPath.toString();
             URL innerURL = new URL (internalUrl);
-            URLConnection conn = innerURL.openConnection ();
+            URLConnection conn = innerURL.openConnection ();*/
+            
+            
+            String requestURL = getRequestURL(request);
+            //String requestURL = request.getRequestURL().toString(); this method is only in Servlet API 2.3
+            URLMapper serverMapper = new HttpServerURLMapper();
+            FileObject files[] = serverMapper.getFileObjects(new URL(requestURL));
+            if ((files == null) || (files.length != 1)) {
+                throw new IOException();
+            }
+            URL internal = URLMapper.findURL(files[0], URLMapper.INTERNAL);
+            URLConnection conn = internal.openConnection();
             
             response.setContentType(conn.getContentType ());   // NOI18N
             // PENDING: copy all info - headers, length, encoding, ...
@@ -171,25 +183,37 @@ public class WrapperServlet extends NbBaseServlet {
             in.close ();
 
         }
-        catch (java.net.MalformedURLException ex) {
+        catch (MalformedURLException ex) {
             try {
                 response.sendError (HttpServletResponse.SC_NOT_FOUND,
                                    NbBundle.getBundle(NbBaseServlet.class).getString("MSG_HTTP_NOT_FOUND"));
             }
-            catch (java.io.IOException ex2) {}
+            catch (IOException ex2) {}
         }
-        catch (java.io.IOException ex) {
+        catch (IOException ex) {
             try {
                 response.sendError (HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
-            catch (java.io.IOException ex2) {}
+            catch (IOException ex2) {}
         }
         finally {
             try { out.close(); } catch (Exception ex) {}
         }
     }
 
+    private String getRequestURL(HttpServletRequest request) throws UnknownHostException, MalformedURLException {
+        HttpServerSettings settings = (HttpServerSettings)SharedClassObject.findObject(HttpServerSettings.class, true);
 
+        String pi = request.getPathInfo();
+        if (pi.startsWith("/")) {
+            pi = pi.substring(1);
+        }
+        URL reconstructedURL = new URL ("http",   // NOI18N
+                              InetAddress.getLocalHost ().getHostName (), 
+                              settings.getPort (),
+                              settings.getWrapperBaseURL () + pi.toString());
+        return reconstructedURL.toExternalForm();
+    }
 
     /**
     * Returns a short description of the servlet.
