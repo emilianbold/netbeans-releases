@@ -69,7 +69,7 @@ final class TopComponentSubModel {
                 s.add(tc);
             } else {
                 // XXX TopComponent was garbaged, remove its ID.
-                tcID2index.remove(tcID);
+                it.remove();
             }
         }
         s.removeAll(openedTopComponents);
