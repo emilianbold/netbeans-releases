@@ -43,6 +43,7 @@ import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.DataNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
@@ -51,7 +52,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
@@ -444,11 +444,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
 
     private void descriptionChanged(final String oldDescription, final String newDescription) {
         if (oldDescription != newDescription && oldDescription != null && !oldDescription.equals(newDescription)) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(oldDescription, newDescription);
-                }
-            });
+            firePropertyChange(DataNode.PROP_SHORT_DESCRIPTION, oldDescription, newDescription);
         }
     }
 
