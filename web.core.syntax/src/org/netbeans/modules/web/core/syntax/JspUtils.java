@@ -182,6 +182,17 @@ public class JspUtils {
     }
     
     
+    /** Decides whether a given file is in the subtree defined by the given folder.
+     * Similar to <code>org.openide.filesystems.FileUtil.isParentOf (FileObject folder, FileObject fo)</code>, 
+     * but also accepts the case that <code>fo == folder</code>
+     */
+    public static boolean isInSubTree(FileObject folder, FileObject fo) {
+        if (fo == folder) {
+            return true;
+        }
+        else return FileUtil.isParentOf(folder, fo);
+    }
+
     /** Finds a relative resource path between rootFolder and relativeObject. 
      * @return relative path between rootFolder and relativeObject. The returned path
      * never starts with a '/'. It never ends with a '/'.
@@ -191,7 +202,7 @@ public class JspUtils {
         String rfp = rootFolder.getPath();
         String rop = relativeObject.getPath();
         // check that they share the start of the path 
-        if (!FileUtil.isParentOf (rootFolder, relativeObject)) {
+        if (!isInSubTree (rootFolder, relativeObject)) {
             throw new IllegalArgumentException("" + rootFolder + " / " + relativeObject); // NOI18N
         }
         // now really return the result
