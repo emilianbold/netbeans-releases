@@ -1,12 +1,10 @@
 OpenIDE-Module: org.netbeans.modules.db/1
-OpenIDE-Module-Name: Database Explorer
 OpenIDE-Module-Install: org/netbeans/modules/db/DatabaseModule.class
 OpenIDE-Module-Specification-Version: 1.4
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Description: org.netbeans.modules.db.docs.HelpSet
-OpenIDE-Module-Display-Category: Database
-OpenIDE-Module-Short-Description: Views and modifies the structure of the connected database.
-OpenIDE-Module-Long-Description: Uses the Explorer to view the current structure of the connected database tables and their data while you are developing database applications or applets within the IDE.
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/db/resources/Bundle.properties
 Class-Path: docs/db.jar
 
 Name: org/netbeans/modules/db/explorer/nodes/RootNode.class
