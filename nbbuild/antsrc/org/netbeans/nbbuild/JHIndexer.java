@@ -40,16 +40,19 @@ import org.apache.tools.ant.types.Path;
  */
 public class JHIndexer extends MatchingTask {
 
-    private File jhall;
+    private Path classpath;
     private File db;
     private File basedir;
     private String locale;
 
     /** Set the location of <samp>jhall.jar</samp> (JavaHelp tools library). */
-    public void setJhall (File jhall) {
+    public Path createClasspath() {
         // JavaHelp release notes say jhtools.jar is enough, but class NoClassDefFoundError
         // on javax.help.search.IndexBuilder when I tried it...
-        this.jhall = jhall;
+        if (classpath == null) {
+            classpath = new Path(getProject());
+        }
+        return classpath.createPath();
     }
 
     /** Set the location of the output database.
@@ -69,9 +72,15 @@ public class JHIndexer extends MatchingTask {
     public void setLocale (String locale) {
         this.locale = locale;
     }
+    
+    /** @deprecated Use {@link #createClasspath} instead. */
+    public void setJhall(File f) {
+        log("The 'jhall' attribute to <jhindexer> is deprecated. Use a nested <classpath> instead.", Project.MSG_WARN);
+        createClasspath().setLocation(f);
+    }
 
     public void execute () throws BuildException {
-        if (jhall == null) throw new BuildException ("Must specify the jhall attribute");
+        if (classpath == null) throw new BuildException ("Must specify the classpath attribute to find jhall.jar");
         if (db == null) throw new BuildException ("Must specify the db attribute");
         if (basedir == null) throw new BuildException ("Must specify the basedir attribute");
         FileScanner scanner = getDirectoryScanner (basedir);
@@ -139,7 +148,7 @@ public class JHIndexer extends MatchingTask {
                     os.close ();
                 }
                 Java java = (Java) project.createTask ("java");
-                java.createClasspath ().createPathElement ().setLocation (jhall);
+                java.setClasspath(classpath);
                 java.setClassname ("com.sun.java.help.search.Indexer");
                 java.createArg ().setValue ("-c");
                 java.createArg ().setFile (config);

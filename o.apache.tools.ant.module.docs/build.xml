@@ -52,8 +52,12 @@ Microsystems, Inc. All Rights Reserved.
         <unzip src="../external/ant-docs-1.5.1.zip" dest="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
         <mkdir dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch"/>
         <jhindexer basedir="javahelp/org/apache/tools/ant/module/docs"
-                   db="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch"
-                   jhall="../../nbbuild/external/jhall-1.1.2_02.jar">
+                   db="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch">
+            <classpath>
+                <fileset dir="../../nbbuild/external">
+                    <include name="jhall*.jar"/>
+                </fileset>
+            </classpath>
             <include name="**/*.html"/>
             <exclude name="JavaHelpSearch/"/>
             <exclude name="credits.html"/>

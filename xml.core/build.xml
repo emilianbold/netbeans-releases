@@ -83,8 +83,12 @@ Microsystems, Inc. All Rights Reserved.
     <target name="javahelp">
         <mkdir dir="javahelp/org/netbeans/modules/xml/core/docs/JavaHelpSearch"/>
         <jhindexer basedir="javahelp/org/netbeans/modules/xml/core/docs/"
-                   db="javahelp/org/netbeans/modules/xml/core/docs/JavaHelpSearch"
-                   jhall="${nbroot}/nbbuild/external/jhall-1.1.2_02.jar">
+                   db="javahelp/org/netbeans/modules/xml/core/docs/JavaHelpSearch">
+            <classpath>
+                <fileset dir="${nbroot}/nbbuild/external">
+                    <include name="jhall*.jar"/>
+                </fileset>
+            </classpath>
             <include name="**/*.html"/>
             <exclude name="JavaHelpSearch/"/>
         </jhindexer>
