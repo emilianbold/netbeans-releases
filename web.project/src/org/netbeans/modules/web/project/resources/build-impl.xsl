@@ -801,7 +801,7 @@ is divided into following sections:
                     </xsl:if>
                     <xsl:if test="//webproject3:web-module-additional-libraries/webproject3:library[@dirs]">
                         <xsl:call-template name="copyIterateDirs">
-                            <xsl:with-param name="files" select="@files"/>
+                            <xsl:with-param name="files" select="@dirs"/>
                             <xsl:with-param name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
                             <xsl:with-param name="libfile" select="webproject3:file"/>
                         </xsl:call-template>
@@ -836,14 +836,14 @@ is divided into following sections:
                 <xsl:attribute name="unless">dist.ear.dir</xsl:attribute>
                   <xsl:for-each select="/p:project/p:configuration/webproject3:data/webproject3:web-module-libraries/webproject3:library[webproject3:path-in-war]">
                     <xsl:variable name="copyto" select=" webproject3:path-in-war"/>
-                    <xsl:if test="//webproject3:library[@files]">
+                    <xsl:if test="//webproject3:web-module-libraries/webproject3:library[@files]">
                         <xsl:call-template name="copyIterateFiles">
                             <xsl:with-param name="files" select="@files"/>
                             <xsl:with-param name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
                             <xsl:with-param name="libfile" select="webproject3:file"/>
                         </xsl:call-template>
                     </xsl:if>
-                    <xsl:if test="//webproject3:library[@dirs]">
+                    <xsl:if test="//webproject3:web-module-libraries/webproject3:library[@dirs]">
                         <xsl:choose>
                             <xsl:when test="webproject3:path-in-war-classes">
                                 <xsl:call-template name="copyIterateDirs">
@@ -865,14 +865,14 @@ is divided into following sections:
                 
                 <xsl:for-each select="/p:project/p:configuration/webproject3:data/webproject3:web-module-additional-libraries/webproject3:library[webproject3:path-in-war]">
                     <xsl:variable name="copyto" select=" webproject3:path-in-war"/>
-                    <xsl:if test="//webproject3:library[@files]">
+                    <xsl:if test="//webproject3:web-module-additional-libraries/webproject3:library[@files]">
                         <xsl:call-template name="copyIterateFiles">
                             <xsl:with-param name="files" select="@files"/>
                             <xsl:with-param name="target" select="concat('${build.web.dir.real}/',$copyto)"/>
                             <xsl:with-param name="libfile" select="webproject3:file"/>
                         </xsl:call-template>
                     </xsl:if>
-                    <xsl:if test="//webproject3:library[@dirs]">
+                    <xsl:if test="//webproject3:web-module-additional-libraries/webproject3:library[@dirs]">
                         <xsl:choose>
                             <xsl:when test="webproject3:path-in-war-classes">
                                 <xsl:call-template name="copyIterateDirs">

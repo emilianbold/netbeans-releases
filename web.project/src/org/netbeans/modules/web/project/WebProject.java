@@ -113,6 +113,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     private SourceRoots testRoots;
     private final UpdateHelper updateHelper;
     private final AuxiliaryConfiguration aux;
+    private final WebProjectClassPathExtender classPathExtender;
 
     private class FileWatch implements AntProjectListener, FileChangeListener {
 
@@ -238,6 +239,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         apiWebServicesClientSupport = WebServicesSupportFactory.createWebServicesClientSupport (webProjectWebServicesSupport);
         enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper, UpdateHelper.createDefaultNotifier());
+        classPathExtender = new WebProjectClassPathExtender(this, updateHelper, evaluator(), refHelper);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
         css = new CopyOnSaveSupport();
@@ -302,7 +304,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new WebSharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl(this.updateHelper),
             new WebFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
-            new WebProjectClassPathExtender(this, updateHelper, evaluator(), refHelper),
+            classPathExtender,
         });
     }
 
@@ -401,14 +403,8 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             return;
         
         if (fo.getParent ().equals (libFolder)) {
-            WebProjectClassPathExtender cpExt = (WebProjectClassPathExtender)getLookup ().lookup (WebProjectClassPathExtender.class);
-            if (cpExt == null) {
-                ErrorManager.getDefault().log ("WebProjectClassPathExtender not found in the project lookup of project: " + getProjectDirectory().getPath()); //NOI18N
-                return;
-            }
-
             try {
-                cpExt.addArchiveFile(fo);
+                classPathExtender.addArchiveFile(fo);
             }
             catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
@@ -561,22 +557,17 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 }
                 
                 if (libFolderName != null && helper.resolveFile (libFolderName).isDirectory ()) {
-                    WebProjectClassPathExtender cpExt = (WebProjectClassPathExtender) WebProject.this.getLookup().lookup(WebProjectClassPathExtender.class);
                     libFolder = helper.resolveFileObject(libFolderName);
-                    if (cpExt != null) {
-                        FileObject children [] = libFolder.getChildren ();
-                        List libs = new LinkedList();
-                        for (int i = 0; i < children.length; i++) {
-                            if (FileUtil.isArchiveFile(children[i]))
-                                libs.add(children[i]);
-                        }
-                        FileObject[] libsArray = new FileObject[libs.size()];
-                        libs.toArray(libsArray);
-                        cpExt.addArchiveFiles(WebProjectProperties.JAVAC_CLASSPATH, libsArray, ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
-                        libFolder.addFileChangeListener (WebProject.this);
+                    FileObject children [] = libFolder.getChildren ();
+                    List libs = new LinkedList();
+                    for (int i = 0; i < children.length; i++) {
+                        if (FileUtil.isArchiveFile(children[i]))
+                            libs.add(children[i]);
                     }
-                    else
-                        ErrorManager.getDefault().log("Cannot find WebProjectClassPathExtender in the lookup of the project " + WebProject.this.getProjectDirectory() + "."); // NOI18N
+                    FileObject[] libsArray = new FileObject[libs.size()];
+                    libs.toArray(libsArray);
+                    classPathExtender.addArchiveFiles(WebProjectProperties.JAVAC_CLASSPATH, libsArray, ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+                    libFolder.addFileChangeListener (WebProject.this);
                 }
 
                 // Register copy on save support
@@ -585,7 +576,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 
                 // Check up on build scripts.
                 if (updateHelper.isCurrent()) {
-                    //Refresh build-impl.xml only for webproject/2
                     genFilesHelper.refreshBuildScript(
                         GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                         WebProject.class.getResource("resources/build-impl.xsl"),
@@ -956,18 +946,12 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 evt.getPropertyName().equals(WebProjectProperties.WAR_CONTENT_ADDITIONAL)) {
             ProjectManager.mutex().postWriteRequest(new Runnable () {
                 public void run() {
-                    ClassPathSupport cs = new ClassPathSupport( evaluator(), refHelper, helper, 
-                                                WebProjectProperties.WELL_KNOWN_PATHS, 
-                                                WebProjectProperties.LIBRARY_PREFIX, 
-                                                WebProjectProperties.LIBRARY_SUFFIX, 
-                                                WebProjectProperties.ANT_ARTIFACT_PREFIX );
-
                     EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                     //update lib references in private properties
                     EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     ArrayList l = new ArrayList ();
-                    l.addAll(cs.itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
-                    l.addAll(cs.itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
+                    l.addAll(classPathExtender.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
+                    l.addAll(classPathExtender.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
                     WebProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                 }
