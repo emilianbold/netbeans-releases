@@ -839,6 +839,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/jspsyntax..."/>
     <ant dir="../web/jspsyntax" target="netbeans"/>
   </target>
+  <target name="all-web/examples" depends="all-web/core">
+    <echo message="Building module web/examples..."/>
+    <ant dir="../web/examples" target="netbeans"/>
+  </target>
   <target name="all-web/jspdebug" depends="build-platform,all-web/core,all-java/srcmodel,all-debuggercore/api,all-debuggerjpda/api">
     <echo message="Building module web/jspdebug..."/>
     <ant dir="../web/jspdebug" target="netbeans"/>
