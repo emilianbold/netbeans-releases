@@ -420,7 +420,11 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             super(n);
         }
         public void update() {
-            changeOriginal(createNodeDelegateImpl(), true);
+            Children.MUTEX.postWriteRequest(new Runnable() {
+                    public void run() {
+                        changeOriginal(createNodeDelegateImpl(), true);
+                    }
+                });
         }
     }
 
