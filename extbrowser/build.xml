@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="init" depends="default.init">
     <patternset id="extbrowser.files">
       <include name="${nb.modules.dir}/extbrowser.jar"/>
-      <include name="${nb.modules.dir}/bin/extbrowser.dll"/>
+      <include name="${nb.modules/bin.dir}/extbrowser.dll"/>
     </patternset>
     <path id="cp">
       <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
@@ -46,8 +46,9 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="release" depends="init">
-    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}">
-      <fileset dir="release/modules" excludesfile="../nbbuild/standard-jar-excludes.txt">
+    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/bin.dir}" />
+    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/bin.dir}" >
+      <fileset dir="release/modules/bin" excludesfile="../nbbuild/standard-jar-excludes.txt">
         <exclude name="**/sources/*"/>
       </fileset>
     </copy>
