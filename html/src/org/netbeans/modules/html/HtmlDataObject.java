@@ -46,10 +46,6 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         n.setIconBase ("org/netbeans/modules/html/htmlObject"); // NOI18N
         return n;
     }
-
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (HtmlLoader.class.getName () + ".Obj"); // NOI18N
-    }
     
     /** Creates new Cookie */
     public Node.Cookie createCookie(Class klass) {
