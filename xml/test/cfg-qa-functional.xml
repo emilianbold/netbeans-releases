@@ -26,6 +26,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- CORE -->
 		<include name="org/netbeans/modules/xml/core/CoreTemplatesTest.class"/>
 		<include name="org/netbeans/modules/xml/core/settings/CoreSettingsTest.class"/>
+		<include name="org/netbeans/modules/xml/core/actions/OpenActionJTest.class"/>
                 <!-- CATALOG -->
 		<include name="org/netbeans/modules/xml/catalog/CatalogTest.class"/>
                 <!-- TOOLS -->
