@@ -510,7 +510,12 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             debugLog("Init view 3="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
         }
         
-       
+        if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
+            hierarchy.getMainWindow().setExtendedState(wsa.getMainWindowFrameStateJoined());
+        } else {
+            hierarchy.getMainWindow().setExtendedState(wsa.getMainWindowFrameStateSeparated());
+        }
+        
         // Shows main window
         hierarchy.getMainWindow().setVisible(true);
         
@@ -518,16 +523,6 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
 
         // Init desktop.
         hierarchy.updateDesktop(wsa);
-        
-        // XXX Seems it needs to be called after setVisible(true);
-        // When tried to be set (maximized) immediately after prepareWindow, it didn't work,
-        // even thou its peer was already present (addNotify from pack was called on frame).
-        if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
-            hierarchy.getMainWindow().setExtendedState(wsa.getMainWindowFrameStateJoined());
-        } else {
-            hierarchy.getMainWindow().setExtendedState(wsa.getMainWindowFrameStateSeparated());
-        }
-        
         
         // Show separate modes.
         hierarchy.setSeparateModesVisible(true);

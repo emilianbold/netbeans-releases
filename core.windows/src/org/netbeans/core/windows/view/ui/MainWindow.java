@@ -381,8 +381,9 @@ public final class MainWindow extends JFrame {
         } 
         invalidate();
         validate();
-        if( !firstTimeHack )
-            repaint();
+        if( firstTimeHack && !System.getProperty("os.name").startsWith("Windows") )
+            releaseWaitingForPaintDummyGraphic();
+        repaint();
     }
 
     // XXX PENDING used in DnD only.
@@ -495,6 +496,8 @@ public final class MainWindow extends JFrame {
     protected Image waitingForPaintDummyImage; 
     protected Graphics waitingForPaintDummyGraphic; 
     
+    boolean firstTimeHack = true;
+    
     public void setVisible( boolean flag ) {
         if( firstTimeHack ) {
             waitingForPaintDummyImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
@@ -508,25 +511,6 @@ public final class MainWindow extends JFrame {
             waitingForPaintDummyGraphic.dispose();
             waitingForPaintDummyGraphic = null;
             waitingForPaintDummyImage = null;
-        }
-    }
-
-    boolean firstTimeHack = true;
-    public void setExtendedState(int state) {
-
-        int prevState = getExtendedState();
-
-        if( !System.getProperty("os.name").startsWith("Windows") )
-            releaseWaitingForPaintDummyGraphic();
-
-        super.setExtendedState(state);
-        
-        if( firstTimeHack && state != prevState && state == Frame.MAXIMIZED_BOTH ) {
-            //we're switching to the maximized mode for the first time upon startup
-            //so the main window must repaint now (instead of repainting from the
-            //setDesktop method)
-            firstTimeHack = false;
-            repaint();        
         }
     }
 }
