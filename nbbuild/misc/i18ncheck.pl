@@ -179,6 +179,12 @@ sub checkline {
             && ! m,getProperty,
             && ! m,getBoolean,
             && ! m,NbBundle\. ?get(Message|LocalizedFile),
+            && ! m,\. ?log\s*\(,
+            && ! m,new HelpCtx\s*\(,
+            && ! m,new PropertyDescriptor\s*\(,
+            && ! m,setIconBase\s*\(,
+            && ! m,loadImage\s*\(,
+            && ! m,getResource(AsStream)?\s*\(,
             && m,".*", 
            ); 
 }
