@@ -276,12 +276,12 @@ class TestUtil extends Object {
     static void parseClassElement(ClassElement ce) {
         //System.err.println("$$$$$$$ Parsing class element :"+ce.getVMName());
         SourceElement se = ce.getSource();
-        int sourceStatus = se.getStatus();
-        if ((sourceStatus != SourceElement.STATUS_OK)&(sourceStatus != SourceElement.STATUS_ERROR)) {
+        //int sourceStatus = se.getStatus();
+        //if ((sourceStatus != SourceElement.STATUS_OK)&(sourceStatus != SourceElement.STATUS_ERROR)) {
             //System.err.println("$$$$$ Parsing ....");
             Task parser = se.prepare();
             parser.waitFinished();
-        } 
+        //} 
         if (se.getStatus() == SourceElement.STATUS_OK) {
             //System.err.println("$$$$$$ SourceElement is OK ....");
         } else {
