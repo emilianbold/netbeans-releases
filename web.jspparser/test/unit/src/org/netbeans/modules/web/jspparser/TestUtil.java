@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.web.core.jsploader.WebModule;
+import org.netbeans.api.web.webmodule.WebModule;
+import org.netbeans.spi.web.webmodule.WebModuleImplementation;
+import org.netbeans.modules.web.core.jsploader.JspParserAccess;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -32,7 +34,7 @@ import org.openide.filesystems.Repository;
  */
 class TestUtil {
     
-    static FileObject mountRoot(File f, NbTestCase test) throws IOException {
+/*    static FileObject mountRoot(File f, NbTestCase test) throws IOException {
         try {
             FileObject fo[] = FileUtil.fromFile(f);
             if ((fo == null) || (fo.length == 0)) {
@@ -55,11 +57,11 @@ class TestUtil {
             ioe.initCause(e);
             throw ioe;
         }
-    }
+    }*/
     
     static FileObject getFileInWorkDir(String path, NbTestCase test) throws Exception {
         File f = new File(Manager.getWorkDirPath());
-        FileObject workDirFO = mountRoot(f, test);
+        FileObject workDirFO = FileUtil.fromFile(f)[0];
         StringTokenizer st = new StringTokenizer(path, "/");
         FileObject tempFile = workDirFO;
         while (st.hasMoreTokens()) {
@@ -68,8 +70,43 @@ class TestUtil {
         return tempFile;
     }
     
-    static JspParserAPI.WebModule getWebModule(FileObject wmRoot, FileObject jspFile) {
-        return WebModule.getJspParserWM(wmRoot);
+    static JspParserAPI.WebModule getWebModule(FileObject wmRoot, FileObject jspFile) throws Exception {
+        WebModule wm = createWebModule(new UnpWarWebModuleImplementation(wmRoot));
+        return JspParserAccess.getJspParserWM(wm/*wmRoot*/);
+    }
+    
+    private static WebModule createWebModule(WebModuleImplementation impl) throws Exception {
+        java.lang.reflect.Constructor c = WebModule.class.getDeclaredConstructor(
+            new Class[] {WebModuleImplementation.class});
+        c.setAccessible(true);
+        return (WebModule)c.newInstance(new Object[] {impl});
+    }
+    
+    static class UnpWarWebModuleImplementation implements WebModuleImplementation {
+        
+        private FileObject docBase;
+        private String contextPath;
+        
+        public UnpWarWebModuleImplementation(FileObject docBase) {
+            this.docBase = docBase;
+            contextPath = "";
+        }
+
+        public FileObject getDocumentBase () {
+            return docBase;
+        }
+    
+        public FileObject getJavaSourcesFolder () {
+            return docBase.getFileObject("WEB-INF/classes");
+        }
+    
+        public String getContextPath () {
+            return contextPath;
+        }
+    
+        public void setContextPath (String path) {
+            this.contextPath = path;
+        }
     }
     
 }

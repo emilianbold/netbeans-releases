@@ -119,7 +119,7 @@ public class ParseTest extends NbTestCase {
     
     private static int fileNr = 1;
     
-    private void analyzeIt(FileObject root, FileObject jspFile) throws IOException {
+    private void analyzeIt(FileObject root, FileObject jspFile) throws Exception {
         log("calling parseIt, root: " + root + "  file: " + jspFile);
         JspParserAPI api = JspParserFactory.getJspParser();
         JspParserAPI.ParseResult result = api.analyzePage(jspFile, TestUtil.getWebModule(root, jspFile), JspParserAPI.ERROR_IGNORE);
