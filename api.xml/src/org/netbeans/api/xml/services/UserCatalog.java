@@ -22,14 +22,15 @@ import org.openide.util.Lookup;
 import org.openide.xml.EntityCatalog;
 
 /**
- * Factory of services based on user's catalog. A client cannot instantiate and
+ * Factory of user's catalog service instaces. A client cannot instantiate and
  * use it directly. It can indirectly use instances are registeretered in a 
  * {@link Lookup} by providers.
  * <p>
  * It is user's level equivalent of system's entity resolution support 
  * {@link EntityCatalog} in OpenIDE API. Do not mix these,
- * always use UserCatalog if working with user's files. User may, depending
- * on provider implementation, use system catalog as user's one if needed.
+ * always use <code>UserCatalog</code> while working with user's files.
+ * User may, depending on provider implementation, use system catalog as
+ * user's one if needed.
  *
  * @author  Libor Kramolis
  * @author  Petr Kuzel
@@ -50,27 +51,33 @@ public abstract class UserCatalog {
     
     /**
      * User's JAXP/TrAX <code>URIResolver</code>.
+     * @param ctx Service invocation context (e.g. used for locating its
+     * settings). <code>null</code>stays for IDE global context.
      * @return URIResolver or <code>null</code> if not supported.
      */
-    public URIResolver getURIResolver() {
+    public URIResolver getURIResolver(Lookup ctx) {
         return null;
     }
     
     /**
      * User's SAX <code>EntityResolver</code>.
+     * @param ctx Service invocation context (e.g. used for locating its
+     * settings). <code>null</code>stays for IDE global context.
      * @return EntityResolver or <code>null</code> if not supported.
      */
-    public EntityResolver getEntityResolver() {
+    public EntityResolver getEntityResolver(Lookup ctx) {
         return null;
     }
             
     /**
      * Read-only "sampled" iterator over all registered entity public IDs.
+     * @param ctx Service invocation context (e.g. used for locating its
+     * settings). <code>null</code>stays for IDE global context.
      * @return all known public IDs or <code>null</code> if not supported. 
      */
     // Svata suggested here a live collection, but he accepts this solution if it
     // is only for informational purposes. It is.
-    public Iterator getPublicIDs() {
+    public Iterator getPublicIDs(Lookup ctx) {
         return null;
     }
 }

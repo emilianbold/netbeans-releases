@@ -20,7 +20,8 @@ import org.netbeans.modules.xml.catalog.spi.*;
 import org.netbeans.modules.xml.catalog.lib.*;
 import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
 
-import org.netbeans.spi.xml.services.*;
+import org.netbeans.api.xml.services.*;
+import org.openide.util.Lookup;
 
 /**
  * An entity resolver that can resolve all registrations
@@ -34,13 +35,13 @@ import org.netbeans.spi.xml.services.*;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class CatalogEntityResolver extends UserCatalogProvider implements EntityResolver {
+public class CatalogEntityResolver extends UserCatalog implements EntityResolver {
 
     /** Creates new CatalogEntityResolver */
     public CatalogEntityResolver() {
     }
 
-    public EntityResolver getEntityResolver() {
+    public EntityResolver getEntityResolver(Lookup ctx) {
         return this;
     }
     
@@ -89,7 +90,7 @@ public class CatalogEntityResolver extends UserCatalogProvider implements Entity
     /**
      * Return all known public IDs.
      */
-    public Iterator getPublicIDs() {
+    public Iterator getPublicIDs(Lookup ctx) {
         
         IteratorIterator ret = new IteratorIterator();
         

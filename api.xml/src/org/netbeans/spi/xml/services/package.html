@@ -15,8 +15,44 @@
 <head><title>XML Tools SPI</title></head>
 
 <body>
-NetBeans XML tools services SPI.
+NetBeans XML tools services implementation guidelines.
 
 <h2>XML Tools Services SPIs</h2>
-See particular classes for details.
+
+<h3>Services and Settings</h3>
+A service should not fully control its settings. The setting should be separated 
+(possibly standartized) and located by the service using run-time invocation
+context. Context sensitive services must express their contextuality in API
+allowing clients to pass the invocation context to them.
+
+<h4>Global Service API Example</h4>
+<pre>
+public interface XMLService extends EntityResolver {
+  // inherited from EntityResolver
+  // InputSource resolveEntity(String publicId, String systemId);
+}
+</pre>
+
+<h4>Context Sensitive Service API Example</h4>
+<pre>
+public interface CtxXMLService {
+  InputSource resolveEntity(Lookup ctx, String publicId, String systemId);
+}
+</pre>
+Also factoring approach can be used:
+<pre>
+public interface CtxService {
+  XMLServiceWith30Methods getXMLService(Lookup ctx);
+}
+</pre>
+
+<h3>Statefull Contextual Services</h3>
+Some contextual services are statefull. In such case implementor must properly
+handle state per individual context. For example such service can store its
+state in context if apply.
+
+<h3>Global Context</h3>
+How should we handle <code>null</code> contexts? 
+Treat them as global (for settings).
+
 </body></html>

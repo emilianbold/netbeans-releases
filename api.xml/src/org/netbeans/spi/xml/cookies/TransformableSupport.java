@@ -147,13 +147,13 @@ public final class TransformableSupport implements TransformableCookie {
 
     private static URIResolver getURIResolver () {
         UserCatalog catalog = UserCatalog.getDefault();
-        URIResolver res = (catalog == null ? null : catalog.getURIResolver());
+        URIResolver res = (catalog == null ? null : catalog.getURIResolver(null));
         return res;
     }
 
     private static EntityResolver getEntityResolver () {
         UserCatalog catalog = UserCatalog.getDefault();
-        EntityResolver res = (catalog == null ? null : catalog.getEntityResolver());
+        EntityResolver res = (catalog == null ? null : catalog.getEntityResolver(null));
         return res;
     }
     
