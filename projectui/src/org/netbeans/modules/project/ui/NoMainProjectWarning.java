@@ -36,17 +36,12 @@ public class NoMainProjectWarning extends JPanel {
     /** Creates new form NoMainProjectWarning */
     public NoMainProjectWarning (Project[] projects) {
         initComponents();
-        // add MainClassChooser
+
         ProjectsListModel model = new ProjectsListModel (projects);
         jList1.setModel (model);
         jList1.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         if (model.getSize () > 0) {
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                    jList1.setSelectedIndex (0);
-                }
-            });
-            
+            jList1.setSelectedIndex (0);
         }
         jList1.setCellRenderer(new ProjectsRenderer ());
         jList1.addListSelectionListener (new ListSelectionListener () {

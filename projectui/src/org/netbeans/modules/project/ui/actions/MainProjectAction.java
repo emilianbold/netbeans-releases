@@ -150,14 +150,16 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
            public void stateChanged (ChangeEvent e) {
                if (e.getSource () instanceof MouseEvent && MouseUtils.isDoubleClick (((MouseEvent)e.getSource ()))) {
                    // click button and the finish dialog with selected class
-                   okButton.doClick ();
+                   if (panel.getSelectedProject () != null) {
+                       okButton.doClick ();
+                   }
                } else {
                    okButton.setEnabled (panel.getSelectedProject () != null);
                }
            }
         });
         
-        okButton.setEnabled (false);
+        okButton.setEnabled (panel.getSelectedProject () != null);
         
         DialogDescriptor desc = new DialogDescriptor (panel,
                 action == null ?
