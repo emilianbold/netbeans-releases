@@ -202,6 +202,7 @@ public abstract class AbstractTestUtil {
      */
     public static void saveDataObject(DataObject dataObject) throws IOException {
         SaveCookie cookie = (SaveCookie) dataObject.getCookie(SaveCookie.class);
+        if (cookie == null) throw new IllegalStateException("Cannot save document without SaveCookie.");
         cookie.save();
     }
     

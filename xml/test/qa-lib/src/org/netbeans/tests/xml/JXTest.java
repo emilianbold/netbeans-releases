@@ -12,8 +12,10 @@
  */
 package org.netbeans.tests.xml;
 
-import java.io.IOException;
+import java.io.*;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.util.Dumper;
+import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.test.oo.gui.jelly.JellyProperties;
 
 /**
@@ -22,6 +24,9 @@ import org.netbeans.test.oo.gui.jelly.JellyProperties;
  */
 public class JXTest extends XTest {
     public static final String DELIM = "|";
+    protected static boolean captureScreen = true;
+    protected static boolean dumpScreen = true;
+    
     
     /** Creates a new instance of JXMLXtest */
     public JXTest(String name) {
@@ -36,6 +41,23 @@ public class JXTest extends XTest {
             fail("Load Debug Timeouts fail.");
             ioe.printStackTrace();
         }
+    }
+
+    void fail(String msg, Exception e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        if (captureScreen) {
+            try {
+                PNGEncoder.captureScreen(getWorkDirPath()+File.separator+"screen.png");
+            } catch (Exception e1) {}
+        }
+        if (dumpScreen) {
+            try {
+                Dumper.dumpAll(getWorkDirPath()+File.separator+"screen.xml");
+            } catch (Exception e2) {}
+        }
+        fail(msg + "\n" + sw);
     }
     
 //    /**

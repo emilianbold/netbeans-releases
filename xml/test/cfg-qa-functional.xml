@@ -24,10 +24,10 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/tax/CreateXMLTest.class"/>
 		<include name="org/netbeans/tax/io/TreeBuilderTest.class"/>
                 <!-- CORE -->
-		<!-- include name="org/netbeans/modules/xml/core/CoreTemplatesTest.class"/-->
+		<include name="org/netbeans/modules/xml/core/CoreTemplatesTest.class"/>
 		<include name="org/netbeans/modules/xml/core/settings/CoreSettingsTest.class"/>
                 <!-- CATALOG -->
-		<!-- include name="org/netbeans/modules/xml/catalog/CatalogTest.class"/-->
+		<include name="org/netbeans/modules/xml/catalog/CatalogTest.class"/>
                 <!-- TOOLS -->
                 <include name="org/netbeans/modules/xml/tools/generator/GenerateDOMScannerSupportTest.class"/>
                 <include name="org/netbeans/modules/xml/tools/generator/GenerateDTDSupportTest.class"/>
