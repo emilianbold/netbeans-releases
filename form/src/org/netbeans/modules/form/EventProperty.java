@@ -291,29 +291,6 @@ public class EventProperty extends PropertySupport.ReadWrite {
             if (EventProperty.this.isReadOnly())
                 return eventCombo;
 
-            // listening to combobox focus gain - seems to be useless...
-/*            eventCombo.addFocusListener(new FocusAdapter() {
-                public void focusGained(FocusEvent evt) {
-                    Vector ehandlers = event.getHandlers();
-                    eventCombo.removeAllItems();
-                    if (ehandlers.size() == 0) {
-                        eventCombo.getEditor().setItem(
-                            FormUtils.getDefaultEventName(
-                                event.getComponent(),
-                                event.getListenerMethod()));
-                    }
-                    else {
-                        for (int i=0, n = ehandlers.size(); i < n; i++)
-                            eventCombo.addItem(((EventHandler)
-                                               ehandlers.get(i)).getName());
-
-                        if (lastSelectedHandler != null)
-                            eventCombo.setSelectedItem(
-                                lastSelectedHandler.getName());
-                    }
-                }
-            }); */
-
             // listening to combobox's editor focus lost
             // (we remember the listener in a field so we can remove it
             if (comboEditFocusListener == null)
@@ -324,26 +301,12 @@ public class EventProperty extends PropertySupport.ReadWrite {
                         EventEditor.this.setValue(lastSelectedHandler != null ?
                                       lastSelectedHandler.getName() : null);
                     }
+                    public void focusGained(FocusEvent evt) {
+                        eventCombo.getEditor().selectAll();
+                    }
                 };
             eventCombo.getEditor().getEditorComponent().addFocusListener(
                                                comboEditFocusListener);
-
-            // listening to Enter key pressed in combobox's editor
-            eventCombo.getEditor().addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    eventCombo.removeActionListener(comboSelectListener);
-                    eventCombo.getEditor().getEditorComponent()
-                        .removeFocusListener(comboEditFocusListener);
-
-                    String selected = (String) eventCombo.getEditor().getItem();
-                    EventProperty.this.setValue(selected);
-                    selected = lastSelectedHandler != null ?
-                                   lastSelectedHandler.getName() : null;
-                    EventEditor.this.setValue(selected);
-                    if (!"".equals(selected)) // NOI18N
-                        event.gotoEventHandler(selected);
-                }
-            });
 
             // listening to Esc key pressed in combobox's editor
             eventCombo.getEditor().getEditorComponent()
@@ -357,6 +320,29 @@ public class EventProperty extends PropertySupport.ReadWrite {
                         EventEditor.this.setValue(lastSelectedHandler != null ?
                                       lastSelectedHandler.getName() : null);
                     }
+                    else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                        eventCombo.removeActionListener(comboSelectListener);
+                        eventCombo.getEditor().getEditorComponent()
+                            .removeFocusListener(comboEditFocusListener);
+
+                        String selected = (String) eventCombo.getEditor().getItem();
+                        EventProperty.this.setValue(selected);
+                        if ((selected == null || "".equals(selected)) // NOI18N
+                                && lastSelectedHandler != null)
+                        {
+                            selected = lastSelectedHandler.getName();
+                            EventEditor.this.setValue(selected);
+                        }
+
+                        if (selected != null && !"".equals(selected)) // NOI18N
+                            event.gotoEventHandler(selected);
+                    }
+                }
+            });
+
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    eventCombo.getEditor().getEditorComponent().requestFocus();
                 }
             });
 
