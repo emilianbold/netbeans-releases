@@ -148,9 +148,25 @@ public class TemplatesPanel implements WizardDescriptor.Panel, TemplatesPanelGUI
             if (key instanceof DataObject) {
                 DataObject dobj = (DataObject) key;
                 if (dobj instanceof DataFolder) {
-                    return new Node[] {
-                        new FilterNode (dobj.getNodeDelegate(), new CategoriesChildren ((DataFolder)dobj))
-                    };
+                    DataFolder folder = (DataFolder) dobj;
+                    FileObject[] children = folder.getPrimaryFile().getChildren();
+                    int type = children.length == 0 ? 0 : 1;   //Empty folder or File folder
+                    for (int i=0; i< children.length; i++) {
+                        if (children[i].isFolder()) {
+                            type = 2;   //Folder folder
+                            break;
+                        }
+                    }
+                    if (type == 1) {
+                        return new Node[] {
+                            new FilterNode (dobj.getNodeDelegate(), Children.LEAF)
+                        };
+                    }
+                    else if (type == 2) {
+                        return new Node[] {                        
+                            new FilterNode (dobj.getNodeDelegate(), new CategoriesChildren ((DataFolder)dobj))
+                        };
+                    }
                 }
             }
             return new Node[0];

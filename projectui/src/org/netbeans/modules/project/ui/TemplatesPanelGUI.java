@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.text.html.HTMLEditorKit;
 import org.openide.ErrorManager;
@@ -179,36 +180,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         this.jLabel1.setText (this.firer.getCategoriesName());
         this.jLabel1.setDisplayedMnemonic(this.firer.getCategoriesMnemonic());
         this.jLabel2.setText (this.firer.getTemplatesName());
-        this.jLabel2.setDisplayedMnemonic (this.firer.getCategoriesMnemonic());
-        BeanTreeView btv = new BeanTreeView ();
-        btv.setRootVisible(false);
-        btv.setPopupAllowed(false);
-        btv.setDefaultActionAllowed(false);
-        GridBagConstraints c = new GridBagConstraints ();
-        c.gridx = GridBagConstraints.RELATIVE;
-        c.gridy = GridBagConstraints.RELATIVE;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        c.gridheight = GridBagConstraints.REMAINDER;
-        c.fill = GridBagConstraints.BOTH;
-        c.anchor = GridBagConstraints.NORTHWEST;
-        c.weightx = 1.0;
-        c.weighty = 1.0;
-        ((GridBagLayout)this.categoriesPanel.getLayout()).setConstraints(btv, c);
-        this.categoriesPanel.add (btv);
-        this.categoriesPanel.addPropertyChangeListener(this);
-        ListView lv = new ListView ();
-        lv.setPopupAllowed(false);
-        c = new GridBagConstraints ();
-        c.gridx = GridBagConstraints.RELATIVE;
-        c.gridy = GridBagConstraints.RELATIVE;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        c.gridheight = GridBagConstraints.REMAINDER;
-        c.fill = GridBagConstraints.BOTH;
-        c.anchor = GridBagConstraints.NORTHWEST;
-        c.weightx = 1.0;
-        c.weighty = 1.0;
-        ((GridBagLayout)this.projectsPanel.getLayout()).setConstraints(lv, c);
-        this.projectsPanel.add (lv);
+        this.jLabel2.setDisplayedMnemonic (this.firer.getCategoriesMnemonic());                                                
+        this.categoriesPanel.addPropertyChangeListener(this);                        
         this.projectsPanel.addPropertyChangeListener(this);
         this.description.setEditorKit(new HTMLEditorKit());
     }
@@ -223,8 +196,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        categoriesPanel = new ExplorerProviderPanel ();
-        projectsPanel = new ExplorerProviderPanel ();
+        categoriesPanel = new CategoriesPanel ();
+        projectsPanel = new TemplatesPanel ();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         description = new javax.swing.JEditorPane();
@@ -253,9 +226,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        add(jLabel2, gridBagConstraints);
-
-        categoriesPanel.setLayout(new java.awt.GridBagLayout());
+        add(jLabel2, gridBagConstraints);       
 
         categoriesPanel.setBorder(new javax.swing.border.EtchedBorder());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -264,8 +235,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.weighty = 0.7;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 6);
         add(categoriesPanel, gridBagConstraints);
-
-        projectsPanel.setLayout(new java.awt.GridBagLayout());
 
         projectsPanel.setBorder(new javax.swing.border.EtchedBorder());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -317,21 +286,17 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         return desc;
     }
     
-    private static class ExplorerProviderPanel extends JPanel implements ExplorerManager.Provider, PropertyChangeListener, VetoableChangeListener {
+    private static abstract class ExplorerProviderPanel extends JPanel implements ExplorerManager.Provider, PropertyChangeListener, VetoableChangeListener {
         
         private ExplorerManager manager;
         
-        public ExplorerProviderPanel () {           
+        protected ExplorerProviderPanel () {           
             this.manager = new ExplorerManager ();
             this.manager.addPropertyChangeListener(this);
             this.manager.addVetoableChangeListener(this);
+            this.initGUI ();
         }
-        
-        public ExplorerProviderPanel (Node rootNode) {
-            this ();
-            this.manager.setRootContext(rootNode);            
-        }
-        
+                
         public void setRootNode (Node node) {
             this.manager.setRootContext(node);
         }
@@ -390,9 +355,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         }
         
         public void propertyChange (PropertyChangeEvent event) {
-            this.firePropertyChange(event.getPropertyName(), 
+            this.firePropertyChange(event.getPropertyName(),
                 event.getOldValue(), event.getNewValue());
-        }                        
+        }
         
         public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
             if (ExplorerManager.PROP_SELECTED_NODES.equals (evt.getPropertyName())) {
@@ -403,6 +368,77 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             }
         }
         
+        protected abstract JComponent createComponent ();
+        
+        private void initGUI () {
+            this.setLayout (new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints ();
+            c.gridx = GridBagConstraints.RELATIVE;
+            c.gridy = GridBagConstraints.RELATIVE;
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.gridheight = GridBagConstraints.REMAINDER;
+            c.fill = GridBagConstraints.BOTH;
+            c.anchor = GridBagConstraints.NORTHWEST;
+            c.weightx = 1.0;
+            c.weighty = 1.0;
+            JComponent component = this.createComponent ();
+            ((GridBagLayout)this.getLayout()).setConstraints(component, c);
+            this.add (component);
+        }        
+    }
+
+
+    private static class CategoriesBeanTreeView extends BeanTreeView {
+        public CategoriesBeanTreeView () {
+            super ();
+            this.tree.setEditable(false);
+        }
+    }
+
+    private static final class CategoriesPanel extends ExplorerProviderPanel {
+
+        private BeanTreeView btv;
+
+        protected synchronized JComponent createComponent () {
+            if (this.btv == null) {
+                this.btv = new CategoriesBeanTreeView ();
+                this.btv.setRootVisible(false);
+                this.btv.setPopupAllowed(false);
+                this.btv.setDefaultActionAllowed(false);
+            }
+            return this.btv;
+        }
+        
+        public void propertyChange (PropertyChangeEvent event) {
+            if (event.getPropertyName() == ExplorerManager.PROP_SELECTED_NODES) {
+                Node[] oldNodes = (Node[]) event.getOldValue();
+                Node[] newNodes = (Node[]) event.getNewValue();
+                if (oldNodes != null) {
+                    for (int i=0; i< oldNodes.length; i++) {
+                        this.btv.collapseNode (oldNodes[i]);
+                    }
+                }
+                if (newNodes != null) {
+                    for (int i=0; i< newNodes.length; i++) {
+                        this.btv.expandNode (newNodes[i]);
+                    }
+                }
+            }
+            super.propertyChange (event);
+        }
+    }
+    
+    private static final class TemplatesPanel extends ExplorerProviderPanel {
+        
+        private ListView list;
+
+        protected synchronized JComponent createComponent () {
+            if (this.list == null) {
+                this.list = new ListView ();
+                this.list.setPopupAllowed(false);
+            }
+            return this.list;
+        }
     }
            
     // Variables declaration - do not modify//GEN-BEGIN:variables
