@@ -3436,4 +3436,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     http://openide.netbeans.org/tutorial/api-design.html#api
     </fail>
   </target>
+
+  <target name="check-clusters-content" depends="bootstrap,init-tasks"> 
+    <taskdef name="checkcontent" classname="org.netbeans.nbbuild.CheckClustersContent" classpath="nbantext.jar"/>
+    <checkcontent clusters="${nb.clusters.list}" trackingPath="${netbeans.dest.dir}" kitDestDir="${netbeans.dest.dir}"/>
+  </target>
 </project>
