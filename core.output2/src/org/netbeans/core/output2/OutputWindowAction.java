@@ -28,9 +28,7 @@ public final class OutputWindowAction extends CallableSystemAction {
 
     public void performAction() {
         OutputWindow output = OutputWindow.findDefault();
-        if (!output.isOpened()) {
-            output.open();
-        }
+        output.open();
         output.requestActive();
     }
     
