@@ -161,7 +161,7 @@ final class NbErrorManager extends ErrorManager {
         
         if (prefix != null)
             log.print ("[" + prefix + "] "); // NOI18N
-        log.println ("*********** Exception occurred ************ at " + new Date()); // NOI18N
+        log.println ("*********** Exception occurred ************ at " + ex.getDate()); // NOI18N
         ex.printStackTrace(log);
         log.flush();
 
@@ -447,7 +447,7 @@ final class NbErrorManager extends ErrorManager {
     {
         /** the original throwable */
         private Throwable t;
-
+        private Date d;
         private Annotation[] arr;
         private int severity;
 
@@ -507,7 +507,10 @@ final class NbErrorManager extends ErrorManager {
 
         /** @return date assigned to the exception */
         Date getDate () {
-            return (Date)find (4);
+            if (d == null) {
+                d = (Date)find (4);
+            }
+            return d;
         }
 
         /** Prints stack trace of all annotations and if
