@@ -68,10 +68,20 @@ public class NbPatchClass extends MatchingTask {
      */
     public void setSource (File f) {
         if (f.exists()) {
+            log ("Adding source file " + f.getAbsolutePath(), Project.MSG_VERBOSE);
             FileSet xfs = new FileSet();
-            xfs.setDir(project.getBaseDir());
-            xfs.setIncludes(f.getAbsolutePath());
-            addFileset(xfs);
+            xfs.setDir(f.getParentFile());
+            log("Setting FileSet's dir to \"" + f.getParentFile().getAbsolutePath() + "\"", Project.MSG_DEBUG );
+            xfs.setIncludes(f.getName());
+            log("Setting FileSet's include to \"" + f.getName() + "\"",Project.MSG_DEBUG );
+            DirectoryScanner ds = xfs.getDirectoryScanner(project);
+            String[] files = ds.getIncludedFiles();
+            if (files.length < 1) {
+                log ("FileSet is empty, source doesn't doesn't exist (" + f.getParentFile().getAbsolutePath() + ")", Project.MSG_VERBOSE);
+            } else {
+                log ("Adding FileSet with "  + files.length + " file(s)", Project.MSG_VERBOSE);
+                addFileset(xfs);
+            }
         }
     }
     
@@ -86,6 +96,7 @@ public class NbPatchClass extends MatchingTask {
      */
     private Vector filesets = new Vector ();
     public void addFileset(FileSet set) {
+        log ("Adding new FileSet", Project.MSG_DEBUG);
         filesets.addElement(set);
     }
  
@@ -101,6 +112,7 @@ public class NbPatchClass extends MatchingTask {
                 DirectoryScanner ds = n.getDirectoryScanner(project);
                 String[] files = ds.getIncludedFiles();
                 File bdir = ds.getBasedir();
+                if (files.length < 1) log ("FileSet is empty, doesn't have included files", Project.MSG_VERBOSE);
                 for (int k=0; k < files.length && fs_empty; k++) {
                     File n_file = new File(bdir, files[k]);
                     if (n_file.exists()) fs_empty = false;
