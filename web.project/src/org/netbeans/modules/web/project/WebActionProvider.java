@@ -702,11 +702,21 @@ class WebActionProvider implements ActionProvider {
                 if (o != null) {
                     AttachingDICookie attCookie = (AttachingDICookie)o;
                     if (sdi.getTransport().equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
-                        if (attCookie.getSharedMemoryName().equalsIgnoreCase(sdi.getShmemName())) {
+                        String shmem = attCookie.getSharedMemoryName();
+                        if (shmem == null) {
+                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Shared memory name is null.");
+                            return false;
+                        }
+                        if (shmem.equalsIgnoreCase(sdi.getShmemName())) {
                             return true;
                         }
                     } else {
-                        if (attCookie.getHostName().equalsIgnoreCase(sdi.getHost())) {
+                        String hostname = attCookie.getHostName();
+                        if (hostname == null) {
+                            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Hostname is null.");
+                            return false;
+                        }
+                        if (hostname.equalsIgnoreCase(sdi.getHost())) {
                             if (attCookie.getPortNumber() == sdi.getPort()) {
                                 return true;
                             }
