@@ -684,3 +684,21 @@ src/org/netbeans/jemmy/drivers/menus/QueueJMenuDriver.java
 27140:
 Files:
 src/org/netbeans/jemmy/drivers/menus/QueueJMenuDriver.java
+
+#VERSION 2.1.0
+
+Merge of trunk and queue-branch versions. See <a href="http://jemmy.netbeans.org/queue.html">"Queue Using"</a>
+for more information
+
+Versioning. Build number and packages implementtion version.
+See <a href="http://jemmy.netbeans.org/JemmyVersioning.html">"Jemmy Versioning"</a>
+for more info.
+
+Image library. New library allowing to compare two images using different approaches
+and to find one image inside another.
+
+New class: PNGDecored. Allows to load image from PNG graphics file.
+
+Bugfixes: 23436, 28144, 23436, 21011
+
+

@@ -68,14 +68,14 @@ public class PNGDecoder extends Object {
 
     boolean compare(byte[] b1, byte[] b2) {
         if(b1.length != b2.length) {
-            return(false);;
+            return(false);
         }
         for(int i = 0; i < b1.length; i++) {
             if(b1[i] != b2[i]) {
-                return(false);;
+                return(false);
             }
         }
-        return(true);;
+        return(true);
     }
 
     void checkEquality(byte[] b1, byte[] b2) {
