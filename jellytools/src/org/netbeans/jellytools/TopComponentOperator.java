@@ -22,6 +22,7 @@ import org.netbeans.jellytools.actions.UndockAction;
 import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
@@ -128,6 +129,8 @@ public class TopComponentOperator extends JComponentOperator {
     public void dockViewInto(String newLocationPath) {
         makeComponentVisible();
         ((TopComponent)getSource()).requestFocus();
+        // need to wait a little
+        new EventTool().waitNoEvent(500);
         new DockingAction(newLocationPath).perform();
     }
     
@@ -136,6 +139,8 @@ public class TopComponentOperator extends JComponentOperator {
     public void undockView() {
         makeComponentVisible();
         ((TopComponent)getSource()).requestFocus();
+        // need to wait a little
+        new EventTool().waitNoEvent(500);
         new UndockAction().perform();
     }
     
@@ -144,6 +149,8 @@ public class TopComponentOperator extends JComponentOperator {
     public void cloneView() {
         makeComponentVisible();
         ((TopComponent)getSource()).requestFocus();
+        // need to wait a little
+        new EventTool().waitNoEvent(500);
         new CloneViewAction().perform();
     }
     
