@@ -89,12 +89,22 @@ class RefreshAction
         // Loop through all the nodes passed to this routine
         while( nodeIndex < activatedNodes.length && rootFolderSelected ) {
 
-            // Get the file behind the object
+            // Get the node object
             dataObject = (DataObject)activatedNodes[ nodeIndex ].getCookie( DataObject.class );
-            fileObject = dataObject.getPrimaryFile( );
+            if( dataObject != null ) {
 
-            // If this file is not an HTTPRootFileObject,
-            if( !( fileObject instanceof HTTPRootFileObject ) ) {
+                // Get the file
+                fileObject = dataObject.getPrimaryFile( );
+
+                // If this file is not an HTTPRootFileObject,
+                if( !( fileObject instanceof HTTPRootFileObject ) ) {
+
+                    // Flag that this action doesn't apply
+                    rootFolderSelected = false;
+
+                }
+
+            } else {
 
                 // Flag that this action doesn't apply
                 rootFolderSelected = false;
