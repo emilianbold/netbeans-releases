@@ -348,7 +348,13 @@ workspaceswitcher
     <echo message="Virgin build created; see NetBeans-${buildnum}-virgin.zip."/>
   </target>
 
-  <target name="firststart-merge" depends="init,build-messaging">
+  <target name="firststart-merge" depends="merge-delete, merge" />   
+
+  <target name="merge-delete">
+    <delete dir="${netbeans.dest}" />
+  </target>
+  
+  <target name="merge" depends="init,build-messaging">
     <mkdir dir="${netbeans.dest}"/>
     <nbmerge dest="${netbeans.dest}" topdir=".." modules="openide,core,${modules}" targetprefix="all-">
       <suppress locale="ja" unless="netbeans.japanese"/>

@@ -133,13 +133,14 @@ public class NbMerge extends Task {
         }
         project.addTarget (dummy);
         project.executeTarget (dummyName);
-        
+
+/* Done in build.xml        
         Delete delete = (Delete) project.createTask ("delete");
         delete.setDir (dest);
         delete.init ();
         delete.setLocation (location);
         delete.execute ();
-
+*/
         List suppressedlocales = new LinkedList (); // List<String>
         Iterator it = suppress.iterator ();
         while (it.hasNext ()) {
