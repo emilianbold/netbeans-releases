@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
     </AvailableCompilers>    
 
     <AvailablePackagers>
-        <Compiler id="packager" antfile="lib/basic_packager_targets.xml" target="package" default="true"/>
+        <Packager id="packager" antfile="lib/basic_packager_targets.xml" target="package" default="true"/>
     </AvailablePackagers>
     
     <AvailableResultProcessors>

@@ -55,6 +55,7 @@ public class PluginExecuteTask extends Task {
     // system property name used to store name of the plugin used for test execution
     // required when running result_processor (by default base plugin will be used?)
     private static final String PLUGIN_USED_FOR_EXECUTION = "_xtest.plugin.used.for.test.execution";
+    private static final String EXECUTOR_USED_FOR_EXECUTION = "_xtest.plugin.executor.used.for.test.execution";
     
     private String pluginName;
     private String executeType;
@@ -108,6 +109,7 @@ public class PluginExecuteTask extends Task {
     public static void executeCorrespondingResultProcessor(Task issuingTask) throws BuildException {
         // get the plugin name
         String pluginName = System.getProperty(PLUGIN_USED_FOR_EXECUTION);
+        String executorID = System.getProperty(EXECUTOR_USED_FOR_EXECUTION);
         if (pluginName == null) {
             throw new BuildException("No tests were executed, cannot run result processor");
         }
@@ -116,7 +118,7 @@ public class PluginExecuteTask extends Task {
         // find the plugin
         try {
             PluginDescriptor requiredPlugin = pluginManager.getPreferredPluginDescriptor(pluginName);
-            PluginDescriptor.Action pluginAction = requiredPlugin.getDefaultResultProcessor();
+            PluginDescriptor.Action pluginAction = requiredPlugin.getCorrespondingResultProcessor(executorID);
             pluginExecute(requiredPlugin, pluginAction, issuingTask, null, null);
         } catch (PluginResourceNotFoundException prnfe) {
             // bad thing happened
@@ -146,6 +148,7 @@ public class PluginExecuteTask extends Task {
         // if applicable 
         if (pluginAction instanceof PluginDescriptor.Executor) {
             System.setProperty(PLUGIN_USED_FOR_EXECUTION, pluginDescriptor.getName());
+            System.setProperty(EXECUTOR_USED_FOR_EXECUTION, pluginAction.getID());
         }
         
         ant.setAntfile(antFile.getAbsolutePath());

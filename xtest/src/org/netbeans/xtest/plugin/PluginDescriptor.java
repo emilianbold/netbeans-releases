@@ -347,6 +347,7 @@ public class PluginDescriptor implements XMLSerializable, Serializable {
         return availableResultProcessors;
     }
     
+    
     // get RP for defined plugin with defined ID
     public ResultProcessor getResultProcessor(String rpID) throws PluginResourceNotFoundException {
         Action action = getAction(availableResultProcessors, rpID);
@@ -365,9 +366,23 @@ public class PluginDescriptor implements XMLSerializable, Serializable {
         throw new PluginResourceNotFoundException("Cannot find "+exceptionSubMessage+" for plugin "+getName());        
     }
     
+    
     // get default plugin RP
     public ResultProcessor getDefaultResultProcessor() throws PluginResourceNotFoundException {
         return getResultProcessor(null);
+    }    
+    
+    // get result processor for corresponding executor
+    public ResultProcessor getCorrespondingResultProcessor(String executorID) throws PluginResourceNotFoundException {        
+        if ((executorID != null)&&(availableResultProcessors != null)) {
+            for (int i=0; i < availableResultProcessors.length; i++) {
+                    if (executorID.equals(availableResultProcessors[i].getCorrespondingExecutorID())) {
+                        return availableResultProcessors[i];
+                    }
+                }
+        }
+        // no corresponding result processor was found for this target as defined, fallback to default rp
+        return getDefaultResultProcessor();
     }
     
     public boolean hasDefaultResultProcessor() {
@@ -600,7 +615,7 @@ public class PluginDescriptor implements XMLSerializable, Serializable {
                 classMappingRegistry.registerSimpleField("target",ClassMappingRegistry.ATTRIBUTE,"target");
                 classMappingRegistry.registerSimpleField("antFile",ClassMappingRegistry.ATTRIBUTE,"antfile");
                 classMappingRegistry.registerSimpleField("defaultAction",ClassMappingRegistry.ATTRIBUTE,"default");
-                
+                classMappingRegistry.registerSimpleField("executorID", ClassMappingRegistry.ATTRIBUTE,"executor");
             } catch (MappingException me) {
                 me.printStackTrace();
                 classMappingRegistry = null;
@@ -609,6 +624,12 @@ public class PluginDescriptor implements XMLSerializable, Serializable {
         
         public ClassMappingRegistry registerXMLMapping() {
             return classMappingRegistry;
-        }   
+        }
+        
+        private String executorID;
+        
+        public String getCorrespondingExecutorID() {
+            return executorID;
+        }
     }
 }
