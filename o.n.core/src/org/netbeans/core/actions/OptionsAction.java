@@ -13,47 +13,58 @@
 
 package org.netbeans.core.actions;
 
+import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.ObjectStreamException;
-import java.awt.*;
-import java.awt.event.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import javax.swing.table.JTableHeader;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Collections;
-import javax.swing.*;
+import java.util.List;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JSplitPane;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.plaf.basic.BasicBorders;
-
-import org.openide.util.*;
-import org.openide.util.actions.CallableSystemAction;
-import org.openide.nodes.*;
+import javax.swing.table.JTableHeader;
+import org.netbeans.core.NbMainExplorer;
+import org.netbeans.core.NbPlaces;
+import org.netbeans.core.NbTopManager;
+import org.netbeans.core.projects.SessionManager;
+import org.netbeans.core.projects.SettingChildren;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.awt.StatusDisplayer;
+import org.openide.cookies.InstanceCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.propertysheet.PropertySheetView;
-import org.openide.explorer.view.TreeView;
-import org.openide.explorer.view.TreeTableView;
 import org.openide.explorer.view.NodeTableModel;
+import org.openide.explorer.view.TreeTableView;
+import org.openide.explorer.view.TreeView;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
+import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-import org.openide.windows.Workspace;
-import org.openide.cookies.InstanceCookie;
-
-import org.netbeans.core.projects.SettingChildren;
-import org.netbeans.core.projects.SessionManager;
-import org.netbeans.core.NbMainExplorer;
-import org.netbeans.core.NbPlaces;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.windows.Mode;
-import org.openide.ErrorManager;
-import org.openide.awt.StatusDisplayer;
 
 /** Action that opens explorer view which displays global
 * options of the IDE.
@@ -93,13 +104,13 @@ public class OptionsAction extends CallableSystemAction {
                     optionPanel.setDialogDescriptor(dd);
                         
                     dialog = DialogDisplayer.getDefault().createDialog(dd);
-                    dialog.show();
+                    dialog.setVisible(true);
                     dialogWRef = new WeakReference(dialog);
                 } else {
                     dialog.toFront();
                 }
                 
-                org.openide.awt.StatusDisplayer.getDefault ().setStatusText (""); // NOI18N
+                StatusDisplayer.getDefault().setStatusText(""); // NOI18N
             }
         }); // EQ.iL
     }
@@ -128,7 +139,7 @@ public class OptionsAction extends CallableSystemAction {
         /** Singleton instance of options panel */
         private static OptionsPanel singleton;
         
-        private static String TEMPLATES_DISPLAY_NAME = NbBundle.getBundle (org.netbeans.core.NbTopManager.class).getString("CTL_Templates_name"); // NOI18N
+        private static String TEMPLATES_DISPLAY_NAME = NbBundle.getBundle(NbTopManager.class).getString("CTL_Templates_name"); // NOI18N
         
         /** list of String[] that should be expanded when the tree is shown */
         private Collection toExpand;
@@ -237,7 +248,7 @@ public class OptionsAction extends CallableSystemAction {
             setLayout (new java.awt.GridBagLayout ());
 
             GridBagConstraints gridBagConstraints = new GridBagConstraints ();
-            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            gridBagConstraints.fill = GridBagConstraints.BOTH;
             gridBagConstraints.weightx = 1.0;
             gridBagConstraints.weighty = 1.0;
             gridBagConstraints.gridwidth = 2;
@@ -286,7 +297,7 @@ public class OptionsAction extends CallableSystemAction {
         
         public void prepareNodes() {
             if (toExpand == null) {                        
-                ArrayList arr = new ArrayList (101);
+                List arr = new ArrayList (101);
                 expandNodes(getRootContext (), 2, arr);               
                 toExpand = arr;
             }
@@ -407,13 +418,13 @@ public class OptionsAction extends CallableSystemAction {
                 
                 refreshColumns (true);
                 addMouseListener (this);
-                weakL = org.openide.util.WeakListeners.propertyChange (this, SessionManager.getDefault ());
+                weakL = WeakListeners.propertyChange(this, SessionManager.getDefault ());
                 SessionManager.getDefault ().addPropertyChangeListener (weakL);
                 
                 registerKeyboardAction(
                     this,
-                    javax.swing.KeyStroke.getKeyStroke('+'),
-                    javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+                    KeyStroke.getKeyStroke('+'),
+                    JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
                 );
 
                 getAccessibleContext().setAccessibleName(NbBundle.getBundle(OptionsAction.class).getString("ACSN_optionsTree"));
