@@ -125,12 +125,12 @@ public class NbExecutor extends Task {
                 callee.setFailonerror(true);
                 
                 callee.setDir(project.getBaseDir());
-                callee.createArg().setLine("-buildfile " + project.getProperty("ant.file"));
+                callee.createArg().setLine("-buildfile " + "\"" + project.getProperty("ant.file") + "\"");
 
                 outputfile = getLogFile(test.getModule() + "_" + test.getType());
                 if (outputfile != null) {
                     //callee.setOutput(outputfile);
-                    callee.createArg().setLine("-logfile " + outputfile);
+                    callee.createArg().setLine("-logfile " + "\"" + outputfile + "\"");
                 }
                 
                 callee.createArg().setValue(targetName);
