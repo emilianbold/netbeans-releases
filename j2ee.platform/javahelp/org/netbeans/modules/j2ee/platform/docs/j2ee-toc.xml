@@ -156,7 +156,7 @@
             <tocitem text="About Deploying Web Applications" target="about_deploy" />
 	    <tocitem text="Deploying Tasks: Quick Reference" target="deploy_quickref" />
             <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
-            <tocitem text="Setting a Username and Password for the Tomcat Manager" target="deploy_tomcat_manager" />
+            <tocitem text="Authenticating the Tomcat Web Server" target="deploy_tomcat_manager" />
             <tocitem text="Deploying a Web Application" target="deploy_webapp" />
 	    <tocitem text="Changing the Target Server" target="deploy_changeserver" />
 	    <tocitem text="Changing the Default Web Browser" target="deploy_changebrowser" />
