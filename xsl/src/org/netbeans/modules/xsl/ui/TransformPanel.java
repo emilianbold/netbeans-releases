@@ -78,7 +78,7 @@ public final class TransformPanel extends javax.swing.JPanel {
         init (xml, xml_ss, xsl);
         initAccessibility();
     }
-
+    
 
     private void init (DataObject xml, String xml_ss, DataObject xsl) throws MalformedURLException, FileStateInvalidException {
         data = new Data();
@@ -391,6 +391,10 @@ public final class TransformPanel extends javax.swing.JPanel {
         return new Data (getInput(), getXSL(), getOutput(), isOverwriteOutput(), getProcessOutput());
     }
         
+    public void setData(Data data) {
+        this.data = data;
+        updateComponents();
+    }
 
     /**
      * @return selected XML input.
@@ -819,7 +823,7 @@ public final class TransformPanel extends javax.swing.JPanel {
         private Boolean overwrite;
         private Integer process;
 
-        private Data () {
+        public Data () {
             this.xml       = null;
             this.xsl       = null;
             this.output    = null;
@@ -827,7 +831,7 @@ public final class TransformPanel extends javax.swing.JPanel {
             this.process   = null;
         }
 
-        private Data (String xml, String xsl, String output, boolean overwrite, int process) {
+        public Data (String xml, String xsl, String output, boolean overwrite, int process) {
             this.xml       = xml;
             this.xsl       = xsl;
             this.output    = output;
