@@ -259,6 +259,8 @@ public class OutputTabOperator extends JComponentOperator {
      * @return operator for OutputPane component
      */
     public ComponentOperator outputPaneOperator() {
+        // first make component visible because tab must be visible to dispatch events
+        makeComponentVisible();
         if(outputPaneOperator == null) {
             outputPaneOperator = ComponentOperator.createOperator(((AbstractOutputTab)getSource()).getOutputPane());
             outputPaneOperator.copyEnvironment(this);
