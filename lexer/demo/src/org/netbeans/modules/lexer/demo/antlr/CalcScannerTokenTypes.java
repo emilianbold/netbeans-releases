@@ -9,13 +9,14 @@ public interface CalcScannerTokenTypes {
 	int PLUS = 5;
 	int MINUS = 6;
 	int MUL = 7;
-	int MUL3 = 8;
-	int DIV = 9;
-	int LPAREN = 10;
-	int RPAREN = 11;
+	int DIV = 8;
+	int LPAREN = 9;
+	int RPAREN = 10;
+	int ABC = 11;
 	int CONSTANT = 12;
-	int FLOAT = 13;
-	int INTEGER = 14;
-	int DIGIT = 15;
-	int ERROR = 16;
+	int ML_COMMENT = 13;
+	int FLOAT = 14;
+	int INTEGER = 15;
+	int DIGIT = 16;
+	int INCOMPLETE_ML_COMMENT = 17;
 }
