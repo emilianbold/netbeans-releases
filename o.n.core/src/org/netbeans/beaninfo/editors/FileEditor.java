@@ -55,6 +55,8 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
     private javax.swing.filechooser.FileFilter fileFilter = null;
     private java.io.File currentDirectory = null;
     
+    private static File lastCurrentDir = null;
+    
     private JFileChooser chooser;
     private PropertyChangeListener pListener;
     
@@ -99,6 +101,13 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         } else {
             mode = directories ? JFileChooser.DIRECTORIES_ONLY :
                 JFileChooser.FILES_AND_DIRECTORIES; // both false, what now?
+        }
+    }
+    
+    public void setValue(Object value) {
+        super.setValue(value);
+        if ((value instanceof File) && (chooser != null)) {
+            lastCurrentDir = ((File)value).getParentFile();
         }
     }
     
@@ -147,20 +156,23 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
             chooser = new JFileChooser();
         }
         
-        // [PENDING] should the value of currentDirectory override previous
-        // opened directory?
+        File originalFile = (File)getValue ();
+        chooser.setFileSelectionMode(mode);
+        if ((originalFile != null) && (originalFile.isAbsolute())){
+            if (originalFile.getParent () != null) {
+                chooser.setCurrentDirectory (new File (originalFile.getParent ()));
+            }
+            chooser.setSelectedFile (originalFile);
+        } else {
+            if (lastCurrentDir != null) {
+                chooser.setCurrentDirectory(lastCurrentDir);
+            }
+        }
+        
         if ((currentDirectory != null) && (currentDirectory.isDirectory())) {
             chooser.setCurrentDirectory (currentDirectory);
         }
         
-        File originalFile = (File)getValue ();
-        chooser.setFileSelectionMode(mode);
-        if (originalFile != null && originalFile.getParent () != null) {
-            chooser.setCurrentDirectory (new File (originalFile.getParent ()));
-        }
-        if (originalFile != null) {
-            chooser.setSelectedFile (originalFile);
-        }
         chooser.setApproveButtonText (getString ("CTL_ApproveSelect"));
         chooser.setApproveButtonToolTipText (getString ("CTL_ApproveSelectToolTip"));
         if (fileFilter != null) {
