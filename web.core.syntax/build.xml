@@ -65,6 +65,7 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="release/system" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
     </copy>-->
     <copy file="../external/syntaxref12.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
+    <copy file="../tlddoc/doc/jstl11-doc.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
   </target>
 
   <target name="netbeans" depends="jars,release">
