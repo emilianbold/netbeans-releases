@@ -36,7 +36,7 @@ public interface OpenFileImpl {
     FileObject findFileObject(File f);
     
     /**
-     * Opens the specified <codeFileObject</code>.
+     * Opens the specified <code>FileObject</code>.
      *
      * @param  fileObject  file to open
      * @param  fileName  name of the file (used only in messages)
