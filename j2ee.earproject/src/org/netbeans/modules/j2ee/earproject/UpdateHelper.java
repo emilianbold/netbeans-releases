@@ -292,9 +292,6 @@ public class UpdateHelper implements UpdateHelperType {
                                 library.setAttribute(ATTR_DIRS, "" + dirs.size());
                             }
                         }
-//                        if(webFileText.startsWith("reference.")) {
-//                            library.setAttribute(ATTR_FILES, "1");
-//                        }
                     }
                 }
                 cachedElement = newRoot;

@@ -34,7 +34,6 @@ import org.netbeans.api.project.ProjectManager;
 
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.earproject.EarProject;
-//import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
@@ -125,7 +124,6 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
             try {
                 app = DDProvider.getDefault().getDDRoot(earProject.getAppModule().getDeploymentDescriptor());
                 app.setDisplayName(name);
-                //kids.add(new Node[] { new LogicalViewNode(app) });
                 app.write(earProject.getAppModule().getDeploymentDescriptor());
             } catch (java.io.IOException ioe) {
                 org.openide.ErrorManager.getDefault().log(ioe.getLocalizedMessage());

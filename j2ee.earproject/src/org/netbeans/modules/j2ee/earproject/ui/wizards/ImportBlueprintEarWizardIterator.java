@@ -33,7 +33,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
-//import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
@@ -94,7 +93,6 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Instan
 //        Project p = ProjectManager.getDefault().findProject(dir);
         
         Integer index = (Integer) wiz.getProperty(PROP_NAME_INDEX);
-        //FoldersListSettings.getDefault().setNewProjectCount(index.intValue());
         
         resultSet.add(dir);
         
@@ -169,7 +167,6 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Instan
         indexJSP = indexJSP.replace ('.', '/'); // NOI18N
         
         // ignore unvalid mainClass ???
-        
         return webRoot.getFileObject (indexJSP, "jsp"); // NOI18N
     }
 }

@@ -98,12 +98,6 @@ public class EarProjectGenerator {
         //create a default manifest
         FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-j2ee-earproject/MANIFEST.MF"), webInfFO, "MANIFEST"); //NOI18N
         
-        //FileObject webInfFO = webFO.createFolder(META_INF); // NOI18N
-        // create web.xml
-        // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
-//        else if (J2eeProjectConstants.J2EE_13_LEVEL.equals(j2eeLevel))
-//            FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-j2ee-ejbjarproject/ejb-jar-2.0.xml"), webInfFO, "ejb-jar"); //NOI18N
-        
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.put (EarProjectProperties.SOURCE_ROOT, "."); //NOI18N
         ep.setProperty(EarProjectProperties.META_INF, DEFAULT_SRC_FOLDER+"/"+DEFAULT_DOC_BASE_FOLDER); //NOI18N
@@ -124,16 +118,7 @@ public class EarProjectGenerator {
         
             ((EarProject)p).getAppModule().getConfigSupport ().createInitialConfiguration();
         }
-            
-        
-
-        //create default index.jsp
-        //createIndexJSP(webFO);
-        
-//        ProjectEjbJar pwm = (ProjectEjbJar) p.getLookup ().lookup (ProjectEjbJar.class);
-//        if (pwm != null) //should not be null
-//            pwm.setContextPath(contextPath);
-        
+                   
         if (sourceLevel != null) {
             EarProjectGenerator.setPlatformSourceLevel(h, sourceLevel);
         }
@@ -142,11 +127,8 @@ public class EarProjectGenerator {
     }
     
     public static AntProjectHelper importProject (File pDir, File sDir, String name, String j2eeLevel, String serverInstanceID, String platformName, String sourceLevel) throws IOException {
-//        wmFO = dir;
-//        File docRoot = 
         File top = sDir;
         File metaInf = new File(top,"src/conf");
-        //dir = new File(dir,"nbimport");
         pDir.mkdirs();
         // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
         File rootF = pDir;
@@ -165,39 +147,10 @@ public class EarProjectGenerator {
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ReferenceHelper referenceHelper = new ReferenceHelper(h,
                 h.createAuxiliaryConfiguration(), h.getStandardPropertyEvaluator());
-//        EditableProperties ep = new EditableProperties();
-//        if (FileUtil.isParentOf(fo, wmFO) || fo.equals(wmFO)) {
-//            ep.setProperty(WebProjectProperties.SOURCE_ROOT, "."); //NOI18N
-//        } else {
             ep.setProperty(EarProjectProperties.SOURCE_ROOT,
                     referenceHelper.createForeignFileReference(top, null));
-//        }
         ep.setProperty(EarProjectProperties.META_INF, createFileReference(referenceHelper, fo, appRootFO, docBase));
-//        if (FileUtil.isParentOf (fo, wmFO) || fo.equals (wmFO)) {
-//            ep.put (EarProjectProperties.SOURCE_ROOT, "."); //NOI18N
-//            ep.setProperty(EarProjectProperties.META_INF, relativePath (fo, docBase)); //NOI18N
             ep.setProperty(EarProjectProperties.SRC_DIR, "${"+EarProjectProperties.SOURCE_ROOT+"}/src"); //NOI18N
-//            if (libFolder != null) {
-  //              ep.setProperty(EarProjectProperties.LIBRARIES_DIR, relativePath (fo, libFolder)); //NOI18N
-    //        }
-      //  } else {
-        //    File wmRoot = FileUtil.toFile (wmFO);
-          //  ep.put (EarProjectProperties.SOURCE_ROOT, wmRoot.getAbsolutePath ());
-            //String docPath = relativePath (wmFO, docBase);
-//            docPath = docPath.length () > 0 ? "${"+EarProjectProperties.SOURCE_ROOT+"}/" + docPath : "${"+EarProjectProperties.SOURCE_ROOT+"}"; //NOI18N
-  //          ep.setProperty(EarProjectProperties.META_INF, docPath);
-    //        String javaPath = relativePath (wmFO, javaRoot);
-      //      javaPath = javaPath.length () > 0 ? "${"+EarProjectProperties.SOURCE_ROOT+"}/" + javaPath : "${"+EarProjectProperties.SOURCE_ROOT+"}"; //NOI18N
-        //    ep.setProperty(EarProjectProperties.SRC_DIR, javaPath);
-          //  if (libFolder != null) {
-            //    String libPath = relativePath (wmFO, libFolder);
-              //  libPath = libPath.length () > 0 ? "${"+EarProjectProperties.SOURCE_ROOT+"}/" + libPath : "${"+EarProjectProperties.SOURCE_ROOT+"}"; //NOI18N
-                //ep.setProperty(EarProjectProperties.LIBRARIES_DIR, libPath);
-            //}
-        //}
-//        if (! GeneratedFilesHelper.BUILD_XML_PATH.equals (buildfile)) {
-//            ep.setProperty (EarProjectProperties.BUILD_FILE, buildfile);
-//        }
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         FileObject pd = h.getProjectDirectory ();
@@ -291,8 +244,6 @@ public class EarProjectGenerator {
 			new File[] {FileUtil.toFile(javaRoot)},
 			new File[0], FileUtil.toFile(ejbJarDotXml.getParent()),
 			 null, j2eeLevel, serverInstanceID);
-//                    subProjHelper = EjbJarProjectGenerator.importProject(subProjDir, 
-//                        subprojectRoot.getName(), subprojectRoot, javaRoot, ejbJarDotXml.getParent(), j2eeLevel, serverInstanceID, "build.xml");
                     if (platformName != null || sourceLevel != null) {
                         EjbJarProjectGenerator.setPlatform(subProjHelper, platformName, sourceLevel);
                     }
@@ -345,28 +296,6 @@ public class EarProjectGenerator {
         data.appendChild(minant);
         
         Element wmLibs = doc.createElementNS (EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, ArchiveProjectProperties.TAG_WEB_MODULE_LIBRARIES); //NOI18N
-        
-//        if (J2eeProjectConstants.J2EE_14_LEVEL.equals(j2eeLevel)) {
-//            Element servletLib = doc.createElementNS (EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "library"); //NOI18N
-//            Element servletLibName = doc.createElementNS (EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "file"); //NOI18N
-//            servletLibName.appendChild (doc.createTextNode ("${libs.j2ee14.classpath}")); //NOI18N
-//            servletLib.appendChild (servletLibName);
-//            wmLibs.appendChild (servletLib);
-//
-//            Element jspLib = doc.createElementNS (EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "library"); //NOI18N
-//            Element jspLibName = doc.createElementNS (EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "file"); //NOI18N
-//            jspLibName.appendChild (doc.createTextNode ("${libs.jsp20.classpath}")); //NOI18N
-//            jspLib.appendChild (jspLibName);
-//            wmLibs.appendChild (jspLib);
-//            // XXX determine better way to handle the 1.4/1.5 switching
-////        } else if (EjbJar.J2EE_13_LEVEL.equals(j2eeLevel)) {
-////            Element servletLib = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "library"); //NOI18N
-////            Element servletLibName = doc.createElementNS (EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "file"); //NOI18N
-////            servletLibName.appendChild (doc.createTextNode ("${libs.servlet23.classpath}")); //NOI18N
-////            servletLib.appendChild (servletLibName);
-////            wmLibs.appendChild (servletLib);
-//        }
-        
         data.appendChild (wmLibs);
         
         Element addLibs = doc.createElementNS(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, ArchiveProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES); //NOI18N
@@ -378,11 +307,6 @@ public class EarProjectGenerator {
         ep.setProperty(EarProjectProperties.DIST_DIR, "dist");
         ep.setProperty(EarProjectProperties.DIST_JAR, "${"+EarProjectProperties.DIST_DIR+"}/" + name.toLowerCase() + ".ear");
         
-//        if (J2eeProjectConstants.J2EE_14_LEVEL.equals(j2eeLevel))
-//            ep.setProperty(EarProjectProperties.JAVAC_CLASSPATH, "${libs.j2ee14.classpath}");
-//        else if (EjbJar.J2EE_13_LEVEL.equals(j2eeLevel))
-//            ep.setProperty(EarProjectProperties.JAVAC_CLASSPATH, "${libs.servlet23.classpath}");
-        
         ep.setProperty(EarProjectProperties.J2EE_PLATFORM, j2eeLevel);
         
         ep.setProperty(EarProjectProperties.JAR_NAME, name + ".ear");
@@ -391,7 +315,6 @@ public class EarProjectGenerator {
         
         ep.setProperty(EarProjectProperties.CLIENT_MODULE_URI, "");
         ep.setProperty(EarProjectProperties.LAUNCH_URL_RELATIVE, "");
-        //ep.setProperty(EarProjectProperties.LAUNCH_URL_FULL, "");
         ep.setProperty(EarProjectProperties.DISPLAY_BROWSER, "true");
         Deployment deployment = Deployment.getDefault ();
         ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID (serverInstanceID));
@@ -428,9 +351,7 @@ public class EarProjectGenerator {
         ep.setProperty(EarProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
         ep.setProperty(EarProjectProperties.JAVADOC_ENCODING, ""); // NOI18N
         ep.setProperty(EarProjectProperties.JAVADOC_PREVIEW, "true"); // NOI18N        
-
-//        ep.setProperty(EarProjectProperties.COMPILE_JSPS, "false"); // NOI18N        
-        
+       
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
@@ -481,13 +402,4 @@ public class EarProjectGenerator {
             }
         });
     }
-
-//    private static String relativePath (FileObject parent, FileObject child) {
-//        if (child.equals (parent))
-//            return ""; // NOI18N
-//        if (!FileUtil.isParentOf (parent, child))
-//            throw new IllegalArgumentException ("Cannot find relative path, " + parent + " is not parent of " + child);
-//        return child.getPath ().substring (parent.getPath ().length () + 1);
-//    }
-//    
 }

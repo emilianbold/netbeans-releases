@@ -87,7 +87,6 @@ public class EarProjectProperties extends ArchiveProjectProperties {
         Application app = null;
         try {
             app = DDProvider.getDefault().getDDRoot(earProject.getAppModule().getDeploymentDescriptor());
-            //kids.add(new Node[] { new LogicalViewNode(app) });
         } catch (java.io.IOException ioe) {
             org.openide.ErrorManager.getDefault().log(ioe.getLocalizedMessage());
         }
@@ -129,7 +128,6 @@ public class EarProjectProperties extends ArchiveProjectProperties {
                 return;
             }
             J2eeModuleProvider jmp = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
-            //AppDDSegmentProvider seg = (AppDDSegmentProvider) p.getLookup().lookup(AppDDSegmentProvider.class);
             if (null != jmp) {
                 J2eeModule jm = jmp.getJ2eeModule();
                 if (null != jm)
@@ -189,9 +187,7 @@ public class EarProjectProperties extends ArchiveProjectProperties {
         Module mod = null;
         try {
             J2eeModuleProvider jmp = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
-            //AppDDSegmentProvider seg = (AppDDSegmentProvider) p.getLookup().lookup(AppDDSegmentProvider.class);
             if (null != jmp) {
-//                String path = vcpi.getCompletePathInArchive(); //   computePath(vcpi);
                 jmp.setServerInstanceID(earProject.getServerInstanceID());
                 J2eeModule jm = jmp.getJ2eeModule();
                 if (null != jm) {
@@ -372,7 +368,6 @@ public class EarProjectProperties extends ArchiveProjectProperties {
                     continue;
                 }
                 J2eeModuleProvider jmp = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
-                //AppDDSegmentProvider seg = (AppDDSegmentProvider) p.getLookup().lookup(AppDDSegmentProvider.class);
                 if (null != jmp) {
                     J2eeModule jm = jmp.getJ2eeModule();
                     if (null != jm) {
@@ -401,7 +396,6 @@ public class EarProjectProperties extends ArchiveProjectProperties {
         while (iter.hasNext()) {
             AntArtifact art = (AntArtifact) iter.next();
             VisualClassPathItem vcpi = VisualClassPathItem.create(art,VisualClassPathItem.PATH_IN_WAR_APPLET);
-            //new VisualClassPathItem(art, VisualClassPathItem.TYPE_ARTIFACT, null, art.getArtifactLocation().toString(), VisualClassPathItem.PATH_IN_WAR_APPLET);
             vcpi.setRaw(EarProjectProperties.JAR_CONTENT_ADDITIONAL);
             newVCPIs.add(vcpi);
         }
@@ -413,7 +407,6 @@ public class EarProjectProperties extends ArchiveProjectProperties {
         List vcpis = (List) t;
         newVCPIs.addAll(vcpis);
         put(EarProjectProperties.JAR_CONTENT_ADDITIONAL, newVCPIs);
-        //epp.updateApplicationXml();
         store();
         try {
             org.netbeans.api.project.ProjectManager.getDefault().saveProject(getProject());
@@ -426,7 +419,6 @@ public class EarProjectProperties extends ArchiveProjectProperties {
         Application app = null;
         try {
             app = DDProvider.getDefault ().getDDRoot (earProject.getAppModule().getDeploymentDescriptor ());
-            //kids.add(new Node[] { new LogicalViewNode(app) });
         }
         catch (java.io.IOException ioe) {
             org.openide.ErrorManager.getDefault ().log (ioe.getLocalizedMessage ());

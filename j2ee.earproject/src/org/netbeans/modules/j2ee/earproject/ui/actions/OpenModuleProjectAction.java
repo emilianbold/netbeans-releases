@@ -30,15 +30,6 @@ public class OpenModuleProjectAction extends org.openide.util.actions.CookieActi
         protected Class[] cookieClasses() {
             return new Class[] { ModuleNode.class };
         }
-//        public boolean enable(Node[] nodes) {
-//            if (null == nodes) return false;
-//            for (int i = 0 ; i < nodes.length; i++) {
-//                if (!(nodes[i] instanceof ModuleNode)){
-//                    return false;
-//                }
-//            }
-//            return nodes.length > 0;
-//        } 
         
         protected int mode() {
             return org.openide.util.actions.CookieAction.MODE_ALL;

@@ -66,33 +66,7 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
     
     private void updateKeys() {
         List keys = Collections.EMPTY_LIST;
-//        Module mods[] = model.getModule();
-//        if (null != mods) {
-//            keys = new ArrayList();
-////            List webs = new ArrayList();
-//            for (int i = 0; i < mods.length; i++) {
-//                String modPath = mods[i].getEjb();
-//                if (null != modPath) {
-//                    keys.add(modPath);
-//                    continue;
-//                }
-//                Web web = mods[i].getWeb();
-//                if (null != web) {
-//                    keys.add(web.getWebUri());
-//                    continue;
-//                }
-//                modPath = mods[i].getConnector();
-//                if (null != modPath) {
-//                    keys.add(modPath);
-//                    continue;
-//                }
-//                modPath = mods[i].getJava();
-//                if (null != modPath) {
-//                    keys.add(modPath);
-//                    continue;
-//                }
-//            }
-//        }
+
         Project p = FileOwnerQuery.getOwner(model.getProjectDirectory());
         EarProject ep = (EarProject) p.getLookup().lookup(EarProject.class);
         ArchiveProjectProperties epp = ep.getProjectProperties();
@@ -118,14 +92,8 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
                 p = aa.getProject();            
             }
             else continue;
-            //try {
-                J2eeModuleProvider jmp = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
-                //AppDDSegmentProvider seg = (AppDDSegmentProvider) p.getLookup().lookup(AppDDSegmentProvider.class);
-                if (null != jmp) {
-                    //J2eeModule jm = jmp.getJ2eeModule();
-                    keys.add(vcpi);
-                }
-            //}
+            J2eeModuleProvider jmp = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
+            if (null != jmp) keys.add(vcpi);
             
         }
         
@@ -176,31 +144,5 @@ public class LogicalViewChildren extends Children.Keys  implements AntProjectLis
         });
         
     }
-/*    private void addKeyValues(List keyContainer, List beans) {
-        Iterator it = beans.iterator();
-        while (it.hasNext()) {
-            keyContainer.add(new Schema2BeansKey(it.next()));
-        }
-    }
-    
-    private static class Schema2BeansKey {
-        private Object delegate;
-        public Schema2BeansKey(Object delegate) {
-            this.delegate = delegate;
-        }
-        
-        public Object getBean() {
-            return delegate;
-        }
-        
-        public boolean equals(Object other) {
-            return other != null  &&
-                   other.getClass().equals(getClass()) &&
-                   getBean() == ((Schema2BeansKey)other).getBean();
-        }
-        
-        public int hashCode() {
-            return System.identityHashCode(getBean());
-        }
-    }*/
+
 }

@@ -32,7 +32,6 @@ import org.openide.nodes.NodeOperation;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
-//import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.lookup.Lookups;
 
@@ -40,7 +39,6 @@ import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.customizer.VisualClassPathItem;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
-//import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -77,40 +75,6 @@ public class AddModuleAction extends CookieAction {
             EarProject ep = (EarProject) p.getLookup().lookup(EarProject.class);
             EarProjectProperties epp = (EarProjectProperties) ep.getProjectProperties();
             epp.addJ2eeSubprojects(moduleProjects);
-//            List artifactList = new ArrayList();
-//            for (int i = 0; i < moduleProjects.length; i++) {
-//                AntArtifact artifacts[] = AntArtifactQuery.findArtifactsByType( 
-//                    moduleProjects[i], 
-//                    J2eeProjectConstants.ARTIFACT_TYPE_J2EE_ARCHIVE );
-//                artifactList.addAll(Arrays.asList(artifacts));
-//            }
-//            // create the vcpis
-//            List newVCPIs = new ArrayList();
-//            Iterator iter = artifactList.iterator();
-//            while (iter.hasNext()) {
-//                AntArtifact art = (AntArtifact) iter.next();
-//                VisualClassPathItem vcpi = VisualClassPathItem.create(art,VisualClassPathItem.PATH_IN_WAR_APPLET);
-//                    //new VisualClassPathItem(art, VisualClassPathItem.TYPE_ARTIFACT, null, art.getArtifactLocation().toString(), VisualClassPathItem.PATH_IN_WAR_APPLET);
-//                vcpi.setRaw(EarProjectProperties.JAR_CONTENT_ADDITIONAL);
-//                newVCPIs.add(vcpi);
-//            }
-//            Object t = epp.get(EarProjectProperties.JAR_CONTENT_ADDITIONAL);
-//            if (!(t instanceof List)) {
-//                assert false : "jar content isn't a List???";
-//                return;
-//            }
-//            List vcpis = (List) t;
-//            newVCPIs.addAll(vcpis);
-//            epp.put(EarProjectProperties.JAR_CONTENT_ADDITIONAL, newVCPIs);
-//            //epp.updateApplicationXml();
-//            epp.store();
-//                try {
-//                    org.netbeans.api.project.ProjectManager.getDefault().saveProject(epp.getProject());
-//                }
-//                catch ( java.io.IOException ex ) {
-//                    org.openide.ErrorManager.getDefault().notify( ex );
-//                }
-//            epp.configurationXmlChanged(null);
         } catch (UserCancelException uce) {
             // this action has been cancelled
         }
@@ -122,12 +86,9 @@ public class AddModuleAction extends CookieAction {
     
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx(AddModuleAction.class);
     }
     
     protected boolean asynchronous() {
-        // performAction() should run in event thread
         return false;
     }
     
