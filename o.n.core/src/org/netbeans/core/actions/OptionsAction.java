@@ -28,10 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.tree.TreePath;
 
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.Mutex;
-import org.openide.util.WeakListener;
+import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallableSystemAction;
@@ -102,15 +99,7 @@ public class OptionsAction extends CallableSystemAction {
                     WindowTypesManager.getDefaultFrame().equals(WindowTypesManager.TOP_FRAME)) {
                     //Initialize gui to get correct preferred size
                     ((WorkspaceImpl) w).addToShownTcs(optionPanel);
-                    Rectangle r = new Rectangle();
-                    Dimension d = optionPanel.getPreferredSize();
-                    //Center rectangle at screen
-                    Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-                    r.x = (size.width / 2) - (d.width / 2);
-                    r.y = (size.height / 2) - (d.height / 2);
-                    r.width = d.width;
-                    r.height = d.height;
-                    mo.setBounds(r);
+                    mo.setBounds(Utilities.findCenterBounds(optionPanel.getPreferredSize()));
                 }
                 mo.dockInto(optionPanel);
                 mo.requestFocus();
