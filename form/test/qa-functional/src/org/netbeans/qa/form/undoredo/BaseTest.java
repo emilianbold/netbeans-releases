@@ -48,35 +48,10 @@ public class BaseTest extends JellyTestCase {
     public BaseTest(String testName) {
         super(testName);
     }
-    /*
-    protected void setUp() {
-        if (MainFrame.getMainFrame().isMDI())
-            org.netbeans.test.oo.gui.jelly.Options.switchToSDI() ;
-    }
-     */
-    
-   /*
-    public void tearDown() {
-        MainFrame mf = MainFrame.getMainFrame();
-            mf.pushMenuNoBlock("File|Save All");
-            try {Thread.sleep(15000);} catch (Exception e) {}
-            System.out.println("save..");
-    }
-    */
     
     //select tab in PropertySheet
     public void selectTab(PropertySheetOperator pso, String name){
         sleep(1000);
-       /* ComponentSearcher searcher = new ComponentSearcher((Container)pso.getSource());
-        javax.swing.JTabbedPane tPane= JTabbedPaneOperator.findJTabbedPane((Container)pso.getSource(), searcher.getTrueChooser(""));
-        JTabbedPaneOperator tPaneOperator = new JTabbedPaneOperator(tPane);
-        if(tPaneOperator.getTabCount() == -1)return;
-        for(int i = 0 ; i<tPaneOperator.getTabCount(); i++){
-            if(tPaneOperator.getTitleAt(i).equals(name)) {
-                tPaneOperator.setSelectedIndex(i);
-                return;
-            }
-        }*/
         JToggleButtonOperator tbo = new JToggleButtonOperator(pso, name);
         tbo.push();
     }
@@ -90,9 +65,7 @@ public class BaseTest extends JellyTestCase {
         FormNode node = new FormNode("src|data|clear_JFrame");
         node.open();
         editor = new EditorOperator("clear_JFrame");
-        //ewo = new EditorWindowOperator();
-        //editor = ewo.getEditor("clear_JFrame");
-        
+       
         formDesigner = new FormDesignerOperator(fileName);
         palette = new ComponentPaletteOperator();
         inspector = new ComponentInspectorOperator();
@@ -104,7 +77,7 @@ public class BaseTest extends JellyTestCase {
         
         //change properties (color)
         inspector.selectComponent("[JFrame]|JPanel1 [JPanel]");
-        selectTab(pso, "Basic Properties");
+        selectTab(pso, "Properties");
         
         new ColorProperty(pso, "background").setRGBValue(202,234,223);
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]");
@@ -136,9 +109,6 @@ public class BaseTest extends JellyTestCase {
         inspector.selectComponent("[JFrame]|JPanel2 [JPanel]|jButton1 [JButton]");
         
         new Property(pso, "text").openEditor();
-        //inspector.selectNode("[JFrame]" + inspector.delim + "JPanel2 [JPanel]" + inspector.delim + "jButton1 [JButton]");
-        //inspector.switchToTab("Properties");
-        //inspector.openEditDialog("text");
         FormCustomEditorOperator fceo = new FormCustomEditorOperator("text");
         fceo.advanced();
         FormCustomEditorAdvancedOperator fceao = new FormCustomEditorAdvancedOperator();
@@ -154,7 +124,7 @@ public class BaseTest extends JellyTestCase {
         Property prop = new Property(pso, "actionPerformed");
         prop.setValue("myAction");
         formDesigner = new FormDesignerOperator(fileName);
-        selectTab(pso, "Basic Properties");
+        selectTab(pso, "Properties");
         
         
         
