@@ -26,7 +26,6 @@ import org.netbeans.core.IDESettings;
 
 import org.openide.*;
 import org.openide.actions.*;
-import org.openide.awt.SplittedPanel;
 import org.openide.loaders.*;
 import org.openide.explorer.*;
 import org.openide.explorer.view.BeanTreeView;
@@ -1161,7 +1160,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
 
     } // end of ModuleTab inner class
 
-    /** Top component for project ang global settings. */
+    /** Top component for project and global settings. */
     public static class SettingsTab extends ExplorerTab {
         static final long serialVersionUID =9087127908986061114L;
 
@@ -1171,12 +1170,12 @@ public final class NbMainExplorer extends CloneableTopComponent {
         */
         protected TreeView initGui () {
             TreeView view = new BeanTreeView();
-            SplittedPanel split = new SplittedPanel();
+            JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
             PropertySheetView propertyView = new PropertySheetView();
             propertyView.getAccessibleContext().setAccessibleName(NbBundle.getBundle(NbMainExplorer.class).getString("ACSN_ExplorerPropertySheetView"));
             propertyView.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(NbMainExplorer.class).getString("ACSD_ExplorerPropertySheetView"));
-            split.add(view, SplittedPanel.ADD_LEFT);
-            split.add(propertyView, SplittedPanel.ADD_RIGHT);
+            split.setLeftComponent(view);
+            split.setRightComponent(propertyView);
             // add to the panel
             setLayout(new BorderLayout());
             add(split, BorderLayout.CENTER);
@@ -1189,6 +1188,14 @@ public final class NbMainExplorer extends CloneableTopComponent {
         */
         protected void updateTitle () {
             // empty to keep the title unchanged
+        }
+        
+        /** Overriden to explicitely set persistence type of SettingsTab
+         * to PERSISTENCE_NEVER because SettingsTab is used only in Customizer dialog.
+         * If you subclass SettingsTab override this method accordingly as 
+         * eg. OptionsAction.OptionsPanel does. */
+        public int getPersistenceType() {
+            return TopComponent.PERSISTENCE_NEVER;
         }
         
         /** Get context help for a NbMainExplorer.SettingsTab.
