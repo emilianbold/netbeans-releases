@@ -22,6 +22,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -71,8 +73,8 @@ final class NbModuleProject implements Project {
             new SavedHook(),
             new OpenedHook(),
             createActionProvider(),
-            new ClassPathProviderImpl(),
-            new SourceForBinary(),
+            new ClassPathProviderImpl(this),
+            new SourceForBinaryImpl(this),
             // XXX need, in rough descending order of importance:
             // LogicalViewProvider
             // SubprojectProvider - special impl
@@ -156,10 +158,7 @@ final class NbModuleProject implements Project {
     }
     
     private Manifest getManifest() {
-        String manifestMf = helper.evaluate("manifest.mf"); // NOI18N
-        if (manifestMf == null) {
-            manifestMf = "manifest.mf"; // NOI18N
-        }
+        String manifestMf = evaluate("manifest.mf"); // NOI18N
         FileObject manifestFO = helper.resolveFileObject(manifestMf);
         if (manifestFO != null) {
             try {
@@ -176,19 +175,83 @@ final class NbModuleProject implements Project {
         return null;
     }
     
-    private FileObject getSourceDirectory() {
-        String srcDir = helper.evaluate("src.dir"); // NOI18N
-        if (srcDir == null) {
-            srcDir = "src"; // NOI18N
+    AntProjectHelper getHelper() {
+        return helper;
+    }
+
+    /**
+     * Replacement for AntProjectHelper.evaluate for NbModuleProject.
+     * Takes into account default values for various properties.
+     */
+    String evaluate(String prop) {
+        return PropertyUtils.evaluate(prop, makeEvalPredefs(), makeEvalDefs());
+    }
+    
+    /**
+     * Create stock predefs: ${basedir} and system properties.
+     */
+    private Map/*<String,String>*/ makeEvalPredefs() {
+        Map/*<String,String>*/ m = new HashMap();
+        m.putAll(System.getProperties());
+        m.put("basedir", FileUtil.toFile(getProjectDirectory()).getAbsolutePath()); // NOI18N
+        return m;
+    }
+    
+    /**
+     * Create stock defs: private project props, shared project props, defaults.
+     * Synch with build-impl.xsl.
+     */
+    private List/*<Map<String,String>>*/ makeEvalDefs() {
+        Map defaults = new HashMap();
+        defaults.put("code.name.base.dashes", getName().replace('.', '-')); // NOI18N
+        defaults.put("module.jar.dir", "modules"); // NOI18N
+        defaults.put("module.jar", "${module.jar.dir}/${code.name.base.dashes}.jar"); // NOI18N
+        defaults.put("manifest.mf", "manifest.mf");
+        defaults.put("src.dir", "src");
+        defaults.put("build.classes.dir", "build/classes");
+        if (supportsUnitTests()) {
+            defaults.put("test.src.dir", "test/unit/src");
+            defaults.put("build.test.classes.dir", "build/test/classes");
         }
+        // skip a bunch of properties irrelevant here - NBM stuff, etc.
+        return Arrays.asList(new Map/*<String,String>*/[] {
+            helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
+            helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH),
+            defaults,
+        });
+    }
+    
+    FileObject getSourceDirectory() {
+        String srcDir = evaluate("src.dir"); // NOI18N
         return helper.resolveFileObject(srcDir);
+    }
+    
+    FileObject getTestSourceDirectory() {
+        if (!supportsUnitTests()) {
+            return null;
+        }
+        String testSrcDir = evaluate("test.src.dir"); // NOI18N
+        return helper.resolveFileObject(testSrcDir);
+    }
+    
+    File getTestClassesDirectory() {
+        if (!supportsUnitTests()) {
+            return null;
+        }
+        String testClassesDir = evaluate("build.test.classes.dir"); // NOI18N
+        return helper.resolveFile(testClassesDir);
+    }
+    
+    File getModuleJarLocation() {
+        String moduleJar = "netbeans/" + evaluate("module.jar"); // NOI18N
+        return helper.resolveFile(moduleJar);
     }
     
     private boolean supportsJavadoc() {
         return supportsFeature("javadoc"); // NOI18N
     }
     
-    private boolean supportsUnitTests() {
+    boolean supportsUnitTests() {
         return supportsFeature("unit-tests"); // NOI18N
     }
     
@@ -246,139 +309,6 @@ final class NbModuleProject implements Project {
         protected void projectClosed() {
             // ignore for now
             // XXX could discard caches, etc.
-        }
-        
-    }
-    
-    private final class ClassPathProviderImpl implements ClassPathProvider {
-        
-        private ClassPath compile, source, boot;
-        
-        ClassPathProviderImpl() {}
-        
-        public ClassPath findClassPath(FileObject file, String type) {
-            FileObject srcDir = getSourceDirectory();
-            if (srcDir == null) {
-                return null;
-            }
-            if (!FileUtil.isParentOf(srcDir, file)) {
-                // XXX deal with tests too
-                return null;
-            }
-            // XXX listen to changes, etc.
-            if (type.equals(ClassPath.COMPILE) || type.equals(ClassPath.EXECUTE)) {
-                // Should both be the same, hopefully. <run-dependency> in project.xml
-                // means that the module should be enabled, but this module need not
-                // be able to access its classes. <compile-dependency> is what we care about.
-                if (compile == null) {
-                    compile = createCompileClasspath();
-                    System.err.println("compile-time classpath for " + getName() + ": " + compile);//XXX
-                }
-                return compile;
-            } else if (type.equals(ClassPath.SOURCE)) {
-                if (source == null) {
-                    source = ClassPathSupport.createClassPath(new FileObject[] {srcDir});
-                }
-                return source;
-            } else if (type.equals(ClassPath.BOOT)) {
-                if (boot == null) {
-                    JavaPlatformManager pm = JavaPlatformManager.getDefault();
-                    JavaPlatform jdk = pm.getDefaultPlatform();
-                    boot = jdk.getBootstrapLibraries();
-                }
-                return boot;
-            } else {
-                // XXX JAVADOC?
-                return null;
-            }
-        }
-        
-        private ClassPath createCompileClasspath() {
-            ModuleList ml = ModuleList.getDefault();
-            Element data = helper.getPrimaryConfigurationData(true);
-            Element moduleDependencies = Util.findElement(data,
-                "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
-            List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
-            Iterator it = deps.iterator();
-            List/*<PathResourceImplementation>*/ entries = new ArrayList();
-            String nbrootRel = helper.evaluate("nbroot"); // NOI18N
-            File nbroot = helper.resolveFile(nbrootRel);
-            while (it.hasNext()) {
-                Element dep = (Element)it.next();
-                if (Util.findElement(dep, "compile-dependency", // NOI18N
-                        NbModuleProjectType.NAMESPACE_SHARED) == null) {
-                    continue;
-                }
-                Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
-                    NbModuleProjectType.NAMESPACE_SHARED);
-                String cnb = Util.findText(cnbEl);
-                ModuleList.Entry module = ml.getEntry(cnb);
-                if (module == null) {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + getName());
-                    continue;
-                }
-                File moduleJar = module.getJarLocation(nbroot);
-                try {
-                    // XXX creating a jar:file:/tmp/foo.jar!/ URL does *not* yet
-                    // work; bug in URLMapper (fixed in trunk but not in base tag yet):
-                    // java.lang.NullPointerException
-                    //         at org.openide.filesystems.AbstractFileSystem.findResource(AbstractFileSystem.java:140)
-                    //         at org.openide.filesystems.URLMapper$DefaultURLMapper.geFileObjectBasicImpl(URLMapper.java:240)
-                    //         at org.openide.filesystems.URLMapper$DefaultURLMapper.getFileObjects(URLMapper.java:148)
-                    //         at org.openide.filesystems.URLMapper.findFileObjects(URLMapper.java:108)
-                    //         at org.netbeans.api.java.classpath.ClassPath$Entry.getRoot(ClassPath.java:449)
-                    // Cf. also hack in ClassPath.getJarRoot which automagically translates
-                    // file:/tmp/foo.jar to the root of some JarFileSystem; i.e. duplicating what
-                    // URLMapper is already supposed to be doing.
-                    entries.add(ClassPathSupport.createResource(moduleJar.toURI().toURL()));
-                } catch (MalformedURLException e) {
-                    ErrorManager.getDefault().notify(e);
-                }
-            }
-            // XXX add ${cp.extra}
-            return ClassPathSupport.createClassPath(entries);
-        }
-        
-    }
-    
-    private final class SourceForBinary implements SourceForBinaryQueryImplementation {
-        
-        private URL moduleJarUrl;
-        
-        SourceForBinary() {}
-        
-        public FileObject[] findSourceRoot(URL binaryRoot) {
-            //System.err.println("findSourceRoot: " + binaryRoot);
-            // XXX handle also jar: URLs here
-            if (binaryRoot.equals(getModuleJarUrl())) {
-                FileObject srcDir = getSourceDirectory();
-                //System.err.println("\t-> " + srcDir);
-                return new FileObject[] {srcDir};
-            }
-            // XXX handle also tests, and build/classes dir
-            return new FileObject[0];
-        }
-        
-        private URL getModuleJarUrl() {
-            if (moduleJarUrl == null) {
-                String moduleJarDir = helper.evaluate("module.jar.dir");
-                if (moduleJarDir == null) {
-                    moduleJarDir = "modules";
-                }
-                // XXX handle also other possible substitutions - most easily with better support in APH
-                File actualJar = new File(new File(new File(
-                            FileUtil.toFile(getProjectDirectory()),
-                            "netbeans"), // NOI18N
-                        moduleJarDir.replace('/', File.separatorChar)),
-                    getName().replace('.', '-') + ".jar"); // NOI18N
-                try {
-                    moduleJarUrl = actualJar.toURI().toURL();
-                } catch (MalformedURLException e) {
-                    ErrorManager.getDefault().notify(e);
-                }
-                //System.err.println("Module JAR: " + moduleJarUrl);
-            }
-            return moduleJarUrl;
         }
         
     }
