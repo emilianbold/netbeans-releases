@@ -26,6 +26,7 @@ import org.openide.util.*;
 import org.openide.awt.UndoRedo;
 
 import org.netbeans.modules.form.palette.*;
+import org.netbeans.modules.form.wizard.ConnectionWizard;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 
 /**

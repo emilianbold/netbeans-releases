@@ -182,22 +182,22 @@ public class FormEvents {
         }
     }
 
-    // --------
-    // package private interface
-
-    String findFreeHandlerName(String methodName, String componentName) {
+    public String findFreeHandlerName(String methodName, String componentName) {
         return findFreeHandlerName(componentName
                                    + methodName.substring(0, 1).toUpperCase()
                                    + methodName.substring(1));
     }
 
-    String findFreeHandlerName(String baseName) {
+    public String findFreeHandlerName(String baseName) {
         String name = baseName;
         int n = 0;
         while (eventHandlers.get(name) != null)
             name = baseName + (++n);
         return name;
     }
+
+    // --------
+    // package private interface
 
     static String getEventIdName(Method eventMethod) {
         StringBuffer buf = new StringBuffer(64);
