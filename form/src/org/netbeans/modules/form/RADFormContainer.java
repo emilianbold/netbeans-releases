@@ -21,16 +21,31 @@ import com.netbeans.developer.modules.loaders.form.forminfo.FormInfo;
 */
 public class RADFormContainer extends RADContainer implements FormContainer {
 
+  /** The form info of form represented by this RADFormContainer */
   private FormInfo formInfo;
   
+  /** Creates new RADFormContainer for form specified by its FormInfo
+  * @param formInfo the info describing the form type
+  */
   public RADFormContainer (FormInfo formInfo) {
     this.formInfo = formInfo;
   }
   
+  /** Called to create the instance of the bean. Default implementation simply creates instance 
+  * of the bean's class using the default constructor.  Top-level container (the form object itself) 
+  * will redefine this to use FormInfo to create the instance, as e.g. Dialogs cannot be created using 
+  * the default constructor 
+  * @return the instance of the bean that will be used during design time 
+  */
+  protected Object createBeanInstance () {
+    return formInfo.getContainerGenName ();
+  }
+
   public String getContainerGenName () {
     return formInfo.getContainerGenName ();
   }
   
+  /** @return the form info of form represented by this RADFormContainer */
   public FormInfo getFormInfo () {
     return formInfo;
   }
@@ -38,6 +53,8 @@ public class RADFormContainer extends RADContainer implements FormContainer {
 
 /*
  * Log
+ *  2    Gandalf   1.1         6/6/99   Ian Formanek    New FormInfo design 
+ *       employed to provide correct top-level bean properties
  *  1    Gandalf   1.0         5/10/99  Ian Formanek    
  * $
  */

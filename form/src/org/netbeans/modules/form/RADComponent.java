@@ -99,7 +99,7 @@ public class RADComponent {
     }
 
     this.beanClass = beanClass;
-    beanInstance = BeanSupport.createBeanInstance (beanClass);
+    beanInstance = createBeanInstance ();
     beanInfo = BeanSupport.createBeanInfo (beanClass);
     
     nameToProperty = new HashMap ();
@@ -114,6 +114,16 @@ public class RADComponent {
     defaultPropertyValues = BeanSupport.getDefaultPropertyValues (beanClass);
   }
 
+  /** Called to create the instance of the bean. Default implementation simply creates instance 
+  * of the bean's class using the default constructor.  Top-level container (the form object itself) 
+  * will redefine this to use FormInfo to create the instance, as e.g. Dialogs cannot be created using 
+  * the default constructor 
+  * @return the instance of the bean that will be used during design time 
+  */
+  protected Object createBeanInstance () {
+    return BeanSupport.createBeanInstance (beanClass);
+  }
+  
   void setNodeReference (RADComponentNode node) {
     this.componentNode = node;
   }
@@ -596,20 +606,20 @@ public class RADComponent {
     *    any editor.
     */
     public PropertyEditor getPropertyEditor () {
-      if (editor == null) {
-        PropertyEditor defaultEditor = null;
-        if (desc.getPropertyEditorClass () != null) {
-          try {
-            defaultEditor = (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
-          } catch (InstantiationException ex) {
-          } catch (IllegalAccessException iex) {
-          }
-        } else {
-          defaultEditor = FormPropertyEditorManager.findEditor (desc.getPropertyType ());
+      // the property editor cannot be reused as it is not reentrant !!! [IAN]
+
+      PropertyEditor defaultEditor = null;
+      if (desc.getPropertyEditorClass () != null) {
+        try {
+          defaultEditor = (PropertyEditor) desc.getPropertyEditorClass ().newInstance ();
+        } catch (InstantiationException ex) {
+        } catch (IllegalAccessException iex) {
         }
-        if (defaultEditor != null) {
-          editor = new FormPropertyEditor (RADComponent.this, desc.getPropertyType (), defaultEditor);
-        }
+      } else {
+        defaultEditor = FormPropertyEditorManager.findEditor (desc.getPropertyType ());
+      }
+      if (defaultEditor != null) {
+        editor = new FormPropertyEditor (RADComponent.this, desc.getPropertyType (), defaultEditor);
       }
       return editor;
     }
@@ -881,6 +891,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  19   Gandalf   1.18        6/6/99   Ian Formanek    New FormInfo design 
+ *       employed to provide correct top-level bean properties
  *  18   Gandalf   1.17        5/31/99  Ian Formanek    
  *  17   Gandalf   1.16        5/31/99  Ian Formanek    
  *  16   Gandalf   1.15        5/30/99  Ian Formanek    
