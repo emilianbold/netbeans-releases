@@ -198,10 +198,15 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     }
 
     /** Creates a EditorSupport for this page. May return null. */
-    protected EditorSupport createJspEditor() {
+/*    protected EditorSupport createJspEditor() {
         return new BaseJspEditor(getPrimaryEntry());
     }
-    
+*/    
+    /** Creates a EditorSupport for this page. May return null. */
+    protected BaseJspEditorSupport createJspEditorSupport() {
+        return new BaseJspEditorSupport(this);
+    }
+
     protected EditorCookie createServletEditor() {
         return new ServletEditor(this);
     }
@@ -1014,6 +1019,15 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return retValue;
     }
     
+    public void addSaveCookie(SaveCookie cookie){
+        getCookieSet().add(cookie);
+    }
+
+    public void removeSaveCookie(){
+        Node.Cookie cookie = getCookie(SaveCookie.class);
+        if (cookie!=null) getCookieSet().remove(cookie);
+    }
+
     ////// -------- INNER CLASSES ---------
 
     private class Listener extends FileChangeAdapter implements PropertyChangeListener, ServerRegistryImpl.ServerRegistryListener {

@@ -126,7 +126,8 @@ public class JspLoader extends UniFileLoader {
 
         JspDataObject obj = createJspObject(primaryFile, this);
         // [PENDING] add these from JspDataObject, not from the loader
-        EditorSupport es =  obj.createJspEditor();   //new JspEditor (obj.getPrimaryEntry ());
+//        EditorSupport es =  obj.createJspEditor();   //new JspEditor (obj.getPrimaryEntry ());
+        BaseJspEditorSupport es = obj.createJspEditorSupport();
         if (es != null) {
             es.setMIMEType (JSP_MIME_TYPE);
             obj.getCookieSet0 ().add (es);
