@@ -260,12 +260,12 @@ final class LibrariesNode extends AbstractNode {
                         result = new Node[] {J2eePlatformNode.create(eval, platformProperty)};
                         break;
                     case Key.TYPE_PROJECT:
-                        result = new Node[] {new ProjectNode(key.getProject(), helper, refHelper, key.getClassPathId(),
+                        result = new Node[] {new ProjectNode(key.getProject(), helper, eval, refHelper, key.getClassPathId(),
                             key.getEntryId())};
                         break;
                     case Key.TYPE_LIBRARY:
                         result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
-                            helper, key.getClassPathId(), key.getEntryId())};
+                            helper, eval, refHelper, key.getClassPathId(), key.getEntryId())};
                         break;
                 }
             }

@@ -64,7 +64,7 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
                         public Object run() throws Exception {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathId);
-                            WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser ();
+                            WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser (WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
                             List resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
                             VisualClassPathItem item = VisualClassPathItem.create (library, VisualClassPathItem.PATH_IN_WAR_LIB);
                             if (!resources.contains(item)) {
@@ -103,13 +103,13 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
                         public Object run() throws Exception {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathId);
-                            WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser ();
+                            WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser (WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
                             List resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
                             File f = FileUtil.toFile (archiveFile);
                             if (f == null ) {
                                 throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                             }
-                            VisualClassPathItem item = VisualClassPathItem.create (f, VisualClassPathItem.PATH_IN_WAR_LIB);
+                            VisualClassPathItem item = VisualClassPathItem.create (f, archiveFile.isFolder() ? VisualClassPathItem.PATH_IN_WAR_NONE : VisualClassPathItem.PATH_IN_WAR_LIB);
                             if (!resources.contains(item)) {
                                 resources.add (item);
                                 raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
@@ -146,7 +146,7 @@ public class WebProjectClassPathExtender implements ProjectClassPathExtender {
                         public Object run() throws Exception {
                             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty (classPathId);
-                            WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser ();
+                            WebProjectProperties.PathParser parser = new WebProjectProperties.PathParser (WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
                             List resources = (List) parser.decode(raw, project, helper.getAntProjectHelper(), eval, refHelper);
                             VisualClassPathItem item = VisualClassPathItem.create (artifact, VisualClassPathItem.PATH_IN_WAR_LIB);
                             if (!resources.contains(item)) {
