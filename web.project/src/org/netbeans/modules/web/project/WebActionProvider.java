@@ -565,18 +565,25 @@ class WebActionProvider implements ActionProvider {
             if (files != null) {
                 p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots, files[0]))); // NOI18N
             } else {
-                files = findJsps (context);
+                FileObject[] testRoots = project.getTestSourceRoots().getRoots();
+                files = findJavaSourcesAndPackages(context, testRoots);
                 if (files != null) {
-                    for (int i=0; i < files.length; i++) {
-                        FileObject jsp = files[i];
-                        if (areIncludesModified(jsp)) {
-                            invalidateClassFile(project, jsp);
-                        }
-                    }
-                    setAllPropertiesForSingleJSPCompilation(p, files);
-                    targetNames = new String [] {"compile-single-jsp"};
+                    p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(testRoots,files[0]))); // NOI18N
+                    targetNames = new String[] {"compile-test-single"}; // NOI18N
                 } else {
-                    return;
+                    files = findJsps (context);
+                    if (files != null) {
+                        for (int i=0; i < files.length; i++) {
+                            FileObject jsp = files[i];
+                            if (areIncludesModified(jsp)) {
+                                invalidateClassFile(project, jsp);
+                            }
+                        }
+                        setAllPropertiesForSingleJSPCompilation(p, files);
+                        targetNames = new String [] {"compile-single-jsp"};
+                    } else {
+                        return;
+                    }
                 }
             }
             
@@ -827,7 +834,9 @@ class WebActionProvider implements ActionProvider {
             return findJavaSources(context) != null || findJsps(context) != null || findHtml(context) != null || findTestSources(context, false) != null;
         }
         else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            return findJavaSourcesAndPackages( context, project.getSourceRoots().getRoots() ) != null || findJsps (context) != null;
+            return findJavaSourcesAndPackages(context, project.getSourceRoots().getRoots()) != null
+                   || findJavaSourcesAndPackages(context, project.getTestSourceRoots().getRoots()) != null
+                   || findJsps (context) != null;
         }
         else if ( command.equals( COMMAND_VERIFY ) ) {
             return project.getWebModule().hasVerifierSupport();
