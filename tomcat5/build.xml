@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_all}/j2eeserver/external/jmxri.jar"/>
         <pathelement location="${nb_all}/j2eeserver/external/javax77.jar"/>
         <pathelement location="${nb_all}/j2eeserver/external/jsr88javax.jar"/>
-        <pathelement location="${web/ddapi.dir}/${nb.modules/autoload.dir}/ddapi.jar"/>
+        <pathelement location="${web/ddapi.dir}/${nb.modules.dir}/org-netbeans-api-web-dd.jar"/>
         <pathelement location="${debuggercore/api.dir}/${nb.modules.dir}/org-netbeans-api-debugger.jar"/>
         <pathelement location="${debuggerjpda/api.dir}/${nb.modules.dir}/org-netbeans-api-debugger-jpda.jar"/>
         <pathelement location="${nb_all}/libs/external/xerces-2.6.0.jar"/>
