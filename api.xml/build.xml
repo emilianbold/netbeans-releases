@@ -69,7 +69,6 @@ Microsystems, Inc. All Rights Reserved.
                 manifest="manifest-subst.mf"
                 compress="false">
             <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
-<!--            <fileset dir="compat/src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/> -->
             <locale name="ja"/>
         </locjar>    
     </target>
@@ -131,12 +130,6 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${jaxp-transform}"/>
             </classpath>                       
         </javadoc>
-    </target>
-
-
-    <!-- Run tests. -->
-    <target name="test">
-        <ant dir="testbase" target="run"/>
     </target>
 
 </project>
