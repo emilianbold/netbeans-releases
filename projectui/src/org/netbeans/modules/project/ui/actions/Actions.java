@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -25,6 +26,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.NodeAction;
 
 /** Factory for all kinds of actions used in projectui and
@@ -208,7 +210,7 @@ public class Actions implements ActionsFactory {
     /** New file action which implements the node action - good for the 
      * Hack class
      */
-    public static class SystemNewFile extends NodeAction {
+    public static class SystemNewFile extends CallableSystemAction implements ContextAwareAction {
         
         public SystemNewFile() {}
             
@@ -229,6 +231,23 @@ public class Actions implements ActionsFactory {
             return false;
         }
 
+        public void actionPerformed( ActionEvent ev ) {
+            org.netbeans.spi.project.ui.support.LogicalViews.newFileAction().actionPerformed(ev);
+        }
+        
+        public boolean isEnabled() {
+            return org.netbeans.spi.project.ui.support.LogicalViews.newFileAction().isEnabled();            
+        }
+        
+        public void performAction() {
+            actionPerformed( new ActionEvent( this, 0, "" ) ); // NOI18N
+        }
+        
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return ((ContextAwareAction)org.netbeans.spi.project.ui.support.LogicalViews.newFileAction()).createContextAwareInstance( actionContext );
+        }
+        
+        /*
         protected boolean enable( Node[] activatedNodes ) {
             if ( activatedNodes.length != 1 ) {
                 return false;
@@ -237,7 +256,8 @@ public class Actions implements ActionsFactory {
             Action subst = getSubstitute( activatedNodes[0].getLookup() );
             return subst.isEnabled();
         }
-
+         */
+         /*
         protected void performAction( Node[] activatedNodes) {
             if ( activatedNodes.length != 1 ) {
                 return;
@@ -246,10 +266,13 @@ public class Actions implements ActionsFactory {
             Action subst = getSubstitute( activatedNodes[0].getLookup() );
             subst.actionPerformed( new java.awt.event.ActionEvent( activatedNodes[0].getLookup(), 0, null ) );            
         }
+          */
         
+        /*
         private Action getSubstitute( Lookup actionContext ) {
              return ((ContextAwareAction)org.netbeans.spi.project.ui.support.LogicalViews.newFileAction()).createContextAwareInstance( actionContext );
         }
+         */
 
     }
     
