@@ -34,7 +34,7 @@
 DATE_STAMP=`date +%Y.%m.%d-%H:%M`
 
 ### DEBUG
-#set > $CVS_ROOT/"${DATE_STAMP}__0.set.txt"
+set > $CVS_ROOT/"${DATE_STAMP}__0.set.txt"
 
 
 #
@@ -48,7 +48,7 @@ cvs update -A -d -P 2>&1 >> $CVS_ROOT/"${DATE_STAMP}__1.update.txt"
 # update content
 #
 cd www
-ant -logfile $CVS_ROOT/"${DATE_STAMP}__2.ant_all.txt" all #2>&1 >> $CVS_ROOT/"${DATE_STAMP}__2.ant-error.txt"
+ant -logfile $CVS_ROOT/"${DATE_STAMP}__2.ant_all.txt" all 2>&1 >> $CVS_ROOT/"${DATE_STAMP}__2.ant_error.txt"
 
 
 #
