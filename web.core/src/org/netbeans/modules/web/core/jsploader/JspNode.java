@@ -64,12 +64,6 @@ public class JspNode extends DataNode {
         setShortDescription (NbBundle.getMessage(JspNode.class, "LBL_jspNodeShortDesc"));
     }
 
-
-    private void readObject(ObjectInputStream is) throws IOException, ClassNotFoundException {
-        is.defaultReadObject();
-        initialize();
-    }
-
     public DataObject getDataObject() {
         return super.getDataObject();
     }
