@@ -114,7 +114,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     
     private void showErrorMessage(final String message) {
         synchronized (this) {
-            if(new Date().getTime() > notificationTimeout) {
+            if(new Date().getTime() > notificationTimeout && isProjectOpened()) {
                 // set timeout to suppress the same messages during next 20 seconds (feel free to adjust the timeout
                 // using more suitable value)
                 notificationTimeout = new Date().getTime() + 20000;
@@ -435,6 +435,15 @@ public final class ProjectWebModule extends J2eeModuleProvider
         
         FileObject[] rootArray = new FileObject[roots.size()];
         return (FileObject[])roots.toArray(rootArray);        
+    }
+    
+    private boolean isProjectOpened() {
+        Project[] projects = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < projects.length; i++) {
+            if (projects[i].equals(project)) 
+                return true;
+        }
+        return false;
     }
     
     private static class IT implements Iterator {
