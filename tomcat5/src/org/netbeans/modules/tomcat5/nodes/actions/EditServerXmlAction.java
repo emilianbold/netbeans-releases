@@ -34,10 +34,6 @@ import java.io.File;
 public class EditServerXmlAction extends NodeAction {
     
     protected boolean enable(Node[] nodes) {
-        for (int i = 0; i < nodes.length; i++) {
-            TomcatInstanceNode cookie = (TomcatInstanceNode)nodes[i].getCookie(TomcatInstanceNode.class);
-            if (cookie == null || !cookie.isServerXmlAccessible()) return false;
-        }
         return true;
     }
     

@@ -35,6 +35,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.Utilities;
+import org.openide.ErrorManager;
 
 
 /**
@@ -659,33 +660,18 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
             DataObject dataObject = null;
             try {
                 dataObject = DataObject.find(fileObject);
-            } catch(DataObjectNotFoundException ex) {// ignore it
+            } catch(DataObjectNotFoundException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
             if (dataObject != null) {
                 EditorCookie editorCookie = (EditorCookie)dataObject.getCookie(EditorCookie.class);
-                if (editorCookie == null) return;
-                editorCookie.open();
+                if (editorCookie != null) {
+                    editorCookie.open();
+                } else {
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot find EditorCookie."); // NOI18N
+                }
             }
         }
-    }
-
-    /**
-     * Is server.xml file accessible?
-     *
-     * @return <code>true</code> if server.xml file is accessible,
-     *         <code>false</code> otherwise.
-     */
-    public boolean isServerXmlAccessible() {
-        FileObject fileObject = getTomcatConf();
-        if (fileObject != null) {
-            DataObject dataObject = null;
-            try {
-                dataObject = DataObject.find(fileObject);
-                return true;
-            } catch(DataObjectNotFoundException ex) {// ignore it
-            }
-        }
-        return false;
     }
 
     /**
