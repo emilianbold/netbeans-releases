@@ -104,12 +104,12 @@ public final class NbClipboard extends ExClipboard
         // transferable. Can be fixed as Jesse describes in #32485
         if (log.isLoggable (log.INFORMATIONAL)) {
             log.log (log.INFORMATIONAL, "setContents called with: "); // NOI18N
-            logFlavors (contents.getTransferDataFlavors ());
+            logFlavors (contents);
         }
         contents = convert(contents);
         if (log.isLoggable (log.INFORMATIONAL)) {
             log.log (log.INFORMATIONAL, "After conversion:"); // NOI18N
-            logFlavors (contents.getTransferDataFlavors ());
+            logFlavors (contents);
         }
 
         if (slowSystemClipboard) {
@@ -150,12 +150,15 @@ public final class NbClipboard extends ExClipboard
             synchronized (this) {
                 if (log.isLoggable (log.INFORMATIONAL)) {
                     log.log (log.INFORMATIONAL, "getContents by " + requestor); // NOI18N
-                    logFlavors (prev.getTransferDataFlavors ());
+                    logFlavors (prev);
                 }
+                if (prev == null)  // if system clipboard has no contents
+                    return null;
+
                 Transferable res = convert (prev);
                 if (log.isLoggable (log.INFORMATIONAL)) {
                     log.log (log.INFORMATIONAL, "getContents by " + requestor); // NOI18N
-                    logFlavors (res.getTransferDataFlavors ());
+                    logFlavors (res);
 
                     res = new LoggableTransferable (res);
                 }
@@ -184,7 +187,7 @@ public final class NbClipboard extends ExClipboard
         if (contents != null) {
             if (log.isLoggable (log.INFORMATIONAL)) {
                 log.log (log.INFORMATIONAL, "systemClipboard updated:"); // NOI18N
-                logFlavors (contents.getTransferDataFlavors ());
+                logFlavors (contents);
             }
             systemClipboard.setContents(contents, owner);
             return;
@@ -195,7 +198,7 @@ public final class NbClipboard extends ExClipboard
             super.setContents(transferable, null);
             if (log.isLoggable (log.INFORMATIONAL)) {
                 log.log (log.INFORMATIONAL, "internal clipboard updated:"); // NOI18N
-                logFlavors (transferable.getTransferDataFlavors ());
+                logFlavors (transferable);
             }
             fireClipboardChange();
         }
@@ -242,9 +245,14 @@ public final class NbClipboard extends ExClipboard
         }
     }
     
-    private void logFlavors (java.awt.datatransfer.DataFlavor[] arr) {
-        for (int i = 0; i < arr.length; i++) {
-            log.log (log.INFORMATIONAL, "  " + i + " = " + arr[i]);
+    private void logFlavors (Transferable trans) {
+        if (trans == null)
+            log.log (log.INFORMATIONAL, "  no clipboard contents");
+        else {
+            java.awt.datatransfer.DataFlavor[] arr = trans.getTransferDataFlavors();
+            for (int i = 0; i < arr.length; i++) {
+                log.log (log.INFORMATIONAL, "  " + i + " = " + arr[i]);
+            }
         }
     }
     
