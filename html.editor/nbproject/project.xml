@@ -65,7 +65,6 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.editor.html</package>
-                <package>org.netbeans.modules.html.editor.folding</package>
             </public-packages>
         </data>
     </configuration>
