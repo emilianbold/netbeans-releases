@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- default testtypes, attributes and executors -->
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
-    <property name="xtest.executors" value="code,ide"/>
+    <property name="xtest.executors" value="code,ide,ideDOTests,codeDOTests"/>
     
     <!-- properties just for compiler -->
     <property name="build.compiler.deprecation" value="off"/>
@@ -63,7 +63,10 @@ Microsystems, Inc. All Rights Reserved.
              target="buildtests">
            <!-- This property contains directories which should be compiled -->
            <!-- WRITE CORRECT VALUE TO THIS PROPERTY -->
-           <property name="compile.srcdir" value="unit/src;regr/src"/>
+           
+           <!-- Changed to ${xtest.testtype}/src because there was needlessly compiled every configuration. -->
+           <!-- See issue http://www.netbeans.org/issues/show_bug.cgi?id=18880 -->
+           <property name="compile.srcdir" value="${xtest.testtype}/src"/>
        </ant>
     </target>
     
@@ -121,6 +124,46 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
+    <!-- This target executes standalone tests -->
+    <!-- This task is used fro QA DataSystems test execution -->
+    <!-- It prepares test folder before own test is executed -->
+    <!-- Finally it calls runcodetest executor -> test will be executed in code mode -->
+    <target name="runcodeDOTests" depends="prepare-codetest-classpath">
+        <antcall target="restoredata"/>
+        <antcall target="runcodetest"/>
+    </target>
+
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
+    <!-- This target executes tests inside IDE -->
+    <!-- This task is used fro QA DataSystems test execution -->
+    <!-- It prepares test folder before own test is executed -->
+    <!-- Finally it calls runidetest executor -> test will be executed in ide mode -->
+    <target name="runideDOTests">
+        <antcall target="restoredata"/>
+        <antcall target="runidetest"/>
+    </target>
+
+    <!-- Copies fresh data structure for QA DataSystems tests -->
+    <target name="restoredata" depends="test_exists" if="exists">
+        <!-- cleanning old data -->
+        <delete>
+            <fileset dir="results/qa-functional/work/qa-functional/src/DataLoaderTests/DataObjectTest/data">
+                <exclude name="**/Backup/**/*.*" />
+            </fileset>
+        </delete>
+        <!-- copying new data -->
+        <copy todir="results/qa-functional/work/qa-functional/src/DataLoaderTests/DataObjectTest/data">
+            <fileset dir="results/qa-functional/work/qa-functional/src/DataLoaderTests/DataObjectTest/data/Backup"/>
+        </copy>
+    </target>
+            
+    <target name="test_exists">
+        <available property="exists" file="${xtest.results}/${tbag.testtype}/work/qa-functional/src/"/>
+    </target>    
+
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
     <target name="test_report">
         <ant dir="." antfile="${xtest.general.antfile}"
              target="test_report"/>
@@ -154,21 +197,27 @@ Microsystems, Inc. All Rights Reserved.
         <condition property="idecode.classpath">
             <equals arg1="${xtest.source.location}" arg2="ide"/>
         </condition>
+        <!-- For QA-functional tests there will be special classpath: -->
+        <!-- Will override the previous definiton if needed -->  
+        <condition property="openideandcore.jarcode.classpath">
+            <equals arg1="${xtest.testtype}" arg2="qa-functional"/>
+        </condition>
     </target>
 
     <!-- ========================= -->
     <!-- Classpath for compilation -->
     <!-- ========================= -->
     
+    <!-- Note, openideandcore-jarcompile-classpath must be last - it may override previous definitions of classpath!! -->
     <target name="prepare-compile-classpath"
-         depends="jarcompile-classpath,srccompile-classpath,idecompile-classpath"/>
+         depends="jarcompile-classpath,srccompile-classpath,idecompile-classpath,openideandcore-jarcompile-classpath"/>
     
     <target name="jarcompile-classpath" depends="which-classpath" if="jarcode.classpath">
         <echo message="Using jars classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against jars -->
 	<path id="compiletest.classpath">        
-	    <pathelement location="../openide-13javac-workaround.jar"/>
-	    <pathelement location="../netbeans/lib/openide.jar"/>
+                <pathelement location="../openide-13javac-workaround.jar"/>
+                <pathelement location="../netbeans/lib/openide.jar"/>
 	</path>
     </target>
         
@@ -189,13 +238,24 @@ Microsystems, Inc. All Rights Reserved.
 	        <pathelement location="${netbeans.home}/lib/openide.jar"/>
    	</path>
     </target>
-    
+
+    <target name="openideandcore-jarcompile-classpath" depends="which-classpath" if="openideandcore.jarcode.classpath">
+        <echo message="Using jars (Openide and Core) classpath for compilation."/>
+    	<!-- this classpath will be used for compiling tests against jars -->
+	<path id="compiletest.classpath">        
+	    <pathelement location="../openide-13javac-workaround.jar"/>
+	    <pathelement location="../netbeans/lib/openide.jar"/>
+	    <pathelement location="../../core/netbeans/lib/core.jar"/>
+	</path>
+    </target>
+
     <!-- ================================== -->
     <!-- Classpath for execution code tests -->
     <!-- ================================== -->
     
+    <!-- Note, penideandcore-jartest-classpath must be last, it may override previous definitions of classpath!! -->
     <target name="prepare-codetest-classpath" 
-            depends="jartest-classpath,srctest-classpath,idetest-classpath"/>
+            depends="jartest-classpath,srctest-classpath,idetest-classpath,openideandcore-jartest-classpath"/>
     
     <target name="jartest-classpath" depends="which-classpath" if="jarcode.classpath">
         <echo message="Using jars classpath."/>
@@ -233,6 +293,48 @@ Microsystems, Inc. All Rights Reserved.
         	</fileset>
     	</path>
     </target>
+        
+    <target name="openideandcore-jartest-classpath" depends="which-classpath,setDOclasspath" if="openideandcore.jarcode.classpath">
+        <echo message="Using jars (Openide and Core) classpath."/>
+        <echo message="Additional execution classpath: ${additionalclasspath}"/>
+        <!-- this classpath will be used for executing tests against jars -->
+	<path id="codetest.classpath">
+        	<pathelement location="../netbeans/lib/openide.jar"/>
+        	<fileset dir="../../core/netbeans/lib">
+            		<include name="core.jar"/>
+            		<include name="ext/*.jar"/>
+        	</fileset>
+        	<pathelement path="${additionalclasspath}" />
+    	</path>
+    </target>
     
+    <target name="testDO">
+        <condition property="mytest1">
+            <equals arg1="${tbag.name}" arg2="DO1"/>
+        </condition>
+        <condition property="mytest2">
+            <equals arg1="${tbag.name}" arg2="DO2"/>
+        </condition>
+        <condition property="mytest2">
+            <equals arg1="${tbag.name}" arg2="DO3"/>
+        </condition>
+        <condition property="mytest2">
+            <equals arg1="${tbag.name}" arg2="DO4"/>
+        </condition>
+        <condition property="mytest2">
+            <equals arg1="${tbag.name}" arg2="DO5"/>
+        </condition>
+    </target>
+    
+    <target name="setDOclasspath" depends="testDO,setDOclasspath1,setDOclasspath2"/>
+    
+    <target name="setDOclasspath1" depends="testDO" if="mytest1">
+        <property name="additionalclasspath" value="../../text/netbeans/modules/text.jar"/>
+    </target>
+    
+    <target name="setDOclasspath2" depends="testDO" if="mytest2">
+       <property name="additionalclasspath" value="${java.home}/../lib/tools.jar;../../openidex/netbeans/modules/autoload/openidex.jar;../../text/netbeans/modules/text.jar;../../image/netbeans/modules/image.jar;../../utilities/netbeans/modules/utilities.jar;../../java/netbeans/modules/java.jar;../../form/netbeans/modules/form.jar"/>
+    </target>
+
 </project>
 
