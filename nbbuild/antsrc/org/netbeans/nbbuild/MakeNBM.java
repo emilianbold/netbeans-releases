@@ -219,6 +219,7 @@ public class MakeNBM extends MatchingTask {
     private File module = null;
     private String homepage = null;
     private String distribution = null;
+    private String needsrestart = null;
     private Blurb license = null;
     private Blurb description = null;
     private Blurb notification = null;    
@@ -270,6 +271,10 @@ public class MakeNBM extends MatchingTask {
     /** URL to a home page describing the module. */
     public void setHomepage (String homepage) {
 	this.homepage = homepage;
+    }
+    /** Does module need IDE restart to be installed? */
+    public void setNeedsrestart (String needsrestart) {
+        this.needsrestart = needsrestart;
     }
     /** URL where this NBM file is expected to be downloadable from. */
     public void setDistribution (String distribution) {
@@ -403,6 +408,8 @@ public class MakeNBM extends MatchingTask {
                         ps.println ("        license=\"" + xmlEscape(name) + "\"");
 		    }
 		    ps.println ("        downloadsize=\"0\"");
+                    if (needsrestart != null)
+                        ps.println ("        needsrestart=\"" + needsrestart + "\"");
 		    ps.println (">");
 		    if (description != null) {
 			ps.print ("  <description>");
