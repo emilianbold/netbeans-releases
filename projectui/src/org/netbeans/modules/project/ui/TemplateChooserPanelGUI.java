@@ -86,10 +86,13 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         
         
         // Create the templates view
-        BeanTreeView btv = new BeanTreeView();
+        BeanTreeView btv = new TemplatesTreeView();
         btv.setSelectionMode( javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION );        
         btv.setRootVisible( false );
         btv.setBorder( descriptionScrollPane.getBorder() );
+        btv.setDefaultActionAllowed(false);
+        btv.setPopupAllowed(false);       
+        // btv.setFocusCycleRoot( true );
         templatesPanel.add( btv, java.awt.BorderLayout.CENTER );
     }
     
@@ -99,9 +102,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         // Populate the combo box with list of projects
         Project openProjects[] = OpenProjectList.getDefault().getOpenProjects();
         DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
-        projectsComboBox.setModel( projectsModel );
-        
-        
+        projectsComboBox.setModel( projectsModel );                
         projectsComboBox.setSelectedItem( p );
     }
     
@@ -199,6 +200,8 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
 
         templatesPanel.setLayout(new java.awt.BorderLayout());
 
+        templatesPanel.setFocusable(false);
+        templatesPanel.setRequestFocusEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -223,7 +226,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(jLabel3, gridBagConstraints);
 
+        descriptionScrollPane.setFocusable(false);
+        descriptionScrollPane.setRequestFocusEnabled(false);
+        descriptionScrollPane.setEnabled(false);
+        jTextArea1.setEditable(false);
         jTextArea1.setText("No description");
+        jTextArea1.setFocusable(false);
         descriptionScrollPane.setViewportView(jTextArea1);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -334,6 +342,15 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
     }
     
     // Private innerclasses ----------------------------------------------------
+
+    // Just to make the tree non-editable
+    private static final class TemplatesTreeView extends BeanTreeView {
+        
+        TemplatesTreeView() {
+            tree.setEditable(false);
+        }
+                
+    }
     
     private static class ProjectCellRenderer extends javax.swing.plaf.basic.BasicComboBoxRenderer implements ListCellRenderer {
         
