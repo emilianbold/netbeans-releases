@@ -50,8 +50,6 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
-import org.netbeans.core.projects.SessionManager;
-import org.netbeans.core.projects.SystemFileSystem;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.SplitConstraint;
@@ -87,9 +85,6 @@ public class WindowManagerParser {
     private Map modeParserMap = new HashMap(19);
     
     private Map groupParserMap = new HashMap(19);
-    
-    /** true if wswmgr file is present in session layer */
-    private boolean inSessionLayer = false;
     
     //Set of <String>
     //Used to collect names of all localy stored wstcref files.
@@ -735,14 +730,6 @@ public class WindowManagerParser {
         return wmName;
     }
     
-    boolean isInSessionLayer () {
-        return inSessionLayer;
-    }
-    
-    void setInSessionLayer (boolean inSessionLayer) {
-        this.inSessionLayer = inSessionLayer;
-    }
-    
     void log (String s) {
         if (DEBUG) {
             Debug.log(WindowManagerParser.class, s);
@@ -787,13 +774,6 @@ public class WindowManagerParser {
             wmConfigFO = rootFolder.getFileObject
             (WindowManagerParser.this.getName(), PersistenceManager.WINDOWMANAGER_EXT);
             if (wmConfigFO != null) {
-                Object attr = wmConfigFO.getAttribute("SystemFileSystem.layer"); // NOI18N
-                if ((attr instanceof String) && !"session".equals(attr)) { // NOI18N
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, 
-                        "The WindowManager configuration ought to be stored on session layer, to prevent misbehaviour on swtiching project. See #39713 for details."); //NOI18N
-                    // setting the session layer works only for new files :(
-                    //WindowManagerParser.this.setInSessionLayer(true);
-                }
                 //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.getConfigFOInput" + " wmConfigFO LOCAL:" + wmConfigFO);
                 return wmConfigFO;
             } else {
@@ -803,13 +783,6 @@ public class WindowManagerParser {
                 rootFolder = pm.getRootModuleFolder();
                 wmConfigFO = rootFolder.getFileObject
                 (WindowManagerParser.this.getName(), PersistenceManager.WINDOWMANAGER_EXT);
-                //Check layer attribute and if it is session copy it to create
-                //local file at session layer too.
-                //Valid only till winsys is in project layer.
-                Object attr = wmConfigFO.getAttribute("SystemFileSystem.layer"); // NOI18N
-                if ((attr instanceof String) && "session".equals(attr)) { // NOI18N
-                    WindowManagerParser.this.setInSessionLayer(true);
-                }
 
                 //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.getConfigFOInput" + " wmConfigFO MODULE:" + wmConfigFO);
 
@@ -835,13 +808,7 @@ public class WindowManagerParser {
                 buffer.append(WindowManagerParser.this.getName());
                 buffer.append('.');
                 buffer.append(PersistenceManager.WINDOWMANAGER_EXT);
-                if (WindowManagerParser.this.isInSessionLayer()) {
-                    SystemFileSystem.setLayerForNew(rootFolder.getPath(),SessionManager.LAYER_SESSION);
-                }
                 wmConfigFO = FileUtil.createData(rootFolder, buffer.toString());
-                if (WindowManagerParser.this.isInSessionLayer()) {
-                    SystemFileSystem.setLayerForNew(rootFolder.getPath(),null);
-                }
                 //if (DEBUG) Debug.log(WindowManagerParser.class, "-- WMParser.getConfigFOOutput" + " LOCAL not found CREATE");
                 return wmConfigFO;
             }

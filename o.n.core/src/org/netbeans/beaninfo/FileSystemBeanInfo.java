@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -48,8 +48,7 @@ public class FileSystemBeanInfo extends SimpleBeanInfo {
             desc[1].setShortDescription (bundle.getString("HINT_valid"));
             desc[1].setExpert (true);
 */
-            desc[2].setDisplayName (bundle.getString("PROP_hidden"));
-            desc[2].setShortDescription (bundle.getString("HINT_hidden"));
+            desc[2].setHidden(true);
             desc[3].setHidden (true);
             desc[4].setHidden (true);
             desc[5].setHidden (true);

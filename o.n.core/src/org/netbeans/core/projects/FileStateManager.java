@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,8 +32,6 @@ import org.openide.ErrorManager;
  */
 final class FileStateManager {
     
-    /** Identification of filesystem representing Project */
-    public static final int LAYER_PROJECT = 0;
     /** Identification of filesystem representing Session */
     public static final int LAYER_SESSION = 1;
     /** Identification of filesystem representing XML-layers from all installed modules */
@@ -58,7 +56,7 @@ final class FileStateManager {
     private FileSystem layers [] = new FileSystem [LAYERS_COUNT];
     /** List of listeners listening on changes in file state */
     private HashMap listeners = new HashMap (10);
-    /** Listener attached to SessionManager, it refreshes list of layers after the project is switched */
+    /** Listener attached to SessionManager, it refreshes list of layers if some are added or removed */
     private PropertyChangeListener propL = null;
 
     public static synchronized FileStateManager getDefault () {
@@ -215,7 +213,6 @@ final class FileStateManager {
     }
 
     private void getLayers () {
-        layers [LAYER_PROJECT] = SessionManager.getDefault ().getLayer (SessionManager.LAYER_PROJECT);
         layers [LAYER_SESSION] = SessionManager.getDefault ().getLayer (SessionManager.LAYER_SESSION);
         layers [LAYER_MODULES] = SessionManager.getDefault ().getLayer (SessionManager.LAYER_INSTALL);
     }

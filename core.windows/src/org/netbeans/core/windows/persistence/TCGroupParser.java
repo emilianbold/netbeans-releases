@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,8 +35,6 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
-import org.netbeans.core.projects.SessionManager;
-import org.netbeans.core.projects.SystemFileSystem;
 import org.netbeans.core.windows.Debug;
 
 /**
@@ -67,8 +65,6 @@ class TCGroupParser {
     private boolean inModuleFolder;
     /** true if wstcgrp file is present in local folder */
     private boolean inLocalFolder;
-    /** true if wstcgrp file is present in session layer */
-    private boolean inSessionLayer = false;
     
     public TCGroupParser(String tc_id) {
         this.tc_id = tc_id;
@@ -144,14 +140,6 @@ class TCGroupParser {
         this.localParentFolder = localParentFolder;
     }
     
-    boolean isInSessionLayer () {
-        return inSessionLayer;
-    }
-    
-    void setInSessionLayer (boolean inSessionLayer) {
-        this.inSessionLayer = inSessionLayer;
-    }
-    
     void log (String s) {
         Debug.log(TCGroupParser.class, s);
     }
@@ -183,13 +171,6 @@ class TCGroupParser {
                 //log("-- TCGroupParser.getConfigFOInput" + " looking for MODULE");
                 tcGroupConfigFO = moduleParentFolder.getFileObject
                 (TCGroupParser.this.getName(), PersistenceManager.TCGROUP_EXT);
-                //Check layer attribute and if it is session copy it to create
-                //local file at session layer too.
-                //Valid only till winsys is in project layer.
-                Object attr = tcGroupConfigFO.getAttribute("SystemFileSystem.layer"); // NOI18N
-                if ((attr instanceof String) && "session".equals(attr)) { // NOI18N
-                    TCGroupParser.this.setInSessionLayer(true);
-                }
             } else {
                 //XXX should not happen
                 tcGroupConfigFO = null;
@@ -211,13 +192,7 @@ class TCGroupParser {
                 buffer.append('.');
                 buffer.append(PersistenceManager.TCGROUP_EXT);
                 //XXX should be improved localParentFolder can be null
-                if (TCGroupParser.this.isInSessionLayer()) {
-                    SystemFileSystem.setLayerForNew(localParentFolder.getPath(),SessionManager.LAYER_SESSION);
-                }
                 tcGroupConfigFO = FileUtil.createData(localParentFolder, buffer.toString());
-                if (TCGroupParser.this.isInSessionLayer()) {
-                    SystemFileSystem.setLayerForNew(localParentFolder.getPath(),null);
-                }
                 //log("-- TCGroupParser.getConfigFOOutput" + " LOCAL not found CREATE");
 
                 return tcGroupConfigFO;

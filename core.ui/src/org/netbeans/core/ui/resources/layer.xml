@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
@@ -554,26 +554,8 @@ Microsystems, Inc. All Rights Reserved.
         </folder> <!-- Services -->
     </folder>  <!-- UI -->
 
-    <!-- registers all roots of all filesystems -->
-    <folder name="Mount">
-        <file name="AllRoots.instance">
-            <attr name="instanceClass" stringvalue="[Lorg.openide.filesystems.FileSystem;" /> <!-- array of FileSystem-->
-            <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UIUtils.allRoots" />
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.layer" />
-        </file>
-        <file name="Home.instance">
-            <attr name="instanceClass" stringvalue="[Lorg.openide.filesystems.FileSystem;" /> <!-- array of FileSystem-->
-            <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UIUtils.allRoots" />
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.layer" />
-            
-            <!-- uses value of System.getProperty ("user.home") to find the location of the file -->
-            <attr name="property" stringvalue="user.home" />
-        </file>
-    </folder>
-	
     <folder name="Windows2">
         <!--
-        <attr name="SystemFileSystem.layer" stringvalue="project"/>
         <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
 	-->
         <folder name="Modes">

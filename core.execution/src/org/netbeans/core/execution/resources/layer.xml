@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -62,14 +62,8 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="ScriptType">
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/scriptTypes.gif" />
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-            <attr name="SystemFileSystem.layer" stringvalue="project"/>
             <attr name="helpID" stringvalue="org.netbeans.core.services.ScriptTypes"/>
         </folder>
-        
-        <file name="org-netbeans-core-execution-ExecutionSettings.settings" url="ExecutionSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/executionSettings.gif" />
-        </file>
     </folder>
     
     <folder name="UI">
@@ -82,14 +76,6 @@ Microsystems, Inc. All Rights Reserved.
         <!-- settings categories UI presentation -->
         <folder name="Services">
         
-            <folder name="DebuggingAndExecuting">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-
-                <file name="org-netbeans-core-execution-ExecutionSettings.shadow">
-                    <attr name="originalFile" stringvalue="Services/org-netbeans-core-execution-ExecutionSettings.settings"/>
-                </file>
-            </folder> <!-- DebuggingAndExecuting -->
-
             <folder name="IDEConfiguration">
                 <folder name="ServerAndExternalToolSettings">
                     <file name="ScriptTypes.shadow">

@@ -380,10 +380,8 @@ public class OptionsAction extends CallableSystemAction {
         }
 
         private static class TTW extends TreeTableView implements MouseListener, PropertyChangeListener, java.awt.event.ActionListener {
-            /** Project/Session indicator property */
-            private final Node.Property indicator = new SettingChildren.IndicatorProperty ();
-            /** Project layer state indicator property */
-            private final Node.Property project = new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_PROJECT);
+            /** Dummy property that can be expanded or collapsed. */
+            private final Node.Property indicator = new IndicatorProperty();
             /** Session layer state indicator property */
             private final Node.Property session = new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_SESSION);
             /** Modules layer state indicator property */
@@ -440,23 +438,20 @@ public class OptionsAction extends CallableSystemAction {
 
                 if ((changeSets && length == 1) || (!changeSets && length > 1)) {
                     // build full_set
-                    if (null != SessionManager.getDefault ().getLayer (SessionManager.LAYER_PROJECT))
-                        new_set = new Node.Property [] { indicator, project, session, modules };
-                    else
-                        new_set = new Node.Property [] { indicator, session, modules };
+                    new_set = new Node.Property[] {indicator, session, modules};
 
                     indicator.setDisplayName (
-                        NbBundle.getMessage (SettingChildren.class, "LBL_IndicatorProperty_Name_Expanded")); //NOI18N
+                        NbBundle.getMessage(OptionsAction.class, "LBL_IndicatorProperty_Name_Expanded")); //NOI18N
                     indicator.setShortDescription (
-                        NbBundle.getMessage (SettingChildren.class, "LBL_IndicatorProperty_Description_Expanded")); //NOI18N
+                        NbBundle.getMessage(OptionsAction.class, "LBL_IndicatorProperty_Description_Expanded")); //NOI18N
                 }
                 else {
                     if (changeSets) {
-                        new_set = new Node.Property [] { indicator };
+                        new_set = new Node.Property[] {indicator};
                         indicator.setDisplayName (
-                            NbBundle.getMessage (SettingChildren.class, "LBL_IndicatorProperty_Name")); //NOI18N
+                            NbBundle.getMessage(OptionsAction.class, "LBL_IndicatorProperty_Name")); //NOI18N
                         indicator.setShortDescription (
-                            NbBundle.getMessage (SettingChildren.class, "LBL_IndicatorProperty_Description")); //NOI18N
+                            NbBundle.getMessage(OptionsAction.class, "LBL_IndicatorProperty_Description")); //NOI18N
                     }
                 }
                 
@@ -513,6 +508,20 @@ public class OptionsAction extends CallableSystemAction {
                 // move to top
                 tree.scrollRowToVisible(0);
             }
+
+            /** Dummy placeholder property. */
+            private static final class IndicatorProperty extends PropertySupport.ReadOnly {
+
+                public IndicatorProperty() {
+                    super("indicator", String.class, "", ""); // NOI18N
+                }
+
+                public Object getValue() {
+                    return ""; // NOI18N
+                }
+
+            }
+
         }
             
        

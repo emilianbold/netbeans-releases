@@ -48,7 +48,6 @@ import org.netbeans.TopSecurityManager;
 import org.netbeans.core.actions.*;
 import org.netbeans.core.modules.InstalledFileLocatorImpl;
 import org.netbeans.core.perftool.StartLog;
-import org.netbeans.core.projects.TrivialProjectManager;
 import org.netbeans.core.modules.ModuleSystem;
 
 /**
@@ -344,18 +343,13 @@ public class NonGui extends NbTopManager implements Runnable {
         Main.incrementSplashProgressBar();
         
         // -----------------------------------------------------------------------------------------------------
-        // 10. Initialization of project (because it can change loader pool and it influences main window menu)
+        // 10. Loader pool loading
         try {
             LoaderPoolNode.load();
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
         }
-        try {
-            ((TrivialProjectManager)Lookup.getDefault().lookup(TrivialProjectManager.class)).load();
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify (ErrorManager.INFORMATIONAL, e);
-        }
-        StartLog.logProgress ("Project opened"); // NOI18N
+        StartLog.logProgress ("LoaderPool loaded"); // NOI18N
         Main.incrementSplashProgressBar(10);
 
         LoaderPoolNode.installationFinished ();

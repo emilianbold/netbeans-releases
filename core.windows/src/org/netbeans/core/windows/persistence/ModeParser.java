@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -52,8 +52,6 @@ import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 
-import org.netbeans.core.projects.SessionManager;
-import org.netbeans.core.projects.SystemFileSystem;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.SplitConstraint;
@@ -108,8 +106,6 @@ class ModeParser {
     private boolean inModuleFolder;
     /** true if wsmode file is present in local folder */
     private boolean inLocalFolder;
-    /** true if wsmode file is present in session layer */
-    private boolean inSessionLayer = false;
     
     /** Contains names of all tcRefs placed in local folder <String> */
     private Set maskSet;
@@ -921,14 +917,6 @@ class ModeParser {
         this.inLocalFolder = inLocalFolder;
     }
     
-    boolean isInSessionLayer () {
-        return inSessionLayer;
-    }
-    
-    void setInSessionLayer (boolean inSessionLayer) {
-        this.inSessionLayer = inSessionLayer;
-    }
-    
     private final class PropertyHandler extends DefaultHandler {
         
         /** Mode configuration data */
@@ -959,13 +947,6 @@ class ModeParser {
                 //if (DEBUG) Debug.log(ModeParser.class, "-- ModeParser.getConfigFOInput" + " looking for MODULE");
                 modeConfigFO = moduleParentFolder.getFileObject
                 (ModeParser.this.getName(), PersistenceManager.MODE_EXT);
-                //Check layer attribute and if it is session copy it to create
-                //local file at session layer too.
-                //Valid only till winsys is in project layer.
-                Object attr = modeConfigFO.getAttribute("SystemFileSystem.layer"); // NOI18N
-                if ((attr instanceof String) && "session".equals(attr)) { // NOI18N
-                    ModeParser.this.setInSessionLayer(true);
-                }
             } else {
                 //XXX should not happen
                 modeConfigFO = null;
@@ -987,13 +968,7 @@ class ModeParser {
                 buffer.append('.');
                 buffer.append(PersistenceManager.MODE_EXT);
                 //XXX should be improved localParentFolder can be null
-                if (ModeParser.this.isInSessionLayer()) {
-                    SystemFileSystem.setLayerForNew(localParentFolder.getPath(),SessionManager.LAYER_SESSION);
-                }
                 modeConfigFO = FileUtil.createData(localParentFolder, buffer.toString());
-                if (ModeParser.this.isInSessionLayer()) {
-                    SystemFileSystem.setLayerForNew(localParentFolder.getPath(),null);
-                }
                 //if (DEBUG) Debug.log(ModeParser.class, "-- ModeParser.getConfigFOOutput" + " LOCAL not found CREATE");
 
                 return modeConfigFO;

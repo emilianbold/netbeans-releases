@@ -48,7 +48,6 @@ import org.netbeans.TopSecurityManager;
 import org.netbeans.core.modules.Module;
 import org.netbeans.core.perftool.StartLog;
 import org.netbeans.core.modules.ModuleSystem;
-import org.netbeans.core.projects.TrivialProjectManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.modules.ModuleInfo;
 
@@ -415,11 +414,18 @@ public abstract class NbTopManager {
         void save();
 
         // Project specific.
-        /** @since 1.20 */
+        /** @since 1.20
+         * @deprecated Probably unused.
+         */
         void saveProjectData();
-        /** @since 1.20 */
+        /** @since 1.20
+         * @deprecated Probably unused.
+         */
         void loadProjectData();
-        /** @since 1.20 */
+        /**
+         * This is used by projects/projectui to track the project selection.
+         * @since 1.20
+         */
         void setProjectName(String projectName);
     } // End of WindowSystem interface.
     
@@ -491,26 +497,10 @@ public abstract class NbTopManager {
                         } catch (IOException ioe) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
                         }
-                        boolean isWinsysSaved = false;
-                        // save project, if applicable
-                        try {
-                            TrivialProjectManager tpm
-                                = (TrivialProjectManager)Lookup.getDefault()
-                                    .lookup(TrivialProjectManager.class);
-                            // XXX #29159 Empty trivial prj manager doesn't store anything.
-                            if(!(tpm instanceof TrivialProjectManager.Empty)) {
-                                tpm.store();
-                                isWinsysSaved = true;
-                            }
-                        } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-                        }
                         // save window system, [PENDING] remove this after the winsys will
                         // persist its state automaticaly
-                        if (!isWinsysSaved) {
-                            if(windowSystem != null) {
-                                windowSystem.save();
-                            }
+                        if (windowSystem != null) {
+                            windowSystem.save();
                         }
                         org.netbeans.core.projects.XMLSettingsHandler.saveOptions();
                         try {

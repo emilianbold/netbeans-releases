@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -73,15 +73,6 @@ implements RepositoryListener, NewTemplateAction.Cookie {
         this (ch, Repository.getDefault(), filter);
     }
 
-    // delegate Index cookie to Filesystems Settings for convenience
-    public Node.Cookie getCookie(Class clazz) {
-        if (clazz == Index.class) {
-            return NbPlaces.getDefault().repositorySettings().getCookie(clazz);
-        } else {
-            return super.getCookie(clazz);
-        }
-    }
-
     public HelpCtx getHelpCtx () {
         return new HelpCtx (DataSystem.class);
     }
@@ -128,15 +119,7 @@ implements RepositoryListener, NewTemplateAction.Cookie {
                    null,
                    new RefreshAllFilesystemsAction(), // #31047
                    null,
-/*
-                   SystemAction.get (org.netbeans.core.actions.AddFSAction.class),
-                   SystemAction.get (org.netbeans.core.actions.AddJarAction.class),
-                   null,
-*/
                    SystemAction.get (org.netbeans.core.actions.MountAction.class),
-                   null,
-                   // See getCookie override:
-                   SystemAction.get(org.openide.actions.ReorderAction.class),
                    null,
                    SystemAction.get (org.openide.actions.ToolsAction.class),
                    //SystemAction.get (org.openide.actions.PropertiesAction.class), // #12072
@@ -209,10 +192,7 @@ implements RepositoryListener, NewTemplateAction.Cookie {
             DataSystem ds = getDS ();
             if (ds == null) return;
 
-            if (ev.getPropertyName ().equals ("hidden")) {
-                // change in the hidden state of a file system
-                ds.refresh ();
-            } else if (ev.getPropertyName().equals("root")) {
+            if (ev.getPropertyName().equals("root")) {
                 FileSystem fs = (FileSystem)ev.getSource ();
                 ds.refresh (fs);
                 ds.refresh ();
@@ -245,7 +225,11 @@ implements RepositoryListener, NewTemplateAction.Cookie {
             ArrayList list = new ArrayList();
             while (en.hasMoreElements()) {
                 Object o = en.nextElement();
-                if (fs != o && !((FileSystem)o).isHidden()) {
+                // XXX hack to show only masterfs and no other filesystems
+                // should later be solved better
+                // XXX if we stay with this behavior, this whole class could be rewritten
+                // to be much much simpler, since there will always be exactly one MasterFileSystem
+                if (fs != o && o.getClass().getName().equals("org.netbeans.modules.masterfs.MasterFileSystem")) { // NOI18N
                     DataObject root = null;
                     try {
                         root = DataObject.find(((FileSystem)o).getRoot());

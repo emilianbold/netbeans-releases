@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -46,10 +46,7 @@ import org.openide.util.actions.SystemAction;
  * @author  Vitezslav Stejskal
  */
 public final class SettingChildren extends FilterNode.Children {
-    /** Name of Node.Property indicating if setting is defined on Project layer */
-    public static final String PROP_INDICATOR = "Indicator"; // NOI18N
-    /** Name of Node.Property showing status of Project layer according to the setting */
-    public static final String PROP_LAYER_PROJECT = "Project-Layer"; // NOI18N
+
     /** Name of Node.Property showing status of Session layer according to the setting */
     public static final String PROP_LAYER_SESSION = "Session-Layer"; // NOI18N
     /** Name of Node.Property showing status of Modules layer according to the setting */
@@ -253,75 +250,6 @@ public final class SettingChildren extends FilterNode.Children {
         }
     }
 
-    /** Read-only property indicating if specific setting is defined on Project layer. */
-    public static class IndicatorProperty extends PropertySupport {
-        private FileObject primaryFile = null;
-
-        public IndicatorProperty () {
-            this (null);
-        }
-
-        public IndicatorProperty (FileObject primaryFile) {
-            super (PROP_INDICATOR, Integer.class,
-                NbBundle.getMessage (IndicatorProperty.class, "LBL_IndicatorProperty_Name"), // NOI18N
-                NbBundle.getMessage (IndicatorProperty.class, "LBL_IndicatorProperty_Description"), // NOI18N
-                true, false);
-
-            this.primaryFile = primaryFile;
-
-            setValue (ListImageEditor.PROP_VALUES, new Integer [] {
-                new Integer (0),
-                new Integer (1)
-            });
-
-            setValue (ListImageEditor.PROP_IMAGES, new Image [] {
-                Utilities.loadImage ("org/netbeans/core/resources/empty.gif"), // NOI18N
-                Utilities.loadImage ("org/netbeans/core/resources/project.gif") // NOI18N
-            });
-        }
-
-        public Object getValue () throws IllegalAccessException, InvocationTargetException {
-            FileStateManager fsm = FileStateManager.getDefault ();
-            if (FileStateManager.FSTATE_DEFINED == fsm.getFileState (primaryFile, 
-                    FileStateManager.LAYER_PROJECT)) {
-                return new Integer (1);
-            }
-
-            return new Integer (0);
-        }
-
-        public void setValue (Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            throw new IllegalAccessException ();
-        }
-
-        public PropertyEditor getPropertyEditor () {
-            return new ListImageEditor ();
-        }
-
-        public String getShortDescription () {
-            String s = null;
-            if (primaryFile != null) {
-                Integer val = null;
-                try {
-                    val = (Integer) getValue ();
-                } catch (Exception e) {
-                    // ignore it, will be handled later
-                }
-                switch (val == null ? -1 : val.intValue ()) {
-                    case 0: // session setting
-                        s = NbBundle.getMessage (SettingChildren.class, "LBL_indicator_session");
-                        break; 
-                    case 1: // project opetion
-                        s = NbBundle.getMessage (SettingChildren.class, "LBL_indicator_project");
-                        break; 
-                }
-            } else {
-                s = super.getShortDescription ();
-            }
-            return s == null || s.length () == 0 ? null : s; // no description for empty strings
-        }
-    }
-
     /** Filter node used for adding special status related properties to setting nodes. */
     private static final class SettingFilterNode extends FilterNode {
         private FSL weakL = null;
@@ -335,8 +263,6 @@ public final class SettingChildren extends FilterNode.Children {
             weakL = new FSL (this);
             FileStateManager.getDefault ().addFileStatusListener (weakL, pf);
 
-            specialProp (new IndicatorProperty (pf));
-            specialProp (new FileStateProperty (pf, FileStateManager.LAYER_PROJECT, PROP_LAYER_PROJECT, false));
             specialProp (new FileStateProperty (pf, FileStateManager.LAYER_SESSION, PROP_LAYER_SESSION, false));
             specialProp (new FileStateProperty (pf, FileStateManager.LAYER_MODULES, PROP_LAYER_MODULES, false));
         }
@@ -377,10 +303,8 @@ public final class SettingChildren extends FilterNode.Children {
                     return;
                 }
                 
-                n.firePropertyChange (PROP_LAYER_PROJECT, null, null);
                 n.firePropertyChange (PROP_LAYER_SESSION, null, null);
                 n.firePropertyChange (PROP_LAYER_MODULES, null, null);
-                n.firePropertyChange (PROP_INDICATOR, null, null);
             }
         }
     }

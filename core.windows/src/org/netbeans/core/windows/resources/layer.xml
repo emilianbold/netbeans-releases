@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
@@ -22,21 +22,14 @@ Microsystems, Inc. All Rights Reserved.
     desktop layout, modes and groups.
     -->
     <folder name="Windows2">
-        <attr name="SystemFileSystem.layer" stringvalue="project"/>
-        <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr">
-        <!-- is on session layer because of the bug #39713. Don't change main window constraints when changing projects. -->
-            <attr name="SystemFileSystem.layer" stringvalue="session"/>
-        </file>        
+        <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr"/>
     </folder>
 
-    <folder name="Windows2Local">
-        <attr name="SystemFileSystem.layer" stringvalue="project"/>
-    </folder>
+    <folder name="Windows2Local"/>
 
     <!-- Folders of old window system are defined here to simplify ImportManager
          code. Handling of missing reference folders. -->
     <folder name="Windows">
-        <attr name="SystemFileSystem.layer" stringvalue="project"/>
         <folder name="WindowManager"/>
         <folder name="Components"/>
     </folder>
