@@ -29,6 +29,7 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/actions/*Test.class"/>
+                <include name="org/openide/execution/*Test.class"/>
                 <include name="org/openide/filesystems/*.class"/>
                 <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testFireFileDataCreatedEvent"/>
                 <exclude name="org/openide/filesystems/LocalFileSystemTest.class/testFireFileFolderCreatedEvent"/>
@@ -68,6 +69,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- But if #6 is seen failing, please file a bug report, that is more serious. -->
                 <include name="org/openide/nodes/*.class"/>
 		<exclude name="org/openide/nodes/FilterNodeTest.class/testChangeOriginalLeafToArray"/>
+                <include name="org/openide/options/*Test.class"/>
                 <include name="org/openide/util/*.class"/>
                 <include name="org/openide/util/actions/*Test.class"/>
                 <include name="org/openide/xml/*.class"/>

@@ -2,3 +2,4 @@
 **/src/**/data/**
 **/src/**/*.jar
 **/src/**/*.xml
+**/src/**/*.ser
