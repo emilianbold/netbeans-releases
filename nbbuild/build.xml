@@ -1000,7 +1000,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <echo message="Building module projects/libraries..."/>
       <ant dir="../projects/libraries" target="netbeans"/>
   </target>
-  <target name="all-projects/projectui" depends="all-openide,all-projects/projectapi,all-projects/projectuiapi,all-openide/loaders,all-openide/masterfs">
+  <target name="all-projects/projectui" depends="all-openide,all-projects/projectapi,all-projects/projectuiapi,all-openide/loaders,all-openide/masterfs,all-openidex">
       <echo message="Building module projects/projectui..."/>
       <ant dir="../projects/projectui" target="netbeans"/>
   </target>
@@ -1024,7 +1024,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <echo message="Building module ant/project..."/>
       <ant dir="../ant/project" target="netbeans"/>
   </target>
-  <target name="all-java/project" depends="all-openide,all-openide/loaders,all-projects/projectapi,all-projects/projectuiapi,all-java/api,all-java">
+  <target name="all-java/project" depends="all-openide,all-openide/loaders,all-openidex,all-projects/projectapi,all-projects/projectuiapi,all-java/api,all-java">
     <echo message="Building module java/project..."/>
     <ant dir="../java/project" target="netbeans"/>
   </target>

@@ -24,24 +24,35 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.LogicalViews;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
+import org.openidex.search.SearchInfo;
+import org.openidex.search.SimpleSearchInfo;
 
 /** Root node for list of open projects
  * @author Petr Hrebejk
@@ -191,7 +202,9 @@ public class ProjectsRootNode extends AbstractNode {
         private static String badgedNamePattern = NbBundle.getMessage( ProjectsRootNode.class, "LBL_MainProject_BadgedNamePattern" );
         
         public BadgingNode( Node n) {
-            super( n );
+            super( n,
+                   null,
+                   new ProxyLookup(new Lookup[] {n.getLookup(), Lookups.singleton(new ProjectNodeSearchInfo(n))}) );
             OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         }
         
@@ -220,6 +233,65 @@ public class ProjectsRootNode extends AbstractNode {
         private boolean isMain() {
             Project p = (Project)getLookup().lookup( Project.class );
             return p != null && OpenProjectList.getDefault().isMainProject( p );
+        }
+
+        /**
+         * SearchInfo object for project nodes.
+         *
+         * @see  SearchInfo
+         */
+        static final class ProjectNodeSearchInfo implements SearchInfo {
+
+            /** */
+            private final Node projectNode;
+
+            /**
+             */
+            ProjectNodeSearchInfo(Node n) {
+                projectNode = n;
+            }
+
+            /**
+             */
+            public boolean canSearch() {
+                return true;
+            }
+
+            /**
+             */
+            public Iterator objectsToSearch() {
+                return createIterator();
+            }
+
+            /**
+             */
+            private Iterator createIterator() {
+                /* get the project: */
+                Project project = (Project) projectNode.getLookup().lookup(Project.class);
+                assert project != null;
+
+                /* get the Sources object: */
+                Sources sources = (Sources) project.getLookup().lookup(Sources.class);
+                if (sources == null) {
+                    sources = GenericSources.genericOnly(project);
+                }
+
+                /* build a delegated SearchInfo object: */
+                SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+                if (sourceGroups.length == 0) {
+                    return Collections.EMPTY_LIST.iterator();
+                }
+                SimpleSearchInfo searchInfo = new SimpleSearchInfo();
+                for (int i = 0; i < sourceGroups.length; i++) {
+                    FileObject sourceRoot = sourceGroups[i].getRootFolder();
+                    DataFolder dataFolder = DataFolder.findFolder(sourceRoot);
+                    searchInfo.add(new SimpleSearchInfo(dataFolder, true));
+                }
+
+                /* return the SearchInfo's iterator: */
+                return searchInfo.objectsToSearch();
+            }
+
         }
         
     }

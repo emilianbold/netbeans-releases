@@ -45,9 +45,13 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
+import org.openidex.search.SimpleSearchInfo;
 
 /**
  * Display of Java sources in a package structure rather than folder structure.
@@ -347,7 +351,9 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
 
         public PackageNode( FileObject root, DataFolder dataFolder ) {
             super( dataFolder.getNodeDelegate(), 
-                   isEmpty( dataFolder ) ? Children.LEAF : dataFolder.createNodeChildren( NO_FOLDERS_FILTER ) );
+                   isEmpty( dataFolder ) ? Children.LEAF : dataFolder.createNodeChildren( NO_FOLDERS_FILTER ),
+                   new ProxyLookup(new Lookup[] {dataFolder.getNodeDelegate().getLookup(),
+                                                 Lookups.singleton(new SimpleSearchInfo(dataFolder, false))}));
             this.root = root;
             this.dataFolder = dataFolder;
             disableDelegation(DELEGATE_GET_DISPLAY_NAME | DELEGATE_SET_DISPLAY_NAME);
