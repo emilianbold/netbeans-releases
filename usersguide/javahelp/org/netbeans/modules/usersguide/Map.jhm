@@ -744,7 +744,8 @@
 
    <mapID target="org.netbeans.beaninfo.editors.ColorEditor$NbColorChooser" url="editing/configuring/colorchooser.html" /> 
 
-   <mapID target="org.netbeans.beaninfo.editors.FontEditor$FontPanel" url="pending.html" /> 
+   <mapID target="org.netbeans.beaninfo.editors.FontEditor$FontPanel" url="editing/configuring/fontsandcolors.html" /> 
+
 <!--OptionsAction is Options window--> 
    <mapID target="org.netbeans.core.actions.OptionsAction" url="configure/configure_options.html" /> 
 <!--root Options node + category nodes-->
