@@ -199,6 +199,15 @@ class FormToolBar extends JToolBar {
         menu.add(item);
         menu.show(this, p.x, p.y);
     }
+    
+    public String getUIClassID() {
+        // For GTK and Aqua look and feels, we provide a custom toolbar UI
+        if (UIManager.get("Nb.Toolbar.ui") != null) { // NOI18N
+            return "Nb.Toolbar.ui"; // NOI18N
+        } else {
+            return super.getUIClassID();
+        }
+    }
 
     // -------
 
