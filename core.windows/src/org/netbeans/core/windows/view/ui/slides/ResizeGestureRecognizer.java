@@ -34,20 +34,14 @@ import org.netbeans.core.windows.Constants;
  */
 public class ResizeGestureRecognizer implements AWTEventListener {
     
-     private static ResizeGestureRecognizer recog = new ResizeGestureRecognizer();
-     
-     private static int debugCount = 0;
 
-     //TODO - need to have a single instance for each sidebar
-     static void attachResizeRecognizer(String side, Component component, CommandManager manager) {
-         recog.update(side, component, manager);
-         Toolkit.getDefaultToolkit().addAWTEventListener(recog, AWTEvent.MOUSE_MOTION_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
-         debugCount = debugCount + 1;
+     void attachResizeRecognizer(String side, Component component) {
+         update(side, component);
+         Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_MOTION_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
      }
-     static void detachResizeRecognizer(String side, Component component) {
-         Toolkit.getDefaultToolkit().removeAWTEventListener(recog);
-         recog.update(null, null, null);
-         debugCount = debugCount - 1;
+     void detachResizeRecognizer(String side, Component component) {
+         Toolkit.getDefaultToolkit().removeAWTEventListener(this);
+         update(null, null);
      }
      
     
@@ -67,15 +61,15 @@ public class ResizeGestureRecognizer implements AWTEventListener {
     private static final int STATE_DRAGGING = 2;
     
     /** Creates a new instance of ResizeGestureRecognizer */
-    public ResizeGestureRecognizer() {
+    public ResizeGestureRecognizer(CommandManager mgr) {
+        this.mgr = mgr;
         glass = new GlassPane();
     }
     
-    public void update(String side, Component component, CommandManager manager) {
+    public void update(String side, Component component) {
         this.side = side;
         comp = component;
         state = STATE_NOOP;
-        mgr = manager;
         resetState();
     }
 

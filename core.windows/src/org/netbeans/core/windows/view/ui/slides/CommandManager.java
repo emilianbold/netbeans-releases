@@ -49,9 +49,12 @@ final class CommandManager implements ActionListener {
     private SlidingButton curSlideButton;
     private int curSlideOrientation;
     private int curSlidedIndex;
+    private ResizeGestureRecognizer recog;
+    
     
     public CommandManager(SlideBar slideBar) {
         this.slideBar = slideBar;
+        recog = new ResizeGestureRecognizer(this);
     }
    
     public void slideResize(int delta) {
@@ -97,8 +100,7 @@ final class CommandManager implements ActionListener {
         curSlideButton.setSelected(true);
 
         postEvent(new SlideBarActionEvent(slideBar, SlideBar.COMMAND_SLIDE_IN, operation));
-        //TODO - one instance per command manager
-        ResizeGestureRecognizer.attachResizeRecognizer(orientation2Side(curSlideOrientation), cont, this);
+        recog.attachResizeRecognizer(orientation2Side(curSlideOrientation), cont);
     }
     
     /** Fires slide out operation. 
@@ -115,8 +117,7 @@ final class CommandManager implements ActionListener {
         
         curSlideButton.setSelected(false);
         
-        //TODO - one instance per command manager
-        ResizeGestureRecognizer.detachResizeRecognizer(orientation2Side(curSlideOrientation), getSlidedTabContainer());
+        recog.detachResizeRecognizer(orientation2Side(curSlideOrientation), getSlidedTabContainer());
         
         curSlidedComp = null;
         curSlideButton = null;
