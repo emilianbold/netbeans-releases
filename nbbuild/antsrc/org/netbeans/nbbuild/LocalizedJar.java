@@ -1,55 +1,14 @@
 /*
- * The Apache Software License, Version 1.1
+ *                 Sun Public License Notice
  *
- * Copyright (c) 1999 The Apache Software Foundation.  All rights 
- * reserved.
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *
- * 3. The end-user documentation included with the redistribution, if
- *    any, must include the following acknowlegement:  
- *       "This product includes software developed by the 
- *        Apache Software Foundation (http://www.apache.org/)."
- *    Alternately, this acknowlegement may appear in the software itself,
- *    if and wherever such third-party acknowlegements normally appear.
- *
- * 4. The names "The Jakarta Project", "Tomcat", and "Apache Software
- *    Foundation" must not be used to endorse or promote products derived
- *    from this software without prior written permission. For written 
- *    permission, please contact apache@apache.org.
- *
- * 5. Products derived from this software may not be called "Apache"
- *    nor may "Apache" appear in their names without prior written
- *    permission of the Apache Group.
- *
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
- * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
- * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- * ====================================================================
- *
- * This software consists of voluntary contributions made by many
- * individuals on behalf of the Apache Software Foundation.  For more
- * information on the Apache Software Foundation, please see
- * <http://www.apache.org/>.
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.nbbuild;
@@ -78,7 +37,7 @@ import org.apache.tools.ant.types.*;
  * <p>Based on <code>&lt;zip&gt;</code> and <code>&lt;jar&gt;</code> tasks in Ant,
  * but not feasible to simply subclass or compose them.
  * @see <a href="http://www.netbeans.org/i18n/">NetBeans I18N documentation</a>
- * @author Jesse Glick (and see source for <samp>Zip.java</samp> and <samp>Jar.java</samp>)
+ * @author Jesse Glick
  */
 public class LocalizedJar extends MatchingTask {
 
@@ -145,6 +104,7 @@ public class LocalizedJar extends MatchingTask {
      * locale-specific JARs may be created in the <samp>locale/</samp> subdirectory
      * of the directory containing this JAR, and will be named according to the name
      * of this JAR.
+     * Compare Ant's <samp>&lt;jar&gt;</samp> task.
      */
     public void setJarfile (File jarFile) {
         if (! jarFile.getName ().endsWith (".jar")) {
@@ -377,9 +337,9 @@ public class LocalizedJar extends MatchingTask {
                 log ("Building localized jar: " + jar);
                 try {
                     jar.getParentFile ().mkdirs ();
-                    ZipOutputStream zOut = new ZipOutputStream (new FileOutputStream (jar));
+                    ZipOutputStream out = new ZipOutputStream (new FileOutputStream (jar));
                     try {
-                        zOut.setMethod (doCompress ? ZipOutputStream.DEFLATED : ZipOutputStream.STORED);
+                        out.setMethod (doCompress ? ZipOutputStream.DEFLATED : ZipOutputStream.STORED);
                         String localeMark = (String) localeMarks.get (jar);
                         String brandingMark = (String) brandingMarks.get (jar);
                         Set addedDirs = new HashSet (); // Set<String>
@@ -409,26 +369,26 @@ public class LocalizedJar extends MatchingTask {
                         if (brandingMark != null) {
                             attr.putValue ("OpenIDE-Archive-Branding", brandingMark);
                         }
-                        // [PENDING] would be good to also remove any Class-Path attributes
-                        // if this is a */locale/* JAR, since they no longer apply.
+                        if (localeMark != null || brandingMark != null) {
+                            // Presumably this no longer applies:
+                            attr.remove (Attributes.Name.CLASS_PATH);
+                        }
                         ByteArrayOutputStream baos = new ByteArrayOutputStream ();
                         mani.write (baos);
-                        zipFile (new ByteArrayInputStream (baos.toByteArray ()), zOut, "META-INF/MANIFEST.MF", time, addedDirs);
+                        byte[] bytes = baos.toByteArray ();
+                        addToJar (new ByteArrayInputStream (bytes), new ByteArrayInputStream (bytes),
+                                  out, "META-INF/MANIFEST.MF", time, addedDirs);
                         // Now regular files.
                         Iterator it2 = files.entrySet ().iterator ();
                         while (it2.hasNext ()) {
                             Map.Entry entry = (Map.Entry) it2.next ();
                             String path = (String) entry.getKey ();
                             File file = (File) entry.getValue ();
-                            is = new FileInputStream (file);
-                            try {
-                                zipFile (is, zOut, path, file.lastModified (), addedDirs);
-                            } finally {
-                                is.close ();
-                            }
+                            addToJar (new FileInputStream (file), new FileInputStream (file),
+                                      out, path, file.lastModified (), addedDirs);
                         }
                     } finally {
-                        zOut.close ();
+                        out.close ();
                     }
                 } catch (IOException ioe) {
                     String msg = "Problem creating JAR: " + ioe.getMessage ();
@@ -442,61 +402,49 @@ public class LocalizedJar extends MatchingTask {
 
     } // end execute()
 
-    private void zipFile (InputStream in, ZipOutputStream zOut, String vPath, long lastModified, Set addedDirs) throws IOException {
-        if (vPath.endsWith ("/")) {
-            throw new IOException ("Bad path: " + vPath);
-        }
-        // Add parent dirs as needed:
-        int pos = -1;
-        while ((pos = vPath.indexOf ('/', pos + 1)) != -1) {
-            String dir = vPath.substring (0, pos + 1);
-            if (! addedDirs.contains (dir)) {
-                addedDirs.add (dir);
-                ZipEntry ze = new ZipEntry (dir);
-                ze.setSize (0);
-                ze.setMethod (ZipEntry.STORED);
-                ze.setCrc (emptyCrc);
-                zOut.putNextEntry (ze);
+    private void addToJar (InputStream in1, InputStream in2, ZipOutputStream out,
+                           String path, long lastModified, Set addedDirs) throws IOException {
+        try {
+            if (path.endsWith ("/")) {
+                throw new IOException ("Bad path: " + path);
             }
-        }
-        // Add the file itself:
-        ZipEntry ze = new ZipEntry (vPath);
-        ze.setTime (lastModified);
-        if (! doCompress) {
+            // Add parent dirs as needed:
+            int pos = -1;
+            while ((pos = path.indexOf ('/', pos + 1)) != -1) {
+                String dir = path.substring (0, pos + 1);
+                if (! addedDirs.contains (dir)) {
+                    addedDirs.add (dir);
+                    ZipEntry ze = new ZipEntry (dir);
+                    ze.setSize (0);
+                    ze.setMethod (ZipEntry.STORED);
+                    ze.setCrc (emptyCrc);
+                    ze.setTime (lastModified);
+                    out.putNextEntry (ze);
+                }
+            }
+            // Add the file itself:
+            ZipEntry ze = new ZipEntry (path);
+            ze.setMethod (doCompress ? ZipEntry.DEFLATED : ZipEntry.STORED);
+            ze.setTime (lastModified);
             long size = 0;
-            CRC32 cal = new CRC32 ();
-            if (! in.markSupported ()) {
-                ByteArrayOutputStream bos = new ByteArrayOutputStream ();
-                byte[] buffer = new byte[8 * 1024];
-                int count = 0;
-                do {
-                    size += count;
-                    cal.update (buffer, 0, count);
-                    bos.write (buffer, 0, count);
-                    count = in.read (buffer, 0, buffer.length);
-                } while (count != -1);
-                in = new ByteArrayInputStream (bos.toByteArray ());
-            } else {
-                in.mark (Integer.MAX_VALUE);
-                byte[] buffer = new byte[8 * 1024];
-                int count = 0;
-                do {
-                    size += count;
-                    cal.update (buffer, 0, count);
-                    count = in.read (buffer, 0, buffer.length);
-                } while (count != -1);
-                in.reset ();
+            CRC32 crc = new CRC32 ();
+            byte[] buf = new byte[4096];
+            int read;
+            while ((read = in1.read (buf)) != -1) {
+                crc.update (buf, 0, read);
+                size += read;
             }
+            in1.close ();
+            ze.setCrc (crc.getValue ());
             ze.setSize (size);
-            ze.setCrc (cal.getValue ());
+            out.putNextEntry (ze);
+            while ((read = in2.read (buf)) != -1) {
+                out.write (buf, 0, read);
+            }
+        } finally {
+            in2.close ();
+            in1.close ();
         }
-        zOut.putNextEntry (ze);
-        byte[] buffer = new byte[8 * 1024];
-        int count = 0;
-        do {
-            zOut.write (buffer, 0, count);
-            count = in.read (buffer, 0, buffer.length);
-        } while (count != -1);
-    } // end zipFile ()
+    } // end addToJar()
 
 }
