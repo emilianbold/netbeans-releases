@@ -13,7 +13,14 @@ Use is subject to license terms.  *-->
 <p>After you create a web service, you implement its operations in the implementation class. You can add operations
  manually in the Source Editor or by using the Add Operation dialog box. In the latter case, the IDE automatically
  declares the operation in the Service Endpoint Interface (the "interface").</p>
-
+<table cellpadding="3" cellspacing="0" border="0">
+<tr valign="top"> 
+<td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
+<td>Since the WSDL file governs the interface to the web service,
+	you may <i>not</i> add new operations to web services that are created from a WSDL file, 
+	because these operations will not be reflected back in the WSDL file.</td>
+</tr>
+</table>
 <b>To add a web service operation:</b>
 <ol>
 	<li>Open the Add Operation dialog box in one of two ways from the Projects window:
@@ -41,9 +48,7 @@ Use is subject to license terms.  *-->
 		  and type <tt>a</tt> in the Name text box. Click OK.</li>
 		  <li>Click Add.</li>
 		  <li>Choose <tt>int</tt> from the Type drop-down
-		  and type <tt>b</tt> in the Name text box. Click OK.</li>
-		  <li>Click the Exceptions tab and click Add.</li>
-		  <li>Type <tt>java.rmi.RemoteException</tt>. Click OK.</li>
+		  and type <tt>b</tt> in the Name text box. Click OK.</li>	
 		  <li>Click OK to create the operation.
 		  <p>The IDE adds the skeleton of the operation to the implementation class and 
 	 declares it in the interface.</p></li>
