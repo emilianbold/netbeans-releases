@@ -124,9 +124,10 @@ final class Services extends ServiceType.Registry implements Comparator {
             // adds also default instance of this service
             current.add (s.getServiceType());
             servicesChangedNotify();
+            
+            supp.firePropertyChange (PROP_KINDS, null, null);
+            supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
         }
-        supp.firePropertyChange (PROP_KINDS, null, null);
-        supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
 
     }
 
@@ -536,6 +537,9 @@ final class Services extends ServiceType.Registry implements Comparator {
 
 /*
 * $Log$
+* Revision 1.44  2001/04/20 13:10:53  jtulach
+* Fix of #11600. The changes are fired in synchronized block
+*
 * Revision 1.43  2001/04/11 12:53:09  dstrupl
 * #9945 - Newly formed ServiceType subclasses not shown in Project Settings
 * Method recomputeKinds fixed.
