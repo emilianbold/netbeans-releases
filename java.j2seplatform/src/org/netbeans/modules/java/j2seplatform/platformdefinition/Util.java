@@ -53,6 +53,10 @@ public class Util {
             }
             else {
                 url = f.toURI().toURL();
+                String surl = url.toExternalForm();
+                if (!surl.endsWith("/")) {
+                    url = new URL (surl+"/");
+                }
             }
         } catch (MalformedURLException e) {
             throw new AssertionError(e);            

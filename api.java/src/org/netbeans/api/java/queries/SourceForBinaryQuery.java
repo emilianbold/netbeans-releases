@@ -50,6 +50,9 @@ public class SourceForBinaryQuery {
             throw new IllegalArgumentException("File URL pointing to " + // NOI18N
                 "JAR is not valid classpath entry. Use jar: URL. Was: "+binaryRoot); // NOI18N
         }
+        if (!binaryRoot.toExternalForm().endsWith("/")) {
+            throw new IllegalArgumentException ("Folder URL must end with '/'. Was: "+binaryRoot);
+        }
         for (Iterator it = implementations.allInstances().iterator(); it.hasNext();) {
             Result result = ((SourceForBinaryQueryImplementation)it.next()).findSourceRoots (binaryRoot);
             if (result != null) {
