@@ -312,7 +312,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
          * correct content for the test-generated file. 
          */
     static public void assertFile(File test, File pass) {
-        assertFile(null, test, pass, null, null);
+        assertFile("Difference between " + test + " and " + pass, test, pass, null, null);
     }
 
 /**
