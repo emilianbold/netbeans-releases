@@ -186,7 +186,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 helper.createCacheDirectoryProvider(),
                 new ProjectWebServicesSupportProvider(),
                 spp,
-                new EnterpriseReferenceContainerImpl(this),
+                new EnterpriseReferenceContainerImpl(this, helper),
                 new ProjectEjbJarProvider(),
                 ejbModule, //implements J2eeModuleProvider
                 new EjbJarActionProvider( this, helper, refHelper ),

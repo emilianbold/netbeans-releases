@@ -61,6 +61,12 @@ public abstract class EnterpriseReferenceContainer {
     public abstract String getServiceLocatorName();
     
     /**
+     * set name of service locator fo this project. 
+     * @param serviceLocator used in this project
+     */
+    public abstract void setServiceLocatorName(String serviceLocator) throws IOException;
+    
+    /**
      * Add given message destination reference into the deployment descriptor
      * @param ref to destination
      * @param referencingClass class using the destination

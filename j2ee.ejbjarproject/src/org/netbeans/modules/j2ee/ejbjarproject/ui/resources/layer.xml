@@ -130,7 +130,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder> 
     
-    <!-- <folder name="NodeFactories">
+    <folder name="NodeFactories">
        <folder name="java">
           <folder name="explorer">
              <file name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview.ejb.session.BeanClassFactory.instance">
@@ -138,7 +138,7 @@ Microsystems, Inc. All Rights Reserved.
              </file>
           </folder>
        </folder>
-    </folder> -->
+    </folder> 
 
     <folder name="org-netbeans-modules-j2ee-ejbjarproject">
         <file name="ejb-jar-2.0.xml" url="ejb-jar-2.0.xml"/>

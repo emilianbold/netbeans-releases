@@ -42,6 +42,7 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
     private Project webProject;
     private ReferenceHelper helper;
     private AntProjectHelper antHelper;
+    private static final String SERVICE_LOCATOR_PROPERTY = "project.serviceLocator.class"; //NOI18N
     
     public WebContainerImpl(Project p, ReferenceHelper helper, AntProjectHelper antHelper) {
         webProject = p;
@@ -93,7 +94,17 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
     }
     
     public String getServiceLocatorName() {
-        return null;
+        EditableProperties ep =
+                    antHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        return ep.getProperty(SERVICE_LOCATOR_PROPERTY);
+    }
+    
+    public void setServiceLocatorName(String serviceLocator) throws IOException {
+         EditableProperties ep =
+                    antHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+         ep.setProperty(SERVICE_LOCATOR_PROPERTY, serviceLocator);
+         antHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+         ProjectManager.getDefault().saveProject(webProject);
     }
     
     private BaseBean findDD() throws IOException {
@@ -185,4 +196,5 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
         }
         return ref;
     }
+
 }
