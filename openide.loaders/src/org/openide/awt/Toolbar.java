@@ -101,6 +101,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             MetalLookAndFeel.class.isAssignableFrom(UIManager.getLookAndFeel().getClass());
     private static final boolean isJdk15 = 
             System.getProperty( "java.version" ).startsWith( "1.5" );
+    private static final boolean isJdk16 = 
+            System.getProperty( "java.version" ).startsWith( "1.6" );
     
     static final long serialVersionUID =5011742660516204764L;
     
@@ -481,6 +483,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
 	waitFinished();	
     }
     
+    private static final Insets emptyInsets = new Insets(1,1,1,1);
     /** Overridden to set focusable to false for any AbstractButton
      * subclasses which are added */
     protected void addImpl(Component c, Object constraints, int idx) {
@@ -490,10 +493,13 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         if (c instanceof AbstractButton) {
             c.setFocusable(false);
             ((JComponent) c).setOpaque(false);
-            if( !(c instanceof JToggleButton) && isMetalLaF && isJdk15 ) {
+            if( !(c instanceof JToggleButton) && isMetalLaF && (isJdk15 || isJdk16)) {
                 //JDK 1.5 metal/ocean resets borders, so fix it this way
                 ((AbstractButton) c).setBorderPainted(false);
                 ((AbstractButton) c).setOpaque(false);
+            }
+            if( isJdk16 && !isMetalLaF ) {
+                ((AbstractButton) c).setMargin( emptyInsets );
             }
         }
         super.addImpl (c, constraints, idx);
@@ -794,8 +800,6 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             if (ic == null) {
                 JButton button = ExecBridge.createButton (dob);
                 if (button != null) {
-                    System.err.println("Button is " + button);
-                    System.err.println("dob is " + dob);
                     button.putClientProperty ("file", dob);
                 }
                 return button != null ? new InstanceSupport.Instance (button) : null;
