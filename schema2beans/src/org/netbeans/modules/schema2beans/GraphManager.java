@@ -33,8 +33,8 @@ public class GraphManager extends Object {
     }
     
     public static interface Factory {
-	public org.w3c.dom.Document createDocument(InputStream in,
-						   boolean validate);
+        public org.w3c.dom.Document createDocument(InputStream in,
+                                                   boolean validate);
     }
     
     Document	document = null;
@@ -644,7 +644,8 @@ public class GraphManager extends Object {
      */
     public static Document createXmlDocument(InputStream in, boolean validate,
                                              EntityResolver er) throws Schema2BeansRuntimeException {
-	
+        if (in == null)
+            throw new IllegalArgumentException("in == null");	// NOI18N
         try {
             if (DDLogFlags.debug) {
                 // Dump the contents to stdout
@@ -690,6 +691,8 @@ public class GraphManager extends Object {
 
     public static Document createXmlDocument(InputSource in, boolean validate,
                                              EntityResolver er, ErrorHandler eh) throws Schema2BeansException {
+        if (in == null)
+            throw new IllegalArgumentException("in == null");	// NOI18N
         if (validate == false && er == null) {
             // The client is not interested in any validation, so make
             // see to it that any entity resolution doesn't hit the network

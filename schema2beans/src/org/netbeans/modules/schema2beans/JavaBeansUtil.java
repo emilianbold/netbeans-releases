@@ -26,7 +26,8 @@ import org.w3c.dom.*;
  * This is a utility class with several static methods for working
  * with generic java beans.  There are methods here for writing a java
  * bean out {link writeBeanProperty}, for reading a java bean
- * from XML {link readBean}.
+ * from XML {link readBean}, and for copying one java bean to
+ * another {link copyBean}.
  */
 public class JavaBeansUtil {
     private JavaBeansUtil() {}

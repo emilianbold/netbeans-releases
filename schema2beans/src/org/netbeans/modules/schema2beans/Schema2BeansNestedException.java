@@ -27,8 +27,10 @@ public class Schema2BeansNestedException extends Schema2BeansException implement
 
     public Schema2BeansNestedException(Throwable e) {
         super("");
-        //System.out.println("Created Schema2BeansNestedException1: e="+e);
-        //e.printStackTrace();
+        if (DDLogFlags.debug) {
+            System.out.println("Created Schema2BeansNestedException1: e="+e);
+            e.printStackTrace();
+        }
         childThrowable = e;
         message = childThrowable.getMessage();
         genStackTrace();
@@ -36,8 +38,10 @@ public class Schema2BeansNestedException extends Schema2BeansException implement
     
     public Schema2BeansNestedException(String mesg, Throwable e) {
         super(mesg);
-        //System.out.println("Created Schema2BeansNestedException2: e="+e+" mesg="+mesg);
-        //e.printStackTrace();
+        if (DDLogFlags.debug) {
+            System.out.println("Created Schema2BeansNestedException2: e="+e+" mesg="+mesg);
+            e.printStackTrace();
+        }
         childThrowable = e;
         message = mesg+"\n"+childThrowable.getMessage();
         genStackTrace();
@@ -72,6 +76,6 @@ public class Schema2BeansNestedException extends Schema2BeansException implement
     }
 
     public void printStackTrace() {
-        System.out.println(stackTrace);
+        System.err.println(stackTrace);
     }
 }
