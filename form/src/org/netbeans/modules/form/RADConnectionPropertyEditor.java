@@ -108,7 +108,10 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
       switch (currentValue.type) {
         case RADConnectionDesignValue.TYPE_VALUE: return currentValue.value;     
         case RADConnectionDesignValue.TYPE_CODE: return currentValue.userCode;
-        case RADConnectionDesignValue.TYPE_PROPERTY: return currentValue.radComponentName + "." + currentValue.property.getReadMethod ().getName () + " ()"; // [FUTURE: Handle indexed properties]
+        case RADConnectionDesignValue.TYPE_PROPERTY: 
+            PropertyDescriptor pd = currentValue.getProperty ();
+            if (pd == null) return null; // failed to initialize => do not generate code
+            else return currentValue.radComponentName + "." + pd.getReadMethod ().getName () + " ()"; // [FUTURE: Handle indexed properties]
         case RADConnectionDesignValue.TYPE_METHOD: return currentValue.radComponentName + "." + currentValue.methodName + " ()";
       }
     }
@@ -144,6 +147,9 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
     String value = null;                        // used if type = TYPE_VALUE
     String requiredTypeName = null;             // used if type = TYPE_VALUE
     
+    transient private boolean needsInit = false; // used for deserialization init if type = TYPE_PROPERTY or TYPE_METHOD
+    transient private FormManager2 formManager;  // used for deserialization init if type = TYPE_PROPERTY or TYPE_METHOD
+    
     RADConnectionDesignValue (RADComponent comp, MethodDescriptor md) {
       radComponent = comp;
       radComponentName = radComponent.getName ();
@@ -160,12 +166,26 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
       type = TYPE_PROPERTY;
     }
 
+    private RADConnectionDesignValue (String compName, int type, String name, FormManager2 manager) {
+      radComponentName = compName;
+      formManager = manager;
+      if (type == TYPE_PROPERTY) {
+        needsInit = true;
+        type = TYPE_PROPERTY;
+        propertyName = name;
+      } else if (type == TYPE_METHOD) {
+        needsInit = true;
+        type = TYPE_METHOD;
+        methodName = name;
+      } else throw new IllegalArgumentException ();
+    }
+
     RADConnectionDesignValue (Class requiredType, String valueText) {
       this.requiredTypeName = requiredType.getName ();
       this.value = value;
       type = TYPE_VALUE;
     }
-
+    
     RADConnectionDesignValue (String userCode) {
       this.userCode = userCode;
       type = TYPE_CODE;
@@ -180,6 +200,37 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
       }
       throw new InternalError ();
     }
+    
+    PropertyDescriptor getProperty () {
+      if (needsInit) {
+        if (!initialize ()) return null;
+      }
+      return property;
+    }
+
+    private boolean initialize () {
+      radComponent = formManager.findRADComponent (radComponentName);
+      if (radComponent != null) {
+        if (type == TYPE_PROPERTY) { // property
+          PropertyDescriptor[] componentsProps = radComponent.getBeanInfo ().getPropertyDescriptors ();
+          for (int i = 0; i < componentsProps.length; i++) {
+            if (componentsProps[i].getName ().equals (propertyName)) {
+              property = componentsProps[i];
+              return true;
+            }
+          } // if the property of given name cannot be found => ignore
+        } else { // method
+          MethodDescriptor[] componentMethods = radComponent.getBeanInfo ().getMethodDescriptors ();
+          for (int i = 0; i < componentMethods.length; i++) {
+            if (componentMethods[i].getName ().equals (methodName)) {
+              method = componentMethods[i];
+              return true;
+            }
+          } // if the property of given name cannot be found => ignore
+        }
+      } // if the component cannot be found, simply ignore it
+      return false;
+    }
 
     /** Provides a value which should be used during design-time
     * as the real property value on the bean instance.
@@ -190,23 +241,30 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
     * @return the real property value to be used during design-time
     */
     public Object getDesignValue (RADComponent radComponent) {
+/*      if (needsInit) {
+        if (!initialize ()) {
+          return IGNORED_VALUE; // failed to initialize
+        }
+      } */
       switch (type) {
         case TYPE_PROPERTY: 
-            try {
+            return FormDesignValue.IGNORED_VALUE; // [PENDING: use the value during design time]
+/*            try {
               Object value = property.getReadMethod ().invoke (radComponent.getBeanInstance (), new Object[0]);
               return value;
             } catch (Exception e) {
               // in case of failure do not provide the value during design time
               return FormDesignValue.IGNORED_VALUE;
-            }
+            }*/ // [PENDING]
         case TYPE_METHOD: 
-            try {
+            return FormDesignValue.IGNORED_VALUE; // [PENDING: use the value during design time]
+/*            try {
               Object value = method.getMethod ().invoke (radComponent.getBeanInstance (), new Object[0]);
               return value;
             } catch (Exception e) {
               // in case of failure do not provide the value during design time
               return FormDesignValue.IGNORED_VALUE;
-            }
+            } */ // [PENDING]
         case TYPE_VALUE: 
             return FormDesignValue.IGNORED_VALUE; // [PENDING: use the value during design time]
         case TYPE_CODE: 
@@ -256,35 +314,16 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
         } catch (Exception e) { 
           // ignore failures... and use no conn instead
         }
+
       } else if (VALUE_PROPERTY.equals (typeString)) {
         String component = attributes.getNamedItem (ATTR_COMPONENT).getNodeValue ();
         String name = attributes.getNamedItem (ATTR_NAME).getNodeValue ();
-        RADComponent connComp = rcomponent.getFormManager ().findRADComponent (component);
-        if (connComp != null) {
-          PropertyDescriptor[] componentsProps = connComp.getBeanInfo ().getPropertyDescriptors ();
-          for (int i = 0; i < componentsProps.length; i++) {
-            if (componentsProps[i].getName ().equals (name)) {
-              setValue (new RADConnectionDesignValue (connComp, componentsProps[i])); // [PENDING]
-              break;
-            }
-          } // if the property of given name cannot be found => ignore
-        } // if the component cannot be found, simply ignore it
+        setValue (new RADConnectionDesignValue (component, RADConnectionDesignValue.TYPE_PROPERTY, name, rcomponent.getFormManager ()));
 
       } else if (VALUE_METHOD.equals (typeString)) {
         String component = attributes.getNamedItem (ATTR_COMPONENT).getNodeValue ();
         String name = attributes.getNamedItem (ATTR_NAME).getNodeValue ();
-
-        RADComponent connComp = rcomponent.getFormManager ().findRADComponent (component);
-        if (connComp != null) {
-          MethodDescriptor[] componentMethods = connComp.getBeanInfo ().getMethodDescriptors ();
-          for (int i = 0; i < componentMethods.length; i++) {
-            if (componentMethods[i].getName ().equals (name)) {
-              setValue (new RADConnectionDesignValue (connComp, componentMethods[i])); // [PENDING]
-              break;
-            }
-          } // if the property of given name cannot be found => ignore
-        } // if the component cannot be found, simply ignore it
-
+        setValue (new RADConnectionDesignValue (component, RADConnectionDesignValue.TYPE_METHOD, name, rcomponent.getFormManager ()));
 
       } else {
         String code = attributes.getNamedItem (ATTR_CODE).getNodeValue ();
@@ -293,6 +332,9 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
 
 
     } catch (NullPointerException e) {
+      if (System.getProperty ("netbeans.debug.exceptions") != null) {
+        e.printStackTrace ();
+      }
       throw new java.io.IOException ();
     }
   }
