@@ -27,6 +27,7 @@ import com.netbeans.ddl.impl.*;
 */
 public class CreateTable extends ColumnListCommand 
 {
+static final long serialVersionUID =-6731725400393279232L;
 	public TableColumn createColumn(String name)
 	throws ClassNotFoundException, IllegalAccessException, InstantiationException
 	{
@@ -112,6 +113,8 @@ public class CreateTable extends ColumnListCommand
 
 /*
 * <<Log>>
+*  4    Gandalf   1.3         8/17/99  Ian Formanek    Generated serial version 
+*       UID
 *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 

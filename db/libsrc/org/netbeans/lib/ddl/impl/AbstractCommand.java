@@ -43,6 +43,7 @@ implements Serializable, DDLCommand
 	/** Additional properties */
 	private Map addprops;
 	
+static final long serialVersionUID =-560515030304320086L;
 	/** Returns specification (DBSpec) for this command */
 	public DBSpec getSpecification()
 	{
@@ -215,6 +216,8 @@ implements Serializable, DDLCommand
 
 /*
 * <<Log>>
+*  8    Gandalf   1.7         8/17/99  Ian Formanek    Generated serial version 
+*       UID
 *  7    Gandalf   1.6         6/8/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----
 *  6    Gandalf   1.5         5/21/99  Slavek Psenicka System.out changed to 

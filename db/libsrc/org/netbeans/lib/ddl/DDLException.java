@@ -20,6 +20,7 @@ package com.netbeans.ddl;
 */
 public class DDLException extends Exception 
 {
+static final long serialVersionUID =6999409518605532598L;
 	/** Creates new exception 
 	* @param message The text describing the exception
 	*/
@@ -30,6 +31,8 @@ public class DDLException extends Exception
 
 /*
  * <<Log>>
+ *  4    Gandalf   1.3         8/17/99  Ian Formanek    Generated serial version
+ *       UID
  *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
  *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
  *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 

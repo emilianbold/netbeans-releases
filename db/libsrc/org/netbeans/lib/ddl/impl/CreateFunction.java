@@ -30,6 +30,7 @@ public class CreateFunction extends CreateProcedure implements FunctionDescripto
 	/** Catalog */
 	private int rarg;
 				
+static final long serialVersionUID =-7554675717309349130L;
 	/** Returns text of procedure */
 	public int getReturnType()
 	{
@@ -53,6 +54,8 @@ public class CreateFunction extends CreateProcedure implements FunctionDescripto
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         8/17/99  Ian Formanek    Generated serial version 
+*       UID
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $

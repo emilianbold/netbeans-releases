@@ -28,6 +28,7 @@ public class ColumnCommand extends AbstractCommand
 	/** Column */
 	private TableColumn column;
 		
+static final long serialVersionUID =-4554975764392047624L;
 	/** Creates specification of command
 	* @param type Type of column
 	* @param name Name of column
@@ -80,6 +81,8 @@ public class ColumnCommand extends AbstractCommand
 
 /*
 * <<Log>>
+*  4    Gandalf   1.3         8/17/99  Ian Formanek    Generated serial version 
+*       UID
 *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 

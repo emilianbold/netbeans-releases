@@ -29,6 +29,7 @@ public class CommentView extends AbstractCommand
 {
 	private String comment;
 	
+static final long serialVersionUID =-3070595900954150762L;
 	public String getComment()
 	{
 		return comment;	
@@ -52,6 +53,8 @@ public class CommentView extends AbstractCommand
 
 /*
 * <<Log>>
+*  2    Gandalf   1.1         8/17/99  Ian Formanek    Generated serial version 
+*       UID
 *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
 * $
 */

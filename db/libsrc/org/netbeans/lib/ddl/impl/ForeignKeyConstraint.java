@@ -31,6 +31,7 @@ public class ForeignKeyConstraint extends AbstractTableColumn implements Foreign
 	/** Referenced column */
 	String cname;
 	
+static final long serialVersionUID =9183651896170854492L;
 	/** Returns name of Referenced table */
 	public String getReferencedTableName()
 	{
@@ -74,6 +75,8 @@ public class ForeignKeyConstraint extends AbstractTableColumn implements Foreign
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         8/17/99  Ian Formanek    Generated serial version 
+*       UID
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $

@@ -30,6 +30,7 @@ public class CreateIndex extends ColumnListCommand
 	/** Index name */
 	private String tablename;
 	
+static final long serialVersionUID =1899024699690380782L;
 	public String getIndexName()
 	{
 		return tablename;
@@ -57,6 +58,8 @@ public class CreateIndex extends ColumnListCommand
 
 /*
 * <<Log>>
+*  4    Gandalf   1.3         8/17/99  Ian Formanek    Generated serial version 
+*       UID
 *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 

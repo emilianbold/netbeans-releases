@@ -25,6 +25,7 @@ public class CommandNotSupportedException extends Exception
 	/** Unsuccessfull command */
 	private String cmd;
 
+static final long serialVersionUID =3121142575910991422L;
 	/** Creates new exception 
 	* @param command The text describing the exception
 	*/
@@ -51,6 +52,8 @@ public class CommandNotSupportedException extends Exception
 
 /*
  * <<Log>>
+ *  4    Gandalf   1.3         8/17/99  Ian Formanek    Generated serial version
+ *       UID
  *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
  *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
  *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 

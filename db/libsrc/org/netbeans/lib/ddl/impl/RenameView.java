@@ -28,6 +28,7 @@ public class RenameView extends AbstractCommand
 	/** New name */
 	private String newname;
 	
+static final long serialVersionUID =-223515979547554815L;
 	/** Returns new name */
 	public String getNewName()
 	{
@@ -54,6 +55,8 @@ public class RenameView extends AbstractCommand
 
 /*
 * <<Log>>
+*  2    Gandalf   1.1         8/17/99  Ian Formanek    Generated serial version 
+*       UID
 *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
 * $
 */

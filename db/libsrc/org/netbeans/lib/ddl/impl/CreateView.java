@@ -29,6 +29,7 @@ public class CreateView extends AbstractCommand
 {
 	String query;
 	
+static final long serialVersionUID =-3890617111076632936L;
 	public String getQuery()
 	{
 		return query;
@@ -50,6 +51,8 @@ public class CreateView extends AbstractCommand
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         8/17/99  Ian Formanek    Generated serial version 
+*       UID
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $

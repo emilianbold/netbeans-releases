@@ -25,4 +25,5 @@ import com.netbeans.ddl.*;
 */
 public class PrimaryKeyConstraint extends AbstractTableColumn implements TableConstraintDescriptor
 {	
+static final long serialVersionUID =1012869540018507889L;
 }

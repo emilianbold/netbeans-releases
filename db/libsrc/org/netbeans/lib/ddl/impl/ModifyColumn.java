@@ -27,6 +27,7 @@ import com.netbeans.ddl.impl.*;
 
 public class ModifyColumn extends ColumnCommand 
 {
+static final long serialVersionUID =2870433389508513811L;
 	public AbstractTableColumn specifyColumn(String type, String name)
 	throws ClassNotFoundException, IllegalAccessException, InstantiationException
 	{
@@ -42,6 +43,8 @@ public class ModifyColumn extends ColumnCommand
 
 /*
 * <<Log>>
+*  2    Gandalf   1.1         8/17/99  Ian Formanek    Generated serial version 
+*       UID
 *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
 * $
 */

@@ -27,6 +27,7 @@ public class DatabaseProductNotFoundException extends Exception
 	/** Database product name */
 	private String sname;
 
+static final long serialVersionUID =-1108211224066947350L;
 	/** Creates new exception
 	* @param desc The text describing the exception
 	*/
@@ -56,6 +57,8 @@ public class DatabaseProductNotFoundException extends Exception
 
 /*
  * <<Log>>
+ *  4    Gandalf   1.3         8/17/99  Ian Formanek    Generated serial version
+ *       UID
  *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
  *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
  *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 

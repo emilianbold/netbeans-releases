@@ -28,6 +28,7 @@ public class RenameColumn extends ColumnCommand
 	/** New name */
 	private String newname;
 
+static final long serialVersionUID =7150074600789999024L;
 	/** Remove simple column 
 	* @param name Column name
 	*/
@@ -52,6 +53,8 @@ public class RenameColumn extends ColumnCommand
 
 /*
 * <<Log>>
+*  2    Gandalf   1.1         8/17/99  Ian Formanek    Generated serial version 
+*       UID
 *  1    Gandalf   1.0         4/23/99  Slavek Psenicka 
 * $
 */

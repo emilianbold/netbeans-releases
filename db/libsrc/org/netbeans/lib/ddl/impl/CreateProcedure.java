@@ -36,6 +36,7 @@ public class CreateProcedure extends AbstractCommand implements ProcedureDescrip
 	/** Arguments */
 	private Vector args;
 	
+static final long serialVersionUID =1316633286943440734L;
 	public CreateProcedure()
 	{
 		args = new Vector();
@@ -141,6 +142,8 @@ public class CreateProcedure extends AbstractCommand implements ProcedureDescrip
 
 /*
 * <<Log>>
+*  3    Gandalf   1.2         8/17/99  Ian Formanek    Generated serial version 
+*       UID
 *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $
