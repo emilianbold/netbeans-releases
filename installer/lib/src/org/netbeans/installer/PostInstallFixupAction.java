@@ -45,7 +45,6 @@ public class PostInstallFixupAction extends ProductAction {
             support.putRequiredService(FileService.NAME);
             support.putRequiredService(ProductService.NAME);
             support.putRequiredService(Win32RegistryService.NAME);
-            support.putClass("org.netbeans.installer.DirectoryChooserPanelSwingImpl$1");
         }
         catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
@@ -87,11 +86,25 @@ public class PostInstallFixupAction extends ProductAction {
             jdkHome = Util.getJdkHome();
         }
         logEvent(this, Log.DBG, "jdkHome = " + jdkHome);
-
+        
+        //This file is used by IDE Update Center.
+        String productID = Util.getStringPropertyValue("ProductID");
+        if (productID != null) {
+            try {
+                String fileName = nbInstallDir + sep + "nb4.0" + sep + "config" + sep + "productid";
+                logEvent(this, Log.DBG, "create file: " + fileName + " content: '" + productID + "'");
+                fileService.createAsciiFile(fileName,new String[] { productID });
+            }
+            catch (Exception ex) {
+                logEvent(this, Log.ERROR, ex);
+            }
+        }
+        
         installIDEConfigFile();
         
-        if (Util.isUnixOS())
+        if (Util.isUnixOS()) {
             installGnomeIcon();
+        }
         
         deleteUnusedFiles();
     }
@@ -104,6 +117,7 @@ public class PostInstallFixupAction extends ProductAction {
             
             deleteFiles(nbInstallDir, new String[] {sep + "etc" + sep + "netbeans.conf"});
             deleteFiles(nbInstallDir, new String[] {"_uninst" + sep + "install.log"});
+            deleteFiles(nbInstallDir, new String[] {"nb4.0" + sep + "config" + sep + "productid" });
             deleteFiles(uninstallDir, new String[] {"install.properties"});
 
             if (Util.isUnixOS())

@@ -13,10 +13,21 @@
 
 package org.netbeans.installer;
 
-import java.io.*;
-import java.util.Vector;
-
+import com.installshield.util.LocalizedStringResolver;
 import com.installshield.util.Log;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.File;
+import java.io.FileFilter;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 public class Util {
     
@@ -75,21 +86,6 @@ public class Util {
     }
     public static boolean isDarwinOS() {
         return System.getProperty("os.name").startsWith("Darwin");
-    }
-    
-    // ISMP
-    
-    public static String getUiMode() {
-        return getStringPropertyValue("uiMode");
-    }
-    
-    public static boolean isUiMode() {
-        String mode = getStringPropertyValue("uiMode");
-        return "gui".equals(mode);
-    }
-    
-    public static void setUiMode(String uiMode) {
-        setStringPropertyValue("uiMode", uiMode);
     }
     
     // Product Directories
@@ -178,6 +174,7 @@ public class Util {
         setStringPropertyValue("productName", productName);
     }
     
+    ////////////////////////////////////////////////////////////
     public static String getInstalledJdk() {
         return getStringPropertyValue("installedJdk");
     }
@@ -194,6 +191,24 @@ public class Util {
         setBooleanPropertyValue("jdkAlreadyInstalled", value);
     }
     
+    ////////////////////////////////////////////////////////////
+    public static String getInstalledJre() {
+        return getStringPropertyValue("installedJre");
+    }
+    
+    public static void setInstalledJre(String value) {
+        setStringPropertyValue("installedJre", value);
+    }
+    
+    public static boolean isJREAlreadyInstalled() {
+        return getBooleanPropertyValue("jreAlreadyInstalled");
+    }
+    
+    public static void setJREAlreadyInstalled(boolean value) {
+        setBooleanPropertyValue("jreAlreadyInstalled", value);
+    }
+    
+    ////////////////////////////////////////////////////////////
     public static boolean isBelowRecommendedJDK() {
         return getBooleanPropertyValue("isBelowRecommendedJDK");
     }
@@ -444,4 +459,71 @@ public class Util {
             return false;
         return true;
     }
+    
+    /** Check JDK installed by jdkbundle installer. */
+    public static boolean checkJdkHome(String jdkHome) {
+        File jreDir = new File(jdkHome,File.separator + "jre");
+        File jvmJREFile = new File(jreDir, File.separator + "bin" +
+                          File.separator + getJVMName());
+        File jvmFile = new File(jdkHome, File.separator + "bin" +
+                       File.separator + getJVMName());
+                                                                                                                                         
+        if (!jvmFile.exists() || !jvmJREFile.exists()) {
+            return false;
+        }
+                                                                                                                                         
+        RunCommand runCommand = new RunCommand();
+        runCommand.execute(jvmFile.getAbsolutePath()+" -version");
+                                                                                                                                         
+        String line = runCommand.getErrorLine();
+                                                                                                                                         
+        if (line != null) {
+            StringTokenizer st = new StringTokenizer(line.trim());
+            String version="";
+            while (st.hasMoreTokens()) {
+                version=st.nextToken();
+            }
+            String jdkVersion = LocalizedStringResolver.resolve("org.netbeans.installer.Bundle","JDK.version");
+            if (version.equals("\"" + jdkVersion + "\"")) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    
+    /** Check public JRE installed by jdkbundle installer.
+     * Used only on Windows where public JRE is in different directory. */
+    public static boolean checkJreHome(String jreHome) {
+        File jvmFile = new File(jreHome, File.separator + "bin" +
+                       File.separator + getJVMName());
+                                                                                                                                         
+        if (!jvmFile.exists()) {
+            return false;
+        }
+                                                                                                                                         
+        RunCommand runCommand = new RunCommand();
+        runCommand.execute(jvmFile.getAbsolutePath()+" -version");
+                                                                                                                                         
+        String line = runCommand.getErrorLine();
+                                                                                                                                         
+        if (line != null) {
+            StringTokenizer st = new StringTokenizer(line.trim());
+            String version="";
+            while (st.hasMoreTokens()) {
+                version=st.nextToken();
+            }
+            String jreVersion = LocalizedStringResolver.resolve("org.netbeans.installer.Bundle","JRE.version");
+            if (version.equals("\"" + jreVersion + "\"")){
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+                                                                                                                                         
 }
