@@ -154,28 +154,42 @@ public final class OpenProjectList {
         }
     }
        
-    public void close(Project p) {
+    public void close( Project projects[] ) {
         boolean mainClosed = false;
+        boolean someClosed = false;
         synchronized ( this ) {
-            if ( !openProjects.contains( p ) ) {
-                return; // Nothing to remove
+            for( int i = 0; i < projects.length; i++ ) {
+                if ( !openProjects.contains( projects[i] ) ) {
+                    continue; // Nothing to remove
+                }
+                if ( !mainClosed ) {
+                    mainClosed = isMainProject( projects[i] );
+                }
+                openProjects.remove( projects[i] );
+                recentProjects.add( projects[i] );
+                notifyClosed( projects[i] );
+                someClosed = true;
             }
-            mainClosed = isMainProject( p );
-            openProjects.remove( p );
-            recentProjects.add( p );
-            notifyClosed(p);
-            saveProjectList( openProjects );
+            if ( someClosed ) {
+                saveProjectList( openProjects );
+            }
             if ( mainClosed ) {
                 this.mainProject = null;
                 saveMainProject( mainProject );
             }
-            recentProjects.save();
+            if ( someClosed ) {
+                recentProjects.save();
+            }
         }
-        pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, null, null );
+        if ( someClosed ) {
+            pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, null, null );
+        }
         if ( mainClosed ) {
             pchSupport.firePropertyChange( PROPERTY_MAIN_PROJECT, null, null );
         }
-        pchSupport.firePropertyChange( PROPERTY_RECENT_PROJECTS, null, null );
+        if ( someClosed ) {
+            pchSupport.firePropertyChange( PROPERTY_RECENT_PROJECTS, null, null );
+        }
     }
         
     public synchronized Project[] getOpenProjects() {
