@@ -796,8 +796,8 @@ implements Serializable, DataObject.Container {
      * @returns <code>true</code>
      * @since 1.13
      */
-    boolean isMergingFolders() {
-        return true;
+    boolean isMergingFolders(FileObject who, FileObject targetFolder) {
+        return !targetFolder.equals (who.getParent ());
     }
     
     /** Support for index cookie for folder nodes.

@@ -384,7 +384,7 @@ public class MultiDataObject extends DataObject {
     */
     private String existInFolder(FileObject fo, FileObject folder) {
         // merge folders when neccessary
-        if (fo.isFolder () && isMergingFolders ())
+        if (fo.isFolder () && isMergingFolders (fo, folder))
             return ""; // NOI18N
         
         String orig = fo.getName ();
@@ -405,7 +405,7 @@ public class MultiDataObject extends DataObject {
      * the same folder already exists in the target location of copy, move operation, otherwise
      * existing falder will be used. Default implementation returns <code>false</code>.
      */
-    boolean isMergingFolders() {
+    boolean isMergingFolders(FileObject who, FileObject targetFolder) {
         return false;
     }
     
