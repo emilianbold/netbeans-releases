@@ -384,8 +384,7 @@ class AntGrammar implements GrammarQuery {
                               ) {
                         // XXX complete filenames
                     } else if (attrClazzName.equals("java.lang.String") &&
-                               (attrName.equals("if") || attrName.equals("unless") ||
-                                attrName.equals("property"))) {
+                               Arrays.asList(PROPERTY_NAME_VALUED_PROPERTY_NAMES).contains(attrName)) {
                         // <isset property="..."/>, <include name="*" unless="..."/>, etc.
                         choices.addAll(Arrays.asList(likelyPropertyNames(ctx)));
                     }
@@ -487,8 +486,25 @@ class AntGrammar implements GrammarQuery {
         // XXX getElementsByTagName just throws an exception, you can't use it...
         Set/*<String>*/ choices = new TreeSet();
         visitForLikelyPropertyNames(parent, choices);
+        Iterator it = choices.iterator();
+        while (it.hasNext()) {
+            String propname = (String)it.next();
+            if (propname.indexOf("${") != -1) {
+                // Not actually a direct property name, rather a computed name.
+                // Skip it as it cannot be used here.
+                it.remove();
+            }
+        }
         return (String[])choices.toArray(new String[choices.size()]);
     }
+    
+    private static final String[] PROPERTY_NAME_VALUED_PROPERTY_NAMES = {
+        "if",
+        "unless",
+        "property",
+        "failureproperty",
+        "errorproperty",
+    };
     
     private static void visitForLikelyPropertyNames(Node n, Set/*<String>*/ choices) {
         int type = n.getNodeType();
@@ -516,9 +532,8 @@ class AntGrammar implements GrammarQuery {
                     choices.add("TODAY");
                 }
                 // <available>, <dirname>, <pathconvert>, <uptodate>, <target>, <isset>, <include>, etc.
-                String[] attrs = {"if", "unless", "property"};
-                for (int i = 0; i < attrs.length; i++) {
-                    String propname = el.getAttribute(attrs[i]);
+                for (int i = 0; i < PROPERTY_NAME_VALUED_PROPERTY_NAMES.length; i++) {
+                    String propname = el.getAttribute(PROPERTY_NAME_VALUED_PROPERTY_NAMES[i]);
                     if (propname != null && propname.length() > 0) {
                         choices.add(propname);
                     }
