@@ -14,7 +14,6 @@
 package org.netbeans.jellytools.nodes;
 
 import javax.swing.tree.TreePath;
-import org.netbeans.jellytools.RepositoryTabOperator;
 import org.netbeans.jellytools.actions.*;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
@@ -44,12 +43,6 @@ public class FolderNode extends Node {
         copyAction
     };*/
     
-    /** creates new FolderNode
-     * @param treePath String tree path inside Filesystems Repository */    
-    public FolderNode(String treePath) {
-        super(new RepositoryTabOperator().tree(), treePath);
-    }
-
     /** creates new FolderNode
      * @param tree JTreeOperator of tree
      * @param treePath String tree path */    

@@ -14,7 +14,6 @@
 package org.netbeans.jellytools.nodes;
 
 import javax.swing.tree.TreePath;
-import org.netbeans.jellytools.RepositoryTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.*;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -22,12 +21,6 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 /** Node representing Form */
 public class FormNode extends Node {
     
-    /** creates new FormNode in Filesystems Repository
-     * @param treePath String tree path */    
-    public FormNode(String treePath) {
-       super(new RepositoryTabOperator().tree(), treePath);
-    }
-
     /** creates new FormNode
      * @param treeOperator JTreeOperator tree
      * @param treePath String tree path */    

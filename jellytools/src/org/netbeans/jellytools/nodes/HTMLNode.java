@@ -7,14 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.jellytools.nodes;
 
 import javax.swing.tree.TreePath;
-import org.netbeans.jellytools.RepositoryTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.*;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -22,12 +21,6 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 /** Node representing HTML file */
 public class HTMLNode extends Node {
     
-    /** creates new HTMLNode in Filesystems Repository
-     * @param treePath String tree path */    
-    public HTMLNode(String treePath) {
-       super(new RepositoryTabOperator().tree(), treePath);
-    }
-
     /** creates new HTMLNode
      * @param treeOperator JTreeOperator tree
      * @param treePath String tree path */    

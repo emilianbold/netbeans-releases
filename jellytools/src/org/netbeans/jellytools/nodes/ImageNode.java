@@ -14,7 +14,6 @@
 package org.netbeans.jellytools.nodes;
 
 import javax.swing.tree.TreePath;
-import org.netbeans.jellytools.RepositoryTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.*;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -22,12 +21,6 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 /** Node representing Image file */
 public class ImageNode extends Node {
     
-    /** creates new URLNode in Filesystems Repository
-     * @param treePath String tree path */    
-    public ImageNode(String treePath) {
-       super(new RepositoryTabOperator().tree(), treePath);
-    }
-
     /** creates new URLNode
      * @param treeOperator JTreeOperator tree
      * @param treePath String tree path */    

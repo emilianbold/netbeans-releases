@@ -33,7 +33,7 @@ import org.openide.explorer.view.Visualizer;
  * <p>
  * Example:<p>
  * <pre>
- *  Node node = new Node(RepositoryTabOperator.invoke().getRootNode(), "jellytools/src|org|netbeans|jellytools");
+ *  Node node = new Node(ProjectsTabOperator.invoke().getProjectRootNode(), "jellytools/src|org|netbeans|jellytools");
  *  System.out.println(node.getText());
  *  new NewTemplateAction().performAPI(node);
  * </pre> 

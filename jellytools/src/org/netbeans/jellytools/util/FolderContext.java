@@ -17,7 +17,6 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.RepositoryTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -92,10 +91,12 @@ public class FolderContext {
     public static FolderContext getWorkDir(JellyTestCase test) throws IOException {
         String wd = test.getWorkDir().getAbsolutePath();
         FileSystem fs = Repository.getDefault().findFileSystem(wd);
+        /* RepositoryTabOperator removed from jellytools
         if (fs == null) {
             RepositoryTabOperator.invoke().mountLocalDirectoryAPI(wd);
         }
         fs = Repository.getDefault().findFileSystem(wd);
+         */
         if (fs == null) {
             throw new IllegalStateException("Cannot mount: " + wd);
         }
@@ -220,6 +221,7 @@ public class FolderContext {
      * @param path Jelly Node's relative path separated by '|'
      * @return Node
      */
+    /* RepositoryTabOperator removed from jellytools
     public Node getJellyNode(String path) {
         Node node = null;
         String treePath = getTreePath(path) ;
@@ -227,6 +229,7 @@ public class FolderContext {
         node = new Node(tree, treePath);
         return node;
     }
+     */
     
     /** Returns absolute Tree Path.
      * @param path relative path separated by '|'
