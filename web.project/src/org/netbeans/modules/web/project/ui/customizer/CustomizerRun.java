@@ -38,11 +38,10 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         
         VisualPropertySupport vps = new VisualPropertySupport(webProperties);
         
-        
         serverURLs = InstanceProperties.getInstanceList ();
         serverNames = new String[serverURLs.length];
         for (int i = 0; i < serverURLs.length; i++) {
-            serverNames[i] = InstanceProperties.getInstanceProperties (serverURLs [i]).getProperty (InstanceProperties.DISPLAY_NAME_ATTR);;
+            serverNames[i] = InstanceProperties.getInstanceProperties (serverURLs [i]).getProperty (InstanceProperties.DISPLAY_NAME_ATTR);
         }
         
         vps.register(jTextFieldContextPath, WebProjectProperties.CONTEXT_PATH);
@@ -184,6 +183,8 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
     }//GEN-END:initComponents
 
     private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxServerActionPerformed
+        if (jComboBoxServer.getSelectedIndex() == -1)
+            return;
         setFullURL();
     }//GEN-LAST:event_jComboBoxServerActionPerformed
 
