@@ -366,16 +366,7 @@ public class NbTopManager extends TopManager {
   public void restart () {
     // save project
     storeLastProject ();
-
-    // uninstall updated modules
-    ModuleUpdater.loadNewModules ();
     
-    /*
-    // copy
-    AutoUpdate.copyUpdatedModules ();
-    */
-    
-    // do exit
     if (ModuleInstaller.exit ()) {
       Runtime.getRuntime().exit (RESTART_EXIT_CODE);
     }
