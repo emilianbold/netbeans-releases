@@ -21,13 +21,6 @@
 <mapID target="gs.key" url="getstart/keyconcepts.html" />
 <mapID target="gs.howto" url="getstart/howto.html" />
 
-<mapID target="modules.manage" url="modules/managingmods.html" />
-<mapID target="ide.autoupdate" url="modules/autoupdate.html" />
-<mapID target="configure.module" url="modules/module.html" />
-<mapID target="update.offline" url="modules/updateoffline.html" />
-<mapID target="update.prompt" url="modules/updateprompt.html" />
-<mapID target="update.globally" url="modules/updateglobally.html" />
-
 <mapID target="proj_creating" url="project/proj_creating.html" />
 <mapID target="proj_main" url="project/proj_main.html" />
 <mapID target="proj_process" url="project/proj_process.html" />
@@ -283,9 +276,6 @@
 <mapID target="webbrowser.default" url="webbrowser/default.html" />
 <!--linked to from web/advanced help set - file webmod/mod_browser.html-->
 
-<mapID target="workspace.jump" url="workspace/workspace_jump.html" />
-<mapID target="workspace.window.mode" url="workspace/window_modes.html" />
-
 <mapID target="propfiles.intro" url="propfiles/propfile.html" />
 <mapID target="propfiles.creating" url="propfiles/creatingprops.html" />
 <mapID target="propfiles.adding" url="propfiles/addingprops.html" />
@@ -322,6 +312,8 @@
 <mapID target="ant_tasks-classpath" url="ant/ant_tasks-classpath.html" />
 <mapID target="ant_version" url="ant/ant_version.html" />
 
+<!--old configure/modules/shortcuts targets-->
+<!--
 <mapID target="configure.options" url="configure/configure_options.html" />
 <mapID target="configure.startup-switches" url="configure/configure_startup-switches.html" />
 <mapID target="configure.menucommands" url="configure/menu_commands.html" />
@@ -338,11 +330,55 @@
 <mapID target="configure.system.settings" url="configure/system_settings.html" />
 <mapID target="configure.fontsize" url="configure/font_size.html" />
 
+<mapID target="modules.manage" url="modules/managingmods.html" />
+<mapID target="ide.autoupdate" url="modules/autoupdate.html" />
+<mapID target="configure.module" url="modules/module.html" />
+<mapID target="update.offline" url="modules/updateoffline.html" />
+<mapID target="update.prompt" url="modules/updateprompt.html" />
+<mapID target="update.globally" url="modules/updateglobally.html" />
+
+<mapID target="workspace.jump" url="workspace/workspace_jump.html" />
+<mapID target="workspace.window.mode" url="workspace/window_modes.html" />
+
 <mapID target="shortcuts.editor" url="shortcuts/editorcuts.html" />
 <mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
 <mapID target="shortcuts.menus" url="shortcuts/menucuts.html" />
 <mapID target="shortcuts.window" url="shortcuts/window-navcuts.html" />
+<mapID target="shortcuts.menucuts-setting" url="shortcuts/menucuts-setting.html" />-->
+
+<!--new configure/modules/shortcuts targets-->
+
+<mapID target="configure.about" url="configure/configure_about.html" />
+<mapID target="configure.overview" url="configure/configure_overview.html" />
+<mapID target="configure.quickref" url="configure/configure_quickref.html" />
+<mapID target="configure.options" url="configure/configure_options.html" />
+<mapID target="configure.startup-switches" url="configure/configure_startup-switches.html" />
+<!--maybe reincorporate the following 2 topics later-->
+<!--<mapID target="configure.output" url="configure/output.html" />-->
+<!--<mapID target="configure.system.settings" url="configure/system_settings.html" />-->
+
+<mapID target="workspace.window.managing" url="configure/workspace/window_managing.html" />
+<mapID target="workspace.window.mode" url="configure/workspace/window_modes.html" />
+<mapID target="configure.menucustomize" url="configure/workspace/menu_customize.html" />
+<mapID target="configure.menucommands" url="configure/workspace/menu_commands.html" />
+<mapID target="configure.menucontextual" url="configure/workspace/menu_contextual.html" />
+<mapID target="configure.tbcustomize" url="configure/workspace/toolbar_customize.html" />
+<mapID target="configure.tbcommands" url="configure/workspace/toolbar_commands.html" />
+
+<mapID target="ide.autoupdate" url="configure/modules/autoupdate.html" />
+<mapID target="update.offline" url="configure/modules/updateoffline.html" />
+<mapID target="update.globally" url="configure/modules/updateglobally.html" />
+<mapID target="configure.enable.module" url="configure/modules/enablemodule.html" />
+<mapID target="configure.module" url="configure/modules/modulenodes.html" />
+
+<mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
+<mapID target="shortcuts.menus" url="shortcuts/menucuts.html" />
 <mapID target="shortcuts.menucuts-setting" url="shortcuts/menucuts-setting.html" />
+<mapID target="shortcuts.editor" url="shortcuts/editorcuts.html" />
+<mapID target="shortcuts.window" url="shortcuts/window-navcuts.html" />
+
+
+<!--accessibility targets-->
 
 <mapID target="accessibility.home" url="accessibility/accessibility_home.html" />
 <mapID target="accessibility.stylesheet" url="accessibility/stylesheet.html" />
@@ -555,7 +591,7 @@
 <mapID target="org.apache.tools.ant.module.node-manip" url="ant/add-task.html" />
 <mapID target="org.netbeans.beaninfo.editors.PropertiesCustomEditor" url="ant/settings.html" />
 
-<!--
+<!--note: topics no longer
 <mapID target="setupwizard.idesettings" url="configure/setup_1.html" />
 <mapID target="setupwizard.moduleselection" url="configure/setup_2.html" />
 <mapID target="setupwizard.autoupdate" url="configure/setup_3.html" />
@@ -728,7 +764,7 @@
 
 
       
-   <mapID target="org.netbeans.core.MenuFolderNode" url="configure/menu_commands.html" /> 
+   <mapID target="org.netbeans.core.MenuFolderNode" url="configure/menu_customize.html" /> 
    <mapID target="org.netbeans.core.actions.DockingAction" url="pending.html" />
    <mapID target="org.netbeans.core.actions.EditorViewAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.ExecutionViewAction" url="pending.html" /> 
@@ -759,13 +795,13 @@
    <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="vcs-nb/cvs-nb/cvs_merge-resolve.html" />-->
    <mapID target="org.netbeans.modules.merge.Merge.visualizers" url="vcs-nb/vcs_merge.html" />
    <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="vcs-nb/vcs_merge.html" />-->
-
+<!--possibly remap the following target to configure_options.html -->
    <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
    <mapID target="org.netbeans.core.NbMainExplorer" url="objects/explorer.html" /> 
    <mapID target="org.netbeans.core.NbPlaces$SessionNode" url="pending.html" /> 
    <mapID target="org.netbeans.core.ModuleNode$AutoLoadModulesAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.TemplatesExplorer.dialog" url="objects/objects_new.html" /> 
-   <mapID target="org.netbeans.core.ToolbarFolderNode" url="configure/tb_commands.html" /> 
+   <mapID target="org.netbeans.core.ToolbarFolderNode" url="configure/tb_customize.html" /> 
    <mapID target="org.netbeans.core.actions.HTMLViewAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.NextWorkspaceAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.PreviousWorkspaceAction" url="pending.html" /> 
@@ -778,11 +814,11 @@
    <mapID target="org.netbeans.core.execution.ProcessNode" url="objects/objects_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="objects/objects_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="objects/objects_runtime.html" /> 
-   <mapID target="org.netbeans.core.windows.toolbars.ToolbarConfiguration" url="configure/toolbar.html" /> 
+   <mapID target="org.netbeans.core.windows.toolbars.ToolbarConfiguration" url="configure/toolbar_customize.html" /> 
 
  <!--TODO: add a CSH topic for these nodes; Look & Feel / Menu Bar; Toobars-->  
-   <mapID target="org.netbeans.core.windows.services.MenuFolderNode" url="configure/menu_commands.html" /> 
-   <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/toolbar.html" /> 
+   <mapID target="org.netbeans.core.windows.services.MenuFolderNode" url="configure/menu_customize.html" /> 
+   <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/toolbar_customize.html" /> 
       
    <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />
    <mapID target="org.netbeans.core.actions.NextOutJumpAction" url="pending.html" /> 

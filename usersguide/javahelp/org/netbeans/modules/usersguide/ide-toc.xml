@@ -548,30 +548,35 @@
     </tocitem>
 
 </tocitem>
+
 <tocitem text="IDE Configuration">
-  
     <tocitem text="Configuring IDE-wide Settings" >
+      <tocitem text="About Configuring the IDE" target="configure.about" />    
+      <tocitem text="Working with IDE Configurations" target="configure.overview" />    
+      <tocitem text="Configuration Tasks: Quick Reference" target="configure.quickref" />          
       <tocitem text="Using the Options Window" target="configure.options" />
+      <tocitem text="IDE Startup Parameters" target="configure.startup-switches" />      
+      <!--<tocitem text="Configuring System Settings" target="configure.system.settings" />
+      <tocitem text="IDE Startup Parameters" target="configure.startup-switches" />-->
       <tocitem text="Configuring Java Settings" target="java.java_sources" />
-      <tocitem text="Managing IDE Windows" target="workspace.jump"/>
-      <tocitem text="Changing Window Modes" target="workspace.window.mode"/>
       <tocitem text="Setting Character Encoding for Java Files" target="java.encoding" />
-      <tocitem text="Setting Font Size in the IDE" target="configure.fontsize" />
-      <tocitem text="Configuring System Settings" target="configure.system.settings" />
-      <tocitem text="IDE Startup Parameters" target="configure.startup-switches" />
     </tocitem>
 
-    <tocitem text="Configuring Menus and Toolbars">
+    <tocitem text="Configuring the IDE's Workspace">
+      <tocitem text="Managing IDE Windows" target="workspace.window.managing"/>
+      <tocitem text="Changing Window Modes" target="workspace.window.mode"/>
+      <tocitem text="Customizing Menus in the IDE" target="configure.menucustomize" />
       <tocitem text="Customizing the Display of Commands in a Menu" target="configure.menucommands" />
-      <tocitem text="Customizing the Contextual Menu for an Object" target="configure.popup" />
-      <tocitem text="Adding a Menu to the Main Window" target="configure.menucreate" />
-      <tocitem text="Removing a Menu From the Main Window" target="configure.menudelete" />
-      <tocitem text="About" target="configure.toolbar" />
+      <tocitem text="Customizing the Contextual Menu for an Object" target="configure.menucontextual" />
+      <tocitem text="Customizing Toolbars in the IDE" target="configure.tbcustomize" />
       <tocitem text="Customizing the Display of Commands in a Toolbar" target="configure.tbcommands" />
-      <tocitem text="Moving and Hiding a Toolbar" target="configure.tbmove" />
-      <tocitem text="Saving a Toolbar Configuration" target="configure.tbsave" />
-      <tocitem text="Adding a Toolbar to the Main Window" target="configure.tbcreate" />
-      <tocitem text="Removing a Toolbar From the Main Window" target="configure.tbdelete" />
+    </tocitem>
+
+    <tocitem text="Managing Modules" >
+      <tocitem text="Updating the IDE" target="ide.autoupdate" />
+      <tocitem text="Installing Modules Offline" target="update.offline" />
+      <tocitem text="Updating a Multi-User IDE Installation" target="update.globally" />
+      <tocitem text="Enabling or Disabling a Module" target="configure.enable.module" />
     </tocitem>
 
     <tocitem text="Keyboard Shortcuts" >
@@ -582,16 +587,8 @@
       <tocitem text="Setting Keyboard Shortcuts for the Source Editor" target="editing.settingkeybdshorts"/>
       <tocitem text="Window Navigation Shortcuts" target="shortcuts.window" />
       <tocitem text="Help Viewer Shortcuts" target="accessibility.jhshortcuts" />
-    </tocitem>
-
-    <tocitem text="Managing Modules" >
-      <tocitem text="Updating the IDE" target="ide.autoupdate" />
-      <tocitem text="Installing Modules Offline" target="update.offline" />
-      <tocitem text="Setting the Update Prompt Frequency" target="update.prompt" />
-      <tocitem text="Updating a Multi-User IDE Installation" target="update.globally" />
-      <tocitem text="Enabling or Disabling a Module" target="configure.module" />
-    </tocitem>
-
+    </tocitem>    
+    
 </tocitem>
 </toc>
   
