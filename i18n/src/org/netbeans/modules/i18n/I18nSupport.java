@@ -162,9 +162,17 @@ public abstract class I18nSupport {
          * @return next hard coded string or null if the search reached end. */
         public HardCodedString findNextHardCodedString();
 
-        /** Gets all hard coded strings from docuement. 
+        /** Gets all hard coded strings from document. 
          * @return all hard coded strings from source document or null if such don't exist */
         public HardCodedString[] findAllHardCodedStrings();
+        
+        /** Gets next hard coded but i18n-ized string. Starts from the beginning of the source. Used in test tool.
+         * @return next hard coded string or null if the search reached end. */
+        public HardCodedString findNextI18nString();
+
+        /** Gets all i18n-zed hard coded strings from document.  Used in test tool.
+         * @return all hard coded strings from source document or null if such don't exist */
+        public HardCodedString[] findAllI18nStrings();
     }
 
     /**

@@ -154,7 +154,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
     private javax.swing.JList list;
     // End of variables declaration//GEN-END:variables
 
-    /** Nested class. <code>PropertyEditor</code> for <code>initJavaCode</code> property. 
+    /** Nested class. <code>PropertyEditor</code>. 
      * @see I18nOptions#PROP_INIT_JAVA_CODE */
     public static class InitCodeEditor extends StringEditor {
         /** Overrides superclass method. */
@@ -163,7 +163,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         }
     } // End of nested class InitCodeEditor.
     
-    /** Nested class. <code>PropertyEditor</code> for <code>replaceJavaCode</code> property.
+    /** Nested class. <code>PropertyEditor</code>.
      * @see I18nOptions#PROP_INIT_REPLACE_CODE */
     public static class ReplaceCodeEditor extends StringEditor {
         /** Overrides superclass method. */
@@ -172,7 +172,7 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         }
     } // End of nested class ReplaceCodeEditor.
     
-    /** Nested class. <code>PropertyEditor</code> for <code>replaceJavaCode</code> property.
+    /** Nested class. <code>PropertyEditor</code>.
      * @see I18nOptions#PROP_REGULAR_EXPRESSION */
     public static class RegExpEditor extends StringEditor {
         /** Overrides superclass method. */
@@ -180,5 +180,14 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
             return new HelpStringCustomEditor((String)getValue(), I18nUtil.getRegExpItems(), I18nUtil.getRegExpHelpItems());
         }
     } // End of nested class RegExpEditor.
+    
+    /** Nested class. <code>PropertyEditor</code>.
+     * @see I18nOptions#PROP_I18N_REGULAR_EXPRESSION */
+    public static class I18nRegExpEditor extends StringEditor {
+        /** Overrides superclass method. */
+        public Component getCustomEditor() {
+            return new HelpStringCustomEditor((String)getValue(), I18nUtil.getI18nRegExpItems(), I18nUtil.getRegExpHelpItems());
+        }
+    } // End of nested class I18nRegExpEditor.
     
 }

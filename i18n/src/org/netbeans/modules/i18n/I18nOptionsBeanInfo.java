@@ -45,12 +45,14 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
             PropertyDescriptor initCodePD =    new PropertyDescriptor(I18nOptions.PROP_INIT_JAVA_CODE, I18nOptions.class);
             PropertyDescriptor replaceCodePD = new PropertyDescriptor(I18nOptions.PROP_REPLACE_JAVA_CODE, I18nOptions.class);
             PropertyDescriptor regExpPD =      new PropertyDescriptor(I18nOptions.PROP_REGULAR_EXPRESSION, I18nOptions.class);
+            PropertyDescriptor i18nRegExpPD =  new PropertyDescriptor(I18nOptions.PROP_I18N_REGULAR_EXPRESSION, I18nOptions.class);
             PropertyDescriptor lastResPD =     new PropertyDescriptor(I18nOptions.PROP_LAST_RESOURCE, I18nOptions.class);
 
             // Set expert flags.
             initCodePD.setExpert(true);
             replaceCodePD.setExpert(true);
             regExpPD.setExpert(true);
+            i18nRegExpPD.setExpert(true);
 
             // Set last resource property as hidden.
             lastResPD.setHidden(true);
@@ -61,14 +63,16 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
             initCodePD.setDisplayName(I18nUtil.getBundle().getString("TXT_InitCodeFormat"));
             replaceCodePD.setDisplayName(I18nUtil.getBundle().getString("TXT_ReplaceCodeFormat"));
             regExpPD.setDisplayName(I18nUtil.getBundle().getString("TXT_RegularExpression"));
+            i18nRegExpPD.setDisplayName(I18nUtil.getBundle().getString("TXT_I18nRegularExpression"));
             
             // Set property editors.
             initCodePD.setPropertyEditorClass(HelpStringCustomEditor.InitCodeEditor.class);
             replaceCodePD.setPropertyEditorClass(HelpStringCustomEditor.ReplaceCodeEditor.class); 
             regExpPD.setPropertyEditorClass(HelpStringCustomEditor.RegExpEditor.class);
+            i18nRegExpPD.setPropertyEditorClass(HelpStringCustomEditor.I18nRegExpEditor.class);
             
             return new PropertyDescriptor[] {
-                genFieldPD, advWizardPD, initCodePD, replaceCodePD, regExpPD, lastResPD
+                genFieldPD, advWizardPD, initCodePD, replaceCodePD, regExpPD, i18nRegExpPD, lastResPD
             };
         } catch(IntrospectionException ie) {
             return null;

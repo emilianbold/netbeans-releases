@@ -19,6 +19,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,7 +30,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.I18nSupport;
@@ -67,8 +67,6 @@ public class AdditionalWizardPanel extends JPanel {
     private AdditionalWizardPanel() {
         initComponents();
 
-        setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);
-        
         addAdditionalComponent();
 
         sourceCombo.setModel(new DefaultComboBoxModel(sourceMap.keySet().toArray()));
@@ -183,8 +181,14 @@ public class AdditionalWizardPanel extends JPanel {
             
             panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); // NOI18N
             panel.setName(NbBundle.getBundle(getClass()).getString("TXT_ModifyAdditional"));
-        
-            panel.add(additionalPanel, BorderLayout.CENTER);
+            panel.setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);
+
+            panel.setLayout(new GridBagLayout());
+            GridBagConstraints constraints = new GridBagConstraints();
+            constraints.weightx = 1.0;
+            constraints.weighty = 1.0;
+            constraints.fill = GridBagConstraints.BOTH;
+            panel.add(additionalPanel, constraints);
             
             return panel;
         }
@@ -253,7 +257,11 @@ public class AdditionalWizardPanel extends JPanel {
         /** Helper method. Places progress panel for monitoring search. */
         private void showProgressPanel(ProgressWizardPanel progressPanel) {
             ((Container)getComponent()).remove(additionalPanel);
-            ((Container)getComponent()).add(progressPanel, BorderLayout.CENTER);
+            GridBagConstraints constraints = new GridBagConstraints();
+            constraints.weightx = 1.0;
+            constraints.weighty = 1.0;
+            constraints.fill = GridBagConstraints.BOTH;
+            ((Container)getComponent()).add(progressPanel, constraints);
             ((JComponent)getComponent()).revalidate();
             getComponent().repaint();
         }
@@ -262,9 +270,13 @@ public class AdditionalWizardPanel extends JPanel {
         public void reset() {
             Container container = (Container)getComponent();
             
-            if(!SwingUtilities.isDescendingFrom(additionalPanel, container)) {
+            if(!container.isAncestorOf(additionalPanel)) {
                 container.removeAll();
-                container.add(additionalPanel, BorderLayout.CENTER);
+                GridBagConstraints constraints = new GridBagConstraints();
+                constraints.weightx = 1.0;
+                constraints.weighty = 1.0;
+                constraints.fill = GridBagConstraints.BOTH;
+                container.add(additionalPanel, constraints);
             }
         }
         

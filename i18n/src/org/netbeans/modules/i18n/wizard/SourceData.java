@@ -45,6 +45,11 @@ public class SourceData extends Object {
     /** Mapping found hard coded strings to i18n strings. */
     private Map stringMap;
 
+    
+    /** Constructor. */
+    public SourceData(DataObject resource) {
+        this.resource = resource;
+    }
 
     /** Constructor. */
     public SourceData(DataObject resource, I18nSupport support) {

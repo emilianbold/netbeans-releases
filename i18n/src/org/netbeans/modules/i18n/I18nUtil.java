@@ -48,6 +48,9 @@ public abstract class I18nUtil {
 
     /** Help description for regular expression customizer. */
     private static String[][] regExpHelpItems;
+    
+    /** Items for i18n regular expression customizer. */
+    private static String[] i18nRegExpItems;
 
     /** Resource bundle used in i18n module. */
     private static ResourceBundle bundle;
@@ -62,7 +65,7 @@ public abstract class I18nUtil {
             };
         }
               
-        return initFormatItems;            
+        return initFormatItems;
     }
 
     /** Gets <code>InitHelpFormats</code>. */
@@ -124,6 +127,18 @@ public abstract class I18nUtil {
         }
             
         return regExpItems;
+    }
+    
+    /** Gets <code>i18nRegExpItems</code>. */
+    public static String[] getI18nRegExpItems() {
+        if(i18nRegExpItems == null) {
+            i18nRegExpItems = new String[] {
+                "(getString)([:space:]*)\\(([:space:])*{hardString}", // NOI18N
+                "(getString|getMessage)([:space:]*)\\(([:space:])*{hardString}", // NOI18N
+            };
+        }
+            
+        return i18nRegExpItems;
     }
     
     /** Gets <code>regExpHelpItems</code>. */

@@ -18,6 +18,8 @@ package org.netbeans.modules.i18n.wizard;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.beans.BeanInfo;
 import java.io.IOException;
 import java.util.HashMap;
@@ -31,7 +33,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
@@ -80,8 +81,6 @@ public class ResourceWizardPanel extends JPanel {
         
         initComponents();
 
-        setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);
-        
         initTable();
     }
 
@@ -218,16 +217,8 @@ public class ResourceWizardPanel extends JPanel {
 
             I18nSupport support = null;
 
-            try {
-                support = FactoryRegistry.getFactory(dataObject.getClass().getName()).create(dataObject);
-            } catch(IOException ioe) {
-                if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    System.err.println("I18N: Document could noy be loaded for "+dataObject.getName()); // NOI18N
-
-                continue;
-            }
-
-            sourceMap.put(dataObject, new SourceData(resource, support));
+            sourceMap.put(dataObject, new SourceData(resource));
+            
             tableModel.fireTableCellUpdated(selectedRows[i], 1);
         }
 
@@ -246,16 +237,8 @@ public class ResourceWizardPanel extends JPanel {
 
             I18nSupport support = null;
 
-            try {
-                support = FactoryRegistry.getFactory(dataObject.getClass().getName()).create(dataObject);
-            } catch(IOException ioe) {
-                if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    System.err.println("I18N: Document could noy be loaded for "+dataObject.getName()); // NOI18N
-
-                continue;
-            }
-
-            sourceMap.put(dataObject, new SourceData(resource, support));
+            sourceMap.put(dataObject, new SourceData(resource));
+            
             tableModel.fireTableCellUpdated(i, 1);
         }
 
@@ -367,7 +350,21 @@ public class ResourceWizardPanel extends JPanel {
 
         /** Component. */
         private final ResourceWizardPanel resourcePanel = new ResourceWizardPanel(this);
+        
+        /** Indicates whether this panel is used in i18n test wizard or not. */
+        private boolean testWizard;
 
+
+        /** Constructs Panel for i18n wizard. */
+        public Panel() {
+            this(false);
+        }
+
+        /** Constructs panel for i18n wizard or i18n test wizard. */
+        public Panel(boolean testWizard) {
+            this.testWizard = testWizard;
+        }
+        
         
         /** Gets component to display. Implements superclass abstract method. 
          * @return this instance */
@@ -375,9 +372,19 @@ public class ResourceWizardPanel extends JPanel {
             JPanel panel = new JPanel();
             
             panel.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); // NOI18N
-            panel.setName(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_SelectResource"));
+            if(testWizard)
+                panel.setName(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_SelectTestResource"));
+            else
+                panel.setName(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_SelectResource"));
+
+            panel.setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);
             
-            panel.add(resourcePanel, BorderLayout.CENTER);
+            panel.setLayout(new GridBagLayout());
+            GridBagConstraints constraints = new GridBagConstraints();
+            constraints.weightx = 1.0;
+            constraints.weighty = 1.0;
+            constraints.fill = GridBagConstraints.BOTH;
+            panel.add(resourcePanel, constraints);
             
             return panel;
         }
@@ -417,25 +424,53 @@ public class ResourceWizardPanel extends JPanel {
 
             // For each source perform the task.
             for(int i=0; sourceIterator.hasNext(); i++) {
-                Object source = sourceIterator.next();
+                DataObject source = (DataObject)sourceIterator.next();
 
-                progressPanel.setMainText(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_SearchingIn")+" "+((DataObject)source).getPrimaryFile().getPackageName('.')); // NOI18N
+                progressPanel.setMainText(NbBundle.getBundle(ResourceWizardPanel.class).getString("TXT_SearchingIn")+" "+source.getPrimaryFile().getPackageName('.')); // NOI18N
 
                 // Get source data.
                 SourceData sourceData = (SourceData)sourceMap.get(source);
-
+                
                 // Get i18n support for this source.
                 I18nSupport support = sourceData.getSupport();
+
+                if(support == null) {
+                    // Invalid sourceData.                    
+                    try {
+                        support = FactoryRegistry.getFactory(source.getClass().getName()).create(source);
+                    } catch(IOException ioe) {
+                        if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                            System.err.println("I18N: Document could noy be loaded for "+source.getName()); // NOI18N
+
+                        // Remove source from settings.
+                        sourceMap.remove(source);
+                        
+                        continue;
+                    }
+
+                    sourceData = new SourceData(sourceData.getResource(), support);
+                    
+                    sourceMap.put(source, sourceData);
+                }
+
 
                 // Get string map.
                 Map stringMap = sourceData.getStringMap();
 
-                if(stringMap != null)
+                if(stringMap != null && !testWizard)
                     // Search was already performed.
                     continue;
 
-                // Find all hard coded strings in the source.
-                HardCodedString[] foundStrings = support.getFinder().findAllHardCodedStrings();
+                
+                HardCodedString[] foundStrings;
+                
+                if(testWizard) {
+                    // Find all i18n-zied hard coded strings in the source.
+                    foundStrings = support.getFinder().findAllI18nStrings();
+                } else {
+                    // Find all non-i18-ized hard coded strings in the source.
+                    foundStrings = support.getFinder().findAllHardCodedStrings();
+                }
 
                 if(foundStrings == null) {
                     // Set empty map.
@@ -447,6 +482,9 @@ public class ResourceWizardPanel extends JPanel {
 
                 // Put hard coded string - i18n pairs into map.
                 for(int j=0; j<foundStrings.length; j++) {
+                    if(testWizard && support.getResourceHolder().getValueForKey(foundStrings[j].getText()) != null)
+                        continue;
+                        
                     map.put(foundStrings[j], support.getDefaultI18nString(foundStrings[j]));
                 }
 
@@ -459,7 +497,11 @@ public class ResourceWizardPanel extends JPanel {
         /** Helper method. Places progress panel for monitoring search. */
         private void showProgressPanel(ProgressWizardPanel progressPanel) {
             ((Container)getComponent()).remove(resourcePanel);
-            ((Container)getComponent()).add(progressPanel, BorderLayout.CENTER);
+            GridBagConstraints constraints = new GridBagConstraints();
+            constraints.weightx = 1.0;
+            constraints.weighty = 1.0;
+            constraints.fill = GridBagConstraints.BOTH;
+            ((Container)getComponent()).add(progressPanel, constraints);
             ((JComponent)getComponent()).revalidate();
             getComponent().repaint();
         }
@@ -468,9 +510,13 @@ public class ResourceWizardPanel extends JPanel {
         public void reset() {
             Container container = (Container)getComponent();
             
-            if(!SwingUtilities.isDescendingFrom(resourcePanel, container)) {
+            if(!container.isAncestorOf(resourcePanel)) {
                 container.removeAll();
-                container.add(resourcePanel, BorderLayout.CENTER);
+                GridBagConstraints constraints = new GridBagConstraints();
+                constraints.weightx = 1.0;
+                constraints.weighty = 1.0;
+                constraints.fill = GridBagConstraints.BOTH;
+                container.add(resourcePanel, constraints);
             }
         }
 

@@ -71,7 +71,6 @@ public class SourceWizardPanel extends JPanel {
         initList();
         
         putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); // NOI18N
-        setName(NbBundle.getBundle(SourceWizardPanel.class).getString("TXT_SelectSources"));
     }
     
 
@@ -277,10 +276,31 @@ public class SourceWizardPanel extends JPanel {
      * @see org.openide.WizardDescriptor.Panel */
     public static class Panel extends I18nWizardDescriptor.Panel {
 
+        /** Test wizard flag. */
+        private final boolean testWizard;
+        
+        
+        /** Constructor for i18n wizard. */
+        public Panel() {
+            this(false);
+        }
+        
+        /** Constructor for specified i18n wizard. */
+        public Panel(boolean testWizard) {
+            this.testWizard = testWizard;
+        }
+        
+        
         /** Gets component to display. Implements superclass abstract method. 
          * @return this instance */
         protected Component createComponent() {
-            return new SourceWizardPanel(this);
+            Component component = new SourceWizardPanel(this);
+            if(testWizard)
+                component.setName(NbBundle.getBundle(SourceWizardPanel.class).getString("TXT_SelecTestSources"));
+            else
+                component.setName(NbBundle.getBundle(SourceWizardPanel.class).getString("TXT_SelectSources"));                
+            
+            return component;
         }
 
         /** Gets if panel is valid. Overrides superclass method. */

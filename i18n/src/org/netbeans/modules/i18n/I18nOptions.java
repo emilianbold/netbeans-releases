@@ -45,9 +45,12 @@ public class I18nOptions extends SystemOption {
     /** Property name for replacing java code. */
     public static final String PROP_REPLACE_JAVA_CODE = "replaceJavaCode"; // NOI18N
     
-    /** Property name for replacing init java . */
+    /** Property name for regular expression for finding non-i18n strings. */
     public static final String PROP_REGULAR_EXPRESSION = "regularExpression"; // NOI18N
 
+    /** Property name for regular expression for finding i18n strings. */
+    public static final String PROP_I18N_REGULAR_EXPRESSION = "i18nRegularExpression"; // NOI18N
+    
     /** Property name for last used resource data object. */
     public static final String PROP_LAST_RESOURCE = "lastResource"; // NOI18N
 
@@ -131,7 +134,8 @@ public class I18nOptions extends SystemOption {
         putProperty(PROP_REPLACE_JAVA_CODE, replaceJavaCode, true);
     }    
 
-    /** Getter for regular expression property. */
+    /** Getter for regular expression property. 
+     * @see #PROP_REGULAR_EXPRESSION */
     public String getRegularExpression() {
         // Lazy init.
         if(getProperty(PROP_REGULAR_EXPRESSION) == null)
@@ -140,7 +144,8 @@ public class I18nOptions extends SystemOption {
         return (String)getProperty(PROP_REGULAR_EXPRESSION);
     }
 
-    /** Setter for regular expression property. */
+    /** Setter for regular expression property. 
+     * @see #PROP_REGULAR_EXPRESSION */
     public void setRegularExpression(String regExp) {
         // Make sure it is sane.
         if(regExp == null)
@@ -149,6 +154,28 @@ public class I18nOptions extends SystemOption {
         // Stores in class-wide state and fires property changes if needed:
         putProperty(PROP_REGULAR_EXPRESSION, regExp, true);
     }    
+    
+    /** Getter for i18n regular expression property. 
+     * @see #PROP_I18N_REGULAR_EXPRESSION */
+    public String getI18nRegularExpression() {
+        // Lazy init.
+        if(getProperty(PROP_I18N_REGULAR_EXPRESSION) == null)
+            putProperty(PROP_I18N_REGULAR_EXPRESSION, I18nUtil.getI18nRegExpItems()[0], true);
+        
+        return (String)getProperty(PROP_I18N_REGULAR_EXPRESSION);
+    }
+
+    /** Setter for i18n regular expression property. 
+     * @see #PROP_I18N_REGULAR_EXPRESSION */
+    public void setI18nRegularExpression(String regExp) {
+        // Make sure it is sane.
+        if(regExp == null)
+            return;
+        
+        // Stores in class-wide state and fires property changes if needed:
+        putProperty(PROP_I18N_REGULAR_EXPRESSION, regExp, true);
+    }    
+    
     
     /** Getter for last resource property. */
     public DataObject getLastResource() {
