@@ -54,8 +54,8 @@ public class PropertyType_NbProcessDescriptor extends PropertyEditorsTest {
         FS_Data_path = path.substring(0,path.lastIndexOf(System.getProperty("file.separator")));
         
         NbTestSuite suite = new NbTestSuite();
-        //suite.addTest(new PropertyType_NbProcessDescriptor("testByInPlace"));
-        //suite.addTest(new PropertyType_NbProcessDescriptor("testCustomizerCancel"));
+        suite.addTest(new PropertyType_NbProcessDescriptor("testByInPlace"));
+        suite.addTest(new PropertyType_NbProcessDescriptor("testCustomizerCancel"));
         suite.addTest(new PropertyType_NbProcessDescriptor("testCustomizerOk"));
         return suite;
     }
@@ -89,7 +89,6 @@ public class PropertyType_NbProcessDescriptor extends PropertyEditorsTest {
         String process = propertyValue_L.substring(0,index);
         String argument = propertyValue_L.substring(index + DELIM.length());
         
-        System.out.println("PREOCESS="+process+"   ARGUMENT="+argument);
         customizer.setProcess(process,false);
         customizer.setArguments(argument);
     }

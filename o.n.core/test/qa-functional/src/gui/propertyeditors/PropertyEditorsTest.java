@@ -71,8 +71,8 @@ public abstract class PropertyEditorsTest extends NbTestCase {
     
     
     public void setUp() {
-        err = System.out;
-        //err = getLog();
+        //err = System.out;
+        err = getLog();
         log = getRef();
         
         beanName = PropertyEditorsSupport.beanName;
@@ -84,7 +84,7 @@ public abstract class PropertyEditorsTest extends NbTestCase {
             // set defaults
             JellyProperties.setDefaults();
             JellyProperties.setJemmyOutput(new PrintWriter(err, true), new PrintWriter(err, true), null);
-            JellyProperties.setJemmyDebugTimeouts();
+            //JellyProperties.setJemmyDebugTimeouts();
             
             initializeWorkplace();
             
