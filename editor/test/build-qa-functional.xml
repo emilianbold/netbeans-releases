@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- You can override default qa-functional-compiler if you need something special -->
 
     <target name="qa-functional-compiler">
-        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
+        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**,org/netbeans/test/editor/app/**">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
                 <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
