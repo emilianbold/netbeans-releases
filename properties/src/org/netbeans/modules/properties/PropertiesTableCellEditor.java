@@ -103,14 +103,15 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
           return true;
     } */
 
-        public boolean stopCellEditing() {
+// if overriding this methods remember to call fireEditingStopped & fireEditingCancelled
+// since from jdk1.3 the delegates do that work
+/*        public boolean stopCellEditing() {
             return true;
         }
 
         public void cancelCellEditing() {
-        }
-    }
-
+        }*/
+    } // end of class block
 }
 
 /*
