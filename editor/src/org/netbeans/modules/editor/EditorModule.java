@@ -54,13 +54,17 @@ public class EditorModule implements ModuleInstall {
   private static final String MIME_JAVA = "text/x-java";
   private static final String MIME_HTML = "text/html";
   private static final String MIME_IDL = "text/x-idl";
+  private static final String MIME_XML = "text/xml";
+  private static final String MIME_DTD = "text/x-dtd";
 
   /** Kit replacements that will be installed into JEditorPane */
   KitInfo[] replacements = new KitInfo[] {
     new KitInfo(MIME_PLAIN, "com.netbeans.developer.modules.text.NbEditorPlainKit"),
     new KitInfo(MIME_JAVA, "com.netbeans.developer.modules.text.NbEditorJavaKit"),
     new KitInfo(MIME_HTML, "com.netbeans.developer.modules.text.NbEditorHTMLKit"),
-    new KitInfo(MIME_IDL, "com.netbeans.developer.modules.text.NbEditorIDLKit")
+    new KitInfo(MIME_IDL, "com.netbeans.developer.modules.text.NbEditorIDLKit"),
+    new KitInfo(MIME_XML, "com.netbeans.developer.modules.text.NbEditorXMLKit"),
+    new KitInfo(MIME_DTD, "com.netbeans.developer.modules.text.NbEditorDTDKit")
   };
 
   private static PropertyChangeListener settingsListener;
@@ -195,6 +199,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  23   Gandalf   1.22        7/28/99  Libor Kramolis  
  *  22   Gandalf   1.21        7/26/99  Miloslav Metelka 
  *  21   Gandalf   1.20        7/21/99  Miloslav Metelka 
  *  20   Gandalf   1.19        7/21/99  Miloslav Metelka 
