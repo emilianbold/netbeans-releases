@@ -252,7 +252,10 @@ public class PropertiesStructure extends Element {
         }
     }
 
-    /** Returns an iterator iterating through items which have non-empty key */
+    /** Returns an iterator iterating through items which have non-null key.
+    * The method was changed since its creation and now should be named
+    * nonNullItems to better fit the functionality.
+    */
     public Iterator nonEmptyItems() {
         return new Iterator() {
                    // iterator which relies on the list's iterator
@@ -273,7 +276,7 @@ public class PropertiesStructure extends Element {
                            else
                                nextElem = null;
                        }
-                       while (nextElem != null && nextElem.getKey().length() == 0);
+                       while (nextElem == null && innerIt.hasNext()); // key can be an empty string
                    }
 
                    public boolean hasNext() {
