@@ -51,6 +51,10 @@ final class CatalogEntryNode extends BeanNode {
         };
     }
     
+    public SystemAction getDefaultAction() {
+        return SystemAction.get(ViewAction.class);
+    }
+    
     /**
      * Provide <code>ViewCookie</code>. Always provide same instance for
      * entry until its system ID changes.

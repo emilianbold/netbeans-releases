@@ -166,6 +166,12 @@ Microsystems, Inc. All Rights Reserved.
         <file name="A-F6.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.xsl.actions.TransformAction"/>
 	</file>
+        <file name="A-F9.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.actions.CheckAction"/>
+	</file>
+        <file name="A-S-F9.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.xml.tools.actions.ValidateAction"/>
+	</file>        
     </folder> <!-- Shortcuts -->
 
     

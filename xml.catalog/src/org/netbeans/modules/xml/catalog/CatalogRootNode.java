@@ -55,9 +55,9 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
     /** Creates new CatalogNode */
     public CatalogRootNode() {
         super(new RootChildren());
-        setName("XML-CATALOG"); // NOI18N
-        setDisplayName (Util.THIS.getString("TEXT_catalog_root")); // NOI18N
-        setIconBase("org/netbeans/modules/xml/catalog/resources/catalog-root");  // NOI18N
+        setName("XML-CATALOG");                                                 // NOI18N
+        setDisplayName (Util.THIS.getString("TEXT_catalog_root"));              // NOI18N
+        setIconBase("org/netbeans/modules/xml/catalog/resources/catalog-root"); // NOI18N
         setShortDescription(Util.THIS.getString("PROP_catalog_root_desc"));
         getCookieSet().add(this);
     }
