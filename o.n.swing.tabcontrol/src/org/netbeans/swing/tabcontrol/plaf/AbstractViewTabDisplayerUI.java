@@ -563,7 +563,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         }
         
         public void repaintTab (int tab) {
-            if (tab < 0 || tab > displayer.getModel().size()) {
+            if (tab < 0 || tab >= displayer.getModel().size()) {
                 //This can happen because we can be notified
                 //of a change on a tab that has just been removed
                 //from the model
