@@ -776,11 +776,11 @@ public class MetaComponentCreator {
         if (newMenuComp != null)
             newMenuComp.initSubComponents(new RADComponent[0]);
 
-        addMenuComponent(newMenuItemComp, targetComp);
-
         // for some components, we initialize their properties with some
         // non-default values e.g. a label on buttons, checkboxes
         defaultMenuInit(newMenuItemComp);
+
+        addMenuComponent(newMenuItemComp, targetComp);
 
         // for new menu bars we do some additional special things...
         if (newMenuComp != null) {
