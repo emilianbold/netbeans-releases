@@ -10,7 +10,6 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -27,10 +26,9 @@ import org.netbeans.modules.j2ee.ddloaders.multiview.ui.BrowseFolders;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityNode;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
 import org.netbeans.modules.java.JavaDataObject;
+import org.netbeans.modules.java.ui.nodes.SourceNodes;
 import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.refactoring.ui.MoveClassUI;
-import org.netbeans.modules.refactoring.ui.RefactoringPanel;
-import org.netbeans.modules.refactoring.ui.RenameRefactoringUI;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -40,16 +38,19 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
 import org.openide.src.ClassElement;
 import org.openide.src.Identifier;
 import org.openide.src.MethodElement;
 import org.openide.src.MethodParameter;
 import org.openide.src.SourceException;
 import org.openide.src.Type;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
-import javax.jmi.reflect.RefObject;
 import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
@@ -319,22 +320,23 @@ public class Utils {
         return (JavaClass) JavaModel.getDefaultExtent().getType().resolve(fullClassName);
     }
 
+    private static Lookup createClassRefactoringLookup(String fullClassName) {
+        Node node = SourceNodes.getExplorerFactory().createClassNode(resolveJavaClass(fullClassName));
+        InstanceContent ic = new InstanceContent();
+        ic.add(node);
+        return new AbstractLookup(ic);
+    }
+
     public static void activateRenameClassUI(String fullClassName) {
-        JavaClass jmiObject = resolveJavaClass(fullClassName);
-        activateRenameRefactoringUI(jmiObject);
+        Lookup lookup = createClassRefactoringLookup(fullClassName);
+        final Action action = RefactoringActionsFactory.renameAction().createContextAwareInstance(lookup);
+        action.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
     }
 
     public static void activateMoveClassUI(String fullClassName) {
-        JavaClass sourceClass = resolveJavaClass(fullClassName);
-        activateMoveClassUI(sourceClass);
-    }
-
-    public static void activateMoveClassUI(JavaClass sourceClass) {
-        new RefactoringPanel(new MoveClassUI(sourceClass));
-    }
-
-    public static void activateRenameRefactoringUI(RefObject jmiObject) {
-        new RefactoringPanel(new RenameRefactoringUI(jmiObject));
+        Lookup lookup = createClassRefactoringLookup(fullClassName);
+        final Action action = RefactoringActionsFactory.moveClassAction().createContextAwareInstance(lookup);
+        action.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
     }
 
     public static String getMethodName(String fieldName, boolean get) {
