@@ -13,9 +13,11 @@
 
 package org.netbeans.modules.j2ee.api.ejbjar;
 
+import java.io.IOException;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.web.dd.EjbLocalRef;
 import org.netbeans.api.web.dd.EjbRef;
+import org.netbeans.api.web.dd.ResourceRef;
 
 /**
  * Instances of this class should be supplied by projects to indicate that 
@@ -37,17 +39,19 @@ public abstract class EnterpriseReferenceContainer {
      * include the target in the deployed archive but instead reference the 
      * interface jar (or standard ejb module) included in the J2EE application.
      * @param ref -- ejb reference this will include the ejb link which assumes
-     * root packaging in the containing application.
+     * root packaging in the containing application. The name of this ref should
+     * be considered a hint and made unique within the deployment descriptor.
      * @param referencedClassName -- name of referenced class, this can be used
      * to determine where to add the deployment descriptor entry. This class
      * will be modified with a method or other strategy to obtain the ejb.
-     * @ target -- target to include in the build
+     * @param target to include in the build
+     * @return actual jndi name used in deployment descriptor
      */
-    public abstract void addEjbReferernce(EjbRef ref, String referenceClassName,  AntArtifact target) throws java.io.IOException;
+    public abstract String addEjbReferernce(EjbRef ref, String referenceClassName,  AntArtifact target) throws IOException;
     /**
      * @see #addEjbReference(EjbRef, String, AntArtifact)
      */
-    public abstract void addEjbLocalReference(EjbLocalRef localRef, String referencedClassName, AntArtifact target) throws java.io.IOException;
+    public abstract String addEjbLocalReference(EjbLocalRef localRef, String referencedClassName, AntArtifact target) throws IOException;
     
     /**
      * @return name of the service locator defined for this project or null
@@ -57,8 +61,17 @@ public abstract class EnterpriseReferenceContainer {
     
     // JMS
     
-    // DataSource
+    /**
+     * Add given resource reference into the deployment descriptor.
+     * @param ref reference to resource used
+     * @param referencingClass class which will use the resource
+     * @return unique jndi name used in deployment descriptor
+     */
+    public abstract String addResourceRef(ResourceRef ref, String referencingClass) throws IOException;
     
-    
-    
+    /**
+     * Create resource ref instance based on current project type.
+     * @param className to determine context from
+     */
+    public abstract ResourceRef createResourceRef(String className) throws IOException;
 }

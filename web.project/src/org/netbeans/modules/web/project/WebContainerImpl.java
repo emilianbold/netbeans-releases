@@ -24,6 +24,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.web.dd.DDProvider;
 import org.netbeans.api.web.dd.EjbLocalRef;
 import org.netbeans.api.web.dd.EjbRef;
+import org.netbeans.api.web.dd.ResourceRef;
 import org.netbeans.api.web.dd.WebApp;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.schema2beans.BaseBean;
@@ -51,22 +52,32 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
         this.antHelper = antHelper;
     }
     
-    public void addEjbLocalReference(EjbLocalRef localRef, String referencedClassName, AntArtifact target) throws java.io.IOException {
-        addReference(localRef, target);
+    public String addEjbLocalReference(EjbLocalRef localRef, String referencedClassName, AntArtifact target) throws java.io.IOException {
+        return addReference(localRef, target);
     }
     
-    public void addEjbReferernce(EjbRef ref, String referencedClassName, AntArtifact target) throws IOException {
-         addReference(ref, target);
+    public String addEjbReferernce(EjbRef ref, String referencedClassName, AntArtifact target) throws IOException {
+         return addReference(ref, target);
     }
     
-    private void addReference(Object ref, AntArtifact target) throws IOException {
+    
+    private String addReference(Object ref, AntArtifact target) throws IOException {
          BaseBean bb = findDD();
          // Using basebean here as the web dd implementation classes 
          // perform downcasting. Pavel / Milan can this be resolved
          // this idiom will be used for many other enterprise resources 
+         String refName = null;
          if (ref instanceof EjbRef) {
+            EjbRef ejbRef = (EjbRef) ref;
+            refName = getUniqueName(getWebApp(), "EjbRef", "EjbRefName", 
+                    ejbRef.getEjbRefName());
+            ejbRef.setEjbRefName(refName);
             bb.addValue("EjbRef", ref);
          } else {
+            EjbLocalRef ejbRef = (EjbLocalRef) ref;
+            refName = getUniqueName(getWebApp(), "EjbLocalRef", "EjbRefName", 
+                    ejbRef.getEjbRefName());
+            ejbRef.setEjbRefName(refName);  
             bb.addValue("EjbLocalRef", ref);
          }
          
@@ -81,6 +92,7 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
         addJ2eeLibrary();
          
         writeDD(bb);
+        return refName;
     }
     
     public String getServiceLocatorName() {
@@ -98,14 +110,53 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
     }
     
     private BaseBean findDD() throws IOException {
-        WebModuleImplementation jp = (WebModuleImplementation) webProject.getLookup().lookup(WebModuleImplementation.class);
-        WebApp wa = DDProvider.getDefault().getDDRootCopy(jp.getDeploymentDescriptor());
+        WebApp wa = getWebApp();
         return DDProvider.getDefault().getBaseBean(wa);
+    }
+    
+    private WebApp getWebApp() throws IOException {
+        WebModuleImplementation jp = (WebModuleImplementation) webProject.getLookup().lookup(WebModuleImplementation.class);
+        return DDProvider.getDefault().getDDRootCopy(jp.getDeploymentDescriptor());
     }
     
     private void writeDD(BaseBean bb) throws IOException {
         WebModuleImplementation jp = (WebModuleImplementation) webProject.getLookup().lookup(WebModuleImplementation.class);
         File f = FileUtil.toFile(jp.getDeploymentDescriptor());
         bb.write(f);
+    }
+
+    public String addResourceRef(ResourceRef ref, String referencingClass) throws IOException {
+         BaseBean bb = findDD();
+         // Using basebean here as the web dd implementation classes 
+         // perform downcasting. Pavel / Milan can this be resolved
+         // this idiom will be used for many other enterprise resources 
+         String resourceRefName = getUniqueName(getWebApp(), "ResourceRef", "ResRefName", //NOI18N
+                                               ref.getResRefName());
+         ref.setResRefName(resourceRefName);
+         bb.addValue("ResourceRef", ref);
+         writeDD(bb);
+         return resourceRefName;
+    }
+
+    public ResourceRef createResourceRef(String className) throws IOException {
+        ResourceRef ref = null;
+        try {
+         ref = (ResourceRef) getWebApp().createBean("ResourceRef");
+        } catch (ClassNotFoundException cnfe) {
+            IOException ioe = new IOException();
+            ioe.initCause(cnfe);
+            throw ioe;
+        }
+        return ref;
+    }
+    
+    private String getUniqueName(WebApp wa, String beanName, 
+                                 String property, String originalValue) {
+        String proposedValue = originalValue;
+        int index = 1;
+        while (wa.findBeanByName(beanName, property, proposedValue) != null) {
+            proposedValue = originalValue+Integer.toString(index++);
+        }
+        return proposedValue;
     }
 }
