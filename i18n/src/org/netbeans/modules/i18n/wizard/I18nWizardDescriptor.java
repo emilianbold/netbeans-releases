@@ -169,7 +169,7 @@ final class I18nWizardDescriptor extends WizardDescriptor {
                         if("defaultButton".equals(evt.getPropertyName())) { // NOI18N
                             Object newValue = evt.getNewValue();
                             if(newValue != nextButton && newValue != finishButton) {
-                                RequestProcessor.postRequest(new Runnable() {
+                                RequestProcessor.getDefault().post(new Runnable() {
                                     public void run() {
                                         updateDefaultButton();
                                     }
@@ -194,7 +194,7 @@ final class I18nWizardDescriptor extends WizardDescriptor {
                 
                 if(current instanceof ProgressMonitor) {
                     // Do the search job first.
-                    RequestProcessor.postRequest(new ProgressThread((ProgressMonitor)current) {
+                    RequestProcessor.getDefault().post(new ProgressThread((ProgressMonitor)current) {
                         public void handleAction() {
                             handleNextButton();
                         }
@@ -213,7 +213,7 @@ final class I18nWizardDescriptor extends WizardDescriptor {
 
                 if(current instanceof ProgressMonitor) {
                     // Do the search job first.
-                    RequestProcessor.postRequest(new ProgressThread((ProgressMonitor)current) {
+                    RequestProcessor.getDefault().post(new ProgressThread((ProgressMonitor)current) {
                         public void handleAction() {
                             Dialog dialog = (Dialog)SwingUtilities.getAncestorOfClass(Dialog.class, current.getComponent());
                             dialog.setVisible(false);
