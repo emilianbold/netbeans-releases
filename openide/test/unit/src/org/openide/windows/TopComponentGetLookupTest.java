@@ -19,7 +19,10 @@ import javax.swing.ActionMap;
 import junit.framework.*;
 
 import org.netbeans.junit.*;
+import org.openide.nodes.AbstractNode;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 
 
@@ -63,7 +66,9 @@ public class TopComponentGetLookupTest extends NbTestCase {
         });
         
         assertNotNull ("At least one node is registered", lookup.lookup (N.class));
-        assertEquals ("Two registered", lookup.lookup (new Lookup.Template (N.class)).allItems().size (), 2);
+        Lookup.Result res = lookup.lookup (new Lookup.Template (N.class));
+        java.util.Collection c = res.allItems ();
+        assertEquals ("Two registered", c.size (), 2);
     }
     
     /** Tests changes in cookies.
@@ -102,7 +107,58 @@ public class TopComponentGetLookupTest extends NbTestCase {
         top.setActivatedNodes (new org.openide.nodes.Node[0]);
         assertNull ("No cookie now", lookup.lookup (org.openide.cookies.OpenCookie.class));
     }
+   
+    public void testNodesAreThereEvenIfTheyAreNotContainedInTheirOwnLookup () {
+        Lookup.Result res = lookup.lookup (new Lookup.Template (org.openide.nodes.Node.class));
         
+        AbstractNode n1 = new AbstractNode (org.openide.nodes.Children.LEAF, Lookup.EMPTY);
+        
+        InstanceContent content = new InstanceContent ();
+        AbstractNode n2 = new AbstractNode (org.openide.nodes.Children.LEAF, new AbstractLookup (content));
+        
+        assertNull ("Not present in its lookup", n1.getLookup ().lookup (n1.getClass ()));
+        assertNull ("Not present in its lookup", n2.getLookup ().lookup (n2.getClass ()));
+        
+        top.setActivatedNodes (new AbstractNode[] { n1 });
+        
+        assertEquals ("But node is in the lookup", n1, lookup.lookup (n1.getClass ()));
+        
+        assertEquals ("One item there", 1, res.allInstances ().size ());
+        
+        L listener = new L ();
+        res.addLookupListener(listener);
+        
+        top.setActivatedNodes (new AbstractNode[] { n2 });
+        listener.check ("Node changed", 1);
+        
+        java.util.Collection addedByTCLookup = res.allInstances ();
+        assertEquals ("One item still", 1, addedByTCLookup.size ());
+        
+        content.add (n2);
+        assertEquals ("After the n2.getLookup starts to return itself, there is no change", 
+            addedByTCLookup, res.allInstances ());
+        
+        // would be nice if there was no change, but is not right now
+        // listener.check ("And nothing is fired", 0);
+        
+        content.remove (n2);
+        assertEquals ("After the n2.getLookup stops to return itself, there is no change", 
+            addedByTCLookup, res.allInstances ());
+        
+        // would be nice if there was no change, but is not right now
+        // listener.check ("And nothing is fired", 0);
+        
+        content.add (n1);
+        // would be nice if there was no change, but is not right now
+        // listener.check ("Adding another node, fires change", 1);
+        // so we check at least for one being fired
+        listener.checkAtLeast ("Adding another node, fires change", 1);
+        java.util.Collection two = res.allInstances ();
+        assertEquals ("Really two nodes", 2, two.size ());
+        java.util.Iterator it = two.iterator ();
+        assertEquals ("First is the one from the node's lookup", n1, it.next ());
+        assertEquals ("Second is the one added by the TC lookup", n2, it.next ());
+    }
     
     
     /** Listener to count number of changes.
@@ -116,6 +172,15 @@ public class TopComponentGetLookupTest extends NbTestCase {
          */
         public void resultChanged(org.openide.util.LookupEvent ev) {
             cnt++;
+        }
+        
+        /** Checks at least given number of changes.
+         */
+        public void checkAtLeast (String text, int num) {
+            if (cnt < num) {
+                fail (text + " expected at least " + num + " but was " + cnt);
+            }
+            cnt = 0;
         }
         
         /** Checks number of modifications.
