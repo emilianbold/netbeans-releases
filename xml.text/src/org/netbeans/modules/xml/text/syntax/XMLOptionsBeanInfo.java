@@ -14,19 +14,25 @@ package org.netbeans.modules.xml.text.syntax;
 
 import java.beans.*;
 import java.awt.Image;
-
+import org.netbeans.modules.editor.options.OptionSupport;
 
 /** BeanInfo for plain options
  *
  * @author Libor Kramolis
  */
-public class XMLOptionsBeanInfo extends org.netbeans.modules.editor.options.HTMLOptionsBeanInfo {
+public class XMLOptionsBeanInfo extends org.netbeans.modules.editor.options.BaseOptionsBeanInfo {
 
     public XMLOptionsBeanInfo () {
-        super(); // NOI18N
+        super ("/org/netbeans/modules/editor/resources/htmlOptions"); // NOI18N
     }
 
     protected Class getBeanClass() {
         return XMLOptions.class;
     }
+	
+    protected String[] getPropNames() {
+		String parentNames[] = super.getPropNames();
+        return OptionSupport.mergeStringArrays(parentNames, XMLOptions.XML_PROP_NAMES);
+    }
+	
 }

@@ -27,6 +27,14 @@ public class XMLOptions extends AbstractBaseOptions {
     /** Serial Version UID */
     private static final long serialVersionUID = 2347735706857337892L;
 
+    public static final String COMPLETION_AUTO_POPUP_PROP = "completionAutoPopup"; // NOI18N
+
+    public static final String COMPLETION_AUTO_POPUP_DELAY_PROP = "completionAutoPopupDelay"; // NOI18N
+    
+    static final String[] XML_PROP_NAMES = new String[] {
+                                                COMPLETION_AUTO_POPUP_PROP,
+                                                COMPLETION_AUTO_POPUP_DELAY_PROP,
+                                            };
     
     //
     // init
