@@ -64,8 +64,8 @@ public class SimpleDialogPanel extends JPanel {
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = i;
-            gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+            gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             add(jLabels[i], gridBagConstraints);
         }
         for (int i=0;i<jTextFields.length;i++) {
@@ -75,23 +75,25 @@ public class SimpleDialogPanel extends JPanel {
             gridBagConstraints.gridx = 1;
             gridBagConstraints.gridy = i;
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-            gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+            gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
             gridBagConstraints.weightx = 1.0;
             jLabels[i].setLabelFor(jTextFields[i]);
             add(jTextFields[i], gridBagConstraints);
         }
         if (customizers!=null) {
             java.util.List buttonList = new java.util.ArrayList();
+            int j=0;
             for (int i=0;i<customizers.length;i++) {
                 if (customizers[i]) {
                     JButton button = new JButton();
                     button.setText(NbBundle.getMessage(SimpleDialogPanel.class,"LBL_browse"));
-                    button.setMnemonic(NbBundle.getMessage(SimpleDialogPanel.class,"LBL_browse_mnem").charAt(0));
+                    button.setMnemonic(NbBundle.getMessage(SimpleDialogPanel.class,"LBL_browse"+String.valueOf(j++)+"_mnem").charAt(0));
+                    button.setMargin(new java.awt.Insets(0, 14, 0, 14));
                     buttonList.add(button);
                     gridBagConstraints = new java.awt.GridBagConstraints();
                     gridBagConstraints.gridx = 2;
                     gridBagConstraints.gridy = i;
-                    gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
+                    gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 11);
                     add(button, gridBagConstraints);
                 }
             }
