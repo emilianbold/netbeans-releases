@@ -51,7 +51,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements HelpCtx.Pro
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabelOptions.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_Options_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelOptions, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_Options_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -84,7 +84,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements HelpCtx.Pro
 
         additionalJavacParamsJLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"MNE_AdditionalCompilerOptions").charAt(0));
         additionalJavacParamsJLabel.setLabelFor(additionalJavacParamsJTextField);
-        additionalJavacParamsJLabel.setText(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"LBL_AdditionalCompilerOptions"));
+        org.openide.awt.Mnemonics.setLocalizedText(additionalJavacParamsJLabel, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_AdditionalCompilerOptions"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -103,7 +103,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements HelpCtx.Pro
         add(additionalJavacParamsJTextField, gridBagConstraints);
         additionalJavacParamsJTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"AD_AdditionalCompilerOptions"));
 
-        additionalJavacParamsExampleJLabel.setText(org.openide.util.NbBundle.getMessage (CustomizerCompile.class,"LBL_AdditionalCompilerOptionsExample"));
+        org.openide.awt.Mnemonics.setLocalizedText(additionalJavacParamsExampleJLabel, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_AdditionalCompilerOptionsExample"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
