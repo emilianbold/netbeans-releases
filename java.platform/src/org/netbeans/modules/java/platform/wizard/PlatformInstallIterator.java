@@ -14,6 +14,7 @@
 package org.netbeans.modules.java.platform.wizard;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.JComponent;
 import javax.swing.event.*;
@@ -108,6 +109,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
         firstPanel = true;
         String[] steps = (String[])wizard.getProperty("WizardPanel_contentData");
         updatePanelsList(new JComponent[]{((JComponent)current().getComponent())});
+        this.wizard.setTitle(NbBundle.getMessage(PlatformInstallIterator.class,"TXT_AddPlatformTitle"));
     }
     
     public java.util.Set instantiate() throws IOException {

@@ -38,14 +38,16 @@ import org.openide.util.Utilities;
  * @author  sd99038, Tomas  Zezula
  */
 public class LocationChooser extends javax.swing.JFileChooser  implements PropertyChangeListener {
+        
 
     private WizardDescriptor.InstantiatingIterator iterator;
     private LocationChooser.Panel firer;
     private InstallerRegistry regs;
-    private PlatformAccessory accessory;
+    private PlatformAccessory accessory;    
 
     public LocationChooser (LocationChooser.Panel firer) {
         super ();
+        this.setName (NbBundle.getMessage(LocationChooser.class,"TXT_PlatformFolderTitle"));
         this.setFileSelectionMode(DIRECTORIES_ONLY);
         this.setMultiSelectionEnabled(false);
         this.setControlButtonsAreShown(false);
@@ -57,6 +59,9 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         this.setFileView( new PlatformFileView( this.getFileSystemView(), this.regs));                
         this.addPropertyChangeListener (this);
     }
+    
+    
+    
 
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -97,7 +102,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
     private WizardDescriptor.InstantiatingIterator getInstaller () {
         return this.iterator;
     }
-
+    
     private static class PlatformFileFilter extends FileFilter {
 
         public boolean accept(File f) {
@@ -109,7 +114,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         }
     }
 
-    private static class PlatformAccessory extends JComponent {
+    private static class PlatformAccessory extends JComponent {        
 
         private JTextField tf;
 
@@ -120,6 +125,8 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         private void setType (String type) {
             this.tf.setText(type);
         }
+        
+        
 
         private void initComponents () {
             GridBagLayout l = new GridBagLayout();
@@ -134,7 +141,6 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
             this.add (label);
             this.tf = new JTextField();
             this.tf.setEditable(false);
-            this.tf.setColumns(15);
             c = new GridBagConstraints();
             c.gridx = c.gridy = GridBagConstraints.RELATIVE;
             c.gridwidth = GridBagConstraints.REMAINDER;
@@ -154,8 +160,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
             c.weightx = c.weighty = 1.0;
             l.setConstraints(fill,c);
             this.add (fill);
-        }
-
+        }        
     }
 
 

@@ -60,9 +60,9 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
 
     DataFolder                  installFolder;
     DetectPanel.WizardPanel     detectPanel;
-    SrcDocLocation.Panel        srcDocPanel;
     Collection                  listeners;
     JDKImpl                     platform;
+    WizardDescriptor            wizard;
     boolean                     valid;
     int                         currentIndex;
 
@@ -83,24 +83,22 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
         switch (this.currentIndex) {
             case 0:
                 return this.detectPanel;
-            case 1:
-                return this.srcDocPanel;
             default:
                 throw new IllegalStateException();
         }
     }
 
     public boolean hasNext() {
-        return this.currentIndex == 0;
+        return false;
     }
 
     public boolean hasPrevious() {
-        return this.currentIndex == 1;
+        return false;
     }
 
     public void initialize(WizardDescriptor wiz) {
+        this.wizard = wiz;
         this. detectPanel = new DetectPanel.WizardPanel(this);
-        this.srcDocPanel = new SrcDocLocation.Panel (this);
         this.currentIndex = 0;
     }
 
@@ -110,6 +108,8 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
      * @return singleton Set with java platform's instance DO inside.
      */
     public java.util.Set instantiate() throws IOException {
+        //Workaround #44444
+        this.detectPanel.storeSettings (this.wizard);
         final String systemName = ((J2SEPlatformImpl)getPlatform()).getAntName();
         FileObject platformsFolder = Repository.getDefault().getDefaultFileSystem().findResource(
                 "Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
@@ -214,8 +214,8 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
     }
 
     public void uninitialize(WizardDescriptor wiz) {
+        this.wizard = null;        
         this.detectPanel = null;
-        this.srcDocPanel = null;
     }
 
     public boolean isValid() {
@@ -303,13 +303,11 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
             command[2] = InstalledFileLocator.getDefault().locate("modules/ext/org-netbeans-modules-java-j2seplatform-probe.jar", "org.netbeans.modules.java.j2seplatform", false).getAbsolutePath(); // NOI18N
             command[3] = "org.netbeans.modules.java.j2seplatform.wizard.SDKProbe";
             command[4] = path;
-            System.out.println("Probe command: "+Arrays.asList(command));
             final Process process = runtime.exec(command);
             // PENDING -- this may be better done by using ExecEngine, since
             // it produces a cancellable task.
             process.waitFor();
             int exitValue = process.exitValue();
-            System.out.println("Probe exit status: "+exitValue);
             if (exitValue != 0)
                 throw new IOException();
         } catch (InterruptedException ex) {

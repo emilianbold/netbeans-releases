@@ -13,9 +13,15 @@
 
 package org.netbeans.modules.java.j2seplatform.wizard;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.*;
 import javax.swing.event.*;
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.java.classpath.ClassPath;
 
 import org.openide.filesystems.*;
 import org.openide.util.NbBundle;
@@ -25,8 +31,11 @@ import org.openide.util.TaskListener;
 import org.openide.util.HelpCtx;
 
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 
 /**
@@ -55,18 +64,14 @@ public class DetectPanel extends javax.swing.JPanel {
         putClientProperty("WizardPanel_contentData",
             new String[] {
                 NbBundle.getMessage(DetectPanel.class,"TITLE_J2SEWizardIterator_Configure"),
-                NbBundle.getMessage(DetectPanel.class,"TITLE_J2SEWizardIterator_SrcJavadoc")
         });
         this.platform = p;
+        this.setName (NbBundle.getMessage(DetectPanel.class,"TITLE_PlatformName"));
     }
 
     public void addNotify() {
-        super.addNotify();
-    }
-
-    void setFolder(FileObject f) {
-        jdkLocation.setText(FileUtil.toFile(f).getAbsolutePath());
-    }
+        super.addNotify();        
+    }    
 
     private void postInitComponents () {
         this.jdkName.getDocument().addDocumentListener (new DocumentListener () {
@@ -82,32 +87,10 @@ public class DetectPanel extends javax.swing.JPanel {
             public void changedUpdate(DocumentEvent e) {
                 handleNameChange ();
             }
-        });
-
-        this.antName.getDocument().addDocumentListener(new DocumentListener () {
-
-            public void insertUpdate(DocumentEvent e) {
-                handleAntNameChange();
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                handleAntNameChange();
-            }
-
-            public void changedUpdate(DocumentEvent e) {
-                handleNameChange();
-            }
-        });
+        });       
     }
 
     private void handleNameChange () {
-        String name = jdkName.getText ();
-        String antName = Util.normalizeName(name);
-        this.antName.setText (antName);
-        this.fireChange();
-    }
-
-    private void handleAntNameChange () {
         this.fireChange();
     }
 
@@ -119,169 +102,129 @@ public class DetectPanel extends javax.swing.JPanel {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel2 = new javax.swing.JLabel();
-        jdkLocation = new javax.swing.JTextField();
-        jTextArea1 = new javax.swing.JTextArea();
-        waitLabel = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
         jLabel3 = new javax.swing.JLabel();
         jdkName = new javax.swing.JTextField();
-        jLabel4 = new javax.swing.JLabel();
-        javaSpecVer = new javax.swing.JTextField();
-        jLabel5 = new javax.swing.JLabel();
-        javaVendor = new javax.swing.JTextField();
-        jLabel6 = new javax.swing.JLabel();
-        machineName = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
-        antName = new javax.swing.JTextField();
+        sources = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        javadoc = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setText(NbBundle.getBundle(DetectPanel.class).getString("LAB_DetectPanel_Location"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 6);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(jLabel2, gridBagConstraints);
-
-        jdkLocation.setEditable(false);
-        jdkLocation.setBorder(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 6, 12);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
-        add(jdkLocation, gridBagConstraints);
-
-        jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
-        jTextArea1.setEditable(false);
-        jTextArea1.setLineWrap(true);
-        jTextArea1.setRows(5);
-        jTextArea1.setText(NbBundle.getBundle(DetectPanel.class).getString("TXT_DetectPanel_Explain"));
-        jTextArea1.setWrapStyleWord(true);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 12);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jTextArea1, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 12);
-        gridBagConstraints.weightx = 1.0;
-        add(waitLabel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 12);
-        gridBagConstraints.weightx = 1.0;
-        add(jSeparator1, gridBagConstraints);
-
-        jLabel3.setLabelFor(jdkName);
+        jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("MNE_PlatformName").charAt(0));
         jLabel3.setText(NbBundle.getBundle(DetectPanel.class).getString("LBL_DetailsPanel_Name"));
+        jLabel3.setLabelFor(jdkName);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 6);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel3, gridBagConstraints);
 
-        jdkName.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 12, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         add(jdkName, gridBagConstraints);
 
-        jLabel4.setLabelFor(javaSpecVer);
-        jLabel4.setText(NbBundle.getBundle(DetectPanel.class).getString("LBL_DetectPanel_SpecificationVersion"));
+        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("MNE_PlatformSources").charAt(0));
+        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("TXT_Sources"));
+        jLabel1.setLabelFor(sources);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 6);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jLabel4, gridBagConstraints);
-
-        javaSpecVer.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 12);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(javaSpecVer, gridBagConstraints);
-
-        jLabel5.setLabelFor(javaVendor);
-        jLabel5.setText(NbBundle.getBundle(DetectPanel.class).getString("LBL_DetectPanel_Vendor"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 6);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jLabel5, gridBagConstraints);
-
-        javaVendor.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 12);
-        gridBagConstraints.weightx = 1.0;
-        add(javaVendor, gridBagConstraints);
-
-        jLabel6.setLabelFor(machineName);
-        jLabel6.setText(NbBundle.getBundle(DetectPanel.class).getString("LBL_DetectPanel_VMName"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 6);
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jLabel6, gridBagConstraints);
-
-        machineName.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 12);
-        add(machineName, gridBagConstraints);
-
-        jLabel1.setLabelFor(antName);
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("LBL_AntName"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 6);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel1, gridBagConstraints);
 
-        antName.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(antName, gridBagConstraints);
+        gridBagConstraints.weightx = 1.0;
+        add(sources, gridBagConstraints);
+
+        jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("MNE_PlatformJavadoc").charAt(0));
+        jLabel4.setText(NbBundle.getBundle(DetectPanel.class).getString("TXT_JavaDoc"));
+        jLabel4.setLabelFor(javadoc);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 6);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(jLabel4, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 6);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        add(javadoc, gridBagConstraints);
+
+        jButton1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("LBL_Browse"));
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectSources(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 6, 12);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(jButton1, gridBagConstraints);
+
+        jButton2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seplatform/wizard/Bundle").getString("LBL_Browse"));
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectJavadoc(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 12);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(jButton2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jPanel1, gridBagConstraints);
 
     }//GEN-END:initComponents
 
-    public void setNotifyMessage (String message) {
-        waitLabel.setText (message);
-    }
+    private void selectJavadoc(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectJavadoc
+        String newValue = this.browse(this.javadoc.getText(),NbBundle.getMessage(DetectPanel.class,"TXT_SelectJavadoc"));
+        if (newValue != null) {
+            this.javadoc.setText(newValue);
+        }
+        
+    }//GEN-LAST:event_selectJavadoc
 
+    private void selectSources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectSources
+        String newValue = this.browse(this.sources.getText(),NbBundle.getMessage(DetectPanel.class,"TXT_SelectSources"));
+        if (newValue != null) {
+            this.sources.setText(newValue);
+        }
+    }//GEN-LAST:event_selectSources
+    
     public final synchronized void addChangeListener (ChangeListener listener) {
         if (this.listeners == null)
             this.listeners = new ArrayList ();
@@ -297,9 +240,23 @@ public class DetectPanel extends javax.swing.JPanel {
     public String getPlatformName() {
 	    return jdkName.getText();
     }
+    
+    String getSources () {
+        String val = this.sources.getText();
+        return val.length() == 0 ? null : val;
+    }
 
-    public String getAntName () {
-        return this.antName.getText();
+    void setSources (String sources) {
+        this.sources.setText (sources == null ? "" : sources);      //NOI18N
+    }
+
+    String getJavadoc () {
+        String val = this.javadoc.getText();
+        return val.length() == 0 ? null : val;
+    }
+
+    void setJavadoc (String jdoc) {
+        this.javadoc.setText(jdoc == null ? "" : jdoc);             //NOI18N
     }
 
     protected final void fireChange () {
@@ -319,19 +276,11 @@ public class DetectPanel extends javax.swing.JPanel {
      * Updates static information from the detected platform's properties
      */
     void updateData() {
-        Map m = platform.getSystemProperties();
-        String v = (String)m.get("java.version");
-        this.javaSpecVer.setText(v == null ? "" : v);
-        v = (String)m.get("java.vendor");
-        this.javaVendor.setText(v == null ? "" : v);
-        v = (String)m.get("java.vm.name");
-        this.machineName.setText(v == null ? "" : v);
-
+        Map m = platform.getSystemProperties();        
         // if the name is empty, fill something in:
         if ("".equals(jdkName.getText())) {
             jdkName.setText(getInitialName (m));
-            jdkName.setEditable(true);
-            antName.setEditable (true);
+            this.jdkName.selectAll();
         }
     }
 
@@ -350,23 +299,39 @@ public class DetectPanel extends javax.swing.JPanel {
         }
         return result.toString();
     }
+    
+    
+    private String browse (String oldValue, String title) {
+        JFileChooser chooser = new JFileChooser ();
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        chooser.setFileFilter (new FileFilter () {
+            public boolean accept(File f) {
+                return (f.exists() && f.canRead() && (f.isDirectory() || (f.getName().endsWith(".zip") || f.getName().endsWith(".jar"))));
+            }
+
+            public String getDescription() {
+                return NbBundle.getMessage(DetectPanel.class,"TXT_ZipFilter");
+            }
+        });
+        File f = new File (oldValue);
+        chooser.setSelectedFile(f);
+        chooser.setDialogTitle (title);
+        if (chooser.showOpenDialog (this) == JFileChooser.APPROVE_OPTION) {
+            return chooser.getSelectedFile().getAbsolutePath();
+        }
+        return null;
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField antName;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextField javaSpecVer;
-    private javax.swing.JTextField javaVendor;
-    private javax.swing.JTextField jdkLocation;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JTextField javadoc;
     private javax.swing.JTextField jdkName;
-    private javax.swing.JTextField machineName;
-    private javax.swing.JLabel waitLabel;
+    private javax.swing.JTextField sources;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -379,8 +344,9 @@ public class DetectPanel extends javax.swing.JPanel {
         private final J2SEWizardIterator  iterator;
         private Collection          changeList = new ArrayList();
         private boolean             detected;
-	    private J2SEPlatformImpl    platform;
+	private J2SEPlatformImpl    platform;
         private boolean             valid;
+        private boolean             firstPass=true;
 
         WizardPanel(J2SEWizardIterator iterator) {
             this.iterator = iterator;
@@ -396,7 +362,6 @@ public class DetectPanel extends javax.swing.JPanel {
         public java.awt.Component getComponent() {
             if (component == null) {
                 component = new DetectPanel(iterator.getPlatform());
-                component.setFolder(iterator.getInstallFolder());
                 component.addChangeListener (this);
                 task = RequestProcessor.getDefault().create(iterator);
                 task.addTaskListener(this);
@@ -419,8 +384,60 @@ public class DetectPanel extends javax.swing.JPanel {
             return valid;
         }
 
-        public void readSettings(Object settings) {
-            component.setNotifyMessage(NbBundle.getMessage(DetectPanel.class,"TXT_DetectPanel_WaitMessage"));
+        public void readSettings(Object settings) {           
+            JavaPlatform platform = this.iterator.getPlatform();
+            String srcPath = null;
+            String jdocPath = null;
+            ClassPath src = platform.getSourceFolders();
+            if (src.entries().size()>0) {
+                URL folderRoot = ((ClassPath.Entry)src.entries().get(0)).getURL();
+                if ("jar".equals(folderRoot.getProtocol())) {   //NOI18N
+                    folderRoot = FileUtil.getArchiveFile (folderRoot);
+                }
+                srcPath = new File(URI.create(folderRoot.toExternalForm())).getAbsolutePath();
+            }
+            else if (firstPass) {
+                Iterator il = platform.getInstallFolders().iterator();
+                if (il.hasNext()) {
+                    File base = FileUtil.toFile ((FileObject)il.next());
+                    if (base!=null) {
+                        File f = new File (base,"src.zip"); //NOI18N
+                        if (f.canRead()) {
+                            srcPath = f.getAbsolutePath();
+                        }
+                        else {
+                            f = new File (base,"src.jar");  //NOI18N
+                            if (f.canRead()) {
+                                srcPath = f.getAbsolutePath();
+                            }
+                        }
+                    }
+                }                
+            }
+            List jdoc = platform.getJavadocFolders();
+            if (jdoc.size()>0) {
+                URL folderRoot = (URL)jdoc.get(0);
+                if ("jar".equals(folderRoot.getProtocol())) {
+                    folderRoot = FileUtil.getArchiveFile (folderRoot);
+                }
+                jdocPath = new File (URI.create(folderRoot.toExternalForm())).getAbsolutePath();
+            }
+            else if (firstPass) {
+                Iterator il = platform.getInstallFolders().iterator();
+                if (il.hasNext()) {
+                    File base = FileUtil.toFile ((FileObject)il.next());
+                    if (base!=null) {
+                        File f = new File (base,"docs"); //NOI18N
+                        if (f.isDirectory() && f.canRead()) {
+                            jdocPath = f.getAbsolutePath();
+                        }                        
+                    }
+                }
+                firstPass = false;
+            }
+            this.component.setSources (srcPath);
+            this.component.setJavadoc (jdocPath);
+            this.component.jdkName.setEditable(false);
             task.schedule(0);
         }
 
@@ -445,23 +462,59 @@ public class DetectPanel extends javax.swing.JPanel {
 	 has entered. Stores user-customized display name into the Platform.
 	 */
         public void storeSettings(Object settings) {
-	        platform.setDisplayName(component.getPlatformName());
-            platform.setAntName (component.getAntName());
+            assert platform instanceof J2SEPlatformImpl;                        
+            String name = component.getPlatformName();
+            platform.setDisplayName (name);
+            String antName = createAntName (name);
+            platform.setAntName (antName);
+            List src = new ArrayList ();
+            List jdoc = new ArrayList ();
+            String srcPath = this.component.getSources();
+            if (srcPath!=null) {
+                File f = new File (srcPath);
+                try {
+                    URL url = f.toURI().toURL();
+                    if (FileUtil.isArchiveFile(url)) {
+                        src.add (ClassPathSupport.createResource(FileUtil.getArchiveRoot(url)));
+                    }
+                    else {
+                        src.add (ClassPathSupport.createResource(url));
+                    }
+                }catch (MalformedURLException mue) {
+                    ErrorManager.getDefault().notify (mue);
+                }
+            }
+            String jdocPath = this.component.getJavadoc();
+            if (jdocPath!=null) {
+                File f = new File (jdocPath);
+                try {
+                    URL url = f.toURI().toURL();
+                    if (FileUtil.isArchiveFile(url)) {
+                        jdoc.add (FileUtil.getArchiveRoot(url));
+                    }
+                    else {
+                        jdoc.add (url);
+                    }
+                } catch (MalformedURLException mue) {
+                    ErrorManager.getDefault().notify (mue);
+                }
+            }
+            ((J2SEPlatformImpl)platform).setSourceFolders (ClassPathSupport.createClassPath(src));
+            ((J2SEPlatformImpl)platform).setJavadocFolders (jdoc);
         }
 
         /**
          * Revalidates the Wizard Panel
          */
         public void taskFinished(Task task) {
-            detected = iterator.isValid();
-            SwingUtilities.invokeLater(
-                    new Runnable() {
-                        public void run () {
-                            component.updateData();
-                            checkValid();
-                        }
-                    }
-            );
+            SwingUtilities.invokeLater( new Runnable () {
+                public void run () {
+                    component.updateData ();
+                    component.jdkName.setEditable(true);
+                    detected = iterator.isValid();
+                    checkValid ();
+                }
+            });            
         }
 
 
@@ -470,36 +523,53 @@ public class DetectPanel extends javax.swing.JPanel {
         }
 
         private void checkValid () {
-            boolean validAntName = isValidAntName (component.getAntName());
-            boolean validDisplayName = component.getPlatformName().length() > 0;
-            boolean v = detected && validDisplayName &&  validAntName;
-            setValid(v);
-            if (!v) {
-                component.setNotifyMessage(NbBundle.getMessage(DetectPanel.class,"TXT_DetectPanel_ConfigUnsuccess"));
-            }
-            else if (!validAntName) {
-                component.setNotifyMessage(NbBundle.getMessage(DetectPanel.class,"TXT_DetectPanel_InvalidAntName"));
-            }
-            else if (!validDisplayName) {
-                component.setNotifyMessage(NbBundle.getMessage(DetectPanel.class,"TXT_DetectPanel_InvalidDisplayName"));
-            }
-            else {
-                component.setNotifyMessage(NbBundle.getMessage(DetectPanel.class, "TXT_DetectPanel_ConfigSuccess"));
-            }
+            String name = this.component.getPlatformName ();            
+            boolean validDisplayName = name.length() > 0;           
+            boolean v = detected && validDisplayName;
+            setValid(v);            
         }
 
-        private static boolean isValidAntName (String name) {
-            if (name == null || name.length() == 0)
-                return false;
-            if (!Character.isJavaIdentifierStart (name.charAt(0)))
-                return false;
+        private static String createAntName (String name) {
+            StringBuffer baseName = new StringBuffer ();
+            if (name == null || name.length() == 0) {
+                throw new IllegalArgumentException ();
+            }
+            
+            if (!Character.isJavaIdentifierStart (name.charAt(0))) {
+                baseName.append('_');
+            }
             for (int i=0; i< name.length(); i++) {
                 char c = name.charAt(i);
-                if (!Character.isJavaIdentifierPart(c) &&
-                    c !='-' && c!='.')
-                    return false;
+                if (!Character.isJavaIdentifierPart(c) && c !='-' && c!='.') {
+                    c = '_';
+                }
+                baseName.append (c);
             }
-            return true;
+            String antName = baseName.toString();
+            if (platformExists (antName)) {
+                int index = 1;
+                antName = baseName.toString () + Integer.toString (index);
+                while (platformExists (antName)) {
+                    index ++;
+                    antName = baseName.toString () + Integer.toString (index);
+                }
+            }
+            return antName;
         }
-    }
+        
+        private static boolean platformExists (String antName) {
+            JavaPlatformManager mgr = JavaPlatformManager.getDefault();
+            JavaPlatform[] platforms = mgr.getInstalledPlatforms();
+            for (int i=0; i < platforms.length; i++) {
+                if (platforms[i] instanceof J2SEPlatformImpl) {
+                    String val = ((J2SEPlatformImpl)platforms[i]).getAntName();
+                    if (antName.equals(val)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+    }    
 }
