@@ -32,6 +32,8 @@ import org.openide.util.WeakListener;
 */
 public class PatternChildren extends ClassChildren {
 
+    static final RequestProcessor ANALYZER = new RequestProcessor("Bean patterns analyser", 1);
+
     private boolean wri = true;
 
     private Listener elementListener = new Listener();
@@ -108,7 +110,7 @@ public class PatternChildren extends ClassChildren {
     
     private synchronized void scheduleRefresh() {
         if (refreshTask == null) {
-            refreshTask = RequestProcessor.getDefault().create(elementListener);
+            refreshTask = ANALYZER.create(elementListener);
         }
         refreshTask.schedule(0);
     }
@@ -237,7 +239,7 @@ public class PatternChildren extends ClassChildren {
                 name.equals(ElementProperties.PROP_EXCEPTIONS) ||
                 name.equals(ElementProperties.PROP_BODY))
                 return;
-            RequestProcessor.getDefault().post(this);
+            scheduleRefresh();
         }
         
         public void run() {
