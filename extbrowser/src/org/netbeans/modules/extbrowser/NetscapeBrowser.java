@@ -186,7 +186,7 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
                 }
             }
             retValue = new NbProcessDescriptor (
-                b, "-remote openURL({" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "})", // NOI18N
+                b, "-remote \"openURL({" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "})\"", // NOI18N
                 NbBundle.getMessage (NetscapeBrowser.class, "MSG_BrowserExecutorHint")
             );                
         }

@@ -294,11 +294,6 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 task.browser.url = url;
                 task.browser.pcs.firePropertyChange(PROP_URL, oldUrl, url);
 
-            } catch (InterruptedException ex) {
-                // this can be timer interrupt
-                if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {                
-                    ExtWebBrowser.getEM().log("Interrupted: " + ex);                // NOI18N
-                }
             } catch (Exception ex) {
                 final Exception ex1 = ex;
                 if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
@@ -380,7 +375,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
          *
          * It is used when WWW_Activate or WWW_OpenURL fail
          */
-        private void startBrowser(NbProcessDescriptor cmd, String url) throws NbBrowserException, java.io.IOException, InterruptedException {
+        private void startBrowser(NbProcessDescriptor cmd, String url) throws java.io.IOException {
             StatusDisplayer.getDefault ().setStatusText (NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_startingBrowser"));
             cmd.exec(new ExtWebBrowser.UnixBrowserFormat(url));
         }

@@ -126,7 +126,7 @@ public class MozillaBrowser extends ExtWebBrowser {
             }
             retValue = new NbProcessDescriptor(
                 prg,
-                "-remote openURL({" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "})", // NOI18N
+                "-remote \"openURL({" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "})\"", // NOI18N
                 NbBundle.getMessage(MozillaBrowser.class, "MSG_BrowserExecutorHint")
             );
         }

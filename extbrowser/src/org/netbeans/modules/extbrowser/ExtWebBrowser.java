@@ -354,7 +354,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
             }
 
             return new NbProcessDescriptor( b,
-                "-remote openURL({" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "})", // NOI18N
+                "-remote \"openURL({" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "})\"", // NOI18N
                 NbBundle.getMessage(ExtWebBrowser.class, "MSG_BrowserExecutorHint")
             );
             
@@ -422,7 +422,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
             if (idx >= 0) {
                 browserExecutable = new NbProcessDescriptor (
                     browserExecutable.getProcessName(),
-                    args.substring(0, idx)+"-remote openURL({URL})"+args.substring(idx+8), // NOI18N
+                    args.substring(0, idx)+"-remote \"openURL({URL})"+args.substring(idx+8), // NOI18N
                     NbBundle.getMessage (ExtWebBrowser.class, "MSG_BrowserExecutorHint")
                 );
             }
