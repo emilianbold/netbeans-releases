@@ -71,8 +71,8 @@ ToDo:
     <!-- The following is not permitted by Ant: -->
     <!-- <property name="modules" value="${config.modules.${moduleconfig}}"/> -->
     <!-- So this is a little trick to do it anyway. -->
-    <resolve name="modules" property="config.modules.${moduleconfig}"/>
-    <resolve name="fixedmodules" property="config.fixedmodules.${moduleconfig}"/>
+    <resolve name="modules" value="config.modules.${moduleconfig}"/>
+    <resolve name="fixedmodules" value="config.fixedmodules.${moduleconfig}"/>
     <property name="allmodules" value="${fixedmodules},${modules}"/>
   </target>
 
@@ -2347,6 +2347,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../j2ee/earproject" target="netbeans"/>
   </target>
+<target name="all-j2ee/debug" depends="init">
+  <echo message="Building module j2ee/debug.."/>
+  <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+  <antcall target="build-one-cluster-dependencies" inheritAll="false">
+    <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+    <param name="one.cluster.name" value="this-cluster"/>
+  </antcall>
+  <ant dir="../j2ee/debug" target="netbeans"/>
+</target>
   <target name="all-j2ee/utilities" depends="init">
     <echo message="Building module j2ee/utilities.."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
@@ -2701,9 +2710,9 @@ the ${netbeans.dest}/bin/ directory.
 
   <macrodef name="resolve">
     <attribute name="name"/>
-    <attribute name="property"/>
+    <attribute name="value"/>
     <sequential>
-      <property name="@{name}" value="${@{property}}"/>
+      <property name="@{name}" value="${@{value}}"/>
     </sequential>
   </macrodef>
 
@@ -2725,7 +2734,7 @@ the ${netbeans.dest}/bin/ directory.
     </condition>
     <echo>Dependency prop :${one.cluster.name}-hasNoDependencies:</echo>
     <echo>Cluster dep :${one.cluster.dependencies}:</echo>
-    <resolve name="test.prop" property="${one.cluster.name}-hasNoDependencies"/>
+    <resolve name="test.prop" value="${one.cluster.name}-hasNoDependencies"/>
     <echo>Cluster dep prp:${test.prop}:</echo>
   </target>
 
@@ -2739,14 +2748,14 @@ the ${netbeans.dest}/bin/ directory.
     <condition property="${one.cluster.name}-is-built">
       <available file="${netbeans.dest.dir}/${one.cluster.name}.built"/>
     </condition>
-    <resolve name="test1.prop" property="${one.cluster.name}-is-built"/>
+    <resolve name="test1.prop" value="${one.cluster.name}-is-built"/>
     <echo>Cluster ${one.cluster.name} is :${test1.prop}:</echo>
   </target>
 
   <target name="build-one-cluster" unless="${one.cluster.name}-is-built" depends="build-one-cluster-check">
     <echo message="Building ${one.cluster.name} modules"/>
-    <resolve name="one-cluster-modules" property="${one.cluster.name}"/>
-    <resolve name="one-cluster-dependencies" property="${one.cluster.name}.depends"/>
+    <resolve name="one-cluster-modules" value="${one.cluster.name}"/>
+    <resolve name="one-cluster-dependencies" value="${one.cluster.name}.depends"/>
     <echo>${one-cluster-modules}</echo>
     <echo>Dependencies: ${one-cluster-dependencies}</echo>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -2792,7 +2801,7 @@ the ${netbeans.dest}/bin/ directory.
     
     <setclusterpatternset cluster="${one.cluster.name}" name="${one.cluster.name}.files" trackingpath="${netbeans.dest.dir}" clusterdir="${one.cluster.dir}"/>
     
-    <resolve name="zipcluster.file" property="${one.cluster.name}.pkg.filename"/>
+    <resolve name="zipcluster.file" value="${one.cluster.name}.pkg.filename"/>
     <zip destfile="${netbeans.build.dir}/zips/${clusters.prefix}-${zipcluster.file}-${buildnum}.zip" update="true" duplicate="preserve">
       <zipfileset dir="${netbeans.dest.dir}" filemode="755">
         <include name="${one.cluster.dir}/${nb.bin.dir}/nbexec"/>
@@ -2816,18 +2825,18 @@ the ${netbeans.dest}/bin/ directory.
     <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
     <mkdir dir="${netbeans.build.dir}/rpms"/>
     
-    <resolve name="pkg.name" property="${one.cluster.name}.pkg.name"/>
-    <resolve name="pkg.version" property="${one.cluster.name}.pkg.version"/>
-    <resolve name="pkg.desc" property="${one.cluster.name}.pkg.desc"/>
-    <resolve name="pkg.vendor" property="${one.cluster.name}.pkg.vendor"/>
-    <resolve name="pkg.email" property="${one.cluster.name}.pkg.email"/>
-    <resolve name="pkg.rpm.name" property="${one.cluster.name}.pkg.rpm.name"/>
-    <resolve name="pkg.rpm.requires" property="${one.cluster.name}.pkg.rpm.requires"/>
-    <resolve name="pkg.rpm.group" property="${one.cluster.name}.pkg.rpm.group"/>
-    <resolve name="pkg.rpm.url" property="${one.cluster.name}.pkg.rpm.url"/>
-    <resolve name="pkg.rpm.copyright" property="${one.cluster.name}.pkg.rpm.copyright"/>
-    <resolve name="pkg.rpm.map" property="${one.cluster.name}.pkg.rpm.map"/>
-    <resolve name="pkg.rpm.prefix" property="${one.cluster.name}.pkg.rpm.prefix"/>
+    <resolve name="pkg.name" value="${one.cluster.name}.pkg.name"/>
+    <resolve name="pkg.version" value="${one.cluster.name}.pkg.version"/>
+    <resolve name="pkg.desc" value="${one.cluster.name}.pkg.desc"/>
+    <resolve name="pkg.vendor" value="${one.cluster.name}.pkg.vendor"/>
+    <resolve name="pkg.email" value="${one.cluster.name}.pkg.email"/>
+    <resolve name="pkg.rpm.name" value="${one.cluster.name}.pkg.rpm.name"/>
+    <resolve name="pkg.rpm.requires" value="${one.cluster.name}.pkg.rpm.requires"/>
+    <resolve name="pkg.rpm.group" value="${one.cluster.name}.pkg.rpm.group"/>
+    <resolve name="pkg.rpm.url" value="${one.cluster.name}.pkg.rpm.url"/>
+    <resolve name="pkg.rpm.copyright" value="${one.cluster.name}.pkg.rpm.copyright"/>
+    <resolve name="pkg.rpm.map" value="${one.cluster.name}.pkg.rpm.map"/>
+    <resolve name="pkg.rpm.prefix" value="${one.cluster.name}.pkg.rpm.prefix"/>
     
     <echo file="${netbeans.build.dir}/rpms/${pkg.rpm.name}.spec">
 %define global_product_version ${pkg.version}
@@ -2868,19 +2877,19 @@ ${pkg.rpm.map}/${one.cluster.dir}</echo>
     <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
     <mkdir dir="${netbeans.build.dir}/svr4s"/>
     
-    <resolve name="pkg.name" property="${one.cluster.name}.pkg.name"/>
-    <resolve name="pkg.version" property="${one.cluster.name}.pkg.version"/>
-    <resolve name="pkg.desc" property="${one.cluster.name}.pkg.desc"/>
-    <resolve name="pkg.vendor" property="${one.cluster.name}.pkg.vendor"/>
-    <resolve name="pkg.email" property="${one.cluster.name}.pkg.email"/>
-    <resolve name="pkg.svr4.pkg" property="${one.cluster.name}.pkg.svr4.pkg"/>
-    <resolve name="pkg.svr4.maxinst" property="${one.cluster.name}.pkg.svr4.maxinst"/>
-    <resolve name="pkg.svr4.sunw_pkgvers" property="${one.cluster.name}.pkg.svr4.sunw_pkgvers"/>
-    <resolve name="pkg.svr4.hotline" property="${one.cluster.name}.pkg.svr4.hotline"/>
-    <resolve name="pkg.svr4.classes" property="${one.cluster.name}.pkg.svr4.classes"/>
-    <resolve name="pkg.svr4.basedir" property="${one.cluster.name}.pkg.svr4.basedir"/>
-    <resolve name="pkg.svr4.pkginst" property="${one.cluster.name}.pkg.svr4.pkginst"/>
-    <resolve name="pkg.svr4.category" property="${one.cluster.name}.pkg.svr4.category"/>
+    <resolve name="pkg.name" value="${one.cluster.name}.pkg.name"/>
+    <resolve name="pkg.version" value="${one.cluster.name}.pkg.version"/>
+    <resolve name="pkg.desc" value="${one.cluster.name}.pkg.desc"/>
+    <resolve name="pkg.vendor" value="${one.cluster.name}.pkg.vendor"/>
+    <resolve name="pkg.email" value="${one.cluster.name}.pkg.email"/>
+    <resolve name="pkg.svr4.pkg" value="${one.cluster.name}.pkg.svr4.pkg"/>
+    <resolve name="pkg.svr4.maxinst" value="${one.cluster.name}.pkg.svr4.maxinst"/>
+    <resolve name="pkg.svr4.sunw_pkgvers" value="${one.cluster.name}.pkg.svr4.sunw_pkgvers"/>
+    <resolve name="pkg.svr4.hotline" value="${one.cluster.name}.pkg.svr4.hotline"/>
+    <resolve name="pkg.svr4.classes" value="${one.cluster.name}.pkg.svr4.classes"/>
+    <resolve name="pkg.svr4.basedir" value="${one.cluster.name}.pkg.svr4.basedir"/>
+    <resolve name="pkg.svr4.pkginst" value="${one.cluster.name}.pkg.svr4.pkginst"/>
+    <resolve name="pkg.svr4.category" value="${one.cluster.name}.pkg.svr4.category"/>
 <echo file="${netbeans.build.dir}/svr4s/${pkg.svr4.pkg}.spec">
 PKG=${pkg.svr4.pkg}
 NAME=${pkg.name}
@@ -3362,7 +3371,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   >
     <property name="buildnum" value="dev-${buildnumber}"/>
     <echo message="Packaging sources of ${cluster.name} modules"/>
-    <resolve name="cluster-modules" property="${cluster.name}"/>
+    <resolve name="cluster-modules" value="${cluster.name}"/>
     <mkdir dir="${netbeans.build.dir}"/>
     <taskdef name="definefileset" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
     <definefileset modules="${cluster-modules}" targetprefix="all-" id="source-modules" dir=".." />
