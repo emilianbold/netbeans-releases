@@ -233,7 +233,8 @@ public class AddTableColumnDialog
            	pane.add(ixcheckbox);
  
 			try {
-				DatabaseMetaData dmd = nfo.getConnection().getMetaData();
+//				DatabaseMetaData dmd = nfo.getConnection().getMetaData();
+				DatabaseMetaData dmd = nfo.getDatabaseAdaptor().getMetaData();
 				String catalog = (String)nfo.get(DatabaseNode.CATALOG);
 				String table = (String)nfo.get(DatabaseNode.TABLE);
 				ResultSet rs = dmd.getIndexInfo(catalog,nfo.getUser(),table, true, false);
@@ -378,8 +379,8 @@ public class AddTableColumnDialog
 			DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddColumnDialogTitle"), true, listener);
 			dialog = TopManager.getDefault().createDialog(descriptor);
 			dialog.setResizable(true);
-		} catch (MissingResourceException ex) {
-			System.out.println("missing resource "+ex.getKey()+"("+ex+")");
+		} catch (MissingResourceException e) {
+			e.printStackTrace();
 		}
     }
     

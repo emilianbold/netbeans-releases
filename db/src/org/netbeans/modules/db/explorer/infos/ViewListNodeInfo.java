@@ -29,7 +29,8 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 	throws DatabaseException
 	{
  		try {
-			DatabaseMetaData dmd = getConnection().getMetaData();
+//			DatabaseMetaData dmd = getConnection().getMetaData();
+			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
 			String[] filter = new String[] {"VIEW"};
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			ResultSet rs = dmd.getTables(catalog, getUser(), null, filter);
@@ -53,7 +54,8 @@ public class ViewListNodeInfo extends DatabaseNodeInfo
 	throws DatabaseException
 	{
  		try {
-			DatabaseMetaData dmd = getConnection().getMetaData();
+//			DatabaseMetaData dmd = getConnection().getMetaData();
+			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
 			String[] filter = new String[] {"VIEW"};
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			boolean uc = dmd.storesUpperCaseIdentifiers();

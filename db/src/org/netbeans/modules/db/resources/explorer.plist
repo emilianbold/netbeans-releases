@@ -97,11 +97,13 @@
 				name = "Oracle";
 				driver = "oracle.jdbc.driver.OracleDriver";
 				prefix = "jdbc:oracle:@<SID>";
+				adaptor = "com.netbeans.enterprise.modules.db.adaptors.OracleAdaptor";
 			},
 			{
 				name = "Oracle thin";
 				driver = "oracle.jdbc.driver.OracleDriver";
 				prefix = "jdbc:oracle:thin:@<HOST>:<PORT>:<SID>";
+				adaptor = "com.netbeans.enterprise.modules.db.adaptors.OracleAdaptor";
 			},
 			{
 				name = "Pointbase";
@@ -154,6 +156,12 @@
 			{
 				code = prefix;
 				name = "DatabasePrefix";
+				class = java.lang.String;
+				writable = YES;	
+			},
+			{
+				code = adaptorClass;
+				name = "AdaptorClass";
 				class = java.lang.String;
 				writable = YES;	
 			}
@@ -251,6 +259,10 @@
 				class = com.netbeans.enterprise.modules.db.explorer.actions.DisconnectAction;
 			},
 			delimiter,
+			{
+				name = "ViewData";
+				class = com.netbeans.enterprise.modules.db.explorer.actions.ViewDataAction;
+			},
 			{
 				name = "TestDriver";
 				class = com.netbeans.enterprise.modules.db.explorer.actions.TestDriverAction;

@@ -42,8 +42,8 @@ public class TableNode extends DatabaseNode
 			cmd.execute();
 			super.setName(newname);
 			info.put(DatabaseNode.TABLE, newname);
-		} catch (Exception e) {
-			System.out.println("Unable to change name: "+e);
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 
@@ -56,7 +56,6 @@ public class TableNode extends DatabaseNode
 /*			
 			nfo = (TableNodeInfo)n.getCookie(TableNodeInfo.class);
 			if (nfo != null) {
-				System.out.println(nfo.getName()+": table cut/paste allowed");
 				s.add(new TablePasteType((TableNodeInfo)nfo, n));
 				return;
 			}  
@@ -71,7 +70,6 @@ public class TableNode extends DatabaseNode
 /*			
 			nfo = (DatabaseNodeInfo)NodeTransfer.copyCookie(t, TableNodeInfo.class);
 			if (nfo != null) {
-				System.out.println(nfo.getName()+": table copy/paste allowed");
 				s.add(new TablePasteType((TableNodeInfo)nfo, null));
 				return;
 			}
@@ -190,8 +188,8 @@ public class TableNode extends DatabaseNode
 					cmd.execute();
 					ownerinfo.addColumn(name);
 					if (node != null) node.destroy();
-				} catch (final Exception e) {
-					System.out.println("Unable to process command, "+e.getMessage());
+				} catch (final Exception ex) {
+					ex.printStackTrace();
 /*
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {

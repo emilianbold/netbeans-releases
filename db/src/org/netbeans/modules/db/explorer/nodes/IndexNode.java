@@ -43,7 +43,7 @@ public class IndexNode extends DatabaseNode
 			cmd.execute();
 			super.setName(newname);
 		} catch (Exception e) {
-			System.out.println("Unable to change name: "+e);
+			e.printStackTrace();
 		}
 	}
 */
@@ -99,7 +99,8 @@ public class IndexNode extends DatabaseNode
 
 				try {
 					con = info.getConnection();
-					dmd = con.getMetaData();
+//					dmd = con.getMetaData();
+					dmd = info.getDatabaseAdaptor().getMetaData();
 					spec = (Specification)info.getSpecification();
 					catalog = (String)info.get(DatabaseNode.CATALOG);
 

@@ -19,6 +19,7 @@ import java.util.*;
 import com.netbeans.ddl.*;
 import com.netbeans.ddl.impl.*;
 import org.openide.nodes.Node;
+import com.netbeans.enterprise.modules.db.adaptors.*;
 import com.netbeans.enterprise.modules.db.DatabaseException;
 import com.netbeans.enterprise.modules.db.explorer.DatabaseNodeChildren;
 import com.netbeans.enterprise.modules.db.explorer.infos.*;
@@ -39,7 +40,8 @@ public class TableNodeInfo extends DatabaseNodeInfo
  		try {
  			
 			ResultSet rs;
-			DatabaseMetaData dmd = getConnection().getMetaData();
+//			DatabaseMetaData dmd = getConnection().getMetaData();
+			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String user = getUser();
 			String table = (String)get(DatabaseNode.TABLE);
@@ -68,13 +70,11 @@ public class TableNodeInfo extends DatabaseNodeInfo
         
 			// Foreign keys
 /*        
-			System.out.println("Foreign keys");
 			Hashtable fhash = new Hashtable(); 	
 			rs = dmd.getImportedKeys(catalog,user,table);
 			while (rs.next()) {
 				DatabaseNodeInfo finfo = DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.FOREIGN_KEY, rs);
 				String iname = (String)finfo.get("name");
-				System.out.println("\t"+iname);
 				fhash.put(iname,finfo);
 			}
 			rs.close();
@@ -106,8 +106,8 @@ public class TableNodeInfo extends DatabaseNodeInfo
 		try {
 			if (key.equals("remarks")) setRemarks((String)obj);		
 			put(key, obj);
-		} catch (Exception e) {
-			System.out.println("unable to set "+key+" = "+obj);
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 
@@ -178,7 +178,8 @@ public class TableNodeInfo extends DatabaseNodeInfo
 		try {
 			Vector chvec = new Vector(1);
 			ResultSet rs;
-			DatabaseMetaData dmd = getConnection().getMetaData();
+//			DatabaseMetaData dmd = getConnection().getMetaData();
+			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String user = getUser();
 			String table = (String)get(DatabaseNode.TABLE);

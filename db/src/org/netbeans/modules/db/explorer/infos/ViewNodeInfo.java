@@ -33,7 +33,8 @@ public class ViewNodeInfo extends DatabaseNodeInfo
  		try {
  			
 			ResultSet rs;
-			DatabaseMetaData dmd = getConnection().getMetaData();
+//			DatabaseMetaData dmd = getConnection().getMetaData();
+			DatabaseMetaData dmd = getDatabaseAdaptor().getMetaData();
 			String catalog = (String)get(DatabaseNode.CATALOG);
 			String user = getUser();
 			String view = (String)get(DatabaseNode.VIEW);
@@ -57,8 +58,8 @@ public class ViewNodeInfo extends DatabaseNodeInfo
 		try {
 			if (key.equals("remarks")) setRemarks((String)obj);		
 			put(key, obj);
-		} catch (Exception e) {
-			System.out.println("unable to set "+key+" = "+obj);
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 
