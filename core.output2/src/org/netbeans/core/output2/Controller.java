@@ -12,6 +12,7 @@
  */
 package org.netbeans.core.output2;
 
+import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -810,7 +811,7 @@ public class Controller { //XXX public only for debug access to logging code
                 }
             }
         }
-        popup.addPopupMenuListener(new PMListener());
+        popup.addPopupMenuListener(new PMListener(popupItems));
         popup.show(src, p.x, p.y);
     }
     
@@ -819,6 +820,11 @@ public class Controller { //XXX public only for debug access to logging code
      * referenced through PopupItems->JSeparator->PopupMenu->Invoker->OutputPane->OutputTab
      */
     private static class PMListener implements PopupMenuListener {
+        private Object[] popupItems;
+        public PMListener (Object[] popupItems) {
+            this.popupItems = popupItems;
+        }
+        
         public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
             JPopupMenu popup = (JPopupMenu) e.getSource();
             popup.removeAll();
@@ -826,6 +832,11 @@ public class Controller { //XXX public only for debug access to logging code
             popup.putClientProperty ("container", null); //NOI18N
             popup.putClientProperty ("component", null); //NOI18N
             popup.removePopupMenuListener(this);
+            for (int i=0; i < popupItems.length; i++) {
+                if (popupItems[i] instanceof ControllerAction) {
+                    ((ControllerAction) popupItems[i]).clearListeners();
+                }
+            }
         }
         
         public void popupMenuCanceled(PopupMenuEvent e) {
@@ -1034,7 +1045,7 @@ public class Controller { //XXX public only for debug access to logging code
             navigateToFirstErrorLine(tab);
         }
     }
-
+    
     /**
      * A stateless action which will find the owning OutputTab's controller and call
      * actionPerformed with its ID as an argument.
@@ -1075,6 +1086,13 @@ public class Controller { //XXX public only for debug access to logging code
             this.id = id;
             putValue (NAME, name);
             putValue (ACCELERATOR_KEY, stroke);
+        }
+        
+        void clearListeners() {
+            PropertyChangeListener[] l = changeSupport.getPropertyChangeListeners();
+            for (int i=0; i < l.length; i++) {
+                removePropertyChangeListener (l[i]);
+            }
         }
 
         /**

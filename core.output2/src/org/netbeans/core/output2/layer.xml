@@ -43,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="S-F12.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.core.output2.PreviousOutJumpAction"/>
 	</file>
-        <file name="C-4.instance">
+        <file name="D-4.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.core.output2.OutputWindowAction"/>
 	</file>
     </folder>
