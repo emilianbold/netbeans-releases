@@ -134,6 +134,7 @@ final class CommandManager implements ActionListener {
             operation = SlideOperationFactory.createSlideIntoDesktop(
                 getSlidedTabContainer(), curSlideOrientation, useEffect);
         }
+        recog.detachResizeRecognizer(orientation2Side(curSlideOrientation), getSlidedTabContainer());
         postEvent(new SlideBarActionEvent(slideBar, SlideBar.COMMAND_DISABLE_AUTO_HIDE, operation, null, tabIndex));
     }
     
