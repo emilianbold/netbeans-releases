@@ -1,8 +1,8 @@
 
 public class TestFile {
     
-    /** Holds value of property _nonIndexProperty. */
-    private MyType _nonIndexProperty;
+    /** Holds value of property nonIndexProperty. */
+    private MyType nonIndexProperty;
     
     /** Utility field used by bound properties. */
     private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
@@ -60,9 +60,9 @@ public class TestFile {
      *
      */
     public void setNonIndexProperty(MyType nonIndexProperty) throws java.beans.PropertyVetoException {
-        MyType oldNonIndexProperty = _nonIndexProperty;
+        MyType oldNonIndexProperty = this.nonIndexProperty;
         vetoableChangeSupport.fireVetoableChange("nonIndexProperty", oldNonIndexProperty, nonIndexProperty);
-        _nonIndexProperty = nonIndexProperty;
+        this.nonIndexProperty = nonIndexProperty;
         propertyChangeSupport.firePropertyChange("nonIndexProperty", oldNonIndexProperty, nonIndexProperty);
     }
     
