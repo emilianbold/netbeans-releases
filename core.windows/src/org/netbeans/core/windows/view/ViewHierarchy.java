@@ -495,6 +495,10 @@ final class ViewHierarchy {
         } else {
             mainWindow.setBounds(wsa.getMainWindowBoundsSeparated());
         }
+        // #38146 So the updateSplit works with correct size.
+        mainWindow.validate();
+        // PENDING consider better handling this event so there is not doubled
+        // validation (one in MainWindow - needs to be provided here) and this as second one.
     }
     
     private void updateMainWindowTitle() {
