@@ -49,12 +49,13 @@ NbDocument.Printable {
     if (s != null) {
       Object val = s.getAttribute(NbDocument.GUARDED);
       if (val != null && val instanceof Boolean) {
-        if (((Boolean)val).booleanValue() == true) {
+        if (((Boolean)val).booleanValue() == true) { // want make guarded
           super.setCharacterAttributes(offset, length, guardedSet, replace);
-        }
-        if (((Boolean)val).booleanValue() == false) {
+        } else { // want make unguarded
           super.setCharacterAttributes(offset, length, unguardedSet, replace);
         }
+      } else { // not special values, just pass
+        super.setCharacterAttributes(offset, length, s, replace);
       }
     }
   }
@@ -74,6 +75,7 @@ NbDocument.Printable {
 
 /*
  * Log
+ *  6    Gandalf   1.5         5/7/99   Miloslav Metelka improved setChar.Attr.()
  *  5    Gandalf   1.4         5/5/99   Miloslav Metelka 
  *  4    Gandalf   1.3         4/22/99  Miloslav Metelka 
  *  3    Gandalf   1.2         4/8/99   Miloslav Metelka 
