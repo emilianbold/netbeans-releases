@@ -128,6 +128,7 @@ public final class FreeformProject implements Project {
             new View(this), // LogicalViewProvider
             cp, // ClassPathProvider
             new SourceLevelQueryImpl(this), // SourceLevelQueryImplementation
+            new SourceForBinaryQueryImpl(this), // SourceForBinaryQueryImplementation
             new WebModules.ProjectWebModule(this), // WebModule
             new ProjectCustomizerProvider(this, helper, eval), // CustomizerProvider
             new OpenHook(cp), // ProjectOpenedHook
