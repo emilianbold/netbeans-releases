@@ -434,6 +434,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
             designer.open();
             designer.requestFocus();
 
+            ComponentInspector.getInstance().open();
             ComponentInspector.getInstance().focusForm(this, true);
             PaletteTopComponent.getInstance().open();
         }
