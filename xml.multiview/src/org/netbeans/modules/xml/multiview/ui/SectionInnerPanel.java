@@ -26,11 +26,13 @@ import java.awt.event.FocusEvent;
 import java.awt.*;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * @author mkuchtiak
  */
-public abstract class SectionInnerPanel extends javax.swing.JPanel implements LinkCookie, ErrorLocator {
+public abstract class SectionInnerPanel extends javax.swing.JPanel implements LinkCookie, ErrorLocator, PropertyChangeListener {
     private SectionView sectionView;
     private java.util.List refreshableList = new LinkedList();
 
@@ -55,6 +57,7 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
     });
 
     private static final int REFRESH_DELAY = 50;
+    private java.util.List flushFocusListeners = new LinkedList();
 
     /** Constructor that takes the enclosing SectionView object as its argument
      * @param sectionView enclosing SectionView object
@@ -110,81 +113,22 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
      * @param tc JTextComponent whose content is related to data model
      */
     public final void addModifier(final JTextComponent tc) {
-        tc.addFocusListener(new java.awt.event.FocusAdapter() {
-            private String orgValue;
-
-            public void focusGained(FocusEvent evt) {
-                orgValue = tc.getText();
-            }
-
-            public void focusLost(FocusEvent evt) {
-                if (!tc.getText().equals(orgValue)) {
-                    setValue(tc, tc.getText());
-                }
-            }
-        });
+        final ModifyFocusListener listener = new ModifyFocusListener(tc);
+        flushFocusListeners.add(listener);
+        tc.addFocusListener(listener);
     }
+
     /** Adds text component to the set of JTextComponentc that should be validated correctness.
      * After the value in this component is changed either setValue() method is called(value is correct)
      * or rollbackValue() method is called(value is incorrect). Also the documentChanged() method is called during editing.
      * @param tc JTextComponent whose content is related to data model and should be validated before saving to data model.
      */
     public final void addValidatee(final JTextComponent tc) {
+
         tc.getDocument().addDocumentListener(new TextListener(tc));
-        tc.addFocusListener(new java.awt.event.FocusAdapter() {
-            private String orgValue;
-            private boolean viewIsBuggy;
-
-            public void focusGained(FocusEvent evt) {
-                orgValue = tc.getText();
-                if (sectionView.getErrorPanel().getError() != null) {
-                    viewIsBuggy = true;
-                } else {
-                    viewIsBuggy = false;
-                }
-            }
-
-            public void focusLost(FocusEvent evt) {
-                org.netbeans.modules.xml.multiview.Error error = sectionView.getErrorPanel().getError();
-                if (error != null && error.isEditError() && tc == error.getFocusableComponent()) {
-                    if (Error.TYPE_WARNING == error.getSeverityLevel()) {
-                        org.openide.DialogDescriptor desc = new RefreshSaveDialog(sectionView.getErrorPanel());
-                        Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(desc);
-                        dialog.show();
-                        Integer opt = (Integer) desc.getValue();
-                        if (opt.equals(RefreshSaveDialog.OPTION_FIX)) {
-                            tc.requestFocus();
-                        } else if (opt.equals(RefreshSaveDialog.OPTION_REFRESH)) {
-                            rollbackValue(tc);
-                            sectionView.checkValidity();
-                        } else {
-                            setValue(tc, tc.getText());
-                            sectionView.checkValidity();
-                        }
-                    } else {
-                        org.openide.DialogDescriptor desc = new RefreshDialog(sectionView.getErrorPanel());
-                        Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(desc);
-                        dialog.show();
-                        Integer opt = (Integer) desc.getValue();
-                        if (opt.equals(RefreshDialog.OPTION_FIX)) {
-                            tc.requestFocus();
-                        } else if (opt.equals(RefreshDialog.OPTION_REFRESH)) {
-                            rollbackValue(tc);
-                            sectionView.checkValidity();
-                        }
-                    }
-                } else {
-                    if (!tc.getText().equals(orgValue)) {
-                        setValue(tc, tc.getText());
-                        sectionView.checkValidity();
-                    } else {
-                        if (viewIsBuggy) {
-                            sectionView.checkValidity();
-                        }
-                    }
-                }
-            }
-        });
+        ValidateFocusListener listener = new ValidateFocusListener(tc);
+        flushFocusListeners.add(listener);
+        tc.addFocusListener(listener);
     }
 
     protected void scheduleRefreshView() {
@@ -203,6 +147,25 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
 
     public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         scheduleRefreshView();
+    }
+
+    /**
+     * This method gets called when a bound property is changed.
+     *
+     * @param evt A PropertyChangeEvent object describing the event source
+     *            and the property that has changed.
+     */
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (ToolBarDesignEditor.PROPERTY_FLUSH_DATA.equals(evt.getPropertyName())) {
+            flushData();
+        }
+    }
+
+    public void flushData() {
+        for (Iterator it = flushFocusListeners.iterator(); it.hasNext();) {
+            ((FlushFocusListener) it.next()).flushData();
+        }
     }
 
     private class TextListener implements javax.swing.event.DocumentListener {
@@ -243,4 +206,94 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
         }
     }
 
+    private abstract class FlushFocusListener extends java.awt.event.FocusAdapter {
+        public abstract void flushData();
+    }
+
+    private class ValidateFocusListener extends FlushFocusListener {
+        private String orgValue;
+        private boolean viewIsBuggy;
+        private final JTextComponent tc;
+
+        public ValidateFocusListener(JTextComponent tc) {
+            this.tc = tc;
+        }
+
+        public void focusGained(FocusEvent evt) {
+            orgValue = tc.getText();
+            if (sectionView.getErrorPanel().getError() != null) {
+                viewIsBuggy = true;
+            } else {
+                viewIsBuggy = false;
+            }
+        }
+
+        public void focusLost(FocusEvent evt) {
+            flushData();
+        }
+
+        public void flushData() {
+            Error error = sectionView.getErrorPanel().getError();
+            if (error != null && error.isEditError() && tc == error.getFocusableComponent()) {
+                if (Error.TYPE_WARNING == error.getSeverityLevel()) {
+                    org.openide.DialogDescriptor desc = new RefreshSaveDialog(sectionView.getErrorPanel());
+                    Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(desc);
+                    dialog.show();
+                    Integer opt = (Integer) desc.getValue();
+                    if (opt.equals(RefreshSaveDialog.OPTION_FIX)) {
+                        tc.requestFocus();
+                    } else if (opt.equals(RefreshSaveDialog.OPTION_REFRESH)) {
+                        rollbackValue(tc);
+                        sectionView.checkValidity();
+                    } else {
+                        setValue(tc, tc.getText());
+                        sectionView.checkValidity();
+                    }
+                } else {
+                    org.openide.DialogDescriptor desc = new RefreshDialog(sectionView.getErrorPanel());
+                    Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(desc);
+                    dialog.show();
+                    Integer opt = (Integer) desc.getValue();
+                    if (opt.equals(RefreshDialog.OPTION_FIX)) {
+                        tc.requestFocus();
+                    } else if (opt.equals(RefreshDialog.OPTION_REFRESH)) {
+                        rollbackValue(tc);
+                        sectionView.checkValidity();
+                    }
+                }
+            } else {
+                if (!tc.getText().equals(orgValue)) {
+                    setValue(tc, tc.getText());
+                    sectionView.checkValidity();
+                } else {
+                    if (viewIsBuggy) {
+                        sectionView.checkValidity();
+                    }
+                }
+            }
+        }
+    }
+
+    private class ModifyFocusListener extends FlushFocusListener {
+        private String orgValue;
+        private final JTextComponent tc;
+
+        public ModifyFocusListener(JTextComponent tc) {
+            this.tc = tc;
+        }
+
+        public void focusGained(FocusEvent evt) {
+            orgValue = tc.getText();
+        }
+
+        public void focusLost(FocusEvent evt) {
+            flushData();
+        }
+
+        public void flushData() {
+            if (!tc.getText().equals(orgValue)) {
+                setValue(tc, tc.getText());
+            }
+        }
+    }
 }

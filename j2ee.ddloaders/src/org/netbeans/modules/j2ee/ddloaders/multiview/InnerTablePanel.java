@@ -29,6 +29,8 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
  * @author pfiala
@@ -131,6 +133,16 @@ public class InnerTablePanel extends SectionInnerPanel {
         table = tablePanel.getTable();
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setRowSelectionAllowed(true);
+        table.addMouseListener(new MouseAdapter() {
+            /**
+             * Invoked when the mouse has been clicked on a component.
+             */
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    editCell(table.getSelectedRow(), table.getSelectedColumn());
+                }
+            }
+        });
         InputMap inputMap = table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         inputMap.put(KeyStroke.getKeyStroke("ENTER"), "selectNextColumnCell"); //NOI18N
         inputMap.put(KeyStroke.getKeyStroke("shift ENTER"), "selectPreviousColumnCell");    //NOI18N

@@ -34,6 +34,7 @@ class CmpRelationShipsNode extends EjbSectionNode {
     protected SectionInnerPanel createNodeInnerPanel() {
         final EjbJar ejbJar = (EjbJar) key;
         EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) getSectionNodeView().getDataObject();
+        final CmpRelationshipsDialogHelper dialogHelper = new CmpRelationshipsDialogHelper(dataObject, ejbJar);
         final CmpRelationshipsTableModel model = new CmpRelationshipsTableModel(ejbJar);
         final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
             public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
@@ -41,19 +42,16 @@ class CmpRelationShipsNode extends EjbSectionNode {
                     scheduleRefreshView();
                 }
             }
-        };
-        final CmpRelationshipsDialogHelper dialogHelper = new CmpRelationshipsDialogHelper(dataObject, ejbJar);
-        innerTablePanel.getAddButton().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                dialogHelper.showCmpRelationshipsDialog(Utils.getBundleMessage("LBL_AddCMPRelationship"), null);
-            }
-        });
-        innerTablePanel.getEditButton().addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                int row = innerTablePanel.getTable().getSelectedRow();
+
+            protected void editCell(int row, int column) {
                 EjbRelation ejbRelation = ejbJar.getSingleRelationships().getEjbRelation(row);
                 dialogHelper.showCmpRelationshipsDialog(Utils.getBundleMessage("LBL_Edit_CMP_Relationship"),
                         ejbRelation);
+            }
+        };
+        innerTablePanel.getAddButton().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                dialogHelper.showCmpRelationshipsDialog(Utils.getBundleMessage("LBL_AddCMPRelationship"), null);
             }
         });
         return innerTablePanel;

@@ -16,7 +16,6 @@ package org.netbeans.modules.xml.multiview;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
-import org.openide.windows.CloneableTopComponent;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -24,15 +23,16 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.CloneableTopComponent;
 import org.xml.sax.InputSource;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Enumeration;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 /**
  * XmlMultiviewDataObject.java
@@ -220,31 +220,27 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     protected void updateDocument() {
         //System.out.println("restart Gen");           
         final String newDoc = generateDocumentFromModel();
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    javax.swing.text.Document doc = getEditorSupport().openDocument();
-                    Utils.replaceDocument(doc,newDoc);
-                    //setDocumentValid(true);
-                    //if (saveAfterNodeChanges){
-                    //    SaveCookie savec = (SaveCookie) getCookie(SaveCookie.class);
-                    //    if (savec!=null) savec.save();
-                    //}
-                    // this is necessary for correct undo behaviour
-                    //getEditorSupport().getUndo().discardAllEdits();
-                }
-                catch (javax.swing.text.BadLocationException e) {
-                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
-                }
+        try {
+            javax.swing.text.Document doc = getEditorSupport().openDocument();
+            Utils.replaceDocument(doc,newDoc);
+            //setDocumentValid(true);
+            //if (saveAfterNodeChanges){
+            //    SaveCookie savec = (SaveCookie) getCookie(SaveCookie.class);
+            //    if (savec!=null) savec.save();
+            //}
+            // this is necessary for correct undo behaviour
+            //getEditorSupport().getUndo().discardAllEdits();
+        }
+        catch (javax.swing.text.BadLocationException e) {
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+        }
 
-                catch (IOException e) {
-                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
-                }
-                finally {
-                    changedFromUI=false;                             
-                }
-            }
-        });
+        catch (IOException e) {
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+        }
+        finally {
+            changedFromUI=false;
+        }
     }
     
     /** Display Name for MultiView editor
@@ -342,16 +338,16 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     }
 
     public boolean canClose() {
-        synchronizeModelTask.waitFinished();
-        if (isModified()) {
-            Enumeration enumeration =
-                    ((CloneableTopComponent) getEditorSupport() .getMVTC()).getReference().getComponents();
+        final CloneableTopComponent topComponent = ((CloneableTopComponent) editor.getMVTC());
+        Enumeration enumeration = topComponent.getReference().getComponents();
+        if (enumeration.hasMoreElements()) {
+            enumeration.nextElement();
             if (enumeration.hasMoreElements()) {
-                enumeration.nextElement();
-                return enumeration.hasMoreElements();
+                return true;
             }
-            return false;
         }
-        return true;
+        synchronizeModelTask.schedule(PARSING_INIT_DELAY);
+        synchronizeModelTask.waitFinished();
+        return !isModified();
     }
 }

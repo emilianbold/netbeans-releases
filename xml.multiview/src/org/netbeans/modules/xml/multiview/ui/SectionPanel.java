@@ -103,6 +103,10 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
             return;
         }
         innerPanel = createInnerpanel();
+        final ToolBarDesignEditor toolBarDesignEditor = sectionView.getToolBarDesignEditor();
+        if (toolBarDesignEditor != null) {
+            toolBarDesignEditor.addPropertyChangeListener(innerPanel);
+        }
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -126,6 +130,8 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     protected void closeInnerPanel() {
         if (innerPanel != null) {
             innerPanel.removeFocusListener(sectionFocusListener);
+            sectionView.getToolBarDesignEditor().removePropertyChangeListener(innerPanel);
+            innerPanel.flushData();
             remove(innerPanel);
             innerPanel = null;
         }

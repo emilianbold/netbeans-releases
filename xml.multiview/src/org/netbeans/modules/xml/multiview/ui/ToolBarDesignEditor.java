@@ -13,17 +13,15 @@
 
 package org.netbeans.modules.xml.multiview.ui;
 
-import java.awt.*;
-import javax.swing.*;
-import org.openide.explorer.view.*;
-import org.openide.explorer.*;
-import org.openide.util.Lookup;
-import javax.swing.text.DefaultEditorKit;
-
-import org.openide.util.actions.SystemAction;
-import org.openide.actions.*;
-import org.openide.nodes.*;
 import org.netbeans.modules.xml.multiview.Error;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
+import org.openide.explorer.view.ChoiceView;
+import org.openide.explorer.view.NodeListModel;
+import org.openide.util.Lookup;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * The ComponentPanel three pane editor. This is basically a container that implements the ExplorerManager
@@ -38,6 +36,7 @@ public class ToolBarDesignEditor extends AbstractDesignEditor {
     protected JComponent designPanel;
     private ErrorPanel errorPanel;
     private Object lastActive;
+    public static final String PROPERTY_FLUSH_DATA = "Flush Data"; // NOI18N
 
     /**
      * Creates a new instance of ToolBarDesignEditor

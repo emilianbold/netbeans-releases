@@ -277,7 +277,7 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         }
     }
 
-    private ToolBarDesignEditor getToolBarDesignEditor() {
+    protected ToolBarDesignEditor getToolBarDesignEditor() {
         Container parent = getParent();
         return parent == null ? null : (ToolBarDesignEditor) parent.getParent();
     }

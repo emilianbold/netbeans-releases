@@ -16,12 +16,14 @@ package org.netbeans.modules.xml.multiview;
 import org.netbeans.core.spi.multiview.*;
 import org.openide.windows.TopComponent;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.NbBundle;
 import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.awt.*;
 
 /**
  * XmlMultiviewElement.java
@@ -55,8 +57,14 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     }
     
     public CloseOperationState canCloseElement() {
-        return CloseOperationState.STATE_OK;
-    }    
+        editor.firePropertyChange(ToolBarDesignEditor.PROPERTY_FLUSH_DATA, false, true);
+        if (!dObj.canClose()) {
+            return MultiViewFactory.createUnsafeCloseState(NbBundle.getMessage(ToolBarMultiViewElement.class,
+                    "LBL_DataObjectModified"), null, null);
+        } else {
+            return CloseOperationState.STATE_OK;
+        }
+    }
     
     public void componentActivated() {
        editor.componentActivated();

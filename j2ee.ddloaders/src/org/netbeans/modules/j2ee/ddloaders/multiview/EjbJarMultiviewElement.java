@@ -12,8 +12,6 @@
  */
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.core.spi.multiview.CloseOperationState;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
@@ -72,13 +70,4 @@ public abstract class EjbJarMultiviewElement extends ToolBarMultiViewElement {
     }
 
     protected abstract PanelView createView();
-
-    public CloseOperationState canCloseElement() {
-        if (! dataObject.canClose()) {
-            return MultiViewFactory.createUnsafeCloseState(Utils.getBundleMessage("LBL_DataObjectModified"), null,
-                    null);
-        } else {
-            return CloseOperationState.STATE_OK;
-        }
-    }
 }
