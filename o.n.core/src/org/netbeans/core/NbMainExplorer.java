@@ -294,10 +294,10 @@ public final class NbMainExplorer extends CloneableTopComponent
         Places.Nodes ns = TopManager.getDefault().getPlaces().nodes();
         // build the list of roots
         LinkedList result = new LinkedList();
-        // workplace
-        result.add(ns.project ());
         // repository
         result.add(ns.repository());
+        // workplace
+        result.add(ns.project ());
         // roots added by modules (javadoc etc...)
         result.addAll(Arrays.asList(ns.roots()));
         // runtime
