@@ -181,7 +181,11 @@ public abstract class FormatterIndentEngineBeanInfo extends SimpleBeanInfo {
     
     private String getValidIconPrefix() {
         return (iconPrefix != null) ? iconPrefix
-            : "/org/netbeans/modules/editor/resources/indentEngine";
+            : "org/netbeans/modules/editor/resources/indentEngine";
+    }
+    
+    private Image getDefaultIcon(String iconResource){
+        return Utilities.loadImage(iconResource);
     }
 
     public Image getIcon(int type) {
@@ -189,13 +193,13 @@ public abstract class FormatterIndentEngineBeanInfo extends SimpleBeanInfo {
             if (icon == null) {
                 icon = loadImage(getValidIconPrefix() + ".gif"); // NOI18N
             }
-            return icon;
+            return (icon != null) ? icon : getDefaultIcon(getValidIconPrefix() + ".gif");
 
         } else {
             if (icon32 == null) {
                 icon32 = loadImage(getValidIconPrefix() + "32.gif"); // NOI18N
             }
-            return icon32;
+            return (icon32 != null) ? icon32 : getDefaultIcon(getValidIconPrefix() + "32.gif");
         }
     }
 
