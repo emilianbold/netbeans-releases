@@ -21,232 +21,430 @@ Microsystems, Inc. All Rights Reserved.
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
 
-<xsl:comment> *** GENERATED FROM project.xml - DO NOT EDIT *** </xsl:comment>
+        <xsl:comment><![CDATA[
+*** GENERATED FROM project.xml - DO NOT EDIT  ***
+***         EDIT ../build.xml INSTEAD         ***
 
-<xsl:variable name="name" select="/p:project/p:name"/>
-<project name="{$name}-impl" default="build" basedir="..">
-    <target name="init">
-        <!--
-        <xsl:variable name="cp">
-            <xsl:for-each select="/p:project/p:configuration/web:data/web:web-module-libraries/web:library">
-                <xsl:value-of select="web:file"/>
-                <xsl:text>;</xsl:text>
-            </xsl:for-each>
-        </xsl:variable>
-        <property name="javac.classpath" value="{$cp}"/>
-        -->
-        <property file="nbproject/private/private.properties"/>
-        <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
-        <property file="${{user.properties.file}}"/>
-        <property file="nbproject/project.properties"/>
-        <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
-            <!-- XXX Ugly but Ant does not yet support recursive property evaluation: -->
-            <property name="file.tmp" location="${{java.io.tmpdir}}/platform.properties"/>
-            <echo file="${{file.tmp}}">
-                platform.home=$${platforms.${platform.active}.home}
-                platform.bootcp=$${platforms.${platform.active}.bootclasspath}
-                build.compiler=$${platforms.${platform.active}.compiler}
-            </echo>
-            <property file="${{file.tmp}}"/>
-            <delete file="${{file.tmp}}"/>
-            <fail unless="platform.home">Must set platform.home</fail>
-            <fail unless="platform.bootcp">Must set platform.bootcp</fail>
-        </xsl:if>
-        <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
-        <!-- Note that if the properties were defined in project.xml that would be easy -->
-        <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
-        <fail unless="src.dir">Must set src.dir</fail>
-        <fail unless="build.dir">Must set build.dir</fail>
-        <fail unless="build.web.dir">Must set build.web.dir</fail>
-        <fail unless="build.generated.dir">Must set build.generated.dir</fail>
-        <fail unless="dist.dir">Must set dist.dir</fail>
-        <fail unless="build.classes.dir">Must set build.classes.dir</fail>
-        <fail unless="dist.javadoc.dir">Must set dist.javadoc.dir</fail>
-        <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
-        <fail unless="dist.war">Must set dist.war</fail>
-        <xsl:if test="/p:project/p:configuration/web:data/web:use-manifest">
-            <fail unless="manifest.file">Must set manifest.file</fail>
-        </xsl:if>
+For the purpose of easier reading the script
+is divided into following sections:
 
-        <condition property="no.deps">
-            <istrue value="${{no.dependencies}}"/>
-        </condition>
-        <condition property="no.javadoc.preview">
-            <isfalse value="${{javadoc.preview}}"/>
-        </condition>
-        <taskdef name="copyfiles" classname="org.netbeans.modules.web.project.ant.CopyFiles" classpath="${{libs.copyfiles.classpath}}"/>
-        <condition property="do.compile.jsps">
-            <istrue value="${{compile.jsps}}"/>
-        </condition>
-    </target>
+  - initialization
+  - compilation
+  - dist
+  - execution
+  - debugging
+  - javadoc
+  - cleanup
 
-    <xsl:call-template name="deps.target">
-        <xsl:with-param name="targetname" select="'deps-jar'"/>
-        <xsl:with-param name="type" select="'jar'"/>
-    </xsl:call-template>
+]]></xsl:comment>
 
-    <target name="compile-classes" depends="init,deps-jar">
-        <mkdir dir="${{build.classes.dir}}"/>
-        <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
-                <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false" fork="yes" executable="${{platform.home}}/bin/javac">
-                    <classpath>
-                        <path path="${{javac.classpath}}"/>
-                    </classpath>
-                </javac>
-            </xsl:when>
-            <xsl:otherwise>
-                <javac srcdir="${{src.dir}}" destdir="${{build.classes.dir}}" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false">
-                    <classpath>
-                        <path path="${{javac.classpath}}"/>
-                    </classpath>
-                </javac>
-            </xsl:otherwise>
-        </xsl:choose>
-        <copy todir="${{build.classes.dir}}">
-            <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
-        </copy>
-    </target>
-    
-    <target name="compile" depends="init,deps-jar,compile-classes">
-        <copy todir="${{build.web.dir}}">
-          <fileset excludes="WEB-INF/classes/**" dir="${{web.docbase.dir}}"/>
-        </copy>
-        <!-- copy libraries -->
-        <xsl:for-each select="/p:project/p:configuration/web:data/web:web-module-libraries/web:library[web:path-in-war]">
-            <xsl:variable name="copyto" select=" web:path-in-war"/>
-            <xsl:variable name="libfile" select="web:file"/>
-            <copyfiles todir="${{build.web.dir}}/{$copyto}" files="{$libfile}"/>
-        </xsl:for-each>
-        <xsl:for-each select="/p:project/p:configuration/web:data/web:web-module-additional-libraries/web:library[web:path-in-war]">
-            <xsl:variable name="copyto" select=" web:path-in-war"/>
-            <xsl:variable name="libfile" select="web:file"/>
-            <copyfiles todir="${{build.web.dir}}/{$copyto}" files="{$libfile}"/>
-        </xsl:for-each>
-    </target>
+        <xsl:variable name="name" select="/p:project/p:name"/>
+        <project name="{$name}-impl">
+            <xsl:attribute name="default">build</xsl:attribute>
+            <xsl:attribute name="basedir">..</xsl:attribute>
 
-    <target name="compile-jsps" depends="compile" if="do.compile.jsps"> 
+            <target name="default">
+                <xsl:attribute name="depends">dist,javadoc</xsl:attribute>
+                <xsl:attribute name="description">Build whole project.</xsl:attribute>
+            </target>
 
-      <taskdef classname="org.apache.jasper.JspC" name="jasper2" > 
-        <classpath path="${{jspc.classpath}}"/> 
-      </taskdef> 
+            <xsl:comment> 
+    ======================
+    INITIALIZATION SECTION 
+    ======================
+    </xsl:comment>
 
-      <mkdir dir="${{build.generated.dir}}/src"/>
-      <jasper2
-             validateXml="false" 
-             uriroot="${{basedir}}/${{build.web.dir}}" 
-             outputDir="${{basedir}}/${{build.generated.dir}}/src" /> 
+            <target name="pre-init">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="init-private">
+                <xsl:attribute name="depends">pre-init</xsl:attribute>
+                <property file="nbproject/private/private.properties"/>
+            </target>
+
+            <target name="init-userdir">
+                <xsl:attribute name="depends">pre-init,init-private</xsl:attribute>
+                <property name="user.properties.file" location="${{netbeans.user}}/build.properties"/>
+            </target>
+
+            <target name="init-user">
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir</xsl:attribute>
+                <property file="${{user.properties.file}}"/>
+            </target>
+
+            <target name="init-project">
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user</xsl:attribute>
+                <property file="nbproject/project.properties"/>
+            </target>
+
+            <target name="do-init">
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project</xsl:attribute>
+                <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
+                    <!--Setting java and javac default location -->
+                    <property name="platforms.${{platform.active}}.javac" value="${{platform.home}}/bin/javac"/>
+                    <property name="platforms.${{platform.active}}.java" value="${{platform.home}}/bin/java"/>
+                    <!-- XXX Ugly but Ant does not yet support recursive property evaluation: -->
+                    <tempfile property="file.tmp" prefix="platform" suffix=".properties"/>
+                    <echo file="${{file.tmp}}">
+                        platform.home=$${platforms.${platform.active}.home}
+                        platform.bootcp=$${platforms.${platform.active}.bootclasspath}                
+                        build.compiler=$${platforms.${platform.active}.compiler}
+                        platform.java=$${platforms.${platform.active}.java}
+                        platform.javac=$${platforms.${platform.active}.javac}
+                    </echo>
+                    <property file="${{file.tmp}}"/>
+                    <delete file="${{file.tmp}}"/>
+                    <fail unless="platform.home">Must set platform.home</fail>
+                    <fail unless="platform.bootcp">Must set platform.bootcp</fail>                        
+                    <fail unless="platform.java">Must set platform.java</fail>
+                    <fail unless="platform.javac">Must set platform.javac</fail>
+                </xsl:if>
+                <xsl:comment> The two properties below are usually overridden </xsl:comment>
+                <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
+                <property name="default.javac.source" value="1.4"/>
+                <property name="default.javac.target" value="1.4"/>
+                <xsl:if test="/p:project/p:configuration/web:data/web:use-manifest">
+                    <fail unless="manifest.file">Must set manifest.file</fail>
+                </xsl:if>
+                <condition property="no.javadoc.preview">
+                    <isfalse value="${{javadoc.preview}}"/>
+                </condition>
+                <condition property="do.compile.jsps">
+                    <istrue value="${{compile.jsps}}"/>
+                </condition>
+                <condition property="do.display.browser">
+                    <istrue value="${{display.browser}}"/>
+                </condition>
+            </target>
+
+            <target name="post-init">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="init-check">
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init</xsl:attribute>
+                <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
+                <!-- Note that if the properties were defined in project.xml that would be easy -->
+                <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
+                <fail unless="src.dir">Must set src.dir</fail>
+                <fail unless="build.dir">Must set build.dir</fail>
+                <fail unless="build.web.dir">Must set build.web.dir</fail>
+                <fail unless="build.generated.dir">Must set build.generated.dir</fail>
+                <fail unless="dist.dir">Must set dist.dir</fail>
+                <fail unless="build.classes.dir">Must set build.classes.dir</fail>
+                <fail unless="dist.javadoc.dir">Must set dist.javadoc.dir</fail>
+                <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
+                <fail unless="dist.war">Must set dist.war</fail>
+            </target>
+
+            <target name="init-macrodef-javac">
+                <macrodef>
+                    <xsl:attribute name="name">javac</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">srcdir</xsl:attribute>
+                        <xsl:attribute name="default">${src.dir}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">destdir</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${javac.classpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">debug</xsl:attribute>
+                        <xsl:attribute name="default">${javac.debug}</xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <javac>
+                            <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
+                            <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
+                            <xsl:attribute name="debug">@{debug}</xsl:attribute>
+                            <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
+                            <xsl:attribute name="source">${javac.source}</xsl:attribute>
+                            <xsl:attribute name="target">${javac.target}</xsl:attribute>
+                            <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
+                                <xsl:attribute name="fork">yes</xsl:attribute>
+                                <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
+                            </xsl:if>
+                            <xsl:attribute name="includeantruntime">false</xsl:attribute>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                            <customize/>
+                        </javac>
+                    </sequential>
+                 </macrodef>
+            </target>
+
+            <target name="init-macrodef-nbjpda">
+                <macrodef>
+                    <xsl:attribute name="name">nbjpdastart</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">name</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="@{{name}}">
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                            <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
+                                <bootclasspath>
+                                    <path path="${{platform.bootcp}}"/>
+                                </bootclasspath>
+                            </xsl:if>
+                        </nbjpdastart>
+                    </sequential>
+                </macrodef>
+                <macrodef>
+                    <xsl:attribute name="name">nbjpdareload</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">dir</xsl:attribute>
+                        <xsl:attribute name="default">${build.classes.dir}</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <nbjpdareload>
+                            <fileset includes="${{fix.includes}}*.class" dir="@{{dir}}"/>
+                        </nbjpdareload>
+                    </sequential>
+                </macrodef>
+            </target>
+
+            <target name="init-macrodef-debug">
+                <macrodef>
+                    <xsl:attribute name="name">debug</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classname</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">args</xsl:attribute>
+                        <xsl:attribute name="default">${application.args}</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <java fork="true" classname="@{{classname}}">
+                            <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
+                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                                <bootclasspath>
+                                    <path path="${{platform.bootcp}}"/>
+                                </bootclasspath>
+                            </xsl:if>
+                            <jvmarg value="-Xdebug"/>
+                            <jvmarg value="-Xnoagent"/>
+                            <jvmarg value="-Djava.compiler=none"/>
+                            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                            <arg line="@{{args}}"/>
+                        </java>
+                    </sequential>
+                </macrodef>
+            </target>
+            
+            <target name="init-taskdefs">
+                <taskdef name="copyfiles" classname="org.netbeans.modules.web.project.ant.CopyFiles" classpath="${{libs.copyfiles.classpath}}"/>
+            </target>
+            
+            <target name="init">
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-macrodef-javac,init-macrodef-nbjpda,init-macrodef-debug,init-taskdefs</xsl:attribute>
+            </target>
+
+            <xsl:comment>
+    ===================
+    COMPILATION SECTION
+    ===================
+    </xsl:comment>
+
+            <xsl:call-template name="deps.target">
+                <xsl:with-param name="targetname" select="'deps-jar'"/>
+                <xsl:with-param name="type" select="'jar'"/>
+            </xsl:call-template>
+
+            <target name="pre-pre-compile">
+                <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
+                <mkdir dir="${{build.classes.dir}}"/>
+            </target>
+
+            <target name="pre-compile">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="do-compile">
+                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
+                <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1"/>
+                <copy todir="${{build.classes.dir}}">
+                    <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
+                </copy>
+                <copy todir="${{build.web.dir}}">
+                  <fileset excludes="WEB-INF/classes/**" dir="${{web.docbase.dir}}"/>
+                </copy>
+                <xsl:for-each select="/p:project/p:configuration/web:data/web:web-module-libraries/web:library[web:path-in-war]">
+                    <xsl:variable name="copyto" select=" web:path-in-war"/>
+                    <xsl:variable name="libfile" select="web:file"/>
+                    <copyfiles todir="${{build.web.dir}}/{$copyto}" files="{$libfile}"/>
+                </xsl:for-each>
+                <xsl:for-each select="/p:project/p:configuration/web:data/web:web-module-additional-libraries/web:library[web:path-in-war]">
+                    <xsl:variable name="copyto" select=" web:path-in-war"/>
+                    <xsl:variable name="libfile" select="web:file"/>
+                    <copyfiles todir="${{build.web.dir}}/{$copyto}" files="{$libfile}"/>
+                </xsl:for-each>
+            </target>
+
+            <target name="post-compile">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="compile">
+                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile,do-compile,post-compile</xsl:attribute>
+                <xsl:attribute name="description">Compile project.</xsl:attribute>
+            </target>
+
+            <target name="pre-compile-single">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="do-compile-single">
+                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile</xsl:attribute>
+                <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+                <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1">
+                    <customize>
+                        <include name="${{javac.includes}}"/>
+                    </customize>
+                </webproject:javac>
+            </target>
+
+            <target name="post-compile-single">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="compile-single">
+                <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile-single,do-compile-single,post-compile-single</xsl:attribute>
+            </target>
+
+            <target name="compile-jsps" depends="compile" if="do.compile.jsps"> 
+                <taskdef classname="org.apache.jasper.JspC" name="jasper2" > 
+                    <classpath path="${{jspc.classpath}}"/> 
+                </taskdef> 
+
+                <mkdir dir="${{build.generated.dir}}/src"/>
+                <jasper2
+                    validateXml="false" 
+                    uriroot="${{basedir}}/${{build.web.dir}}" 
+                    outputDir="${{basedir}}/${{build.generated.dir}}/src" /> 
+                <mkdir dir="${{build.generated.dir}}/classes"/>
+                <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1"
+                    srcdir="${{build.generated.dir}}/src"
+                    destdir="${{build.generated.dir}}/classes"
+                    classpath="${{javac.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}"/>
+
+            </target> 
+
+            <target name="compile-single-jsp" depends="compile"> 
+                <fail unless="jsp.includes">Must select a file in the IDE or set jsp.includes</fail>
+
+                <taskdef classname="org.netbeans.modules.web.project.ant.JspCSingle" name="single-jspc" > 
+                    <classpath path="${{libs.copyfiles.classpath}}:${{jspc.classpath}}"/>
+                </taskdef> 
+
+                <mkdir dir="${{build.generated.dir}}/src"/>
+                <single-jspc
+                     validateXml="false" 
+                     uriroot="${{basedir}}/${{build.web.dir}}" 
+                     outputDir="${{basedir}}/${{build.generated.dir}}/src"
+                     jspincludes="${{jsp.includes}}" /> 
              
-       <mkdir dir="${{build.generated.dir}}/classes"/>
-        <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
-                <javac srcdir="${{build.generated.dir}}/src" destdir="${{build.generated.dir}}/classes" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false" fork="yes" executable="${{platform.home}}/bin/javac">
-                    <classpath>
-                        <path path="${{javac.classpath}}:${{build.classes.dir}}"/>
-                        <path path="${{jspc.classpath}}"/>
-                    </classpath>
-                </javac>
-            </xsl:when>
-            <xsl:otherwise>
-                <javac srcdir="${{build.generated.dir}}/src" destdir="${{build.generated.dir}}/classes" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false">
-                    <classpath>
-                        <path path="${{javac.classpath}}:${{build.classes.dir}}"/>
-                        <path path="${{jspc.classpath}}"/>
-                    </classpath>
-                </javac>
-            </xsl:otherwise>
-        </xsl:choose>
-    </target> 
+                <mkdir dir="${{build.generated.dir}}/classes"/>
+                <!--
+                <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1">
+                    <xsl:with-param name="srcdir" select="'${{build.generated.dir}}/src'"/>
+                    <xsl:with-param name="destdir" select="'${{build.generated.dir}}/classes'"/>
+                    <xsl:with-param name="classpath" select="'${{javac.classpath}}:${{build.classes.dir}}'"/>
+                    <xsl:with-param name="classpath" select="'${{javac.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}'"/>
+               </webproject:javac>
+               -->
+            </target>
+            
+            <xsl:comment>
+    ====================
+    DIST BUILDING SECTION
+    ====================
+    </xsl:comment>
 
-    <target name="compile-single-jsp" depends="compile"> 
-      <fail unless="jsp.includes">Must select a file in the IDE or set jsp.includes</fail>
+            <target name="pre-dist">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
 
-      <taskdef classname="org.netbeans.modules.web.project.ant.JspCSingle" name="single-jspc" > 
-        <classpath path="${{libs.copyfiles.classpath}}:${{jspc.classpath}}"/>
-      </taskdef> 
+            <target name="do-dist">
+                <xsl:attribute name="depends">init,compile,compile-jsps,pre-dist</xsl:attribute>
+                <dirname property="dist.jar.dir" file="${{dist.war}}"/>
+                <mkdir dir="${{dist.jar.dir}}"/>
+                <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
+                    <fileset dir="${{build.web.dir}}"/>
+                </jar>
+            </target>
 
-      <mkdir dir="${{build.generated.dir}}/src"/>
-      <single-jspc
-             validateXml="false" 
-             uriroot="${{basedir}}/${{build.web.dir}}" 
-             outputDir="${{basedir}}/${{build.generated.dir}}/src"
-             jspincludes="${{jsp.includes}}" /> 
-             
-       <mkdir dir="${{build.generated.dir}}/classes"/>
-        <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
-                <javac srcdir="${{build.generated.dir}}/src" destdir="${{build.generated.dir}}/classes" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false" fork="yes" executable="${{platform.home}}/bin/javac">
-                    <classpath>
-                        <path path="${{javac.classpath}}:${{build.classes.dir}}"/>
-                        <path path="${{jspc.classpath}}"/>
-                    </classpath>
-                </javac>
-            </xsl:when>
-            <xsl:otherwise>
-                <javac srcdir="${{build.generated.dir}}/src" destdir="${{build.generated.dir}}/classes" debug="${{javac.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}" source="${{javac.source}}" includeantruntime="false">
-                    <classpath>
-                        <path path="${{javac.classpath}}:${{build.classes.dir}}"/>
-                        <path path="${{jspc.classpath}}"/>
-                    </classpath>
-                </javac>
-            </xsl:otherwise>
-        </xsl:choose>
-    </target> 
+            <target name="post-dist">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
 
+            <target name="dist">
+                <xsl:attribute name="depends">init,compile,pre-dist,do-dist,post-dist</xsl:attribute>
+                <xsl:attribute name="description">Build distribution (WAR).</xsl:attribute>
+            </target>
 
-    <target name="compile-single" depends="init,deps-jar">
-        <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+            <xsl:comment>
+    =================
+    EXECUTION SECTION
+    =================
+    </xsl:comment>
 
-        <!-- XXX this block of <condition>s is pretty ugly; better to use a templated target, or <macrodef> -->
-        <property name="task-tmp.src.dir" value="${{src.dir}}"/>
-                                
-        <property name="task-tmp.out.dir" value="${{build.classes.dir}}"/> 
-        
-        <property name="task-tmp.classpath" value="${{javac.classpath}}"/>
-        
-        <property name="task-tmp.debug" value="${{javac.debug}}"/>
-        
-        <property location="${{task-tmp.src.dir}}" name="tmp-task.src.dir.absolute"/>        
-        
-        <mkdir dir="${{task-tmp.out.dir}}"/>
-
-        <xsl:choose>
-            <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
-                <javac srcdir="${{task-tmp.src.dir}}" destdir="${{task-tmp.out.dir}}"
-                    debug="${{task-tmp.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}"
-                    source="${{javac.source}}" includes="${{javac.includes}}" includeantruntime="false"
-                    fork="yes" executable="${{platform.home}}/bin/javac">
-                    <classpath>
-                        <path path="${{task-tmp.classpath}}"/>
-                    </classpath>
-                </javac>
-            </xsl:when>
-            <xsl:otherwise>
-                <javac srcdir="${{task-tmp.src.dir}}" destdir="${{task-tmp.out.dir}}"
-                    debug="${{task-tmp.debug}}" deprecation="${{javac.deprecation}}" target="${{javac.target}}"
-                    source="${{javac.source}}" includes="${{javac.includes}}" includeantruntime="false">
-                    <classpath>
-                        <path path="${{task-tmp.classpath}}"/>
-                    </classpath>
-                </javac>
-            </xsl:otherwise>
-        </xsl:choose>        
-    </target>
-    
-    <target name="dist" depends="init,compile,compile-jsps">
-        <dirname property="dist.jar.dir" file="${{dist.war}}"/>
-        <mkdir dir="${{dist.jar.dir}}"/>
-        <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
-            <fileset dir="${{build.web.dir}}"/>
-        </jar>
-    </target>
-
-    <target name="run" depends="init,compile,compile-jsps">
-        <nbdeploy debugmode="false" clientUrlPart="${{client.urlPart}}" forceRedeploy="${{forceRedeploy}}">
-        </nbdeploy>
-        <nbbrowse url="${{client.url}}"/>
-    </target>
-
+            <target name="run">
+                <xsl:attribute name="depends">run-deploy,run-display-browser</xsl:attribute>
+                <xsl:attribute name="description">Deploy to server and show in browser.</xsl:attribute>
+            </target>
+            
+            <target name="run-deploy">
+                <xsl:attribute name="depends">init,compile,compile-jsps</xsl:attribute>
+                <nbdeploy debugmode="false" clientUrlPart="${{client.urlPart}}" forceRedeploy="${{forceRedeploy}}"/>
+            </target>
+            
+            <target name="run-display-browser" if="do.display.browser">
+                <xsl:attribute name="depends">run-deploy</xsl:attribute>
+                <nbbrowse url="${{client.url}}"/>
+            </target>
+            <xsl:comment>
+    =================
+    DEBUGGING SECTION
+    =================
+    </xsl:comment>
     <target name="debug-nb" depends="init,compile,compile-jsps" if="netbeans.home">
         <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}">
         </nbdeploy>
@@ -278,50 +476,85 @@ Microsystems, Inc. All Rights Reserved.
         </nbjpdareload>
     </target>
     
-    <target name="javadoc" depends="init">
-        <mkdir dir="${{dist.javadoc.dir}}"/>
-        <!-- XXX do an up-to-date check first -->
-        <javadoc destdir="${{dist.javadoc.dir}}" source="${{javac.source}}"
-                 notree="${{javadoc.notree}}"
-                 use="${{javadoc.use}}"
-                 nonavbar="${{javadoc.nonavbar}}"
-                 noindex="${{javadoc.noindex}}"
-                 splitindex="${{javadoc.splitindex}}"
-                 author="${{javadoc.author}}"
-                 version="${{javadoc.version}}"
-                 windowtitle="${{javadoc.windowtitle}}"
-                 private="${{javadoc.private}}" >
-                 <!-- encoding="${{javadoc.encoding}}" -->
-            <classpath>
-                <path path="${{javac.classpath}}"/>
-            </classpath>
-            <sourcepath>
-                <pathelement location="${{src.dir}}"/>
-            </sourcepath>
-            <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
-            <bootclasspath>
-                <path path="${{platform.bootcp}}"/>
-            </bootclasspath>
-            </xsl:if>
-            <fileset dir="${{src.dir}}"/>
-        </javadoc>
-    </target>
-    
-    <target name="javadoc-nb" depends="init,javadoc" if="netbeans.home" unless="no.javadoc.preview">
-        <nbbrowse file="${{dist.javadoc.dir}}/index.html"/>
-    </target>
+            <xsl:comment>
+    ===============
+    JAVADOC SECTION
+    ===============
+    </xsl:comment>
 
-    <xsl:call-template name="deps.target">
-        <xsl:with-param name="targetname" select="'deps-clean'"/>
-    </xsl:call-template>
+            <target name="javadoc-build">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <mkdir dir="${{dist.javadoc.dir}}"/>
+                <!-- XXX do an up-to-date check first -->
+                <javadoc destdir="${{dist.javadoc.dir}}" source="${{javac.source}}"
+                         notree="${{javadoc.notree}}"
+                         use="${{javadoc.use}}"
+                         nonavbar="${{javadoc.nonavbar}}"
+                         noindex="${{javadoc.noindex}}"
+                         splitindex="${{javadoc.splitindex}}"
+                         author="${{javadoc.author}}"
+                         version="${{javadoc.version}}"
+                         windowtitle="${{javadoc.windowtitle}}"
+                         private="${{javadoc.private}}" >
+                         <!-- encoding="${{javadoc.encoding}}" -->
+                    <classpath>
+                        <path path="${{javac.classpath}}"/>
+                    </classpath>
+                    <sourcepath>
+                        <pathelement location="${{src.dir}}"/>
+                    </sourcepath>
+                    <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
+                        <bootclasspath>
+                            <path path="${{platform.bootcp}}"/>
+                        </bootclasspath>
+                    </xsl:if>
+                    <fileset dir="${{src.dir}}"/>
+                </javadoc>
+            </target>
 
-    <target name="clean" depends="init,deps-clean">
-        <delete dir="${{build.dir}}"/>
-        <delete dir="${{dist.dir}}"/>
-        <!-- XXX explicitly delete all build.* and dist.* dirs in case they are not subdirs -->
-    </target>
+            <target name="javadoc-browse">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="unless">no.javadoc.preview</xsl:attribute>
+                <xsl:attribute name="depends">init,javadoc-build</xsl:attribute>
+                <nbbrowse file="${{dist.javadoc.dir}}/index.html"/>
+            </target>
 
-</project>
+            <target name="javadoc">
+                <xsl:attribute name="depends">init,javadoc-build,javadoc-browse</xsl:attribute>
+                <xsl:attribute name="description">Build Javadoc.</xsl:attribute>
+            </target>
+            
+            <xsl:comment>
+    ===============
+    CLEANUP SECTION
+    ===============
+    </xsl:comment>
+
+            <xsl:call-template name="deps.target">
+                <xsl:with-param name="targetname" select="'deps-clean'"/>
+            </xsl:call-template>
+
+            <target name="do-clean">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <delete dir="${{build.dir}}"/>
+                <delete dir="${{dist.dir}}"/>
+                <!-- XXX explicitly delete all build.* and dist.* dirs in case they are not subdirs -->
+                <!--
+                <delete dir="${{build.generated.dir}}"/>
+                <delete dir="${{build.web.dir}}"/> 
+                -->
+            </target>
+
+            <target name="post-clean">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="clean">
+                <xsl:attribute name="depends">init,deps-clean,do-clean,post-clean</xsl:attribute>
+                <xsl:attribute name="description">Clean build products.</xsl:attribute>
+            </target>
+        </project>
 
 <!-- TBD items:
 
@@ -353,7 +586,9 @@ to simulate
     <xsl:template name="deps.target">
         <xsl:param name="targetname"/>
         <xsl:param name="type"/>
-        <target name="{$targetname}" depends="init" unless="no.deps">
+        <target name="{$targetname}">
+            <xsl:attribute name="depends">init</xsl:attribute>
+            <xsl:attribute name="unless">${no.dependencies}</xsl:attribute>
             <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
             <xsl:for-each select="$references/projdeps:reference[not($type) or projdeps:artifact-type = $type]">
                 <xsl:variable name="subproj" select="projdeps:foreign-project"/>
