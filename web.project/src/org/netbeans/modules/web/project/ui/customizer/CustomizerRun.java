@@ -14,17 +14,17 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import org.netbeans.modules.web.project.ProjectWebModule;
+import org.netbeans.modules.web.project.Utils;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import org.openide.util.NbBundle;
-import org.openide.NotifyDescriptor;
-import org.openide.DialogDisplayer;
+import org.openide.WizardValidationException;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.openide.util.HelpCtx;
 
-public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCtx.Provider {
+public class CustomizerRun extends JPanel implements WebCustomizer.ValidatingPanel, HelpCtx.Provider {
     
     // Helper for storing properties
     private VisualPropertySupport vps;
@@ -34,7 +34,6 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
     String[] serverNames;
     String[] serverURLs;
     boolean initialized = false;
-    private org.openide.util.RequestProcessor.Task checkCPTask;
 
     private WebProjectProperties webProperties;
 
@@ -47,7 +46,15 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
         this.wm = wm;        
         vps = new VisualPropertySupport(webProperties);
     }
-    
+
+    public void validatePanel() throws WizardValidationException {
+        final String message = contextPathValidation();
+        if(message != null) {
+            throw new WizardValidationException(jTextFieldContextPath, message, message);
+        }
+    }
+
+
     public void initValues() {
         initialized = false;
         Deployment deployment = Deployment.getDefault ();
@@ -93,6 +100,8 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
         vps.register(jTextFieldContextPath, WebProjectProperties.CONTEXT_PATH);
 
         jTextFieldRelativeURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
+
+        errorLabel.setForeground(Utils.getErrorColor());
         initialized = true;
     } 
     
@@ -112,7 +121,10 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
         jLabelContextPathDesc = new javax.swing.JLabel();
         jLabelRelativeURL = new javax.swing.JLabel();
         jTextFieldRelativeURL = new javax.swing.JTextField();
+        errorLabel = new javax.swing.JLabel();
         jLabelURLExample = new javax.swing.JLabel();
+
+        FormListener formListener = new FormListener();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -125,11 +137,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 0);
         add(jLabelContextPath, gridBagConstraints);
 
-        jTextFieldContextPath.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                jTextFieldContextPathKeyReleased(evt);
-            }
-        });
+        jTextFieldContextPath.addKeyListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -149,11 +157,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
         add(jLabelServer, gridBagConstraints);
 
-        jComboBoxServer.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jComboBoxServerActionPerformed(evt);
-            }
-        });
+        jComboBoxServer.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -167,11 +171,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
         jCheckBoxDisplayBrowser.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeRun_DisplayBrowser_LabelMnemonic").charAt(0));
         jCheckBoxDisplayBrowser.setSelected(true);
         jCheckBoxDisplayBrowser.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_DisplayBrowser_JCheckBox"));
-        jCheckBoxDisplayBrowser.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBoxDisplayBrowserActionPerformed(evt);
-            }
-        });
+        jCheckBoxDisplayBrowser.addActionListener(formListener);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -212,6 +212,16 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
         add(jTextFieldRelativeURL, gridBagConstraints);
         jTextFieldRelativeURL.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeRun_RelativeURL_A11YDesc"));
 
+        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, " ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 12);
+        add(errorLabel, gridBagConstraints);
+
         jLabelURLExample.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_RelativeURLExample"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -224,11 +234,35 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
         add(jLabelURLExample, gridBagConstraints);
         jLabelURLExample.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "ACS_CustomizeRun_RelativeURLExample_A11YDesc"));
 
+    }
+
+    // Code for dispatching events from components to event handlers.
+
+    private class FormListener implements java.awt.event.ActionListener, java.awt.event.KeyListener {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            if (evt.getSource() == jComboBoxServer) {
+                CustomizerRun.this.jComboBoxServerActionPerformed(evt);
+            }
+            else if (evt.getSource() == jCheckBoxDisplayBrowser) {
+                CustomizerRun.this.jCheckBoxDisplayBrowserActionPerformed(evt);
+            }
+        }
+
+        public void keyPressed(java.awt.event.KeyEvent evt) {
+        }
+
+        public void keyReleased(java.awt.event.KeyEvent evt) {
+            if (evt.getSource() == jTextFieldContextPath) {
+                CustomizerRun.this.jTextFieldContextPathKeyReleased(evt);
+            }
+        }
+
+        public void keyTyped(java.awt.event.KeyEvent evt) {
+        }
     }//GEN-END:initComponents
 
     private void jTextFieldContextPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldContextPathKeyReleased
-        // TODO add your handling code here:
-        restartTimer();
+        checkContextPath();
     }//GEN-LAST:event_jTextFieldContextPathKeyReleased
 
     private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxServerActionPerformed
@@ -249,6 +283,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
     }//GEN-LAST:event_jCheckBoxDisplayBrowserActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel errorLabel;
     private javax.swing.JCheckBox jCheckBoxDisplayBrowser;
     private javax.swing.JComboBox jComboBoxServer;
     private javax.swing.JLabel jLabelContextPath;
@@ -266,41 +301,28 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerRun.class);
     }
-    
-    private boolean isCorrectCP(String contextPath) {
-        boolean correct=true;
-        if (!contextPath.equals("") && !contextPath.startsWith("/")) correct=false; //NOI18N
-        else if (contextPath.endsWith("/")) correct=false; //NOI18N
-        else if (contextPath.indexOf("//")>=0) correct=false; //NOI18N
-        return correct;
+
+    private boolean checkContextPath() {
+        String message = contextPathValidation();
+        errorLabel.setText(message);
+        return message != null;
     }
-    
-    /** Restart the timer which starts the task after the specified delay.
-    */
-    private void restartTimer() {
-        Runnable r = new Runnable() {
-            public void run() {
-                String contextPath = jTextFieldContextPath.getText();
-                if (!isCorrectCP(contextPath)) {
-                    java.util.StringTokenizer tok = new java.util.StringTokenizer(contextPath,"/"); //NOI18N
-                    StringBuffer buf = new StringBuffer(""); //NOI18N
-                    while (tok.hasMoreTokens()) {
-                        buf.append("/"+tok.nextToken()); //NOI18N
-                    }
-                    String updatedPath = buf.toString();
-                    jTextFieldContextPath.setText(updatedPath);
-                    String mes = java.text.MessageFormat.format (
-                            NbBundle.getMessage (CustomizerRun.class, "MSG_invalidCP"),
-                            new Object [] {contextPath});
-                    NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(desc);
-                }
+
+    private String contextPathValidation() {
+        String contextPath = jTextFieldContextPath.getText();
+        String message = null;
+        if (contextPath.length() > 0) {
+            if (!contextPath.startsWith("/")) {
+                message = NbBundle.getMessage (CustomizerRun.class, "MSG_INVALID_CP_DOES_NOT_START_WITH_SLASH");
+            } else if (contextPath.contains("//")) {
+                message = NbBundle.getMessage (CustomizerRun.class, "MSG_INVALID_CP_CONTAINS_DOUBLE_SLASH");
+                message = "Context path should not contain \"//\"";
+            } else if (contextPath.endsWith("/")) {
+                message = NbBundle.getMessage (CustomizerRun.class, "MSG_INVALID_CP_ENDS_WITH_SLASH");
+                message = "Context path should not end with \"/\"";
             }
-	};
-        // attempt to cancel previous task
-        if (checkCPTask!=null && !checkCPTask.isFinished()) checkCPTask.cancel();
-        
-        checkCPTask = org.openide.util.RequestProcessor.getDefault().post(r,1000);             
-    } 
-    
+        }
+        return message;
+    }
+
 }
