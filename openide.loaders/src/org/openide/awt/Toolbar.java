@@ -572,6 +572,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             int y = (getHeight() / 2) - (sz / 2);
             int x = (getWidth() / 2) - (sz / 2);
             
+            y-=2;
+            
             GradientPaint gradient = new GradientPaint(x+1, y+1, Color.BLACK,
             x+sz-1, y+sz-1, Color.WHITE);
             
