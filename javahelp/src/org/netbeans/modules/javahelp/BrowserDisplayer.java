@@ -70,7 +70,7 @@ import org.openide.awt.HtmlBrowser;
  * <li>textFontFamily - the font family of the activator text
  * @see setTextFontFamily
  * <li>textFontSize - the size of the activator text font. Size is specified
- * in a css termonolgy. See the setTextFontSize for acceptable syntax
+ * in a css terminology. See the setTextFontSize for acceptable syntax.
  * @see setTextFontSize
  * <li>textFontWeight - the activator text font weight
  * @see setTextFontWeight
