@@ -60,6 +60,13 @@ public class NonGui extends NbTopManager implements Runnable {
     
     static {
         // #27330: installation in directory with hash marks
+        // But #29935: first prime it so it need do no more class loading later
+        try {
+            Utilities.toURL(new File("").getAbsoluteFile()); // NOI18N
+        } catch (MalformedURLException mfue) {
+            // should not happen
+            mfue.printStackTrace();
+        }
         org.netbeans.Main.setURLConvertor(new org.netbeans.Main.URLConvertor() {
             public URL toURL(File f) throws MalformedURLException {
                 return Utilities.toURL(f);
