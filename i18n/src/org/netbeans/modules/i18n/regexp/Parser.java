@@ -747,7 +747,7 @@ public class Parser {
         result = new TreeNode(TreeNode.SET,
                               start,
                               endIndex,
-                              specials != null ? specials : null);
+                              specials);
 
         int from = start + 1 + specials.length();
         int to = endIndex - 1;
