@@ -112,7 +112,7 @@ Microsystems, Inc. All Rights Reserved.
    </target>
    
    <target name="checkout-modules" depends="init,actionlist" if="xtest.execute_actions.checkout">
-      <mconfig repositories="${xtest.instance.list}"/>
+      <mconfig instances="${xtest.instance.list}"/>
       <echo message="${xtest.driver.modules}"/>     
       <checkout modules="${xtest.driver.modules}" repos="${xtest.cvs.repositories}" quiet="true"/>
    </target>
