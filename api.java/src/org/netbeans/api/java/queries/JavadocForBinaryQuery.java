@@ -40,6 +40,11 @@ public class JavadocForBinaryQuery {
 
     /**
      * Find Javadoc information for a classpath root containing Java classes.
+     * <p>
+     * These methods calls findJavadoc method on the JavadocForBinaryQueryImplementation 
+     * instances registered in the lookup until null result is returned for given binaryRoot. The
+     * non null result is returned.
+     * </p>
      * @param binary URL of a classpath root
      * @return a result object encapsulating the answer (never null)
      */
