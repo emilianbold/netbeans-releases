@@ -76,19 +76,6 @@ Microsystems, Inc. All Rights Reserved.
     </java>
   </target>
 
-  <target name="xsl-win32" depends="init">
-    <java classname="com.installshield.isje.ISJE" fork="true">
-      <arg value="${ismp.project}" />
-      <arg value="-xsl" />
-      <arg value="unix.xsl"/>
-      <arg value="-saveas"/>
-      <arg value="build/${ismp.project}-win32"/>
-      <classpath>
-        <path refid="ismp.cp"/>
-      </classpath>
-    </java>
-  </target>
-
   <target name="build-win32" depends="init, compile, unzip, xsl-win32">
     <java classname="com.installshield.isje.ISJE" fork="true">
       <arg value="build/${ismp.project}-win32" />
