@@ -169,28 +169,25 @@ public class IndexSearch extends TopComponent {
 
       // Workaround for bug in FileSystems
       String strUrl = url.toString();
-      //System.out.println ( url.toString() );
+
       if ( strUrl.startsWith( "nbfs:" ) && strUrl.charAt( 5 ) != '/' ){
         url = new URL( "nbfs:/" + strUrl.substring( 5 ) );
       }
 
-      //System.out.println ( "the URL " + url );
       TopManager.getDefault().showUrl( url );
     }
     catch ( java.net.MalformedURLException ex ) {
-      System.out.println ( "Malformed URL" );
+      // Do nothing if the URL isn't O.K.
     }
   }
   
   
   private void searchComboBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchComboBoxActionPerformed
-    //System.out.println( "Combo in action " + evt );
     if ( searchEngine == null )
       searchButtonActionPerformed( evt );
   }//GEN-LAST:event_searchComboBoxActionPerformed
 
   private void searchButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
-    //System.out.println ( "Button AP " );
     if ( searchEngine == null ) {
       searchEngine = new SearchEngine();
       searchEngine.go();
@@ -301,7 +298,6 @@ public class IndexSearch extends TopComponent {
         tasks.add( searchThread );
         searchThread.go();
       }
-      //System.out.println ( "All started" );
       searchButton.setText( STR_STOP );
     }
 
