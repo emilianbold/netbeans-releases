@@ -23,6 +23,7 @@ import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -55,6 +56,23 @@ public class LibrariesChooser extends javax.swing.JPanel {
             }
         }
         return (Library[]) libs.toArray(new Library[libs.size()]);
+    }
+
+    public void addListSelectionListener(ListSelectionListener listener) {
+        jList1.addListSelectionListener(listener);
+    }
+
+    public boolean isValidSelection() {
+        Object[] selected = this.jList1.getSelectedValues();
+        if(selected.length == 0) {
+            return false;
+        }
+        for (int i = 0; i < selected.length; i++) {
+            if(incompatibleLibs.contains(selected[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** This method is called from within the constructor to
@@ -210,20 +228,6 @@ public class LibrariesChooser extends javax.swing.JPanel {
         private Library[] createLibraries () {
             Library[] libs = LibraryManager.getDefault().getLibraries();
             numberOfLibs = libs.length;
-            Collection filterOut = j2eePlatform.equals("1.3") ? filter13 : filter14;
-//            final Collection baseLibraries = VisualClasspathSupport.getBaseLibrarySet();
-//            ArrayList asList = new ArrayList ();
-//            for (int i = 0; i < libs.length; i++) {
-//                final Library lib = libs[i];
-//                if (alreadySelectedLibs.contains(lib)) {
-//                    continue;
-//                }
-//                if (filterOut.contains (lib)) {
-//                    continue;
-//                }
-//                asList.add(lib);
-//            }
-//            libs = (Library[]) asList.toArray(new Library [asList.size()]);
             Arrays.sort(libs, new Comparator () {
                 public int compare (Object o1, Object o2) {
                     assert (o1 instanceof Library) && (o2 instanceof Library);
@@ -256,26 +260,25 @@ public class LibrariesChooser extends javax.swing.JPanel {
             if (value instanceof Library) {
                 displayName = ((Library)value).getDisplayName();
             }
-            final Color foreground;
+            super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
             final String toolTipText;
-            if(alreadySelectedLibs.contains(value)) {
-                foreground = Color.LIGHT_GRAY;
-                toolTipText = NbBundle.getMessage(LibrariesChooser.class, "LBL_LibraryAlreadyInProject_ToolTip");
-            } else if(incompatibleLibs.contains(value)) {
-                foreground = Color.RED;
-                toolTipText = NbBundle.getMessage(LibrariesChooser.class, "LBL_IncompatibleLibrary_ToolTip")
-                        + " (" + j2eePlatform + ")";
-                isSelected = false; // selection of incompatible libraries is here only masked
+            if (value instanceof Library) {
+                final String libraryString = VisualClasspathSupport.getLibraryString((Library) value);
+                if (alreadySelectedLibs.contains(value)) {
+                    toolTipText = NbBundle.getMessage(LibrariesChooser.class, "LBL_LibraryAlreadyInProject_ToolTip") +
+                            " !!!     (" + libraryString + ")";
+                } else if (incompatibleLibs.contains(value)) {
+                    toolTipText = NbBundle.getMessage(LibrariesChooser.class, "LBL_IncompatibleLibrary_ToolTip")
+                            + " (" + j2eePlatform + ") !!!     (" + libraryString + ")";
+                    setEnabled(false);
+                } else {
+                    toolTipText = libraryString;
+                }
             } else {
-                foreground = null;
                 toolTipText = null;
             }
-            super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
             setToolTipText(toolTipText);
             setIcon(createIcon());
-            if(foreground != null) {
-                setForeground(foreground);
-            }
             return this;
         }
 
