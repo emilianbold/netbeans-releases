@@ -354,16 +354,20 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             String contextPath = panel.jTextFieldContextPath.getText().trim();
             if (!contextPath.startsWith("/")) //NOI18N
                 contextPath = "/" + contextPath; //NOI18N
-            
+
+            String moduleLoc = panel.moduleLocationTextField.getText().trim();
+
             d.putProperty(WizardProperties.PROJECT_DIR, new File(panel.createdFolderTextField.getText()));
-            d.putProperty(WizardProperties.SOURCE_ROOT, new File(panel.moduleLocationTextField.getText()));
+            d.putProperty(WizardProperties.SOURCE_ROOT, new File(moduleLoc));
             d.putProperty(WizardProperties.DISPLAY_NAME, name);
             d.putProperty(WizardProperties.CODE_NAME, name.replace(' ', '-')); //NOI18N
             d.putProperty(WizardProperties.CONTEXT_PATH, contextPath);
-            
-            File f = new File(panel.moduleLocationTextField.getText().trim());
-            FileObject fo = FileUtil.toFileObject(f);
-            presetSecondPanel(fo);
+
+            if (moduleLoc.length() > 0) {
+                File f = new File(moduleLoc);
+                FileObject fo = FileUtil.toFileObject(f);
+                presetSecondPanel(fo);
+            }
         }
         
         private boolean isWebModule (FileObject dir) {
