@@ -1,7 +1,7 @@
 OpenIDE-Module: org.netbeans.modules.properties/1
 OpenIDE-Module-Name: Resource Bundles
 OpenIDE-Module-Display-Category: Data Files
-OpenIDE-Module-Specification-Version: 1.5
+OpenIDE-Module-Specification-Version: 1.6
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/properties/Layer.xml
 

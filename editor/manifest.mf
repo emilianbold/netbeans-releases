@@ -2,7 +2,7 @@ OpenIDE-Module: org.netbeans.modules.editor/1
 OpenIDE-Module-Name: Editor
 OpenIDE-Module-Display-Category: Editing
 OpenIDE-Module-Install: org/netbeans/modules/editor/EditorModule.class
-OpenIDE-Module-Specification-Version: 1.6
+OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/editor/resources/layer.xml
 Class-Path: ext/nb-editor.jar
