@@ -457,25 +457,25 @@
 </tocitem>
 
 
-<tocitem text="Scripting Languages">
-  <tocitem text="Using Scripting Languages" target="script.scripting">
-    <tocitem text="Running a Script" target="script.runscript" />
-    <tocitem text="Adding a Scripting Language" target="script.addscript" />
-  </tocitem>
-  <tocitem text="Building With Ant" target="ant.building">
-    <tocitem text="Ant Project Files" target="ant.ident" />
-    <tocitem text="Creating and Running an Ant Project" target="ant.project" />
-    <tocitem text="Executing a Target" target="ant.target" />
-    <tocitem text="Editing Ant Scripts" target="ant.editing" />
-    <tocitem text="Advanced Compilation and Execution Support" target="ant.advance">
-      <tocitem text="Compiling Ant Scripts" target="ant.compiling" />
-      <tocitem text="Compiling Files With Ant" target="ant.compwith" />
-      <tocitem text="Running Ant Scripts" target="ant.running" />
-    </tocitem>
-    <tocitem text="Configuring Ant Settings" target="ant.settings" />
-    <tocitem text="Creating Custom Ant Tasks" target="ant.custom-tasks" />
-  </tocitem>
+
+<tocitem text="Using Scripting Languages" target="script.scripting">
+  <tocitem text="Running a Script" target="script.runscript" />
+  <tocitem text="Adding a Scripting Language" target="script.addscript" />
 </tocitem>
+<tocitem text="Building With Ant" target="ant.building">
+  <tocitem text="Ant Project Files" target="ant.ident" />
+  <tocitem text="Creating and Running an Ant Project" target="ant.project" />
+  <tocitem text="Executing a Target" target="ant.target" />
+  <tocitem text="Editing Ant Scripts" target="ant.editing" />
+  <tocitem text="Advanced Compilation and Execution Support" target="ant.advance">
+    <tocitem text="Compiling Ant Scripts" target="ant.compiling" />
+    <tocitem text="Compiling Files With Ant" target="ant.compwith" />
+    <tocitem text="Running Ant Scripts" target="ant.running" />
+  </tocitem>
+  <tocitem text="Configuring Ant Settings" target="ant.settings" />
+  <tocitem text="Creating Custom Ant Tasks" target="ant.custom-tasks" />
+</tocitem>
+
 
 
 <tocitem text="Developing JSP and Servlet Files" target="jsp.jsp_jump">
