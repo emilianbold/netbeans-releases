@@ -56,7 +56,9 @@ import org.openide.loaders.DataShadow;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.AsyncGUIJob;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /** If you are looking for the non-GUI part of the panel please look
  * into new file wizard
@@ -66,7 +68,7 @@ import org.openide.util.NbBundle;
  * Provides the GUI for the template chooser panel.
  * @author Jesse Glick
  */
-final class TemplateChooserPanelGUI extends javax.swing.JPanel implements PropertyChangeListener {
+final class TemplateChooserPanelGUI extends javax.swing.JPanel implements PropertyChangeListener, AsyncGUIJob {
     
     private static final ListCellRenderer PROJECT_CELL_RENDERER = new ProjectCellRenderer();
     
@@ -78,27 +80,23 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     
     //GUI Builder
     private TemplatesPanelGUI.Builder builder;
+    private Project project;
+    private boolean isWarmingUp = false;
     
     public TemplateChooserPanelGUI(Project p /* , String[] recommendedTypes */ ) {
-        this.builder = new FileChooserBuilder ();
-        initComponents();
-        final TemplatesPanelGUI tempPanel = (TemplatesPanelGUI)this.templatesPanel;
-        ((TemplatesPanelGUI)this.templatesPanel).setTemplatesFolder (Repository.getDefault().getDefaultFileSystem().findResource("Templates"));  //NOI18N
-        // select first category
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                tempPanel.setSelectedCategoryByName (null);
-            }
-        });
-        initValues( p );        
+        project = p;
         setPreferredSize( PREF_DIM );
         setName (org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_Name")); // NOI18N
-        projectsComboBox.setRenderer( PROJECT_CELL_RENDERER );                
+        isWarmingUp = true;
+        Utilities.attachInitJob (this, this);
      }
     
     /** Called from readSettings, to initialize the GUI with proper components
      */
     public void initValues( Project p ) {
+        if (isWarmingUp) {
+            return ;
+        }
         // Populate the combo box with list of projects
         Project openProjects[] = OpenProjectList.getDefault().getOpenProjects();
         Arrays.sort( openProjects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
@@ -133,10 +131,16 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     
     
     public Project getProject() {
+        if (isWarmingUp) {
+            return null;
+        }
         return (Project)projectsComboBox.getSelectedItem();
     }
     
     public FileObject getTemplate() {
+        if (isWarmingUp) {
+            return null;
+        }
         return ((TemplatesPanelGUI)this.templatesPanel).getSelectedTemplate ();
     }
     
@@ -150,6 +154,9 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     }
     
     private String getCategory () {
+        if (isWarmingUp) {
+            return null;
+        }
         return ((TemplatesPanelGUI)this.templatesPanel).getSelectedCategoryName ();
     }
 
@@ -432,6 +439,26 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         // simplied but more counts
         //return new FileChildren (p, (DataFolder) folder).getNodesCount () > 0;
         
+    }
+    
+    public void construct () {
+        this.builder = new FileChooserBuilder ();
+        initComponents();
+        isWarmingUp = false;
+        projectsComboBox.setRenderer( PROJECT_CELL_RENDERER );                
+        initValues( project );        
+    }
+    
+    public void finished () {
+        final TemplatesPanelGUI tempPanel = (TemplatesPanelGUI)this.templatesPanel;
+        ((TemplatesPanelGUI)this.templatesPanel).setTemplatesFolder (Repository.getDefault().getDefaultFileSystem().findResource("Templates"));  //NOI18N
+        // select first category
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                tempPanel.setSelectedCategoryByName (null);
+            }
+        });
+        ((TemplatesPanelGUI)this.templatesPanel).doFinished ();
     }
     
 }

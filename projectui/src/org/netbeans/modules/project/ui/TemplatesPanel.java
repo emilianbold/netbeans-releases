@@ -29,14 +29,16 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.AsyncGUIJob;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author  tom
  */
-public class TemplatesPanel implements WizardDescriptor.Panel, TemplatesPanelGUI.Builder {
+public class TemplatesPanel implements WizardDescriptor.Panel {
     
     private ArrayList listeners;
     private TemplatesPanelGUI panel;
@@ -109,49 +111,15 @@ public class TemplatesPanel implements WizardDescriptor.Panel, TemplatesPanelGUI
     
     public synchronized Component getComponent() {
         if (this.panel == null) {
-            this.panel = new TemplatesPanelGUI (this);
+            this.panel = new TemplatesPanelGUI ();
+            Utilities.attachInitJob (panel, new WarmupJob ());
             this.panel.setName (NbBundle.getBundle (TemplatesPanel.class).getString ("LBL_TemplatesPanel_Name")); // NOI18N
         }
         return this.panel;
     }
     
-    public void fireChange() {
-        Iterator  it = null;
-        synchronized (this) {
-            if (this.listeners == null) {
-                return;
-            }
-            it = ((ArrayList)this.listeners.clone()).iterator();
-        }
-        ChangeEvent event = new ChangeEvent (this);
-        while (it.hasNext ()) {
-            ((ChangeListener)it.next()).stateChanged(event);
-        }
-    }
-    
-    public org.openide.nodes.Children createCategoriesChildren (DataFolder folder) {
-        assert folder != null : "Folder cannot be null.";  //NOI18N
-        return new CategoriesChildren (folder);
-    }
-    
-    public org.openide.nodes.Children createTemplatesChildren(DataFolder folder) {
-        return new TemplateChildren (folder);
-    }
-    
-    public char getCategoriesMnemonic() {
-        return NbBundle.getMessage(TemplatesPanel.class,"MNE_Categories").charAt(0);
-    }
-    
-    public String getCategoriesName() {
-        return NbBundle.getMessage(TemplatesPanel.class,"CTL_Categories");
-    }
-    
-    public char getTemplatesMnemonic() {
-        return NbBundle.getMessage(TemplatesPanel.class,"MNE_Projects").charAt (0);
-    }
-    
-    public String getTemplatesName() {
-        return NbBundle.getMessage(TemplatesPanel.class,"CTL_Projects");
+    private TemplatesPanelGUI.Builder constructBuilder () {
+        return new Builder ();
     }
     
     private static class CategoriesChildren extends Children.Keys {
@@ -229,4 +197,57 @@ public class TemplatesPanel implements WizardDescriptor.Panel, TemplatesPanelGUI
         
     }
     
+    private class WarmupJob implements AsyncGUIJob {
+        public void construct () {
+            TemplatesPanelGUI.Builder firer = constructBuilder ();
+            panel.doWarmUp (firer);
+        }
+        
+        public void finished () {
+            panel.doFinished ();
+        }
+    }
+    
+    private class Builder implements TemplatesPanelGUI.Builder {
+
+        public org.openide.nodes.Children createCategoriesChildren (DataFolder folder) {
+            assert folder != null : "Folder cannot be null.";  //NOI18N
+            return new CategoriesChildren (folder);
+        }
+
+        public org.openide.nodes.Children createTemplatesChildren(DataFolder folder) {
+            return new TemplateChildren (folder);
+        }
+
+        public char getCategoriesMnemonic() {
+            return NbBundle.getMessage(TemplatesPanel.class,"MNE_Categories").charAt(0);
+        }
+
+        public String getCategoriesName() {
+            return NbBundle.getMessage(TemplatesPanel.class,"CTL_Categories");
+        }
+
+        public char getTemplatesMnemonic() {
+            return NbBundle.getMessage(TemplatesPanel.class,"MNE_Projects").charAt (0);
+        }
+
+        public String getTemplatesName() {
+            return NbBundle.getMessage(TemplatesPanel.class,"CTL_Projects");
+        }
+
+        public void fireChange() {
+            Iterator  it = null;
+            synchronized (this) {
+                if (listeners == null) {
+                    return;
+                }
+                it = ((ArrayList)listeners.clone()).iterator();
+            }
+            ChangeEvent event = new ChangeEvent (this);
+            while (it.hasNext ()) {
+                ((ChangeListener)it.next()).stateChanged(event);
+            }
+        }
+
+    }
 }

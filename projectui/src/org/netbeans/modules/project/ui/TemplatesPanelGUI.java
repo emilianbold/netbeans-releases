@@ -45,6 +45,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -75,24 +76,63 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     
     private Builder firer;
     
+    private boolean isWarmingUp = false;
+    private static int DELAY_TIME = 50;
+    
+    /** Creates new form TemplatesPanelGUI */
+    public TemplatesPanelGUI () {
+        isWarmingUp = true;
+        setName (NbBundle.getMessage(TemplatesPanelGUI.class, "TXT_SelectTemplate")); // NOI18N
+    }
+    
     /** Creates new form TemplatesPanelGUI */
     public TemplatesPanelGUI (Builder firer) {
         assert firer != null : "Builder can not be null";  //NOI18N
         this.firer = firer;
         initComponents();
         postInitComponents ();
-        setName (NbBundle.getMessage(TemplatesPanelGUI.class,"TXT_SelectTemplate"));
+        setName (NbBundle.getMessage(TemplatesPanelGUI.class, "TXT_SelectTemplate")); // NOI18N
     }
+    
+    RequestProcessor.Task setTemplatesFolderTask = null;
 
-
-    public void setTemplatesFolder (FileObject folder) {
+    public void setTemplatesFolder (final FileObject folder) {
+        if (setTemplatesFolderTask != null && !setTemplatesFolderTask.isFinished ()) {
+            setTemplatesFolderTask.cancel ();
+        }
+        if (isWarmingUp) {
+//            if (setTemplatesFolderTask != null && !setTemplatesFolderTask.isFinished ()) {
+//                setTemplatesFolderTask.cancel ();
+//            }
+            setTemplatesFolderTask = RequestProcessor.getDefault ().post (new Runnable () {
+                public void run () {
+                    setTemplatesFolder (folder);
+                }
+            }, DELAY_TIME);
+            return ;
+        }
         DataFolder dobj = DataFolder.findFolder (folder);
         ((ExplorerProviderPanel)this.categoriesPanel).setRootNode(new FilterNode (
             dobj.getNodeDelegate(), this.firer.createCategoriesChildren(dobj)));
     }
-
+    
+    RequestProcessor.Task setSelectedCategoryByNameTask = null;
 
     public void setSelectedCategoryByName (final String categoryName) {
+        if (setSelectedCategoryByNameTask != null && !setSelectedCategoryByNameTask.isFinished ()) {
+            setSelectedCategoryByNameTask.cancel ();
+        }
+        if (isWarmingUp) {
+//            if (setSelectedCategoryByNameTask != null && !setSelectedCategoryByNameTask.isFinished ()) {
+//                setSelectedCategoryByNameTask.cancel ();
+//            }
+            setSelectedCategoryByNameTask = RequestProcessor.getDefault ().post (new Runnable () {
+                public void run () {
+                    setSelectedCategoryByName (categoryName);
+                }
+            }, DELAY_TIME);
+            return ;
+        }
         if (categoryName != null) {
             ((ExplorerProviderPanel)this.categoriesPanel).setSelectedNode (categoryName);
         } else {
@@ -102,10 +142,29 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     }
     
     public String getSelectedCategoryName () {
+        if (isWarmingUp) {
+            return null;
+        }
         return ((ExplorerProviderPanel)this.categoriesPanel).getSelectionPath();
     }
     
+    RequestProcessor.Task setSelectedTemplateByNameTask = null;
+    
     public void setSelectedTemplateByName (final String templateName) {
+        if (setSelectedTemplateByNameTask != null && !setSelectedTemplateByNameTask.isFinished ()) {
+            setSelectedTemplateByNameTask.cancel ();
+        }
+        if (isWarmingUp) {
+            if (setSelectedTemplateByNameTask != null && !setSelectedTemplateByNameTask.isFinished ()) {
+                setSelectedTemplateByNameTask.cancel ();
+            }
+            setSelectedTemplateByNameTask = RequestProcessor.getDefault ().post (new Runnable () {
+                public void run () {
+                    setSelectedTemplateByName (templateName);
+                }
+            }, DELAY_TIME);
+            return ;
+        }
         final TemplatesPanel tempExplorer = ((TemplatesPanel)this.projectsPanel);
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
@@ -122,10 +181,16 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     }
     
     public String getSelectedTemplateName () {
+        if (isWarmingUp) {
+            return null;
+        }
         return ((TemplatesPanel)this.projectsPanel).getSelectionPath();
     }
     
     public FileObject getSelectedTemplate () {
+        if (isWarmingUp) {
+            return null;
+        }
         Node[] nodes = (Node[]) ((ExplorerProviderPanel)this.projectsPanel).getSelectedNodes();
         if (nodes != null && nodes.length == 1) {
             DataObject dobj = (DataObject) nodes[0].getCookie (DataObject.class);
@@ -140,6 +205,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     }
 
     public void propertyChange (PropertyChangeEvent event) {
+        if (isWarmingUp) {
+            return;
+        }
         if (event.getSource() == this.categoriesPanel) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals (event.getPropertyName ())) {
                 Node[] selectedNodes = (Node[]) event.getNewValue();
@@ -196,25 +264,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         this.description.setEditorKit(new HTMLEditorKit());
     }
 
-    public void addNotify() {
-        super.addNotify();
-        
-        if (description.getEditorKit() instanceof HTMLEditorKit) {
-            // override the Swing default CSS to make the HTMLEditorKit use the
-            // same font as the rest of the UI.  This must be done in addNotify()
-            // because before the components are realized the font sizes are wrong
-            // on GTKLookAndFeel
-
-            HTMLEditorKit htmlkit = (HTMLEditorKit) description.getEditorKit();
-            StyleSheet css = htmlkit.getStyleSheet();
-            Font f = jLabel1.getFont();
-            css.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
-                        .append("pt; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
-        }
-        
-        categoriesPanel.requestFocus ();
-    }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -305,6 +354,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     }//GEN-END:initComponents
     
     private URL getDescription (DataObject dobj) {
+        if (isWarmingUp) {
+            return null;
+        }
         //XXX: Some templates are using templateWizardURL others instantiatingWizardURL. What is correct?        
         FileObject fo = dobj.getPrimaryFile();
         URL desc = (URL) fo.getAttribute(ATTR_INSTANTIATING_DESC);
@@ -511,5 +563,37 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel projectsPanel;
     // End of variables declaration//GEN-END:variables
+
+    void doWarmUp (Builder firer) {
+        assert firer != null : "Builder can not be null";  //NOI18N
+        this.firer = firer;
+        initComponents();
+        isWarmingUp = false;
+        postInitComponents ();
+        if (setTemplatesFolderTask != null && !setTemplatesFolderTask.isFinished ()) {
+            setTemplatesFolderTask.waitFinished ();
+        }
+        if (setSelectedTemplateByNameTask != null && !setSelectedTemplateByNameTask.isFinished ()) {
+            setSelectedTemplateByNameTask.waitFinished ();
+        }
+        if (setSelectedCategoryByNameTask != null && !setSelectedCategoryByNameTask.isFinished ()) {
+            setSelectedCategoryByNameTask.waitFinished ();
+        }
+    }
     
+    void doFinished () {
+        categoriesPanel.requestFocus ();
+        if (description.getEditorKit() instanceof HTMLEditorKit) {
+            // override the Swing default CSS to make the HTMLEditorKit use the
+            // same font as the rest of the UI.  This must be done in addNotify()
+            // because before the components are realized the font sizes are wrong
+            // on GTKLookAndFeel
+
+            HTMLEditorKit htmlkit = (HTMLEditorKit) description.getEditorKit();
+            StyleSheet css = htmlkit.getStyleSheet();
+            Font f = jLabel1.getFont();
+            css.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
+                        .append("pt; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+        }
+    }
 }
