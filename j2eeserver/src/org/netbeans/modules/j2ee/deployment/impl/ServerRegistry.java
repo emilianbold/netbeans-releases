@@ -247,7 +247,7 @@ public final class ServerRegistry implements java.io.Serializable {
         try {
             instanceFO.delete();
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
         }
     }
     
@@ -269,7 +269,7 @@ public final class ServerRegistry implements java.io.Serializable {
                     }
                 }
             } catch (javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException dmce) {
-                org.openide.ErrorManager.getDefault().log(org.openide.ErrorManager.INFORMATIONAL, dmce.toString());
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, dmce);
             } catch (Exception e) {
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, e);
             }
@@ -399,9 +399,10 @@ public final class ServerRegistry implements java.io.Serializable {
         File propFile = new File(rootDir, relativePath);
         Properties prop = new Properties();
         try {
-            prop.load(new FileInputStream(propFile));
+            if (propFile.exists())
+                prop.load(new FileInputStream(propFile));
         } catch (IOException ioe) {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, ioe.toString());
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ioe.toString());
         }
         return prop;
     }
