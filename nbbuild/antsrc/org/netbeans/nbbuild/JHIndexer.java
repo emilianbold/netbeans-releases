@@ -30,7 +30,6 @@ import org.apache.tools.ant.types.Path;
 
 // ToDo:
 // stopwords configuration
-// locale setting
 // add branding suffix to each generated file
 // verbose mode
 
