@@ -26,33 +26,45 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-/** Permits a PDF file to be opened in an external viewer.
+/**
+ * Permits a PDF file to be opened in an external viewer.
+ *
  * @author Jesse Glick
  */
 class PDFOpenSupport implements OpenCookie {
     
     private File f;
     
-    public PDFOpenSupport (File f) {
-        if (! f.isFile ())
-            throw new IllegalArgumentException (NbBundle.getMessage
-                (PDFOpenSupport.class, "EXC_no_such_pdf", f.getPath ())); // NOI18N
+    /**
+     * @exception  java.lang.IllegalArgumentException
+     *             if the specified file does not exist or is not a plain file
+     */
+    public PDFOpenSupport(File f) {
+        if (!f.isFile()) {
+            String msg = NbBundle.getMessage(PDFOpenSupport.class,
+                                             "EXC_no_such_pdf",         //NOI18N
+                                             f.getPath());
+            throw new IllegalArgumentException(msg);
+        }
         this.f = f;
     }
     
-    public void open () {
-        Settings sett = Settings.getDefault ();
+    public void open() {
+        Settings sett = Settings.getDefault();
         try {
-            Process p = Runtime.getRuntime ().exec (new String[] {
-                sett.getPDFViewer ().getAbsolutePath (), f.getAbsolutePath ()
+            Process p = Runtime.getRuntime().exec(
+                    new String[] {sett.getPDFViewer().getAbsolutePath(),
+                                  f.getAbsolutePath()
             });
             // [PENDING] redirect p's output
         } catch (IOException ioe) {
             // Try to reconfigure.
-            String excmessage = ioe.getLocalizedMessage ();
-            String exceptionType = ioe.getClass ().getName ();
-            int idx = exceptionType.lastIndexOf ('.');
-            if (idx != -1) exceptionType = exceptionType.substring (idx + 1);
+            String excmessage = ioe.getLocalizedMessage();
+            String exceptionType = ioe.getClass().getName();
+            int idx = exceptionType.lastIndexOf('.');
+            if (idx != -1) {
+                exceptionType = exceptionType.substring(idx + 1);
+            }
             /* [PENDING] does not work (no properties show in sheet, though node has them):
             Node n;
             try {
@@ -65,17 +77,19 @@ class PDFOpenSupport implements OpenCookie {
             sheet.setNodes (new Node[] { n });
             //TopManager.getDefault ().getNodeOperation ().explore (n);
              */
-            DialogDescriptor d = new DialogDescriptor
-                (new ReconfigureReaderPanel (exceptionType, excmessage), // content pane
-                NbBundle.getMessage (PDFOpenSupport.class, "TITLE_pick_a_viewer"), // title
+            DialogDescriptor d = new DialogDescriptor(
+                new ReconfigureReaderPanel(exceptionType, excmessage), // content pane
+                NbBundle.getMessage(PDFOpenSupport.class, "TITLE_pick_a_viewer"), // title
                 true, // modal
                 DialogDescriptor.OK_CANCEL_OPTION, // option type
-                DialogDescriptor.OK_OPTION, // default value
-                DialogDescriptor.DEFAULT_ALIGN, // alignment
-                new HelpCtx (PDFOpenSupport.class.getName () + ".dialog"), // help context NOI18N
+                DialogDescriptor.OK_OPTION,        // default value
+                DialogDescriptor.DEFAULT_ALIGN,    // alignment
+                new HelpCtx(PDFOpenSupport.class.getName()
+                            + ".dialog"),          //help context       //NOI18N
                 null); // action listener
-            if (DialogDescriptor.OK_OPTION == DialogDisplayer.getDefault().notify(d))
+            if (DialogDescriptor.OK_OPTION == DialogDisplayer.getDefault().notify(d)) {
                 open ();
+            }
         }
     }
     
